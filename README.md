@@ -1,3 +1,9 @@
+[![Build Status](https://travis-ci.org/sul-dlss/preservation_core_catalog.svg?branch=master)](https://travis-ci.org/sul-dlss/preservation_core_catalog)
+
+[![Coverage Status](https://coveralls.io/repos/github/sul-dlss/preservation_core_catalog/badge.svg)](https://coveralls.io/github/sul-dlss/preservation_core_catalog)
+
+[![Build Status](https://travis-ci.org/sul-dlss/preservation_core_catalog.svg?branch=master)](https://travis-ci.org/sul-dlss/preservation_core_catalog)
+
 # README
 
 
