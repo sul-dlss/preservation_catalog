@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fileInventory type="additions" objectId="druid:ct764fs4485" versionId="9" inventoryDatetime="2015-04-30T18:53:06Z" fileCount="6" byteCount="53950" blockCount="56">
+  <fileGroup groupId="metadata" dataSource="" fileCount="6" byteCount="53950" blockCount="56">
+    <file>
+      <fileSignature size="2274" md5="99130c65b1d00a82f7bf1dec62818fa5" sha1="8d7999b4a0d5b6d0d5e9b827158e7ec9499fa26b" sha256="131d54b63dae1f18a80a37124779e3f2aaca9675a78f076890b47466fd691a39"/>
+      <fileInstance path="descMetadata.xml" datetime="2015-04-30T18:53:05Z"/>
+    </file>
+    <file>
+      <fileSignature size="1690" md5="5ef3852620fe8f1dde9c8d796f609f93" sha1="216dcfe863191ed7c7c34c83028a0effdb8da08b" sha256="6308f33036322d9bec121f782dbd943d86e6b3255393279b6a0706371d9ef620"/>
+      <fileInstance path="events.xml" datetime="2015-04-30T18:53:06Z"/>
+    </file>
+    <file>
+      <fileSignature size="688" md5="5c443f240b57ba815fe57df78f60b7b2" sha1="6c965b819d7496f11ce666e1988025eb5f318a4c" sha256="0d3aa5e5decd44a900253ec170a1e659dc07a09948cec19748d72a967e28f8d0"/>
+      <fileInstance path="identityMetadata.xml" datetime="2015-04-30T18:53:05Z"/>
+    </file>
+    <file>
+      <fileSignature size="263" md5="4aa26ccbdf0070e8ac3765f6d61c8a4d" sha1="5b319074a40c1d1c748a5fe90775d94c243a2f57" sha256="6f7eb13d97918aed8851dcbf2e7040b027ef9cd16b79f0b6589f6d2bd7c582df"/>
+      <fileInstance path="provenanceMetadata.xml" datetime="2015-04-30T18:53:05Z"/>
+    </file>
+    <file>
+      <fileSignature size="1043" md5="41d31b8d1154863b36022ad3c389f8c2" sha1="454ec24cecfece7d5e37a84734ad8333227b2f39" sha256="ce8e8623c9907e544112982d5682d3bd4802c6e2b423fbf9c0543c0b1bd72297"/>
+      <fileInstance path="versionMetadata.xml" datetime="2015-04-30T18:53:06Z"/>
+    </file>
+    <file>
+      <fileSignature size="47992" md5="69c74c6dae80148d61b5db5af6a4e30e" sha1="adf359a4460c3e3d2bce51437a53ee64912aaced" sha256="8cc3427bd700a84f190fa38e962d1356a1186579554b76d8fbe5a1918d23a41e"/>
+      <fileInstance path="workflows.xml" datetime="2015-04-30T18:53:06Z"/>
+    </file>
+  </fileGroup>
+</fileInventory>

@@ -1,0 +1,8 @@
+<versionMetadata objectId="druid:ct764fs4485">
+  <version tag="1.0.0" versionId="1">
+    <description>Initial Version</description>
+  </version>
+  <version tag="2.0.0" versionId="2">
+    <description>change pdfs to preserve only</description>
+  </version>
+</versionMetadata>

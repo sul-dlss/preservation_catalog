@@ -1,0 +1,80 @@
+<contentMetadata type="book" objectId="dg806ms0373">
+  <resource type="page" sequence="1" id="dg806ms0373_1">
+    <label>Page 1</label>
+    <file id="dg806ms0373_00_0001.tif" mimetype="image/tiff" size="49314084" preserve="yes" publish="no" shelve="no">
+      <checksum type="md5">2856d7e45b07a69627992c899b931641</checksum>
+      <checksum type="sha1">ddb8f7156901e187a94fe0d9fd308771a344d7b1</checksum>
+      <imageData width="4302" height="5352"/>
+    </file>
+    <file id="dg806ms0373_00_0001.jp2" mimetype="image/jp2" size="4350025" preserve="no" publish="yes" shelve="yes">
+      <checksum type="md5">83b727a01d20b67b8ebc9a3aba1bdfe7</checksum>
+      <checksum type="sha1">7077169cbc662e0a72a4a0f03773a1b0414f1c16</checksum>
+      <imageData width="4302" height="5352"/>
+    </file>
+  </resource>
+  <resource type="page" sequence="2" id="dg806ms0373_2">
+    <label>Page 2</label>
+    <file id="dg806ms0373_00_0002.tif" mimetype="image/tiff" size="39822148" preserve="yes" publish="no" shelve="no">
+      <checksum type="md5">0ea3a17b045d491cdca40c91481cf0b7</checksum>
+      <checksum type="sha1">4bfd119bed218a22425ada5e48da1e60f59effff</checksum>
+      <imageData width="4211" height="5359"/>
+    </file>
+    <file id="dg806ms0373_00_0002.jp2" mimetype="image/jp2" size="4265749" preserve="no" publish="yes" shelve="yes">
+      <checksum type="md5">79ea7a7d0e767dcc61e76f1bc3963978</checksum>
+      <checksum type="sha1">dd3a8757ab536af0bf9db4b6409c8ab8e6e8bc8c</checksum>
+      <imageData width="4211" height="5359"/>
+    </file>
+  </resource>
+  <resource type="page" sequence="3" id="dg806ms0373_3">
+    <label>Page 3</label>
+    <file id="dg806ms0373_00_0003.tif" mimetype="image/tiff" size="37110388" preserve="yes" publish="no" shelve="no">
+      <checksum type="md5">e67d6312c27bf040d4e81d88638538a7</checksum>
+      <checksum type="sha1">a39e7775f100d7025501631fb3dab9aea0180743</checksum>
+      <imageData width="4211" height="5359"/>
+    </file>
+    <file id="dg806ms0373_00_0003.jp2" mimetype="image/jp2" size="4264858" preserve="no" publish="yes" shelve="yes">
+      <checksum type="md5">73bf92bf70d6925535c660d94aada4b4</checksum>
+      <checksum type="sha1">b59e5c88e78179b26baf131cf0c60c0e56f2ceab</checksum>
+      <imageData width="4211" height="5359"/>
+    </file>
+  </resource>
+  <resource type="page" sequence="4" id="dg806ms0373_4">
+    <label>Page 4</label>
+    <file id="dg806ms0373_00_0004.tif" mimetype="image/tiff" size="37604424" preserve="yes" publish="no" shelve="no">
+      <checksum type="md5">2d71681cb3f016faa6febaa412d32252</checksum>
+      <checksum type="sha1">4e08a52b7bbc68476ada376b51e752078982abb9</checksum>
+      <imageData width="4209" height="5346"/>
+    </file>
+    <file id="dg806ms0373_00_0004.jp2" mimetype="image/jp2" size="4253629" preserve="no" publish="yes" shelve="yes">
+      <checksum type="md5">50daae634c3783a9f26f6805541ba692</checksum>
+      <checksum type="sha1">19d908c0903d4744f6d6b96c60685e6eb4b730c3</checksum>
+      <imageData width="4209" height="5346"/>
+    </file>
+  </resource>
+  <resource type="page" sequence="5" id="dg806ms0373_5">
+    <label>Page 5</label>
+    <file id="dg806ms0373_00_0005.tif" mimetype="image/tiff" size="38500388" preserve="yes" publish="no" shelve="no">
+      <checksum type="md5">f791d936e32c2e5f643ac535146477c6</checksum>
+      <checksum type="sha1">feffb1420bc36cd6ff1ad8b46783d78fcde2a3a9</checksum>
+      <imageData width="4209" height="5346"/>
+    </file>
+    <file id="dg806ms0373_00_0005.jp2" mimetype="image/jp2" size="4252718" preserve="no" publish="yes" shelve="yes">
+      <checksum type="md5">7134320e6f1330d5f2415b748c34f71d</checksum>
+      <checksum type="sha1">0914b380aec26006387208f5979ce74fa5349d02</checksum>
+      <imageData width="4209" height="5346"/>
+    </file>
+  </resource>
+  <resource type="page" sequence="6" id="dg806ms0373_6">
+    <label>Page 6</label>
+    <file id="dg806ms0373_00_0006.tif" mimetype="image/tiff" size="44675832" preserve="yes" publish="no" shelve="no">
+      <checksum type="md5">b203982cbbba8abfb49679ba74d05df8</checksum>
+      <checksum type="sha1">ff685a76b7f7b184a297cc9b423158a3bbd873ef</checksum>
+      <imageData width="4298" height="5341"/>
+    </file>
+    <file id="dg806ms0373_00_0006.jp2" mimetype="image/jp2" size="4338008" preserve="no" publish="yes" shelve="yes">
+      <checksum type="md5">acfd80bf9c5c420e6cd0809109d55e5c</checksum>
+      <checksum type="sha1">3a9ccd8cb76e5cf71759e3439e4c96d9ee819b79</checksum>
+      <imageData width="4298" height="5341"/>
+    </file>
+  </resource>
+</contentMetadata>

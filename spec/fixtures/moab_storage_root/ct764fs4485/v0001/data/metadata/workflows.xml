@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workflows objectId="druid:ct764fs4485">
+    <workflow repository="dor" objectId="druid:ct764fs4485" id="accessionWF">
+        <process priority="0" lifecycle="submitted" elapsed="0.0" attempts="1" datetime="2014-03-06T16:29:18-0800" status="completed" name="start-accession"/>
+        <process priority="0" lifecycle="accessioned" elapsed="0.0" attempts="0" datetime="2014-03-06T16:29:18-0800" status="waiting" name="end-accession"/>
+        <process priority="0" lifecycle="deposited" elapsed="0.0" attempts="0" datetime="2014-03-06T16:29:18-0800" status="waiting" name="sdr-ingest-received"/>
+        <process priority="0" elapsed="0.0" attempts="0" datetime="2014-03-06T16:29:18-0800" status="waiting" name="sdr-ingest-transfer"/>
+        <process priority="0" lifecycle="described" elapsed="2.311" attempts="1" datetime="2014-03-06T20:13:18-0800" status="completed" name="descriptive-metadata"/>
+        <process priority="0" elapsed="2.275" attempts="1" datetime="2014-03-06T22:41:15-0800" status="completed" name="rights-metadata"/>
+        <process priority="0" elapsed="2.937" attempts="1" datetime="2014-03-06T22:41:35-0800" status="completed" name="content-metadata"/>
+        <process priority="0" elapsed="79.997" attempts="1" datetime="2014-03-06T22:43:53-0800" status="completed" name="technical-metadata"/>
+        <process priority="0" elapsed="3.459" attempts="1" datetime="2014-03-06T22:44:43-0800" status="completed" name="remediate-object"/>
+        <process priority="0" elapsed="6.098" attempts="5" datetime="2014-03-07T17:25:56-0800" status="completed" name="shelve"/>
+        <process priority="0" elapsed="0.468" attempts="1" datetime="2014-03-07T17:25:58-0800" status="completed" name="provenance-metadata"/>
+        <process priority="0" lifecycle="published" elapsed="12.287" attempts="1" datetime="2014-03-07T17:47:13-0800" status="completed" name="publish"/>
+    </workflow>
+    <workflow repository="dor" objectId="druid:ct764fs4485" id="assemblyWF">
+        <process version="1" priority="0" elapsed="0.0" archived="true" attempts="1" datetime="2014-03-06T14:21:54-0800" status="completed" name="start-assembly"/>
+        <process version="1" priority="0" elapsed="2.438" archived="true" attempts="1" datetime="2014-03-06T15:37:10-0800" status="completed" name="checksum-compute"/>
+        <process version="1" priority="0" elapsed="1.312" archived="true" attempts="1" datetime="2014-03-06T15:38:17-0800" status="completed" name="exif-collect"/>
+        <process version="1" priority="0" elapsed="67.769" archived="true" attempts="2" datetime="2014-03-06T15:52:23-0800" status="completed" name="jp2-create"/>
+        <process version="1" priority="0" elapsed="4.296" archived="true" attempts="1" datetime="2014-03-06T16:29:18-0800" status="completed" name="accessioning-initiate"/>
+    </workflow>
+    <workflow repository="dor" objectId="druid:ct764fs4485" id="dpgImageWF">
+        <process priority="0" lifecycle="registered" elapsed="0.0" attempts="1" datetime="2014-02-24T14:31:22-0800" status="completed" name="initiate"/>
+        <process priority="0" elapsed="0.0" attempts="1" datetime="2014-02-24T14:31:22-0800" status="waiting" name="delete_scratch"/>
+        <process priority="0" lifecycle="imageqced" elapsed="0.0" attempts="1" datetime="2014-02-24T14:31:22-0800" status="waiting" name="imageqc"/>
+        <process priority="0" elapsed="0.0" attempts="1" datetime="2014-02-24T14:31:22-0800" status="waiting" name="completeness"/>
+        <process priority="0" elapsed="0.0" attempts="1" datetime="2014-02-24T14:31:22-0800" status="waiting" name="postprocessing"/>
+        <process priority="0" elapsed="0.0" attempts="2" datetime="2014-02-24T14:50:21-0800" status="completed" name="tracking_db"/>
+        <process priority="0" lifecycle="scanned" elapsed="0.0" attempts="2" datetime="2014-02-26T13:39:13-0800" status="complete" name="scan"/>
+        <process priority="0" lifecycle="imported" elapsed="0.0" attempts="3" datetime="2014-02-26T13:41:05-0800" status="complete" name="import_files"/>
+        <process priority="0" elapsed="0.0" attempts="3" datetime="2014-02-26T13:54:04-0800" status="complete" name="md5_gen"/>
+        <process priority="0" elapsed="0.0" attempts="3" datetime="2014-02-26T13:55:10-0800" status="complete" name="copy_to_assembly"/>
+        <process priority="0" elapsed="0.0" attempts="3" datetime="2014-02-26T13:56:07-0800" status="complete" name="md5_verify_assembly"/>
+        <process priority="0" lifecycle="digitized" elapsed="0.0" attempts="5" datetime="2014-03-06T14:21:54-0800" status="complete" name="digitized"/>
+    </workflow>
+</workflows>

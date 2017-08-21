@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workflows objectId="druid:ct764fs4485">
+    <workflow repository="dor" objectId="druid:ct764fs4485" id="accessionWF">
+        <process version="1" priority="0" lifecycle="submitted" elapsed="0.0" archived="true" attempts="1" datetime="2014-03-06T16:29:18-0800" status="completed" name="start-accession"/>
+        <process version="1" priority="0" lifecycle="described" elapsed="2.311" archived="true" attempts="1" datetime="2014-03-06T20:13:18-0800" status="completed" name="descriptive-metadata"/>
+        <process version="1" priority="0" elapsed="2.275" archived="true" attempts="1" datetime="2014-03-06T22:41:15-0800" status="completed" name="rights-metadata"/>
+        <process version="1" priority="0" elapsed="2.937" archived="true" attempts="1" datetime="2014-03-06T22:41:35-0800" status="completed" name="content-metadata"/>
+        <process version="1" priority="0" elapsed="79.997" archived="true" attempts="1" datetime="2014-03-06T22:43:53-0800" status="completed" name="technical-metadata"/>
+        <process version="1" priority="0" elapsed="3.459" archived="true" attempts="1" datetime="2014-03-06T22:44:43-0800" status="completed" name="remediate-object"/>
+        <process version="1" priority="0" elapsed="6.098" archived="true" attempts="5" datetime="2014-03-07T17:25:56-0800" status="completed" name="shelve"/>
+        <process version="1" priority="0" elapsed="0.468" archived="true" attempts="1" datetime="2014-03-07T17:25:58-0800" status="completed" name="provenance-metadata"/>
+        <process version="1" priority="0" lifecycle="published" elapsed="12.287" archived="true" attempts="1" datetime="2014-03-07T17:47:13-0800" status="completed" name="publish"/>
+        <process version="1" priority="0" elapsed="4.971" archived="true" attempts="1" datetime="2014-03-10T12:01:19-0700" status="completed" name="sdr-ingest-transfer"/>
+        <process version="1" priority="0" lifecycle="deposited" elapsed="0.0" archived="true" attempts="1" datetime="2014-03-12T05:26:12-0700" status="completed" name="sdr-ingest-received"/>
+        <process version="1" priority="0" lifecycle="accessioned" elapsed="0.228" archived="true" attempts="1" datetime="2014-03-12T05:26:53-0700" status="completed" name="end-accession"/>
+    </workflow>
+    <workflow repository="dor" objectId="druid:ct764fs4485" id="accessionWF">
+        <process version="2" priority="0" lifecycle="submitted" elapsed="0.0" archived="true" attempts="1" datetime="2014-03-20T11:40:44-0700" status="completed" name="start-accession"/>
+        <process version="2" priority="0" lifecycle="described" elapsed="0.236" archived="true" attempts="1" datetime="2014-03-20T11:41:14-0700" status="completed" name="descriptive-metadata"/>
+        <process version="2" priority="0" elapsed="0.24" archived="true" attempts="1" datetime="2014-03-20T11:42:09-0700" status="completed" name="rights-metadata"/>
+        <process version="2" priority="0" elapsed="0.185" archived="true" attempts="1" datetime="2014-03-20T11:42:18-0700" status="completed" name="content-metadata"/>
+        <process version="2" priority="0" elapsed="0.54" archived="true" attempts="1" datetime="2014-03-20T11:42:50-0700" status="completed" name="technical-metadata"/>
+        <process version="2" priority="0" elapsed="2.106" archived="true" attempts="1" datetime="2014-03-20T11:43:00-0700" status="completed" name="remediate-object"/>
+        <process version="2" priority="0" elapsed="0.315" archived="true" attempts="1" datetime="2014-03-20T11:43:21-0700" status="completed" name="shelve"/>
+        <process version="2" priority="0" lifecycle="published" elapsed="0.503" archived="true" attempts="1" datetime="2014-03-20T11:43:27-0700" status="completed" name="publish"/>
+        <process version="2" priority="0" elapsed="0.337" archived="true" attempts="1" datetime="2014-03-20T11:43:38-0700" status="completed" name="provenance-metadata"/>
+        <process version="2" priority="0" elapsed="1.237" archived="true" attempts="1" datetime="2014-03-20T11:43:53-0700" status="completed" name="sdr-ingest-transfer"/>
+        <process version="2" priority="0" lifecycle="deposited" elapsed="0.0" archived="true" attempts="1" datetime="2014-03-20T11:44:31-0700" status="completed" name="sdr-ingest-received"/>
+        <process version="2" priority="0" lifecycle="accessioned" elapsed="0.296" archived="true" attempts="1" datetime="2014-03-20T11:46:06-0700" status="completed" name="end-accession"/>
+    </workflow>
+    <workflow repository="dor" objectId="druid:ct764fs4485" id="accessionWF">
+        <process version="3" priority="0" lifecycle="submitted" elapsed="0.0" archived="true" attempts="1" datetime="2014-04-09T17:32:24-0700" status="completed" name="start-accession"/>
+        <process version="3" priority="0" lifecycle="described" elapsed="0.726" archived="true" attempts="1" datetime="2014-04-09T17:33:26-0700" status="completed" name="descriptive-metadata"/>
+        <process version="3" priority="0" elapsed="0.742" archived="true" attempts="1" datetime="2014-04-09T17:33:28-0700" status="completed" name="rights-metadata"/>
+        <process version="3" priority="0" elapsed="0.189" archived="true" attempts="1" datetime="2014-04-09T17:34:07-0700" status="completed" name="content-metadata"/>
+        <process version="3" priority="0" elapsed="12.334" archived="true" attempts="1" datetime="2014-04-09T17:34:40-0700" status="completed" name="technical-metadata"/>
+        <process version="3" priority="0" elapsed="2.21" archived="true" attempts="1" datetime="2014-04-09T17:35:35-0700" status="completed" name="remediate-object"/>
+        <process version="3" priority="0" elapsed="16.832" archived="true" attempts="1" datetime="2014-04-09T17:36:11-0700" status="completed" name="shelve"/>
+        <process version="3" priority="0" lifecycle="published" elapsed="1.199" archived="true" attempts="1" datetime="2014-04-09T17:36:15-0700" status="completed" name="publish"/>
+        <process version="3" priority="0" elapsed="0.725" archived="true" attempts="1" datetime="2014-04-09T17:36:27-0700" status="completed" name="provenance-metadata"/>
+        <process version="3" priority="0" elapsed="16.058" archived="true" attempts="1" datetime="2014-04-09T18:39:54-0700" status="completed" name="sdr-ingest-transfer"/>
+        <process version="3" priority="0" lifecycle="deposited" elapsed="0.0" archived="true" attempts="1" datetime="2014-04-19T12:32:25-0700" status="completed" name="sdr-ingest-received"/>
+        <process version="3" priority="0" lifecycle="accessioned" elapsed="0.247" archived="true" attempts="1" datetime="2014-04-19T12:34:13-0700" status="completed" name="end-accession"/>
+    </workflow>
+    <workflow repository="dor" objectId="druid:ct764fs4485" id="accessionWF">
+        <process version="4" priority="0" lifecycle="submitted" elapsed="0.0" archived="true" attempts="1" datetime="2014-04-22T11:10:38-0700" status="completed" name="start-accession"/>
+        <process version="4" priority="0" lifecycle="described" elapsed="0.29" archived="true" attempts="1" datetime="2014-04-22T11:11:39-0700" status="completed" name="descriptive-metadata"/>
+        <process version="4" priority="0" elapsed="0.237" archived="true" attempts="1" datetime="2014-04-22T11:11:58-0700" status="completed" name="rights-metadata"/>
+        <process version="4" priority="0" elapsed="0.161" archived="true" attempts="1" datetime="2014-04-22T11:12:10-0700" status="completed" name="content-metadata"/>
+        <process version="4" priority="0" elapsed="8.535" archived="true" attempts="1" datetime="2014-04-22T11:12:34-0700" status="completed" name="technical-metadata"/>
+        <process version="4" priority="0" elapsed="0.882" archived="true" attempts="1" datetime="2014-04-22T11:13:03-0700" status="completed" name="remediate-object"/>
+        <process version="4" priority="0" elapsed="1.205" archived="true" attempts="1" datetime="2014-04-22T11:13:37-0700" status="completed" name="shelve"/>
+        <process version="4" priority="0" elapsed="0.34" archived="true" attempts="1" datetime="2014-04-22T11:13:51-0700" status="completed" name="provenance-metadata"/>
+        <process version="4" priority="0" lifecycle="published" elapsed="0.519" archived="true" attempts="1" datetime="2014-04-22T11:13:52-0700" status="completed" name="publish"/>
+        <process version="4" priority="0" elapsed="3.025" archived="true" attempts="1" datetime="2014-04-22T11:14:55-0700" status="completed" name="sdr-ingest-transfer"/>
+        <process version="4" priority="0" lifecycle="deposited" elapsed="0.0" archived="true" attempts="1" datetime="2014-04-27T21:09:04-0700" status="completed" name="sdr-ingest-received"/>
+        <process version="4" priority="0" lifecycle="accessioned" elapsed="0.244" archived="true" attempts="1" datetime="2014-04-27T21:09:31-0700" status="completed" name="end-accession"/>
+    </workflow>
+    <workflow repository="dor" objectId="druid:ct764fs4485" id="accessionWF">
+        <process priority="0" lifecycle="submitted" elapsed="0.0" attempts="1" datetime="2014-04-28T15:28:49-0700" status="completed" name="start-accession"/>
+        <process priority="0" lifecycle="accessioned" elapsed="0.0" attempts="0" datetime="2014-04-28T15:28:49-0700" status="waiting" name="end-accession"/>
+        <process priority="0" lifecycle="deposited" elapsed="0.0" attempts="0" datetime="2014-04-28T15:28:49-0700" status="waiting" name="sdr-ingest-received"/>
+        <process priority="0" elapsed="0.0" attempts="0" datetime="2014-04-28T15:28:49-0700" status="waiting" name="sdr-ingest-transfer"/>
+        <process priority="0" lifecycle="described" elapsed="0.234" attempts="1" datetime="2014-04-28T15:29:40-0700" status="completed" name="descriptive-metadata"/>
+        <process priority="0" elapsed="0.384" attempts="1" datetime="2014-04-28T15:29:56-0700" status="completed" name="rights-metadata"/>
+        <process priority="0" elapsed="0.196" attempts="1" datetime="2014-04-28T15:30:51-0700" status="completed" name="content-metadata"/>
+        <process priority="0" elapsed="0.723" attempts="1" datetime="2014-04-28T15:31:32-0700" status="completed" name="technical-metadata"/>
+        <process priority="0" elapsed="0.93" attempts="1" datetime="2014-04-28T15:32:39-0700" status="completed" name="remediate-object"/>
+        <process priority="0" elapsed="0.303" attempts="1" datetime="2014-04-28T15:33:11-0700" status="completed" name="shelve"/>
+        <process priority="0" lifecycle="published" elapsed="1.388" attempts="1" datetime="2014-04-28T15:34:00-0700" status="completed" name="publish"/>
+        <process priority="0" elapsed="0.432" attempts="1" datetime="2014-04-28T15:34:00-0700" status="completed" name="provenance-metadata"/>
+    </workflow>
+    <workflow repository="dor" objectId="druid:ct764fs4485" id="assemblyWF">
+        <process version="1" priority="0" elapsed="0.0" archived="true" attempts="1" datetime="2014-03-06T14:21:54-0800" status="completed" name="start-assembly"/>
+        <process version="1" priority="0" elapsed="2.438" archived="true" attempts="1" datetime="2014-03-06T15:37:10-0800" status="completed" name="checksum-compute"/>
+        <process version="1" priority="0" elapsed="1.312" archived="true" attempts="1" datetime="2014-03-06T15:38:17-0800" status="completed" name="exif-collect"/>
+        <process version="1" priority="0" elapsed="67.769" archived="true" attempts="2" datetime="2014-03-06T15:52:23-0800" status="completed" name="jp2-create"/>
+        <process version="1" priority="0" elapsed="4.296" archived="true" attempts="1" datetime="2014-03-06T16:29:18-0800" status="completed" name="accessioning-initiate"/>
+    </workflow>
+    <workflow repository="dor" objectId="druid:ct764fs4485" id="disseminationWF">
+        <process version="1" priority="0" elapsed="0.053" archived="true" attempts="2" datetime="2014-03-12T05:26:53-0700" status="completed" name="cleanup"/>
+    </workflow>
+    <workflow repository="dor" objectId="druid:ct764fs4485" id="disseminationWF">
+        <process version="2" priority="0" elapsed="0.075" archived="true" attempts="4" datetime="2014-03-20T12:07:43-0700" status="completed" name="cleanup"/>
+    </workflow>
+    <workflow repository="dor" objectId="druid:ct764fs4485" id="disseminationWF">
+        <process version="3" priority="0" elapsed="0.222" archived="true" attempts="2" datetime="2014-04-19T12:34:40-0700" status="completed" name="cleanup"/>
+    </workflow>
+    <workflow repository="dor" objectId="druid:ct764fs4485" id="disseminationWF">
+        <process version="4" priority="0" elapsed="0.127" archived="true" attempts="2" datetime="2014-04-27T21:09:39-0700" status="completed" name="cleanup"/>
+    </workflow>
+    <workflow repository="dor" objectId="druid:ct764fs4485" id="dpgImageWF">
+        <process priority="0" lifecycle="registered" elapsed="0.0" attempts="1" datetime="2014-02-24T14:31:22-0800" status="completed" name="initiate"/>
+        <process priority="0" lifecycle="imageqced" elapsed="0.0" attempts="1" datetime="2014-02-24T14:31:22-0800" status="waiting" name="imageqc"/>
+        <process priority="0" elapsed="0.0" attempts="1" datetime="2014-02-24T14:31:22-0800" status="waiting" name="completeness"/>
+        <process priority="0" elapsed="0.0" attempts="1" datetime="2014-02-24T14:31:22-0800" status="waiting" name="postprocessing"/>
+        <process priority="0" elapsed="0.0" attempts="2" datetime="2014-02-24T14:50:21-0800" status="completed" name="tracking_db"/>
+        <process priority="0" lifecycle="scanned" elapsed="0.0" attempts="2" datetime="2014-02-26T13:39:13-0800" status="complete" name="scan"/>
+        <process priority="0" lifecycle="imported" elapsed="0.0" attempts="3" datetime="2014-02-26T13:41:05-0800" status="complete" name="import_files"/>
+        <process priority="0" elapsed="0.0" attempts="3" datetime="2014-02-26T13:54:04-0800" status="complete" name="md5_gen"/>
+        <process priority="0" elapsed="0.0" attempts="3" datetime="2014-02-26T13:55:10-0800" status="complete" name="copy_to_assembly"/>
+        <process priority="0" elapsed="0.0" attempts="3" datetime="2014-02-26T13:56:07-0800" status="complete" name="md5_verify_assembly"/>
+        <process priority="0" lifecycle="digitized" elapsed="0.0" attempts="5" datetime="2014-03-06T14:21:54-0800" status="complete" name="digitized"/>
+        <process priority="0" elapsed="0.0" attempts="3" datetime="2014-03-13T11:43:22-0700" status="complete" name="delete_scratch"/>
+    </workflow>
+    <workflow repository="dor" objectId="druid:ct764fs4485" id="versioningWF">
+        <process version="2" priority="0" lifecycle="opened" elapsed="0.0" archived="true" attempts="1" datetime="2014-03-20T11:37:17-0700" status="completed" name="start-version"/>
+        <process version="2" priority="0" elapsed="0.0" archived="true" attempts="1" datetime="2014-03-20T11:40:43-0700" status="completed" name="submit-version"/>
+        <process version="2" priority="0" elapsed="0.0" archived="true" attempts="1" datetime="2014-03-20T11:40:43-0700" status="completed" name="start-accession"/>
+    </workflow>
+    <workflow repository="dor" objectId="druid:ct764fs4485" id="versioningWF">
+        <process version="3" priority="0" lifecycle="opened" elapsed="0.0" archived="true" attempts="1" datetime="2014-04-09T17:14:35-0700" status="completed" name="start-version"/>
+        <process version="3" priority="0" elapsed="0.0" archived="true" attempts="1" datetime="2014-04-09T17:31:51-0700" status="completed" name="submit-version"/>
+        <process version="3" priority="0" elapsed="0.0" archived="true" attempts="1" datetime="2014-04-09T17:31:51-0700" status="completed" name="start-accession"/>
+    </workflow>
+    <workflow repository="dor" objectId="druid:ct764fs4485" id="versioningWF">
+        <process version="4" priority="0" lifecycle="opened" elapsed="0.0" archived="true" attempts="1" datetime="2014-04-22T11:02:17-0700" status="completed" name="start-version"/>
+        <process version="4" priority="0" elapsed="0.0" archived="true" attempts="1" datetime="2014-04-22T11:10:36-0700" status="completed" name="submit-version"/>
+        <process version="4" priority="0" elapsed="0.0" archived="true" attempts="1" datetime="2014-04-22T11:10:37-0700" status="completed" name="start-accession"/>
+    </workflow>
+    <workflow repository="dor" objectId="druid:ct764fs4485" id="versioningWF">
+        <process version="5" priority="0" lifecycle="opened" elapsed="0.0" archived="true" attempts="1" datetime="2014-04-28T15:28:40-0700" status="completed" name="start-version"/>
+        <process version="5" priority="0" elapsed="0.0" archived="true" attempts="1" datetime="2014-04-28T15:28:49-0700" status="completed" name="submit-version"/>
+        <process version="5" priority="0" elapsed="0.0" archived="true" attempts="1" datetime="2014-04-28T15:28:49-0700" status="completed" name="start-accession"/>
+    </workflow>
+    <workflow repository="sdr" objectId="druid:ct764fs4485" id="sdrIngestWF">
+        <process version="1" priority="0" elapsed="0.0" archived="true" attempts="1" datetime="2014-03-10T12:01:19-0700" status="completed" name="start-ingest"/>
+        <process version="1" priority="0" elapsed="0.336" archived="true" attempts="1" datetime="2014-03-12T05:25:55-0700" status="completed" name="register-sdr"/>
+        <process version="1" priority="0" elapsed="14.821" archived="true" attempts="1" datetime="2014-03-12T05:26:10-0700" status="completed" name="transfer-object"/>
+        <process version="1" priority="0" elapsed="0.509" archived="true" attempts="1" datetime="2014-03-12T05:26:10-0700" status="completed" name="validate-bag"/>
+        <process version="1" priority="0" elapsed="0.29" archived="true" attempts="1" datetime="2014-03-12T05:26:11-0700" status="completed" name="populate-metadata"/>
+        <process version="1" priority="0" elapsed="0.065" archived="true" attempts="1" datetime="2014-03-12T05:26:11-0700" status="completed" name="verify-agreement"/>
+        <process version="1" priority="0" elapsed="0.767" archived="true" attempts="1" datetime="2014-03-12T05:26:12-0700" status="completed" name="complete-deposit"/>
+        <process version="1" priority="0" elapsed="0.185" archived="true" attempts="2" datetime="2014-03-12T05:26:12-0700" status="completed" name="ingest-cleanup"/>
+    </workflow>
+    <workflow repository="sdr" objectId="druid:ct764fs4485" id="sdrIngestWF">
+        <process version="2" priority="0" elapsed="0.0" archived="true" attempts="1" datetime="2014-03-20T11:43:53-0700" status="completed" name="start-ingest"/>
+        <process version="2" priority="0" elapsed="0.15" archived="true" attempts="1" datetime="2014-03-20T11:44:27-0700" status="completed" name="register-sdr"/>
+        <process version="2" priority="0" elapsed="2.301" archived="true" attempts="1" datetime="2014-03-20T11:44:30-0700" status="completed" name="transfer-object"/>
+        <process version="2" priority="0" elapsed="0.015" archived="true" attempts="1" datetime="2014-03-20T11:44:30-0700" status="completed" name="validate-bag"/>
+        <process version="2" priority="0" elapsed="0.248" archived="true" attempts="1" datetime="2014-03-20T11:44:31-0700" status="completed" name="populate-metadata"/>
+        <process version="2" priority="0" elapsed="0.053" archived="true" attempts="1" datetime="2014-03-20T11:44:31-0700" status="completed" name="verify-agreement"/>
+        <process version="2" priority="0" elapsed="0.127" archived="true" attempts="1" datetime="2014-03-20T11:44:31-0700" status="completed" name="complete-deposit"/>
+        <process version="2" priority="0" elapsed="0.186" archived="true" attempts="2" datetime="2014-03-20T11:44:31-0700" status="completed" name="ingest-cleanup"/>
+    </workflow>
+    <workflow repository="sdr" objectId="druid:ct764fs4485" id="sdrIngestWF">
+        <process version="3" priority="0" elapsed="0.0" archived="true" attempts="1" datetime="2014-04-09T18:39:54-0700" status="completed" name="start-ingest"/>
+        <process version="3" priority="0" elapsed="0.163" archived="true" attempts="1" datetime="2014-04-19T12:32:20-0700" status="completed" name="register-sdr"/>
+        <process version="3" priority="0" elapsed="2.452" archived="true" attempts="1" datetime="2014-04-19T12:32:23-0700" status="completed" name="transfer-object"/>
+        <process version="3" priority="0" elapsed="0.045" archived="true" attempts="1" datetime="2014-04-19T12:32:23-0700" status="completed" name="validate-bag"/>
+        <process version="3" priority="0" elapsed="0.214" archived="true" attempts="1" datetime="2014-04-19T12:32:24-0700" status="completed" name="populate-metadata"/>
+        <process version="3" priority="0" elapsed="0.061" archived="true" attempts="1" datetime="2014-04-19T12:32:24-0700" status="completed" name="verify-agreement"/>
+        <process version="3" priority="0" elapsed="0.29" archived="true" attempts="1" datetime="2014-04-19T12:32:25-0700" status="completed" name="complete-deposit"/>
+        <process version="3" priority="0" elapsed="0.303" archived="true" attempts="2" datetime="2014-04-19T12:32:25-0700" status="completed" name="ingest-cleanup"/>
+    </workflow>
+    <workflow repository="sdr" objectId="druid:ct764fs4485" id="sdrIngestWF">
+        <process version="4" priority="0" elapsed="0.0" archived="true" attempts="1" datetime="2014-04-22T11:14:54-0700" status="completed" name="start-ingest"/>
+        <process version="4" priority="0" elapsed="0.214" archived="true" attempts="1" datetime="2014-04-27T21:08:57-0700" status="completed" name="register-sdr"/>
+        <process version="4" priority="0" elapsed="2.436" archived="true" attempts="1" datetime="2014-04-27T21:09:00-0700" status="completed" name="transfer-object"/>
+        <process version="4" priority="0" elapsed="0.047" archived="true" attempts="1" datetime="2014-04-27T21:09:00-0700" status="completed" name="validate-bag"/>
+        <process version="4" priority="0" elapsed="0.524" archived="true" attempts="1" datetime="2014-04-27T21:09:01-0700" status="completed" name="populate-metadata"/>
+        <process version="4" priority="0" elapsed="0.041" archived="true" attempts="1" datetime="2014-04-27T21:09:01-0700" status="completed" name="verify-agreement"/>
+        <process version="4" priority="0" elapsed="0.186" archived="true" attempts="1" datetime="2014-04-27T21:09:02-0700" status="completed" name="complete-deposit"/>
+        <process version="4" priority="0" elapsed="2.38" archived="true" attempts="2" datetime="2014-04-27T21:09:05-0700" status="completed" name="ingest-cleanup"/>
+    </workflow>
+</workflows>

@@ -1,0 +1,26 @@
+<versionMetadata objectId="druid:ct764fs4485">
+  <version tag="1.0.0" versionId="1">
+    <description>Initial Version</description>
+  </version>
+  <version tag="2.0.0" versionId="2">
+    <description>change pdfs to preserve only</description>
+  </version>
+  <version tag="2.0.1" versionId="3">
+    <description>auto remeditation remediate_homebrew.rb</description>
+  </version>
+  <version tag="2.0.2" versionId="4">
+    <description/>
+  </version>
+  <version tag="2.0.3" versionId="5">
+    <description>auto remeditation add_collection.rb</description>
+  </version>
+  <version tag="2.0.4" versionId="6">
+    <description>Change access setting to world</description>
+  </version>
+  <version tag="2.0.5" versionId="7">
+    <description>Apply APO defaults</description>
+  </version>
+  <version tag="2.0.6" versionId="8">
+    <description>auto remeditation change_collection.rb</description>
+  </version>
+</versionMetadata>

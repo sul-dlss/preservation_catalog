@@ -1,0 +1,7 @@
+<provenanceMetadata objectId="druid:ct764fs4485">
+  <agent name="DOR">
+    <what object="druid:ct764fs4485">
+      <event when="2015-05-21T13:55:42-07:00" who="DOR-accessionWF">DOR Common Accessioning completed</event>
+    </what>
+  </agent>
+</provenanceMetadata>

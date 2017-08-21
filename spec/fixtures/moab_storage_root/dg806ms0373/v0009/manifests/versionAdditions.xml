@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fileInventory type="additions" objectId="druid:dg806ms0373" versionId="9" inventoryDatetime="2016-02-05T23:27:24Z" fileCount="5" byteCount="49568" blockCount="51">
+  <fileGroup groupId="metadata" dataSource="" fileCount="5" byteCount="49568" blockCount="51">
+    <file>
+      <fileSignature size="1892" md5="cff8d25427396f0aed6e4b25635af52b" sha1="3c96fdc3a20b2c1086f34104a55e5554e0a4e9e3" sha256="a8d608e2a83d3b333028d9e162f95859d479c8684db5b0eb71b88e2fba7a50d4"/>
+      <fileInstance path="events.xml" datetime="2016-02-05T23:27:23Z"/>
+    </file>
+    <file>
+      <fileSignature size="263" md5="0fbf7f8436d03d9f2827051df6a4c67a" sha1="06636124b9cf2364308099aa7a22dc040b087116" sha256="8b06d37e1f0f164c110705d3a496ada2ed94fb2dd1806e9a5ca9be6ae2032d46"/>
+      <fileInstance path="provenanceMetadata.xml" datetime="2016-02-05T23:27:22Z"/>
+    </file>
+    <file>
+      <fileSignature size="863" md5="32d7a442a721efaf0f1c26bd10283b69" sha1="b1f144c819e9e46fee261dc9645935987bf3a154" sha256="3777fbc1a60af3c98c297faf7b1f50a8d31004442da4efc78aa1c759e18bdc3c"/>
+      <fileInstance path="rightsMetadata.xml" datetime="2016-02-05T23:27:21Z"/>
+    </file>
+    <file>
+      <fileSignature size="1083" md5="766ae4832b43aa8525b0c8884a1082da" sha1="860597b966ff366fd3a1077cce503c1cacf11e50" sha256="66f24fc61f1aedada850972bf1f4906ab79e9feec753033977b8113918175cc8"/>
+      <fileInstance path="versionMetadata.xml" datetime="2016-02-05T23:27:24Z"/>
+    </file>
+    <file>
+      <fileSignature size="45467" md5="0dce5ae8cf7697486d791ea0b7f0f280" sha1="7828dedf9f25d0cfcc0a3e9df2057156418e416b" sha256="01b8774ce608bc3335ad097f5f2ff257b9d5883dfe2c305c33312b7a8bea86a7"/>
+      <fileInstance path="workflows.xml" datetime="2016-02-05T23:27:24Z"/>
+    </file>
+  </fileGroup>
+</fileInventory>
