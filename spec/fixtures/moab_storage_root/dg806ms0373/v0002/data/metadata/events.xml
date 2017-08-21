@@ -1,0 +1,8 @@
+
+<events>
+  <event type="remediation" when="2013-06-03T12:40:13-07:00" who="Dor::Identifiable 3.6.1">Record Remediation Version</event>
+  <event type="remediation" when="2013-06-03T12:40:13-07:00" who="Dor::Versionable 3.12.2">Add missing versionMetadata</event>
+  <event type="open" when="2013-10-16T10:32:12-07:00" who="Laura Williams">Version 2 opened</event>
+  <event type="close" when="2013-10-16T10:39:29-07:00" who="Laura Williams">Version 2 closed</event>
+  <event type="remediation" when="2013-10-16T11:53:09-07:00" who="Dor::Identifiable 3.6.1">Record Remediation Version</event>
+</events>

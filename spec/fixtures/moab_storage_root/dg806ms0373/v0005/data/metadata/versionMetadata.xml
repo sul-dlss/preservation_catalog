@@ -1,0 +1,17 @@
+<versionMetadata objectId="druid:dg806ms0373">
+  <version tag="1.0.0" versionId="1">
+    <description>Initial Version</description>
+  </version>
+  <version tag="1.1.0" versionId="2">
+    <description>add collection object</description>
+  </version>
+  <version tag="1.2.0" versionId="3">
+    <description>apply APO defaults</description>
+  </version>
+  <version tag="1.2.1" versionId="4">
+    <description>auto remeditation replace_descMetadata.rb</description>
+  </version>
+  <version tag="1.2.2" versionId="5">
+    <description>auto remeditation remediate_aams_rightsMD.rb</description>
+  </version>
+</versionMetadata>
