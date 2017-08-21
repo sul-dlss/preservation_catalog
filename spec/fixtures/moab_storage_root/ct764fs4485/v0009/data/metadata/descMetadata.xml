@@ -1,0 +1,48 @@
+<mods xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.loc.gov/mods/v3" xsi:schemaLocation="http://www.loc.gov/mods/v3 http://www.loc.gov/standards/mods/v3/mods-3-5.xsd">
+   <identifier type="local" displayLabel="Source ID">M0443_S2_D-K_B9_F33_003</identifier>
+   
+   <typeOfResource>text</typeOfResource>
+   <genre authority="aat" valueURI="http://vocab.getty.edu/aat/300026707">announcements</genre>
+
+   <titleInfo>
+      <title>Homebrew Computer Club Meeting Announcements</title>
+         </titleInfo>
+   <name type="corporate" authority="naf" valueURI="http://id.loc.gov/authorities/names/no2014002343">
+      <namePart>Homebrew Computer Club</namePart>
+      <role>
+         <roleTerm type="text" authority="marcrelator" valueURI="http://id.loc.gov/vocabulary/relators/cre">Creator</roleTerm>
+      </role>
+   </name>
+   <originInfo>
+      <dateIssued encoding="w3cdtf" keyDate="yes">1984-11</dateIssued>
+      <issuance>continuing</issuance>
+   </originInfo>
+   <physicalDescription>
+      <form authority="rdacarrier">sheet</form>
+      <extent>1 sheet</extent>
+      <digitalOrigin>reformatted digital</digitalOrigin>
+      <internetMediaType>image/jpeg</internetMediaType>
+      <internetMediaType>application/pdf</internetMediaType>
+   </physicalDescription>
+   <subject authority="lcsh" valueURI="http://id.loc.gov/authorities/subjects/sh2008101488">
+      <topic>Computer industry--United States--History</topic>
+   </subject>
+   <subject authority="lcsh" valueURI="http://id.loc.gov/authorities/subjects/sh85084825">
+      <topic>Microelectronics industry</topic>
+   </subject>
+   <subject authority="lcsh">
+      <name type="corporate" authority="naf" valueURI="http://id.loc.gov/authorities/names/no2014002343">
+         <namePart>Homebrew Computer Club</namePart>
+      </name>
+   </subject>
+   <language>
+      <languageTerm type="code" authority="iso639-2b">eng</languageTerm>
+   </language>
+   <recordInfo>
+      <languageOfCataloging>
+         <languageTerm authority="iso639-2b">eng</languageTerm>
+      </languageOfCataloging>
+      <recordContentSource authority="marcorg">CSt</recordContentSource>
+      <recordIdentifier>druid:ct764fs4485</recordIdentifier>
+   </recordInfo>
+</mods>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fileInventory type="manifests" objectId="druid:ct764fs4485" versionId="8" inventoryDatetime="2015-04-09T03:02:18Z" fileCount="4" byteCount="30597" blockCount="33">
+  <fileGroup groupId="manifests" dataSource="/services-disk03/sdr2objects/ct/764/fs/4485/ct764fs4485/v0008/manifests" fileCount="4" byteCount="30597" blockCount="33">
+    <file>
+      <fileSignature size="7527" md5="a43faff0baf36342e012f1fcaa66fd99" sha1="4dbe07fee9323ba016359e65e96be9c596aa578f" sha256="d92a987f1fe117a0c92574e27d5295280afa68ab148e0e53140830a787bd98b3"/>
+      <fileInstance path="fileInventoryDifference.xml" datetime="2015-04-09T03:02:18Z"/>
+    </file>
+    <file>
+      <fileSignature size="15432" md5="ca2d66b3a267f8bd2eff0979ec1031a6" sha1="ffe72b94cac71100c91e0a3dfa8593b77034aeb3" sha256="aa6bb5817ee3e4338a713eb5c7fe0dce3cc61caf91751f702645ce6140e81fa3"/>
+      <fileInstance path="signatureCatalog.xml" datetime="2015-04-09T03:02:18Z"/>
+    </file>
+    <file>
+      <fileSignature size="2122" md5="47a62ce5900a8e1dc0303f076380844e" sha1="3fb185e65a5e500f4b6dbc50c54c8d1963a26a8a" sha256="3ffa4319d8366e610070099108885df09b66bda532536fcb53a4f776050880ea"/>
+      <fileInstance path="versionAdditions.xml" datetime="2015-04-09T03:00:51Z"/>
+    </file>
+    <file>
+      <fileSignature size="5516" md5="68fd528ca514a00bb407c2d2a9f98f09" sha1="86664fcda9351d7fceae3f4941bea499deaa416f" sha256="07f0c45857166ea00a2e5596d4144a26f8488f2013a716f6e6f1292a954b2101"/>
+      <fileInstance path="versionInventory.xml" datetime="2015-04-09T03:00:51Z"/>
+    </file>
+  </fileGroup>
+</fileInventory>

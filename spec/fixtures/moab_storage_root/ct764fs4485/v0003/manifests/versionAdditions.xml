@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fileInventory type="additions" objectId="druid:ct764fs4485" versionId="3" inventoryDatetime="2014-04-10T01:39:54Z" fileCount="3" byteCount="14330" blockCount="16">
+  <fileGroup groupId="metadata" dataSource="" fileCount="3" byteCount="14330" blockCount="16">
+    <file>
+      <fileSignature size="263" md5="03bafc4375e7bb3dacfa115e9be16b1a" sha1="079482f15aafeb6a1051189bdd07c312b5f92303" sha256="5351e5fdeeed73fd6f3e992903bc6544d87eaeea2ed056fe721e5587a91eebd4"/>
+      <fileInstance path="provenanceMetadata.xml" datetime="2014-04-10T01:39:53Z"/>
+    </file>
+    <file>
+      <fileSignature size="396" md5="4b19febe37fc2f2c3e98810ac3411f35" sha1="e781f1fc2be638665864034a13ac45ecdd46dd27" sha256="cf072972b40603b775dcdca9b15830d987ada53ba0e1e61933442486d7b75bb1"/>
+      <fileInstance path="versionMetadata.xml" datetime="2014-04-10T01:39:54Z"/>
+    </file>
+    <file>
+      <fileSignature size="13671" md5="16a8870e3a719b22e8571069167c7212" sha1="bbcc49211cfe5db14466b39a0615989812df13d8" sha256="5d8eb995933225e3d799c5240afe348b1b278d16f8c253858fd87a4bd0eeb3bf"/>
+      <fileInstance path="workflows.xml" datetime="2014-04-10T01:39:54Z"/>
+    </file>
+  </fileGroup>
+</fileInventory>
