@@ -1,4 +1,5 @@
 Rails.application.configure do
+  require 'moab'
   # Settings specified here will take precedence over those in config/application.rb.
 
   # In the development environment your application's code is reloaded on
@@ -51,4 +52,17 @@ Rails.application.configure do
   # Use an evented file watcher to asynchronously detect changes in source code,
   # routes, locales, etc. This feature depends on the listen gem.
   config.file_watcher = ActiveSupport::EventedFileUpdateChecker
+
+
 end
+# ROOT = "/Users/sul.saravs/Desktop/preservation_core_catalog"
+# p "hi" *100
+# p ROOT
+# p "hi" *100
+# Moab::Config is created in moab-versioning/lib/moab/config.rb
+# Moab::Config.configure do
+#   storage_roots File.join('spec','fixtures')
+#   storage_trunk 'moab_storage_root'
+#   # deposit_trunk 'deposit'
+#   # path_method :druid
+# end
