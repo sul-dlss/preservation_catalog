@@ -22,6 +22,10 @@ RSpec.describe MoabStorageController, type: :controller do
         expect(assigns(:stored_druids).first).to be_an_instance_of String
       end
     end
+    it 'assigns @storage_root correctly' do
+      get :index
+      expect(assigns(:storage_root)).to eq "#{Moab::Config.storage_roots}/#{Moab::Config.storage_trunk}"
+    end
     it 'returns json by default' do
       get :index
       expect(response.content_type).to eq "application/json"
