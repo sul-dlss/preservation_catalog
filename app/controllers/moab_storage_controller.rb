@@ -10,6 +10,17 @@ class MoabStorageController < ApplicationController
     end
   end
 
+  def show
+    version_metadata_file = Stanford::StorageServices.version_metadata(params['id'])
+    vm = Moab::VersionMetadata.parse(version_metadata_file.read)
+    # FIXME: moab gem likely has a better way to get the latest version (github issue #24)
+    @output = { current_version: vm.versions.last.version_id }
+    respond_to do |format|
+      format.xml { render xml: @output }
+      format.all { render json: @output, content_type: 'application/json' }
+    end
+  end
+
   private
 
   def druids_from_storage_root

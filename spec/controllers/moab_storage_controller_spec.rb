@@ -39,4 +39,34 @@ RSpec.describe MoabStorageController, type: :controller do
       expect(response.content_type).to eq "application/xml"
     end
   end
+
+  describe "GET #show" do
+    let(:fixture_druid) { 'ct764fs4485' }
+    it "returns http success status code" do
+      get :show, params: { id: fixture_druid }
+      expect(response).to have_http_status(:success)
+    end
+    context 'assigns @output correctly' do
+      it 'Hash' do
+        get :show, params: { id: fixture_druid }
+        expect(assigns(:output)).to be_an_instance_of Hash
+      end
+      it 'current_version' do
+        get :show, params: { id: fixture_druid }
+        expect(assigns(:output)[:current_version]).to eq 10
+      end
+    end
+    it 'returns json by default' do
+      get :show, params: { id: fixture_druid }
+      expect(response.content_type).to eq "application/json"
+    end
+    it 'returns json when requested' do
+      get :show, params: { id: fixture_druid, format: :json }
+      expect(response.content_type).to eq "application/json"
+    end
+    it 'returns xml when requested' do
+      get :show, params: { id: fixture_druid, format: :xml }
+      expect(response.content_type).to eq "application/xml"
+    end
+  end
 end
