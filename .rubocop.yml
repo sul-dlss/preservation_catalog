@@ -42,6 +42,11 @@ Layout/EmptyLinesAroundClassBody:
 Layout/EmptyLinesAroundModuleBody:
   Enabled: false
 
+Style/FileName:
+  Exclude:
+    - 'Capfile'
+    - 'Gemfile'
+
 Style/StringLiterals:
   Enabled: false
 
