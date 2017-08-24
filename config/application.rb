@@ -20,6 +20,6 @@ end
 require 'moab'
 Moab::Config.configure do
   # FIXME: put this hardcoded dir in settings.yml file (github issue #21)
-  storage_roots File.join(File.dirname(__FILE__), '..', 'spec','fixtures')
+  storage_roots File.join(File.dirname(__FILE__), '..', 'spec', 'fixtures')
   storage_trunk 'moab_storage_root'
 end
