@@ -1,0 +1,58 @@
+inherit_from: .rubocop_todo.yml
+
+# Turn on RSpec cops
+require: rubocop-rspec
+
+AllCops:
+  DisplayCopNames: true
+  Include:
+    - Rakefile
+    - config.ru
+    - lib/**/*.rake
+  Exclude:
+    - 'Gemfile.lock'
+    - '**/*.md'
+    - 'bin/**/*'
+    - 'config/**/*.yml'
+    - 'db/**/*'
+    - 'script/**/*'
+    - 'vendor/**/*'
+
+# Turn on Rails cops
+Rails:
+  Enabled: true
+
+Metrics/BlockLength:
+  Exclude:
+    - 'spec/**/*'
+
+# because this isn't 1994
+Metrics/LineLength:
+  Max: 120
+
+Metrics/MethodLength:
+  Max: 20
+
+Layout/EmptyLinesAroundBlockBody:
+  Enabled: false
+
+Layout/EmptyLinesAroundClassBody:
+  Enabled: false
+
+Layout/EmptyLinesAroundModuleBody:
+  Enabled: false
+
+Style/StringLiterals:
+  Enabled: false
+
+Style/SymbolArray:
+  Enabled: false
+
+RSpec/MultipleExpectations:
+  Exclude:
+    - 'spec/controllers/moab_storage_controller_spec.rb'
+
+
+Bundler/OrderedGems:
+  Exclude:
+    - 'Gemfile'
