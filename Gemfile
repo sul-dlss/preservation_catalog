@@ -43,6 +43,9 @@ group :development, :test do
   gem 'rspec-rails', '~> 3.6'
   gem 'rails-controller-testing'
   gem 'coveralls'
+  # Ruby static code analyzer http://rubocop.readthedocs.io/en/latest/
+  gem 'rubocop', '~> 0.49.1', require: false # avoid code churn due to rubocop changes
+  gem 'rubocop-rspec'
 end
 
 group :development do
