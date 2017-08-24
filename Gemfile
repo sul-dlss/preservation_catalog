@@ -21,6 +21,12 @@ gem 'jbuilder', '~> 2.5'
 # gem 'bcrypt', '~> 3.1.7'
 
 gem 'config'
+# Use Capistrano for deployment
+# gem 'capistrano-rails', group: :development
+
+# useful for debugging, even in prod
+gem 'pry-byebug' # Adds step-by-step debugging and stack navigation capabilities to pry using byebug
+gem 'pry-rails' # use pry as the rails console shell instead of IRB
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
