@@ -42,6 +42,7 @@ RSpec.describe MoabStorageController, type: :controller do
 
   describe "GET #show" do
     let(:fixture_druid) { 'ct764fs4485' }
+
     it "returns http success status code" do
       get :show, params: { id: fixture_druid }
       expect(response).to have_http_status(:success)
