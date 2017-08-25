@@ -39,9 +39,9 @@ development:
 
 test:
   <<: *default
-  databse: preservation_core_catalog
-  username: preservation_core_catalog
-  password: 'password1'
+  databse: travis_ci_test
+  # username: preservation_core_catalog
+  # password: 'password1'
 
 production:
   <<: *default
