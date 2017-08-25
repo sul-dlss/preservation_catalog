@@ -39,7 +39,7 @@ development:
 
 test:
   <<: *default
-  databse: travis_ci_test
+  database: preservation_core_catalog
   # username: preservation_core_catalog
   # password: 'password1'
 

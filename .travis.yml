@@ -5,4 +5,4 @@ cache: bundler
 services:
   - postgresql
 before_script:
-  - psql -c 'create database travis_ci_test;' -U postgres
+  - psql -c 'create database preservation_core_catalog;' -U postgres
