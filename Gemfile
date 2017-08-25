@@ -42,6 +42,8 @@ gem 'pry-rails' # use pry as the rails console shell instead of IRB
 #switch from sqlite3 to postgresql
 gem 'pg'
 
+
+
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
@@ -63,6 +65,11 @@ group :development do
   gem 'spring'
   gem 'spring-watcher-listen', '~> 2.0.0'
 end
+
+group :test do 
+  gem 'shoulda-matchers', git: 'https://github.com/thoughtbot/shoulda-matchers.git', branch:'rails-5'
+end
+
 
 group :deploy do
   gem 'capistrano-rails'
