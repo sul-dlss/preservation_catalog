@@ -12,6 +12,9 @@
 
 ActiveRecord::Schema.define(version: 20170823233217) do
 
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "plpgsql"
+
   create_table "endpoints", force: :cascade do |t|
     t.string "endpoint_name", null: false
     t.string "endpoint_type", null: false
@@ -24,14 +27,14 @@ ActiveRecord::Schema.define(version: 20170823233217) do
   create_table "preservation_copies", force: :cascade do |t|
     t.integer "version"
     t.string "status"
-    t.integer "last_audited", limit: 8
-    t.integer "preserved_objects_id", null: false
-    t.integer "endpoints_id", null: false
+    t.bigint "last_audited"
+    t.bigint "preserved_object_id"
+    t.bigint "endpoint_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["endpoints_id"], name: "index_preservation_copies_on_endpoints_id"
+    t.index ["endpoint_id"], name: "index_preservation_copies_on_endpoint_id"
     t.index ["last_audited"], name: "index_preservation_copies_on_last_audited"
-    t.index ["preserved_objects_id"], name: "index_preservation_copies_on_preserved_objects_id"
+    t.index ["preserved_object_id"], name: "index_preservation_copies_on_preserved_object_id"
   end
 
   create_table "preserved_objects", force: :cascade do |t|
@@ -45,4 +48,6 @@ ActiveRecord::Schema.define(version: 20170823233217) do
     t.index ["preservation_policy"], name: "index_preserved_objects_on_preservation_policy"
   end
 
+  add_foreign_key "preservation_copies", "endpoints"
+  add_foreign_key "preservation_copies", "preserved_objects"
 end

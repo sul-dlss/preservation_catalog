@@ -1,15 +1,12 @@
 class CreatePreservedObjects < ActiveRecord::Migration[5.1]
   def change
     create_table :preserved_objects do |t|
-      t.string :druid, null: false, unique: true
+      t.string :druid, null: false, unique: true, index: true
       t.integer :version
-      t.string :preservation_policy
+      t.string :preservation_policy, index: true
       t.integer :size
 
       t.timestamps
     end
-
-    add_index :preserved_objects, :druid
-    add_index :preserved_objects, :preservation_policy
   end
 end

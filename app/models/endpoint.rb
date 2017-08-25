@@ -1,3 +1,3 @@
 class Endpoint < ApplicationRecord
-  has_many :preserved_copies
+  has_many :preservation_copies
 end
