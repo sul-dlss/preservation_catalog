@@ -35,3 +35,30 @@ Things you may want to cover:
 * Deployment instructions
 
 * ...
+
+### Setting up PostgreSQL
+
+#### 1. Installing Postgres
+
+If you use homebrew you can install PostgreSQL by typing  `brew install postgresql` into the command line.
+
+Make sure Postgres starts every time your computer starts up.
+`brew services start postgresql`
+
+Check to see if Postgres is running.
+`postgres -V`
+
+#### 2. Configuring Postgres
+
+The `psql` utility, which lets you carry out admin functions.
+
+Enter `psql postgres` into the command line.
+Create your username and password by entering the following into the command line.
+`CREATE USER 'your_username' WITH PASSWORD 'your_password';`
+
+Next create the name of your database.
+`CREATE DATABASE 'name of database';`
+
+Grant superuser privileges so you can create and drop database.
+`GRANT ALL PRIVILEGES ON DATABASE 'database name' TO 'your_username';`
+`ALTER USER 'your_username' WITH SUPERUSER;`
