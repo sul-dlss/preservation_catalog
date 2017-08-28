@@ -45,7 +45,7 @@ If you use homebrew you can install PostgreSQL by typing  `brew install postgres
 Make sure Postgres starts every time your computer starts up.
 `brew services start postgresql`
 
-Let's make sre Postgres is installing and running.
+Check to see if Postgres is running.
 `postgres -V`
 
 #### 2. Configuring Postgres
