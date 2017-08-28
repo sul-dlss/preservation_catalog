@@ -45,20 +45,23 @@ If you use homebrew you can install PostgreSQL by typing  `brew install postgres
 Make sure Postgres starts every time your computer starts up.
 `brew services start postgresql`
 
-Check to see if Postgres is running.
+Check to see if Postgres is installed:
 `postgres -V`
+
+and that it's accepting connections:
+`pg_isready`
 
 #### 2. Configuring Postgres
 
-The `psql` utility, which lets you carry out admin functions.
+Use the `psql` utility, which lets you carry out admin functions:
+* Enter `psql postgres` into the command line.
+* Create the preservation core user and grant it the privileges it needs by entering the following commands in psql:
+```sql
+CREATE USER preservation_core_catalog;
+ALTER USER preservation_core_catalog CREATEDB;
+CREATE DATABASE preservation_core_catalog;
+ALTER DATABASE preservation_core_catalog OWNER TO preservation_core_catalog;
+GRANT ALL PRIVILEGES ON DATABASE preservation_core_catalog TO preservation_core_catalog;
+```
 
-Enter `psql postgres` into the command line.
-Create your username and password by entering the following into the command line.
-`CREATE USER 'your_username' WITH PASSWORD 'your_password';`
-
-Next create the name of your database.
-`CREATE DATABASE 'name of database';`
-
-Grant superuser privileges so you can create and drop database.
-`GRANT ALL PRIVILEGES ON DATABASE 'database name' TO 'your_username';`
-`ALTER USER 'your_username' WITH SUPERUSER;`
+For more info on postgres commands, see https://www.postgresql.org/docs/
