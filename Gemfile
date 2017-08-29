@@ -5,28 +5,23 @@ git_source(:github) do |repo_name|
   "https://github.com/#{repo_name}.git"
 end
 
-# work with Moab Objects
-gem 'moab-versioning'
-
-# Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
-gem 'rails', '~> 5.1.3'
-# Use Puma as the app server
-gem 'puma', '~> 3.7'
-
+# general Ruby/Rails gems
+# gives us Settings to manage configs on different instances
+gem 'config'
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
 gem 'jbuilder', '~> 2.5'
-# Use ActiveModel has_secure_password
-# gem 'bcrypt', '~> 3.1.7'
-
-gem 'config'
-# Use Capistrano for deployment
-# gem 'capistrano-rails', group: :development
-
+# use postgres as the database
+gem 'pg'
 # useful for debugging, even in prod
 gem 'pry-byebug' # Adds step-by-step debugging and stack navigation capabilities to pry using byebug
 gem 'pry-rails' # use pry as the rails console shell instead of IRB
+# Use Puma as the app server
+gem 'puma', '~> 3.7'
+gem 'rails', '~> 5.1.3'
 
-gem 'pg'
+# Stanford/Samvera gems
+# work with Moab Objects
+gem 'moab-versioning'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
