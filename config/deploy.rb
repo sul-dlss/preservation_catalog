@@ -7,6 +7,9 @@ ask :branch, `git rev-parse --abbrev-ref HEAD`.chomp
 # Default deploy_to directory is /var/www/my_app_name
 set :deploy_to, "/opt/app/pcc/preservation_core_catalog"
 
+# update shared_configs before restarting app
+before 'deploy:restart', 'shared_configs:update'
+
 # Default value for :format is :airbrussh.
 # set :format, :airbrussh
 
