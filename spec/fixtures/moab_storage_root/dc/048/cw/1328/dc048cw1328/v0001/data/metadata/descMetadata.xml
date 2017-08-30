@@ -1,0 +1,75 @@
+
+<mods xmlns="http://www.loc.gov/mods/v3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="3.3" xsi:schemaLocation="http://www.loc.gov/mods/v3 http://www.loc.gov/standards/mods/v3/mods-3-3.xsd">
+  <titleInfo>
+    <title>Ultrafast studies of ionic liquids and the role of nanostructural organization</title>
+  </titleInfo>
+  <name type="personal">
+    <namePart>Fruchey, Kendall Stanley.</namePart>
+    <role>
+      <roleTerm authority="marcrelator" type="text">creator</roleTerm>
+    </role>
+  </name>
+  <name type="personal">
+    <namePart>Fayer, Michael D.</namePart>
+    <role>
+      <roleTerm type="text">primary advisor.</roleTerm>
+    </role>
+    <role>
+      <roleTerm authority="marcrelator" type="code">ths</roleTerm>
+    </role>
+  </name>
+  <name type="personal">
+    <namePart>Dai, Hongjie</namePart>
+    <namePart type="date">1966-</namePart>
+    <role>
+      <roleTerm type="text">advisor.</roleTerm>
+    </role>
+    <role>
+      <roleTerm authority="marcrelator" type="code">ths</roleTerm>
+    </role>
+  </name>
+  <name type="personal">
+    <namePart>Zare, Richard N.</namePart>
+    <role>
+      <roleTerm type="text">advisor.</roleTerm>
+    </role>
+    <role>
+      <roleTerm authority="marcrelator" type="code">ths</roleTerm>
+    </role>
+  </name>
+  <name type="corporate">
+    <namePart>Stanford University</namePart>
+    <namePart>Dept. of Chemistry.</namePart>
+  </name>
+  <typeOfResource>text</typeOfResource>
+  <genre authority="marcgt">theses</genre>
+  <originInfo>
+    <place>
+      <placeTerm authority="marccountry" type="code">xx</placeTerm>
+    </place>
+    <dateIssued>2011</dateIssued>
+    <dateIssued encoding="marc" keyDate="yes">2011</dateIssued>
+    <issuance>monographic</issuance>
+  </originInfo>
+  <language>
+    <languageTerm authority="iso639-2b" type="code">eng</languageTerm>
+  </language>
+  <physicalDescription>
+    <form authority="marcform">electronic</form>
+    <form authority="gmd">electronic resource</form>
+    <extent>1 online resource.</extent>
+  </physicalDescription>
+  <abstract>Ionic liquids are a quickly emerging class of neoteric solvents composed of organic and inorganic ions that remain liquid at room temperature. Their properties are diverse and often unique, bridging the continuum between polar and nonpolar, molecular and ionic. One property which has garnered special attention is the possibly ubiquitous existence of ordering in the bulk liquid, known as nanostructural organization. Resulting from the energetics of balancing the strong electrostatics of ions with steric considerations, it has been suggested that ionic liquids with sufficiently large alkyl substitutions should form distinct regions of polar and non-polar groups within the bulk solvent structure. The characteristics of this ordering, and even its very existence, have been heavily debated topics in ionic liquid research. Two ultrafast fluorescence experiments are discussed which attempt to assess the extent and role of nanostructural organization in the solvent properties of prototypical ionic liquids. Additionally, an Optical Kerr Effect study is described with the aim of understanding the role of Li in ionic liquid electrolytes. Time dependent fluorescence depolarization measurements studied the rotational friction experienced by small charged and nonpolar dye molecules in a series of ionic liquids with increasing alkyl chain lengths. Two distinct behaviors were observed. For a charged pyranine-derivative dye, strong interaction between the dye molecules and ionic liquid leads to a greater rotational friction than the Debye-Stokes-Einstein hydrodynamic theory predicts. The magnitude of this increase scales with the size of the ionic liquid cation. For the nonpolar dye perylene, the rotational friction was less than the slip boundary condition of hydrodynamic theory. Moreover, increasing alkyl chain length causes the rotational behavior to converge on that experienced by the dye in a purely alkane environment. The causes of these trends are discussed, leading to the conclusion that different regions of the nanostructured environment are being assessed. The nonpolar dye is segregated into the nonpolar region of the ionic liquid, so that the rotation friction describes the structure of this region. The charged dye is interacting with the ions in the hydrophilic region. The results shed light on some aspects of nanostructural organization as it applies to ionic liquids as solvents. To assess the spatial characteristics of nanostructural organization, donor-donor excitation transfer was examined. The time dependence of the excitation transfer is strongly sensitive to the distribution of donors and acceptors in solution. Using a dye molecule that is anticipated to segregate into the nonpolar regions, the altered distribution of dye molecules resulting from nanostructural organization will be evident in the excitation transfer. Fluorescence depolarization can be used to monitor the excitation transfer. Observables for an isotropic and structured distribution of dye were calculated, and compared to fluorescence experiments. Based on the fits, an upper bound on the radius of 6-8Å is placed on the size of the hydrophobic regions of nanostructural orgaization, modeled as spheres. The transport properties of ionic liquids as electrolytes are strongly and negatively affected by the addition of lithium. To understand this, Optical Heterodyne Detected Optical Kerr Effect studies were performed on a pure and lithium loaded imidazolium ionic liquid. Mode-coupling theory was tested in the pure liquid, and found to be capable of describing the dynamics. Mode-coupling theory was then used to understand the results in the lithium loaded samples. Changes in parameters from the mode-coupling theory fits occur at a lithium mole fraction of 0.2. This is discussed in terms of outside MD simulations to understand and substantiate the changes in ionic liquid structure leading to the loss of ion mobility.</abstract>
+  <note displayLabel="statement of responsibility">Kendall Stanley Fruchey.</note>
+  <note>Submitted to the Department of Chemistry.</note>
+  <note>Thesis (Ph.D.)--Stanford University, 2011.</note>
+  <identifier type="uri">http://purl.stanford.edu/dc048cw1328</identifier>
+  <location>
+    <url usage="primary display">http://purl.stanford.edu/dc048cw1328</url>
+  </location>
+  <recordInfo>
+    <recordContentSource authority="marcorg">CSt</recordContentSource>
+    <recordCreationDate encoding="marc">110721</recordCreationDate>
+    <recordIdentifier source="SIRSI">a9238484</recordIdentifier>
+  </recordInfo>
+</mods>
