@@ -1,0 +1,101 @@
+<mods:mods xmlns:mods="http://www.loc.gov/mods/v3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="3.3" xsi:schemaLocation="http://www.loc.gov/mods/v3 http://cosimo.stanford.edu/standards/mods/v3/mods-3-3.xsd">
+  <mods:titleInfo>
+    <mods:title>Geocoding in Law Enforcement</mods:title>
+    <mods:subTitle>Final Report</mods:subTitle>
+  </mods:titleInfo>
+  <mods:name type="corporate">
+    <mods:namePart>United States</mods:namePart>
+    <mods:namePart>Dept. of Justice.</mods:namePart>
+    <mods:namePart>Office of Community Oriented Policing Services,</mods:namePart>
+    <mods:role>
+      <mods:roleTerm type="text">issuing body.</mods:roleTerm>
+    </mods:role>
+  </mods:name>
+  <mods:name type="corporate">
+    <mods:namePart>Police Foundation (U.S.)</mods:namePart>
+    <mods:namePart>Crime Mapping and Problem Analysis Laboratory,</mods:namePart>
+    <mods:role>
+      <mods:roleTerm type="text">issuing body.</mods:roleTerm>
+    </mods:role>
+  </mods:name>
+  <mods:typeOfResource>text</mods:typeOfResource>
+  <mods:originInfo>
+    <mods:place>
+      <mods:placeTerm authority="marccountry" type="code">dcu</mods:placeTerm>
+    </mods:place>
+    <mods:place>
+      <mods:placeTerm type="text">Washington, DC</mods:placeTerm>
+    </mods:place>
+    <mods:publisher>U.S. Department of Justice, Office of Community Oriented Policing Services</mods:publisher>
+    <mods:dateIssued>2000</mods:dateIssued>
+    <mods:dateIssued encoding="marc" keyDate="yes">2000</mods:dateIssued>
+    <mods:issuance>monographic</mods:issuance>
+  </mods:originInfo>
+  <mods:language>
+    <mods:languageTerm authority="iso639-2b" type="code">eng</mods:languageTerm>
+  </mods:language>
+  <mods:relatedItem type="original">
+    <mods:physicalDescription>
+      <mods:extent>1 online resource (17 pages) : PDF, illustrations (some color)</mods:extent>
+    </mods:physicalDescription>
+    <mods:recordInfo>
+      <mods:descriptionStandard>rda</mods:descriptionStandard>
+      <mods:recordContentSource authority="marcorg">STF</mods:recordContentSource>
+      <mods:recordCreationDate encoding="marc">110429</mods:recordCreationDate>
+      <mods:recordChangeDate encoding="iso8601">20110429093443.0</mods:recordChangeDate>
+      <mods:languageOfCataloging>
+        <mods:languageTerm authority="iso639-2b" type="code">eng</mods:languageTerm>
+      </mods:languageOfCataloging>
+      <mods:recordIdentifier source="SUL catalog key">9100265</mods:recordIdentifier>
+      <mods:recordIdentifier source="oclc">717384763</mods:recordIdentifier>
+    </mods:recordInfo>
+  </mods:relatedItem>
+  <mods:physicalDescription>
+    <mods:form authority="marcform">electronic</mods:form>
+    <mods:reformattingQuality>preservation</mods:reformattingQuality>
+    <mods:digitalOrigin>reformatted digital</mods:digitalOrigin>
+  </mods:physicalDescription>
+  <mods:note displayLabel="statement of responsibility">Prepared by: The Crime Mapping Laboratory Police Foundation.</mods:note>
+  <mods:note>"August 2000."</mods:note>
+  <mods:note>"Report to the Office of Community Oriented Policing Services Cooperative Agreement #97-CK-WXK-004.:</mods:note>
+  <mods:note>Downloaded from http://www.cops.usdoj.gov/files/RIC/Publications/geocodinginlawenforcementfinalreport.pdf on Mar 30, 2011.</mods:note>
+  <mods:subject>
+    <mods:geographicCode authority="marcgac">n-us---</mods:geographicCode>
+  </mods:subject>
+  <mods:subject authority="lcsh">
+    <mods:topic>Law enforcement</mods:topic>
+    <mods:geographic>United States</mods:geographic>
+    <mods:topic>Data processing</mods:topic>
+  </mods:subject>
+  <mods:subject authority="lcsh">
+    <mods:topic>Criminal investigation</mods:topic>
+    <mods:geographic>United States</mods:geographic>
+    <mods:topic>Data processing</mods:topic>
+  </mods:subject>
+  <mods:subject authority="lcsh">
+    <mods:topic>Digital mapping</mods:topic>
+  </mods:subject>
+  <mods:classification authority="lcc">HV7936.A8 G46 2000</mods:classification>
+  <mods:relatedItem type="series">
+    <mods:titleInfo>
+      <mods:title>COPS publication</mods:title>
+    </mods:titleInfo>
+  </mods:relatedItem>
+  <mods:identifier type="uri">http://www.cops.usdoj.gov/files/RIC/Publications/geocodinginlawenforcementfinalreport.pdf</mods:identifier>
+  <mods:identifier type="uri">http://purl.stanford.edu/bp628nk4868</mods:identifier>
+  <mods:location>
+    <mods:url usage="primary display">http://www.cops.usdoj.gov/files/RIC/Publications/geocodinginlawenforcementfinalreport.pdf</mods:url>
+  </mods:location>
+  <mods:location>
+    <mods:url>http://purl.stanford.edu/bp628nk4868</mods:url>
+  </mods:location>
+  <mods:recordInfo>
+    <mods:recordContentSource>DOR_MARC2MODS3-3.xsl Revision 1.1</mods:recordContentSource>
+    <mods:recordCreationDate encoding="iso8601">2011-04-29T09:31:10.265-07:00</mods:recordCreationDate>
+  </mods:recordInfo>
+  <mods:identifier displayLabel="SUL Resource ID" type="local">druid:bp628nk4868</mods:identifier>
+  <mods:location>
+    <mods:physicalLocation>Stanford University Libraries</mods:physicalLocation>
+    <mods:url>http://purl.stanford.edu/bp628nk4868</mods:url>
+  </mods:location>
+</mods:mods>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fileInventory type="additions" objectId="druid:dc048cw1328" versionId="2" inventoryDatetime="2013-06-17T23:52:28Z" fileCount="9" byteCount="14910" blockCount="20">
+  <fileGroup groupId="metadata" dataSource="" fileCount="9" byteCount="14910" blockCount="20">
+    <file>
+      <fileSignature size="1817" md5="ef4b1d205335ec4df1b720b0c206461e" sha1="b061c67dcfae35f443a694f0bb4dc17795820cc4" sha256="f5fdfd569b8be7b0386f2b6be8e48ba385341b88ed3975536f819d9a59617233"/>
+      <fileInstance path="contentMetadata.xml" datetime="2013-06-17T23:52:27Z"/>
+    </file>
+    <file>
+      <fileSignature size="249" md5="07a61e1bb9caad642bbfd8ebc93b2db2" sha1="55e3cb7380fdbf3a4ac8d6f9ded645c6a3758d45" sha256="3a1398d231e5437b88e4336c90d2b970c3ffb906c9cfb365c726553ea97a0e9f"/>
+      <fileInstance path="embargoMetadata.xml" datetime="2013-06-17T23:52:27Z"/>
+    </file>
+    <file>
+      <fileSignature size="1088" md5="82ef41479d0da407cf17ebba58685635" sha1="0f5d981f88f18a9426ae02774a681cd4932c6166" sha256="afe5e5f978fa41cf2d1964b86a4be2f67989fbe8aa60ab12daff4cc79b0fa320"/>
+      <fileInstance path="events.xml" datetime="2013-06-17T23:52:27Z"/>
+    </file>
+    <file>
+      <fileSignature size="709" md5="9f8b7ff8f16cc26876dca6709ffe17eb" sha1="ac59b6bc00accda9575171330c94cde7bbad354c" sha256="cab9ebe06105060690d38a5c7ec244345435df9a181f1bf5f6f422265b4f0826"/>
+      <fileInstance path="identityMetadata.xml" datetime="2013-06-17T23:52:27Z"/>
+    </file>
+    <file>
+      <fileSignature size="265" md5="e510b75f325f96f2e1c91552b45469c0" sha1="55a5601c433eef823520464791bcaa24915d16c1" sha256="e6327d0e5ec17c532b78e7d58ec4f9bffd8379dbde4d1b414ea79eebb7b2f549"/>
+      <fileInstance path="provenanceMetadata.xml" datetime="2013-06-17T23:52:27Z"/>
+    </file>
+    <file>
+      <fileSignature size="414" md5="6761fe905e241b43634d40f32582dd73" sha1="c21672f70754fed8757b802be656d3528fde7801" sha256="462c751084d38f6e85b66e5f0203d43e2cfa33f0209ccdea064af0eaa94f582e"/>
+      <fileInstance path="relationshipMetadata.xml" datetime="2013-06-17T23:52:27Z"/>
+    </file>
+    <file>
+      <fileSignature size="471" md5="fee88c844a7818f51b754a2626f62a4d" sha1="5228c38ea16efac2428f221b597c62be5f8149aa" sha256="0aca179908d478b0089e4813aedee9ac890681f37c89e9cc9de6ddc2ad28171f"/>
+      <fileInstance path="rightsMetadata.xml" datetime="2013-06-17T23:52:26Z"/>
+    </file>
+    <file>
+      <fileSignature size="264" md5="e0fa5105d4d088136709d8e6be0c6908" sha1="eb7d69f581457450b858558a03865ef0824b77ec" sha256="f6085e8073a9269921718cccd805b77bb4dcfe928706c0736fbd01da0bc0570f"/>
+      <fileInstance path="versionMetadata.xml" datetime="2013-06-17T23:52:27Z"/>
+    </file>
+    <file>
+      <fileSignature size="9633" md5="5e853fbaeb820037f1decd3f979c9999" sha1="295d900bffe32de71bde7ef0107ccd360b855ead" sha256="f2064163a4a8db47de7c830e34231c161f3f1411ab5fd57f8c8742e1b7356849"/>
+      <fileInstance path="workflows.xml" datetime="2013-06-17T23:52:28Z"/>
+    </file>
+  </fileGroup>
+</fileInventory>

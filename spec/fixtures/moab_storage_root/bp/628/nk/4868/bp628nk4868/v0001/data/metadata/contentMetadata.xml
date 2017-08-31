@@ -1,0 +1,10 @@
+<contentMetadata type="file" objectId="druid:bp628nk4868">
+  <resource objectId="druid:bp628nk4868" data="content" id="content" type="file">
+    <attr name="label">Geocoding in Law Enforcement: Final Report</attr>
+    <file preserve="yes" deliver="yes" size="398963" mimetype="application/pdf" id="geocodinginlawenforcementfinalreport.pdf" shelve="yes" publish="yes">
+      <location type="url">https://stacks.stanford.edu/file/druid:bp628nk4868/geocodinginlawenforcementfinalreport.pdf</location>
+      <checksum type="md5">5569a21de739fc9783b8ccbcdb80c9d6</checksum>
+      <checksum type="sha1">a6f05879e34592af473cc84dff60b9acd72b1a0c</checksum>
+    </file>
+  </resource>
+</contentMetadata>

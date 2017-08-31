@@ -1,0 +1,48 @@
+
+<jhove xmlns="http://hul.harvard.edu/ois/xml/ns/jhove" xmlns:mix="http://www.loc.gov/mix/v10" xmlns:textmd="info:lc/xmlns/textMD-v3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" date="2009-08-06" name="JhoveToolkit" release="1.0" xsi:schemaLocation="http://hul.harvard.edu/ois/xml/ns/jhove http://cosimo.stanford.edu/standards/jhove/v1/jhove.xsd">
+  <date>2011-10-28T02:28:23-07:00</date>
+  <repInfo uri="Dissertation-augmented.pdf">
+    <reportingModule date="2009-05-22" release="1.8">PDF-hul</reportingModule>
+    <format>PDF</format>
+    <version>1.4</version>
+    <status>Well-Formed and valid</status>
+    <sigMatch>
+      <module>PDF-hul</module>
+    </sigMatch>
+    <mimeType>application/pdf</mimeType>
+    <checksums></checksums>
+  </repInfo>
+  <repInfo uri="Dissertation.pdf">
+    <reportingModule date="2009-05-22" release="1.8">PDF-hul</reportingModule>
+    <format>PDF</format>
+    <version>1.6</version>
+    <status>Not well-formed</status>
+    <sigMatch>
+      <module>PDF-hul</module>
+    </sigMatch>
+    <mimeType>application/pdf</mimeType>
+    <checksums></checksums>
+  </repInfo>
+  <repInfo uri="License1.pdf">
+    <reportingModule date="2009-05-22" release="1.8">PDF-hul</reportingModule>
+    <format>PDF</format>
+    <version>1.5</version>
+    <status>Not well-formed</status>
+    <sigMatch>
+      <module>PDF-hul</module>
+    </sigMatch>
+    <mimeType>application/pdf</mimeType>
+    <checksums></checksums>
+  </repInfo>
+  <repInfo uri="License2.pdf">
+    <reportingModule date="2009-05-22" release="1.8">PDF-hul</reportingModule>
+    <format>PDF</format>
+    <version>1.5</version>
+    <status>Not well-formed</status>
+    <sigMatch>
+      <module>PDF-hul</module>
+    </sigMatch>
+    <mimeType>application/pdf</mimeType>
+    <checksums></checksums>
+  </repInfo>
+</jhove>

@@ -1,0 +1,5 @@
+<events>
+  <event type="remediation" who="Dor::Processable 3.5.0" when="2012-05-07T16:19:01-07:00">Replace individual *WF datastreams with unified workflows datastream</event>
+  <event type="remediation" who="Dor::Identifiable 3.6.1" when="2012-05-07T16:19:01-07:00">Record Remediation Version</event>
+  <event type="remediation" who="Dor::ContentMetadataDS 3.6.0" when="2012-05-07T16:19:01-07:00">Change contentMetadata type attribute</event>
+<event type="remediation" who="Dor::Identifiable 3.6.1" when="2016-08-23T20:55:32Z">Assert correct models</event><event type="remediation" who="Dor::Identifiable 3.6.1" when="2016-08-23T20:55:32Z">Record Remediation Version</event></events>
