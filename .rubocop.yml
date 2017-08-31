@@ -53,10 +53,15 @@ Style/StringLiterals:
 Style/SymbolArray:
   Enabled: false
 
+RSpec/ExampleLength:
+  Max: 50
+
 RSpec/MultipleExpectations:
   Exclude:
     - 'spec/controllers/moab_storage_controller_spec.rb'
 
+RSpec/NamedSubject:
+  Enabled: false
 
 Bundler/OrderedGems:
   Exclude:
