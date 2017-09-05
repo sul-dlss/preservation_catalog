@@ -47,6 +47,7 @@ RSpec.describe MoabStorageController, type: :controller do
       get :show, params: { id: fixture_druid }
       expect(response).to have_http_status(:success)
     end
+
     context 'assigns @output correctly' do
       it 'Hash' do
         get :show, params: { id: fixture_druid }
@@ -56,6 +57,17 @@ RSpec.describe MoabStorageController, type: :controller do
         get :show, params: { id: fixture_druid }
         expect(assigns(:output)[:current_version]).to eq 10
       end
+
+      it 'object_size' do
+        get :show, params: { id: fixture_druid }
+        expect(assigns(:output)[:object_size]).to be_between(21_900_000, 22_000_000)
+      end
+
+      it 'object_size_human' do
+        get :show, params: { id: fixture_druid }
+        expect(assigns(:output)[:object_size_human]).to a_string_ending_with("MB")
+      end
+
     end
     it 'returns json by default' do
       get :show, params: { id: fixture_druid }
