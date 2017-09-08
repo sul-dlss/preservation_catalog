@@ -7,8 +7,8 @@ default: &default
 
 development:
   <<: *default
-  database: preservation_core_catalog
-  username: preservation_core_catalog
+  database: pcc
+  username: pcc
 
 test:
   <<: *default
