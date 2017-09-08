@@ -14,7 +14,7 @@ RSpec.describe MoabStorageController, type: :controller do
       end
       it 'with all the fixture druids' do
         get :index
-        expect(assigns(:stored_druids)).to include('ct764fs4485', 'dg806ms0373', 'jj925bx9565')
+        expect(assigns(:stored_druids)).to include('bj102hs9687', 'bp628nk4868', 'bz514sm9647', 'dc048cw1328')
       end
       it 'Array of Strings' do
         get :index
@@ -41,7 +41,7 @@ RSpec.describe MoabStorageController, type: :controller do
   end
 
   describe "GET #show" do
-    let(:fixture_druid) { 'ct764fs4485' }
+    let(:fixture_druid) { 'bj102hs9687' }
 
     it "returns http success status code" do
       get :show, params: { id: fixture_druid }
@@ -55,12 +55,12 @@ RSpec.describe MoabStorageController, type: :controller do
       end
       it 'current_version' do
         get :show, params: { id: fixture_druid }
-        expect(assigns(:output)[:current_version]).to eq 10
+        expect(assigns(:output)[:current_version]).to eq 3
       end
 
       it 'object_size' do
         get :show, params: { id: fixture_druid }
-        expect(assigns(:output)[:object_size]).to be_between(21_900_000, 22_000_000)
+        expect(assigns(:output)[:object_size]).to be_between(1_900_000, 2_100_000)
       end
 
       it 'object_size_human' do
