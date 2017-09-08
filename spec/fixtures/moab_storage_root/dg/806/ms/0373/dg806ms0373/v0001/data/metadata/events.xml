@@ -1,5 +1,0 @@
-
-<events>
-  <event type="remediation" when="2013-06-03T12:40:13-07:00" who="Dor::Identifiable 3.6.1">Record Remediation Version</event>
-  <event type="remediation" when="2013-06-03T12:40:13-07:00" who="Dor::Versionable 3.12.2">Add missing versionMetadata</event>
-</events>
