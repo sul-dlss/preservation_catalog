@@ -1,8 +1,0 @@
-<events>
-  <event type="remediation" when="2014-03-06T22:44:41-08:00" who="Dor::Identifiable 3.6.1">Record Remediation Version</event>
-  <event type="open" when="2014-03-20T11:37:18-07:00" who="Doris C. Cheung">Version 2 opened</event>
-  <event type="close" when="2014-03-20T11:40:45-07:00" who="Doris C. Cheung">Version 2 closed</event>
-  <event type="remediation" when="2014-03-20T11:42:59-07:00" who="Dor::Identifiable 3.6.1">Record Remediation Version</event>
-  <event type="open" when="2014-04-22T11:02:18-07:00" who="Benjamin L Albritton">Version 4 opened</event>
-  <event type="close" when="2014-04-22T11:10:41-07:00" who="Benjamin L Albritton">Version 4 closed</event>
-</events>
