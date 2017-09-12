@@ -50,20 +50,15 @@ and that it's accepting connections:
 
 #### 2. Configuring Postgres
 
-Use the `psql` utility, which lets you carry out admin functions:
-* Enter `psql postgres` into the command line.
-* Create the preservation core users and grant them the privileges they need for dev and test by entering the following commands in psql:
-```sql
-CREATE USER preservation_core_catalog;
-ALTER USER preservation_core_catalog CREATEDB;
-CREATE DATABASE preservation_core_catalog;
-ALTER DATABASE preservation_core_catalog OWNER TO preservation_core_catalog;
-GRANT ALL PRIVILEGES ON DATABASE preservation_core_catalog TO preservation_core_catalog;
-CREATE USER pcc;
-ALTER USER pcc CREATEDB;
-CREATE DATABASE pcc;
-ALTER DATABASE pcc OWNER TO pcc;
-GRANT ALL PRIVILEGES ON DATABASE pcc TO pcc;
+Using the `psql` utility, run these two setup scripts from the command line, like so:
+```sh
+psql -f db/scripts/pcc_setup.sql
+psql -f db/scripts/preservation_core_catalog_setup.sql
 ```
+
+These scripts do the following for you:
+* create the test and dev PostgreSQL users.
+* create the test and dev databases.
+* setup the needed ownership and permissions between the DBs and the users.
 
 For more info on postgres commands, see https://www.postgresql.org/docs/
