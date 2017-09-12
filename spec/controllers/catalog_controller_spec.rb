@@ -22,7 +22,7 @@ RSpec.describe CatalogController, type: :controller do
     end
   end
 
-  describe 'PUT #update' do
+  describe 'PATCH #update' do
     context 'with valid params' do
       it 'updates the object with the expected field values' do
         allow(Stanford::StorageServices).to receive(:current_version).and_return(6)
