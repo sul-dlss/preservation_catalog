@@ -1,0 +1,5 @@
+CREATE USER preservation_core_catalog;
+ALTER USER preservation_core_catalog CREATEDB;
+CREATE DATABASE preservation_core_catalog;
+ALTER DATABASE preservation_core_catalog OWNER TO preservation_core_catalog;
+GRANT ALL PRIVILEGES ON DATABASE preservation_core_catalog TO preservation_core_catalog;
