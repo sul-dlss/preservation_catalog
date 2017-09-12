@@ -5,8 +5,4 @@ cache: bundler
 services:
   - postgresql
 before_script:
-  - psql -c 'CREATE USER preservation_core_catalog;' -U postgres
-  - psql -c 'ALTER USER preservation_core_catalog CREATEDB;' -U postgres
-  - psql -c 'CREATE DATABASE preservation_core_catalog;' -U postgres
-  - psql -c 'ALTER DATABASE preservation_core_catalog OWNER TO preservation_core_catalog;' -U postgres
-  - psql -c 'GRANT ALL PRIVILEGES ON DATABASE preservation_core_catalog TO preservation_core_catalog;' -U postgres
+  - bundle exec rake init_postgres[postgres]
