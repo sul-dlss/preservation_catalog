@@ -1,22 +1,25 @@
 require 'rails_helper'
 
 RSpec.describe PreservedObject, type: :model do
+  let!(:preservation_policy) { PreservationPolicy.create!(preservation_policy_name: 'default') }
+
   let(:required_attributes) do
     {
       druid: 'ab123cd45678',
-      current_version: 1
+      current_version: 1,
+      preservation_policy: preservation_policy
     }
   end
   let(:addl_attributes) do
     {
-      preservation_policy: 'keepit',
       size: 1
     }
   end
 
+  it { is_expected.to belong_to(:preservation_policy) }
   it { is_expected.to have_many(:preservation_copies) }
   it { is_expected.to have_db_index(:druid) }
-  it { is_expected.to have_db_index(:preservation_policy) }
+  it { is_expected.to have_db_index(:preservation_policy_id) }
 
   context 'validation' do
     it 'is valid with required attributes' do
@@ -39,8 +42,9 @@ RSpec.describe PreservedObject, type: :model do
     it 'enforces unique constraint on druid' do
       PreservedObject.create(required_attributes)
       exp_err_msg = 'Validation failed: Druid has already been taken'
-      expect { PreservedObject.create!(required_attributes) }.to raise_error(ActiveRecord::RecordInvalid, exp_err_msg)
+      expect do
+        PreservedObject.create!(required_attributes)
+      end.to raise_error(ActiveRecord::RecordInvalid, exp_err_msg)
     end
   end
-
 end
