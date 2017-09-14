@@ -33,13 +33,13 @@ RSpec.describe CatalogController, type: :controller do
         allow(PreservedObject).to receive(:find_by).with(druid: id).and_return(preserved_obj)
 
         allow(preserved_obj).to receive(:update_attributes)
-        put :update_preserved_object, params: { id: id }
+        patch :update_preserved_object, params: { id: id }
         expect(preserved_obj).to have_received(:update_attributes).with(druid: id, size: 555, current_version: 6)
       end
     end
     context 'with invalid params' do
       it 'returns the unprocessable entity http status code' do
-        put :update_preserved_object
+        patch :update_preserved_object
         expect(response).to have_http_status(422)
       end
     end
