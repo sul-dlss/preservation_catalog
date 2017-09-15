@@ -11,5 +11,5 @@ RuboCop::RakeTask.new
 task default: [:spec, :rubocop]
 
 task :travis_setup_postgres do
-  sh("psql -U postgres -f db/scripts/preservation_core_catalog_setup.sql")
+  sh("psql -U postgres -f db/scripts/pcc_test_setup.sql")
 end
