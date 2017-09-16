@@ -53,7 +53,7 @@ and that it's accepting connections:
 Using the `psql` utility, run these two setup scripts from the command line, like so:
 ```sh
 psql -f db/scripts/pcc_setup.sql postgres
-psql -f db/scripts/preservation_core_catalog_setup.sql postgres
+psql -f db/scripts/pcc_test_setup.sql postgres
 ```
 
 These scripts do the following for you:

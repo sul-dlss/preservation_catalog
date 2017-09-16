@@ -12,5 +12,5 @@ development:
 
 test:
   <<: *default
-  database: preservation_core_catalog
-  username: preservation_core_catalog
+  database: pcc_test
+  username: pcc_test
