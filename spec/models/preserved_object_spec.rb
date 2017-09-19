@@ -97,8 +97,8 @@ RSpec.describe PreservedObject, type: :model do
           PreservedObject.update('ab123cd45678', current_version: 0)
           expect(po.reload.current_version).to eq 1
         end
-        it "logs at warn level" do
-          expect(Rails.logger).to receive(:warn).with("#{po.druid} incoming version smaller than db version")
+        it "logs at error level" do
+          expect(Rails.logger).to receive(:error).with("#{po.druid} incoming version smaller than db version")
           PreservedObject.update('ab123cd45678', current_version: 0)
         end
         it_behaves_like 'entry exists', 0

@@ -37,8 +37,8 @@ class PreservedObject < ApplicationRecord
       Rails.logger.info "#{druid} incoming version is equal to db version"
       existing_rec.touch
     elsif version_comparison == 1
-      # FIXME: what should happen
-      Rails.logger.warn "#{druid} incoming version smaller than db version"
+      # TODO: needs manual intervention until automatic recovery services implemented
+      Rails.logger.error "#{druid} incoming version smaller than db version"
       existing_rec.touch
     elsif version_comparison == -1
       Rails.logger.info "#{druid} incoming version is greater than db version"
