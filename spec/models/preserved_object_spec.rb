@@ -85,6 +85,17 @@ RSpec.describe PreservedObject, type: :model do
           PreservedObject.update('ab123cd45678', current_version: 5)
           expect(po.reload.current_version).to eq 5
         end
+        it 'updates entry with size if included' do
+          PreservedObject.update('ab123cd45678', current_version: 5, size: 666)
+          expect(po.reload.size).to eq 666
+        end
+        it 'retains old size if incoming size is nil' do
+          expect(po.size).to eq nil
+          PreservedObject.update('ab123cd45678', current_version: 4, size: 666)
+          expect(po.reload.size).to eq 666
+          PreservedObject.update('ab123cd45678', current_version: 5)
+          expect(po.reload.size).to eq 666
+        end
         it "logs at info level" do
           expect(Rails.logger).to receive(:info).with("#{po.druid} incoming version is greater than db version")
           PreservedObject.update('ab123cd45678', current_version: 5)
@@ -120,6 +131,10 @@ RSpec.describe PreservedObject, type: :model do
         expect(PreservedObject.exists?(druid: po.druid)).to be false
         PreservedObject.update(po.druid, current_version: 1, preservation_policy: preservation_policy)
         expect(PreservedObject.exists?(druid: po.druid)).to be true
+      end
+      it 'includes size in entry if passed in' do
+        PreservedObject.update(po.druid, current_version: 1, size: 666, preservation_policy: preservation_policy)
+        expect(PreservedObject.exists?(druid: po.druid, size: 666)).to be true
       end
       it 'logs at warn level' do
         expect(Rails.logger).to receive(:warn).with("update #{po.druid} called but object not found; writing object")
