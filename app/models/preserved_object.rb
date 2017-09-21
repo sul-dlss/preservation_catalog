@@ -13,37 +13,39 @@ class PreservedObject < ApplicationRecord
   validates :current_version, presence: true
   validates :preservation_policy, null: false
 
-  def self.update(druid, current_version: nil, size: nil, preservation_policy: nil)
-    existing_rec = find_by(druid: druid)
+  def self.update_or_create(druid, current_version: nil, size: nil, preservation_policy: nil)
     if exists?(druid: druid)
       # TODO: add more info, e.g. caller, timestamp written to db
       Rails.logger.debug "update #{druid} called and object exists"
-      if current_version
-        version_comparison = existing_rec.current_version <=> current_version
-        update_entry_per_compare(version_comparison, existing_rec, druid, current_version, size)
+
+      existing_rec = find_by(druid: druid)
+      existing_rec.update_if_valid_version_change(druid, current_version, size) if current_version
+
+      if existing_rec.changed?
+        existing_rec.save
+      else
+        existing_rec.touch
       end
+
       true
     else
-      create(druid: druid, current_version: current_version, size: size, preservation_policy: preservation_policy)
       Rails.logger.warn "update #{druid} called but object not found; writing object" # TODO: add more info
+      create(druid: druid, current_version: current_version, size: size, preservation_policy: preservation_policy)
       false
     end
   end
 
-  private_class_method
-  def self.update_entry_per_compare(version_comparison, existing_rec, druid, current_version, size)
+  def update_if_valid_version_change(druid, updated_version, size)
+    version_comparison = self.current_version <=> updated_version
     if version_comparison.zero?
       Rails.logger.info "#{druid} incoming version is equal to db version"
-      existing_rec.touch
     elsif version_comparison == 1
       # TODO: needs manual intervention until automatic recovery services implemented
       Rails.logger.error "#{druid} incoming version smaller than db version"
-      existing_rec.touch
     elsif version_comparison == -1
       Rails.logger.info "#{druid} incoming version is greater than db version"
-      existing_rec.current_version = current_version
-      existing_rec.size = size if size
-      existing_rec.save
+      self.current_version = updated_version
+      self.size = size if size
     end
   end
 end

@@ -1,11 +1,12 @@
 require 'rails_helper'
 
 RSpec.describe PreservedObject, type: :model do
+  let(:druid) { 'ab123cd4567' }
   let!(:preservation_policy) { PreservationPolicy.create!(preservation_policy_name: 'default') }
 
   let(:required_attributes) do
     {
-      druid: 'ab123cd45678',
+      druid: druid,
       current_version: 1,
       preservation_policy: preservation_policy
     }
@@ -37,7 +38,7 @@ RSpec.describe PreservedObject, type: :model do
       expect(PreservedObject.new(current_version: 1)).not_to be_valid
     end
     it 'is not valid without a current_version' do
-      expect(PreservedObject.new(druid: 'ab123cd45678')).not_to be_valid
+      expect(PreservedObject.new(druid: druid)).not_to be_valid
     end
     it 'enforces unique constraint on druid' do
       PreservedObject.create(required_attributes)
@@ -55,62 +56,62 @@ RSpec.describe PreservedObject, type: :model do
       shared_examples 'entry exists' do |incoming_version|
         it 'updates entry with timestamp' do
           before_time = po.updated_at
-          PreservedObject.update('ab123cd45678', current_version: incoming_version)
-          expect(po.reload.updated_at).to be > before_time
+          PreservedObject.update_or_create(druid, current_version: incoming_version)
+          expect(po.reload.updated_at).to be_between(before_time, Time.current)
         end
         it 'logs at debug level' do
           allow(Rails.logger).to receive(:debug)
           expect(Rails.logger).to receive(:debug).with("update #{po.druid} called and object exists")
-          PreservedObject.update(po.druid, current_version: incoming_version)
+          PreservedObject.update_or_create(po.druid, current_version: incoming_version)
         end
         it 'returns true' do
-          expect(PreservedObject.update(po.druid, current_version: incoming_version)).to eq true
+          expect(PreservedObject.update_or_create(po.druid, current_version: incoming_version)).to eq true
         end
       end
 
       context 'incoming and db versions match' do
         it "entry version stays the same" do
-          PreservedObject.update('ab123cd45678', current_version: 1)
+          PreservedObject.update_or_create(druid, current_version: 1)
           expect(po.reload.current_version).to eq 1
         end
         it "logs at info level" do
           expect(Rails.logger).to receive(:info).with("#{po.druid} incoming version is equal to db version")
-          PreservedObject.update('ab123cd45678', current_version: 1)
+          PreservedObject.update_or_create(druid, current_version: 1)
         end
         it_behaves_like 'entry exists', 1
       end
 
       context 'incoming version is greater than db version' do
         it "updates entry with incoming version" do
-          PreservedObject.update('ab123cd45678', current_version: 5)
+          PreservedObject.update_or_create(druid, current_version: 5)
           expect(po.reload.current_version).to eq 5
         end
         it 'updates entry with size if included' do
-          PreservedObject.update('ab123cd45678', current_version: 5, size: 666)
+          PreservedObject.update_or_create(druid, current_version: 5, size: 666)
           expect(po.reload.size).to eq 666
         end
         it 'retains old size if incoming size is nil' do
           expect(po.size).to eq nil
-          PreservedObject.update('ab123cd45678', current_version: 4, size: 666)
+          PreservedObject.update_or_create(druid, current_version: 4, size: 666)
           expect(po.reload.size).to eq 666
-          PreservedObject.update('ab123cd45678', current_version: 5)
+          PreservedObject.update_or_create(druid, current_version: 5)
           expect(po.reload.size).to eq 666
         end
         it "logs at info level" do
           expect(Rails.logger).to receive(:info).with("#{po.druid} incoming version is greater than db version")
-          PreservedObject.update('ab123cd45678', current_version: 5)
+          PreservedObject.update_or_create(druid, current_version: 5)
         end
         it_behaves_like 'entry exists', 5
       end
 
       context 'incoming version is smaller than db version' do
         it "entry version stays the same" do
-          PreservedObject.update('ab123cd45678', current_version: 0)
+          PreservedObject.update_or_create(druid, current_version: 0)
           expect(po.reload.current_version).to eq 1
         end
         it "logs at error level" do
           expect(Rails.logger).to receive(:error).with("#{po.druid} incoming version smaller than db version")
-          PreservedObject.update('ab123cd45678', current_version: 0)
+          PreservedObject.update_or_create(druid, current_version: 0)
         end
         it_behaves_like 'entry exists', 0
       end
@@ -123,25 +124,27 @@ RSpec.describe PreservedObject, type: :model do
       end
 
       after(:all) do
-        po = PreservedObject.find_by(druid: 'ab123cd45678')
+        po = PreservedObject.find_by(druid: 'ab123cd4567')
         po.destroy if po
       end
 
       it 'creates entry' do
         expect(PreservedObject.exists?(druid: po.druid)).to be false
-        PreservedObject.update(po.druid, current_version: 1, preservation_policy: preservation_policy)
+        PreservedObject.update_or_create(po.druid, current_version: 1, preservation_policy: preservation_policy)
         expect(PreservedObject.exists?(druid: po.druid)).to be true
       end
       it 'includes size in entry if passed in' do
-        PreservedObject.update(po.druid, current_version: 1, size: 666, preservation_policy: preservation_policy)
+        PreservedObject.update_or_create(
+          po.druid, current_version: 1, size: 666, preservation_policy: preservation_policy
+        )
         expect(PreservedObject.exists?(druid: po.druid, size: 666)).to be true
       end
       it 'logs at warn level' do
         expect(Rails.logger).to receive(:warn).with("update #{po.druid} called but object not found; writing object")
-        PreservedObject.update(po.druid)
+        PreservedObject.update_or_create(po.druid)
       end
       it 'returns false' do
-        expect(PreservedObject.update(po.druid)).to eq false
+        expect(PreservedObject.update_or_create(po.druid)).to eq false
       end
     end
   end
