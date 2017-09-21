@@ -24,8 +24,8 @@ class PreservedObject < ApplicationRecord
       end
       true
     else
-      create(druid: druid, current_version: current_version, size: size, preservation_policy: preservation_policy)
       Rails.logger.warn "update #{druid} called but object not found; writing object" # TODO: add more info
+      create(druid: druid, current_version: current_version, size: size, preservation_policy: preservation_policy)
       false
     end
   end
