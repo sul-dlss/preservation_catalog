@@ -14,11 +14,11 @@ class PreservedObject < ApplicationRecord
   validates :preservation_policy, null: false
 
   def self.update_or_create(druid, current_version: nil, size: nil, preservation_policy: nil)
-    existing_rec = find_by(druid: druid)
     if exists?(druid: druid)
       # TODO: add more info, e.g. caller, timestamp written to db
       Rails.logger.debug "update #{druid} called and object exists"
 
+      existing_rec = find_by(druid: druid)
       existing_rec.update_if_valid_version_change(druid, current_version, size) if current_version
 
       if existing_rec.changed?
