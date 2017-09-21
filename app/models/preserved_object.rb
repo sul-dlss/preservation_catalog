@@ -13,7 +13,7 @@ class PreservedObject < ApplicationRecord
   validates :current_version, presence: true
   validates :preservation_policy, null: false
 
-  def self.update(druid, current_version: nil, size: nil, preservation_policy: nil)
+  def self.update_or_create(druid, current_version: nil, size: nil, preservation_policy: nil)
     existing_rec = find_by(druid: druid)
     if exists?(druid: druid)
       # TODO: add more info, e.g. caller, timestamp written to db
