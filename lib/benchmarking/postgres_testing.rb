@@ -1,7 +1,7 @@
 # rails runner postgres_testing.rb
 require 'benchmark'
 require 'logger'
-logger = Logger.new('log/benchmark.log')
+logger = Logger.new('log/postgres_benchmark.log')
 
 at_exit do
   logger.info "Benchmarking stopped at #{Time.now.getlocal}"
