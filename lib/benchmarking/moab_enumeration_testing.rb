@@ -28,7 +28,7 @@ class MoabEnumerationBenchmarker
   end
 
   def logger
-    @logger ||= Logger.new('log/benchmark.log')
+    @logger ||= Logger.new('log/benchmark_moab_enumeration.log')
   end
 
   def all_results
