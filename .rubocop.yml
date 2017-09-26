@@ -26,6 +26,7 @@ Bundler/OrderedGems:
   Exclude:
     - 'Gemfile'
 
+# --- Layout ---
 
 Layout/EmptyLinesAroundBlockBody:
   Enabled: false
@@ -36,6 +37,7 @@ Layout/EmptyLinesAroundClassBody:
 Layout/EmptyLinesAroundModuleBody:
   Enabled: false
 
+# --- Metrics ---
 
 Metrics/BlockLength:
   Exclude:
@@ -48,43 +50,37 @@ Metrics/LineLength:
 Metrics/MethodLength:
   Max: 20
 
+# --- Rails ---
 
 Rails/HasAndBelongsToMany:
   Enabled: false
 
 Rails/SkipsModelValidations:
   Exclude:
-    - 'app/models/preserved_object.rb' # because we're using touch on purpose
+    - 'app/services/preserved_object_handler.rb' # because we're using touch on purpose
 
-
-RSpec/BeforeAfterAll:
-  Exclude:
-    - 'spec/models/preserved_object_spec.rb' # after(:all) is fine here
+# --- RSpec ---
 
 RSpec/ExampleLength:
   Max: 50
 
-RSpec/MessageSpies:
-  Exclude:
-    - 'spec/models/preserved_object_spec.rb' # have_received is a pain here
-
 RSpec/MultipleExpectations:
-  Exclude:
-    - 'spec/controllers/moab_storage_controller_spec.rb'
-    - 'spec/models/preserved_object_spec.rb'
-
-RSpec/NestedGroups:
-  Max: 4
+  Max: 2
 
 RSpec/NamedSubject:
   Enabled: false
 
+RSpec/NestedGroups:
+  Max: 4
+
+# --- Style ---
 
 Style/FileName:
   Exclude:
     - 'Capfile'
     - 'Gemfile'
 
+# because ' vs " isn't a big deal for readability or maintainability or execution time
 Style/StringLiterals:
   Enabled: false
 
