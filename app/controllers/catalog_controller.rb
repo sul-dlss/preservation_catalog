@@ -1,5 +1,3 @@
-require 'moab/stanford'
-
 ##
 # CatalogController allows clients to manipulate the Object Inventory Catalog, e.g.
 # to add an existing moab object to the catalog, or to update an entry for a moab object

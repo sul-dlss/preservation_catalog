@@ -19,9 +19,3 @@ module PreservationCoreCatalog
     # -- all .rb files in that directory are automatically loaded.
   end
 end
-
-require 'moab'
-Moab::Config.configure do
-  storage_roots File.join(File.dirname(__FILE__), '..', Settings.moab.storage_roots)
-  storage_trunk Settings.moab.storage_trunk
-end
