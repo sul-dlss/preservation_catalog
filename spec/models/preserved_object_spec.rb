@@ -9,7 +9,7 @@ RSpec.describe PreservedObject, type: :model do
 
   let(:required_attributes) do
     {
-      druid: 'ab123cd45678',
+      druid: 'ab123cd4567',
       current_version: 1,
       preservation_policy: preservation_policy
     }
