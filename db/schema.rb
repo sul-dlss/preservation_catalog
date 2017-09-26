@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170908214835) do
+ActiveRecord::Schema.define(version: 20170925210519) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -50,6 +50,8 @@ ActiveRecord::Schema.define(version: 20170908214835) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "status_id", null: false
+    t.datetime "last_checked_on_storage"
+    t.datetime "last_checksum_validation"
     t.index ["endpoint_id"], name: "index_preservation_copies_on_endpoint_id"
     t.index ["last_audited"], name: "index_preservation_copies_on_last_audited"
     t.index ["preserved_object_id"], name: "index_preservation_copies_on_preserved_object_id"
