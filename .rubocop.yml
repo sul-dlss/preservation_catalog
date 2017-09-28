@@ -37,15 +37,32 @@ Layout/EmptyLinesAroundClassBody:
 Layout/EmptyLinesAroundModuleBody:
   Enabled: false
 
+Layout/SpaceAroundEqualsInParameterDefault:
+  Enabled: false
+
 # --- Metrics ---
+
+Metrics/AbcSize:
+  Exclude:
+    - 'app/services/preserved_object_handler.rb' # 2 methods but they seem readable
 
 Metrics/BlockLength:
   Exclude:
     - 'spec/**/*'
 
+Metrics/ClassLength:
+  Max: 120
+
+Metrics/CyclomaticComplexity:
+  Exclude:
+    - 'app/services/preserved_object_handler.rb' # a method that is simply a case statement
+
 # because this isn't 1994
 Metrics/LineLength:
   Max: 120
+  Exclude:
+    - 'app/services/preserved_object_handler.rb' # 2 lines 121
+    - 'spec/services/preserved_object_handler_spec.rb' # 3 lines are longer
 
 Metrics/MethodLength:
   Max: 20
@@ -57,7 +74,7 @@ Rails/HasAndBelongsToMany:
 
 Rails/SkipsModelValidations:
   Exclude:
-    - 'app/services/preserved_object_handler.rb' # because we're using touch on purpose
+    - 'app/services/preserved_object_handler.rb' # we're using touch on purpose
 
 # --- RSpec ---
 
@@ -67,11 +84,16 @@ RSpec/ExampleLength:
 RSpec/MultipleExpectations:
   Max: 2
 
+Rspec/MessageSpies:
+  Exclude:
+    - 'spec/services/preserved_object_handler_spec.rb' # couldn't figure out a logging test
+
 RSpec/NamedSubject:
   Enabled: false
 
 RSpec/NestedGroups:
-  Max: 4
+  Exclude:
+    - 'spec/services/preserved_object_handler_spec.rb'
 
 # --- Style ---
 
@@ -79,6 +101,13 @@ Style/FileName:
   Exclude:
     - 'Capfile'
     - 'Gemfile'
+
+Style/FormatString:
+  Exclude:
+    - 'app/services/preserved_object_handler.rb' # using interpolated strings
+
+Style/FormatStringToken:
+  EnforcedStyle: template # using interpolated strings in PreservedObjectHandler
 
 # because ' vs " isn't a big deal for readability or maintainability or execution time
 Style/StringLiterals:
