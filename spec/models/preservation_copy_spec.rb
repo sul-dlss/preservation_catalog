@@ -11,7 +11,11 @@ RSpec.describe PreservationCopy, type: :model do
       recovery_cost: '1'
     )
   end
-  let!(:preservation_policy) { PreservationPolicy.create!(preservation_policy_name: 'default') }
+  let!(:preservation_policy) do
+    PreservationPolicy.create!(preservation_policy_name: 'default',
+                               archive_ttl: 604_800,
+                               fixity_ttl: 604_800)
+  end
 
   let!(:preserved_object) do
     PreservedObject.create!(
