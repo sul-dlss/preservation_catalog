@@ -24,7 +24,7 @@ RSpec.describe MoabStorageController, type: :controller do
     end
     it 'assigns @storage_root correctly' do
       get :index
-      expect(assigns(:storage_root)).to eq "#{Moab::Config.storage_roots}/#{Moab::Config.storage_trunk}"
+      expect(assigns(:storage_root)).to eq "#{Moab::Config.storage_roots.first}/#{Moab::Config.storage_trunk}"
     end
     it 'returns json by default' do
       get :index
