@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170925210519) do
+ActiveRecord::Schema.define(version: 20170928181349) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -60,6 +60,8 @@ ActiveRecord::Schema.define(version: 20170925210519) do
 
   create_table "preservation_policies", force: :cascade do |t|
     t.string "preservation_policy_name", null: false
+    t.integer "archive_ttl", null: false
+    t.integer "fixity_ttl", null: false
   end
 
   create_table "preserved_objects", force: :cascade do |t|

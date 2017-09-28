@@ -1,7 +1,11 @@
 require 'rails_helper'
 
 RSpec.describe PreservedObject, type: :model do
-  let!(:preservation_policy) { PreservationPolicy.create!(preservation_policy_name: 'default') }
+  let!(:preservation_policy) do
+    PreservationPolicy.create!(preservation_policy_name: 'default',
+                               archive_ttl: 604_800,
+                               fixity_ttl: 604_800)
+  end
 
   let(:required_attributes) do
     {
