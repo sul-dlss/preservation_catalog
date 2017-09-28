@@ -1,7 +1,8 @@
 require 'rails_helper'
 
 RSpec.describe EndpointType, type: :model do
-  let!(:endpoint_type) { EndpointType.create!(type_name: 'nfs', endpoint_class: 'online') }
+  let(:test_type_name) { 'unit_test_nfs' }
+  let!(:endpoint_type) { EndpointType.create!(type_name: test_type_name, endpoint_class: 'online') }
 
   it 'is valid with valid attributes' do
     expect(endpoint_type).to be_valid
@@ -13,7 +14,7 @@ RSpec.describe EndpointType, type: :model do
 
   it 'enforces unique constraint on type_name' do
     expect do
-      EndpointType.create!(type_name: 'nfs', endpoint_class: 'online')
+      EndpointType.create!(type_name: test_type_name, endpoint_class: 'online')
     end.to raise_error(ActiveRecord::RecordInvalid)
   end
 
