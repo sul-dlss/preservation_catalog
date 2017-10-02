@@ -6,6 +6,6 @@ class PreservationPolicy < ApplicationRecord
   has_and_belongs_to_many :endpoints
 
   validates :preservation_policy_name, presence: true
-  validates :archive_ttl, presence: true
-  validates :fixity_ttl, presence: true
+  validates :archive_ttl, presence: true, numericality: { only_integer: true, greater_than: 0 }
+  validates :fixity_ttl, presence: true, numericality: { only_integer: true, greater_than: 0 }
 end
