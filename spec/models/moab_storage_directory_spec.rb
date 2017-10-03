@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe MoabStorageDirectory, type: :model do
-  let(:storage_dir) { 'spec/fixtures/moab_storage_root' }
+  let(:storage_dir) { 'spec/fixtures/moab_storage_trunk' }
 
   describe '.find_moab_paths' do
     it 'passes a druid as the first parameter to the block it gets' do

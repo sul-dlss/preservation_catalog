@@ -15,7 +15,12 @@ moab:
   storage_roots:
     # name: '/location/on/disk'  # e.g.
     fixtures: 'spec/fixtures'
-  storage_trunk: 'moab_storage_root'
+  # storage_trunk is the name of the directory under a storage_root which contains
+  # the druid trees:  e.g. 'spec/fixtures/moab_storage_root' will contain all the druid
+  # trees for this configuration.  if there are multiple storage roots, each will have
+  # the subdirectory specified by storage_trunk (e.g. 'storage_root1/storage_trunk',
+  # 'storage_root2/storage_trunk', etc).
+  storage_trunk: 'moab_storage_trunk'
 
 preservation_policies:
   default_policy_name: 'default'
