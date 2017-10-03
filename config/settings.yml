@@ -21,6 +21,7 @@ moab:
   # the subdirectory specified by storage_trunk (e.g. 'storage_root1/storage_trunk',
   # 'storage_root2/storage_trunk', etc).
   storage_trunk: 'moab_storage_trunk'
+  path_method: druid_tree
 
 preservation_policies:
   default_policy_name: 'default'
