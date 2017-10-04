@@ -23,20 +23,21 @@ RSpec.describe StorageRootToDB do
         { druid: 'dc048cw1328', storage_root_current_version: 2 },
         { druid: 'jj925bx9565', storage_root_current_version: 2 }
       ]
+
+      # set up po_handler for each arg_hash
       expected_argument_list.each do |arg_hash|
-        po_handler = instance_double(PreservedObjectHandler)
+        po_handler = instance_double('PreservedObjectHandler')
         arg_hash[:po_handler] = po_handler
         allow(PreservedObjectHandler).to receive(:new).with(
           arg_hash[:druid],
           arg_hash[:storage_root_current_version],
-          any_args
+          instance_of(Integer)
         ).and_return(po_handler)
         allow(po_handler).to receive(:update_or_create)
       end
+
       subject
-      expected_argument_list.each do |arg_hash|
-        expect(arg_hash[:po_handler]).to have_received(:update_or_create)
-      end
+      expected_argument_list.each { |arg_hash| expect(arg_hash[:po_handler]).to have_received(:update_or_create) }
     end
 
     it "return correct number of results" do
