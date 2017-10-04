@@ -29,7 +29,7 @@ class MoabStorageController < ApplicationController
 
   def druids_from_storage_root
     @druids ||= begin
-      @storage_root ||= "#{Moab::Config.storage_roots}/#{Moab::Config.storage_trunk}"
+      @storage_root ||= "#{Moab::Config.storage_roots.first}/#{Moab::Config.storage_trunk}"
       Dir.glob("#{@storage_root}/**/[a-z][a-z]*[0-9]").map { |d| d.split("/").last }
     end
   end

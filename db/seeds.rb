@@ -1,7 +1,19 @@
-# This file should contain all the record creation needed to seed the database with its default values.
+# This file contains the record creation calls needed to seed the database with its default values.
 # The data can then be loaded with the rails db:seed command (or created alongside the database with db:setup).
-#
-# Examples:
-#
-#   movies = Movie.create([{ name: 'Star Wars' }, { name: 'Lord of the Rings' }])
-#   Character.create(name: 'Luke', movie: movies.first)
+
+# it should be safe to run this repeatedly, as the methods it calls only add new entries from the configs,
+# and leave existing entries untouched.
+ApplicationRecord.transaction do
+  PreservationPolicy.seed_from_config
+  EndpointType.seed_from_config
+  Endpoint.seed_storage_root_endpoints_from_config(
+    Endpoint.default_storage_root_endpoint_type, [PreservationPolicy.default_preservation_policy]
+  )
+  Status.seed_from_config
+end
+
+puts "seeded database.  state of seeded object types after seeding:"
+puts "> PreservationPolicy.all: #{PreservationPolicy.all.to_a}"
+puts "> EndpointType.all: #{EndpointType.all.to_a}"
+puts "> Endpoint.all: #{Endpoint.all.to_a}"
+puts "> Status.all: #{Status.all.to_a}"

@@ -53,9 +53,7 @@ class PreservedObjectHandler
       db_object = PreservedObject.find_by(druid: druid)
       results << update_per_version_comparison(db_object)
     else
-      pp_default = PreservationPolicy.create(preservation_policy_name: 'default',
-                                             archive_ttl: 604_800,
-                                             fixity_ttl: 604_800)
+      pp_default = PreservationPolicy.default_preservation_policy
       PreservedObject.create(druid: druid,
                              current_version: incoming_version,
                              size: incoming_size,

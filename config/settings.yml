@@ -1,3 +1,37 @@
+endpoint_types:
+  online_nfs:
+    endpoint_class: online
+
+endpoints:
+  # the defaults used when seeding the endpoints that correspond to local storage roots
+  storage_root_defaults:
+    # value for endpoint_type_name must correspond to an endpoint_types entry (defined above)
+    endpoint_type_name: 'online_nfs'
+    endpoint_node: 'localhost'
+    recovery_cost: 1
+
 moab:
-  storage_roots: 'spec/fixtures'
-  storage_trunk: 'moab_storage_root'
+  # this is a list of named storage roots.  the names are used to seed the endpoints table.
+  storage_roots:
+    # name: '/location/on/disk'  # e.g.
+    fixtures: 'spec/fixtures'
+  # storage_trunk is the name of the directory under a storage_root which contains
+  # the druid trees:  e.g. 'spec/fixtures/moab_storage_root' will contain all the druid
+  # trees for this configuration.  if there are multiple storage roots, each will have
+  # the subdirectory specified by storage_trunk (e.g. 'storage_root1/storage_trunk',
+  # 'storage_root2/storage_trunk', etc).
+  storage_trunk: 'moab_storage_trunk'
+  path_method: druid_tree
+
+preservation_policies:
+  default_policy_name: 'default'
+  policy_definitions:
+    default:
+      archive_ttl: 604_800 # _ttl values are in seconds. 604,800 s == one week.
+      fixity_ttl: 604_800
+
+statuses:
+  - ok
+  - not_found_on_disk
+  - expected_version_not_found_on_disk
+  - fixity_check_failed
