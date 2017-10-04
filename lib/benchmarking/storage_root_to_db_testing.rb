@@ -1,6 +1,6 @@
 require 'benchmark'
 require 'logger'
-require_relative "../validations/storage_root_to_db.rb"
+require_relative "../audit/storage_root_to_db.rb"
 require 'ruby-prof'
 
 logger = Logger.new('log/benchmark_storage_root_to_db.log')

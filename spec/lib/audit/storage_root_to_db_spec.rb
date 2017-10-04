@@ -1,5 +1,5 @@
 require 'spec_helper'
-require_relative "../../../lib/validations/storage_root_to_db.rb"
+require_relative "../../../lib/audit/storage_root_to_db.rb"
 
 describe "storage root to db" do
   let(:storage_dir) { 'spec/fixtures/moab_storage_root' }
