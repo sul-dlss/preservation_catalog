@@ -5,7 +5,7 @@ RSpec.describe MoabToCatalog do
       PreservationPolicy.seed_from_config
     end
 
-    let(:storage_dir) { 'spec/fixtures/moab_storage_trunk' }
+    let(:storage_dir) { 'spec/fixtures/storage_root01/moab_storage_trunk' }
     let(:subject) { described_class.check_moab_to_catalog_existence(storage_dir) }
 
     it "call 'find_moab_paths' with appropriate argument" do
@@ -17,9 +17,7 @@ RSpec.describe MoabToCatalog do
     it "call 'update_or_create' with the expected values" do
       expected_argument_list = [
         { druid: 'bj102hs9687', storage_root_current_version: 3 },
-        { druid: 'bp628nk4868', storage_root_current_version: 1 },
         { druid: 'bz514sm9647', storage_root_current_version: 3 },
-        { druid: 'dc048cw1328', storage_root_current_version: 2 },
         { druid: 'jj925bx9565', storage_root_current_version: 2 }
       ]
 
@@ -40,7 +38,7 @@ RSpec.describe MoabToCatalog do
     end
 
     it "return correct number of results" do
-      expect(subject.count).to eq 5
+      expect(subject.count).to eq 3
     end
 
     it "storage directory doesn't exist (misspelling, read write permissions)" do
