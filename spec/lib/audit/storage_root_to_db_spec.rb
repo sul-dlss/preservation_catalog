@@ -1,4 +1,3 @@
-require 'spec_helper'
 require_relative "../../../lib/audit/storage_root_to_db.rb"
 RSpec.describe StorageRootToDB do
   describe ".check_online_to_db_existence" do

@@ -1,5 +1,5 @@
 ##
-# Method that will check the online service disks for the existence of moabs in postgres database
+# Method that will check the a single online service disk for the existence of moabs in postgres database
 class StorageRootToDB
   def self.check_online_to_db_existence(storage_dir)
     results = []
