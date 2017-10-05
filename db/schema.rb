@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20171002192320) do
+ActiveRecord::Schema.define(version: 20171005204015) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -77,6 +77,7 @@ ActiveRecord::Schema.define(version: 20171002192320) do
 
   create_table "statuses", force: :cascade do |t|
     t.string "status_text", null: false
+    t.index ["status_text"], name: "index_statuses_on_status_text", unique: true
   end
 
   add_foreign_key "endpoints", "endpoint_types"
