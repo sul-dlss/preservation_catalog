@@ -1,11 +1,11 @@
 require 'benchmark'
 require 'logger'
-require_relative "../audit/storage_root_to_db.rb"
+require_relative "../audit/moab_to_catalog.rb"
 require 'ruby-prof'
 
-logger = Logger.new('log/benchmark_storage_root_to_db.log')
-at_exit do # File.open "/tmp/StorageRootToDB_rubyprof_#{Time.now.getlocal}", 'w' do |file|
-  File.open "#{pcc_app_home}/current/log/StorageRootToDB_rubyprof_#{Time.now.getlocal}", 'w' do |file|
+logger = Logger.new('log/benchmark_moab_to_catalog.log')
+at_exit do # File.open "/tmp/MoabtoCatalog_rubyprof_#{Time.now.getlocal}", 'w' do |file|
+  File.open "#{pcc_app_home}/current/log/MoabtoCatalog_rubyprof_#{Time.now.getlocal}", 'w' do |file|
     RubyProf::FlatPrinter.new(@prof).print(file)
   end
   logger.info "Benchmarking stopped at #{Time.now.getlocal}"
@@ -31,7 +31,7 @@ storage_dir = '/services-disk12/sdr2objects'
 time_to_check_existence = Benchmark.realtime do
   RubyProf.start
   logger.info "Check for output"
-  StorageRootToDB.check_online_to_db_existence(storage_dir)
+  StorageRootToDB.check_moab_to_catalog_existence(storage_dir)
   @prof = RubyProf.stop
 end
 logger.info time_to_check_existence.to_s

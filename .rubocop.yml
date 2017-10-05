@@ -84,7 +84,7 @@ RSpec/ExampleLength:
 RSpec/MultipleExpectations:
   Max: 2
 
-Rspec/MessageSpies:
+RSpec/MessageSpies:
   Exclude:
     - 'spec/services/preserved_object_handler_spec.rb' # couldn't figure out a logging test
 

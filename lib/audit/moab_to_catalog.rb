@@ -1,7 +1,7 @@
 ##
-# Method that will check the a single online service disk for the existence of moabs in postgres database
-class StorageRootToDB
-  def self.check_online_to_db_existence(storage_dir)
+# Method that will check the a single moab service disk for the existence of moabs in postgres database
+class MoabToCatalog
+  def self.check_moab_to_catalog_existence(storage_dir)
     results = []
     MoabStorageDirectory.find_moab_paths(storage_dir) do |druid, _path, _path_match_data|
       storage_root_current_version = Stanford::StorageServices.current_version(druid)
