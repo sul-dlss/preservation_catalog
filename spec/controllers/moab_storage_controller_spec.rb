@@ -14,7 +14,7 @@ RSpec.describe MoabStorageController, type: :controller do
       end
       it 'with all the fixture druids' do
         get :index
-        expect(assigns(:stored_druids)).to include('bj102hs9687', 'bp628nk4868', 'bz514sm9647', 'dc048cw1328')
+        expect(assigns(:stored_druids)).to include('bj102hs9687', 'bz514sm9647', 'jj925bx9565')
       end
       it 'Array of Strings' do
         get :index

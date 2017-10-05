@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe MoabStorageDirectory, type: :model do
-  let(:storage_dir) { 'spec/fixtures/moab_storage_trunk' }
+  let(:storage_dir) { 'spec/fixtures/storage_root01/moab_storage_trunk' }
 
   describe '.find_moab_paths' do
     it 'passes a druid as the first parameter to the block it gets' do
@@ -25,10 +25,10 @@ RSpec.describe MoabStorageDirectory, type: :model do
     let(:druids) { MoabStorageDirectory.list_moab_druids(storage_dir) }
 
     it 'lists the expected druids in the fixture directory' do
-      expect(druids).to include('bj102hs9687', 'bp628nk4868', 'bz514sm9647', 'dc048cw1328', 'jj925bx9565')
+      expect(druids.sort).to eq %w[bj102hs9687 bz514sm9647 jj925bx9565]
     end
     it 'returns only the expected druids in the fixture directory' do
-      expect(druids.length).to eq 5
+      expect(druids.length).to eq 3
     end
   end
 

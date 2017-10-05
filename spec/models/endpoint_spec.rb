@@ -73,17 +73,21 @@ RSpec.describe Endpoint, type: :model do
     it 'does not re-create records that already exist' do
       # run it a second time
       Endpoint.seed_storage_root_endpoints_from_config(strg_rt_endpoint_type, default_pres_policies)
-      # sort so we can avoid comparing via include, and see that it has only/exactly the two expected elements
-      expect(Endpoint.pluck(:endpoint_name).sort).to eq %w[aws fixtures]
+      # sort so we can avoid comparing via include, and see that it has only/exactly the three expected elements
+      expect(Endpoint.pluck(:endpoint_name).sort).to eq %w[aws fixture_sr1 fixture_sr2]
     end
 
     it 'adds new records if there are additions to Settings since the last run' do
-      storage_roots_setting = Config::Options.new(fixtures: 'spec/fixtures', fixtures2: 'spec/fixtures')
+      storage_roots_setting = Config::Options.new(
+        fixture_sr1: 'spec/fixtures/storage_root01',
+        fixture_sr2: 'spec/fixtures/storage_root02',
+        fixture_srTest: 'spec/fixtures/storage_root_unit_test'
+      )
       allow(Settings.moab).to receive(:storage_roots).and_return(storage_roots_setting)
 
       # run it a second time
       Endpoint.seed_storage_root_endpoints_from_config(strg_rt_endpoint_type, default_pres_policies)
-      expect(Endpoint.pluck(:endpoint_name).sort).to eq %w[aws fixtures fixtures2]
+      expect(Endpoint.pluck(:endpoint_name).sort).to eq %w[aws fixture_sr1 fixture_sr2 fixture_srTest]
     end
   end
 
