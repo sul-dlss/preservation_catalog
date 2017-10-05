@@ -14,7 +14,8 @@ moab:
   # this is a list of named storage roots.  the names are used to seed the endpoints table.
   storage_roots:
     # name: '/location/on/disk'  # e.g.
-    fixtures: 'spec/fixtures'
+    fixture_sr1: 'spec/fixtures/storage_root01'
+    fixture_sr2: 'spec/fixtures/storage_root02'
   # storage_trunk is the name of the directory under a storage_root which contains
   # the druid trees:  e.g. 'spec/fixtures/moab_storage_root' will contain all the druid
   # trees for this configuration.  if there are multiple storage roots, each will have
