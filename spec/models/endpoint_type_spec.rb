@@ -21,8 +21,6 @@ RSpec.describe EndpointType, type: :model do
   it { is_expected.to have_many(:endpoints) }
 
   describe '.seed_from_config' do
-    before { EndpointType.seed_from_config }
-
     it 'creates the endpoint types listed in Settings' do
       Settings.endpoint_types.each do |type_name, type_config|
         expect(EndpointType.find_by(type_name: type_name.to_s).endpoint_class).to eq type_config.endpoint_class
