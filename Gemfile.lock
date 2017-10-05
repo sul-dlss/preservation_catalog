@@ -95,6 +95,7 @@ GEM
       capistrano-one_time_key
       capistrano-shared_configs
     docile (1.1.5)
+    druid-tools (0.4.1)
     erubi (1.6.1)
     ffi (1.9.18)
     globalid (0.4.0)
@@ -256,6 +257,7 @@ DEPENDENCIES
   config
   coveralls
   dlss-capistrano
+  druid-tools
   jbuilder (~> 2.5)
   listen (>= 3.0.5, < 3.2)
   moab-versioning
