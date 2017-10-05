@@ -11,7 +11,23 @@ RSpec.describe Status, type: :model do
     expect(Status.new).not_to be_valid
   end
 
+  it 'enforces unique constraint on status_text (model level)' do
+    status
+    exp_err_msg = 'Validation failed: Status text has already been taken'
+    expect do
+      Status.create!(status_text: 'ok')
+    end.to raise_error(ActiveRecord::RecordInvalid, exp_err_msg)
+  end
+
+  it 'enforces unique constraint on status_text (db level)' do
+    status
+    dup_status = Status.new
+    dup_status.status_text = 'ok'
+    expect { dup_status.save(validate: false) }.to raise_error(ActiveRecord::RecordNotUnique)
+  end
+
   it { is_expected.to have_many(:preservation_copies) }
+  it { is_expected.to have_db_index(:status_text) }
 
   describe '.seed_from_config' do
     before { Status.seed_from_config }

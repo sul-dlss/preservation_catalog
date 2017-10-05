@@ -2,7 +2,7 @@
 # the current status of a preservation copy, e.g. all good, fixity check failed, etc
 class Status < ApplicationRecord
   has_many :preservation_copies
-  validates :status_text, presence: true
+  validates :status_text, presence: true, uniqueness: true
 
   # iterates over the statuses enumerated in the settings, creating any that don't already exist.
   # returns an array with the result of the ActiveRecord find_or_create_by! call for each settings entry (i.e.,
