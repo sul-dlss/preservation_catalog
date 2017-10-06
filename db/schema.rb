@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20171005204015) do
+ActiveRecord::Schema.define(version: 20171006193131) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -31,7 +31,7 @@ ActiveRecord::Schema.define(version: 20171005204015) do
     t.integer "recovery_cost", null: false
     t.string "access_key"
     t.bigint "endpoint_type_id", null: false
-    t.index ["endpoint_name"], name: "index_endpoints_on_endpoint_name"
+    t.index ["endpoint_name"], name: "index_endpoints_on_endpoint_name", unique: true
     t.index ["endpoint_type_id"], name: "index_endpoints_on_endpoint_type_id"
   end
 
@@ -71,7 +71,7 @@ ActiveRecord::Schema.define(version: 20171005204015) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "preservation_policy_id", null: false
-    t.index ["druid"], name: "index_preserved_objects_on_druid"
+    t.index ["druid"], name: "index_preserved_objects_on_druid", unique: true
     t.index ["preservation_policy_id"], name: "index_preserved_objects_on_preservation_policy_id"
   end
 

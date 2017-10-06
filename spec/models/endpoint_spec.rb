@@ -25,7 +25,7 @@ RSpec.describe Endpoint, type: :model do
     expect(endpoint).to be_valid
   end
 
-  it 'enforces unique constraint on endpoint_name' do
+  it 'enforces unique constraint on endpoint_name (model level)' do
     expect do
       Endpoint.create!(
         endpoint_name: 'aws',
@@ -35,6 +35,17 @@ RSpec.describe Endpoint, type: :model do
         recovery_cost: '1'
       )
     end.to raise_error(ActiveRecord::RecordInvalid)
+  end
+
+  it 'enforces unique constraint on endpoint_name (db level)' do
+    endpoint
+    dup_endpoint = Endpoint.new
+    dup_endpoint.endpoint_name = 'aws'
+    dup_endpoint.endpoint_node = 'sul-sdr'
+    dup_endpoint.storage_location = '/storage'
+    dup_endpoint.recovery_cost = '1'
+    dup_endpoint.endpoint_type_id = endpoint_type.id
+    expect { dup_endpoint.save(validate: false) }.to raise_error(ActiveRecord::RecordNotUnique)
   end
 
   it { is_expected.to have_many(:preservation_copies) }
