@@ -3,7 +3,9 @@ require 'druid-tools'
 # Catalog to Moab existence check code
 class CatalogToMoabExistence
 
-  # NOTE: this is a bad thing -- HUGE list of objects;  just for now to populate test db
+  # NOTE: this is at the chicken scratches stage
+  #  I'm not convinced we'll _ever_ do the whole db this way;  it was a way to start
+  #    step 1: ensure load_fixtures_helper works with very rough code here
   # FIXME:  temporarily turning off rubocop
   # rubocop:disable all
   def self.whole_db
