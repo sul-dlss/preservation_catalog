@@ -77,6 +77,9 @@ Rails/SkipsModelValidations:
     - 'app/services/preserved_object_handler.rb' # we're using touch on purpose
 
 # --- RSpec ---
+RSpec/BeforeAfterAll:
+  Exclude:
+    - 'spec/load_fixtures_helper.rb' # being careful to avoid state leakage
 
 RSpec/ExampleLength:
   Max: 50

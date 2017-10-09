@@ -22,7 +22,7 @@ RSpec.describe PreservationCopy, type: :model do
       druid: 'ab123cd4567', current_version: 1, preservation_policy_id: preservation_policy.id, size: 1
     )
   end
-  let!(:status) { Status.create!(status_text: 'ok') }
+  let!(:status) { Status.find_by(status_text: 'ok') }
   let!(:preservation_copy) do
     PreservationCopy.create!(
       preserved_object_id: preserved_object.id,

@@ -19,9 +19,9 @@ gem 'pry-rails' # use pry as the rails console shell instead of IRB
 gem 'puma', '~> 3.7'
 gem 'rails', '~> 5.1.3'
 
-# Stanford/Samvera gems
-# work with Moab Objects
-gem 'moab-versioning'
+# Stanford gems
+gem 'moab-versioning' # work with Moab Objects
+gem 'druid-tools' # for druid validation and druid-tree parsing
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console

@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe Status, type: :model do
-  let!(:status) { Status.create!(status_text: 'ok') }
+  let!(:status) { Status.find_by(status_text: 'ok') }
 
   it 'is valid with valid attributes' do
     expect(status).to be_valid
@@ -30,8 +30,6 @@ RSpec.describe Status, type: :model do
   it { is_expected.to have_db_index(:status_text) }
 
   describe '.seed_from_config' do
-    before { Status.seed_from_config }
-
     it 'creates the endpoint statuses listed in Settings' do
       Settings.statuses.each do |status_text|
         expect(Status.find_by(status_text: status_text)).to be_a_kind_of Status
