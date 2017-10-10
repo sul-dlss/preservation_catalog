@@ -49,7 +49,9 @@ RSpec.describe PreservationPolicy, type: :model do
     end
 
     it "raises RecordNotFound if the default policy doesn't exist in the db" do
-      skip('database seeded before running tests; not super-trivial to destroy relevant objects')
+      # a bit contrived, but just want to test that lack of default PreservationPolicy causes lookup to
+      # fail fast.  since db is already seeded, we just make it look up something that we know isn't there.
+      allow(Settings.preservation_policies).to receive(:default_policy_name).and_return('nonexistent')
       expect { PreservationPolicy.default_preservation_policy }.to raise_error(ActiveRecord::RecordNotFound)
     end
   end
