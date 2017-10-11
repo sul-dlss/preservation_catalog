@@ -2,14 +2,28 @@ require 'rails_helper'
 
 RSpec.describe PreservationPolicy, type: :model do
   it 'is valid with valid attributes' do
-    preservation_policy = PreservationPolicy.create!(preservation_policy_name: 'default',
-                                                     archive_ttl: 604_800,
-                                                     fixity_ttl: 604_800)
+    preservation_policy = PreservationPolicy.find_by(preservation_policy_name: 'default')
     expect(preservation_policy).to be_valid
   end
 
   it 'is not valid without valid attributes' do
     expect(PreservationPolicy.new).not_to be_valid
+  end
+
+  it 'enforces unique constraint on preservation_policy_name (model level)' do
+    exp_err_msg = 'Validation failed: Preservation policy name has already been taken'
+    expect do
+      PreservationPolicy.create!(preservation_policy_name: 'default',
+                                 archive_ttl: 604_800,
+                                 fixity_ttl: 604_800)
+    end.to raise_error(ActiveRecord::RecordInvalid, exp_err_msg)
+  end
+
+  it 'enforces unique constraint on preservation_policy_name (db level)' do
+    dup_preservation_policy = PreservationPolicy.new(preservation_policy_name: 'default',
+                                                     archive_ttl: 604_800,
+                                                     fixity_ttl: 604_800)
+    expect { dup_preservation_policy.save(validate: false) }.to raise_error(ActiveRecord::RecordNotUnique)
   end
 
   it { is_expected.to have_many(:preserved_objects) }
