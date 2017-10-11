@@ -104,27 +104,6 @@ class PreservedObjectHandler
     results
   end
 
-  def update_or_create
-    results = []
-    if invalid?
-      results << result_hash(INVALID_ARGUMENTS, errors.full_messages)
-    elsif PreservedObject.exists?(druid: druid)
-      Rails.logger.debug "update #{druid} called and object exists"
-      db_object = PreservedObject.find_by(druid: druid)
-      results << update_per_version_comparison(db_object)
-    else
-      pp_default = PreservationPolicy.default_preservation_policy
-      PreservedObject.create(druid: druid,
-                             current_version: incoming_version,
-                             size: incoming_size,
-                             preservation_policy: pp_default)
-      results << result_hash(CREATED_NEW_OBJECT)
-    end
-    results.flatten!
-    log_results(results)
-    results
-  end
-
   private
   # expects @incoming_version to be numeric
   # TODO: update existence check timestamps/status per each flavor of comparison?
