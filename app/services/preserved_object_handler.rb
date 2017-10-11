@@ -8,27 +8,33 @@
 class PreservedObjectHandler
 
   INVALID_ARGUMENTS = 1
-  VERSION_MATCHES = 2
-  ARG_VERSION_GREATER_THAN_DB_OBJECT = 3
-  ARG_VERSION_LESS_THAN_DB_OBJECT = 4
+  PO_VERSION_MATCHES = 2
+  ARG_VERSION_GREATER_THAN_PO_DB_OBJECT = 3
+  ARG_VERSION_LESS_THAN_PO_DB_OBJECT = 4
   UPDATED_DB_OBJECT = 5
   UPDATED_DB_OBJECT_TIMESTAMP_ONLY = 6
   CREATED_NEW_OBJECT = 7
   DB_UPDATE_FAILED = 8
   OBJECT_ALREADY_EXISTS = 9
   OBJECT_DOES_NOT_EXIST = 10
+  PC_VERSION_MATCHES = 11
+  ARG_VERSION_GREATER_THAN_PC_DB_OBJECT = 12
+  ARG_VERSION_LESS_THAN_PC_DB_OBJECT = 13
 
   RESPONSE_CODE_TO_MESSAGES = {
     INVALID_ARGUMENTS => "encountered validation error(s): %{addl}",
-    VERSION_MATCHES => "incoming version (%{incoming_version}) matches db version",
-    ARG_VERSION_GREATER_THAN_DB_OBJECT => "incoming version (%{incoming_version}) greater than db version",
-    ARG_VERSION_LESS_THAN_DB_OBJECT => "incoming version (%{incoming_version}) less than db version; ERROR!",
+    PO_VERSION_MATCHES => "incoming version (%{incoming_version}) matches preserved object db version",
+    ARG_VERSION_GREATER_THAN_PO_DB_OBJECT => "incoming version (%{incoming_version}) greater than preserved object db version",
+    ARG_VERSION_LESS_THAN_PO_DB_OBJECT => "incoming version (%{incoming_version}) less than preserved object db version; ERROR!",
     UPDATED_DB_OBJECT => "db object updated",
     UPDATED_DB_OBJECT_TIMESTAMP_ONLY => "updated db timestamp only",
     CREATED_NEW_OBJECT => "added object to db as it did not exist",
     DB_UPDATE_FAILED => "db update failed: %{addl}",
     OBJECT_ALREADY_EXISTS => "db object already exists",
-    OBJECT_DOES_NOT_EXIST => "db object does not exist"
+    OBJECT_DOES_NOT_EXIST => "db object does not exist",
+    PC_VERSION_MATCHES => "incoming version (%{incoming_version}) matches preservation copy db version",
+    ARG_VERSION_GREATER_THAN_PC_DB_OBJECT => "incoming version (%{incoming_version}) greater than preservation copy db version",
+    ARG_VERSION_LESS_THAN_PC_DB_OBJECT => "incoming version (%{incoming_version}) less than preservation copy db version; ERROR!"
 
   }.freeze
 
@@ -38,14 +44,16 @@ class PreservedObjectHandler
   validates :druid, presence: true, format: { with: /\A[a-z]{2}[0-9]{3}[a-z]{2}[0-9]{4}\z/ }
   validates :incoming_version, presence: true, numericality: { only_integer: true, greater_than: 0 }
   validates :incoming_size, numericality: { only_integer: true, greater_than: 0 }
+  validates :endpoint, presence: true
 
-  attr_reader :druid, :incoming_version, :incoming_size, :storage_dir
+  attr_reader :druid, :incoming_version, :incoming_size, :storage_dir, :endpoint
 
   def initialize(druid, incoming_version, incoming_size, storage_dir)
     @druid = druid
     @incoming_version = version_string_to_int(incoming_version)
     @incoming_size = string_to_int(incoming_size)
     @storage_dir = storage_dir
+    @endpoint = Endpoint.find_by(storage_location: storage_dir)
   end
 
   def create
@@ -61,11 +69,10 @@ class PreservedObjectHandler
                              size: incoming_size,
                              preservation_policy: pp_default)
       status = Status.find_by(status_text: "ok") # TODO: Replace the status_text to get a default status_text
-      ep = Endpoint.find_by(storage_location: storage_dir)
       PreservationCopy.create(preserved_object: po, 
                           current_version: incoming_version, 
                           last_audited: nil, 
-                          endpoint: ep, 
+                          endpoint: endpoint, 
                           status: status, 
                           last_checked_on_storage: nil)
       results << result_hash(CREATED_NEW_OBJECT)
@@ -75,7 +82,7 @@ class PreservedObjectHandler
     results
   end
 
-  def udpate
+  def update
     results = []
     if invalid?
       results << result_hash(INVALID_ARGUMENTS, errors.full_messages)
@@ -84,29 +91,23 @@ class PreservedObjectHandler
     else 
       Rails.logger.debug "update #{druid} called and object exists"
       db_object = PreservedObject.find_by(druid: druid)
-      results << update_per_version_comparison(db_object)
-      ep = Endpoint.find_by(storage_location: storage_dir)
-      pc_db_object = PreservationCopy.find_by(preserved_object: db_object, endpoint: ep)
-      results << update_per_version_comparison
+      results << update_per_version_comparison_po(db_object)
+      pc_db_object = PreservationCopy.find_by(preserved_object: db_object, endpoint: endpoint)
+      results << update_per_version_comparison_pc(pc_db_object)
     end
     results.flatten!
     log_results(results)
     results
   end
 
-
-
   def update_or_create
     results = []
-
     if invalid?
       results << result_hash(INVALID_ARGUMENTS, errors.full_messages)
     elsif PreservedObject.exists?(druid: druid)
       Rails.logger.debug "update #{druid} called and object exists"
-
       db_object = PreservedObject.find_by(druid: druid)
       results << update_per_version_comparison(db_object)
-
     else
       pp_default = PreservationPolicy.default_preservation_policy
       PreservedObject.create(druid: druid,
@@ -121,23 +122,37 @@ class PreservedObjectHandler
   end
 
   private
-
   # expects @incoming_version to be numeric
   # TODO: update existence check timestamps/status per each flavor of comparison?
-  def update_per_version_comparison(db_object)
+  def update_per_version_comparison_po(db_object)
     version_comparison = db_object.current_version <=> incoming_version
     results = []
     if version_comparison.zero?
-      results << result_hash(VERSION_MATCHES)
+      results << result_hash(PO_VERSION_MATCHES)
     elsif version_comparison == 1
       # TODO: needs manual intervention until automatic recovery services implemented
-      results << result_hash(ARG_VERSION_LESS_THAN_DB_OBJECT)
+      results << result_hash(ARG_VERSION_LESS_THAN_PO_DB_OBJECT)
     elsif version_comparison == -1
       db_object.current_version = incoming_version
-      db_object.size = incoming_size if incoming_size && db_object.respond_to?(:size)
-      results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT)
+      db_object.size = incoming_size if incoming_size
+      results << result_hash(ARG_VERSION_GREATER_THAN_PO_DB_OBJECT)
     end
+    update_db_object(db_object, results)
+    results.flatten
+  end
 
+  def update_per_version_comparison_pc(db_object)
+    version_comparison = db_object.current_version <=> incoming_version
+    results = []
+    if version_comparison.zero?
+      results << result_hash(PC_VERSION_MATCHES) 
+    elsif version_comparison == 1
+      # TODO: needs manual intervention until automatic recovery services implemented
+      results << result_hash(ARG_VERSION_LESS_THAN_PC_DB_OBJECT)
+    elsif version_comparison == -1
+      db_object.current_version = incoming_version
+      results << result_hash(ARG_VERSION_GREATER_THAN_PC_DB_OBJECT)
+    end
     update_db_object(db_object, results)
     results.flatten
   end
@@ -184,15 +199,18 @@ class PreservedObjectHandler
   def logger_severity_level(result_code)
     case result_code
     when INVALID_ARGUMENTS then Logger::ERROR
-    when VERSION_MATCHES then Logger::INFO
-    when ARG_VERSION_GREATER_THAN_DB_OBJECT then Logger::INFO
-    when ARG_VERSION_LESS_THAN_DB_OBJECT then Logger::ERROR
+    when PO_VERSION_MATCHES then Logger::INFO
+    when ARG_VERSION_GREATER_THAN_PO_DB_OBJECT then Logger::INFO
+    when ARG_VERSION_LESS_THAN_PO_DB_OBJECT then Logger::ERROR
+    when PC_VERSION_MATCHES then Logger::INFO
+    when ARG_VERSION_GREATER_THAN_PC_DB_OBJECT then Logger::INFO
+    when ARG_VERSION_LESS_THAN_PC_DB_OBJECT then Logger::ERROR
     when UPDATED_DB_OBJECT then Logger::INFO
     when UPDATED_DB_OBJECT_TIMESTAMP_ONLY then Logger::INFO
     when CREATED_NEW_OBJECT then Logger::WARN
     when DB_UPDATE_FAILED then Logger::ERROR
     when OBJECT_ALREADY_EXISTS then Logger::ERROR
-    WHEN OBJECT_DOES_NOT_EXIST then Logger::ERROR
+    when OBJECT_DOES_NOT_EXIST then Logger::ERROR
     end
   end
 

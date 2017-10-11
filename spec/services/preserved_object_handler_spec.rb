@@ -49,6 +49,10 @@ RSpec.describe PreservedObjectHandler do
         end
       end
     end
+    it 'sets storage directory' do 
+      po_handler = described_class.new(druid, incoming_version, nil, storage_dir)
+      expect(po_handler.storage_dir).to eq storage_dir
+    end
   end
 
   # describe '#update_or_create' do
@@ -389,6 +393,154 @@ RSpec.describe PreservedObjectHandler do
         expect(result_code).to eq PreservedObjectHandler::CREATED_NEW_OBJECT
         result_msg = result.first.values.first
         expect(result_msg).to match(Regexp.escape(exp_msg))
+      end
+    end
+  end
+
+  describe '#update' do
+    let!(:default_prez_policy) { PreservationPolicy.default_preservation_policy }
+  
+    context 'logs errors and returns INVALID_ARGUMENTS if ActiveModel::Validations fail' do
+      let(:bad_druid) { '666' }
+      let(:bad_version) { 'vv666' }
+      let(:bad_size) { '-666' }
+      let(:bad_storage_dir) { '' }
+
+      context 'returns' do
+        let!(:result) do
+          po_handler = described_class.new(bad_druid, bad_version, bad_size, bad_storage_dir)
+          po_handler.update
+        end
+        it '1 result' do
+          expect(result).to be_an_instance_of Array
+          expect(result.size).to eq 1
+        end
+        it 'INVALID_ARGUMENTS' do
+          expect(result).to include(a_hash_including(PreservedObjectHandler::INVALID_ARGUMENTS))
+        end
+        context 'result message includes' do
+          let(:msg) { result.first[PreservedObjectHandler::INVALID_ARGUMENTS] }
+          let(:exp_msg_prefix) { "PreservedObjectHandler(#{bad_druid}, #{bad_version}, #{bad_size}, #{bad_storage_dir})" }
+
+          it "prefix" do
+            expect(msg).to match(Regexp.escape("#{exp_msg_prefix} encountered validation error(s): "))
+          end
+          it "druid error" do
+            expect(msg).to match(/Druid is invalid/)
+          end
+          it "version error" do
+            expect(msg).to match(/Incoming version is not a number/)
+          end
+          it "size error" do
+            expect(msg).to match(/Incoming size must be greater than 0/)
+          end
+          it "storage dir error" do 
+            expect(msg).to match(/Endpoint can't be blank/)
+          end
+        end
+      end
+      it 'bad druid error is written to Rails log' do
+        po_handler = described_class.new(bad_druid, incoming_version, incoming_size, storage_dir)
+        err_msg = "PreservedObjectHandler(#{bad_druid}, #{incoming_version}, #{incoming_size}, #{storage_dir}) encountered validation error(s): [\"Druid is invalid\"]"
+        allow(Rails.logger).to receive(:log).with(Logger::ERROR, err_msg)
+        po_handler.update
+        expect(Rails.logger).to have_received(:log).with(Logger::ERROR, err_msg)
+      end
+      it 'bad version error is written to Rails log' do
+        po_handler = described_class.new(druid, bad_version, incoming_size, storage_dir)
+        err_msg = "PreservedObjectHandler(#{druid}, #{bad_version}, #{incoming_size}, #{storage_dir}) encountered validation error(s): [\"Incoming version is not a number\"]"
+        allow(Rails.logger).to receive(:log).with(Logger::ERROR, err_msg)
+        po_handler.update
+        expect(Rails.logger).to have_received(:log).with(Logger::ERROR, err_msg)
+      end
+      it 'bad size error is written to Rails log' do
+        po_handler = described_class.new(druid, incoming_version, bad_size, storage_dir)
+        err_msg = "PreservedObjectHandler(#{druid}, #{incoming_version}, #{bad_size}, #{storage_dir}) encountered validation error(s): [\"Incoming size must be greater than 0\"]"
+        allow(Rails.logger).to receive(:log).with(Logger::ERROR, err_msg)
+        po_handler.update
+        expect(Rails.logger).to have_received(:log).with(Logger::ERROR, err_msg)
+      end
+      it 'bad storage directory is written to Rails log' do
+        po_handler = described_class.new(druid, incoming_version, incoming_size, bad_storage_dir)
+        err_msg = "PreservedObjectHandler(#{druid}, #{incoming_version}, #{incoming_size}, #{bad_storage_dir}) encountered validation error(s): [\"Endpoint can't be blank\"]"
+        allow(Rails.logger).to receive(:log).with(Logger::ERROR, err_msg)
+        po_handler.update
+        expect(Rails.logger).to have_received(:log).with(Logger::ERROR, err_msg)
+      end
+    end
+    context 'druid in db' do
+      before do
+        # po = PreservedObject.find_by(druid: druid)
+        # po.destroy if po
+        po = PreservedObject.create!(druid: druid, current_version: 2, size: 1, preservation_policy: default_prez_policy)
+        PreservationCopy.create!(
+          preserved_object: po, # TODO see if we got the preserved object that we expected
+          current_version: po.current_version,
+          last_audited: nil,
+          endpoint: Endpoint.find_by(storage_location: storage_dir),
+          status: Status.find_by(status_text: "ok"), # TODO find status default message
+          last_checked_on_storage: nil) # TODO nill for now, figure out how to use Time.now / ask devs
+      end
+      # after do
+      #   po = PreservedObject.find_by(druid: druid)
+      #   po.destroy if po
+      # end
+      let(:po_handler) { described_class.new(druid, incoming_version, incoming_size, storage_dir) }
+      let(:po) { PreservedObject.find_by(druid: druid) }
+      let(:ep) { Endpoint.find_by(storage_location: storage_dir) }
+      let(:pc) { PreservationCopy.find_by(preserved_object: po, endpoint: ep) }
+
+      context "incoming and db versions match" do
+        let(:po_handler) { described_class.new(druid, 2, 1, storage_dir) }
+        let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, 2, 1, #{storage_dir})" }
+        let(:version_matches_po_msg) { "#{exp_msg_prefix} incoming version (2) matches preserved object db version" }
+        let(:version_matches_pc_msg) { "#{exp_msg_prefix} incoming version (2) matches preservation copy db version" }
+        let(:updated_db_timestamp_msg) { "#{exp_msg_prefix} updated db timestamp only" }
+
+        it "entry version stays the same" do
+          expect(po.current_version).to eq 2
+          expect(pc.current_version).to eq 2
+          po_handler.update
+          expect(po.reload.current_version).to eq 2
+          expect(pc.reload.current_version).to eq 2
+        end
+        it "entry size stays the same" do
+          expect(po.size).to eq 1
+          po_handler.update
+          expect(po.reload.size).to eq 1
+        end
+        it "logs at info level" do
+          allow(Rails.logger).to receive(:log).with(Logger::INFO, version_matches_po_msg)
+          allow(Rails.logger).to receive(:log).with(Logger::INFO, version_matches_pc_msg)
+          allow(Rails.logger).to receive(:log).with(Logger::INFO, updated_db_timestamp_msg)
+          po_handler.update
+          expect(Rails.logger).to have_received(:log).with(Logger::INFO, version_matches_po_msg)
+          expect(Rails.logger).to have_received(:log).with(Logger::INFO, version_matches_pc_msg)
+          expect(Rails.logger).to have_received(:log).with(Logger::INFO, updated_db_timestamp_msg).exactly(:twice)
+        end
+        context 'returns' do
+          let!(:results) { po_handler.update }
+
+          # results = [result1, result2]
+          # result1 = {response_code: msg}
+          # result2 = {response_code: msg}
+          it '4 results' do
+            expect(results).to be_an_instance_of Array
+            expect(results.size).to eq 4
+          end
+          it 'PO_VERSION_MATCHES result' do
+            result_msg = results.select { |r| r[PreservedObjectHandler::PO_VERSION_MATCHES] }.first.values.first
+            expect(result_msg).to match(Regexp.escape(version_matches_po_msg))
+          end
+          it 'PC_VERSION_MATCHES result' do
+            result_msg = results.select { |r| r[PreservedObjectHandler::PC_VERSION_MATCHES] }.first.values.first
+            expect(result_msg).to match(Regexp.escape(version_matches_pc_msg))
+          end
+          it "UPDATED_DB_OBJECT_TIMESTAMP_ONLY result" do
+            result_msg = results.select { |r| r[PreservedObjectHandler::UPDATED_DB_OBJECT_TIMESTAMP_ONLY] }.first.values.first
+            expect(result_msg).to match(Regexp.escape(updated_db_timestamp_msg))
+          end
+        end
       end
     end
   end
