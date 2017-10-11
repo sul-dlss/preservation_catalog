@@ -55,7 +55,7 @@ Metrics/BlockLength:
     - 'spec/**/*'
 
 Metrics/ClassLength:
-  Max: 120
+  Max: 200
 
 Metrics/CyclomaticComplexity:
   Exclude:
@@ -69,7 +69,7 @@ Metrics/LineLength:
     - 'spec/services/preserved_object_handler_spec.rb' # 3 lines are longer
 
 Metrics/MethodLength:
-  Max: 20
+  Max: 25
 
 # --- Naming ---
 
@@ -101,7 +101,7 @@ RSpec/ExampleLength:
   Max: 50
 
 RSpec/MultipleExpectations:
-  Max: 2
+  Max: 4
 
 RSpec/MessageSpies:
   Exclude:
