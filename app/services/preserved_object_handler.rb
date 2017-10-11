@@ -90,10 +90,14 @@ class PreservedObjectHandler
       results << result_hash(OBJECT_DOES_NOT_EXIST)
     else 
       Rails.logger.debug "update #{druid} called and object exists"
-      db_object = PreservedObject.find_by(druid: druid)
-      results << update_per_version_comparison_po(db_object)
-      pc_db_object = PreservationCopy.find_by(preserved_object: db_object, endpoint: endpoint)
-      results << update_per_version_comparison_pc(pc_db_object)
+      begin
+        po_db_object = PreservedObject.find_by(druid: druid)
+        results << update_per_version_comparison_po(po_db_object)
+        pc_db_object = PreservationCopy.find_by(preserved_object: po_db_object, endpoint: endpoint)
+        results << update_per_version_comparison_pc(pc_db_object)
+      rescue ActiveRecord::ActiveRecordError => e
+        results << result_hash(DB_UPDATE_FAILED, "#{e.inspect} #{e.message} #{e.backtrace.inspect}")
+      end
     end
     results.flatten!
     log_results(results)
@@ -138,7 +142,8 @@ class PreservedObjectHandler
       results << result_hash(ARG_VERSION_GREATER_THAN_PO_DB_OBJECT)
     end
     update_db_object(db_object, results)
-    results.flatten
+    results.flatten!
+    results
   end
 
   def update_per_version_comparison_pc(db_object)
@@ -154,7 +159,8 @@ class PreservedObjectHandler
       results << result_hash(ARG_VERSION_GREATER_THAN_PC_DB_OBJECT)
     end
     update_db_object(db_object, results)
-    results.flatten
+    results.flatten!
+    results
   end
 
   # TODO: this may need reworking if we need to distinguish db timestamp updates when
@@ -168,8 +174,6 @@ class PreservedObjectHandler
       db_object.touch
       results << result_hash(UPDATED_DB_OBJECT_TIMESTAMP_ONLY)
     end
-  rescue ActiveRecord::ActiveRecordError => e
-    results << result_hash(DB_UPDATE_FAILED, "#{e.inspect} #{e.message} #{e.backtrace.inspect}")
   end
 
   def result_hash(response_code, addl=nil)
