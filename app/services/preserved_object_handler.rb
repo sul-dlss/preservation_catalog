@@ -15,6 +15,8 @@ class PreservedObjectHandler
   UPDATED_DB_OBJECT_TIMESTAMP_ONLY = 6
   CREATED_NEW_OBJECT = 7
   DB_UPDATE_FAILED = 8
+  OBJECT_ALREADY_EXISTS = 9
+  OBJECT_DOES_NOT_EXIST = 10
 
   RESPONSE_CODE_TO_MESSAGES = {
     INVALID_ARGUMENTS => "encountered validation error(s): %{addl}",
@@ -24,7 +26,10 @@ class PreservedObjectHandler
     UPDATED_DB_OBJECT => "db object updated",
     UPDATED_DB_OBJECT_TIMESTAMP_ONLY => "updated db timestamp only",
     CREATED_NEW_OBJECT => "added object to db as it did not exist",
-    DB_UPDATE_FAILED => "db update failed: %{addl}"
+    DB_UPDATE_FAILED => "db update failed: %{addl}",
+    OBJECT_ALREADY_EXISTS => "db object already exists",
+    OBJECT_DOES_NOT_EXIST => "db object does not exist"
+
   }.freeze
 
   include ActiveModel::Validations
@@ -34,13 +39,62 @@ class PreservedObjectHandler
   validates :incoming_version, presence: true, numericality: { only_integer: true, greater_than: 0 }
   validates :incoming_size, numericality: { only_integer: true, greater_than: 0 }
 
-  attr_reader :druid, :incoming_version, :incoming_size
+  attr_reader :druid, :incoming_version, :incoming_size, :storage_dir
 
-  def initialize(druid, incoming_version, incoming_size)
+  def initialize(druid, incoming_version, incoming_size, storage_dir)
     @druid = druid
     @incoming_version = version_string_to_int(incoming_version)
     @incoming_size = string_to_int(incoming_size)
+    @storage_dir = storage_dir
   end
+
+  def create
+    results = []
+    if invalid?
+      results << results_hash(INVALID_ARGUMENTS, errors.full_messages)
+    elsif PreservedObject.exists?(druid: druid)
+      results << result_hash(OBJECT_ALREADY_EXISTS)
+    else
+      pp_default = PreservationPolicy.default_preservation_policy
+      po = PreservedObject.create!(druid: druid,
+                             current_version: incoming_version,
+                             size: incoming_size,
+                             preservation_policy: pp_default)
+      status = Status.find_by(status_text: "ok") # TODO: Replace the status_text to get a default status_text
+      ep = Endpoint.find_by(storage_location: storage_dir)
+      PreservationCopy.create(preserved_object: po, 
+                          current_version: incoming_version, 
+                          last_audited: nil, 
+                          endpoint: ep, 
+                          status: status, 
+                          last_checked_on_storage: nil)
+      results << result_hash(CREATED_NEW_OBJECT)
+    end
+    results.flatten!
+    log_results(results)
+    results
+  end
+
+  def udpate
+    results = []
+    if invalid?
+      results << result_hash(INVALID_ARGUMENTS, errors.full_messages)
+    elsif !PreservedObject.exists?(druid: druid)
+      results << result_hash(OBJECT_DOES_NOT_EXIST)
+    else 
+      Rails.logger.debug "update #{druid} called and object exists"
+      db_object = PreservedObject.find_by(druid: druid)
+      results << update_per_version_comparison(db_object)
+      ep = Endpoint.find_by(storage_location: storage_dir)
+      pc_db_object = PreservationCopy.find_by(preserved_object: db_object, endpoint: ep)
+      results << update_per_version_comparison
+    end
+    results.flatten!
+    log_results(results)
+    results
+  end
+
+
 
   def update_or_create
     results = []
@@ -52,6 +106,7 @@ class PreservedObjectHandler
 
       db_object = PreservedObject.find_by(druid: druid)
       results << update_per_version_comparison(db_object)
+
     else
       pp_default = PreservationPolicy.default_preservation_policy
       PreservedObject.create(druid: druid,
@@ -79,7 +134,7 @@ class PreservedObjectHandler
       results << result_hash(ARG_VERSION_LESS_THAN_DB_OBJECT)
     elsif version_comparison == -1
       db_object.current_version = incoming_version
-      db_object.size = incoming_size if incoming_size
+      db_object.size = incoming_size if incoming_size && db_object.respond_to?(:size)
       results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT)
     end
 
@@ -111,7 +166,7 @@ class PreservedObjectHandler
   end
 
   def result_msg_prefix
-    @msg_prefix ||= "PreservedObjectHandler(#{druid}, #{incoming_version}, #{incoming_size})"
+    @msg_prefix ||= "PreservedObjectHandler(#{druid}, #{incoming_version}, #{incoming_size}, #{storage_dir})"
   end
 
   # results = [result1, result2]
@@ -136,6 +191,8 @@ class PreservedObjectHandler
     when UPDATED_DB_OBJECT_TIMESTAMP_ONLY then Logger::INFO
     when CREATED_NEW_OBJECT then Logger::WARN
     when DB_UPDATE_FAILED then Logger::ERROR
+    when OBJECT_ALREADY_EXISTS then Logger::ERROR
+    WHEN OBJECT_DOES_NOT_EXIST then Logger::ERROR
     end
   end
 

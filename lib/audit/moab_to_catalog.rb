@@ -7,7 +7,7 @@ class MoabToCatalog
       moab = Moab::StorageObject.new(druid, path)
       moab_current_version = moab.current_version_id
       moab_size = Stanford::StorageServices.object_size(druid)
-      po_handler = PreservedObjectHandler.new(druid, moab_current_version, moab_size)
+      po_handler = PreservedObjectHandler.new(druid, moab_current_version, moab_size, storage_dir)
       results << po_handler.update_or_create
     end
     results
