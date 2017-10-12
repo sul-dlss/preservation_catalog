@@ -8,33 +8,28 @@
 class PreservedObjectHandler
 
   INVALID_ARGUMENTS = 1
-  PO_VERSION_MATCHES = 2
-  ARG_VERSION_GREATER_THAN_PO_DB_OBJECT = 3
-  ARG_VERSION_LESS_THAN_PO_DB_OBJECT = 4
+  VERSION_MATCHES = 2
+  ARG_VERSION_GREATER_THAN_DB_OBJECT = 3
+  ARG_VERSION_LESS_THAN_DB_OBJECT = 4
   UPDATED_DB_OBJECT = 5
   UPDATED_DB_OBJECT_TIMESTAMP_ONLY = 6
   CREATED_NEW_OBJECT = 7
   DB_UPDATE_FAILED = 8
   OBJECT_ALREADY_EXISTS = 9
   OBJECT_DOES_NOT_EXIST = 10
-  PC_VERSION_MATCHES = 11
-  ARG_VERSION_GREATER_THAN_PC_DB_OBJECT = 12
-  ARG_VERSION_LESS_THAN_PC_DB_OBJECT = 13
+
 
   RESPONSE_CODE_TO_MESSAGES = {
     INVALID_ARGUMENTS => "encountered validation error(s): %{addl}",
-    PO_VERSION_MATCHES => "incoming version (%{incoming_version}) matches preserved object db version",
-    ARG_VERSION_GREATER_THAN_PO_DB_OBJECT => "incoming version (%{incoming_version}) greater than preserved object db version",
-    ARG_VERSION_LESS_THAN_PO_DB_OBJECT => "incoming version (%{incoming_version}) less than preserved object db version; ERROR!",
-    UPDATED_DB_OBJECT => "db object updated",
-    UPDATED_DB_OBJECT_TIMESTAMP_ONLY => "updated db timestamp only",
+    VERSION_MATCHES => "incoming version (%{incoming_version}) matches %{addl} db version",
+    ARG_VERSION_GREATER_THAN_DB_OBJECT => "incoming version (%{incoming_version}) greater than %{addl} db version",
+    ARG_VERSION_LESS_THAN_DB_OBJECT => "incoming version (%{incoming_version}) less than %{addl} db version; ERROR!",
+    UPDATED_DB_OBJECT => "%{addl} db object updated",
+    UPDATED_DB_OBJECT_TIMESTAMP_ONLY => "%{addl} updated db timestamp only",
     CREATED_NEW_OBJECT => "added object to db as it did not exist",
     DB_UPDATE_FAILED => "db update failed: %{addl}",
-    OBJECT_ALREADY_EXISTS => "db object already exists",
-    OBJECT_DOES_NOT_EXIST => "db object does not exist",
-    PC_VERSION_MATCHES => "incoming version (%{incoming_version}) matches preservation copy db version",
-    ARG_VERSION_GREATER_THAN_PC_DB_OBJECT => "incoming version (%{incoming_version}) greater than preservation copy db version",
-    ARG_VERSION_LESS_THAN_PC_DB_OBJECT => "incoming version (%{incoming_version}) less than preservation copy db version; ERROR!"
+    OBJECT_ALREADY_EXISTS => "%{addl} db object already exists",
+    OBJECT_DOES_NOT_EXIST => "%{addl} db object does not exist"
 
   }.freeze
 
@@ -61,7 +56,7 @@ class PreservedObjectHandler
     if invalid?
       results << results_hash(INVALID_ARGUMENTS, errors.full_messages)
     elsif PreservedObject.exists?(druid: druid)
-      results << result_hash(OBJECT_ALREADY_EXISTS)
+      results << result_hash(OBJECT_ALREADY_EXISTS, 'PreservedObject')
     else
       pp_default = PreservationPolicy.default_preservation_policy
       po = PreservedObject.create!(druid: druid,
@@ -87,7 +82,7 @@ class PreservedObjectHandler
     if invalid?
       results << result_hash(INVALID_ARGUMENTS, errors.full_messages)
     elsif !PreservedObject.exists?(druid: druid)
-      results << result_hash(OBJECT_DOES_NOT_EXIST)
+      results << result_hash(OBJECT_DOES_NOT_EXIST, 'PreservedObject')
     else 
       Rails.logger.debug "update #{druid} called and object exists"
       begin
@@ -111,14 +106,14 @@ class PreservedObjectHandler
     version_comparison = db_object.current_version <=> incoming_version
     results = []
     if version_comparison.zero?
-      results << result_hash(PO_VERSION_MATCHES)
+      results << result_hash(VERSION_MATCHES, db_object.class.name)
     elsif version_comparison == 1
       # TODO: needs manual intervention until automatic recovery services implemented
-      results << result_hash(ARG_VERSION_LESS_THAN_PO_DB_OBJECT)
+      results << result_hash(ARG_VERSION_LESS_THAN_DB_OBJECT, db_object.class.name)
     elsif version_comparison == -1
       db_object.current_version = incoming_version
       db_object.size = incoming_size if incoming_size
-      results << result_hash(ARG_VERSION_GREATER_THAN_PO_DB_OBJECT)
+      results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, db_object.class.name)
     end
     update_db_object(db_object, results)
     results.flatten!
@@ -129,13 +124,13 @@ class PreservedObjectHandler
     version_comparison = db_object.current_version <=> incoming_version
     results = []
     if version_comparison.zero?
-      results << result_hash(PC_VERSION_MATCHES) 
+      results << result_hash(VERSION_MATCHES, db_object.class.name) 
     elsif version_comparison == 1
       # TODO: needs manual intervention until automatic recovery services implemented
-      results << result_hash(ARG_VERSION_LESS_THAN_PC_DB_OBJECT)
+      results << result_hash(ARG_VERSION_LESS_THAN_DB_OBJECT, db_object.class.name)
     elsif version_comparison == -1
       db_object.current_version = incoming_version
-      results << result_hash(ARG_VERSION_GREATER_THAN_PC_DB_OBJECT)
+      results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, db_object.class.name)
     end
     update_db_object(db_object, results)
     results.flatten!
@@ -147,11 +142,11 @@ class PreservedObjectHandler
   def update_db_object(db_object, results)
     if db_object.changed?
       db_object.save
-      results << result_hash(UPDATED_DB_OBJECT)
+      results << result_hash(UPDATED_DB_OBJECT, db_object.class.name)
     else
       # FIXME: we may not want to do this, but instead to update specific timestamp for check
       db_object.touch
-      results << result_hash(UPDATED_DB_OBJECT_TIMESTAMP_ONLY)
+      results << result_hash(UPDATED_DB_OBJECT_TIMESTAMP_ONLY, db_object.class.name)
     end
   end
 
@@ -182,12 +177,9 @@ class PreservedObjectHandler
   def logger_severity_level(result_code)
     case result_code
     when INVALID_ARGUMENTS then Logger::ERROR
-    when PO_VERSION_MATCHES then Logger::INFO
-    when ARG_VERSION_GREATER_THAN_PO_DB_OBJECT then Logger::INFO
-    when ARG_VERSION_LESS_THAN_PO_DB_OBJECT then Logger::ERROR
-    when PC_VERSION_MATCHES then Logger::INFO
-    when ARG_VERSION_GREATER_THAN_PC_DB_OBJECT then Logger::INFO
-    when ARG_VERSION_LESS_THAN_PC_DB_OBJECT then Logger::ERROR
+    when VERSION_MATCHES then Logger::INFO
+    when ARG_VERSION_GREATER_THAN_DB_OBJECT then Logger::INFO
+    when ARG_VERSION_LESS_THAN_DB_OBJECT then Logger::ERROR
     when UPDATED_DB_OBJECT then Logger::INFO
     when UPDATED_DB_OBJECT_TIMESTAMP_ONLY then Logger::INFO
     when CREATED_NEW_OBJECT then Logger::WARN

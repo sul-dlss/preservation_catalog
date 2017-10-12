@@ -81,7 +81,7 @@ RSpec.describe PreservedObjectHandler do
       expect(PreservationCopy).to have_received(:create).with(args2)
     end
     context 'object already exists' do
-      let!(:exp_msg) { "#{exp_msg_prefix} db object already exists" }
+      let!(:exp_msg) { "#{exp_msg_prefix} PreservedObject db object already exists" }
       it 'logs an error' do
         po_handler.create
         allow(Rails.logger).to receive(:log).with(Logger::ERROR, exp_msg)
@@ -201,9 +201,11 @@ RSpec.describe PreservedObjectHandler do
       context "incoming and db versions match" do
         let(:po_handler) { described_class.new(druid, 2, 1, storage_dir) }
         let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, 2, 1, #{storage_dir})" }
-        let(:version_matches_po_msg) { "#{exp_msg_prefix} incoming version (2) matches preserved object db version" }
-        let(:version_matches_pc_msg) { "#{exp_msg_prefix} incoming version (2) matches preservation copy db version" }
-        let(:updated_db_timestamp_msg) { "#{exp_msg_prefix} updated db timestamp only" }
+        let(:version_matches_po_msg) { "#{exp_msg_prefix} incoming version (2) matches PreservedObject db version" }
+        let(:version_matches_pc_msg) { "#{exp_msg_prefix} incoming version (2) matches PreservationCopy db version" }
+        let(:updated_po_db_timestamp_msg) { "#{exp_msg_prefix} PreservedObject updated db timestamp only" }
+        let(:updated_pc_db_timestamp_msg) { "#{exp_msg_prefix} PreservationCopy updated db timestamp only" }
+
 
         it "entry version stays the same" do
           expect(po.current_version).to eq 2
@@ -220,11 +222,14 @@ RSpec.describe PreservedObjectHandler do
         it "logs at info level" do
           allow(Rails.logger).to receive(:log).with(Logger::INFO, version_matches_po_msg)
           allow(Rails.logger).to receive(:log).with(Logger::INFO, version_matches_pc_msg)
-          allow(Rails.logger).to receive(:log).with(Logger::INFO, updated_db_timestamp_msg)
+          allow(Rails.logger).to receive(:log).with(Logger::INFO, updated_po_db_timestamp_msg)
+          allow(Rails.logger).to receive(:log).with(Logger::INFO, updated_pc_db_timestamp_msg)
           po_handler.update
           expect(Rails.logger).to have_received(:log).with(Logger::INFO, version_matches_po_msg)
           expect(Rails.logger).to have_received(:log).with(Logger::INFO, version_matches_pc_msg)
-          expect(Rails.logger).to have_received(:log).with(Logger::INFO, updated_db_timestamp_msg).exactly(:twice)
+          expect(Rails.logger).to have_received(:log).with(Logger::INFO, updated_po_db_timestamp_msg)
+          expect(Rails.logger).to have_received(:log).with(Logger::INFO, updated_pc_db_timestamp_msg)
+
         end
         context 'returns' do
           let!(:results) { po_handler.update }
@@ -236,27 +241,33 @@ RSpec.describe PreservedObjectHandler do
             expect(results).to be_an_instance_of Array
             expect(results.size).to eq 4
           end
-          it 'PO_VERSION_MATCHES result' do
-            result_msg = results.select { |r| r[PreservedObjectHandler::PO_VERSION_MATCHES] }.first.values.first
+          it 'PreservedObject VERSION_MATCHES result' do
+            result_msg = results.select { |r| r[PreservedObjectHandler::VERSION_MATCHES] }.first.values.first
             expect(result_msg).to match(Regexp.escape(version_matches_po_msg))
           end
-          it 'PC_VERSION_MATCHES result' do
-            result_msg = results.select { |r| r[PreservedObjectHandler::PC_VERSION_MATCHES] }.first.values.first
+          it 'PreservationCopy VERSION_MATCHES result' do
+            result_msg = results.select { |r| r[PreservedObjectHandler::VERSION_MATCHES] }.second.values.first
             expect(result_msg).to match(Regexp.escape(version_matches_pc_msg))
           end
-          it "UPDATED_DB_OBJECT_TIMESTAMP_ONLY result" do
+          it "PreservedObject UPDATED_DB_OBJECT_TIMESTAMP_ONLY result" do
             result_msg = results.select { |r| r[PreservedObjectHandler::UPDATED_DB_OBJECT_TIMESTAMP_ONLY] }.first.values.first
-            expect(result_msg).to match(Regexp.escape(updated_db_timestamp_msg))
+            expect(result_msg).to match(Regexp.escape(updated_po_db_timestamp_msg))
+          end
+          it "PreservationCopy UPDATED_DB_OBJECT_TIMESTAMP_ONLY result" do
+            result_msg = results.select { |r| r[PreservedObjectHandler::UPDATED_DB_OBJECT_TIMESTAMP_ONLY] }.second.values.first
+            expect(result_msg).to match(Regexp.escape(updated_pc_db_timestamp_msg))
           end
         end
       end
       context 'incoming version newer than db version' do
         let(:po_handler) { described_class.new(druid, incoming_version, incoming_size, storage_dir) }
         let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, #{incoming_version}, #{incoming_size}, #{storage_dir})" }
-        let(:version_gt_po_msg) { "#{exp_msg_prefix} incoming version (#{incoming_version}) greater than preserved object db version" }
-        let(:version_gt_pc_msg) { "#{exp_msg_prefix} incoming version (#{incoming_version}) greater than preservation copy db version" }
+        let(:version_gt_po_msg) { "#{exp_msg_prefix} incoming version (#{incoming_version}) greater than PreservedObject db version" }
+        let(:version_gt_pc_msg) { "#{exp_msg_prefix} incoming version (#{incoming_version}) greater than PreservationCopy db version" }
 
-        let(:updated_db_msg) { "#{exp_msg_prefix} db object updated" }
+        let(:updated_po_db_msg) { "#{exp_msg_prefix} PreservedObject db object updated" }
+        let(:updated_pc_db_msg) { "#{exp_msg_prefix} PreservationCopy db object updated" }
+
 
         it "updates entry with incoming version" do
           expect(po.current_version).to eq 2
@@ -279,11 +290,14 @@ RSpec.describe PreservedObjectHandler do
         it "logs at info level" do
           allow(Rails.logger).to receive(:log).with(Logger::INFO, version_gt_po_msg)
           allow(Rails.logger).to receive(:log).with(Logger::INFO, version_gt_pc_msg)
-          allow(Rails.logger).to receive(:log).with(Logger::INFO, updated_db_msg)
+          allow(Rails.logger).to receive(:log).with(Logger::INFO, updated_po_db_msg)
+          allow(Rails.logger).to receive(:log).with(Logger::INFO, updated_pc_db_msg)
           po_handler.update
           expect(Rails.logger).to have_received(:log).with(Logger::INFO, version_gt_po_msg)
           expect(Rails.logger).to have_received(:log).with(Logger::INFO, version_gt_pc_msg)
-          expect(Rails.logger).to have_received(:log).with(Logger::INFO, updated_db_msg).exactly(:twice)
+          expect(Rails.logger).to have_received(:log).with(Logger::INFO, updated_po_db_msg)
+          expect(Rails.logger).to have_received(:log).with(Logger::INFO, updated_pc_db_msg)
+
         end
         context 'returns' do
           let!(:results) { po_handler.update }
@@ -295,17 +309,21 @@ RSpec.describe PreservedObjectHandler do
             expect(results).to be_an_instance_of Array
             expect(results.size).to eq 4
           end
-          it 'ARG_VERSION_GREATER_THAN_PO_DB_OBJECT result' do
-            result_msg = results.select { |r| r[PreservedObjectHandler::ARG_VERSION_GREATER_THAN_PO_DB_OBJECT] }.first.values.first
+          it 'PreservedObject ARG_VERSION_GREATER_THAN_DB_OBJECT result' do
+            result_msg = results.select { |r| r[PreservedObjectHandler::ARG_VERSION_GREATER_THAN_DB_OBJECT] }.first.values.first
             expect(result_msg).to match(Regexp.escape(version_gt_po_msg))
           end
-          it 'ARG_VERSION_GREATER_THAN_PC_DB_OBJECT result' do
-            result_msg = results.select { |r| r[PreservedObjectHandler::ARG_VERSION_GREATER_THAN_PC_DB_OBJECT] }.first.values.first
+          it 'PreservationCopy ARG_VERSION_GREATER_THAN_DB_OBJECT result' do
+            result_msg = results.select { |r| r[PreservedObjectHandler::ARG_VERSION_GREATER_THAN_DB_OBJECT] }.second.values.first
             expect(result_msg).to match(Regexp.escape(version_gt_pc_msg))
           end
-          it "UPDATED_DB_OBJECT result" do
+          it "PreservedObject UPDATED_DB_OBJECT result" do
             result_msg = results.select { |r| r[PreservedObjectHandler::UPDATED_DB_OBJECT] }.first.values.first
-            expect(result_msg).to match(Regexp.escape(updated_db_msg))
+            expect(result_msg).to match(Regexp.escape(updated_po_db_msg))
+          end
+          it "PreservationCopy UPDATED_DB_OBJECT result" do
+            result_msg = results.select { |r| r[PreservedObjectHandler::UPDATED_DB_OBJECT] }.second.values.first
+            expect(result_msg).to match(Regexp.escape(updated_pc_db_msg))
           end
         end
       end
@@ -313,9 +331,11 @@ RSpec.describe PreservedObjectHandler do
       context 'incoming version older than db version' do
         let(:po_handler) { described_class.new(druid, 1, 666, storage_dir) }
         let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, 1, 666, #{storage_dir})" }
-        let(:version_less_than_po_msg) { "#{exp_msg_prefix} incoming version (1) less than preserved object db version; ERROR!" }
-        let(:version_less_than_pc_msg) { "#{exp_msg_prefix} incoming version (1) less than preservation copy db version; ERROR!" }
-        let(:updated_db_timestamp_msg) { "#{exp_msg_prefix} updated db timestamp only" }
+        let(:version_less_than_po_msg) { "#{exp_msg_prefix} incoming version (1) less than PreservedObject db version; ERROR!" }
+        let(:version_less_than_pc_msg) { "#{exp_msg_prefix} incoming version (1) less than PreservationCopy db version; ERROR!" }
+        let(:updated_po_db_timestamp_msg) { "#{exp_msg_prefix} PreservedObject updated db timestamp only" }
+        let(:updated_pc_db_timestamp_msg) { "#{exp_msg_prefix} PreservationCopy updated db timestamp only" }
+
 
         it "entry version stays the same" do
           expect(po.current_version).to eq 2
@@ -332,11 +352,15 @@ RSpec.describe PreservedObjectHandler do
         it "logs at error level" do
           allow(Rails.logger).to receive(:log).with(Logger::ERROR, version_less_than_po_msg)
           allow(Rails.logger).to receive(:log).with(Logger::ERROR, version_less_than_pc_msg)
-          allow(Rails.logger).to receive(:log).with(Logger::INFO, updated_db_timestamp_msg)
+          allow(Rails.logger).to receive(:log).with(Logger::INFO, updated_po_db_timestamp_msg)
+          allow(Rails.logger).to receive(:log).with(Logger::INFO, updated_pc_db_timestamp_msg)
+
           po_handler.update
           expect(Rails.logger).to have_received(:log).with(Logger::ERROR, version_less_than_po_msg)
           expect(Rails.logger).to have_received(:log).with(Logger::ERROR, version_less_than_pc_msg)
-          expect(Rails.logger).to have_received(:log).with(Logger::INFO, updated_db_timestamp_msg).exactly(:twice)
+          expect(Rails.logger).to have_received(:log).with(Logger::INFO, updated_po_db_timestamp_msg)
+          expect(Rails.logger).to have_received(:log).with(Logger::INFO, updated_pc_db_timestamp_msg)
+
         end
         context 'returns' do
           let!(:results) { po_handler.update }
@@ -348,18 +372,22 @@ RSpec.describe PreservedObjectHandler do
             expect(results).to be_an_instance_of Array
             expect(results.size).to eq 4
           end
-          it 'ARG_VERSION_LESS_THAN_PO_DB_OBJECT result' do
-            result_msg = results.select { |r| r[PreservedObjectHandler::ARG_VERSION_LESS_THAN_PO_DB_OBJECT] }.first.values.first
+          it 'PreservedObject ARG_VERSION_LESS_THAN_DB_OBJECT result' do
+            result_msg = results.select { |r| r[PreservedObjectHandler::ARG_VERSION_LESS_THAN_DB_OBJECT] }.first.values.first
             expect(result_msg).to match(Regexp.escape(version_less_than_po_msg))
           end
-          it 'ARG_VERSION_LESS_THAN_PC_DB_OBJECT result' do
-            result_msg = results.select { |r| r[PreservedObjectHandler::ARG_VERSION_LESS_THAN_PC_DB_OBJECT] }.first.values.first
+          it 'PreservationCopy ARG_VERSION_LESS_THAN_DB_OBJECT result' do
+            result_msg = results.select { |r| r[PreservedObjectHandler::ARG_VERSION_LESS_THAN_DB_OBJECT] }.second.values.first
             expect(result_msg).to match(Regexp.escape(version_less_than_pc_msg))
           end
           # FIXME: do we want to update timestamp if we found an error (ARG_VERSION_LESS_THAN_DB_OBJECT)
-          it "UPDATED_DB_OBJECT_TIMESTAMP_ONLY result" do
+          it "PreservedObject UPDATED_DB_OBJECT_TIMESTAMP_ONLY result" do
             result_msg = results.select { |r| r[PreservedObjectHandler::UPDATED_DB_OBJECT_TIMESTAMP_ONLY] }.first.values.first
-            expect(result_msg).to match(Regexp.escape(updated_db_timestamp_msg))
+            expect(result_msg).to match(Regexp.escape(updated_po_db_timestamp_msg))
+          end
+          it "PreservationCopy UPDATED_DB_OBJECT_TIMESTAMP_ONLY result" do
+            result_msg = results.select { |r| r[PreservedObjectHandler::UPDATED_DB_OBJECT_TIMESTAMP_ONLY] }.second.values.first
+            expect(result_msg).to match(Regexp.escape(updated_pc_db_timestamp_msg))
           end
         end
       end
