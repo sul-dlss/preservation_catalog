@@ -7,9 +7,9 @@ require 'ruby-prof'
 
 logger = Logger.new('log/benchmark_moab_to_catalog.log')
 at_exit do # #{pcc_app_home}/current/log/MoabtoCatalog_rubyprof_#{Time.now.getlocal}", 'w' do |file|
-
   # File.open "/tmp/MoabtoCatalog_rubyprof_#{Time.now.getlocal}", 'w' do |file|
   # RubyProf::FlatPrinter.new(@prof).print(file)
+
   # end
   logger.info "Benchmarking stopped at #{Time.now.getlocal}"
 end
@@ -34,13 +34,12 @@ sleep(10)
 # this is coming from config/settings.yml and config/initializers
 Stanford::StorageServices.storage_roots.each do |storage_root|
   time_to_check_existence = Benchmark.realtime do
-    RubyProf.start
+    # RubyProf.start
     logger.info "Check for output"
-
     MoabToCatalog.check_moab_to_catalog_existence(File.join(storage_root, Moab::Config.storage_trunk))
     # when creating add true parameter, and if updating leave blank
     # @prof = RubyProf.stop
   end
+  logger.info time_to_check_existence.to_s
+  logger.info "It took #{time_to_check_existence} seconds to check the database w/ online moab"
 end
-logger.info time_to_check_existence.to_s
-logger.info "It took #{time_to_check_existence} seconds to check the database w/ online moab"
