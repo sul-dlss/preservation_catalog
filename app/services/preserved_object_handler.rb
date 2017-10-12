@@ -182,7 +182,7 @@ class PreservedObjectHandler
     when ARG_VERSION_LESS_THAN_DB_OBJECT then Logger::ERROR
     when UPDATED_DB_OBJECT then Logger::INFO
     when UPDATED_DB_OBJECT_TIMESTAMP_ONLY then Logger::INFO
-    when CREATED_NEW_OBJECT then Logger::WARN
+    when CREATED_NEW_OBJECT then Logger::INFO
     when DB_UPDATE_FAILED then Logger::ERROR
     when OBJECT_ALREADY_EXISTS then Logger::ERROR
     when OBJECT_DOES_NOT_EXIST then Logger::ERROR
