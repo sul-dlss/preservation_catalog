@@ -54,7 +54,7 @@ class PreservedObjectHandler
   def create
     results = []
     if invalid?
-      results << results_hash(INVALID_ARGUMENTS, errors.full_messages)
+      results << result_hash(INVALID_ARGUMENTS, errors.full_messages)
     elsif PreservedObject.exists?(druid: druid)
       results << result_hash(OBJECT_ALREADY_EXISTS, 'PreservedObject')
     else
