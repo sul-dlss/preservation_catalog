@@ -40,6 +40,10 @@ Layout/EmptyLinesAroundModuleBody:
 Layout/SpaceAroundEqualsInParameterDefault:
   Enabled: false
 
+Layout/SpaceInsideBrackets:
+  Exclude:
+    - 'config/environments/production.rb' # that's how Rails generates it
+
 # --- Metrics ---
 
 Metrics/AbcSize:
@@ -67,7 +71,18 @@ Metrics/LineLength:
 Metrics/MethodLength:
   Max: 20
 
+# --- Naming ---
+
+Naming/FileName:
+  Exclude:
+    - 'Capfile'
+    - 'Gemfile'
+
 # --- Rails ---
+
+Rails/FilePath:
+  Exclude:
+    - 'config/environments/development.rb' # that's how Rails generates it
 
 Rails/HasAndBelongsToMany:
   Enabled: false
@@ -77,6 +92,7 @@ Rails/SkipsModelValidations:
     - 'app/services/preserved_object_handler.rb' # we're using touch on purpose
 
 # --- RSpec ---
+
 RSpec/BeforeAfterAll:
   Exclude:
     - 'spec/load_fixtures_helper.rb' # being careful to avoid state leakage
@@ -100,10 +116,16 @@ RSpec/NestedGroups:
 
 # --- Style ---
 
-Style/FileName:
+Style/BlockComments:
   Exclude:
-    - 'Capfile'
-    - 'Gemfile'
+    - 'spec/spec_helper.rb' # that's how rspec-rails generates it
+
+Style/Documentation:
+  Exclude:
+    - 'app/controllers/application_controller.rb' # that's how Rails generates it
+    - 'app/helpers/application_helper.rb' # that's how Rails generates it
+    - 'app/models/application_record.rb' # that's how Rails generates it
+    - 'config/application.rb' # that's how Rails generates it
 
 Style/FormatString:
   Exclude:
@@ -111,6 +133,10 @@ Style/FormatString:
 
 Style/FormatStringToken:
   EnforcedStyle: template # using interpolated strings in PreservedObjectHandler
+
+Style/PercentLiteralDelimiters:
+  Exclude:
+    - 'config/spring.rb' # that's how Rails generates it
 
 # because ' vs " isn't a big deal for readability or maintainability or execution time
 Style/StringLiterals:
