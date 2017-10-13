@@ -17,7 +17,7 @@ RSpec.shared_context "fixture moabs in db" do
   end
   after(:all) do
     # TODO: danger - if there are objects in the test db we want to keep
-    Settings.moab.storage_roots.each do |_name, storage_root|
+    Settings.moab.storage_roots.each_value do |storage_root|
       storage_dir = File.join(storage_root, Settings.moab.storage_trunk)
       PreservationCopy.where(endpoint_id: Endpoint.find_by(storage_location: storage_dir).id).each do |pc|
         po_id = pc.preserved_object_id
@@ -51,7 +51,7 @@ end
 def setup
   @moab_storage_dirs = []
   @storage_dir_to_endpoint_id = {}
-  Settings.moab.storage_roots.each do |_name, storage_root|
+  Settings.moab.storage_roots.each_value do |storage_root|
     storage_dir = File.join(storage_root, Settings.moab.storage_trunk)
     @moab_storage_dirs << storage_dir
     @storage_dir_to_endpoint_id[storage_dir] = Endpoint.find_by(storage_location: storage_dir).id

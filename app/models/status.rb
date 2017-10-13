@@ -1,7 +1,7 @@
 ##
 # the current status of a preservation copy, e.g. all good, fixity check failed, etc
 class Status < ApplicationRecord
-  has_many :preservation_copies
+  has_many :preservation_copies, dependent: :restrict_with_exception
   validates :status_text, presence: true, uniqueness: true
 
   # iterates over the statuses enumerated in the settings, creating any that don't already exist.

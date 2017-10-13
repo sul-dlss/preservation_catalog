@@ -1,7 +1,7 @@
 ##
 # metadata about a specific replication endpoint
 class EndpointType < ApplicationRecord
-  has_many :endpoints
+  has_many :endpoints, dependent: :restrict_with_exception
 
   validates :type_name, presence: true, uniqueness: true
   validates :endpoint_class, presence: true
