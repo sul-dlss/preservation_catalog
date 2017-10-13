@@ -18,7 +18,7 @@ RSpec.describe PreservationPolicy, type: :model do
   describe '.seed_from_config' do
     it 'creates the preservation policies listed in Settings' do
       # db already seeded
-      Settings.preservation_policies.policy_definitions.each do |policy_name, _policy_config|
+      Settings.preservation_policies.policy_definitions.each_key do |policy_name|
         expect(
           PreservationPolicy.find_by(preservation_policy_name: policy_name.to_s)
         ).to be_a_kind_of PreservationPolicy
