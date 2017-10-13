@@ -11,7 +11,6 @@ require 'logger'
 # > benchmarker = MoabEnumerationBenchmarker.new
 # > benchmarker.benchmark
 class MoabEnumerationBenchmarker
-  attr_accessor :storage_dirs, :all_results, :methods_to_test
 
   def benchmarked_revision
     pcc_app_home = '/opt/app/pcc/preservation_core_catalog'
