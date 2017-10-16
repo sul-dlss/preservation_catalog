@@ -23,7 +23,6 @@ class PreservationPolicy < ApplicationRecord
     end
   end
 
-  # the first preservation policy defined in the settings is considered the default preservation policy.
   def self.default_preservation_policy
     find_by!(preservation_policy_name: Settings.preservation_policies.default_policy_name)
   end
