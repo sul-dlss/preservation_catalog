@@ -5,7 +5,7 @@ class PreservationPolicy < ApplicationRecord
   has_many :preserved_objects, dependent: :restrict_with_exception
   has_and_belongs_to_many :endpoints
 
-  validates :preservation_policy_name, presence: true
+  validates :preservation_policy_name, presence: true, uniqueness: true
   validates :archive_ttl, presence: true, numericality: { only_integer: true, greater_than: 0 }
   validates :fixity_ttl, presence: true, numericality: { only_integer: true, greater_than: 0 }
 

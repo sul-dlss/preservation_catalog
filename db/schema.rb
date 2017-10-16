@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20171006193131) do
+ActiveRecord::Schema.define(version: 20171011142253) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -62,6 +62,7 @@ ActiveRecord::Schema.define(version: 20171006193131) do
     t.string "preservation_policy_name", null: false
     t.integer "archive_ttl", null: false
     t.integer "fixity_ttl", null: false
+    t.index ["preservation_policy_name"], name: "index_preservation_policies_on_preservation_policy_name", unique: true
   end
 
   create_table "preserved_objects", force: :cascade do |t|

@@ -51,11 +51,7 @@ RSpec.describe PreservedObjectHandler do
   end
 
   describe '#update_or_create' do
-    let!(:default_prez_policy) do
-      PreservationPolicy.create!(preservation_policy_name: 'default',
-                                 archive_ttl: 604_800,
-                                 fixity_ttl: 604_800)
-    end
+    let!(:default_prez_policy) { PreservationPolicy.find_by(preservation_policy_name: 'default') }
 
     context 'logs errors and returns INVALID_ARGUMENTS if ActiveModel::Validations fail' do
       let(:bad_druid) { '666' }
