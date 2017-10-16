@@ -30,7 +30,7 @@ class PreservedObjectHandler
   include ActiveModel::Validations
 
   # Note: supplying validations here to allow validation before use, e.g. incoming_version in numeric logic
-  validates :druid, presence: true, format: { with: /\A[a-z]{2}[0-9]{3}[a-z]{2}[0-9]{4}\z/ }
+  validates :druid, presence: true, format: { with: DruidTools::Druid.pattern }
   validates :incoming_version, presence: true, numericality: { only_integer: true, greater_than: 0 }
   validates :incoming_size, numericality: { only_integer: true, greater_than: 0 }
 
