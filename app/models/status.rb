@@ -14,4 +14,8 @@ class Status < ApplicationRecord
       Status.find_or_create_by!(status_text: status_text)
     end
   end
+
+  def self.default_status
+    find_by!(status_text: Settings.default_status)
+  end
 end

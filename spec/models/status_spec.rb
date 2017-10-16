@@ -54,4 +54,18 @@ RSpec.describe Status, type: :model do
       )
     end
   end
+
+  describe '.default_status' do
+    it 'returns the default status object' do
+      # db already seeded
+      expect(Status.default_status).to be_a_kind_of Status
+    end
+
+    it "raises RecordNotFound if the default status doesn't exist in the db" do
+      # a bit contrived, but just want to test that lack of default Status causes lookup to
+      # fail fast.  since db is already seeded, we just make it look up something that we know isn't there.
+      allow(Settings).to receive(:default_status).and_return('nonexistent')
+      expect { Status.default_status }.to raise_error(ActiveRecord::RecordNotFound)
+    end
+  end
 end
