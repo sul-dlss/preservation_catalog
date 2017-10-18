@@ -1,3 +1,4 @@
+require 'find'
 ##
 # methods for dealing with a directory which stores Moab objects
 class MoabStorageDirectory
