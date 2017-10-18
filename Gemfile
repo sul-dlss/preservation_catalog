@@ -43,6 +43,7 @@ group :development do
   gem 'spring'
   gem 'spring-watcher-listen', '~> 2.0.0'
   gem 'ruby-prof'
+  gem 'hirb' # for db table display via rails console
 end
 
 group :test do

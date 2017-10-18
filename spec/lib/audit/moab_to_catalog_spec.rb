@@ -13,28 +13,51 @@ RSpec.describe MoabToCatalog do
       subject
       expect(MoabStorageDirectory).to have_received(:find_moab_paths).with(storage_dir)
     end
-
-    it "call 'update_or_create' with the expected values" do
-      expected_argument_list = [
-        { druid: 'bj102hs9687', storage_root_current_version: 3 },
-        { druid: 'bz514sm9647', storage_root_current_version: 3 },
-        { druid: 'jj925bx9565', storage_root_current_version: 2 }
-      ]
-
-      # set up po_handler for each arg_hash
-      expected_argument_list.each do |arg_hash|
-        po_handler = instance_double('PreservedObjectHandler')
-        arg_hash[:po_handler] = po_handler
-        allow(PreservedObjectHandler).to receive(:new).with(
-          arg_hash[:druid],
-          arg_hash[:storage_root_current_version],
-          instance_of(Integer)
-        ).and_return(po_handler)
-        allow(po_handler).to receive(:update_or_create)
+    context "determine create or update method with expected values" do
+      let(:expected_argument_list) do
+        [
+          { druid: 'bj102hs9687', storage_root_current_version: 3 },
+          { druid: 'bz514sm9647', storage_root_current_version: 3 },
+          { druid: 'jj925bx9565', storage_root_current_version: 2 }
+        ]
       end
 
-      subject
-      expected_argument_list.each { |arg_hash| expect(arg_hash[:po_handler]).to have_received(:update_or_create) }
+      before do
+        expected_argument_list.each do |arg_hash|
+          po_handler = instance_double('PreservedObjectHandler')
+          arg_hash[:po_handler] = po_handler
+          allow(PreservedObjectHandler).to receive(:new).with(
+            arg_hash[:druid],
+            arg_hash[:storage_root_current_version],
+            instance_of(Integer),
+            storage_dir
+          ).and_return(po_handler)
+        end
+      end
+      it "call #create if object does not exist" do
+        # mock that the object doesn't exist in catalog yet
+        expected_argument_list.each do |arg_hash|
+          allow(PreservedObject).to receive(:exists?).with(druid: arg_hash[:druid]).and_return(false)
+          allow(arg_hash[:po_handler]).to receive(:create)
+        end
+        subject
+        expected_argument_list.each do |arg_hash|
+          expect(PreservedObject).to have_received(:exists?).with(druid: arg_hash[:druid])
+          expect(arg_hash[:po_handler]).to have_received(:create)
+        end
+      end
+      it "call #update if object exists" do
+        # mock that the object does exist in catalog already
+        expected_argument_list.each do |arg_hash|
+          allow(PreservedObject).to receive(:exists?).with(druid: arg_hash[:druid]).and_return(true)
+          allow(arg_hash[:po_handler]).to receive(:update)
+        end
+        subject
+        expected_argument_list.each do |arg_hash|
+          expect(PreservedObject).to have_received(:exists?).with(druid: arg_hash[:druid])
+          expect(arg_hash[:po_handler]).to have_received(:update)
+        end
+      end
     end
 
     it "return correct number of results" do

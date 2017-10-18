@@ -15,16 +15,21 @@ class PreservedObjectHandler
   UPDATED_DB_OBJECT_TIMESTAMP_ONLY = 6
   CREATED_NEW_OBJECT = 7
   DB_UPDATE_FAILED = 8
+  OBJECT_ALREADY_EXISTS = 9
+  OBJECT_DOES_NOT_EXIST = 10
 
   RESPONSE_CODE_TO_MESSAGES = {
     INVALID_ARGUMENTS => "encountered validation error(s): %{addl}",
-    VERSION_MATCHES => "incoming version (%{incoming_version}) matches db version",
-    ARG_VERSION_GREATER_THAN_DB_OBJECT => "incoming version (%{incoming_version}) greater than db version",
-    ARG_VERSION_LESS_THAN_DB_OBJECT => "incoming version (%{incoming_version}) less than db version; ERROR!",
-    UPDATED_DB_OBJECT => "db object updated",
-    UPDATED_DB_OBJECT_TIMESTAMP_ONLY => "updated db timestamp only",
+    VERSION_MATCHES => "incoming version (%{incoming_version}) matches %{addl} db version",
+    ARG_VERSION_GREATER_THAN_DB_OBJECT => "incoming version (%{incoming_version}) greater than %{addl} db version",
+    ARG_VERSION_LESS_THAN_DB_OBJECT => "incoming version (%{incoming_version}) less than %{addl} db version; ERROR!",
+    UPDATED_DB_OBJECT => "%{addl} db object updated",
+    UPDATED_DB_OBJECT_TIMESTAMP_ONLY => "%{addl} updated db timestamp only",
     CREATED_NEW_OBJECT => "added object to db as it did not exist",
-    DB_UPDATE_FAILED => "db update failed: %{addl}"
+    DB_UPDATE_FAILED => "db update failed: %{addl}",
+    OBJECT_ALREADY_EXISTS => "%{addl} db object already exists",
+    OBJECT_DOES_NOT_EXIST => "%{addl} db object does not exist"
+
   }.freeze
 
   include ActiveModel::Validations
@@ -33,32 +38,58 @@ class PreservedObjectHandler
   validates :druid, presence: true, format: { with: DruidTools::Druid.pattern }
   validates :incoming_version, presence: true, numericality: { only_integer: true, greater_than: 0 }
   validates :incoming_size, numericality: { only_integer: true, greater_than: 0 }
+  validates :endpoint, presence: true
 
-  attr_reader :druid, :incoming_version, :incoming_size
+  attr_reader :druid, :incoming_version, :incoming_size, :storage_dir, :endpoint
 
-  def initialize(druid, incoming_version, incoming_size)
+  def initialize(druid, incoming_version, incoming_size, storage_dir)
     @druid = druid
     @incoming_version = version_string_to_int(incoming_version)
     @incoming_size = string_to_int(incoming_size)
+    @storage_dir = storage_dir
+    @endpoint = Endpoint.find_by(storage_location: storage_dir)
   end
 
-  def update_or_create
+  def create
     results = []
-
     if invalid?
       results << result_hash(INVALID_ARGUMENTS, errors.full_messages)
     elsif PreservedObject.exists?(druid: druid)
-      Rails.logger.debug "update #{druid} called and object exists"
-
-      db_object = PreservedObject.find_by(druid: druid)
-      results << update_per_version_comparison(db_object)
+      results << result_hash(OBJECT_ALREADY_EXISTS, 'PreservedObject')
     else
       pp_default = PreservationPolicy.default_preservation_policy
-      PreservedObject.create(druid: druid,
-                             current_version: incoming_version,
-                             size: incoming_size,
-                             preservation_policy: pp_default)
+      po = PreservedObject.create!(druid: druid,
+                                   current_version: incoming_version,
+                                   size: incoming_size,
+                                   preservation_policy: pp_default)
+      status = Status.default_status
+      PreservationCopy.create(preserved_object: po,
+                              current_version: incoming_version,
+                              endpoint: endpoint,
+                              status: status)
       results << result_hash(CREATED_NEW_OBJECT)
+    end
+    results.flatten!
+    log_results(results)
+    results
+  end
+
+  def update
+    results = []
+    if invalid?
+      results << result_hash(INVALID_ARGUMENTS, errors.full_messages)
+    elsif !PreservedObject.exists?(druid: druid)
+      results << result_hash(OBJECT_DOES_NOT_EXIST, 'PreservedObject')
+    else
+      Rails.logger.debug "update #{druid} called and object exists"
+      begin
+        po_db_object = PreservedObject.find_by(druid: druid)
+        results << update_per_version_comparison(po_db_object)
+        pc_db_object = PreservationCopy.find_by(preserved_object: po_db_object, endpoint: endpoint)
+        results << update_per_version_comparison(pc_db_object)
+      rescue ActiveRecord::ActiveRecordError => e
+        results << result_hash(DB_UPDATE_FAILED, "#{e.inspect} #{e.message} #{e.backtrace.inspect}")
+      end
     end
     results.flatten!
     log_results(results)
@@ -73,16 +104,16 @@ class PreservedObjectHandler
     version_comparison = db_object.current_version <=> incoming_version
     results = []
     if version_comparison.zero?
-      results << result_hash(VERSION_MATCHES)
+      results << result_hash(VERSION_MATCHES, db_object.class.name)
     elsif version_comparison == 1
       # TODO: needs manual intervention until automatic recovery services implemented
-      results << result_hash(ARG_VERSION_LESS_THAN_DB_OBJECT)
+      # TODO: we should also probably update status here?
+      results << result_hash(ARG_VERSION_LESS_THAN_DB_OBJECT, db_object.class.name)
     elsif version_comparison == -1
       db_object.current_version = incoming_version
-      db_object.size = incoming_size if incoming_size
-      results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT)
+      db_object.size = incoming_size if db_object.instance_of?(PreservedObject) && incoming_size
+      results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, db_object.class.name)
     end
-
     update_db_object(db_object, results)
     results.flatten
   end
@@ -92,14 +123,12 @@ class PreservedObjectHandler
   def update_db_object(db_object, results)
     if db_object.changed?
       db_object.save
-      results << result_hash(UPDATED_DB_OBJECT)
+      results << result_hash(UPDATED_DB_OBJECT, db_object.class.name)
     else
       # FIXME: we may not want to do this, but instead to update specific timestamp for check
       db_object.touch
-      results << result_hash(UPDATED_DB_OBJECT_TIMESTAMP_ONLY)
+      results << result_hash(UPDATED_DB_OBJECT_TIMESTAMP_ONLY, db_object.class.name)
     end
-  rescue ActiveRecord::ActiveRecordError => e
-    results << result_hash(DB_UPDATE_FAILED, "#{e.inspect} #{e.message} #{e.backtrace.inspect}")
   end
 
   def result_hash(response_code, addl=nil)
@@ -111,7 +140,7 @@ class PreservedObjectHandler
   end
 
   def result_msg_prefix
-    @msg_prefix ||= "PreservedObjectHandler(#{druid}, #{incoming_version}, #{incoming_size})"
+    @msg_prefix ||= "PreservedObjectHandler(#{druid}, #{incoming_version}, #{incoming_size}, #{storage_dir})"
   end
 
   # results = [result1, result2]
@@ -121,7 +150,6 @@ class PreservedObjectHandler
     results.each do |r|
       severity = logger_severity_level(r.keys.first)
       msg = r.values.first
-      # Rails.logger.log(severity, msg, 'PreservedObjectHandler')
       Rails.logger.log(severity, msg)
     end
   end
@@ -134,8 +162,10 @@ class PreservedObjectHandler
     when ARG_VERSION_LESS_THAN_DB_OBJECT then Logger::ERROR
     when UPDATED_DB_OBJECT then Logger::INFO
     when UPDATED_DB_OBJECT_TIMESTAMP_ONLY then Logger::INFO
-    when CREATED_NEW_OBJECT then Logger::WARN
+    when CREATED_NEW_OBJECT then Logger::INFO
     when DB_UPDATE_FAILED then Logger::ERROR
+    when OBJECT_ALREADY_EXISTS then Logger::ERROR
+    when OBJECT_DOES_NOT_EXIST then Logger::ERROR
     end
   end
 
@@ -153,5 +183,4 @@ class PreservedObjectHandler
     return val.to_i if val.instance_of?(String) && val.scan(/\D/).empty?
     val
   end
-
 end
