@@ -1,4 +1,4 @@
-# bin/rails runner lib/benchmark/moab_to_catalog_testing.rb
+# bin/rails runner lib/benchmarking/moab_to_catalog_testing.rb
 
 require 'benchmark'
 require 'logger'
@@ -6,10 +6,11 @@ require_relative "../audit/moab_to_catalog.rb"
 require 'ruby-prof'
 
 logger = Logger.new('log/benchmark_moab_to_catalog.log')
-at_exit do # #{pcc_app_home}/current/log/MoabtoCatalog_rubyprof_#{Time.now.getlocal}", 'w' do |file|
-  # File.open "/tmp/MoabtoCatalog_rubyprof_#{Time.now.getlocal}", 'w' do |file|
-  # RubyProf::FlatPrinter.new(@prof).print(file)
-
+at_exit do
+  # prof_log_file_name = "{pcc_app_home}/current/log/MoabtoCatalog_rubyprof_#{Time.now.getlocal}"
+  # prof_log_file_name = "/tmp/MoabtoCatalog_rubyprof_#{Time.now.getlocal}"
+  # File.open prof_log_file_name, 'w' do |file|
+  #   RubyProf::FlatPrinter.new(@prof).print(file)
   # end
   logger.info "Benchmarking stopped at #{Time.now.getlocal}"
 end
@@ -29,15 +30,19 @@ else
   logger.info "at revision #{commit}"
 end
 sleep(10)
-# storage_dir = 'spec/fixtures/storage_root01/moab_storage_trunk'
-# storage_dir = '/services-disk12/sdr2objects'
+
 # this is coming from config/settings.yml and config/initializers
 Stanford::StorageServices.storage_roots.each do |storage_root|
   time_to_check_existence = Benchmark.realtime do
-    # RubyProf.start
     logger.info "Check for output"
-    MoabToCatalog.check_moab_to_catalog_existence(File.join(storage_root, Moab::Config.storage_trunk))
+    # RubyProf.start
     # when creating add true parameter, and if updating leave blank
+    MoabToCatalog.check_existence(File.join(storage_root, Moab::Config.storage_trunk))
+    # TODO: haven't actually tested this, but looks to me like this will only get profiling info for the last
+    # storage root that was checked.  one way to collect for everything would be to use the start/pause/resume
+    # approach described in the RubyProf docs, presumably with a start/pause above this loop, resume/pause in
+    # this loop, and @prof = RubyProf.stop after this loop.
+    # see https://github.com/ruby-prof/ruby-prof#ruby-prof-convenience-api
     # @prof = RubyProf.stop
   end
   logger.info time_to_check_existence.to_s

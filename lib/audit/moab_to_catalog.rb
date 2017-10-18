@@ -1,7 +1,7 @@
 ##
 # Method that will check the a single moab service disk for the existence of moabs in postgres database
 class MoabToCatalog
-  def self.check_moab_to_catalog_existence(storage_dir, expect_to_create=false)
+  def self.check_existence(storage_dir, expect_to_create=false)
     results = []
     MoabStorageDirectory.find_moab_paths(storage_dir) do |druid, path, _path_match_data|
       moab = Moab::StorageObject.new(druid, path)
