@@ -1,12 +1,12 @@
 require_relative "../../../lib/audit/moab_to_catalog.rb"
 RSpec.describe MoabToCatalog do
-  describe ".check_moab_to_catalog_existence" do
+  describe ".check_existence" do
     before do
       PreservationPolicy.seed_from_config
     end
 
     let(:storage_dir) { 'spec/fixtures/storage_root01/moab_storage_trunk' }
-    let(:subject) { described_class.check_moab_to_catalog_existence(storage_dir) }
+    let(:subject) { described_class.check_existence(storage_dir) }
 
     it "call 'find_moab_paths' with appropriate argument" do
       allow(MoabStorageDirectory).to receive(:find_moab_paths).with(storage_dir)
@@ -65,14 +65,14 @@ RSpec.describe MoabToCatalog do
     end
 
     it "storage directory doesn't exist (misspelling, read write permissions)" do
-      expect { described_class.check_moab_to_catalog_existence('spec/fixtures/moab_strge_root') }.to raise_error(
+      expect { described_class.check_existence('spec/fixtures/moab_strge_root') }.to raise_error(
         SystemCallError, /No such file or directory/
       )
     end
 
     it "storage directory exists but it is empty" do
       storage_dir = 'spec/fixtures/empty'
-      expect(described_class.check_moab_to_catalog_existence(storage_dir)).to eq []
+      expect(described_class.check_existence(storage_dir)).to eq []
     end
 
   end

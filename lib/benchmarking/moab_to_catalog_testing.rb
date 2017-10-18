@@ -36,7 +36,7 @@ Stanford::StorageServices.storage_roots.each do |storage_root|
   time_to_check_existence = Benchmark.realtime do
     # RubyProf.start
     logger.info "Check for output"
-    MoabToCatalog.check_moab_to_catalog_existence(File.join(storage_root, Moab::Config.storage_trunk))
+    MoabToCatalog.check_existence(File.join(storage_root, Moab::Config.storage_trunk))
     # when creating add true parameter, and if updating leave blank
     # @prof = RubyProf.stop
   end
