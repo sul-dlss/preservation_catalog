@@ -354,6 +354,7 @@ RSpec.describe PreservedObjectHandler do
         let(:version_less_than_pc_msg) { "#{exp_msg_prefix} incoming version (1) less than PreservationCopy db version; ERROR!" }
         let(:updated_po_db_timestamp_msg) { "#{exp_msg_prefix} PreservedObject updated db timestamp only" }
         let(:updated_pc_db_timestamp_msg) { "#{exp_msg_prefix} PreservationCopy updated db timestamp only" }
+        let(:updated_pc_db_msg)           { "#{exp_msg_prefix} PreservationCopy db object updated" }
 
         it "entry version stays the same" do
           expect(po.current_version).to eq 2
@@ -371,13 +372,13 @@ RSpec.describe PreservedObjectHandler do
           allow(Rails.logger).to receive(:log).with(Logger::ERROR, version_less_than_po_msg)
           allow(Rails.logger).to receive(:log).with(Logger::ERROR, version_less_than_pc_msg)
           allow(Rails.logger).to receive(:log).with(Logger::INFO, updated_po_db_timestamp_msg)
-          allow(Rails.logger).to receive(:log).with(Logger::INFO, updated_pc_db_timestamp_msg)
+          allow(Rails.logger).to receive(:log).with(Logger::INFO, updated_pc_db_msg)
 
           po_handler.update
           expect(Rails.logger).to have_received(:log).with(Logger::ERROR, version_less_than_po_msg)
           expect(Rails.logger).to have_received(:log).with(Logger::ERROR, version_less_than_pc_msg)
           expect(Rails.logger).to have_received(:log).with(Logger::INFO, updated_po_db_timestamp_msg)
-          expect(Rails.logger).to have_received(:log).with(Logger::INFO, updated_pc_db_timestamp_msg)
+          expect(Rails.logger).to have_received(:log).with(Logger::INFO, updated_pc_db_msg)
 
         end
         context 'returns' do
@@ -403,9 +404,9 @@ RSpec.describe PreservedObjectHandler do
             result_msg = results.select { |r| r[PreservedObjectHandler::UPDATED_DB_OBJECT_TIMESTAMP_ONLY] }.first.values.first
             expect(result_msg).to match(Regexp.escape(updated_po_db_timestamp_msg))
           end
-          it "PreservationCopy UPDATED_DB_OBJECT_TIMESTAMP_ONLY result" do
-            result_msg = results.select { |r| r[PreservedObjectHandler::UPDATED_DB_OBJECT_TIMESTAMP_ONLY] }.second.values.first
-            expect(result_msg).to match(Regexp.escape(updated_pc_db_timestamp_msg))
+          it "PreservationCopy UPDATED_DB_OBJECT result" do
+            result_msg = results.select { |r| r[PreservedObjectHandler::UPDATED_DB_OBJECT] }.first.values.first
+            expect(result_msg).to match(Regexp.escape(updated_pc_db_msg))
           end
         end
       end
