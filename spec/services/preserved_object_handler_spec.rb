@@ -5,6 +5,8 @@ RSpec.describe PreservedObjectHandler do
   let(:incoming_version) { 6 }
   let(:incoming_size) { 9876 }
   let(:storage_dir) { 'spec/fixtures/storage_root01/moab_storage_trunk' } # we are just going to assume the first rails storage root
+  let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, #{incoming_version}, #{incoming_size}, #{storage_dir})" }
+  let(:po_handler) { described_class.new(druid, incoming_version, incoming_size, storage_dir) }
 
   describe '#initialize' do
     it 'sets druid' do
@@ -54,9 +56,8 @@ RSpec.describe PreservedObjectHandler do
       expect(po_handler.storage_dir).to eq storage_dir
     end
   end
+
   describe '#create' do
-    let(:po_handler) { described_class.new(druid, incoming_version, incoming_size, storage_dir) }
-    let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, #{incoming_version}, #{incoming_size}, #{storage_dir})" }
     let!(:exp_msg) { "#{exp_msg_prefix} added object to db as it did not exist" }
 
     it 'creates the preserved object and preservation copy' do
@@ -101,6 +102,41 @@ RSpec.describe PreservedObjectHandler do
         expect(Rails.logger).to have_received(:log).with(Logger::ERROR, exp_msg)
       end
     end
+
+    context 'db update error' do
+      context 'ActiveRecordError' do
+        let(:db_update_failed_prefix) { "#{exp_msg_prefix} db update failed" }
+        let(:results) do
+          allow(Rails.logger).to receive(:log)
+          # FIXME: couldn't figure out how to put next line into its own test
+          expect(Rails.logger).to receive(:log).with(Logger::ERROR, /#{Regexp.escape(db_update_failed_prefix)}/)
+
+          po = instance_double("PreservedObject")
+          allow(PreservedObject).to receive(:create!).with(hash_including(druid: druid))
+                                                     .and_raise(ActiveRecord::ActiveRecordError, 'foo')
+          allow(po).to receive(:destroy) # for after() cleanup calls
+          po_handler.create
+        end
+
+        it 'DB_UPDATED_FAILED error' do
+          expect(results).to include(a_hash_including(PreservedObjectHandler::DB_UPDATE_FAILED))
+        end
+        context 'error message' do
+          let(:result_msg) { results.select { |r| r[PreservedObjectHandler::DB_UPDATE_FAILED] }.first.values.first }
+
+          it 'prefix' do
+            expect(result_msg).to match(Regexp.escape(db_update_failed_prefix))
+          end
+          it 'specific exception raised' do
+            expect(result_msg).to match(Regexp.escape('ActiveRecord::ActiveRecordError'))
+          end
+          it "exception's message" do
+            expect(result_msg).to match(Regexp.escape('foo'))
+          end
+        end
+      end
+    end
+
     context 'returns' do
       let!(:result) { po_handler.create }
 
@@ -141,9 +177,7 @@ RSpec.describe PreservedObjectHandler do
         end
 
         context 'object already exists' do
-          let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, #{incoming_version}, #{incoming_size}, #{storage_dir})" }
           let!(:exp_msg) { "#{exp_msg_prefix} PreservedObject db object does not exist" }
-          let(:po_handler) { described_class.new(druid, incoming_version, incoming_size, storage_dir) }
 
           it 'logs an error' do
             allow(Rails.logger).to receive(:log).with(Logger::ERROR, exp_msg)
@@ -214,7 +248,6 @@ RSpec.describe PreservedObjectHandler do
         )
       end
 
-      let(:po_handler) { described_class.new(druid, incoming_version, incoming_size, storage_dir) }
       let(:po) { PreservedObject.find_by(druid: druid) }
       let(:ep) { Endpoint.find_by(storage_location: storage_dir) }
       let(:pc) { PreservationCopy.find_by(preserved_object: po, endpoint: ep) }
@@ -280,8 +313,6 @@ RSpec.describe PreservedObjectHandler do
         end
       end
       context 'incoming version newer than db version' do
-        let(:po_handler) { described_class.new(druid, incoming_version, incoming_size, storage_dir) }
-        let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, #{incoming_version}, #{incoming_size}, #{storage_dir})" }
         let(:version_gt_po_msg) { "#{exp_msg_prefix} incoming version (#{incoming_version}) greater than PreservedObject db version" }
         let(:version_gt_pc_msg) { "#{exp_msg_prefix} incoming version (#{incoming_version}) greater than PreservationCopy db version" }
 
@@ -411,7 +442,6 @@ RSpec.describe PreservedObjectHandler do
       end
       context 'db update error' do
         context 'ActiveRecordError' do
-          let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, #{incoming_version}, #{incoming_size}, #{storage_dir})" }
           let(:db_update_failed_prefix) { "#{exp_msg_prefix} db update failed" }
           let(:results) do
             allow(Rails.logger).to receive(:log)
