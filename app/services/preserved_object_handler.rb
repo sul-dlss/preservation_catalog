@@ -29,7 +29,6 @@ class PreservedObjectHandler
     DB_UPDATE_FAILED => "db update failed: %{addl}",
     OBJECT_ALREADY_EXISTS => "%{addl} db object already exists",
     OBJECT_DOES_NOT_EXIST => "%{addl} db object does not exist"
-
   }.freeze
 
   include ActiveModel::Validations
@@ -58,16 +57,20 @@ class PreservedObjectHandler
       results << result_hash(OBJECT_ALREADY_EXISTS, 'PreservedObject')
     else
       pp_default = PreservationPolicy.default_preservation_policy
-      po = PreservedObject.create!(druid: druid,
-                                   current_version: incoming_version,
-                                   size: incoming_size,
-                                   preservation_policy: pp_default)
-      status = Status.default_status
-      PreservationCopy.create(preserved_object: po,
-                              current_version: incoming_version,
-                              endpoint: endpoint,
-                              status: status)
-      results << result_hash(CREATED_NEW_OBJECT)
+      begin
+        po = PreservedObject.create!(druid: druid,
+                                     current_version: incoming_version,
+                                     size: incoming_size,
+                                     preservation_policy: pp_default)
+        status = Status.default_status
+        PreservationCopy.create(preserved_object: po,
+                                current_version: incoming_version,
+                                endpoint: endpoint,
+                                status: status)
+        results << result_hash(CREATED_NEW_OBJECT)
+      rescue ActiveRecord::ActiveRecordError => e
+        results << result_hash(DB_UPDATE_FAILED, "#{e.inspect} #{e.message} #{e.backtrace.inspect}")
+      end
     end
     results.flatten!
     log_results(results)
