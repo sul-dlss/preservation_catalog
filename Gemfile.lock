@@ -95,7 +95,7 @@ GEM
       capistrano-one_time_key
       capistrano-shared_configs
     docile (1.1.5)
-    druid-tools (0.4.1)
+    druid-tools (1.0.0)
     erubi (1.6.1)
     ffi (1.9.18)
     globalid (0.4.0)
@@ -121,8 +121,9 @@ GEM
     mime-types-data (3.2016.0521)
     mini_portile2 (2.3.0)
     minitest (5.10.3)
-    moab-versioning (2.1.0)
+    moab-versioning (2.2.0)
       confstruct
+      druid-tools (>= 1.0.0)
       json
       nokogiri
       nokogiri-happymapper

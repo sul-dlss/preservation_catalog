@@ -13,6 +13,31 @@ RSpec.describe MoabToCatalog do
       subject
       expect(MoabStorageDirectory).to have_received(:find_moab_paths).with(storage_dir)
     end
+
+    it 'gets moab current version from Moab::StorageObject' do
+      moab = instance_double(Moab::StorageObject)
+      allow(moab).to receive(:storage_root=)
+      allow(moab).to receive(:object_pathname).and_return(storage_dir)
+      allow(moab).to receive(:size)
+      expect(moab).to receive(:current_version_id).at_least(1).times
+      allow(Moab::StorageObject).to receive(:new).and_return(moab)
+
+      expect(Moab::StorageServices).not_to receive(:new)
+      subject
+    end
+
+    it 'gets moab size from Moab::StorageObject' do
+      moab = instance_double(Moab::StorageObject)
+      allow(moab).to receive(:storage_root=)
+      allow(moab).to receive(:object_pathname).and_return(storage_dir)
+      allow(moab).to receive(:current_version_id)
+      expect(moab).to receive(:size).at_least(1).times
+      allow(Moab::StorageObject).to receive(:new).and_return(moab)
+
+      expect(Moab::StorageServices).not_to receive(:new)
+      subject
+    end
+
     context "determine create or update method with expected values" do
       let(:expected_argument_list) do
         [
