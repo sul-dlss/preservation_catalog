@@ -78,6 +78,8 @@ Naming/FileName:
     - 'Capfile'
     - 'Gemfile'
 
+# --- Performance ---
+
 # --- Rails ---
 
 Rails/FilePath:
@@ -103,9 +105,9 @@ RSpec/ExampleLength:
 RSpec/MultipleExpectations:
   Max: 4
 
+# we like 'expect(x).to receive' better than 'have_received'
 RSpec/MessageSpies:
-  Exclude:
-    - 'spec/services/preserved_object_handler_spec.rb' # couldn't figure out a logging test
+  Enabled: false
 
 RSpec/NamedSubject:
   Enabled: false

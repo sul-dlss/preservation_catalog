@@ -5,9 +5,7 @@ class MoabToCatalog
     results = []
     MoabStorageDirectory.find_moab_paths(storage_dir) do |druid, path, _path_match_data|
       moab = Moab::StorageObject.new(druid, path)
-      moab_current_version = moab.current_version_id
-      moab_size = Stanford::StorageServices.object_size(druid)
-      po_handler = PreservedObjectHandler.new(druid, moab_current_version, moab_size, storage_dir)
+      po_handler = PreservedObjectHandler.new(druid, moab.current_version_id, moab.size, storage_dir)
       if PreservedObject.exists?(druid: druid)
         results << po_handler.update
       else
