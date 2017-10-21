@@ -240,7 +240,7 @@ RSpec.describe PreservedObjectHandler do
       allow(po).to receive(:current_version).and_return(2)
       allow(po).to receive(:current_version=)
       allow(po).to receive(:changed?).and_return(true)
-      allow(po).to receive(:save)
+      allow(po).to receive(:save!)
       allow(PreservedObject).to receive(:find_by!).and_return(po)
       # allow(PreservedObject).to receive(:find_by!).and_return(instance_double(PreservedObject))
       allow(PreservedCopy).to receive(:find_by!).and_raise(ActiveRecord::RecordNotFound, 'foo')
@@ -440,7 +440,7 @@ RSpec.describe PreservedObjectHandler do
               allow(pc).to receive(:version).and_return(1)
               allow(pc).to receive(:version=)
               allow(pc).to receive(:changed?).and_return(true)
-              allow(pc).to receive(:save).and_raise(ActiveRecord::ActiveRecordError, 'foo')
+              allow(pc).to receive(:save!).and_raise(ActiveRecord::ActiveRecordError, 'foo')
               status = instance_double('Status')
               allow(status).to receive(:status_text)
               allow(pc).to receive(:status).and_return(status)
@@ -473,7 +473,7 @@ RSpec.describe PreservedObjectHandler do
               allow(po).to receive(:current_version).and_return(5)
               allow(po).to receive(:current_version=).with(incoming_version)
               allow(po).to receive(:changed?).and_return(true)
-              allow(po).to receive(:save).and_raise(ActiveRecord::ActiveRecordError, 'foo')
+              allow(po).to receive(:save!).and_raise(ActiveRecord::ActiveRecordError, 'foo')
               allow(PreservedObject).to receive(:find_by).with(druid: druid).and_return(po)
               pc = instance_double('PreservedCopy')
               allow(PreservedCopy).to receive(:find_by).with(preserved_object: po, endpoint: ep).and_return(pc)
@@ -481,7 +481,7 @@ RSpec.describe PreservedObjectHandler do
               allow(pc).to receive(:version=).with(incoming_version)
               allow(pc).to receive(:size=).with(incoming_size)
               allow(pc).to receive(:changed?).and_return(true)
-              allow(pc).to receive(:save)
+              allow(pc).to receive(:save!)
               status = instance_double('Status')
               allow(status).to receive(:status_text)
               allow(pc).to receive(:status).and_return(status)
@@ -504,14 +504,14 @@ RSpec.describe PreservedObjectHandler do
         end
       end
 
-      it 'calls PreservedObject.save and PreservedCopy.save if the existing record is altered' do
+      it 'calls PreservedObject.save! and PreservedCopy.save! if the existing record is altered' do
         po = instance_double(PreservedObject)
         pc = instance_double(PreservedCopy)
         allow(PreservedObject).to receive(:find_by).with(druid: druid).and_return(po)
         allow(po).to receive(:current_version).and_return(1)
         allow(po).to receive(:current_version=).with(incoming_version)
         allow(po).to receive(:changed?).and_return(true)
-        allow(po).to receive(:save)
+        allow(po).to receive(:save!)
         allow(PreservedCopy).to receive(:find_by).with(preserved_object: po, endpoint: ep).and_return(pc)
         allow(pc).to receive(:version).and_return(1)
         allow(pc).to receive(:version=).with(incoming_version)
@@ -520,10 +520,10 @@ RSpec.describe PreservedObjectHandler do
         allow(pc).to receive(:changed?).and_return(true)
         allow(pc).to receive(:status).and_return(instance_double(Status, status_text: 'ok'))
         allow(pc).to receive(:status=)
-        allow(pc).to receive(:save)
+        allow(pc).to receive(:save!)
         po_handler.update_version
-        expect(po).to have_received(:save)
-        expect(pc).to have_received(:save)
+        expect(po).to have_received(:save!)
+        expect(pc).to have_received(:save!)
       end
 
       it 'calls PreservedObject.touch and PreservedCopy.touch if the existing record is NOT altered' do
@@ -753,7 +753,7 @@ RSpec.describe PreservedObjectHandler do
             allow(po).to receive(:current_version).and_return(1)
             allow(po).to receive(:current_version=).with(incoming_version)
             allow(po).to receive(:changed?).and_return(true)
-            allow(po).to receive(:save).and_raise(ActiveRecord::ActiveRecordError, 'foo')
+            allow(po).to receive(:save!).and_raise(ActiveRecord::ActiveRecordError, 'foo')
             allow(po).to receive(:destroy) # for after() cleanup calls
             po_handler.confirm_version
           end
@@ -771,7 +771,7 @@ RSpec.describe PreservedObjectHandler do
           end
         end
       end
-      it 'calls PreservedObject.save and PreservedCopy.save if the existing record is altered' do
+      it 'calls PreservedObject.save! and PreservedCopy.save! if the existing record is altered' do
         po = instance_double(PreservedObject)
         pc = instance_double(PreservedCopy)
 
@@ -787,7 +787,7 @@ RSpec.describe PreservedObjectHandler do
         allow(po).to receive(:current_version).and_return(1)
         allow(po).to receive(:current_version=).with(incoming_version)
         allow(po).to receive(:changed?).and_return(true)
-        allow(po).to receive(:save)
+        allow(po).to receive(:save!)
         allow(PreservedCopy).to receive(:find_by).with(preserved_object: po, endpoint: ep).and_return(pc)
         allow(pc).to receive(:version).and_return(1)
         allow(pc).to receive(:version=).with(incoming_version)
@@ -795,10 +795,10 @@ RSpec.describe PreservedObjectHandler do
         allow(pc).to receive(:endpoint).with(ep)
         allow(pc).to receive(:changed?).and_return(true)
         allow(pc).to receive(:status).and_return(Status.ok)
-        allow(pc).to receive(:save)
+        allow(pc).to receive(:save!)
         po_handler.confirm_version
-        expect(po).to have_received(:save)
-        expect(pc).to have_received(:save)
+        expect(po).to have_received(:save!)
+        expect(pc).to have_received(:save!)
       end
       it 'calls PreservedObject.touch and PreservedCopy.touch if the existing record is NOT altered' do
         po_handler = described_class.new(druid, 1, 1, storage_dir)
