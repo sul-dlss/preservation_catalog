@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe Status, type: :model do
-  let!(:status) { Status.find_by(status_text: 'ok') }
+  let!(:status) { Status.default_status }
 
   it 'is valid with valid attributes' do
     expect(status).to be_valid
