@@ -2,9 +2,9 @@ require 'rails_helper'
 
 RSpec.describe EndpointType, type: :model do
   let(:test_type_name) { 'unit_test_nfs' }
-  let!(:endpoint_type) { EndpointType.create!(type_name: test_type_name, endpoint_class: 'online') }
 
   it 'is valid with valid attributes' do
+    endpoint_type = EndpointType.create!(type_name: test_type_name, endpoint_class: 'online')
     expect(endpoint_type).to be_valid
   end
 
@@ -14,6 +14,7 @@ RSpec.describe EndpointType, type: :model do
 
   it 'enforces unique constraint on type_name' do
     expect do
+      EndpointType.create!(type_name: test_type_name, endpoint_class: 'online')
       EndpointType.create!(type_name: test_type_name, endpoint_class: 'online')
     end.to raise_error(ActiveRecord::RecordInvalid)
   end
@@ -30,8 +31,8 @@ RSpec.describe EndpointType, type: :model do
     it 'does not re-create records that already exist' do
       # run it a second time
       EndpointType.seed_from_config
-      # sort so we can avoid comparing via include, and see that it has only/exactly the two expected elements
-      expect(EndpointType.pluck(:type_name).sort).to eq %w[online_nfs unit_test_nfs]
+      # sort so we can avoid comparing via include, and see that it has only/exactly the expected elements
+      expect(EndpointType.pluck(:type_name).sort).to eq %w[online_nfs]
     end
 
     it 'adds new records if there are additions to Settings since the last run' do

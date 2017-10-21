@@ -1,24 +1,12 @@
 require 'rails_helper'
 
 RSpec.describe PreservationCopy, type: :model do
-  let!(:endpoint_type) { EndpointType.create(type_name: 'aws', endpoint_class: 'archive') }
-  let!(:endpoint) do
-    Endpoint.create(
-      endpoint_name: 'aws',
-      endpoint_type_id: endpoint_type.id,
-      endpoint_node: 'sul-sdr',
-      storage_location: '/storage',
-      recovery_cost: '1'
-    )
-  end
-  let!(:preservation_policy) { PreservationPolicy.find_by(preservation_policy_name: 'default') }
-
+  let!(:endpoint) { Endpoint.first }
   let!(:preserved_object) do
-    PreservedObject.create!(
-      druid: 'ab123cd4567', current_version: 1, preservation_policy_id: preservation_policy.id, size: 1
-    )
+    policy_id = PreservationPolicy.default_preservation_policy.id
+    PreservedObject.create!(druid: 'ab123cd4567', current_version: 1, preservation_policy_id: policy_id, size: 1)
   end
-  let!(:status) { Status.find_by(status_text: 'ok') }
+  let!(:status) { Status.default_status }
   let!(:preservation_copy) do
     PreservationCopy.create!(
       preserved_object_id: preserved_object.id,

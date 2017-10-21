@@ -14,15 +14,15 @@ RSpec.describe PreservationPolicy, type: :model do
     exp_err_msg = 'Validation failed: Preservation policy name has already been taken'
     expect do
       PreservationPolicy.create!(preservation_policy_name: 'default',
-                                 archive_ttl: 604_800,
-                                 fixity_ttl: 604_800)
+                                 archive_ttl: 666,
+                                 fixity_ttl: 666)
     end.to raise_error(ActiveRecord::RecordInvalid, exp_err_msg)
   end
 
   it 'enforces unique constraint on preservation_policy_name (db level)' do
     dup_preservation_policy = PreservationPolicy.new(preservation_policy_name: 'default',
-                                                     archive_ttl: 604_800,
-                                                     fixity_ttl: 604_800)
+                                                     archive_ttl: 666,
+                                                     fixity_ttl: 666)
     expect { dup_preservation_policy.save(validate: false) }.to raise_error(ActiveRecord::RecordNotUnique)
   end
 
@@ -48,7 +48,7 @@ RSpec.describe PreservationPolicy, type: :model do
     it 'adds new records if there are additions to Settings since the last run' do
       # db already seeded
       archive_pres_policy_setting = Config::Options.new(
-        archive_policy: Config::Options.new(archive_ttl: 604_800, fixity_ttl: 604_800)
+        archive_policy: Config::Options.new(archive_ttl: 666, fixity_ttl: 666)
       )
       allow(Settings.preservation_policies).to receive(:policy_definitions).and_return(archive_pres_policy_setting)
       PreservationPolicy.seed_from_config

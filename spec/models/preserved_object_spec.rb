@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe PreservedObject, type: :model do
-  let!(:preservation_policy) { PreservationPolicy.find_by(preservation_policy_name: 'default') }
+  let!(:preservation_policy) { PreservationPolicy.default_preservation_policy }
 
   let(:required_attributes) do
     {
