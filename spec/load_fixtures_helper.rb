@@ -29,9 +29,6 @@ RSpec.shared_context "fixture moabs in db" do
 end
 
 def load_fixture_moabs
-  pp_default = PreservationPolicy.default_preservation_policy
-  status_ok_id = Status.find_by(status_text: 'ok').id
-
   @moab_storage_dirs.each do |storage_dir|
     MoabStorageDirectory.find_moab_paths(storage_dir) do |druid, _path, _path_match_data|
       version = Stanford::StorageServices.current_version(druid)
@@ -39,11 +36,11 @@ def load_fixture_moabs
       po = PreservedObject.create(druid: druid,
                                   current_version: version,
                                   size: size,
-                                  preservation_policy: pp_default)
+                                  preservation_policy: PreservationPolicy.default_preservation_policy)
       PreservationCopy.create(preserved_object_id: po.id,
                               endpoint_id: @storage_dir_to_endpoint_id[storage_dir],
                               current_version: version,
-                              status_id: status_ok_id)
+                              status_id: Status.default_status.id)
     end
   end
 end
