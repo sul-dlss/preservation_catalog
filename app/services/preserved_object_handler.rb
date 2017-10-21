@@ -218,7 +218,7 @@ class PreservedObjectHandler
   def update_db_object(db_object)
     results = []
     if db_object.changed?
-      db_object.save
+      db_object.save!
       results << result_hash(UPDATED_DB_OBJECT, db_object.class.name)
     else
       # FIXME: we may not want to do this, but instead to update specific timestamp for check
