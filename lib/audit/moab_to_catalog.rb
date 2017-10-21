@@ -12,8 +12,8 @@ class MoabToCatalog
       if PreservedObject.exists?(druid: druid)
         results << po_handler.update
       else
-        Rails.logger.error "druid: #{druid} expected to exist in catalog but was not found" unless expect_to_create
-        results << po_handler.create
+        Rails.logger.error "druid: #{druid} expected to exist in catalog but was not found"
+        results << po_handler.create if expect_to_create
       end
     end
     results

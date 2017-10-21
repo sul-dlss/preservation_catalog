@@ -8,7 +8,7 @@ RSpec.describe MoabToCatalog do
   end
 
   describe ".check_existence" do
-    let(:subject) { described_class.check_existence(storage_dir) }
+    let(:subject) { described_class.check_existence(storage_dir, true) }
 
     it "calls 'find_moab_paths' with appropriate argument" do
       expect(MoabStorageDirectory).to receive(:find_moab_paths).with(storage_dir)
@@ -39,7 +39,7 @@ RSpec.describe MoabToCatalog do
       subject
     end
 
-    context "determine create or update method with expected values" do
+    context "(calls create or update)" do
       let(:expected_argument_list) do
         [
           { druid: 'bj102hs9687', storage_root_current_version: 3 },
@@ -60,18 +60,29 @@ RSpec.describe MoabToCatalog do
           ).and_return(po_handler)
         end
       end
-      it "call #create if object does not exist" do
-        # mock that the object doesn't exist in catalog yet
-        expected_argument_list.each do |arg_hash|
-          expect(PreservedObject).to receive(:exists?).with(druid: arg_hash[:druid]).and_return(false)
-          exp_msg = "druid: #{arg_hash[:druid]} expected to exist in catalog but was not found"
-          expect(Rails.logger).to receive(:error).with(exp_msg)
-          expect(arg_hash[:po_handler]).to receive(:create)
+
+      context 'object does not exist' do
+        it 'calls #create when expect_to_create is true' do
+          expected_argument_list.each do |arg_hash|
+            expect(PreservedObject).to receive(:exists?).with(druid: arg_hash[:druid]).and_return(false)
+            exp_msg = "druid: #{arg_hash[:druid]} expected to exist in catalog but was not found"
+            expect(Rails.logger).to receive(:error).with(exp_msg)
+            expect(arg_hash[:po_handler]).to receive(:create)
+          end
+          described_class.check_existence(storage_dir, true)
         end
-        subject
+        it 'does not call #create when expect_to_create is false' do
+          expected_argument_list.each do |arg_hash|
+            expect(PreservedObject).to receive(:exists?).with(druid: arg_hash[:druid]).and_return(false)
+            exp_msg = "druid: #{arg_hash[:druid]} expected to exist in catalog but was not found"
+            expect(Rails.logger).to receive(:error).with(exp_msg)
+            expect(arg_hash[:po_handler]).not_to receive(:create)
+          end
+          described_class.check_existence(storage_dir) # expect_to_create is false by default
+        end
       end
-      it "call #update if object exists" do
-        # mock that the object does exist in catalog already
+
+      it "calls #update if object exists" do
         expected_argument_list.each do |arg_hash|
           expect(PreservedObject).to receive(:exists?).with(druid: arg_hash[:druid]).and_return(true)
           expect(arg_hash[:po_handler]).to receive(:update)
@@ -126,7 +137,7 @@ RSpec.describe MoabToCatalog do
       subject
     end
 
-    context "creates or errors" do
+    context "(creates or errors)" do
       let(:expected_argument_list) do
         [
           { druid: 'bj102hs9687', storage_root_current_version: 3 },
@@ -148,7 +159,6 @@ RSpec.describe MoabToCatalog do
         end
       end
       it "call #create if object does not exist" do
-        # mock that the object doesn't exist in catalog yet
         expected_argument_list.each do |arg_hash|
           expect(PreservedObject).to receive(:exists?).with(druid: arg_hash[:druid]).and_return(false)
           expect(arg_hash[:po_handler]).to receive(:create)
@@ -156,7 +166,6 @@ RSpec.describe MoabToCatalog do
         subject
       end
       it "error if object exists" do
-        # mock that the object does exist in catalog already
         expected_argument_list.each do |arg_hash|
           allow(PreservedObject).to receive(:exists?).with(druid: arg_hash[:druid]).and_return(true)
           exp_msg = "druid: #{arg_hash[:druid]} NOT expected to exist in catalog but was found"
