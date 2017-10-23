@@ -100,7 +100,7 @@ class PreservedObjectHandler
 
   # expects @incoming_version to be numeric
   # TODO: update existence check timestamps/status per each flavor of comparison?
-  # rubocop:disable Metrics/PerceivedComplexity
+  # rubocop:disable Metrics/PerceivedComplexity  -- temporary until we fix #211
   def update_per_version_comparison(db_object)
     version_comparison = db_object.current_version <=> incoming_version
     results = []
