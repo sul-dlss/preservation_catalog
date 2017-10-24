@@ -57,6 +57,77 @@ RSpec.describe PreservedObjectHandler do
     end
   end
 
+  RSpec.shared_examples "attributes validated" do |method_sym|
+    let(:bad_druid) { '666' }
+    let(:bad_version) { 'vv666' }
+    let(:bad_size) { '-666' }
+    let(:bad_storage_dir) { '' }
+    let(:bad_druid_msg) { 'Druid is invalid' }
+    let(:bad_version_msg) { 'Incoming version is not a number' }
+    let(:bad_size_msg) { 'Incoming size must be greater than 0' }
+    let(:bad_storage_dir_msg) { "Endpoint can't be blank" }
+
+    context 'returns' do
+      let!(:result) do
+        po_handler = described_class.new(bad_druid, bad_version, bad_size, bad_storage_dir)
+        po_handler.send(method_sym)
+      end
+
+      it '1 result' do
+        expect(result).to be_an_instance_of Array
+        expect(result.size).to eq 1
+      end
+      it 'INVALID_ARGUMENTS' do
+        expect(result).to include(a_hash_including(PreservedObjectHandler::INVALID_ARGUMENTS))
+      end
+      context 'result message includes' do
+        let(:msg) { result.first[PreservedObjectHandler::INVALID_ARGUMENTS] }
+        let(:exp_msg_prefix) { "PreservedObjectHandler(#{bad_druid}, #{bad_version}, #{bad_size}, #{bad_storage_dir})" }
+
+        it "prefix" do
+          expect(msg).to match(Regexp.escape("#{exp_msg_prefix} encountered validation error(s): "))
+        end
+        it "druid error" do
+          expect(msg).to match(bad_druid_msg)
+        end
+        it "version error" do
+          expect(msg).to match(bad_version_msg)
+        end
+        it "size error" do
+          expect(msg).to match(bad_size_msg)
+        end
+        it "storage dir error" do
+          expect(msg).to match(bad_storage_dir_msg)
+        end
+      end
+    end
+
+    it 'bad druid error is written to Rails log' do
+      po_handler = described_class.new(bad_druid, incoming_version, incoming_size, storage_dir)
+      err_msg = "PreservedObjectHandler(#{bad_druid}, #{incoming_version}, #{incoming_size}, #{storage_dir}) encountered validation error(s): [\"#{bad_druid_msg}\"]"
+      expect(Rails.logger).to receive(:log).with(Logger::ERROR, err_msg)
+      po_handler.send(method_sym)
+    end
+    it 'bad version error is written to Rails log' do
+      po_handler = described_class.new(druid, bad_version, incoming_size, storage_dir)
+      err_msg = "PreservedObjectHandler(#{druid}, #{bad_version}, #{incoming_size}, #{storage_dir}) encountered validation error(s): [\"#{bad_version_msg}\"]"
+      expect(Rails.logger).to receive(:log).with(Logger::ERROR, err_msg)
+      po_handler.send(method_sym)
+    end
+    it 'bad size error is written to Rails log' do
+      po_handler = described_class.new(druid, incoming_version, bad_size, storage_dir)
+      err_msg = "PreservedObjectHandler(#{druid}, #{incoming_version}, #{bad_size}, #{storage_dir}) encountered validation error(s): [\"#{bad_size_msg}\"]"
+      expect(Rails.logger).to receive(:log).with(Logger::ERROR, err_msg)
+      po_handler.send(method_sym)
+    end
+    it 'bad storage directory is written to Rails log' do
+      po_handler = described_class.new(druid, incoming_version, incoming_size, bad_storage_dir)
+      err_msg = "PreservedObjectHandler(#{druid}, #{incoming_version}, #{incoming_size}, #{bad_storage_dir}) encountered validation error(s): [\"#{bad_storage_dir_msg}\"]"
+      expect(Rails.logger).to receive(:log).with(Logger::ERROR, err_msg)
+      po_handler.send(method_sym)
+    end
+  end
+
   describe '#create' do
     let!(:exp_msg) { "#{exp_msg_prefix} added object to db as it did not exist" }
 
@@ -80,17 +151,8 @@ RSpec.describe PreservedObjectHandler do
       expect(PreservedObject).to have_received(:create!).with(args)
       expect(PreservationCopy).to have_received(:create).with(args2)
     end
-    context 'object fails validation' do
-      let(:bad_handler) { described_class.new('abc123', incoming_version, incoming_size, storage_dir) }
-      let(:validation_msg_prefix) { "PreservedObjectHandler(abc123, 6, 9876, spec/fixtures/storage_root01/moab_storage_trunk)" }
-      let(:validation_msg) { "#{validation_msg_prefix} encountered validation error(s): [\"Druid is invalid\"]" }
 
-      it 'logs an error' do
-        allow(Rails.logger).to receive(:log).with(Logger::ERROR, validation_msg)
-        bad_handler.create
-        expect(Rails.logger).to have_received(:log).with(Logger::ERROR, validation_msg)
-      end
-    end
+    it_behaves_like 'attributes validated', :create
 
     context 'object already exists' do
       let!(:exp_msg) { "#{exp_msg_prefix} PreservedObject db object already exists" }
@@ -156,86 +218,7 @@ RSpec.describe PreservedObjectHandler do
   describe '#update' do
     let!(:default_prez_policy) { PreservationPolicy.default_preservation_policy }
 
-    context 'logs errors and returns INVALID_ARGUMENTS if ActiveModel::Validations fail' do
-      let(:bad_druid) { '666' }
-      let(:bad_version) { 'vv666' }
-      let(:bad_size) { '-666' }
-      let(:bad_storage_dir) { '' }
-
-      context 'returns' do
-        let!(:result) do
-          po_handler = described_class.new(bad_druid, bad_version, bad_size, bad_storage_dir)
-          po_handler.update
-        end
-
-        it '1 result' do
-          expect(result).to be_an_instance_of Array
-          expect(result.size).to eq 1
-        end
-        it 'INVALID_ARGUMENTS' do
-          expect(result).to include(a_hash_including(PreservedObjectHandler::INVALID_ARGUMENTS))
-        end
-
-        context 'object already exists' do
-          let!(:exp_msg) { "#{exp_msg_prefix} PreservedObject db object does not exist" }
-
-          it 'logs an error' do
-            allow(Rails.logger).to receive(:log).with(Logger::ERROR, exp_msg)
-            po_handler.update
-            expect(Rails.logger).to have_received(:log).with(Logger::ERROR, exp_msg)
-          end
-        end
-
-        context 'result message includes' do
-          let(:msg) { result.first[PreservedObjectHandler::INVALID_ARGUMENTS] }
-          let(:exp_msg_prefix) { "PreservedObjectHandler(#{bad_druid}, #{bad_version}, #{bad_size}, #{bad_storage_dir})" }
-
-          it "prefix" do
-            expect(msg).to match(Regexp.escape("#{exp_msg_prefix} encountered validation error(s): "))
-          end
-          it "druid error" do
-            expect(msg).to match(/Druid is invalid/)
-          end
-          it "version error" do
-            expect(msg).to match(/Incoming version is not a number/)
-          end
-          it "size error" do
-            expect(msg).to match(/Incoming size must be greater than 0/)
-          end
-          it "storage dir error" do
-            expect(msg).to match(/Endpoint can't be blank/)
-          end
-        end
-      end
-      it 'bad druid error is written to Rails log' do
-        po_handler = described_class.new(bad_druid, incoming_version, incoming_size, storage_dir)
-        err_msg = "PreservedObjectHandler(#{bad_druid}, #{incoming_version}, #{incoming_size}, #{storage_dir}) encountered validation error(s): [\"Druid is invalid\"]"
-        allow(Rails.logger).to receive(:log).with(Logger::ERROR, err_msg)
-        po_handler.update
-        expect(Rails.logger).to have_received(:log).with(Logger::ERROR, err_msg)
-      end
-      it 'bad version error is written to Rails log' do
-        po_handler = described_class.new(druid, bad_version, incoming_size, storage_dir)
-        err_msg = "PreservedObjectHandler(#{druid}, #{bad_version}, #{incoming_size}, #{storage_dir}) encountered validation error(s): [\"Incoming version is not a number\"]"
-        allow(Rails.logger).to receive(:log).with(Logger::ERROR, err_msg)
-        po_handler.update
-        expect(Rails.logger).to have_received(:log).with(Logger::ERROR, err_msg)
-      end
-      it 'bad size error is written to Rails log' do
-        po_handler = described_class.new(druid, incoming_version, bad_size, storage_dir)
-        err_msg = "PreservedObjectHandler(#{druid}, #{incoming_version}, #{bad_size}, #{storage_dir}) encountered validation error(s): [\"Incoming size must be greater than 0\"]"
-        allow(Rails.logger).to receive(:log).with(Logger::ERROR, err_msg)
-        po_handler.update
-        expect(Rails.logger).to have_received(:log).with(Logger::ERROR, err_msg)
-      end
-      it 'bad storage directory is written to Rails log' do
-        po_handler = described_class.new(druid, incoming_version, incoming_size, bad_storage_dir)
-        err_msg = "PreservedObjectHandler(#{druid}, #{incoming_version}, #{incoming_size}, #{bad_storage_dir}) encountered validation error(s): [\"Endpoint can't be blank\"]"
-        allow(Rails.logger).to receive(:log).with(Logger::ERROR, err_msg)
-        po_handler.update
-        expect(Rails.logger).to have_received(:log).with(Logger::ERROR, err_msg)
-      end
-    end
+    it_behaves_like 'attributes validated', :update
 
     context 'druid in db' do
       before do
