@@ -81,19 +81,19 @@ class PreservedObjectHandler
     results
   end
 
-  def update
+  def confirm_version
     results = []
     if invalid?
       results << result_hash(INVALID_ARGUMENTS, errors.full_messages)
     elsif !PreservedObject.exists?(druid: druid)
       results << result_hash(OBJECT_DOES_NOT_EXIST, 'PreservedObject')
     else
-      Rails.logger.debug "update #{druid} called and object exists"
+      Rails.logger.debug "confirm_version #{druid} called and object exists"
       begin
         po_db_object = PreservedObject.find_by(druid: druid)
-        results << update_per_version_comparison(po_db_object)
+        results << confirm_version_on_db_object(po_db_object)
         pc_db_object = PreservationCopy.find_by(preserved_object: po_db_object, endpoint: endpoint)
-        results << update_per_version_comparison(pc_db_object)
+        results << confirm_version_on_db_object(pc_db_object)
       rescue ActiveRecord::ActiveRecordError => e
         results << result_hash(DB_UPDATE_FAILED, "#{e.inspect} #{e.message} #{e.backtrace.inspect}")
       end
@@ -174,23 +174,30 @@ class PreservedObjectHandler
   end
 
   # expects @incoming_version to be numeric
-  # TODO: update existence check timestamps/status per each flavor of comparison?
-  def update_per_version_comparison(db_object)
-    version_comparison = db_object.current_version <=> incoming_version
+  # TODO: revisit naming
+  def confirm_version_on_db_object(db_object)
     results = []
-    if version_comparison.zero?
+
+    if incoming_version == db_object.current_version
+      results << update_status(db_object, Status.ok) if db_object.is_a?(PreservationCopy)
       results << result_hash(VERSION_MATCHES, db_object.class.name)
-    elsif version_comparison == 1
-      # TODO: needs manual intervention until automatic recovery services implemented
-      # TODO: we should also probably update status here?
-      results << result_hash(ARG_VERSION_LESS_THAN_DB_OBJECT, db_object.class.name)
-    elsif version_comparison == -1
-      db_object.current_version = incoming_version
-      db_object.size = incoming_size if db_object.instance_of?(PreservedObject) && incoming_size
+    elsif incoming_version > db_object.current_version
       results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, db_object.class.name)
+      if db_object.is_a?(PreservationCopy)
+        update_preservation_copy(db_object, incoming_version)
+        results << update_status(db_object, Status.default_status)
+      else
+        update_preserved_object(db_object, incoming_version, incoming_size)
+      end
+    else
+      # TODO: needs manual intervention until automatic recovery services implemented
+      results << update_status(db_object, Status.unexpected_version) if db_object.is_a?(PreservationCopy)
+      results << result_hash(ARG_VERSION_LESS_THAN_DB_OBJECT, db_object.class.name)
     end
+
     update_db_object(db_object, results)
-    results.flatten
+
+    results
   end
 
   def update_status(preservation_copy, new_status)
