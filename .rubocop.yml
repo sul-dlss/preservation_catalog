@@ -123,6 +123,10 @@ Style/BlockComments:
   Exclude:
     - 'spec/spec_helper.rb' # that's how rspec-rails generates it
 
+Style/BracesAroundHashParameters:
+  Exclude:
+    - app/services/preserved_object_handler.rb # code is clearer with the braces
+
 Style/Documentation:
   Exclude:
     - 'app/controllers/application_controller.rb' # that's how Rails generates it
