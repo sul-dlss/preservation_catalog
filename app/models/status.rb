@@ -18,4 +18,12 @@ class Status < ApplicationRecord
   def self.default_status
     find_by!(status_text: Settings.default_status)
   end
+
+  def self.unexpected_version
+    find_by!(status_text: Settings.statuses.detect { |s| s == 'expected_version_not_found_on_disk' })
+  end
+
+  def self.ok
+    find_by!(status_text: Settings.statuses.detect { |s| s == 'status_ok' })
+  end
 end
