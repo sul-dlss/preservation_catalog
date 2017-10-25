@@ -649,10 +649,10 @@ RSpec.describe PreservedObjectHandler do
     end
   end
 
-  describe '#update' do
+  describe '#confirm_version' do
     let!(:default_prez_policy) { PreservationPolicy.default_preservation_policy }
 
-    it_behaves_like 'attributes validated', :update
+    it_behaves_like 'attributes validated', :confirm_version
 
     context 'druid in db' do
       before do
@@ -676,13 +676,13 @@ RSpec.describe PreservedObjectHandler do
         it "entry version stays the same" do
           expect(po.current_version).to eq 2
           expect(pc.current_version).to eq 2
-          po_handler.update
+          po_handler.confirm_version
           expect(po.reload.current_version).to eq 2
           expect(pc.reload.current_version).to eq 2
         end
         it "entry size stays the same" do
           expect(po.size).to eq 1
-          po_handler.update
+          po_handler.confirm_version
           expect(po.reload.size).to eq 1
         end
         it "logs at info level" do
@@ -690,7 +690,7 @@ RSpec.describe PreservedObjectHandler do
           allow(Rails.logger).to receive(:log).with(Logger::INFO, version_matches_pc_msg)
           allow(Rails.logger).to receive(:log).with(Logger::INFO, updated_po_db_timestamp_msg)
           allow(Rails.logger).to receive(:log).with(Logger::INFO, updated_pc_db_timestamp_msg)
-          po_handler.update
+          po_handler.confirm_version
           expect(Rails.logger).to have_received(:log).with(Logger::INFO, version_matches_po_msg)
           expect(Rails.logger).to have_received(:log).with(Logger::INFO, version_matches_pc_msg)
           expect(Rails.logger).to have_received(:log).with(Logger::INFO, updated_po_db_timestamp_msg)
@@ -698,7 +698,7 @@ RSpec.describe PreservedObjectHandler do
 
         end
         context 'returns' do
-          let!(:results) { po_handler.update }
+          let!(:results) { po_handler.confirm_version }
 
           # results = [result1, result2]
           # result1 = {response_code: msg}
@@ -735,19 +735,19 @@ RSpec.describe PreservedObjectHandler do
         it "updates entry with incoming version" do
           expect(po.current_version).to eq 2
           expect(pc.current_version).to eq 2
-          po_handler.update
+          po_handler.confirm_version
           expect(po.reload.current_version).to eq incoming_version
           expect(pc.reload.current_version).to eq incoming_version
         end
         it 'updates entry with size if included' do
           expect(po.size).to eq 1
-          po_handler.update
+          po_handler.confirm_version
           expect(po.reload.size).to eq incoming_size
         end
         it 'retains old size if incoming size is nil' do
           expect(po.size).to eq 1
           po_handler = described_class.new(druid, incoming_version, nil, storage_dir)
-          po_handler.update
+          po_handler.confirm_version
           expect(po.reload.size).to eq 1
         end
         it "logs at info level" do
@@ -755,7 +755,7 @@ RSpec.describe PreservedObjectHandler do
           allow(Rails.logger).to receive(:log).with(Logger::INFO, version_gt_pc_msg)
           allow(Rails.logger).to receive(:log).with(Logger::INFO, updated_po_db_msg)
           allow(Rails.logger).to receive(:log).with(Logger::INFO, updated_pc_db_msg)
-          po_handler.update
+          po_handler.confirm_version
           expect(Rails.logger).to have_received(:log).with(Logger::INFO, version_gt_po_msg)
           expect(Rails.logger).to have_received(:log).with(Logger::INFO, version_gt_pc_msg)
           expect(Rails.logger).to have_received(:log).with(Logger::INFO, updated_po_db_msg)
@@ -763,7 +763,7 @@ RSpec.describe PreservedObjectHandler do
 
         end
         context 'returns' do
-          let!(:results) { po_handler.update }
+          let!(:results) { po_handler.confirm_version }
 
           # results = [result1, result2]
           # result1 = {response_code: msg}
@@ -797,42 +797,46 @@ RSpec.describe PreservedObjectHandler do
         let(:version_less_than_po_msg) { "#{exp_msg_prefix} incoming version (1) less than PreservedObject db version; ERROR!" }
         let(:version_less_than_pc_msg) { "#{exp_msg_prefix} incoming version (1) less than PreservationCopy db version; ERROR!" }
         let(:updated_po_db_timestamp_msg) { "#{exp_msg_prefix} PreservedObject updated db timestamp only" }
-        let(:updated_pc_db_timestamp_msg) { "#{exp_msg_prefix} PreservationCopy updated db timestamp only" }
+        let(:updated_pc_db_obj_msg) { "#{exp_msg_prefix} PreservationCopy db object updated" }
+        let(:updated_pc_db_status_msg) do
+          "#{exp_msg_prefix} PreservationCopy status changed from ok to expected_version_not_found_on_disk"
+        end
 
         it "entry version stays the same" do
           expect(po.current_version).to eq 2
           expect(pc.current_version).to eq 2
-          po_handler.update
+          po_handler.confirm_version
           expect(po.reload.current_version).to eq 2
           expect(pc.reload.current_version).to eq 2
         end
         it "entry size stays the same" do
           expect(po.size).to eq 1
-          po_handler.update
+          po_handler.confirm_version
           expect(po.reload.size).to eq 1
         end
         it "logs at error level" do
           allow(Rails.logger).to receive(:log).with(Logger::ERROR, version_less_than_po_msg)
           allow(Rails.logger).to receive(:log).with(Logger::ERROR, version_less_than_pc_msg)
           allow(Rails.logger).to receive(:log).with(Logger::INFO, updated_po_db_timestamp_msg)
-          allow(Rails.logger).to receive(:log).with(Logger::INFO, updated_pc_db_timestamp_msg)
+          allow(Rails.logger).to receive(:log).with(Logger::INFO, updated_pc_db_obj_msg)
+          allow(Rails.logger).to receive(:log).with(Logger::INFO, updated_pc_db_status_msg)
 
-          po_handler.update
+          po_handler.confirm_version
           expect(Rails.logger).to have_received(:log).with(Logger::ERROR, version_less_than_po_msg)
           expect(Rails.logger).to have_received(:log).with(Logger::ERROR, version_less_than_pc_msg)
           expect(Rails.logger).to have_received(:log).with(Logger::INFO, updated_po_db_timestamp_msg)
-          expect(Rails.logger).to have_received(:log).with(Logger::INFO, updated_pc_db_timestamp_msg)
-
+          expect(Rails.logger).to have_received(:log).with(Logger::INFO, updated_pc_db_obj_msg)
+          expect(Rails.logger).to have_received(:log).with(Logger::INFO, updated_pc_db_status_msg)
         end
         context 'returns' do
-          let!(:results) { po_handler.update }
+          let!(:results) { po_handler.confirm_version }
 
           # results = [result1, result2]
           # result1 = {response_code: msg}
           # result2 = {response_code: msg}
-          it '4 results' do
+          it '5 results' do
             expect(results).to be_an_instance_of Array
-            expect(results.size).to eq 4
+            expect(results.size).to eq 5
           end
           it 'PreservedObject ARG_VERSION_LESS_THAN_DB_OBJECT result' do
             result_msg = results.select { |r| r[PreservedObjectHandler::ARG_VERSION_LESS_THAN_DB_OBJECT] }.first.values.first
@@ -847,9 +851,13 @@ RSpec.describe PreservedObjectHandler do
             result_msg = results.select { |r| r[PreservedObjectHandler::UPDATED_DB_OBJECT_TIMESTAMP_ONLY] }.first.values.first
             expect(result_msg).to match(Regexp.escape(updated_po_db_timestamp_msg))
           end
-          it "PreservationCopy UPDATED_DB_OBJECT_TIMESTAMP_ONLY result" do
-            result_msg = results.select { |r| r[PreservedObjectHandler::UPDATED_DB_OBJECT_TIMESTAMP_ONLY] }.second.values.first
-            expect(result_msg).to match(Regexp.escape(updated_pc_db_timestamp_msg))
+          it "PreservationCopy UPDATED_DB_OBJECT result" do
+            result_msg = results.select { |r| r[PreservedObjectHandler::UPDATED_DB_OBJECT] }.first.values.first
+            expect(result_msg).to match(Regexp.escape(updated_pc_db_obj_msg))
+          end
+          it "PreservationCopy PC_STATUS_CHANGED result" do
+            result_msg = results.select { |r| r[PreservedObjectHandler::PC_STATUS_CHANGED] }.first.values.first
+            expect(result_msg).to match(Regexp.escape(updated_pc_db_status_msg))
           end
         end
       end
@@ -869,7 +877,7 @@ RSpec.describe PreservedObjectHandler do
             allow(po).to receive(:changed?).and_return(true)
             allow(po).to receive(:save).and_raise(ActiveRecord::ActiveRecordError, 'foo')
             allow(po).to receive(:destroy) # for after() cleanup calls
-            po_handler.update
+            po_handler.confirm_version
           end
 
           it 'DB_UPDATED_FAILED error' do
@@ -893,6 +901,15 @@ RSpec.describe PreservedObjectHandler do
       it 'calls PreservedObject.save and PreservationCopy.save if the existing record is altered' do
         po = instance_double(PreservedObject)
         pc = instance_double(PreservationCopy)
+
+        # bad object-oriented form!  type checking like this is to be avoided.  but also, wouldn't
+        # it be nice if an rspec double returned `true` when asked if it was an instance or kind of
+        # the object type being mocked?  i think that'd be nice.  but that's not what doubles do.
+        allow(po).to receive(:is_a?).with(PreservedObject).and_return(true)
+        allow(po).to receive(:is_a?).with(PreservationCopy).and_return(false)
+        allow(pc).to receive(:is_a?).with(PreservedObject).and_return(false)
+        allow(pc).to receive(:is_a?).with(PreservationCopy).and_return(true)
+
         allow(PreservedObject).to receive(:find_by).with(druid: druid).and_return(po)
         allow(po).to receive(:current_version).and_return(1)
         allow(po).to receive(:current_version=).with(incoming_version)
@@ -904,8 +921,9 @@ RSpec.describe PreservedObjectHandler do
         allow(pc).to receive(:current_version=).with(incoming_version)
         allow(pc).to receive(:endpoint).with(ep)
         allow(pc).to receive(:changed?).and_return(true)
+        allow(pc).to receive(:status).and_return(Status.ok)
         allow(pc).to receive(:save)
-        po_handler.update
+        po_handler.confirm_version
         expect(po).to have_received(:save)
         expect(pc).to have_received(:save)
       end
@@ -922,14 +940,14 @@ RSpec.describe PreservedObjectHandler do
         allow(pc).to receive(:endpoint).with(ep)
         allow(pc).to receive(:changed?).and_return(false)
         allow(pc).to receive(:touch)
-        po_handler.update
+        po_handler.confirm_version
         expect(po).to have_received(:touch)
         expect(pc).to have_received(:touch)
       end
       it 'logs a debug message' do
-        msg = "update #{druid} called and object exists"
+        msg = "confirm_version #{druid} called and object exists"
         allow(Rails.logger).to receive(:debug)
-        po_handler.update
+        po_handler.confirm_version
         expect(Rails.logger).to have_received(:debug).with(msg)
       end
     end
