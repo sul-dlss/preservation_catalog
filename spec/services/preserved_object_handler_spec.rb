@@ -248,6 +248,7 @@ RSpec.describe PreservedObjectHandler do
 
     context 'druid in catalog' do
       let!(:default_prez_policy) { PreservationPolicy.default_preservation_policy }
+
       before do
         po = PreservedObject.create!(druid: druid, current_version: 2, size: 1, preservation_policy: default_prez_policy)
         PreservationCopy.create!(
@@ -256,6 +257,72 @@ RSpec.describe PreservedObjectHandler do
           endpoint: ep,
           status: Status.default_status
         )
+      end
+
+      context 'incoming version newer than db version (happy path)' do
+        let(:version_gt_po_msg) { "#{exp_msg_prefix} incoming version (#{incoming_version}) greater than PreservedObject db version" }
+        let(:version_gt_pc_msg) { "#{exp_msg_prefix} incoming version (#{incoming_version}) greater than PreservationCopy db version" }
+
+        let(:updated_po_db_msg) { "#{exp_msg_prefix} PreservedObject db object updated" }
+        let(:updated_pc_db_msg) { "#{exp_msg_prefix} PreservationCopy db object updated" }
+
+        it "updates entry with incoming version" do
+          expect(po.current_version).to eq 2
+          expect(pc.current_version).to eq 2
+          po_handler.update
+          expect(po.reload.current_version).to eq incoming_version
+          expect(pc.reload.current_version).to eq incoming_version
+        end
+        it 'updates entry with size if included' do
+          expect(po.size).to eq 1
+          po_handler.update
+          expect(po.reload.size).to eq incoming_size
+        end
+        it 'retains old size if incoming size is nil' do
+          expect(po.size).to eq 1
+          po_handler = described_class.new(druid, incoming_version, nil, storage_dir)
+          po_handler.update
+          expect(po.reload.size).to eq 1
+        end
+        it "logs at info level" do
+          allow(Rails.logger).to receive(:log).with(Logger::INFO, version_gt_po_msg)
+          allow(Rails.logger).to receive(:log).with(Logger::INFO, version_gt_pc_msg)
+          allow(Rails.logger).to receive(:log).with(Logger::INFO, updated_po_db_msg)
+          allow(Rails.logger).to receive(:log).with(Logger::INFO, updated_pc_db_msg)
+          po_handler.update
+          expect(Rails.logger).to have_received(:log).with(Logger::INFO, version_gt_po_msg)
+          expect(Rails.logger).to have_received(:log).with(Logger::INFO, version_gt_pc_msg)
+          expect(Rails.logger).to have_received(:log).with(Logger::INFO, updated_po_db_msg)
+          expect(Rails.logger).to have_received(:log).with(Logger::INFO, updated_pc_db_msg)
+
+        end
+        context 'returns' do
+          let!(:results) { po_handler.update }
+
+          # results = [result1, result2]
+          # result1 = {response_code: msg}
+          # result2 = {response_code: msg}
+          it '4 results' do
+            expect(results).to be_an_instance_of Array
+            expect(results.size).to eq 4
+          end
+          it 'PreservedObject ARG_VERSION_GREATER_THAN_DB_OBJECT result' do
+            result_msg = results.select { |r| r[PreservedObjectHandler::ARG_VERSION_GREATER_THAN_DB_OBJECT] }.first.values.first
+            expect(result_msg).to match(Regexp.escape(version_gt_po_msg))
+          end
+          it 'PreservationCopy ARG_VERSION_GREATER_THAN_DB_OBJECT result' do
+            result_msg = results.select { |r| r[PreservedObjectHandler::ARG_VERSION_GREATER_THAN_DB_OBJECT] }.second.values.first
+            expect(result_msg).to match(Regexp.escape(version_gt_pc_msg))
+          end
+          it "PreservedObject UPDATED_DB_OBJECT result" do
+            result_msg = results.select { |r| r[PreservedObjectHandler::UPDATED_DB_OBJECT] }.first.values.first
+            expect(result_msg).to match(Regexp.escape(updated_po_db_msg))
+          end
+          it "PreservationCopy UPDATED_DB_OBJECT result" do
+            result_msg = results.select { |r| r[PreservedObjectHandler::UPDATED_DB_OBJECT] }.second.values.first
+            expect(result_msg).to match(Regexp.escape(updated_pc_db_msg))
+          end
+        end
       end
 
       # context "incoming and db versions match" do
@@ -315,73 +382,6 @@ RSpec.describe PreservedObjectHandler do
       #     it "PreservationCopy UPDATED_DB_OBJECT_TIMESTAMP_ONLY result" do
       #       result_msg = results.select { |r| r[PreservedObjectHandler::UPDATED_DB_OBJECT_TIMESTAMP_ONLY] }.second.values.first
       #       expect(result_msg).to match(Regexp.escape(updated_pc_db_timestamp_msg))
-      #     end
-      #   end
-      # end
-
-      # NOTE: this is the happy path for this method
-      # context 'incoming version newer than db version' do
-      #   let(:version_gt_po_msg) { "#{exp_msg_prefix} incoming version (#{incoming_version}) greater than PreservedObject db version" }
-      #   let(:version_gt_pc_msg) { "#{exp_msg_prefix} incoming version (#{incoming_version}) greater than PreservationCopy db version" }
-      #
-      #   let(:updated_po_db_msg) { "#{exp_msg_prefix} PreservedObject db object updated" }
-      #   let(:updated_pc_db_msg) { "#{exp_msg_prefix} PreservationCopy db object updated" }
-      #
-      #   it "updates entry with incoming version" do
-      #     expect(po.current_version).to eq 2
-      #     expect(pc.current_version).to eq 2
-      #     po_handler.update
-      #     expect(po.reload.current_version).to eq incoming_version
-      #     expect(pc.reload.current_version).to eq incoming_version
-      #   end
-      #   it 'updates entry with size if included' do
-      #     expect(po.size).to eq 1
-      #     po_handler.update
-      #     expect(po.reload.size).to eq incoming_size
-      #   end
-      #   it 'retains old size if incoming size is nil' do
-      #     expect(po.size).to eq 1
-      #     po_handler = described_class.new(druid, incoming_version, nil, storage_dir)
-      #     po_handler.update
-      #     expect(po.reload.size).to eq 1
-      #   end
-      #   it "logs at info level" do
-      #     allow(Rails.logger).to receive(:log).with(Logger::INFO, version_gt_po_msg)
-      #     allow(Rails.logger).to receive(:log).with(Logger::INFO, version_gt_pc_msg)
-      #     allow(Rails.logger).to receive(:log).with(Logger::INFO, updated_po_db_msg)
-      #     allow(Rails.logger).to receive(:log).with(Logger::INFO, updated_pc_db_msg)
-      #     po_handler.update
-      #     expect(Rails.logger).to have_received(:log).with(Logger::INFO, version_gt_po_msg)
-      #     expect(Rails.logger).to have_received(:log).with(Logger::INFO, version_gt_pc_msg)
-      #     expect(Rails.logger).to have_received(:log).with(Logger::INFO, updated_po_db_msg)
-      #     expect(Rails.logger).to have_received(:log).with(Logger::INFO, updated_pc_db_msg)
-      #
-      #   end
-      #   context 'returns' do
-      #     let!(:results) { po_handler.update }
-      #
-      #     # results = [result1, result2]
-      #     # result1 = {response_code: msg}
-      #     # result2 = {response_code: msg}
-      #     it '4 results' do
-      #       expect(results).to be_an_instance_of Array
-      #       expect(results.size).to eq 4
-      #     end
-      #     it 'PreservedObject ARG_VERSION_GREATER_THAN_DB_OBJECT result' do
-      #       result_msg = results.select { |r| r[PreservedObjectHandler::ARG_VERSION_GREATER_THAN_DB_OBJECT] }.first.values.first
-      #       expect(result_msg).to match(Regexp.escape(version_gt_po_msg))
-      #     end
-      #     it 'PreservationCopy ARG_VERSION_GREATER_THAN_DB_OBJECT result' do
-      #       result_msg = results.select { |r| r[PreservedObjectHandler::ARG_VERSION_GREATER_THAN_DB_OBJECT] }.second.values.first
-      #       expect(result_msg).to match(Regexp.escape(version_gt_pc_msg))
-      #     end
-      #     it "PreservedObject UPDATED_DB_OBJECT result" do
-      #       result_msg = results.select { |r| r[PreservedObjectHandler::UPDATED_DB_OBJECT] }.first.values.first
-      #       expect(result_msg).to match(Regexp.escape(updated_po_db_msg))
-      #     end
-      #     it "PreservationCopy UPDATED_DB_OBJECT result" do
-      #       result_msg = results.select { |r| r[PreservedObjectHandler::UPDATED_DB_OBJECT] }.second.values.first
-      #       expect(result_msg).to match(Regexp.escape(updated_pc_db_msg))
       #     end
       #   end
       # end
@@ -448,6 +448,7 @@ RSpec.describe PreservedObjectHandler do
       #     end
       #   end
       # end
+
       context 'db update error' do
         context 'ActiveRecordError' do
           let(:db_update_failed_prefix) { "#{exp_msg_prefix} db update failed" }
@@ -456,14 +457,19 @@ RSpec.describe PreservedObjectHandler do
             # FIXME: couldn't figure out how to put next line into its own test
             expect(Rails.logger).to receive(:log).with(Logger::ERROR, /#{Regexp.escape(db_update_failed_prefix)}/)
 
-            po = instance_double("PreservedObject")
+            po = instance_double('PreservedObject')
             allow(PreservedObject).to receive(:find_by).with(druid: druid).and_return(po)
             allow(po).to receive(:current_version).and_return(1)
             allow(po).to receive(:current_version=).with(incoming_version)
             allow(po).to receive(:size=).with(incoming_size)
             allow(po).to receive(:changed?).and_return(true)
             allow(po).to receive(:save).and_raise(ActiveRecord::ActiveRecordError, 'foo')
-            allow(po).to receive(:destroy) # for after() cleanup calls
+            # FIXME:  need to split db error for each of these tables???
+            pc = instance_double('PreservationCopy')
+            allow(PreservationCopy).to receive(:find_by).with(preserved_object: po, endpoint: ep).and_return(pc)
+            allow(pc).to receive(:current_version).and_return(1)
+            allow(pc).to receive(:changed?).and_return(true)
+            allow(pc).to receive(:save)
             po_handler.update_version
           end
 
@@ -485,6 +491,7 @@ RSpec.describe PreservedObjectHandler do
           end
         end
       end
+
       # it 'calls PreservedObject.save and PreservationCopy.save if the existing record is altered' do
       #   po = instance_double(PreservedObject)
       #   pc = instance_double(PreservationCopy)
@@ -504,6 +511,7 @@ RSpec.describe PreservedObjectHandler do
       #   expect(po).to have_received(:save)
       #   expect(pc).to have_received(:save)
       # end
+
       # it 'calls PreservedObject.touch and PreservationCopy.touch if the existing record is NOT altered' do
       #   po_handler = described_class.new(druid, 1, 1, storage_dir)
       #   po = instance_double(PreservedObject)
@@ -521,6 +529,7 @@ RSpec.describe PreservedObjectHandler do
       #   expect(po).to have_received(:touch)
       #   expect(pc).to have_received(:touch)
       # end
+
       it 'logs a debug message' do
         msg = "update_version #{druid} called and object exists"
         allow(Rails.logger).to receive(:debug)

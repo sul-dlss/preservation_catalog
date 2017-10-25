@@ -107,18 +107,24 @@ class PreservedObjectHandler
       results << result_hash(INVALID_ARGUMENTS, errors.full_messages)
     elsif !PreservedObject.exists?(druid: druid)
       results << result_hash(OBJECT_DOES_NOT_EXIST, 'PreservedObject')
-      # FIXME: should this create the object in this case?  esp if version 1 ? TODO: LOOKY HERE:
+      # FIXME: TODO: LOOKY HERE: should this create the object in this case? esp if version 1 ?
     else
       Rails.logger.debug "update_version #{druid} called and object exists"
       begin
         pres_object = PreservedObject.find_by(druid: druid)
         pres_copy = PreservationCopy.find_by(preserved_object: pres_object, endpoint: endpoint)
+        # FIXME: what if pres_copy doesn't exist
+        # FIXME: what if pres_copy and pres_object versions not the same?
         if incoming_version > pres_copy.current_version
           results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_copy.class.name)
           update_db_object(pres_copy, results)
           results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_object.class.name)
           update_db_object(pres_object, results)
+          # TODO: uncomment and test after method exists in feature branch
+          # results << update_status(pres_copy, Status.default_status)
           results.flatten
+        else
+          # TODO: some sort of error
         end
         # pres_object = PreservedObject.find_by(druid: druid)
         # results << update_per_version_comparison(pres_object) # TODO: fix this
