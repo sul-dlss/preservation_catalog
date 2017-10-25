@@ -101,6 +101,38 @@ class PreservedObjectHandler
     results
   end
 
+  def update_version
+    results = []
+    if invalid?
+      results << result_hash(INVALID_ARGUMENTS, errors.full_messages)
+    elsif !PreservedObject.exists?(druid: druid)
+      results << result_hash(OBJECT_DOES_NOT_EXIST, 'PreservedObject')
+      # FIXME: should this create the object in this case?  esp if version 1 ? TODO: LOOKY HERE:
+    else
+      Rails.logger.debug "update_version #{druid} called and object exists"
+      begin
+        pres_object = PreservedObject.find_by(druid: druid)
+        pres_copy = PreservationCopy.find_by(preserved_object: pres_object, endpoint: endpoint)
+        if incoming_version > pres_copy.current_version
+          results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_copy.class.name)
+          update_db_object(pres_copy, results)
+          results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_object.class.name)
+          update_db_object(pres_object, results)
+          results.flatten
+        end
+        # pres_object = PreservedObject.find_by(druid: druid)
+        # results << update_per_version_comparison(pres_object) # TODO: fix this
+        # pres_copy = PreservationCopy.find_by(preserved_object: pres_object, endpoint: endpoint)
+        # results << update_per_version_comparison(pres_copy) # TODO: fix this
+      rescue ActiveRecord::ActiveRecordError => e
+        results << result_hash(DB_UPDATE_FAILED, "#{e.inspect} #{e.message} #{e.backtrace.inspect}")
+      end
+    end
+    results.flatten!
+    log_results(results)
+    results
+  end
+
   private
 
   # expects @incoming_version to be numeric
