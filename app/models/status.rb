@@ -24,6 +24,6 @@ class Status < ApplicationRecord
   end
 
   def self.ok
-    find_by!(status_text: Settings.statuses.detect { |s| s == 'status_ok' })
+    find_by!(status_text: Settings.statuses.detect { |s| s == 'ok' })
   end
 end
