@@ -114,6 +114,7 @@ RSpec/NamedSubject:
 
 RSpec/NestedGroups:
   Exclude:
+    - 'spec/lib/audit/moab_to_catalog_spec.rb'
     - 'spec/services/preserved_object_handler_spec.rb'
 
 # --- Style ---
