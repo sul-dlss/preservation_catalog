@@ -103,6 +103,7 @@ class PreservedObjectHandler
 
   # expects @incoming_version to be numeric
   # TODO: update existence check timestamps/status per each flavor of comparison?
+  # rubocop:disable Metrics/PerceivedComplexity  -- temporary until we fix #211
   def update_per_version_comparison(db_object)
     version_comparison = db_object.current_version <=> incoming_version
     results = []
@@ -110,8 +111,8 @@ class PreservedObjectHandler
       results << result_hash(VERSION_MATCHES, db_object.class.name)
     elsif version_comparison == 1
       # TODO: needs manual intervention until automatic recovery services implemented
-      # TODO: we should also probably update status here?
       results << result_hash(ARG_VERSION_LESS_THAN_DB_OBJECT, db_object.class.name)
+      db_object.status = unexpected_version_status if db_object.instance_of?(PreservationCopy)
     elsif version_comparison == -1
       db_object.current_version = incoming_version
       db_object.size = incoming_size if db_object.instance_of?(PreservedObject) && incoming_size
@@ -185,5 +186,9 @@ class PreservedObjectHandler
     return val if val.instance_of?(Integer) # NOTE: negative integers caught with validation
     return val.to_i if val.instance_of?(String) && val.scan(/\D/).empty?
     val
+  end
+
+  def unexpected_version_status
+    @unexpected_version_status ||= Status.find_by!(status_text: Settings.statuses.detect { |s| s == 'expected_version_not_found_on_disk' })
   end
 end
