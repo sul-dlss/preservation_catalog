@@ -5,6 +5,9 @@ RSpec.describe PreservedObjectHandler do
   let(:incoming_version) { 6 }
   let(:incoming_size) { 9876 }
   let(:storage_dir) { 'spec/fixtures/storage_root01/moab_storage_trunk' } # we are just going to assume the first rails storage root
+  let(:po) { PreservedObject.find_by(druid: druid) }
+  let(:ep) { Endpoint.find_by(storage_location: storage_dir) }
+  let(:pc) { PreservationCopy.find_by(preserved_object: po, endpoint: ep) }
   let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, #{incoming_version}, #{incoming_size}, #{storage_dir})" }
   let(:po_handler) { described_class.new(druid, incoming_version, incoming_size, storage_dir) }
 
@@ -141,7 +144,7 @@ RSpec.describe PreservedObjectHandler do
       args2 = {
         preserved_object: an_instance_of(PreservedObject), # TODO: see if we got the preserved object that we expected
         current_version: incoming_version,
-        endpoint: Endpoint.find_by(storage_location: storage_dir),
+        endpoint: ep,
         status: Status.default_status
       }
 
@@ -226,14 +229,10 @@ RSpec.describe PreservedObjectHandler do
         PreservationCopy.create!(
           preserved_object: po, # TODO: see if we got the preserved object that we expected
           current_version: po.current_version,
-          endpoint: Endpoint.find_by(storage_location: storage_dir),
+          endpoint: ep,
           status: Status.default_status
         )
       end
-
-      let(:po) { PreservedObject.find_by(druid: druid) }
-      let(:ep) { Endpoint.find_by(storage_location: storage_dir) }
-      let(:pc) { PreservationCopy.find_by(preserved_object: po, endpoint: ep) }
 
       context "incoming and db versions match" do
         let(:po_handler) { described_class.new(druid, 2, 1, storage_dir) }

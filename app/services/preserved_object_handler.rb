@@ -127,7 +127,8 @@ class PreservedObjectHandler
     results = []
     if new_status != preservation_copy.status
       results << result_hash(
-        PC_STATUS_CHANGED, { old_status: preservation_copy.status.status_text, new_status: new_status.status_text }
+        PC_STATUS_CHANGED,
+        { old_status: preservation_copy.status.status_text, new_status: new_status.status_text }
       )
       preservation_copy.status = new_status
     end
@@ -153,7 +154,7 @@ class PreservedObjectHandler
 
   def result_code_msg(response_code, addl=nil)
     arg_hash = { incoming_version: incoming_version }
-    if addl.kind_of?(Hash)
+    if addl.is_a?(Hash)
       arg_hash.merge!(addl)
     else
       arg_hash[:addl] = addl
