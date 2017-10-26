@@ -68,4 +68,16 @@ RSpec.describe Status, type: :model do
       expect { Status.default_status }.to raise_error(ActiveRecord::RecordNotFound)
     end
   end
+
+  describe '.unexpected_version' do
+    it 'returns a Status object' do
+      expect(Status.unexpected_version).to be_a_kind_of Status
+    end
+  end
+
+  describe '.ok' do
+    it 'returns a Status object' do
+      expect(Status.ok).to be_a_kind_of Status
+    end
+  end
 end
