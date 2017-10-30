@@ -1,3 +1,4 @@
+require 'rails_helper'
 require_relative "../../../lib/audit/moab_to_catalog.rb"
 
 RSpec.describe MoabToCatalog do
