@@ -103,7 +103,7 @@ RSpec/ExampleLength:
   Max: 50
 
 RSpec/MultipleExpectations:
-  Max: 4
+  Max: 5
 
 # we like 'expect(x).to receive' better than 'have_received'
 RSpec/MessageSpies:
