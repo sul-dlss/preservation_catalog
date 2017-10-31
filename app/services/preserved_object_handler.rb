@@ -72,6 +72,8 @@ class PreservedObjectHandler
                                 endpoint: endpoint,
                                 status: status)
         results << result_hash(CREATED_NEW_OBJECT)
+      rescue ActiveRecord::RecordNotFound => e
+        results << result_hash(OBJECT_DOES_NOT_EXIST, e.inspect)
       rescue ActiveRecord::ActiveRecordError => e
         results << result_hash(DB_UPDATE_FAILED, "#{e.inspect} #{e.message} #{e.backtrace.inspect}")
       end
@@ -92,6 +94,8 @@ class PreservedObjectHandler
         results << confirm_version_on_db_object(po_db_object)
         pc_db_object = PreservationCopy.find_by!(preserved_object: po_db_object, endpoint: endpoint)
         results << confirm_version_on_db_object(pc_db_object)
+      rescue ActiveRecord::RecordNotFound => e
+        results << result_hash(OBJECT_DOES_NOT_EXIST, e.inspect)
       rescue ActiveRecord::ActiveRecordError => e
         results << result_hash(DB_UPDATE_FAILED, "#{e.inspect} #{e.message} #{e.backtrace.inspect}")
       end
@@ -127,6 +131,8 @@ class PreservedObjectHandler
           results << version_comparison_results(pres_object)
           # FIXME: TODO: should it update existence check timestamps/status?
         end
+      rescue ActiveRecord::RecordNotFound => e
+        results << result_hash(OBJECT_DOES_NOT_EXIST, e.inspect)
       rescue ActiveRecord::ActiveRecordError => e
         results << result_hash(DB_UPDATE_FAILED, "#{e.inspect} #{e.message} #{e.backtrace.inspect}")
       end
