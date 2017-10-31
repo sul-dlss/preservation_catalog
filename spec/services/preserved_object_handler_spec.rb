@@ -602,43 +602,46 @@ RSpec.describe PreservedObjectHandler do
         end
       end
 
-      # it 'calls PreservedObject.save and PreservationCopy.save if the existing record is altered' do
-      #   po = instance_double(PreservedObject)
-      #   pc = instance_double(PreservationCopy)
-      #   allow(PreservedObject).to receive(:find_by).with(druid: druid).and_return(po)
-      #   allow(po).to receive(:current_version).and_return(1)
-      #   allow(po).to receive(:current_version=).with(incoming_version)
-      #   allow(po).to receive(:size=).with(incoming_size)
-      #   allow(po).to receive(:changed?).and_return(true)
-      #   allow(po).to receive(:save)
-      #   allow(PreservationCopy).to receive(:find_by).with(preserved_object: po, endpoint: ep).and_return(pc)
-      #   allow(pc).to receive(:current_version).and_return(1)
-      #   allow(pc).to receive(:current_version=).with(incoming_version)
-      #   allow(pc).to receive(:endpoint).with(ep)
-      #   allow(pc).to receive(:changed?).and_return(true)
-      #   allow(pc).to receive(:save)
-      #   po_handler.update_version
-      #   expect(po).to have_received(:save)
-      #   expect(pc).to have_received(:save)
-      # end
+      it 'calls PreservedObject.save and PreservationCopy.save if the existing record is altered' do
+        po = instance_double(PreservedObject)
+        pc = instance_double(PreservationCopy)
+        allow(PreservedObject).to receive(:find_by).with(druid: druid).and_return(po)
+        allow(po).to receive(:current_version).and_return(1)
+        allow(po).to receive(:current_version=).with(incoming_version)
+        allow(po).to receive(:size=).with(incoming_size)
+        allow(po).to receive(:changed?).and_return(true)
+        allow(po).to receive(:save)
+        allow(PreservationCopy).to receive(:find_by).with(preserved_object: po, endpoint: ep).and_return(pc)
+        allow(pc).to receive(:current_version).and_return(1)
+        allow(pc).to receive(:current_version=).with(incoming_version)
+        allow(pc).to receive(:endpoint).with(ep)
+        allow(pc).to receive(:changed?).and_return(true)
+        allow(pc).to receive(:status).and_return(instance_double(Status, status_text: 'ok'))
+        allow(pc).to receive(:status=)
+        allow(pc).to receive(:save)
+        po_handler.update_version
+        expect(po).to have_received(:save)
+        expect(pc).to have_received(:save)
+      end
 
-      # it 'calls PreservedObject.touch and PreservationCopy.touch if the existing record is NOT altered' do
-      #   po_handler = described_class.new(druid, 1, 1, storage_dir)
-      #   po = instance_double(PreservedObject)
-      #   pc = instance_double(PreservationCopy)
-      #   allow(PreservedObject).to receive(:find_by).with(druid: druid).and_return(po)
-      #   allow(po).to receive(:current_version).and_return(1)
-      #   allow(po).to receive(:changed?).and_return(false)
-      #   allow(po).to receive(:touch)
-      #   allow(PreservationCopy).to receive(:find_by).with(preserved_object: po, endpoint: ep).and_return(pc)
-      #   allow(pc).to receive(:current_version).and_return(1)
-      #   allow(pc).to receive(:endpoint).with(ep)
-      #   allow(pc).to receive(:changed?).and_return(false)
-      #   allow(pc).to receive(:touch)
-      #   po_handler.update_version
-      #   expect(po).to have_received(:touch)
-      #   expect(pc).to have_received(:touch)
-      # end
+      it 'calls PreservedObject.touch and PreservationCopy.touch if the existing record is NOT altered' do
+        skip('need to determine if we want to update timestamps in this situation')
+        po_handler = described_class.new(druid, 1, 1, storage_dir)
+        po = instance_double(PreservedObject)
+        pc = instance_double(PreservationCopy)
+        allow(PreservedObject).to receive(:find_by).with(druid: druid).and_return(po)
+        allow(po).to receive(:current_version).and_return(1)
+        allow(po).to receive(:changed?).and_return(false)
+        allow(po).to receive(:touch)
+        allow(PreservationCopy).to receive(:find_by).with(preserved_object: po, endpoint: ep).and_return(pc)
+        allow(pc).to receive(:current_version).and_return(1)
+        allow(pc).to receive(:endpoint).with(ep)
+        allow(pc).to receive(:changed?).and_return(false)
+        allow(pc).to receive(:touch)
+        po_handler.update_version
+        expect(po).to have_received(:touch)
+        expect(pc).to have_received(:touch)
+      end
 
       it 'logs a debug message' do
         msg = "update_version #{druid} called and druid in Catalog"
