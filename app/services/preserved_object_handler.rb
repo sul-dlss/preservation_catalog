@@ -18,6 +18,7 @@ class PreservedObjectHandler
   OBJECT_ALREADY_EXISTS = 9
   OBJECT_DOES_NOT_EXIST = 10
   PC_STATUS_CHANGED = 11
+  UNEXPECTED_VERSION = 12
 
   RESPONSE_CODE_TO_MESSAGES = {
     INVALID_ARGUMENTS => "encountered validation error(s): %{addl}",
@@ -30,7 +31,8 @@ class PreservedObjectHandler
     DB_UPDATE_FAILED => "db update failed: %{addl}",
     OBJECT_ALREADY_EXISTS => "%{addl} db object already exists",
     OBJECT_DOES_NOT_EXIST => "%{addl} db object does not exist",
-    PC_STATUS_CHANGED => "PreservationCopy status changed from %{old_status} to %{new_status}"
+    PC_STATUS_CHANGED => "PreservationCopy status changed from %{old_status} to %{new_status}",
+    UNEXPECTED_VERSION => "incoming version (%{incoming_version}) has unexpected relationship to %{addl} db version; ERROR!"
   }.freeze
 
   include ActiveModel::Validations
@@ -116,7 +118,7 @@ class PreservedObjectHandler
           results << result_hash(OBJECT_DOES_NOT_EXIST, 'PreservationCopy')
           # FIXME: should this create the object in this case? esp if version 1 ?
         else
-          Rails.logger.debug "update_version #{druid} called and object exists"
+          Rails.logger.debug "update_version #{druid} called and druid in Catalog"
           begin
             if incoming_version > pres_copy.current_version
               results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_copy.class.name)
@@ -129,7 +131,10 @@ class PreservedObjectHandler
                 update_db_object(pres_object, results)
               end
             else
-              # TODO: need code/test for error when incoming should be > current version
+              results << result_hash(UNEXPECTED_VERSION, 'PreservationCopy')
+              results << version_comparison_results(pres_copy)
+              results << version_comparison_results(pres_object)
+              # FIXME: TODO: should it update existence check timestamps/status?
             end
           rescue ActiveRecord::ActiveRecordError => e
             results << result_hash(DB_UPDATE_FAILED, "#{e.inspect} #{e.message} #{e.backtrace.inspect}")
@@ -153,6 +158,19 @@ class PreservedObjectHandler
   def update_preserved_object(pres_obj, new_version, new_size)
     pres_obj.current_version = new_version
     pres_obj.size = new_size if new_size
+  end
+
+  # expects @incoming_version to be numeric
+  def version_comparison_results(db_object)
+    results = []
+    if incoming_version == db_object.current_version
+      results << result_hash(VERSION_MATCHES, db_object.class.name)
+    elsif incoming_version < db_object.current_version
+      results << result_hash(ARG_VERSION_LESS_THAN_DB_OBJECT, db_object.class.name)
+    elsif incoming_version > db_object.current_version
+      results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, db_object.class.name)
+    end
+    results.flatten
   end
 
   # expects @incoming_version to be numeric
@@ -243,6 +261,7 @@ class PreservedObjectHandler
     when OBJECT_ALREADY_EXISTS then Logger::ERROR
     when OBJECT_DOES_NOT_EXIST then Logger::ERROR
     when PC_STATUS_CHANGED then Logger::INFO
+    when UNEXPECTED_VERSION then Logger::ERROR
     end
   end
 
