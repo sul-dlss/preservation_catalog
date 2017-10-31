@@ -17,6 +17,7 @@ class PreservedObjectHandler
   DB_UPDATE_FAILED = 8
   OBJECT_ALREADY_EXISTS = 9
   OBJECT_DOES_NOT_EXIST = 10
+  PC_STATUS_CHANGED = 11
 
   RESPONSE_CODE_TO_MESSAGES = {
     INVALID_ARGUMENTS => "encountered validation error(s): %{addl}",
@@ -28,7 +29,8 @@ class PreservedObjectHandler
     CREATED_NEW_OBJECT => "added object to db as it did not exist",
     DB_UPDATE_FAILED => "db update failed: %{addl}",
     OBJECT_ALREADY_EXISTS => "%{addl} db object already exists",
-    OBJECT_DOES_NOT_EXIST => "%{addl} db object does not exist"
+    OBJECT_DOES_NOT_EXIST => "%{addl} db object does not exist",
+    PC_STATUS_CHANGED => "PreservationCopy status changed from %{old_status} to %{new_status}"
   }.freeze
 
   include ActiveModel::Validations
@@ -121,6 +123,18 @@ class PreservedObjectHandler
     results.flatten
   end
 
+  def update_status(preservation_copy, new_status)
+    results = []
+    if new_status != preservation_copy.status
+      results << result_hash(
+        PC_STATUS_CHANGED,
+        { old_status: preservation_copy.status.status_text, new_status: new_status.status_text }
+      )
+      preservation_copy.status = new_status
+    end
+    results
+  end
+
   # TODO: this may need reworking if we need to distinguish db timestamp updates when
   #   version matched vs. incoming version less than db object
   def update_db_object(db_object, results)
@@ -139,7 +153,14 @@ class PreservedObjectHandler
   end
 
   def result_code_msg(response_code, addl=nil)
-    "#{result_msg_prefix} #{RESPONSE_CODE_TO_MESSAGES[response_code] % { incoming_version: incoming_version, addl: addl }}"
+    arg_hash = { incoming_version: incoming_version }
+    if addl.is_a?(Hash)
+      arg_hash.merge!(addl)
+    else
+      arg_hash[:addl] = addl
+    end
+
+    "#{result_msg_prefix} #{RESPONSE_CODE_TO_MESSAGES[response_code] % arg_hash}"
   end
 
   def result_msg_prefix
@@ -169,6 +190,7 @@ class PreservedObjectHandler
     when DB_UPDATE_FAILED then Logger::ERROR
     when OBJECT_ALREADY_EXISTS then Logger::ERROR
     when OBJECT_DOES_NOT_EXIST then Logger::ERROR
+    when PC_STATUS_CHANGED then Logger::INFO
     end
   end
 
