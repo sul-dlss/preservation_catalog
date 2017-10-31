@@ -151,10 +151,10 @@ RSpec.describe PreservedObjectHandler do
       }
 
       allow(PreservedObject).to receive(:create!).with(args).and_call_original
-      allow(PreservationCopy).to receive(:create).with(args2).and_call_original
+      allow(PreservationCopy).to receive(:create!).with(args2).and_call_original
       po_handler.create
       expect(PreservedObject).to have_received(:create!).with(args)
-      expect(PreservationCopy).to have_received(:create).with(args2)
+      expect(PreservationCopy).to have_received(:create!).with(args2)
     end
 
     it_behaves_like 'attributes validated', :create

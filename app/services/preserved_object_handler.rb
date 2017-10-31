@@ -67,10 +67,10 @@ class PreservedObjectHandler
                                      size: incoming_size,
                                      preservation_policy: pp_default)
         status = Status.default_status
-        PreservationCopy.create(preserved_object: po,
-                                current_version: incoming_version,
-                                endpoint: endpoint,
-                                status: status)
+        PreservationCopy.create!(preserved_object: po,
+                                 current_version: incoming_version,
+                                 endpoint: endpoint,
+                                 status: status)
         results << result_hash(CREATED_NEW_OBJECT)
       rescue ActiveRecord::RecordNotFound => e
         results << result_hash(OBJECT_DOES_NOT_EXIST, e.inspect)
