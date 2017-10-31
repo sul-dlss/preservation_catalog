@@ -225,25 +225,29 @@ RSpec.describe PreservedObjectHandler do
 
     context 'PreservedObject does not exist' do
       let!(:exp_msg) { "#{exp_msg_prefix} PreservedObject db object does not exist" }
-
-      it 'logs an error' do
-        expect(Rails.logger).to receive(:log).with(Logger::ERROR, exp_msg)
+      let(:db_update_failed_prefix) { "#{exp_msg_prefix} db update failed" }
+      let(:results) do
+        allow(Rails.logger).to receive(:log)
+        # FIXME: couldn't figure out how to put next line into its own test
+        expect(Rails.logger).to receive(:log).with(Logger::ERROR, /#{Regexp.escape(db_update_failed_prefix)}/)
+        allow(PreservedObject).to receive(:find_by!).and_raise(ActiveRecord::RecordNotFound, 'foo')
         po_handler.update_version
       end
 
-      context 'returns' do
-        let!(:result) { po_handler.update_version }
+      it 'DB_UPDATE_FAILED error' do
+        expect(results).to include(a_hash_including(PreservedObjectHandler::DB_UPDATE_FAILED))
+      end
+      context 'error message' do
+        let(:result_msg) { results.select { |r| r[PreservedObjectHandler::DB_UPDATE_FAILED] }.first.values.first }
 
-        it '1 result' do
-          expect(result).to be_an_instance_of Array
-          expect(result.size).to eq 1
+        it 'prefix' do
+          expect(result_msg).to match(Regexp.escape(db_update_failed_prefix))
         end
-        it 'OBJECT_DOES_NOT_EXIST result' do
-          result_code = result.first.keys.first
-          expect(result_code).to eq PreservedObjectHandler::OBJECT_DOES_NOT_EXIST
-          result_msg = result.first.values.first
-          expect(result_msg).to match(Regexp.escape(exp_msg))
-          po_handler.update_version
+        it 'specific exception raised' do
+          expect(result_msg).to match(Regexp.escape('ActiveRecord::RecordNotFound'))
+        end
+        it "exception's message" do
+          expect(result_msg).to match(Regexp.escape('foo'))
         end
       end
     end
@@ -253,25 +257,30 @@ RSpec.describe PreservedObjectHandler do
         PreservedObject.create!(druid: druid, current_version: 2, size: 1, preservation_policy: default_prez_policy)
       end
       let!(:exp_msg) { "#{exp_msg_prefix} PreservationCopy db object does not exist" }
-
-      it 'logs an error' do
-        expect(Rails.logger).to receive(:log).with(Logger::ERROR, exp_msg)
+      let(:db_update_failed_prefix) { "#{exp_msg_prefix} db update failed" }
+      let(:results) do
+        allow(Rails.logger).to receive(:log)
+        # FIXME: couldn't figure out how to put next line into its own test
+        expect(Rails.logger).to receive(:log).with(Logger::ERROR, /#{Regexp.escape(db_update_failed_prefix)}/)
+        allow(PreservedObject).to receive(:find_by!).and_return(instance_double(PreservedObject))
+        allow(PreservationCopy).to receive(:find_by!).and_raise(ActiveRecord::RecordNotFound, 'foo')
         po_handler.update_version
       end
 
-      context 'returns' do
-        let!(:result) { po_handler.update_version }
+      it 'DB_UPDATE_FAILED error' do
+        expect(results).to include(a_hash_including(PreservedObjectHandler::DB_UPDATE_FAILED))
+      end
+      context 'error message' do
+        let(:result_msg) { results.select { |r| r[PreservedObjectHandler::DB_UPDATE_FAILED] }.first.values.first }
 
-        it '1 result' do
-          expect(result).to be_an_instance_of Array
-          expect(result.size).to eq 1
+        it 'prefix' do
+          expect(result_msg).to match(Regexp.escape(db_update_failed_prefix))
         end
-        it 'OBJECT_DOES_NOT_EXIST result' do
-          result_code = result.first.keys.first
-          expect(result_code).to eq PreservedObjectHandler::OBJECT_DOES_NOT_EXIST
-          result_msg = result.first.values.first
-          expect(result_msg).to match(Regexp.escape(exp_msg))
-          po_handler.update_version
+        it 'specific exception raised' do
+          expect(result_msg).to match(Regexp.escape('ActiveRecord::RecordNotFound'))
+        end
+        it "exception's message" do
+          expect(result_msg).to match(Regexp.escape('foo'))
         end
       end
     end
@@ -521,9 +530,9 @@ RSpec.describe PreservedObjectHandler do
               expect(Rails.logger).to receive(:log).with(Logger::ERROR, /#{Regexp.escape(db_update_failed_prefix)}/)
 
               po = instance_double('PreservedObject')
-              allow(PreservedObject).to receive(:find_by).with(druid: druid).and_return(po)
+              allow(PreservedObject).to receive(:find_by!).with(druid: druid).and_return(po)
               pc = instance_double('PreservationCopy')
-              allow(PreservationCopy).to receive(:find_by).with(preserved_object: po, endpoint: ep).and_return(pc)
+              allow(PreservationCopy).to receive(:find_by!).with(preserved_object: po, endpoint: ep).and_return(pc)
               allow(pc).to receive(:current_version).and_return(1)
               allow(pc).to receive(:current_version=)
               allow(pc).to receive(:changed?).and_return(true)

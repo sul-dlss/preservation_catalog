@@ -50,7 +50,7 @@ class PreservedObjectHandler
     @incoming_version = version_string_to_int(incoming_version)
     @incoming_size = string_to_int(incoming_size)
     @storage_dir = storage_dir
-    @endpoint = Endpoint.find_by(storage_location: storage_dir)
+    @endpoint = Endpoint.find_by(storage_location: storage_dir) # let the validations catch lack of endpoint
   end
 
   def create
@@ -85,14 +85,12 @@ class PreservedObjectHandler
     results = []
     if invalid?
       results << result_hash(INVALID_ARGUMENTS, errors.full_messages)
-    elsif !PreservedObject.exists?(druid: druid)
-      results << result_hash(OBJECT_DOES_NOT_EXIST, 'PreservedObject')
     else
       Rails.logger.debug "confirm_version #{druid} called and object exists"
       begin
-        po_db_object = PreservedObject.find_by(druid: druid)
+        po_db_object = PreservedObject.find_by!(druid: druid)
         results << confirm_version_on_db_object(po_db_object)
-        pc_db_object = PreservationCopy.find_by(preserved_object: po_db_object, endpoint: endpoint)
+        pc_db_object = PreservationCopy.find_by!(preserved_object: po_db_object, endpoint: endpoint)
         results << confirm_version_on_db_object(pc_db_object)
       rescue ActiveRecord::ActiveRecordError => e
         results << result_hash(DB_UPDATE_FAILED, "#{e.inspect} #{e.message} #{e.backtrace.inspect}")
@@ -108,38 +106,28 @@ class PreservedObjectHandler
     if invalid?
       results << result_hash(INVALID_ARGUMENTS, errors.full_messages)
     else
-      pres_object = PreservedObject.find_by(druid: druid)
-      if pres_object.nil?
-        results << result_hash(OBJECT_DOES_NOT_EXIST, 'PreservedObject')
-        # FIXME: should this create the object in this case? esp if version 1 ?
-      else
-        pres_copy = PreservationCopy.find_by(preserved_object: pres_object, endpoint: endpoint)
-        if !pres_copy
-          results << result_hash(OBJECT_DOES_NOT_EXIST, 'PreservationCopy')
-          # FIXME: should this create the object in this case? esp if version 1 ?
-        else
-          Rails.logger.debug "update_version #{druid} called and druid in Catalog"
-          begin
-            if incoming_version > pres_copy.current_version
-              results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_copy.class.name)
-              update_preservation_copy(pres_copy, incoming_version)
-              results << update_status(pres_copy, Status.default_status)
-              update_db_object(pres_copy, results)
-              if incoming_version > pres_object.current_version # FIXME: need code/test for when it's NOT
-                results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_object.class.name)
-                update_preserved_object(pres_object, incoming_version, incoming_size)
-                update_db_object(pres_object, results)
-              end
-            else
-              results << result_hash(UNEXPECTED_VERSION, 'PreservationCopy')
-              results << version_comparison_results(pres_copy)
-              results << version_comparison_results(pres_object)
-              # FIXME: TODO: should it update existence check timestamps/status?
-            end
-          rescue ActiveRecord::ActiveRecordError => e
-            results << result_hash(DB_UPDATE_FAILED, "#{e.inspect} #{e.message} #{e.backtrace.inspect}")
+      Rails.logger.debug "update_version #{druid} called and druid in Catalog"
+      begin
+        pres_object = PreservedObject.find_by!(druid: druid)
+        pres_copy = PreservationCopy.find_by!(preserved_object: pres_object, endpoint: endpoint)
+        if incoming_version > pres_copy.current_version
+          results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_copy.class.name)
+          update_preservation_copy(pres_copy, incoming_version)
+          results << update_status(pres_copy, Status.default_status)
+          update_db_object(pres_copy, results)
+          if incoming_version > pres_object.current_version # FIXME: need code/test for when it's NOT
+            results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_object.class.name)
+            update_preserved_object(pres_object, incoming_version, incoming_size)
+            update_db_object(pres_object, results)
           end
+        else
+          results << result_hash(UNEXPECTED_VERSION, 'PreservationCopy')
+          results << version_comparison_results(pres_copy)
+          results << version_comparison_results(pres_object)
+          # FIXME: TODO: should it update existence check timestamps/status?
         end
+      rescue ActiveRecord::ActiveRecordError => e
+        results << result_hash(DB_UPDATE_FAILED, "#{e.inspect} #{e.message} #{e.backtrace.inspect}")
       end
     end
     results.flatten!
