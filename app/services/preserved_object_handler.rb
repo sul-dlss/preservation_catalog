@@ -120,6 +120,7 @@ class PreservedObjectHandler
             update_preserved_object(pres_object, incoming_version, incoming_size)
             update_db_object(pres_object, results)
           end
+          # TODO: comparable else for the pres object version mismatch
         else
           results << result_hash(UNEXPECTED_VERSION, 'PreservationCopy')
           results << version_comparison_results(pres_copy)
@@ -161,6 +162,20 @@ class PreservedObjectHandler
     results.flatten
   end
 
+  def increase_version(db_object)
+    results = []
+
+    results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, db_object.class.name)
+    if db_object.is_a?(PreservationCopy)
+      update_preservation_copy(db_object, incoming_version)
+      results << update_status(db_object, Status.default_status)
+    else
+      update_preserved_object(db_object, incoming_version, incoming_size)
+    end
+
+    results
+  end
+
   # expects @incoming_version to be numeric
   # TODO: revisit naming
   def confirm_version_on_db_object(db_object)
@@ -170,13 +185,7 @@ class PreservedObjectHandler
       results << update_status(db_object, Status.ok) if db_object.is_a?(PreservationCopy)
       results << result_hash(VERSION_MATCHES, db_object.class.name)
     elsif incoming_version > db_object.current_version
-      results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, db_object.class.name)
-      if db_object.is_a?(PreservationCopy)
-        update_preservation_copy(db_object, incoming_version)
-        results << update_status(db_object, Status.default_status)
-      else
-        update_preserved_object(db_object, incoming_version, incoming_size)
-      end
+      results.concat(increase_version(db_object))
     else
       # TODO: needs manual intervention until automatic recovery services implemented
       results << update_status(db_object, Status.unexpected_version) if db_object.is_a?(PreservationCopy)

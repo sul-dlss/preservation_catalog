@@ -224,7 +224,7 @@ RSpec.describe PreservedObjectHandler do
     it_behaves_like 'attributes validated', :update_version
 
     context 'PreservedObject does not exist' do
-      let!(:exp_msg) { "#{exp_msg_prefix} PreservedObject db object does not exist" }
+      let(:exp_msg) { "#{exp_msg_prefix} PreservedObject db object does not exist" }
       let(:db_update_failed_prefix) { "#{exp_msg_prefix} db update failed" }
       let(:results) do
         allow(Rails.logger).to receive(:log)
@@ -256,7 +256,7 @@ RSpec.describe PreservedObjectHandler do
       before do
         PreservedObject.create!(druid: druid, current_version: 2, size: 1, preservation_policy: default_prez_policy)
       end
-      let!(:exp_msg) { "#{exp_msg_prefix} PreservationCopy db object does not exist" }
+      let(:exp_msg) { "#{exp_msg_prefix} PreservationCopy db object does not exist" }
       let(:db_update_failed_prefix) { "#{exp_msg_prefix} db update failed" }
       let(:results) do
         allow(Rails.logger).to receive(:log)
