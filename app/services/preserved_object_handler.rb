@@ -124,7 +124,6 @@ class PreservedObjectHandler
             update_preserved_object(pres_object, incoming_version, incoming_size)
             update_db_object(pres_object, results)
           end
-          # TODO: comparable else for the pres object version mismatch
         else
           results << result_hash(UNEXPECTED_VERSION, 'PreservationCopy')
           results << version_comparison_results(pres_copy)

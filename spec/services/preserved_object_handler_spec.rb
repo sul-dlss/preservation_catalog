@@ -354,12 +354,12 @@ RSpec.describe PreservedObjectHandler do
       context 'incoming version newer than PreservationCopy but not PreservedObject' do
         context 'PreservedObject version same' do
           it 'does something' do
-            skip('write this spec')
+            skip('write this spec; we need to figure out the desired behavior.')
           end
         end
         context 'PreservedObject version greater' do
           it 'does something' do
-            skip('write this spec')
+            skip('write this spec; we need to figure out the desired behavior.')
           end
         end
       end
@@ -367,12 +367,12 @@ RSpec.describe PreservedObjectHandler do
       context 'incoming version newer than PreservedObject but not PreservationCopy' do
         context 'PreservationCopy version same' do
           it 'does something' do
-            skip('write this spec')
+            skip('write this spec; we need to figure out the desired behavior.')
           end
         end
         context 'PreservationCopy version greater' do
           it 'does something' do
-            skip('write this spec')
+            skip('write this spec; we need to figure out the desired behavior.')
           end
         end
       end
