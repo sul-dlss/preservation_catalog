@@ -136,7 +136,7 @@ RSpec.describe PreservedObjectHandler do
   describe '#create' do
     let!(:exp_msg) { "#{exp_msg_prefix} added object to db as it did not exist" }
 
-    it 'creates the preserved object and preservation copy' do
+    it 'creates the preserved object and preserved copy' do
       args = {
         druid: druid,
         current_version: incoming_version,
