@@ -55,7 +55,8 @@ Metrics/BlockLength:
     - 'spec/**/*'
 
 Metrics/ClassLength:
-  Max: 200
+  Exclude:
+    - 'app/services/preserved_object_handler.rb'
 
 Metrics/CyclomaticComplexity:
   Exclude:
@@ -70,6 +71,8 @@ Metrics/LineLength:
 
 Metrics/MethodLength:
   Max: 25
+  Exclude:
+    - 'app/services/preserved_object_handler.rb'
 
 # --- Naming ---
 
@@ -103,7 +106,7 @@ RSpec/ExampleLength:
   Max: 50
 
 RSpec/MultipleExpectations:
-  Max: 4
+  Max: 5
 
 # we like 'expect(x).to receive' better than 'have_received'
 RSpec/MessageSpies:

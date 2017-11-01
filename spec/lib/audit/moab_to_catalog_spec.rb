@@ -40,7 +40,7 @@ RSpec.describe MoabToCatalog do
       subject
     end
 
-    context "(calls create or update)" do
+    context "(calls create or confirm_version)" do
       let(:expected_argument_list) do
         [
           { druid: 'bj102hs9687', storage_root_current_version: 3 },
@@ -83,10 +83,10 @@ RSpec.describe MoabToCatalog do
         end
       end
 
-      it "calls #update if object exists" do
+      it "calls #confirm_version if object exists" do
         expected_argument_list.each do |arg_hash|
           expect(PreservedObject).to receive(:exists?).with(druid: arg_hash[:druid]).and_return(true)
-          expect(arg_hash[:po_handler]).to receive(:update)
+          expect(arg_hash[:po_handler]).to receive(:confirm_version)
         end
         subject
       end

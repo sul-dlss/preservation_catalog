@@ -10,7 +10,7 @@ class MoabToCatalog
       moab = Moab::StorageObject.new(druid, path)
       po_handler = PreservedObjectHandler.new(druid, moab.current_version_id, moab.size, storage_dir)
       if PreservedObject.exists?(druid: druid)
-        results << po_handler.update
+        results << po_handler.confirm_version
       else
         Rails.logger.error "druid: #{druid} expected to exist in catalog but was not found"
         results << po_handler.create if expect_to_create
