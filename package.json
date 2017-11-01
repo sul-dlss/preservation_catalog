@@ -1,5 +1,5 @@
 {
-  "name": "preservation_core_catalog",
+  "name": "preservation_catalog",
   "private": true,
   "dependencies": {}
 }

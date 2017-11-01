@@ -7,7 +7,7 @@ require 'ruby-prof'
 
 logger = Logger.new('log/benchmark_moab_to_catalog.log')
 at_exit do
-  # prof_log_file_name = "{pcc_app_home}/current/log/MoabtoCatalog_rubyprof_#{Time.now.getlocal}"
+  # prof_log_file_name = "{app_home}/current/log/MoabtoCatalog_rubyprof_#{Time.now.getlocal}"
   # prof_log_file_name = "/tmp/MoabtoCatalog_rubyprof_#{Time.now.getlocal}"
   # File.open prof_log_file_name, 'w' do |file|
   #   RubyProf::FlatPrinter.new(@prof).print(file)
@@ -16,8 +16,8 @@ at_exit do
 end
 
 logger.info "#{__FILE__} is running at #{Time.now.getlocal}"
-pcc_app_home = '/opt/app/pcc/preservation_core_catalog'
-revisions_log = "#{pcc_app_home}/revisions.log"
+app_home = '/opt/app/pres/preservation_catalog'
+revisions_log = "#{app_home}/revisions.log"
 
 # last line of revisions.log if it exists
 # or else grab current revision

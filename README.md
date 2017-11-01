@@ -1,7 +1,7 @@
-[![Build Status](https://travis-ci.org/sul-dlss/preservation_core_catalog.svg?branch=master)](https://travis-ci.org/sul-dlss/preservation_core_catalog)
-[![Coverage Status](https://coveralls.io/repos/github/sul-dlss/preservation_core_catalog/badge.svg)](https://coveralls.io/github/sul-dlss/preservation_core_catalog)
-[![Dependency Status](https://gemnasium.com/badges/github.com/sul-dlss/preservation_core_catalog.svg)](https://gemnasium.com/github.com/sul-dlss/preservation_core_catalog)
-[![GitHub version](https://badge.fury.io/gh/sul-dlss%2Fpreservation_core_catalog.svg)](https://badge.fury.io/gh/sul-dlss%2Fpreservation_core_catalog)
+[![Build Status](https://travis-ci.org/sul-dlss/preservation_catalog.svg?branch=master)](https://travis-ci.org/sul-dlss/preservation_catalog)
+[![Coverage Status](https://coveralls.io/repos/github/sul-dlss/preservation_catalog/badge.svg?branch=master)](https://coveralls.io/github/sul-dlss/preservation_catalog?branch=master)
+[![Dependency Status](https://gemnasium.com/badges/github.com/sul-dlss/preservation_catalog.svg)](https://gemnasium.com/github.com/sul-dlss/preservation_catalog)
+[![GitHub version](https://badge.fury.io/gh/sul-dlss%2Fpreservation_catalog.svg)](https://badge.fury.io/gh/sul-dlss%2Fpreservation_catalog)
 
 
 # README
@@ -31,8 +31,8 @@ and that it's accepting connections:
 
 Using the `psql` utility, run these two setup scripts from the command line, like so:
 ```sh
-psql -f db/scripts/pcc_setup.sql postgres
-psql -f db/scripts/pcc_test_setup.sql postgres
+psql -f db/scripts/pres_setup.sql postgres
+psql -f db/scripts/pres_test_setup.sql postgres
 ```
 
 These scripts do the following for you:

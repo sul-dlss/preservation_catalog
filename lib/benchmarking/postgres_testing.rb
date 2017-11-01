@@ -9,9 +9,9 @@ end
 
 logger.info "#{__FILE__} is running at #{Time.now.getlocal}"
 
-pcc_app_home = '/opt/app/pcc/preservation_core_catalog'
-revisions_log = "#{pcc_app_home}/revisions.log"
-remote_test_data_dir = "#{pcc_app_home}/testdata"
+app_home = '/opt/app/pres/preservation_catalog'
+revisions_log = "#{app_home}/revisions.log"
+remote_test_data_dir = "#{app_home}/testdata"
 test_data_file = 'all_vols.out.201703270939.sorted'
 remote_test_data = "#{remote_test_data_dir}/#{test_data_file}"
 

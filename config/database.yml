@@ -7,10 +7,10 @@ default: &default
 
 development:
   <<: *default
-  database: pcc
-  username: pcc
+  database: pres
+  username: pres
 
 test:
   <<: *default
-  database: pcc_test
-  username: pcc_test
+  database: pres_test
+  username: pres_test

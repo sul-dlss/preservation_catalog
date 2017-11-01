@@ -1,5 +1,0 @@
-CREATE USER pcc_test;
-ALTER USER pcc_test CREATEDB;
-CREATE DATABASE pcc_test;
-ALTER DATABASE pcc_test OWNER TO pcc_test;
-GRANT ALL PRIVILEGES ON DATABASE pcc_test TO pcc_test;
