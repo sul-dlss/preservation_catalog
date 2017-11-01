@@ -7,7 +7,7 @@ class PreservedCopy < ApplicationRecord
 
   validates :preserved_object, presence: true
   validates :endpoint, presence: true
-  validates :current_version, presence: true
+  validates :version, presence: true
   validates :status, presence: true
   # NOTE: size here is approximate and not used for fixity checking
   validates :size, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true

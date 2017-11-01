@@ -11,7 +11,7 @@ RSpec.describe PreservedCopy, type: :model do
     PreservedCopy.create!(
       preserved_object_id: preserved_object.id,
       endpoint_id: endpoint.id,
-      current_version: 0,
+      version: 0,
       status_id: status.id,
       size: 1
     )

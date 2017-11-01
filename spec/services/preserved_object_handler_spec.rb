@@ -137,24 +137,24 @@ RSpec.describe PreservedObjectHandler do
     let!(:exp_msg) { "#{exp_msg_prefix} added object to db as it did not exist" }
 
     it 'creates the preserved object and preserved copy' do
-      args = {
+      po_args = {
         druid: druid,
         current_version: incoming_version,
         preservation_policy: PreservationPolicy.default_preservation_policy
       }
-      args2 = {
+      pc_args = {
         preserved_object: an_instance_of(PreservedObject), # TODO: see if we got the preserved object that we expected
-        current_version: incoming_version,
+        version: incoming_version,
         size: incoming_size,
         endpoint: ep,
         status: Status.default_status
       }
 
-      allow(PreservedObject).to receive(:create!).with(args).and_call_original
-      allow(PreservedCopy).to receive(:create!).with(args2).and_call_original
+      allow(PreservedObject).to receive(:create!).with(po_args).and_call_original
+      allow(PreservedCopy).to receive(:create!).with(pc_args).and_call_original
       po_handler.create
-      expect(PreservedObject).to have_received(:create!).with(args)
-      expect(PreservedCopy).to have_received(:create!).with(args2)
+      expect(PreservedObject).to have_received(:create!).with(po_args)
+      expect(PreservedCopy).to have_received(:create!).with(pc_args)
     end
 
     it_behaves_like 'attributes validated', :create
@@ -281,7 +281,7 @@ RSpec.describe PreservedObjectHandler do
         po = PreservedObject.create!(druid: druid, current_version: 2, preservation_policy: default_prez_policy)
         PreservedCopy.create!(
           preserved_object: po, # TODO: see if we got the preserved object that we expected
-          current_version: po.current_version,
+          version: po.current_version,
           size: 1,
           endpoint: ep,
           status: Status.unexpected_version
@@ -295,10 +295,10 @@ RSpec.describe PreservedObjectHandler do
         let(:updated_po_db_msg) { "#{exp_msg_prefix} PreservedObject db object updated" }
 
         it "updates entries with incoming version" do
-          expect(pc.current_version).to eq 2
+          expect(pc.version).to eq 2
           expect(po.current_version).to eq 2
           po_handler.update_version
-          expect(pc.reload.current_version).to eq incoming_version
+          expect(pc.reload.version).to eq incoming_version
           expect(po.reload.current_version).to eq incoming_version
         end
         it 'updates entries with size if included' do
@@ -389,10 +389,10 @@ RSpec.describe PreservedObjectHandler do
 
         it "entry version stays the same" do
           expect(po.current_version).to eq 2
-          expect(pc.current_version).to eq 2
+          expect(pc.version).to eq 2
           po_handler.update_version
           expect(po.reload.current_version).to eq 2
-          expect(pc.reload.current_version).to eq 2
+          expect(pc.reload.version).to eq 2
         end
         it "entry size stays the same" do
           expect(pc.size).to eq 1
@@ -459,10 +459,10 @@ RSpec.describe PreservedObjectHandler do
 
         it "entry version stays the same" do
           expect(po.current_version).to eq 2
-          expect(pc.current_version).to eq 2
+          expect(pc.version).to eq 2
           po_handler.update_version
           expect(po.reload.current_version).to eq 2
-          expect(pc.reload.current_version).to eq 2
+          expect(pc.reload.version).to eq 2
         end
         it "entry size stays the same" do
           expect(pc.size).to eq 1
@@ -525,8 +525,8 @@ RSpec.describe PreservedObjectHandler do
               allow(PreservedObject).to receive(:find_by!).with(druid: druid).and_return(po)
               pc = instance_double('PreservedCopy')
               allow(PreservedCopy).to receive(:find_by!).with(preserved_object: po, endpoint: ep).and_return(pc)
-              allow(pc).to receive(:current_version).and_return(1)
-              allow(pc).to receive(:current_version=)
+              allow(pc).to receive(:version).and_return(1)
+              allow(pc).to receive(:version=)
               allow(pc).to receive(:changed?).and_return(true)
               allow(pc).to receive(:save).and_raise(ActiveRecord::ActiveRecordError, 'foo')
               status = instance_double('Status')
@@ -571,8 +571,8 @@ RSpec.describe PreservedObjectHandler do
               allow(po).to receive(:save).and_raise(ActiveRecord::ActiveRecordError, 'foo')
               pc = instance_double('PreservedCopy')
               allow(PreservedCopy).to receive(:find_by).with(preserved_object: po, endpoint: ep).and_return(pc)
-              allow(pc).to receive(:current_version).and_return(5)
-              allow(pc).to receive(:current_version=).with(incoming_version)
+              allow(pc).to receive(:version).and_return(5)
+              allow(pc).to receive(:version=).with(incoming_version)
               allow(pc).to receive(:size=).with(incoming_size)
               allow(pc).to receive(:changed?).and_return(true)
               allow(pc).to receive(:save)
@@ -613,8 +613,8 @@ RSpec.describe PreservedObjectHandler do
         allow(po).to receive(:changed?).and_return(true)
         allow(po).to receive(:save)
         allow(PreservedCopy).to receive(:find_by).with(preserved_object: po, endpoint: ep).and_return(pc)
-        allow(pc).to receive(:current_version).and_return(1)
-        allow(pc).to receive(:current_version=).with(incoming_version)
+        allow(pc).to receive(:version).and_return(1)
+        allow(pc).to receive(:version=).with(incoming_version)
         allow(pc).to receive(:size=).with(incoming_size)
         allow(pc).to receive(:endpoint).with(ep)
         allow(pc).to receive(:changed?).and_return(true)
@@ -636,7 +636,7 @@ RSpec.describe PreservedObjectHandler do
         allow(po).to receive(:changed?).and_return(false)
         allow(po).to receive(:touch)
         allow(PreservedCopy).to receive(:find_by).with(preserved_object: po, endpoint: ep).and_return(pc)
-        allow(pc).to receive(:current_version).and_return(1)
+        allow(pc).to receive(:version).and_return(1)
         allow(pc).to receive(:endpoint).with(ep)
         allow(pc).to receive(:changed?).and_return(false)
         allow(pc).to receive(:touch)
@@ -664,7 +664,7 @@ RSpec.describe PreservedObjectHandler do
         po = PreservedObject.create!(druid: druid, current_version: 2, preservation_policy: default_prez_policy)
         PreservedCopy.create!(
           preserved_object: po, # TODO: see if we got the preserved object that we expected
-          current_version: po.current_version,
+          version: po.current_version,
           size: 1,
           endpoint: ep,
           status: Status.default_status
@@ -681,10 +681,10 @@ RSpec.describe PreservedObjectHandler do
 
         it "entry version stays the same" do
           expect(po.current_version).to eq 2
-          expect(pc.current_version).to eq 2
+          expect(pc.version).to eq 2
           po_handler.confirm_version
           expect(po.reload.current_version).to eq 2
-          expect(pc.reload.current_version).to eq 2
+          expect(pc.reload.version).to eq 2
         end
         it "entry size stays the same" do
           expect(pc.size).to eq 1
@@ -740,10 +740,10 @@ RSpec.describe PreservedObjectHandler do
 
         it "updates entry with incoming version" do
           expect(po.current_version).to eq 2
-          expect(pc.current_version).to eq 2
+          expect(pc.version).to eq 2
           po_handler.confirm_version
           expect(po.reload.current_version).to eq incoming_version
-          expect(pc.reload.current_version).to eq incoming_version
+          expect(pc.reload.version).to eq incoming_version
         end
         it 'updates entry with size if included' do
           expect(pc.size).to eq 1
@@ -810,10 +810,10 @@ RSpec.describe PreservedObjectHandler do
 
         it "entry version stays the same" do
           expect(po.current_version).to eq 2
-          expect(pc.current_version).to eq 2
+          expect(pc.version).to eq 2
           po_handler.confirm_version
           expect(po.reload.current_version).to eq 2
-          expect(pc.reload.current_version).to eq 2
+          expect(pc.reload.version).to eq 2
         end
         it "entry size stays the same" do
           expect(pc.size).to eq 1
@@ -921,8 +921,8 @@ RSpec.describe PreservedObjectHandler do
         allow(po).to receive(:changed?).and_return(true)
         allow(po).to receive(:save)
         allow(PreservedCopy).to receive(:find_by).with(preserved_object: po, endpoint: ep).and_return(pc)
-        allow(pc).to receive(:current_version).and_return(1)
-        allow(pc).to receive(:current_version=).with(incoming_version)
+        allow(pc).to receive(:version).and_return(1)
+        allow(pc).to receive(:version=).with(incoming_version)
         allow(pc).to receive(:size=).with(incoming_size)
         allow(pc).to receive(:endpoint).with(ep)
         allow(pc).to receive(:changed?).and_return(true)
@@ -941,7 +941,7 @@ RSpec.describe PreservedObjectHandler do
         allow(po).to receive(:changed?).and_return(false)
         allow(po).to receive(:touch)
         allow(PreservedCopy).to receive(:find_by).with(preserved_object: po, endpoint: ep).and_return(pc)
-        allow(pc).to receive(:current_version).and_return(1)
+        allow(pc).to receive(:version).and_return(1)
         allow(pc).to receive(:endpoint).with(ep)
         allow(pc).to receive(:changed?).and_return(false)
         allow(pc).to receive(:touch)
