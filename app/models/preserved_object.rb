@@ -8,7 +8,5 @@ class PreservedObject < ApplicationRecord
   has_many :preserved_copies, dependent: :restrict_with_exception
   validates :druid, presence: true, uniqueness: true, format: { with: DruidTools::Druid.pattern }
   validates :current_version, presence: true, numericality: { only_integer: true, greater_than: 0 }
-  # NOTE: size here is approximate and not used for fixity checking
-  validates :size, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
   validates :preservation_policy, null: false
 end

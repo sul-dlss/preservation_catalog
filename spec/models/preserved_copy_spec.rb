@@ -4,7 +4,7 @@ RSpec.describe PreservedCopy, type: :model do
   let!(:endpoint) { Endpoint.first }
   let!(:preserved_object) do
     policy_id = PreservationPolicy.default_preservation_policy.id
-    PreservedObject.create!(druid: 'ab123cd4567', current_version: 1, preservation_policy_id: policy_id, size: 1)
+    PreservedObject.create!(druid: 'ab123cd4567', current_version: 1, preservation_policy_id: policy_id)
   end
   let!(:status) { Status.default_status }
   let!(:preserved_copy) do
@@ -12,7 +12,8 @@ RSpec.describe PreservedCopy, type: :model do
       preserved_object_id: preserved_object.id,
       endpoint_id: endpoint.id,
       current_version: 0,
-      status_id: status.id
+      status_id: status.id,
+      size: 1
     )
   end
 

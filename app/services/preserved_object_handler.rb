@@ -64,11 +64,11 @@ class PreservedObjectHandler
       begin
         po = PreservedObject.create!(druid: druid,
                                      current_version: incoming_version,
-                                     size: incoming_size,
                                      preservation_policy: pp_default)
         status = Status.default_status
         PreservedCopy.create!(preserved_object: po,
                               current_version: incoming_version,
+                              size: incoming_size,
                               endpoint: endpoint,
                               status: status)
         results << result_hash(CREATED_NEW_OBJECT)
@@ -116,12 +116,12 @@ class PreservedObjectHandler
         pres_copy = PreservedCopy.find_by!(preserved_object: pres_object, endpoint: endpoint)
         if incoming_version > pres_copy.current_version
           results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_copy.class.name)
-          update_preserved_copy(pres_copy, incoming_version)
+          update_preserved_copy(pres_copy, incoming_version, incoming_size)
           results << update_status(pres_copy, Status.default_status)
           update_db_object(pres_copy, results)
           if incoming_version > pres_object.current_version # FIXME: need code/test for when it's NOT
             results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_object.class.name)
-            update_preserved_object(pres_object, incoming_version, incoming_size)
+            update_preserved_object(pres_object, incoming_version)
             update_db_object(pres_object, results)
           end
         else
@@ -144,14 +144,14 @@ class PreservedObjectHandler
   private
 
   # expects @incoming_version to be numeric
-  def update_preserved_copy(pres_copy, new_version)
+  def update_preserved_copy(pres_copy, new_version, new_size)
     pres_copy.current_version = new_version
+    pres_copy.size = new_size if new_size
   end
 
   # expects @incoming_version to be numeric
-  def update_preserved_object(pres_obj, new_version, new_size)
+  def update_preserved_object(pres_obj, new_version)
     pres_obj.current_version = new_version
-    pres_obj.size = new_size if new_size
   end
 
   # expects @incoming_version to be numeric
@@ -172,10 +172,10 @@ class PreservedObjectHandler
 
     results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, db_object.class.name)
     if db_object.is_a?(PreservedCopy)
-      update_preserved_copy(db_object, incoming_version)
+      update_preserved_copy(db_object, incoming_version, incoming_size)
       results << update_status(db_object, Status.default_status)
     else
-      update_preserved_object(db_object, incoming_version, incoming_size)
+      update_preserved_object(db_object, incoming_version)
     end
 
     results

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20171101194518) do
+ActiveRecord::Schema.define(version: 20171101203630) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -59,6 +59,7 @@ ActiveRecord::Schema.define(version: 20171101194518) do
     t.bigint "status_id", null: false
     t.datetime "last_checked_on_storage"
     t.datetime "last_checksum_validation"
+    t.bigint "size"
     t.index ["endpoint_id"], name: "index_preserved_copies_on_endpoint_id"
     t.index ["last_audited"], name: "index_preserved_copies_on_last_audited"
     t.index ["preserved_object_id"], name: "index_preserved_copies_on_preserved_object_id"
@@ -68,7 +69,6 @@ ActiveRecord::Schema.define(version: 20171101194518) do
   create_table "preserved_objects", force: :cascade do |t|
     t.string "druid", null: false
     t.integer "current_version", null: false
-    t.bigint "size"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "preservation_policy_id", null: false

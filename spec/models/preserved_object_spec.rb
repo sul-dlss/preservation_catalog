@@ -10,11 +10,6 @@ RSpec.describe PreservedObject, type: :model do
       preservation_policy: preservation_policy
     }
   end
-  let(:addl_attributes) do
-    {
-      size: 1
-    }
-  end
 
   it { is_expected.to belong_to(:preservation_policy) }
   it { is_expected.to have_many(:preserved_copies) }
@@ -24,10 +19,6 @@ RSpec.describe PreservedObject, type: :model do
   context 'validation' do
     it 'is valid with required attributes' do
       po = PreservedObject.create(required_attributes)
-      expect(po).to be_valid
-    end
-    it 'is valid with required and optional attributes' do
-      po = PreservedObject.create(required_attributes.merge(addl_attributes))
       expect(po).to be_valid
     end
     it 'is not valid without attributes' do
