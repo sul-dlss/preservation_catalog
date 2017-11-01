@@ -119,11 +119,11 @@ class PreservedObjectHandler
           results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_copy.class.name)
           update_preserved_copy(pres_copy, incoming_version, incoming_size)
           results << update_status(pres_copy, Status.default_status)
-          update_db_object(pres_copy, results)
+          results.concat(update_db_object(pres_copy))
           if incoming_version > pres_object.current_version # FIXME: need code/test for when it's NOT
             results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_object.class.name)
             update_preserved_object(pres_object, incoming_version)
-            update_db_object(pres_object, results)
+            results.concat(update_db_object(pres_object))
           end
         else
           results << result_hash(UNEXPECTED_VERSION, 'PreservedCopy')
@@ -198,7 +198,7 @@ class PreservedObjectHandler
       results << result_hash(ARG_VERSION_LESS_THAN_DB_OBJECT, db_object.class.name)
     end
 
-    update_db_object(db_object, results)
+    results.concat(update_db_object(db_object))
 
     results
   end
@@ -217,7 +217,8 @@ class PreservedObjectHandler
 
   # TODO: this may need reworking if we need to distinguish db timestamp updates when
   #   version matched vs. incoming version less than db object
-  def update_db_object(db_object, results)
+  def update_db_object(db_object)
+    results = []
     if db_object.changed?
       db_object.save
       results << result_hash(UPDATED_DB_OBJECT, db_object.class.name)
@@ -226,6 +227,7 @@ class PreservedObjectHandler
       db_object.touch
       results << result_hash(UPDATED_DB_OBJECT_TIMESTAMP_ONLY, db_object.class.name)
     end
+    results
   end
 
   def result_hash(response_code, addl=nil)
