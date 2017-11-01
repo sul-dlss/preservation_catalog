@@ -67,7 +67,7 @@ class PreservedObjectHandler
                                      preservation_policy: pp_default)
         status = Status.default_status
         PreservedCopy.create!(preserved_object: po,
-                              current_version: incoming_version,
+                              version: incoming_version,
                               size: incoming_size,
                               endpoint: endpoint,
                               status: status)
@@ -91,9 +91,9 @@ class PreservedObjectHandler
       Rails.logger.debug "confirm_version #{druid} called and object exists"
       begin
         po_db_object = PreservedObject.find_by!(druid: druid)
-        results << confirm_version_on_db_object(po_db_object)
+        results << confirm_version_on_db_object(po_db_object, :current_version)
         pc_db_object = PreservedCopy.find_by!(preserved_object: po_db_object, endpoint: endpoint)
-        results << confirm_version_on_db_object(pc_db_object)
+        results << confirm_version_on_db_object(pc_db_object, :version)
       rescue ActiveRecord::RecordNotFound => e
         results << result_hash(OBJECT_DOES_NOT_EXIST, e.inspect)
       rescue ActiveRecord::ActiveRecordError => e
@@ -114,7 +114,8 @@ class PreservedObjectHandler
       begin
         pres_object = PreservedObject.find_by!(druid: druid)
         pres_copy = PreservedCopy.find_by!(preserved_object: pres_object, endpoint: endpoint)
-        if incoming_version > pres_copy.current_version
+        if incoming_version > pres_copy.version
+          # FIXME: only update PreservedCopy.version IFF it's Moab endpoint
           results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_copy.class.name)
           update_preserved_copy(pres_copy, incoming_version, incoming_size)
           results << update_status(pres_copy, Status.default_status)
@@ -126,8 +127,8 @@ class PreservedObjectHandler
           end
         else
           results << result_hash(UNEXPECTED_VERSION, 'PreservedCopy')
-          results << version_comparison_results(pres_copy)
-          results << version_comparison_results(pres_object)
+          results << version_comparison_results(pres_copy, :version)
+          results << version_comparison_results(pres_object, :current_version)
           # FIXME: TODO: should it update existence check timestamps/status?
         end
       rescue ActiveRecord::RecordNotFound => e
@@ -145,7 +146,7 @@ class PreservedObjectHandler
 
   # expects @incoming_version to be numeric
   def update_preserved_copy(pres_copy, new_version, new_size)
-    pres_copy.current_version = new_version
+    pres_copy.version = new_version
     pres_copy.size = new_size if new_size
   end
 
@@ -155,13 +156,13 @@ class PreservedObjectHandler
   end
 
   # expects @incoming_version to be numeric
-  def version_comparison_results(db_object)
+  def version_comparison_results(db_object, version_symbol)
     results = []
-    if incoming_version == db_object.current_version
+    if incoming_version == db_object.send(version_symbol)
       results << result_hash(VERSION_MATCHES, db_object.class.name)
-    elsif incoming_version < db_object.current_version
+    elsif incoming_version < db_object.send(version_symbol)
       results << result_hash(ARG_VERSION_LESS_THAN_DB_OBJECT, db_object.class.name)
-    elsif incoming_version > db_object.current_version
+    elsif incoming_version > db_object.send(version_symbol)
       results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, db_object.class.name)
     end
     results.flatten
@@ -183,13 +184,13 @@ class PreservedObjectHandler
 
   # expects @incoming_version to be numeric
   # TODO: revisit naming
-  def confirm_version_on_db_object(db_object)
+  def confirm_version_on_db_object(db_object, version_symbol)
     results = []
 
-    if incoming_version == db_object.current_version
+    if incoming_version == db_object.send(version_symbol)
       results << update_status(db_object, Status.ok) if db_object.is_a?(PreservedCopy)
       results << result_hash(VERSION_MATCHES, db_object.class.name)
-    elsif incoming_version > db_object.current_version
+    elsif incoming_version > db_object.send(version_symbol)
       results.concat(increase_version(db_object))
     else
       # TODO: needs manual intervention until automatic recovery services implemented
