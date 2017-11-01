@@ -9,7 +9,7 @@ class CatalogToMoab
   # FIXME:  temporarily turning off rubocop
   # rubocop:disable all
   def self.check_existence
-    PreservationCopy.find_each do |pc|
+    PreservedCopy.find_each do |pc|
       id = pc.preserved_object.druid
       version = pc.current_version
       storage_location = pc.endpoint.storage_location

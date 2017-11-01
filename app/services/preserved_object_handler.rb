@@ -1,5 +1,5 @@
 # creating a PreservedObject and/or updating check timestamps may require interactions
-#  beyond the single PreservedObject model (e.g. PreservationCopy, PreservationPolicy).
+#  beyond the single PreservedObject model (e.g. PreservedCopy, PreservationPolicy).
 #  This service class encapsulates logic to keep the controller and the model object
 #    code simpler/thinner.
 # NOTE: performing validation here to allow this class to be called directly avoiding http overhead
@@ -31,7 +31,7 @@ class PreservedObjectHandler
     DB_UPDATE_FAILED => "db update failed: %{addl}",
     OBJECT_ALREADY_EXISTS => "%{addl} db object already exists",
     OBJECT_DOES_NOT_EXIST => "%{addl} db object does not exist",
-    PC_STATUS_CHANGED => "PreservationCopy status changed from %{old_status} to %{new_status}",
+    PC_STATUS_CHANGED => "PreservedCopy status changed from %{old_status} to %{new_status}",
     UNEXPECTED_VERSION => "incoming version (%{incoming_version}) has unexpected relationship to %{addl} db version; ERROR!"
   }.freeze
 
@@ -67,10 +67,10 @@ class PreservedObjectHandler
                                      size: incoming_size,
                                      preservation_policy: pp_default)
         status = Status.default_status
-        PreservationCopy.create!(preserved_object: po,
-                                 current_version: incoming_version,
-                                 endpoint: endpoint,
-                                 status: status)
+        PreservedCopy.create!(preserved_object: po,
+                              current_version: incoming_version,
+                              endpoint: endpoint,
+                              status: status)
         results << result_hash(CREATED_NEW_OBJECT)
       rescue ActiveRecord::RecordNotFound => e
         results << result_hash(OBJECT_DOES_NOT_EXIST, e.inspect)
@@ -92,7 +92,7 @@ class PreservedObjectHandler
       begin
         po_db_object = PreservedObject.find_by!(druid: druid)
         results << confirm_version_on_db_object(po_db_object)
-        pc_db_object = PreservationCopy.find_by!(preserved_object: po_db_object, endpoint: endpoint)
+        pc_db_object = PreservedCopy.find_by!(preserved_object: po_db_object, endpoint: endpoint)
         results << confirm_version_on_db_object(pc_db_object)
       rescue ActiveRecord::RecordNotFound => e
         results << result_hash(OBJECT_DOES_NOT_EXIST, e.inspect)
@@ -113,10 +113,10 @@ class PreservedObjectHandler
       Rails.logger.debug "update_version #{druid} called and druid in Catalog"
       begin
         pres_object = PreservedObject.find_by!(druid: druid)
-        pres_copy = PreservationCopy.find_by!(preserved_object: pres_object, endpoint: endpoint)
+        pres_copy = PreservedCopy.find_by!(preserved_object: pres_object, endpoint: endpoint)
         if incoming_version > pres_copy.current_version
           results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_copy.class.name)
-          update_preservation_copy(pres_copy, incoming_version)
+          update_preserved_copy(pres_copy, incoming_version)
           results << update_status(pres_copy, Status.default_status)
           update_db_object(pres_copy, results)
           if incoming_version > pres_object.current_version # FIXME: need code/test for when it's NOT
@@ -125,7 +125,7 @@ class PreservedObjectHandler
             update_db_object(pres_object, results)
           end
         else
-          results << result_hash(UNEXPECTED_VERSION, 'PreservationCopy')
+          results << result_hash(UNEXPECTED_VERSION, 'PreservedCopy')
           results << version_comparison_results(pres_copy)
           results << version_comparison_results(pres_object)
           # FIXME: TODO: should it update existence check timestamps/status?
@@ -144,7 +144,7 @@ class PreservedObjectHandler
   private
 
   # expects @incoming_version to be numeric
-  def update_preservation_copy(pres_copy, new_version)
+  def update_preserved_copy(pres_copy, new_version)
     pres_copy.current_version = new_version
   end
 
@@ -171,8 +171,8 @@ class PreservedObjectHandler
     results = []
 
     results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, db_object.class.name)
-    if db_object.is_a?(PreservationCopy)
-      update_preservation_copy(db_object, incoming_version)
+    if db_object.is_a?(PreservedCopy)
+      update_preserved_copy(db_object, incoming_version)
       results << update_status(db_object, Status.default_status)
     else
       update_preserved_object(db_object, incoming_version, incoming_size)
@@ -187,13 +187,13 @@ class PreservedObjectHandler
     results = []
 
     if incoming_version == db_object.current_version
-      results << update_status(db_object, Status.ok) if db_object.is_a?(PreservationCopy)
+      results << update_status(db_object, Status.ok) if db_object.is_a?(PreservedCopy)
       results << result_hash(VERSION_MATCHES, db_object.class.name)
     elsif incoming_version > db_object.current_version
       results.concat(increase_version(db_object))
     else
       # TODO: needs manual intervention until automatic recovery services implemented
-      results << update_status(db_object, Status.unexpected_version) if db_object.is_a?(PreservationCopy)
+      results << update_status(db_object, Status.unexpected_version) if db_object.is_a?(PreservedCopy)
       results << result_hash(ARG_VERSION_LESS_THAN_DB_OBJECT, db_object.class.name)
     end
 
@@ -202,14 +202,14 @@ class PreservedObjectHandler
     results
   end
 
-  def update_status(preservation_copy, new_status)
+  def update_status(preserved_copy, new_status)
     results = []
-    if new_status != preservation_copy.status
+    if new_status != preserved_copy.status
       results << result_hash(
         PC_STATUS_CHANGED,
-        { old_status: preservation_copy.status.status_text, new_status: new_status.status_text }
+        { old_status: preserved_copy.status.status_text, new_status: new_status.status_text }
       )
-      preservation_copy.status = new_status
+      preserved_copy.status = new_status
     end
     results
   end
