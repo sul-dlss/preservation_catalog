@@ -51,6 +51,8 @@ RSpec.describe Endpoint, type: :model do
   it { is_expected.to have_many(:preserved_copies) }
   it { is_expected.to have_db_index(:endpoint_name) }
   it { is_expected.to have_db_index(:endpoint_type_id) }
+  it { is_expected.to have_db_index(:endpoint_node) }
+  it { is_expected.to have_db_index(:storage_location) }
   it { is_expected.to have_and_belong_to_many(:preservation_policies) }
   it { is_expected.to belong_to(:endpoint_type) }
 
