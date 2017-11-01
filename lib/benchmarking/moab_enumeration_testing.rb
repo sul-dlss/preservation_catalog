@@ -100,7 +100,7 @@ class MoabEnumerationBenchmarker
     dir_result = { method_name: method_name, storage_dir: storage_dir }
     dir_result[:benchmark] = Benchmark.bm(storage_dir.length + 5) do |x|
       dir_result[:elapsed_time] = x.report("#{method_name}:\n  #{storage_dir}:") do
-        dir_result[:druid_list] = MoabStorageDirectory.send(method_name, storage_dir)
+        dir_result[:druid_list] = Stanford::MoabStorageDirectory.send(method_name, storage_dir)
       end.real
     end
     dir_result[:druids_per_second] = dir_result[:druid_list].length / dir_result[:elapsed_time]

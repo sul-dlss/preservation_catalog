@@ -6,7 +6,7 @@ class MoabToCatalog
   # NOTE: shameless green! code duplication with seed_catalog
   def self.check_existence(storage_dir, expect_to_create=false)
     results = []
-    MoabStorageDirectory.find_moab_paths(storage_dir) do |druid, path, _path_match_data|
+    Stanford::MoabStorageDirectory.find_moab_paths(storage_dir) do |druid, path, _path_match_data|
       moab = Moab::StorageObject.new(druid, path)
       po_handler = PreservedObjectHandler.new(druid, moab.current_version_id, moab.size, storage_dir)
       if PreservedObject.exists?(druid: druid)
@@ -22,7 +22,7 @@ class MoabToCatalog
   # NOTE: shameless green! code duplication with check_existence
   def self.seed_catalog(storage_dir)
     results = []
-    MoabStorageDirectory.find_moab_paths(storage_dir) do |druid, path, _path_match_data|
+    Stanford::MoabStorageDirectory.find_moab_paths(storage_dir) do |druid, path, _path_match_data|
       moab = Moab::StorageObject.new(druid, path)
       po_handler = PreservedObjectHandler.new(druid, moab.current_version_id, moab.size, storage_dir)
       if PreservedObject.exists?(druid: druid)

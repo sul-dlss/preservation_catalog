@@ -12,7 +12,7 @@ RSpec.describe MoabToCatalog do
     let(:subject) { described_class.check_existence(storage_dir, true) }
 
     it "calls 'find_moab_paths' with appropriate argument" do
-      expect(MoabStorageDirectory).to receive(:find_moab_paths).with(storage_dir)
+      expect(Stanford::MoabStorageDirectory).to receive(:find_moab_paths).with(storage_dir)
       subject
     end
 
@@ -110,7 +110,7 @@ RSpec.describe MoabToCatalog do
     let(:subject) { described_class.seed_catalog(storage_dir) }
 
     it "calls 'find_moab_paths' with appropriate argument" do
-      expect(MoabStorageDirectory).to receive(:find_moab_paths).with(storage_dir)
+      expect(Stanford::MoabStorageDirectory).to receive(:find_moab_paths).with(storage_dir)
       subject
     end
 
