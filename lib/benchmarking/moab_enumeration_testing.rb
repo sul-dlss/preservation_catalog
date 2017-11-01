@@ -13,8 +13,8 @@ require 'logger'
 class MoabEnumerationBenchmarker
 
   def benchmarked_revision
-    pcc_app_home = '/opt/app/pcc/preservation_core_catalog'
-    revisions_log = "#{pcc_app_home}/revisions.log"
+    app_home = '/opt/app/pres/preservation_catalog'
+    revisions_log = "#{app_home}/revisions.log"
 
     # last line of revisions.log if it exists
     # or else grab current revision

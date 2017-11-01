@@ -30,8 +30,8 @@ require 'pathname'
 # '/services-disk11/sdr2objects/fj/491/sg/9116/fj491sg9116/v0001/data/content/fj491sg9116_pm.mov'
 
 logger = Logger.new('log/benchmark_checksum.log')
-pcc_app_home = '/opt/app/pcc/preservation_core_catalog'
-revisions_log = "#{pcc_app_home}/revisions.log"
+app_home = '/opt/app/pres/preservation_catalog'
+revisions_log = "#{app_home}/revisions.log"
 buffer_size = ARGV[0].to_i
 test_filename = ARGV[1]
 
