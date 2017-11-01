@@ -140,12 +140,12 @@ RSpec.describe PreservedObjectHandler do
       args = {
         druid: druid,
         current_version: incoming_version,
-        size: incoming_size,
         preservation_policy: PreservationPolicy.default_preservation_policy
       }
       args2 = {
         preserved_object: an_instance_of(PreservedObject), # TODO: see if we got the preserved object that we expected
         current_version: incoming_version,
+        size: incoming_size,
         endpoint: ep,
         status: Status.default_status
       }
@@ -245,7 +245,7 @@ RSpec.describe PreservedObjectHandler do
 
     context 'PreservedCopy does not exist' do
       before do
-        PreservedObject.create!(druid: druid, current_version: 2, size: 1, preservation_policy: default_prez_policy)
+        PreservedObject.create!(druid: druid, current_version: 2, preservation_policy: default_prez_policy)
       end
       let(:exp_msg) { "#{exp_msg_prefix} PreservedCopy db object does not exist" }
       let(:db_update_failed_prefix) { "#{exp_msg_prefix} #<ActiveRecord::RecordNotFound: foo> db object does not exist" }
@@ -278,10 +278,11 @@ RSpec.describe PreservedObjectHandler do
 
     context 'in Catalog' do
       before do
-        po = PreservedObject.create!(druid: druid, current_version: 2, size: 1, preservation_policy: default_prez_policy)
+        po = PreservedObject.create!(druid: druid, current_version: 2, preservation_policy: default_prez_policy)
         PreservedCopy.create!(
           preserved_object: po, # TODO: see if we got the preserved object that we expected
           current_version: po.current_version,
+          size: 1,
           endpoint: ep,
           status: Status.unexpected_version
         )
@@ -301,15 +302,15 @@ RSpec.describe PreservedObjectHandler do
           expect(po.reload.current_version).to eq incoming_version
         end
         it 'updates entries with size if included' do
-          expect(po.size).to eq 1
+          expect(pc.size).to eq 1
           po_handler.update_version
-          expect(po.reload.size).to eq incoming_size
+          expect(pc.reload.size).to eq incoming_size
         end
         it 'retains old size if incoming size is nil' do
-          expect(po.size).to eq 1
+          expect(pc.size).to eq 1
           po_handler = described_class.new(druid, incoming_version, nil, storage_dir)
           po_handler.update_version
-          expect(po.reload.size).to eq 1
+          expect(pc.reload.size).to eq 1
         end
         it 'updates status of PreservedCopy to "ok"' do
           expect(pc.status).to eq Status.unexpected_version
@@ -394,9 +395,9 @@ RSpec.describe PreservedObjectHandler do
           expect(pc.reload.current_version).to eq 2
         end
         it "entry size stays the same" do
-          expect(po.size).to eq 1
+          expect(pc.size).to eq 1
           po_handler.update_version
-          expect(po.reload.size).to eq 1
+          expect(pc.reload.size).to eq 1
         end
         it 'updates status of PreservedCopy to "ok"' do
           skip("should it update status of PreservedCopy?")
@@ -464,9 +465,9 @@ RSpec.describe PreservedObjectHandler do
           expect(pc.reload.current_version).to eq 2
         end
         it "entry size stays the same" do
-          expect(po.size).to eq 1
+          expect(pc.size).to eq 1
           po_handler.update_version
-          expect(po.reload.size).to eq 1
+          expect(pc.reload.size).to eq 1
         end
         it "logs at error level" do
           expect(Rails.logger).to receive(:log).with(Logger::ERROR, unexpected_version_msg)
@@ -532,6 +533,7 @@ RSpec.describe PreservedObjectHandler do
               allow(status).to receive(:status_text)
               allow(pc).to receive(:status).and_return(status)
               allow(pc).to receive(:status=)
+              allow(pc).to receive(:size=)
               po_handler.update_version
             end
 
@@ -565,13 +567,13 @@ RSpec.describe PreservedObjectHandler do
               allow(PreservedObject).to receive(:find_by).with(druid: druid).and_return(po)
               allow(po).to receive(:current_version).and_return(1)
               allow(po).to receive(:current_version=).with(incoming_version)
-              allow(po).to receive(:size=).with(incoming_size)
               allow(po).to receive(:changed?).and_return(true)
               allow(po).to receive(:save).and_raise(ActiveRecord::ActiveRecordError, 'foo')
               pc = instance_double('PreservedCopy')
               allow(PreservedCopy).to receive(:find_by).with(preserved_object: po, endpoint: ep).and_return(pc)
               allow(pc).to receive(:current_version).and_return(5)
               allow(pc).to receive(:current_version=).with(incoming_version)
+              allow(pc).to receive(:size=).with(incoming_size)
               allow(pc).to receive(:changed?).and_return(true)
               allow(pc).to receive(:save)
               status = instance_double('Status')
@@ -608,12 +610,12 @@ RSpec.describe PreservedObjectHandler do
         allow(PreservedObject).to receive(:find_by).with(druid: druid).and_return(po)
         allow(po).to receive(:current_version).and_return(1)
         allow(po).to receive(:current_version=).with(incoming_version)
-        allow(po).to receive(:size=).with(incoming_size)
         allow(po).to receive(:changed?).and_return(true)
         allow(po).to receive(:save)
         allow(PreservedCopy).to receive(:find_by).with(preserved_object: po, endpoint: ep).and_return(pc)
         allow(pc).to receive(:current_version).and_return(1)
         allow(pc).to receive(:current_version=).with(incoming_version)
+        allow(pc).to receive(:size=).with(incoming_size)
         allow(pc).to receive(:endpoint).with(ep)
         allow(pc).to receive(:changed?).and_return(true)
         allow(pc).to receive(:status).and_return(instance_double(Status, status_text: 'ok'))
@@ -659,10 +661,11 @@ RSpec.describe PreservedObjectHandler do
 
     context 'druid in db' do
       before do
-        po = PreservedObject.create!(druid: druid, current_version: 2, size: 1, preservation_policy: default_prez_policy)
+        po = PreservedObject.create!(druid: druid, current_version: 2, preservation_policy: default_prez_policy)
         PreservedCopy.create!(
           preserved_object: po, # TODO: see if we got the preserved object that we expected
           current_version: po.current_version,
+          size: 1,
           endpoint: ep,
           status: Status.default_status
         )
@@ -684,9 +687,9 @@ RSpec.describe PreservedObjectHandler do
           expect(pc.reload.current_version).to eq 2
         end
         it "entry size stays the same" do
-          expect(po.size).to eq 1
+          expect(pc.size).to eq 1
           po_handler.confirm_version
-          expect(po.reload.size).to eq 1
+          expect(pc.reload.size).to eq 1
         end
         it "logs at info level" do
           allow(Rails.logger).to receive(:log).with(Logger::INFO, version_matches_po_msg)
@@ -743,15 +746,15 @@ RSpec.describe PreservedObjectHandler do
           expect(pc.reload.current_version).to eq incoming_version
         end
         it 'updates entry with size if included' do
-          expect(po.size).to eq 1
+          expect(pc.size).to eq 1
           po_handler.confirm_version
-          expect(po.reload.size).to eq incoming_size
+          expect(pc.reload.size).to eq incoming_size
         end
         it 'retains old size if incoming size is nil' do
-          expect(po.size).to eq 1
+          expect(pc.size).to eq 1
           po_handler = described_class.new(druid, incoming_version, nil, storage_dir)
           po_handler.confirm_version
-          expect(po.reload.size).to eq 1
+          expect(pc.reload.size).to eq 1
         end
         it "logs at info level" do
           allow(Rails.logger).to receive(:log).with(Logger::INFO, version_gt_po_msg)
@@ -813,9 +816,9 @@ RSpec.describe PreservedObjectHandler do
           expect(pc.reload.current_version).to eq 2
         end
         it "entry size stays the same" do
-          expect(po.size).to eq 1
+          expect(pc.size).to eq 1
           po_handler.confirm_version
-          expect(po.reload.size).to eq 1
+          expect(pc.reload.size).to eq 1
         end
         it "logs at error level" do
           allow(Rails.logger).to receive(:log).with(Logger::ERROR, version_less_than_po_msg)
@@ -876,7 +879,6 @@ RSpec.describe PreservedObjectHandler do
             allow(PreservedObject).to receive(:find_by).with(druid: druid).and_return(po)
             allow(po).to receive(:current_version).and_return(1)
             allow(po).to receive(:current_version=).with(incoming_version)
-            allow(po).to receive(:size=).with(incoming_size)
             allow(po).to receive(:changed?).and_return(true)
             allow(po).to receive(:save).and_raise(ActiveRecord::ActiveRecordError, 'foo')
             allow(po).to receive(:destroy) # for after() cleanup calls
@@ -916,12 +918,12 @@ RSpec.describe PreservedObjectHandler do
         allow(PreservedObject).to receive(:find_by).with(druid: druid).and_return(po)
         allow(po).to receive(:current_version).and_return(1)
         allow(po).to receive(:current_version=).with(incoming_version)
-        allow(po).to receive(:size=).with(incoming_size)
         allow(po).to receive(:changed?).and_return(true)
         allow(po).to receive(:save)
         allow(PreservedCopy).to receive(:find_by).with(preserved_object: po, endpoint: ep).and_return(pc)
         allow(pc).to receive(:current_version).and_return(1)
         allow(pc).to receive(:current_version=).with(incoming_version)
+        allow(pc).to receive(:size=).with(incoming_size)
         allow(pc).to receive(:endpoint).with(ep)
         allow(pc).to receive(:changed?).and_return(true)
         allow(pc).to receive(:status).and_return(Status.ok)
@@ -977,7 +979,7 @@ RSpec.describe PreservedObjectHandler do
 
     context 'PreservedCopy does not exist' do
       before do
-        PreservedObject.create!(druid: druid, current_version: 2, size: 1, preservation_policy: default_prez_policy)
+        PreservedObject.create!(druid: druid, current_version: 2, preservation_policy: default_prez_policy)
       end
       let(:exp_msg) { "#{exp_msg_prefix} PreservedCopy db object does not exist" }
       let(:db_update_failed_prefix) { "#{exp_msg_prefix} #<ActiveRecord::RecordNotFound: foo> db object does not exist" }
@@ -988,7 +990,6 @@ RSpec.describe PreservedObjectHandler do
         po = instance_double(PreservedObject)
         allow(po).to receive(:current_version).and_return(2)
         allow(po).to receive(:current_version=)
-        allow(po).to receive(:size=)
         allow(po).to receive(:changed?).and_return(true)
         allow(po).to receive(:save)
         allow(PreservedObject).to receive(:find_by!).and_return(po)
