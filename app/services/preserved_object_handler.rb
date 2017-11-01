@@ -78,7 +78,7 @@ class PreservedObjectHandler
         results << result_hash(DB_UPDATE_FAILED, "#{e.inspect} #{e.message} #{e.backtrace.inspect}")
       end
     end
-    results.flatten!
+
     log_results(results)
     results
   end
@@ -91,16 +91,16 @@ class PreservedObjectHandler
       Rails.logger.debug "confirm_version #{druid} called and object exists"
       begin
         po_db_object = PreservedObject.find_by!(druid: druid)
-        results << confirm_version_on_db_object(po_db_object, :current_version)
+        results.concat(confirm_version_on_db_object(po_db_object, :current_version))
         pc_db_object = PreservedCopy.find_by!(preserved_object: po_db_object, endpoint: endpoint)
-        results << confirm_version_on_db_object(pc_db_object, :version)
+        results.concat(confirm_version_on_db_object(pc_db_object, :version))
       rescue ActiveRecord::RecordNotFound => e
         results << result_hash(OBJECT_DOES_NOT_EXIST, e.inspect)
       rescue ActiveRecord::ActiveRecordError => e
         results << result_hash(DB_UPDATE_FAILED, "#{e.inspect} #{e.message} #{e.backtrace.inspect}")
       end
     end
-    results.flatten!
+
     log_results(results)
     results
   end
@@ -118,7 +118,7 @@ class PreservedObjectHandler
           # FIXME: only update PreservedCopy.version IFF it's Moab endpoint
           results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_copy.class.name)
           update_preserved_copy(pres_copy, incoming_version, incoming_size)
-          results << update_status(pres_copy, Status.default_status)
+          results.concat(update_status(pres_copy, Status.default_status))
           results.concat(update_db_object(pres_copy))
           if incoming_version > pres_object.current_version # FIXME: need code/test for when it's NOT
             results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_object.class.name)
@@ -127,8 +127,8 @@ class PreservedObjectHandler
           end
         else
           results << result_hash(UNEXPECTED_VERSION, 'PreservedCopy')
-          results << version_comparison_results(pres_copy, :version)
-          results << version_comparison_results(pres_object, :current_version)
+          results.concat(version_comparison_results(pres_copy, :version))
+          results.concat(version_comparison_results(pres_object, :current_version))
           # FIXME: TODO: should it update existence check timestamps/status?
         end
       rescue ActiveRecord::RecordNotFound => e
@@ -137,7 +137,7 @@ class PreservedObjectHandler
         results << result_hash(DB_UPDATE_FAILED, "#{e.inspect} #{e.message} #{e.backtrace.inspect}")
       end
     end
-    results.flatten!
+
     log_results(results)
     results
   end
@@ -165,7 +165,7 @@ class PreservedObjectHandler
     elsif incoming_version > db_object.send(version_symbol)
       results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, db_object.class.name)
     end
-    results.flatten
+    results
   end
 
   def increase_version(db_object)
@@ -174,7 +174,7 @@ class PreservedObjectHandler
     results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, db_object.class.name)
     if db_object.is_a?(PreservedCopy)
       update_preserved_copy(db_object, incoming_version, incoming_size)
-      results << update_status(db_object, Status.default_status)
+      results.concat(update_status(db_object, Status.default_status))
     else
       update_preserved_object(db_object, incoming_version)
     end
@@ -188,13 +188,13 @@ class PreservedObjectHandler
     results = []
 
     if incoming_version == db_object.send(version_symbol)
-      results << update_status(db_object, Status.ok) if db_object.is_a?(PreservedCopy)
+      results.concat(update_status(db_object, Status.ok)) if db_object.is_a?(PreservedCopy)
       results << result_hash(VERSION_MATCHES, db_object.class.name)
     elsif incoming_version > db_object.send(version_symbol)
       results.concat(increase_version(db_object))
     else
       # TODO: needs manual intervention until automatic recovery services implemented
-      results << update_status(db_object, Status.unexpected_version) if db_object.is_a?(PreservedCopy)
+      results.concat(update_status(db_object, Status.unexpected_version)) if db_object.is_a?(PreservedCopy)
       results << result_hash(ARG_VERSION_LESS_THAN_DB_OBJECT, db_object.class.name)
     end
 
