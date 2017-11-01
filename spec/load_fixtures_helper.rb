@@ -30,7 +30,7 @@ end
 
 def load_fixture_moabs
   @moab_storage_dirs.each do |storage_dir|
-    MoabStorageDirectory.find_moab_paths(storage_dir) do |druid, _path, _path_match_data|
+    Stanford::MoabStorageDirectory.find_moab_paths(storage_dir) do |druid, _path, _path_match_data|
       version = Stanford::StorageServices.current_version(druid)
       size = Stanford::StorageServices.object_size(druid)
       po = PreservedObject.create(druid: druid,
