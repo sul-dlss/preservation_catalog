@@ -48,7 +48,7 @@ RSpec.describe Endpoint, type: :model do
     expect { dup_endpoint.save(validate: false) }.to raise_error(ActiveRecord::RecordNotUnique)
   end
 
-  it { is_expected.to have_many(:preservation_copies) }
+  it { is_expected.to have_many(:preserved_copies) }
   it { is_expected.to have_db_index(:endpoint_name) }
   it { is_expected.to have_db_index(:endpoint_type_id) }
   it { is_expected.to have_and_belong_to_many(:preservation_policies) }

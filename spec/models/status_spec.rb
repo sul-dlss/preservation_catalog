@@ -26,7 +26,7 @@ RSpec.describe Status, type: :model do
     expect { dup_status.save(validate: false) }.to raise_error(ActiveRecord::RecordNotUnique)
   end
 
-  it { is_expected.to have_many(:preservation_copies) }
+  it { is_expected.to have_many(:preserved_copies) }
   it { is_expected.to have_db_index(:status_text) }
 
   describe '.seed_from_config' do

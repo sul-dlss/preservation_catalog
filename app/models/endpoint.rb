@@ -2,7 +2,7 @@
 # Metadata about a replication endpoint, including a unique human
 # readable name, and the type of endpoint it is (e.g. :online, :archive).
 class Endpoint < ApplicationRecord
-  has_many :preservation_copies, dependent: :restrict_with_exception
+  has_many :preserved_copies, dependent: :restrict_with_exception
   belongs_to :endpoint_type
   has_and_belongs_to_many :preservation_policies
 

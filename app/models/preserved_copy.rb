@@ -1,6 +1,6 @@
 ##
-# PreservationCopy represents a concrete instance of a PreservedObject, in physical storage on some node.
-class PreservationCopy < ApplicationRecord
+# PreservedCopy represents a concrete instance of a PreservedObject, in physical storage on some node.
+class PreservedCopy < ApplicationRecord
   belongs_to :preserved_object
   belongs_to :endpoint
   belongs_to :status
