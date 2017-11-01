@@ -33,4 +33,11 @@ class MoabToCatalog
     end
     results
   end
+
+  # Shameless green. In order to run several seed "jobs" in parallel, we would have to refactor.
+  def seed_from_disk
+    Settings.moab.storage_roots.each do |storage_root|
+      self.class.seed_catalog("#{storage_root[1]}/#{Settings.moab.storage_trunk}")
+    end
+  end
 end
