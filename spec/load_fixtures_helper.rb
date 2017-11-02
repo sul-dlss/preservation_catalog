@@ -40,7 +40,7 @@ def load_fixture_moabs
       PreservedCopy.create(preserved_object_id: po.id,
                            endpoint_id: @storage_dir_to_endpoint_id[storage_dir],
                            current_version: version,
-                           status_id: Status.default_status.id)
+                           status: Status.default_status)
     end
   end
 end

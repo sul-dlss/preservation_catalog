@@ -289,7 +289,7 @@ RSpec.describe PreservedObjectHandler do
         it 'updates status of PreservedCopy to "ok"' do
           expect(pc.status).to eq Status.unexpected_version
           po_handler.update_version
-          expect(pc.reload.status).to eq Status.default_status
+          expect(pc.reload.status).to eq Status.ok
         end
         it "logs at info level" do
           expect(Rails.logger).to receive(:log).with(Logger::INFO, version_gt_po_msg)
@@ -377,7 +377,7 @@ RSpec.describe PreservedObjectHandler do
           skip("should it update status of PreservedCopy?")
           expect(pc.status).to eq Status.unexpected_version
           po_handler.update_version
-          expect(pc.reload.status).to eq Status.default_status
+          expect(pc.reload.status).to eq Status.ok
         end
         it "logs at error and info level" do
           expect(Rails.logger).to receive(:log).with(Logger::ERROR, unexpected_version_msg)
