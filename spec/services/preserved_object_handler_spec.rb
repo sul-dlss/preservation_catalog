@@ -408,32 +408,6 @@ RSpec.describe PreservedObjectHandler do
         it_behaves_like 'unexpected version', 8
       end
 
-      context 'incoming version newer than PreservedCopy but not PreservedObject' do
-        context 'PreservedObject version same' do
-          it 'does something' do
-            skip('write this spec; we need to figure out the desired behavior.')
-          end
-        end
-        context 'PreservedObject version greater' do
-          it 'does something' do
-            skip('write this spec; we need to figure out the desired behavior.')
-          end
-        end
-      end
-
-      context 'incoming version newer than PreservedObject but not PreservedCopy' do
-        context 'PreservedCopy version same' do
-          it 'does something' do
-            skip('write this spec; we need to figure out the desired behavior.')
-          end
-        end
-        context 'PreservedCopy version greater' do
-          it 'does something' do
-            skip('write this spec; we need to figure out the desired behavior.')
-          end
-        end
-      end
-
       context 'incoming version same as db versions (both)' do
         let(:po_handler) { described_class.new(druid, 2, 1, storage_dir) }
         let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, 2, 1, #{storage_dir})" }
