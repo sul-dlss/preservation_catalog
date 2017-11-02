@@ -150,11 +150,9 @@ RSpec.describe PreservedObjectHandler do
         status: Status.default_status
       }
 
-      allow(PreservedObject).to receive(:create!).with(po_args).and_call_original
-      allow(PreservedCopy).to receive(:create!).with(pc_args).and_call_original
+      expect(PreservedObject).to receive(:create!).with(po_args).and_call_original
+      expect(PreservedCopy).to receive(:create!).with(pc_args).and_call_original
       po_handler.create
-      expect(PreservedObject).to have_received(:create!).with(po_args)
-      expect(PreservedCopy).to have_received(:create!).with(pc_args)
     end
 
     it_behaves_like 'attributes validated', :create
@@ -164,9 +162,8 @@ RSpec.describe PreservedObjectHandler do
 
       it 'logs an error' do
         po_handler.create
-        allow(Rails.logger).to receive(:log).with(Logger::ERROR, exp_msg)
+        expect(Rails.logger).to receive(:log).with(Logger::ERROR, exp_msg)
         po_handler.create
-        expect(Rails.logger).to have_received(:log).with(Logger::ERROR, exp_msg)
       end
     end
 
@@ -659,16 +656,11 @@ RSpec.describe PreservedObjectHandler do
           expect(pc.reload.size).to eq 1
         end
         it "logs at info level" do
-          allow(Rails.logger).to receive(:log).with(Logger::INFO, version_matches_po_msg)
-          allow(Rails.logger).to receive(:log).with(Logger::INFO, version_matches_pc_msg)
-          allow(Rails.logger).to receive(:log).with(Logger::INFO, updated_po_db_timestamp_msg)
-          allow(Rails.logger).to receive(:log).with(Logger::INFO, updated_pc_db_timestamp_msg)
+          expect(Rails.logger).to receive(:log).with(Logger::INFO, version_matches_po_msg)
+          expect(Rails.logger).to receive(:log).with(Logger::INFO, version_matches_pc_msg)
+          expect(Rails.logger).to receive(:log).with(Logger::INFO, updated_po_db_timestamp_msg)
+          expect(Rails.logger).to receive(:log).with(Logger::INFO, updated_pc_db_timestamp_msg)
           po_handler.confirm_version
-          expect(Rails.logger).to have_received(:log).with(Logger::INFO, version_matches_po_msg)
-          expect(Rails.logger).to have_received(:log).with(Logger::INFO, version_matches_pc_msg)
-          expect(Rails.logger).to have_received(:log).with(Logger::INFO, updated_po_db_timestamp_msg)
-          expect(Rails.logger).to have_received(:log).with(Logger::INFO, updated_pc_db_timestamp_msg)
-
         end
         context 'returns' do
           let!(:results) { po_handler.confirm_version }
@@ -718,16 +710,11 @@ RSpec.describe PreservedObjectHandler do
           expect(pc.reload.size).to eq 1
         end
         it "logs at info level" do
-          allow(Rails.logger).to receive(:log).with(Logger::INFO, version_gt_po_msg)
-          allow(Rails.logger).to receive(:log).with(Logger::INFO, version_gt_pc_msg)
-          allow(Rails.logger).to receive(:log).with(Logger::INFO, updated_po_db_msg)
-          allow(Rails.logger).to receive(:log).with(Logger::INFO, updated_pc_db_msg)
+          expect(Rails.logger).to receive(:log).with(Logger::INFO, version_gt_po_msg)
+          expect(Rails.logger).to receive(:log).with(Logger::INFO, version_gt_pc_msg)
+          expect(Rails.logger).to receive(:log).with(Logger::INFO, updated_po_db_msg)
+          expect(Rails.logger).to receive(:log).with(Logger::INFO, updated_pc_db_msg)
           po_handler.confirm_version
-          expect(Rails.logger).to have_received(:log).with(Logger::INFO, version_gt_po_msg)
-          expect(Rails.logger).to have_received(:log).with(Logger::INFO, version_gt_pc_msg)
-          expect(Rails.logger).to have_received(:log).with(Logger::INFO, updated_po_db_msg)
-          expect(Rails.logger).to have_received(:log).with(Logger::INFO, updated_pc_db_msg)
-
         end
         context 'returns' do
           let!(:results) { po_handler.confirm_version }
@@ -776,18 +763,12 @@ RSpec.describe PreservedObjectHandler do
           expect(pc.reload.size).to eq 1
         end
         it "logs at error level" do
-          allow(Rails.logger).to receive(:log).with(Logger::ERROR, version_less_than_po_msg)
-          allow(Rails.logger).to receive(:log).with(Logger::ERROR, version_less_than_pc_msg)
-          allow(Rails.logger).to receive(:log).with(Logger::INFO, updated_po_db_timestamp_msg)
-          allow(Rails.logger).to receive(:log).with(Logger::INFO, updated_pc_db_obj_msg)
-          allow(Rails.logger).to receive(:log).with(Logger::INFO, updated_pc_db_status_msg)
-
+          expect(Rails.logger).to receive(:log).with(Logger::ERROR, version_less_than_po_msg)
+          expect(Rails.logger).to receive(:log).with(Logger::ERROR, version_less_than_pc_msg)
+          expect(Rails.logger).to receive(:log).with(Logger::INFO, updated_po_db_timestamp_msg)
+          expect(Rails.logger).to receive(:log).with(Logger::INFO, updated_pc_db_obj_msg)
+          expect(Rails.logger).to receive(:log).with(Logger::INFO, updated_pc_db_status_msg)
           po_handler.confirm_version
-          expect(Rails.logger).to have_received(:log).with(Logger::ERROR, version_less_than_po_msg)
-          expect(Rails.logger).to have_received(:log).with(Logger::ERROR, version_less_than_pc_msg)
-          expect(Rails.logger).to have_received(:log).with(Logger::INFO, updated_po_db_timestamp_msg)
-          expect(Rails.logger).to have_received(:log).with(Logger::INFO, updated_pc_db_obj_msg)
-          expect(Rails.logger).to have_received(:log).with(Logger::INFO, updated_pc_db_status_msg)
         end
         context 'returns' do
           let!(:results) { po_handler.confirm_version }
