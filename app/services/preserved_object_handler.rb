@@ -113,17 +113,16 @@ class PreservedObjectHandler
       begin
         pres_object = PreservedObject.find_by!(druid: druid)
         pres_copy = PreservedCopy.find_by!(preserved_object: pres_object, endpoint: endpoint)
-        if incoming_version > pres_copy.version
+        # FIXME: what if there is more than one associated pres_copy?
+        if incoming_version > pres_copy.version && pres_copy.version == pres_object.current_version
           # FIXME: only update PreservedCopy.version IFF it's Moab endpoint
           results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_copy.class.name)
           update_preserved_copy(pres_copy, incoming_version, incoming_size)
           results.concat(update_status(pres_copy, Status.ok))
           results.concat(update_db_object(pres_copy))
-          if incoming_version > pres_object.current_version # FIXME: need code/test for when it's NOT
-            results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_object.class.name)
-            update_preserved_object(pres_object, incoming_version)
-            results.concat(update_db_object(pres_object))
-          end
+          results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_object.class.name)
+          update_preserved_object(pres_object, incoming_version)
+          results.concat(update_db_object(pres_object))
         else
           results << result_hash(UNEXPECTED_VERSION, 'PreservedCopy')
           results.concat(version_comparison_results(pres_copy, :version))

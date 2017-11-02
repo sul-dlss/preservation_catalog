@@ -105,6 +105,10 @@ RSpec/BeforeAfterAll:
 RSpec/ExampleLength:
   Max: 50
 
+RSpec/InstanceVariable:
+  Exclude:
+    - 'spec/services/preserved_object_handler_spec.rb' # we can't use let instead of @
+
 RSpec/MultipleExpectations:
   Max: 5
 
