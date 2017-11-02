@@ -65,12 +65,11 @@ class PreservedObjectHandler
         po = PreservedObject.create!(druid: druid,
                                      current_version: incoming_version,
                                      preservation_policy: pp_default)
-        status = Status.default_status
         PreservedCopy.create!(preserved_object: po,
                               version: incoming_version,
                               size: incoming_size,
                               endpoint: endpoint,
-                              status: status)
+                              status: Status.default_status)
         results << result_hash(CREATED_NEW_OBJECT)
       rescue ActiveRecord::RecordNotFound => e
         results << result_hash(OBJECT_DOES_NOT_EXIST, e.inspect)
@@ -118,7 +117,7 @@ class PreservedObjectHandler
           # FIXME: only update PreservedCopy.version IFF it's Moab endpoint
           results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_copy.class.name)
           update_preserved_copy(pres_copy, incoming_version, incoming_size)
-          results.concat(update_status(pres_copy, Status.default_status))
+          results.concat(update_status(pres_copy, Status.ok))
           results.concat(update_db_object(pres_copy))
           if incoming_version > pres_object.current_version # FIXME: need code/test for when it's NOT
             results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_object.class.name)
@@ -174,7 +173,7 @@ class PreservedObjectHandler
     results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, db_object.class.name)
     if db_object.is_a?(PreservedCopy)
       update_preserved_copy(db_object, incoming_version, incoming_size)
-      results.concat(update_status(db_object, Status.default_status))
+      results.concat(update_status(db_object, Status.ok))
     else
       update_preserved_object(db_object, incoming_version)
     end
