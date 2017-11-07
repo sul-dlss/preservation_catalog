@@ -11,6 +11,7 @@ RSpec.describe PreservedObjectHandler do
   let(:pc) { PreservedCopy.find_by(preserved_object: po, endpoint: ep) }
   let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, #{incoming_version}, #{incoming_size}, #{storage_dir})" }
   let(:updated_status_msg_regex) { Regexp.new(Regexp.escape("#{exp_msg_prefix} PreservedCopy status changed from")) }
+  let(:db_update_failed_prefix_regex_escaped) { Regexp.escape("#{exp_msg_prefix} db update failed") }
   let(:po_handler) { described_class.new(druid, incoming_version, incoming_size, storage_dir) }
 
   describe '#initialize' do
@@ -169,7 +170,6 @@ RSpec.describe PreservedObjectHandler do
 
     context 'db update error' do
       context 'ActiveRecordError' do
-        let(:db_update_failed_prefix_regex_escaped) { Regexp.escape("#{exp_msg_prefix} db update failed") }
         let(:result_code) { PreservedObjectHandler::DB_UPDATE_FAILED }
         let(:results) do
           allow(Rails.logger).to receive(:log)
@@ -423,7 +423,6 @@ RSpec.describe PreservedObjectHandler do
       end
 
       context 'db update error' do
-        let(:db_update_failed_prefix_regex_escaped) { Regexp.escape("#{exp_msg_prefix} db update failed") }
         let(:result_code) { PreservedObjectHandler::DB_UPDATE_FAILED }
 
         context 'PreservedCopy' do
@@ -744,7 +743,6 @@ RSpec.describe PreservedObjectHandler do
       context 'db update error' do
         context 'ActiveRecordError' do
           let(:result_code) { PreservedObjectHandler::DB_UPDATE_FAILED }
-          let(:db_update_failed_prefix_regex_escaped) { Regexp.escape("#{exp_msg_prefix} db update failed") }
           let(:results) do
             allow(Rails.logger).to receive(:log)
             # FIXME: couldn't figure out how to put next line into its own test
