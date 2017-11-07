@@ -36,6 +36,7 @@ preservation_policies:
 
 statuses:
   - ok
+  - invalid_moab
   - not_found_on_disk
   - expected_version_not_found_on_disk
   - fixity_check_failed
