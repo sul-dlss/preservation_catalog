@@ -370,8 +370,6 @@ RSpec.describe PreservedObjectHandler do
   end
 
   describe '#confirm_version' do
-    let!(:default_prez_policy) { PreservationPolicy.default_preservation_policy }
-
     it_behaves_like 'attributes validated', :confirm_version
 
     context 'druid in db' do
