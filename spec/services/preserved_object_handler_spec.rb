@@ -211,44 +211,50 @@ RSpec.describe PreservedObjectHandler do
     end
   end
 
+  RSpec.shared_examples 'druid not in catalog' do |method_sym|
+    let(:druid) { 'rr111rr1111' }
+    let(:exp_msg) { "#{exp_msg_prefix} #<ActiveRecord::RecordNotFound: Couldn't find PreservedObject> db object does not exist" }
+    let(:results) do
+      allow(Rails.logger).to receive(:log)
+      # FIXME: couldn't figure out how to put next line into its own test
+      expect(Rails.logger).to receive(:log).with(Logger::ERROR, /#{Regexp.escape(exp_msg)}/)
+      po_handler.send(method_sym)
+    end
+
+    it 'OBJECT_DOES_NOT_EXIST error' do
+      code = PreservedObjectHandler::OBJECT_DOES_NOT_EXIST
+      expect(results).to include(a_hash_including(code => exp_msg))
+    end
+  end
+
+  RSpec.shared_examples 'PreservedCopy does not exist' do |method_sym|
+    before do
+      PreservedObject.create!(druid: druid, current_version: 2, preservation_policy: default_prez_policy)
+    end
+    let(:exp_msg) { "#{exp_msg_prefix} #<ActiveRecord::RecordNotFound: foo> db object does not exist" }
+    let(:results) do
+      allow(Rails.logger).to receive(:log)
+      # FIXME: couldn't figure out how to put next line into its own test
+      expect(Rails.logger).to receive(:log).with(Logger::ERROR, /#{Regexp.escape(exp_msg)}/)
+      po = instance_double(PreservedObject)
+      allow(po).to receive(:current_version).and_return(2)
+      allow(po).to receive(:current_version=)
+      allow(po).to receive(:changed?).and_return(true)
+      allow(po).to receive(:save)
+      allow(PreservedObject).to receive(:find_by!).and_return(po)
+      # allow(PreservedObject).to receive(:find_by!).and_return(instance_double(PreservedObject))
+      allow(PreservedCopy).to receive(:find_by!).and_raise(ActiveRecord::RecordNotFound, 'foo')
+      po_handler.send(method_sym)
+    end
+
+    it 'OBJECT_DOES_NOT_EXIST error' do
+      code = PreservedObjectHandler::OBJECT_DOES_NOT_EXIST
+      expect(results).to include(a_hash_including(code => exp_msg))
+    end
+  end
+
   describe '#update_version' do
     it_behaves_like 'attributes validated', :update_version
-
-    context 'druid not in db' do
-      let(:druid) { 'rr111rr1111' }
-      let(:exp_msg) { "#{exp_msg_prefix} #<ActiveRecord::RecordNotFound: Couldn't find PreservedObject> db object does not exist" }
-      let(:results) do
-        allow(Rails.logger).to receive(:log)
-        # FIXME: couldn't figure out how to put next line into its own test
-        expect(Rails.logger).to receive(:log).with(Logger::ERROR, /#{Regexp.escape(exp_msg)}/)
-        po_handler.confirm_version
-      end
-
-      it 'OBJECT_DOES_NOT_EXIST error with the expected message' do
-        code = PreservedObjectHandler::OBJECT_DOES_NOT_EXIST
-        expect(results).to include(a_hash_including(code => exp_msg))
-      end
-    end
-
-    context 'PreservedCopy does not exist' do
-      before do
-        PreservedObject.create!(druid: druid, current_version: 2, preservation_policy: default_prez_policy)
-      end
-      let(:exp_msg) { "#{exp_msg_prefix} #<ActiveRecord::RecordNotFound: foo> db object does not exist" }
-      let(:result_code) { PreservedObjectHandler::OBJECT_DOES_NOT_EXIST }
-      let(:results) do
-        allow(Rails.logger).to receive(:log)
-        # FIXME: couldn't figure out how to put next line into its own test
-        expect(Rails.logger).to receive(:log).with(Logger::ERROR, /#{Regexp.escape(exp_msg)}/)
-        allow(PreservedObject).to receive(:find_by!).and_return(instance_double(PreservedObject))
-        allow(PreservedCopy).to receive(:find_by!).and_raise(ActiveRecord::RecordNotFound, 'foo')
-        po_handler.update_version
-      end
-
-      it 'OBJECT_DOES_NOT_EXIST error' do
-        expect(results).to include(a_hash_including(result_code => exp_msg))
-      end
-    end
 
     context 'in Catalog' do
       before do
@@ -547,6 +553,10 @@ RSpec.describe PreservedObjectHandler do
         expect(Rails.logger).to have_received(:debug).with(msg)
       end
     end
+
+    it_behaves_like 'druid not in catalog', :update_version
+
+    it_behaves_like 'PreservedCopy does not exist', :update_version
   end
 
   describe '#confirm_version' do
@@ -817,45 +827,8 @@ RSpec.describe PreservedObjectHandler do
       end
     end
 
-    context 'druid not in db' do
-      let(:druid) { 'rr111rr1111' }
-      let(:exp_msg) { "#{exp_msg_prefix} #<ActiveRecord::RecordNotFound: Couldn't find PreservedObject> db object does not exist" }
-      let(:results) do
-        allow(Rails.logger).to receive(:log)
-        # FIXME: couldn't figure out how to put next line into its own test
-        expect(Rails.logger).to receive(:log).with(Logger::ERROR, /#{Regexp.escape(exp_msg)}/)
-        po_handler.confirm_version
-      end
+    it_behaves_like 'druid not in catalog', :confirm_version
 
-      it 'OBJECT_DOES_NOT_EXIST error' do
-        code = PreservedObjectHandler::OBJECT_DOES_NOT_EXIST
-        expect(results).to include(a_hash_including(code => exp_msg))
-      end
-    end
-
-    context 'PreservedCopy does not exist' do
-      before do
-        PreservedObject.create!(druid: druid, current_version: 2, preservation_policy: default_prez_policy)
-      end
-      let(:result_code) { PreservedObjectHandler::OBJECT_DOES_NOT_EXIST }
-      let(:exp_msg) { "#{exp_msg_prefix} #<ActiveRecord::RecordNotFound: foo> db object does not exist" }
-      let(:results) do
-        allow(Rails.logger).to receive(:log)
-        # FIXME: couldn't figure out how to put next line into its own test
-        expect(Rails.logger).to receive(:log).with(Logger::ERROR, /#{Regexp.escape(exp_msg)}/)
-        po = instance_double(PreservedObject)
-        allow(po).to receive(:current_version).and_return(2)
-        allow(po).to receive(:current_version=)
-        allow(po).to receive(:changed?).and_return(true)
-        allow(po).to receive(:save)
-        allow(PreservedObject).to receive(:find_by!).and_return(po)
-        allow(PreservedCopy).to receive(:find_by!).and_raise(ActiveRecord::RecordNotFound, 'foo')
-        po_handler.confirm_version
-      end
-
-      it 'OBJECT_DOES_NOT_EXIST error' do
-        expect(results).to include(a_hash_including(result_code => exp_msg))
-      end
-    end
+    it_behaves_like 'PreservedCopy does not exist', :confirm_version
   end
 end
