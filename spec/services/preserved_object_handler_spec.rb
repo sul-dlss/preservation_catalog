@@ -183,7 +183,7 @@ RSpec.describe PreservedObjectHandler do
           po_handler.create
         end
 
-        context 'DB_UPDATED_FAILED error' do
+        context 'DB_UPDATE_FAILED error' do
           it 'prefix' do
             expect(results).to include(a_hash_including(result_code => a_string_matching(db_update_failed_prefix_regex_escaped)))
           end
@@ -758,7 +758,7 @@ RSpec.describe PreservedObjectHandler do
             po_handler.confirm_version
           end
 
-          context 'DB_UPDATED_FAILED error' do
+          context 'DB_UPDATE_FAILED error' do
             it 'prefix' do
               expect(results).to include(a_hash_including(result_code => a_string_matching(db_update_failed_prefix_regex_escaped)))
             end
