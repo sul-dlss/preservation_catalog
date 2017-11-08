@@ -67,7 +67,8 @@ Metrics/LineLength:
   Max: 120
   Exclude:
     - 'app/services/preserved_object_handler.rb' # 2 lines 121
-    - 'spec/services/preserved_object_handler_spec.rb' # 3 lines are longer
+    - 'spec/services/preserved_object_handler_spec.rb'
+    - 'spec/services/shared_examples_preserved_object_handler.rb'
 
 Metrics/MethodLength:
   Max: 25
