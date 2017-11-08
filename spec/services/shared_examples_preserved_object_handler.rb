@@ -98,7 +98,7 @@ RSpec.shared_examples 'PreservedCopy does not exist' do |method_sym|
     allow(po).to receive(:current_version).and_return(2)
     allow(po).to receive(:current_version=)
     allow(po).to receive(:changed?).and_return(true)
-    allow(po).to receive(:save)
+    allow(po).to receive(:save!)
     allow(PreservedObject).to receive(:find_by!).and_return(po)
     # allow(PreservedObject).to receive(:find_by!).and_return(instance_double(PreservedObject))
     allow(PreservedCopy).to receive(:find_by!).and_raise(ActiveRecord::RecordNotFound, 'foo')
