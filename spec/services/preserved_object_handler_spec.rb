@@ -10,14 +10,14 @@ RSpec.describe PreservedObjectHandler do
   let(:po) { PreservedObject.find_by(druid: druid) }
   let(:ep) { Endpoint.find_by(storage_location: storage_dir) }
   let(:pc) { PreservedCopy.find_by(preserved_object: po, endpoint: ep) }
-  let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, #{incoming_version}, #{incoming_size}, #{storage_dir})" }
+  let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, #{incoming_version}, #{incoming_size}, #{ep})" }
   let(:updated_status_msg_regex) { Regexp.new(Regexp.escape("#{exp_msg_prefix} PreservedCopy status changed from")) }
   let(:db_update_failed_prefix_regex_escaped) { Regexp.escape("#{exp_msg_prefix} db update failed") }
-  let(:po_handler) { described_class.new(druid, incoming_version, incoming_size, storage_dir) }
+  let(:po_handler) { described_class.new(druid, incoming_version, incoming_size, ep) }
 
   describe '#initialize' do
     it 'sets druid' do
-      po_handler = described_class.new(druid, incoming_version, nil, storage_dir)
+      po_handler = described_class.new(druid, incoming_version, nil, ep)
       expect(po_handler.druid).to eq druid
     end
     context 'sets incoming_version' do
@@ -34,7 +34,7 @@ RSpec.describe PreservedObjectHandler do
         'asdf' => 'asdf'
       }.each do |k, v|
         it "by parsing '#{k}' to '#{v}'" do
-          po_handler = described_class.new(druid, k, nil, storage_dir)
+          po_handler = described_class.new(druid, k, nil, ep)
           expect(po_handler.incoming_version).to eq v
         end
       end
@@ -53,14 +53,18 @@ RSpec.describe PreservedObjectHandler do
         'asdf' => 'asdf'
       }.each do |k, v|
         it "by parsing '#{k}' to '#{v}'" do
-          po_handler = described_class.new(druid, nil, k, storage_dir)
+          po_handler = described_class.new(druid, nil, k, ep)
           expect(po_handler.incoming_size).to eq v
         end
       end
     end
-    it 'sets storage directory' do
-      po_handler = described_class.new(druid, incoming_version, nil, storage_dir)
-      expect(po_handler.storage_dir).to eq storage_dir
+    it 'exposes storage_location (from endpoint)' do
+      po_handler = described_class.new(druid, incoming_version, nil, ep)
+      expect(po_handler.storage_location).to eq ep.storage_location
+    end
+    it 'sets endpoint' do
+      po_handler = described_class.new(druid, incoming_version, nil, ep)
+      expect(po_handler.endpoint).to eq ep
     end
   end
 
@@ -99,7 +103,7 @@ RSpec.describe PreservedObjectHandler do
         end
         it 'retains old size if incoming size is nil' do
           expect(pc.size).to eq 1
-          po_handler = described_class.new(druid, incoming_version, nil, storage_dir)
+          po_handler = described_class.new(druid, incoming_version, nil, ep)
           po_handler.update_version
           expect(pc.reload.size).to eq 1
         end
@@ -144,8 +148,8 @@ RSpec.describe PreservedObjectHandler do
       end
 
       RSpec.shared_examples 'unexpected version' do |incoming_version|
-        let(:po_handler) { described_class.new(druid, incoming_version, 1, storage_dir) }
-        let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, #{incoming_version}, 1, #{storage_dir})" }
+        let(:po_handler) { described_class.new(druid, incoming_version, 1, ep) }
+        let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, #{incoming_version}, 1, #{ep})" }
         let(:version_msg_prefix) { "#{exp_msg_prefix} incoming version (#{incoming_version})" }
         let(:unexpected_version_msg) { "#{version_msg_prefix} has unexpected relationship to PreservedCopy db version; ERROR!" }
         let(:updated_po_db_timestamp_msg) { "#{exp_msg_prefix} PreservedObject updated db timestamp only" }
@@ -339,7 +343,7 @@ RSpec.describe PreservedObjectHandler do
 
       it 'calls PreservedObject.touch and PreservedCopy.touch if the existing record is NOT altered' do
         skip('need to determine if we want to update timestamps in this situation')
-        po_handler = described_class.new(druid, 1, 1, storage_dir)
+        po_handler = described_class.new(druid, 1, 1, ep)
         po = instance_double(PreservedObject)
         pc = instance_double(PreservedCopy)
         allow(PreservedObject).to receive(:find_by).with(druid: druid).and_return(po)
@@ -385,8 +389,8 @@ RSpec.describe PreservedObjectHandler do
       end
 
       context "incoming and db versions match" do
-        let(:po_handler) { described_class.new(druid, 2, 1, storage_dir) }
-        let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, 2, 1, #{storage_dir})" }
+        let(:po_handler) { described_class.new(druid, 2, 1, ep) }
+        let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, 2, 1, #{ep})" }
         let(:version_matches_po_msg) { "#{exp_msg_prefix} incoming version (2) matches PreservedObject db version" }
         let(:version_matches_pc_msg) { "#{exp_msg_prefix} incoming version (2) matches PreservedCopy db version" }
         let(:updated_po_db_timestamp_msg) { "#{exp_msg_prefix} PreservedObject updated db timestamp only" }
@@ -454,7 +458,7 @@ RSpec.describe PreservedObjectHandler do
         end
         it 'retains old size if incoming size is nil' do
           expect(pc.size).to eq 1
-          po_handler = described_class.new(druid, incoming_version, nil, storage_dir)
+          po_handler = described_class.new(druid, incoming_version, nil, ep)
           po_handler.confirm_version
           expect(pc.reload.size).to eq 1
         end
@@ -489,8 +493,8 @@ RSpec.describe PreservedObjectHandler do
       end
 
       context 'incoming version older than db version' do
-        let(:po_handler) { described_class.new(druid, 1, 666, storage_dir) }
-        let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, 1, 666, #{storage_dir})" }
+        let(:po_handler) { described_class.new(druid, 1, 666, ep) }
+        let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, 1, 666, #{ep})" }
         let(:version_less_than_po_msg) { "#{exp_msg_prefix} incoming version (1) less than PreservedObject db version; ERROR!" }
         let(:version_less_than_pc_msg) { "#{exp_msg_prefix} incoming version (1) less than PreservedCopy db version; ERROR!" }
         let(:updated_po_db_timestamp_msg) { "#{exp_msg_prefix} PreservedObject updated db timestamp only" }
@@ -610,7 +614,7 @@ RSpec.describe PreservedObjectHandler do
         expect(pc).to have_received(:save!)
       end
       it 'calls PreservedObject.touch and PreservedCopy.touch if the existing record is NOT altered' do
-        po_handler = described_class.new(druid, 1, 1, storage_dir)
+        po_handler = described_class.new(druid, 1, 1, ep)
         po = instance_double(PreservedObject)
         pc = instance_double(PreservedCopy)
         allow(PreservedObject).to receive(:find_by).with(druid: druid).and_return(po)

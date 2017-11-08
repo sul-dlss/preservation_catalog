@@ -5,11 +5,11 @@ RSpec.describe Endpoint, type: :model do
   let!(:endpoint_type) { EndpointType.create(type_name: 'aws', endpoint_class: 'archive') }
   let!(:endpoint) do
     Endpoint.create(
-      endpoint_name: 'aws',
+      endpoint_name: 'aws-us-east-2',
       endpoint_type_id: endpoint_type.id,
-      endpoint_node: 'sul-sdr',
-      storage_location: '/storage',
-      recovery_cost: '1'
+      endpoint_node: 's3.us-east-2.amazonaws.com',
+      storage_location: 'sdr-bucket-01',
+      recovery_cost: '5'
     )
   end
 
@@ -28,11 +28,11 @@ RSpec.describe Endpoint, type: :model do
   it 'enforces unique constraint on endpoint_name (model level)' do
     expect do
       Endpoint.create!(
-        endpoint_name: 'aws',
+        endpoint_name: 'aws-us-east-2',
         endpoint_type_id: endpoint_type.id,
-        endpoint_node: 'sul-sdr',
-        storage_location: '/storage',
-        recovery_cost: '1'
+        endpoint_node: 's3.us-east-2.amazonaws.com',
+        storage_location: 'sdr-bucket-01',
+        recovery_cost: '5'
       )
     end.to raise_error(ActiveRecord::RecordInvalid)
   end
@@ -40,10 +40,10 @@ RSpec.describe Endpoint, type: :model do
   it 'enforces unique constraint on endpoint_name (db level)' do
     endpoint
     dup_endpoint = Endpoint.new
-    dup_endpoint.endpoint_name = 'aws'
-    dup_endpoint.endpoint_node = 'sul-sdr'
-    dup_endpoint.storage_location = '/storage'
-    dup_endpoint.recovery_cost = '1'
+    dup_endpoint.endpoint_name = 'aws-us-east-2'
+    dup_endpoint.endpoint_node = 's3.us-east-2.amazonaws.com'
+    dup_endpoint.storage_location = 'sdr-bucket-01'
+    dup_endpoint.recovery_cost = '5'
     dup_endpoint.endpoint_type_id = endpoint_type.id
     expect { dup_endpoint.save(validate: false) }.to raise_error(ActiveRecord::RecordNotUnique)
   end
@@ -79,8 +79,8 @@ RSpec.describe Endpoint, type: :model do
     it 'does not re-create records that already exist' do
       # run it a second time
       Endpoint.seed_storage_root_endpoints_from_config(strg_rt_endpoint_type, default_pres_policies)
-      # sort so we can avoid comparing via include, and see that it has only/exactly the three expected elements
-      expect(Endpoint.pluck(:endpoint_name).sort).to eq %w[aws fixture_sr1 fixture_sr2]
+      # sort so we can avoid comparing via include, and see that it has only/exactly the four expected elements
+      expect(Endpoint.pluck(:endpoint_name).sort).to eq %w[aws-us-east-2 fixture_empty fixture_sr1 fixture_sr2]
     end
 
     it 'adds new records if there are additions to Settings since the last run' do
@@ -93,7 +93,8 @@ RSpec.describe Endpoint, type: :model do
 
       # run it a second time
       Endpoint.seed_storage_root_endpoints_from_config(strg_rt_endpoint_type, default_pres_policies)
-      expect(Endpoint.pluck(:endpoint_name).sort).to eq %w[aws fixture_sr1 fixture_sr2 fixture_srTest]
+      expected_ep_names = %w[aws-us-east-2 fixture_empty fixture_sr1 fixture_sr2 fixture_srTest]
+      expect(Endpoint.pluck(:endpoint_name).sort).to eq expected_ep_names
     end
   end
 
@@ -108,6 +109,25 @@ RSpec.describe Endpoint, type: :model do
       # lookup to fail fast.  since db is already seeded, we just make it look up something that we know isn't there.
       allow(Settings.endpoints.storage_root_defaults).to receive(:endpoint_type_name).and_return('nonexistent')
       expect { Endpoint.default_storage_root_endpoint_type }.to raise_error(ActiveRecord::RecordNotFound)
+    end
+  end
+
+  describe '#to_h' do
+    it 'has the expected values' do
+      expect(endpoint.to_h).to eq(
+        endpoint_name: 'aws-us-east-2',
+        endpoint_type_name: 'aws',
+        endpoint_type_class: 'archive',
+        endpoint_node: 's3.us-east-2.amazonaws.com',
+        storage_location: 'sdr-bucket-01',
+        recovery_cost: 5
+      )
+    end
+  end
+
+  describe '#to_s' do
+    it 'just dumps the result of #to_h as a string, prefixed with the class name' do
+      expect(endpoint.to_s).to match(/Endpoint.*#{Regexp.escape(endpoint.to_h.to_s)}/)
     end
   end
 end

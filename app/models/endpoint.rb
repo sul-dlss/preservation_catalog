@@ -33,4 +33,19 @@ class Endpoint < ApplicationRecord
   def self.default_storage_root_endpoint_type
     EndpointType.find_by!(type_name: Settings.endpoints.storage_root_defaults.endpoint_type_name)
   end
+
+  def to_h
+    {
+      endpoint_name: endpoint_name,
+      endpoint_type_name: endpoint_type.type_name,
+      endpoint_type_class: endpoint_type.endpoint_class,
+      endpoint_node: endpoint_node,
+      storage_location: storage_location,
+      recovery_cost: recovery_cost
+    }
+  end
+
+  def to_s
+    "<Endpoint: #{to_h}>"
+  end
 end
