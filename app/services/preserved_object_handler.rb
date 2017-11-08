@@ -5,6 +5,7 @@
 # NOTE: performing validation here to allow this class to be called directly avoiding http overhead
 #
 # inspired by http://www.thegreatcodeadventure.com/smarter-rails-services-with-active-record-modules/
+require 'pp'
 class PreservedObjectHandler
 
   INVALID_ARGUMENTS = 1
@@ -62,6 +63,18 @@ class PreservedObjectHandler
     else
       pp_default = PreservationPolicy.default_preservation_policy
       begin
+        p '-----------------------------------------'
+        p "storage_dir: #{storage_dir}"
+        p "Druid: #{druid}"
+        p "incoming_version: #{incoming_version}"
+        druid_tool = DruidTools::Druid.new(druid)
+        object_dir = "#{storage_dir}/#{druid_tool.tree.join('/')}"
+        so = Moab::StorageObject.new(druid,object_dir)
+        sov = Moab::StorageObjectValidator.new(so)
+
+        pp sov.validation_errors
+        p "Object_dir: #{object_dir}"
+        p '-----------------------------------------'
         po = PreservedObject.create!(druid: druid,
                                      current_version: incoming_version,
                                      preservation_policy: pp_default)
@@ -77,7 +90,6 @@ class PreservedObjectHandler
         results << result_hash(DB_UPDATE_FAILED, "#{e.inspect} #{e.message} #{e.backtrace.inspect}")
       end
     end
-
     log_results(results)
     results
   end
@@ -127,7 +139,7 @@ class PreservedObjectHandler
           results << result_hash(UNEXPECTED_VERSION, 'PreservedCopy')
           results.concat(version_comparison_results(pres_copy, :version))
           results.concat(version_comparison_results(pres_object, :current_version))
-          # FIXME: TODO: should it update existence check timestamps/status?
+          # FIXME: TODO: should it updat3e existence check timestamps/status?
         end
       rescue ActiveRecord::RecordNotFound => e
         results << result_hash(OBJECT_DOES_NOT_EXIST, e.inspect)
