@@ -56,6 +56,29 @@ class PreservedObjectHandler
     @endpoint = endpoint
   end
 
+  def create_with_validation
+    results = []
+    if invalid?
+      results << result_hash(INVALID_ARGUMENTS, errors.full_messages)
+    elsif PreservedObject.exists?(druid: druid)
+      results << result_hash(OBJECT_ALREADY_EXISTS, 'PreservedObject')
+    else
+      dt = DruidTools::Druid.new(druid)
+      object_dir = "#{storage_location}/#{dt.tree.join('/')}"
+      moab = Moab::StorageObject.new(druid, object_dir)
+      object_validator = Stanford::StorageObjectValidator.new(moab)
+      validation_errors = object_validator.validation_errors
+      if validation_errors.empty?
+        results.concat(create_db_objects(Status.default_status))
+      else
+        results.concat(create_db_objects(Status.invalid))
+      end
+    end
+
+    log_results(results)
+    results
+  end
+
   def create
     results = []
     if invalid?
@@ -63,19 +86,7 @@ class PreservedObjectHandler
     elsif PreservedObject.exists?(druid: druid)
       results << result_hash(OBJECT_ALREADY_EXISTS, 'PreservedObject')
     else
-      pp_default = PreservationPolicy.default_preservation_policy
-      create_results = with_active_record_rescue do
-        po = PreservedObject.create!(druid: druid,
-                                     current_version: incoming_version,
-                                     preservation_policy: pp_default)
-        PreservedCopy.create!(preserved_object: po,
-                              version: incoming_version,
-                              size: incoming_size,
-                              endpoint: endpoint,
-                              status: Status.default_status)
-        results << result_hash(CREATED_NEW_OBJECT)
-      end
-      results.concat(create_results)
+      results.concat(create_db_objects(Status.default_status))
     end
 
     log_results(results)
@@ -135,6 +146,23 @@ class PreservedObjectHandler
   end
 
   private
+
+  def create_db_objects(status)
+    results = []
+    pp_default = PreservationPolicy.default_preservation_policy
+    create_results = with_active_record_rescue do
+      po = PreservedObject.create!(druid: druid,
+                                   current_version: incoming_version,
+                                   preservation_policy: pp_default)
+      PreservedCopy.create!(preserved_object: po,
+                            version: incoming_version,
+                            size: incoming_size,
+                            endpoint: endpoint,
+                            status: status)
+      results << result_hash(CREATED_NEW_OBJECT)
+    end
+    results.concat(create_results)
+  end
 
   def with_active_record_rescue
     results = []
