@@ -41,16 +41,17 @@ class PreservedObjectHandler
   validates :druid, presence: true, format: { with: DruidTools::Druid.pattern }
   validates :incoming_version, presence: true, numericality: { only_integer: true, greater_than: 0 }
   validates :incoming_size, numericality: { only_integer: true, greater_than: 0 }
-  validates :endpoint, presence: true
+  validates_each :endpoint do |record, attr, value|
+    record.errors.add(attr, 'must be an actual Endpoint') unless value.is_a?(Endpoint)
+  end
 
-  attr_reader :druid, :incoming_version, :incoming_size, :storage_dir, :endpoint
+  attr_reader :druid, :incoming_version, :incoming_size, :endpoint
 
-  def initialize(druid, incoming_version, incoming_size, storage_dir)
+  def initialize(druid, incoming_version, incoming_size, endpoint)
     @druid = druid
     @incoming_version = version_string_to_int(incoming_version)
     @incoming_size = string_to_int(incoming_size)
-    @storage_dir = storage_dir
-    @endpoint = Endpoint.find_by(storage_location: storage_dir) # let the validations catch lack of endpoint
+    @endpoint = endpoint
   end
 
   def create
@@ -61,7 +62,7 @@ class PreservedObjectHandler
       results << result_hash(OBJECT_ALREADY_EXISTS, 'PreservedObject')
     else
       pp_default = PreservationPolicy.default_preservation_policy
-      begin
+      create_results = with_active_record_rescue do
         po = PreservedObject.create!(druid: druid,
                                      current_version: incoming_version,
                                      preservation_policy: pp_default)
@@ -71,11 +72,8 @@ class PreservedObjectHandler
                               endpoint: endpoint,
                               status: Status.default_status)
         results << result_hash(CREATED_NEW_OBJECT)
-      rescue ActiveRecord::RecordNotFound => e
-        results << result_hash(OBJECT_DOES_NOT_EXIST, e.inspect)
-      rescue ActiveRecord::ActiveRecordError => e
-        results << result_hash(DB_UPDATE_FAILED, "#{e.inspect} #{e.message} #{e.backtrace.inspect}")
       end
+      results.concat(create_results)
     end
 
     log_results(results)
@@ -88,16 +86,13 @@ class PreservedObjectHandler
       results << result_hash(INVALID_ARGUMENTS, errors.full_messages)
     else
       Rails.logger.debug "confirm_version #{druid} called and object exists"
-      begin
+      confirm_results = with_active_record_rescue do
         po_db_object = PreservedObject.find_by!(druid: druid)
         results.concat(confirm_version_on_db_object(po_db_object, :current_version))
         pc_db_object = PreservedCopy.find_by!(preserved_object: po_db_object, endpoint: endpoint)
         results.concat(confirm_version_on_db_object(pc_db_object, :version))
-      rescue ActiveRecord::RecordNotFound => e
-        results << result_hash(OBJECT_DOES_NOT_EXIST, e.inspect)
-      rescue ActiveRecord::ActiveRecordError => e
-        results << result_hash(DB_UPDATE_FAILED, "#{e.inspect} #{e.message} #{e.backtrace.inspect}")
       end
+      results.concat(confirm_results)
     end
 
     log_results(results)
@@ -110,30 +105,13 @@ class PreservedObjectHandler
       results << result_hash(INVALID_ARGUMENTS, errors.full_messages)
     else
       Rails.logger.debug "update_version #{druid} called and druid in Catalog"
-      begin
-        pres_object = PreservedObject.find_by!(druid: druid)
-        pres_copy = PreservedCopy.find_by!(preserved_object: pres_object, endpoint: endpoint)
-        # FIXME: what if there is more than one associated pres_copy?
-        if incoming_version > pres_copy.version && pres_copy.version == pres_object.current_version
-          # FIXME: only update PreservedCopy.version IFF it's Moab endpoint
-          results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_copy.class.name)
-          update_preserved_copy(pres_copy, incoming_version, incoming_size)
-          results.concat(update_status(pres_copy, Status.ok))
-          results.concat(update_db_object(pres_copy))
-          results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_object.class.name)
-          update_preserved_object(pres_object, incoming_version)
-          results.concat(update_db_object(pres_object))
-        else
-          results << result_hash(UNEXPECTED_VERSION, 'PreservedCopy')
-          results.concat(version_comparison_results(pres_copy, :version))
-          results.concat(version_comparison_results(pres_object, :current_version))
-          # FIXME: TODO: should it update existence check timestamps/status?
+      upd_results = with_active_record_rescue do
+        if endpoint.endpoint_type.endpoint_class == 'online'
+          results.concat update_online_version
+        elsif endpoint.endpoint_type.endpoint_class == 'archive'
         end
-      rescue ActiveRecord::RecordNotFound => e
-        results << result_hash(OBJECT_DOES_NOT_EXIST, e.inspect)
-      rescue ActiveRecord::ActiveRecordError => e
-        results << result_hash(DB_UPDATE_FAILED, "#{e.inspect} #{e.message} #{e.backtrace.inspect}")
       end
+      results.concat(upd_results)
     end
 
     log_results(results)
@@ -141,6 +119,49 @@ class PreservedObjectHandler
   end
 
   private
+
+  def update_online_version
+    results = []
+    pres_object = PreservedObject.find_by!(druid: druid)
+    pres_copy = PreservedCopy.find_by!(preserved_object: pres_object, endpoint: endpoint)
+    # FIXME: what if there is more than one associated pres_copy?
+    if incoming_version > pres_copy.version && pres_copy.version == pres_object.current_version
+      results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_copy.class.name)
+      update_preserved_copy(pres_copy, incoming_version, incoming_size)
+      results.concat(update_status(pres_copy, Status.ok))
+      results.concat(update_db_object(pres_copy))
+      results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_object.class.name)
+      update_preserved_object(pres_object, incoming_version)
+      results.concat(update_db_object(pres_object))
+    else
+      results << result_hash(UNEXPECTED_VERSION, 'PreservedCopy')
+      results.concat(version_comparison_results(pres_copy, :version))
+      results.concat(version_comparison_results(pres_object, :current_version))
+      # FIXME: TODO: should it update existence check timestamps/status?
+    end
+    results
+  end
+
+  # runs the provided block.  if any of the expected exceptions are raised, returns a list
+  # with the appropriate result codes.  otherwise, returns an empty list.  will let unexpected
+  # exceptions up to the caller.
+  #
+  # e.g.:
+  # rescue_results = with_active_record_rescue do
+  #   # do some stuff ActiveRecord stuff that could throw the usual exceptions
+  # end
+  # results.concat(rescue_results)
+  def with_active_record_rescue
+    results = []
+    begin
+      yield
+    rescue ActiveRecord::RecordNotFound => e
+      results << result_hash(OBJECT_DOES_NOT_EXIST, e.inspect)
+    rescue ActiveRecord::ActiveRecordError => e
+      results << result_hash(DB_UPDATE_FAILED, "#{e.inspect} #{e.message} #{e.backtrace.inspect}")
+    end
+    results
+  end
 
   # expects @incoming_version to be numeric
   def update_preserved_copy(pres_copy, new_version, new_size)
@@ -218,7 +239,7 @@ class PreservedObjectHandler
   def update_db_object(db_object)
     results = []
     if db_object.changed?
-      db_object.save
+      db_object.save!
       results << result_hash(UPDATED_DB_OBJECT, db_object.class.name)
     else
       # FIXME: we may not want to do this, but instead to update specific timestamp for check
@@ -244,7 +265,7 @@ class PreservedObjectHandler
   end
 
   def result_msg_prefix
-    @msg_prefix ||= "PreservedObjectHandler(#{druid}, #{incoming_version}, #{incoming_size}, #{storage_dir})"
+    @msg_prefix ||= "PreservedObjectHandler(#{druid}, #{incoming_version}, #{incoming_size}, #{endpoint})"
   end
 
   # results = [result1, result2]

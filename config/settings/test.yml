@@ -4,3 +4,4 @@ moab:
     # name: '/location/on/disk'  # e.g.
     fixture_sr1: 'spec/fixtures/storage_root01'
     fixture_sr2: 'spec/fixtures/storage_root02'
+    fixture_empty: 'spec/fixtures/empty'
