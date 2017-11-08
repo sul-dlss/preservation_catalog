@@ -19,6 +19,10 @@ class Status < ApplicationRecord
     find_by!(status_text: Settings.default_status)
   end
 
+  def self.invalid
+    find_by!(status_text: Settings.statuses.detect { |s| s == 'invalid_moab' })
+  end
+
   def self.unexpected_version
     find_by!(status_text: Settings.statuses.detect { |s| s == 'expected_version_not_found_on_disk' })
   end
