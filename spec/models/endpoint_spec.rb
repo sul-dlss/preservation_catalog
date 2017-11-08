@@ -79,8 +79,8 @@ RSpec.describe Endpoint, type: :model do
     it 'does not re-create records that already exist' do
       # run it a second time
       Endpoint.seed_storage_root_endpoints_from_config(strg_rt_endpoint_type, default_pres_policies)
-      # sort so we can avoid comparing via include, and see that it has only/exactly the three expected elements
-      expect(Endpoint.pluck(:endpoint_name).sort).to eq %w[aws fixture_sr1 fixture_sr2]
+      # sort so we can avoid comparing via include, and see that it has only/exactly the four expected elements
+      expect(Endpoint.pluck(:endpoint_name).sort).to eq %w[aws fixture_empty fixture_sr1 fixture_sr2]
     end
 
     it 'adds new records if there are additions to Settings since the last run' do
@@ -93,7 +93,7 @@ RSpec.describe Endpoint, type: :model do
 
       # run it a second time
       Endpoint.seed_storage_root_endpoints_from_config(strg_rt_endpoint_type, default_pres_policies)
-      expect(Endpoint.pluck(:endpoint_name).sort).to eq %w[aws fixture_sr1 fixture_sr2 fixture_srTest]
+      expect(Endpoint.pluck(:endpoint_name).sort).to eq %w[aws fixture_empty fixture_sr1 fixture_sr2 fixture_srTest]
     end
   end
 

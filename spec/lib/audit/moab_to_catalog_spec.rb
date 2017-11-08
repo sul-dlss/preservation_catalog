@@ -3,6 +3,7 @@ require_relative "../../../lib/audit/moab_to_catalog.rb"
 
 RSpec.describe MoabToCatalog do
   let(:storage_dir) { 'spec/fixtures/storage_root01/moab_storage_trunk' }
+  let(:endpoint) { Endpoint.find_by!(storage_location: storage_dir) }
 
   before do
     PreservationPolicy.seed_from_config
@@ -73,7 +74,7 @@ RSpec.describe MoabToCatalog do
             arg_hash[:druid],
             arg_hash[:storage_root_current_version],
             instance_of(Integer),
-            storage_dir
+            endpoint
           ).and_return(po_handler)
         end
       end
@@ -112,12 +113,13 @@ RSpec.describe MoabToCatalog do
       expect(subject.count).to eq 3
     end
     it "storage directory doesn't exist (misspelling, read write permissions)" do
+      allow(Endpoint).to receive(:find_by!).and_return(instance_double(Endpoint))
       expect { described_class.check_existence('spec/fixtures/moab_strge_root') }.to raise_error(
         SystemCallError, /No such file or directory/
       )
     end
     it "storage directory exists but it is empty" do
-      storage_dir = 'spec/fixtures/empty'
+      storage_dir = 'spec/fixtures/empty/moab_storage_trunk'
       expect(described_class.check_existence(storage_dir)).to eq []
     end
   end
@@ -171,7 +173,7 @@ RSpec.describe MoabToCatalog do
             arg_hash[:druid],
             arg_hash[:storage_root_current_version],
             instance_of(Integer),
-            storage_dir
+            endpoint
           ).and_return(po_handler)
         end
       end
@@ -197,12 +199,13 @@ RSpec.describe MoabToCatalog do
       expect(subject.count).to eq 3
     end
     it "storage directory doesn't exist (misspelling, read write permissions)" do
+      allow(Endpoint).to receive(:find_by!).and_return(instance_double(Endpoint))
       expect { described_class.check_existence('spec/fixtures/moab_strge_root') }.to raise_error(
         SystemCallError, /No such file or directory/
       )
     end
     it "storage directory exists but it is empty" do
-      storage_dir = 'spec/fixtures/empty'
+      storage_dir = 'spec/fixtures/empty/moab_storage_trunk'
       expect(described_class.check_existence(storage_dir)).to eq []
     end
   end
