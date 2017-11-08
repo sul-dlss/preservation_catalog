@@ -111,4 +111,23 @@ RSpec.describe Endpoint, type: :model do
       expect { Endpoint.default_storage_root_endpoint_type }.to raise_error(ActiveRecord::RecordNotFound)
     end
   end
+
+  describe '#to_h' do
+    it 'has the expected values' do
+      expect(endpoint.to_h).to eq(
+        endpoint_name: 'aws-us-east-2',
+        endpoint_type_name: 'aws',
+        endpoint_type_class: 'archive',
+        endpoint_node: 's3.us-east-2.amazonaws.com',
+        storage_location: 'sdr-bucket-01',
+        recovery_cost: 5
+      )
+    end
+  end
+
+  describe '#to_s' do
+    it 'just dumps the result of #to_h as a string, prefixed with the class name' do
+      expect(endpoint.to_s).to match(/Endpoint.*#{Regexp.escape(endpoint.to_h.to_s)}/)
+    end
+  end
 end
