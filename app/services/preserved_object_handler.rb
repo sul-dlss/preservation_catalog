@@ -61,7 +61,7 @@ class PreservedObjectHandler
       results << result_hash(OBJECT_ALREADY_EXISTS, 'PreservedObject')
     else
       pp_default = PreservationPolicy.default_preservation_policy
-      begin
+      create_results = with_active_record_rescue do
         po = PreservedObject.create!(druid: druid,
                                      current_version: incoming_version,
                                      preservation_policy: pp_default)
@@ -71,11 +71,8 @@ class PreservedObjectHandler
                               endpoint: endpoint,
                               status: Status.default_status)
         results << result_hash(CREATED_NEW_OBJECT)
-      rescue ActiveRecord::RecordNotFound => e
-        results << result_hash(OBJECT_DOES_NOT_EXIST, e.inspect)
-      rescue ActiveRecord::ActiveRecordError => e
-        results << result_hash(DB_UPDATE_FAILED, "#{e.inspect} #{e.message} #{e.backtrace.inspect}")
       end
+      results.concat(create_results)
     end
 
     log_results(results)
@@ -88,16 +85,13 @@ class PreservedObjectHandler
       results << result_hash(INVALID_ARGUMENTS, errors.full_messages)
     else
       Rails.logger.debug "confirm_version #{druid} called and object exists"
-      begin
+      confirm_results = with_active_record_rescue do
         po_db_object = PreservedObject.find_by!(druid: druid)
         results.concat(confirm_version_on_db_object(po_db_object, :current_version))
         pc_db_object = PreservedCopy.find_by!(preserved_object: po_db_object, endpoint: endpoint)
         results.concat(confirm_version_on_db_object(pc_db_object, :version))
-      rescue ActiveRecord::RecordNotFound => e
-        results << result_hash(OBJECT_DOES_NOT_EXIST, e.inspect)
-      rescue ActiveRecord::ActiveRecordError => e
-        results << result_hash(DB_UPDATE_FAILED, "#{e.inspect} #{e.message} #{e.backtrace.inspect}")
       end
+      results.concat(confirm_results)
     end
 
     log_results(results)
@@ -110,7 +104,7 @@ class PreservedObjectHandler
       results << result_hash(INVALID_ARGUMENTS, errors.full_messages)
     else
       Rails.logger.debug "update_version #{druid} called and druid in Catalog"
-      begin
+      upd_results = with_active_record_rescue do
         pres_object = PreservedObject.find_by!(druid: druid)
         pres_copy = PreservedCopy.find_by!(preserved_object: pres_object, endpoint: endpoint)
         # FIXME: what if there is more than one associated pres_copy?
@@ -129,11 +123,8 @@ class PreservedObjectHandler
           results.concat(version_comparison_results(pres_object, :current_version))
           # FIXME: TODO: should it update existence check timestamps/status?
         end
-      rescue ActiveRecord::RecordNotFound => e
-        results << result_hash(OBJECT_DOES_NOT_EXIST, e.inspect)
-      rescue ActiveRecord::ActiveRecordError => e
-        results << result_hash(DB_UPDATE_FAILED, "#{e.inspect} #{e.message} #{e.backtrace.inspect}")
       end
+      results.concat(upd_results)
     end
 
     log_results(results)
@@ -141,6 +132,18 @@ class PreservedObjectHandler
   end
 
   private
+
+  def with_active_record_rescue
+    results = []
+    begin
+      yield
+    rescue ActiveRecord::RecordNotFound => e
+      results << result_hash(OBJECT_DOES_NOT_EXIST, e.inspect)
+    rescue ActiveRecord::ActiveRecordError => e
+      results << result_hash(DB_UPDATE_FAILED, "#{e.inspect} #{e.message} #{e.backtrace.inspect}")
+    end
+    results
+  end
 
   # expects @incoming_version to be numeric
   def update_preserved_copy(pres_copy, new_version, new_size)
