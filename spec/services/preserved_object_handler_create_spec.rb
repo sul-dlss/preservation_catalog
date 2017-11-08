@@ -7,9 +7,9 @@ RSpec.describe PreservedObjectHandler do
   let(:incoming_size) { 9876 }
   let(:storage_dir) { 'spec/fixtures/storage_root01/moab_storage_trunk' } # we are just going to assume the first rails storage root
   let(:ep) { Endpoint.find_by(storage_location: storage_dir) }
-  let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, #{incoming_version}, #{incoming_size}, #{storage_dir})" }
+  let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, #{incoming_version}, #{incoming_size}, #{ep})" }
   let(:db_update_failed_prefix_regex_escaped) { Regexp.escape("#{exp_msg_prefix} db update failed") }
-  let(:po_handler) { described_class.new(druid, incoming_version, incoming_size, storage_dir) }
+  let(:po_handler) { described_class.new(druid, incoming_version, incoming_size, ep) }
 
   describe '#create' do
     let!(:exp_msg) { "#{exp_msg_prefix} added object to db as it did not exist" }

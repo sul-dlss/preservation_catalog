@@ -41,16 +41,19 @@ class PreservedObjectHandler
   validates :druid, presence: true, format: { with: DruidTools::Druid.pattern }
   validates :incoming_version, presence: true, numericality: { only_integer: true, greater_than: 0 }
   validates :incoming_size, numericality: { only_integer: true, greater_than: 0 }
-  validates :endpoint, presence: true
+  validates_each :endpoint do |record, attr, value|
+    record.errors.add(attr, 'must be an actual Endpoint') unless value.is_a?(Endpoint)
+  end
 
-  attr_reader :druid, :incoming_version, :incoming_size, :storage_dir, :endpoint
+  attr_reader :druid, :incoming_version, :incoming_size, :endpoint
 
-  def initialize(druid, incoming_version, incoming_size, storage_dir)
+  delegate :storage_location, to: :endpoint
+
+  def initialize(druid, incoming_version, incoming_size, endpoint)
     @druid = druid
     @incoming_version = version_string_to_int(incoming_version)
     @incoming_size = string_to_int(incoming_size)
-    @storage_dir = storage_dir
-    @endpoint = Endpoint.find_by(storage_location: storage_dir) # let the validations catch lack of endpoint
+    @endpoint = endpoint
   end
 
   def create
@@ -247,7 +250,7 @@ class PreservedObjectHandler
   end
 
   def result_msg_prefix
-    @msg_prefix ||= "PreservedObjectHandler(#{druid}, #{incoming_version}, #{incoming_size}, #{storage_dir})"
+    @msg_prefix ||= "PreservedObjectHandler(#{druid}, #{incoming_version}, #{incoming_size}, #{endpoint})"
   end
 
   # results = [result1, result2]

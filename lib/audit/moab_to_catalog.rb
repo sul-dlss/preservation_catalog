@@ -6,9 +6,10 @@ class MoabToCatalog
   # NOTE: shameless green! code duplication with seed_catalog
   def self.check_existence(storage_dir, expect_to_create=false)
     results = []
+    endpoint = Endpoint.find_by!(storage_location: storage_dir)
     Stanford::MoabStorageDirectory.find_moab_paths(storage_dir) do |druid, path, _path_match_data|
       moab = Moab::StorageObject.new(druid, path)
-      po_handler = PreservedObjectHandler.new(druid, moab.current_version_id, moab.size, storage_dir)
+      po_handler = PreservedObjectHandler.new(druid, moab.current_version_id, moab.size, endpoint)
       if PreservedObject.exists?(druid: druid)
         results << po_handler.confirm_version
       else
@@ -22,9 +23,10 @@ class MoabToCatalog
   # NOTE: shameless green! code duplication with check_existence
   def self.seed_catalog(storage_dir)
     results = []
+    endpoint = Endpoint.find_by!(storage_location: storage_dir)
     Stanford::MoabStorageDirectory.find_moab_paths(storage_dir) do |druid, path, _path_match_data|
       moab = Moab::StorageObject.new(druid, path)
-      po_handler = PreservedObjectHandler.new(druid, moab.current_version_id, moab.size, storage_dir)
+      po_handler = PreservedObjectHandler.new(druid, moab.current_version_id, moab.size, endpoint)
       if PreservedObject.exists?(druid: druid)
         Rails.logger.error "druid: #{druid} NOT expected to exist in catalog but was found"
       else
