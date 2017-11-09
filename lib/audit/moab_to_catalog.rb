@@ -42,4 +42,11 @@ class MoabToCatalog
       self.class.seed_catalog("#{storage_root[1]}/#{Settings.moab.storage_trunk}")
     end
   end
+
+  # Shameless green. Code duplication with seed_from_disk
+  def check_existence_from_disk
+    Settings.moab.storage_roots.each do |storage_root|
+      self.class.check_existence("#{storage_root[1]}/#{Settings.moab.storage_trunk}")
+    end
+  end
 end

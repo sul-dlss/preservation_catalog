@@ -9,6 +9,22 @@ RSpec.describe MoabToCatalog do
     PreservationPolicy.seed_from_config
   end
 
+  describe "#check_existence_from_disk" do
+    let(:m2c) { described_class.new }
+
+    it 'calls check_existence once per storage root' do
+      expect(described_class).to receive(:check_existence).exactly(Settings.moab.storage_roots.count).times
+      m2c.check_existence_from_disk
+    end
+
+    it 'calls check_existence with the right arguments' do
+      Settings.moab.storage_roots.each do |storage_root|
+        expect(described_class).to receive(:check_existence).with("#{storage_root[1]}/#{Settings.moab.storage_trunk}")
+      end
+      m2c.check_existence_from_disk
+    end
+  end
+
   describe "#seed_from_disk" do
     let(:m2c) { described_class.new }
 
