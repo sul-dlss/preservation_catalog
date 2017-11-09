@@ -18,6 +18,8 @@ gem 'pry-rails' # use pry as the rails console shell instead of IRB
 # Use Puma as the app server
 gem 'puma', '~> 3.7'
 gem 'rails', '~> 5.1.3'
+# Use newrelic for performance monitoring
+gem 'newrelic_rpm'
 
 # Stanford gems
 gem 'moab-versioning' # work with Moab Objects
