@@ -108,23 +108,9 @@ class PreservedObjectHandler
     else
       Rails.logger.debug "update_version #{druid} called and druid in Catalog"
       upd_results = with_active_record_rescue do
-        pres_object = PreservedObject.find_by!(druid: druid)
-        pres_copy = PreservedCopy.find_by!(preserved_object: pres_object, endpoint: endpoint)
-        # FIXME: what if there is more than one associated pres_copy?
-        if incoming_version > pres_copy.version && pres_copy.version == pres_object.current_version
-          # FIXME: only update PreservedCopy.version IFF it's Moab endpoint
-          results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_copy.class.name)
-          update_preserved_copy(pres_copy, incoming_version, incoming_size)
-          results.concat(update_status(pres_copy, Status.ok))
-          results.concat(update_db_object(pres_copy))
-          results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_object.class.name)
-          update_preserved_object(pres_object, incoming_version)
-          results.concat(update_db_object(pres_object))
-        else
-          results << result_hash(UNEXPECTED_VERSION, 'PreservedCopy')
-          results.concat(version_comparison_results(pres_copy, :version))
-          results.concat(version_comparison_results(pres_object, :current_version))
-          # FIXME: TODO: should it update existence check timestamps/status?
+        if endpoint.endpoint_type.endpoint_class == 'online'
+          results.concat update_online_version
+        elsif endpoint.endpoint_type.endpoint_class == 'archive'
         end
       end
       results.concat(upd_results)
@@ -135,6 +121,28 @@ class PreservedObjectHandler
   end
 
   private
+
+  def update_online_version
+    results = []
+    pres_object = PreservedObject.find_by!(druid: druid)
+    pres_copy = PreservedCopy.find_by!(preserved_object: pres_object, endpoint: endpoint)
+    # FIXME: what if there is more than one associated pres_copy?
+    if incoming_version > pres_copy.version && pres_copy.version == pres_object.current_version
+      results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_copy.class.name)
+      update_preserved_copy(pres_copy, incoming_version, incoming_size)
+      results.concat(update_status(pres_copy, Status.ok))
+      results.concat(update_db_object(pres_copy))
+      results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_object.class.name)
+      update_preserved_object(pres_object, incoming_version)
+      results.concat(update_db_object(pres_object))
+    else
+      results << result_hash(UNEXPECTED_VERSION, 'PreservedCopy')
+      results.concat(version_comparison_results(pres_copy, :version))
+      results.concat(version_comparison_results(pres_object, :current_version))
+      # FIXME: TODO: should it update existence check timestamps/status?
+    end
+    results
+  end
 
   def with_active_record_rescue
     results = []
