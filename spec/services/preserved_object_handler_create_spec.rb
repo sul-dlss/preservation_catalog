@@ -93,6 +93,27 @@ RSpec.describe PreservedObjectHandler do
 
     it_behaves_like 'attributes validated', :create_with_validation
 
+    context 'updates timestamp' do
+      let(:t) { Time.current }
+      let(:ep) { Endpoint.find_by(storage_location: storage_dir) }
+      let(:po_handler) { described_class.new(valid_druid, incoming_version, incoming_size, ep) }
+      let(:po_db_obj) { PreservedObject.find_by(druid: valid_druid) }
+      let(:pc_db_obj) { PreservedCopy.find_by(preserved_object: po_db_obj) }
+      let(:results) do
+        po_handler = described_class.new(valid_druid, incoming_version, incoming_size, ep)
+        po_handler.create_with_validation
+      end
+
+      before { results }
+
+      it "sets last_audited with Epoch time" do
+        expect(pc_db_obj.last_audited).to be_within(10).of(t.to_i)
+      end
+      it "sets last_checked_on_storage with current time" do
+        expect(pc_db_obj.last_checked_on_storage).to be_within(10).of(t)
+      end
+    end
+
     it 'creates the preserved object and preserved copy when there are no validation errors' do
       po_args = {
         druid: valid_druid,

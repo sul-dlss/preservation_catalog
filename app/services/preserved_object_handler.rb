@@ -69,9 +69,9 @@ class PreservedObjectHandler
       object_validator = Stanford::StorageObjectValidator.new(moab)
       validation_errors = object_validator.validation_errors
       if validation_errors.empty?
-        results.concat(create_db_objects(Status.default_status))
+        results.concat(create_db_objects(Status.default_status, true))
       else
-        results.concat(create_db_objects(Status.invalid))
+        results.concat(create_db_objects(Status.invalid, true))
       end
     end
 
@@ -133,18 +133,25 @@ class PreservedObjectHandler
 
   private
 
-  def create_db_objects(status)
+  def create_db_objects(status, validate=false)
     results = []
     pp_default = PreservationPolicy.default_preservation_policy
     create_results = with_active_record_rescue do
       po = PreservedObject.create!(druid: druid,
                                    current_version: incoming_version,
                                    preservation_policy: pp_default)
-      PreservedCopy.create!(preserved_object: po,
-                            version: incoming_version,
-                            size: incoming_size,
-                            endpoint: endpoint,
-                            status: status)
+      pc = PreservedCopy.create!(preserved_object: po,
+                                 version: incoming_version,
+                                 size: incoming_size,
+                                 endpoint: endpoint,
+                                 status: status)
+      if validate
+        t = Time.current
+        # Returns the value of time as an integer number of seconds since the Epoch.
+        pc.last_audited = t.to_i
+        pc.last_checked_on_storage = t
+        pc.save
+      end
       results << result_hash(CREATED_NEW_OBJECT)
     end
     results.concat(create_results)
