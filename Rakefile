@@ -18,7 +18,7 @@ require_relative 'lib/audit/moab_to_catalog'
 desc 'populate the catalog with the contents of the online storage roots'
 task seed_catalog: :environment do
   m2c = MoabToCatalog.new
-  puts "Seeding the database from all storage roots..."
+  puts "#{Time.now.utc.iso8601} Seeding the database from all storage roots..."
   m2c.seed_from_disk
-  puts "Done"
+  puts "#{Time.now.utc.iso8601} Done"
 end
