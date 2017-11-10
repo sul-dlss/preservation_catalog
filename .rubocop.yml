@@ -49,6 +49,7 @@ Layout/SpaceInsideBrackets:
 Metrics/AbcSize:
   Exclude:
     - 'app/services/preserved_object_handler.rb' # 2 methods but they seem readable
+    - 'lib/audit/moab_to_catalog.rb' # #seed_from_disk is decidedly readable
 
 Metrics/BlockLength:
   Exclude:
@@ -93,6 +94,10 @@ Rails/FilePath:
 
 Rails/HasAndBelongsToMany:
   Enabled: false
+
+Rails/Output:
+  Exclude:
+    - 'lib/audit/moab_to_catalog.rb' # yes, we want to use puts statements
 
 Rails/SkipsModelValidations:
   Exclude:
