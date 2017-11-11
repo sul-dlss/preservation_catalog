@@ -16,9 +16,18 @@ end
 
 require_relative 'lib/audit/moab_to_catalog'
 desc 'populate the catalog with the contents of the online storage roots'
-task seed_catalog: :environment do
+task :seed_catalog, [:profile] => [:environment] do |_t, args|
+  unless args[:profile] == 'profile' || args[:profile].nil?
+    p "Usage: rake seed_catalog || rake seed_catalog[profile]"
+    exit
+  end
   m2c = MoabToCatalog.new
   puts "#{Time.now.utc.iso8601} Seeding the database from all storage roots..."
-  m2c.seed_from_disk
+  if args[:profile] == 'profile'
+    puts 'When done, check log/seed_from_disk[TIMESTAMP].log for profiling details'
+    m2c.seed_from_disk_with_profiling
+  elsif args[:profile].nil?
+    m2c.seed_from_disk
+  end
   puts "#{Time.now.utc.iso8601} Done"
 end
