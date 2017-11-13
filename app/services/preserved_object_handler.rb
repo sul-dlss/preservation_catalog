@@ -92,13 +92,7 @@ class PreservedObjectHandler
       results << result_hash(INVALID_ARGUMENTS, errors.full_messages)
     else
       Rails.logger.debug "confirm_version #{druid} called"
-      confirm_results = with_active_record_rescue do
-        po_db_object = PreservedObject.find_by!(druid: druid)
-        results.concat(confirm_version_on_db_object(po_db_object, :current_version))
-        pc_db_object = PreservedCopy.find_by!(preserved_object: po_db_object, endpoint: endpoint)
-        results.concat(confirm_version_on_db_object(pc_db_object, :version))
-      end
-      results.concat(confirm_results)
+      results.concat(confirm_version_in_catalog)
     end
 
     log_results(results)
@@ -111,13 +105,10 @@ class PreservedObjectHandler
       results << result_hash(INVALID_ARGUMENTS, errors.full_messages)
     else
       Rails.logger.debug "update_version #{druid} called"
-      upd_results = with_active_record_rescue do
-        if endpoint.endpoint_type.endpoint_class == 'online'
-          results.concat update_online_version
-        elsif endpoint.endpoint_type.endpoint_class == 'archive'
-        end
+      if endpoint.endpoint_type.endpoint_class == 'online'
+        results.concat(update_online_version)
+      elsif endpoint.endpoint_type.endpoint_class == 'archive'
       end
-      results.concat(upd_results)
     end
 
     log_results(results)
@@ -162,24 +153,37 @@ class PreservedObjectHandler
 
   def update_online_version
     results = []
-    pres_object = PreservedObject.find_by!(druid: druid)
-    pres_copy = PreservedCopy.find_by!(preserved_object: pres_object, endpoint: endpoint)
-    # FIXME: what if there is more than one associated pres_copy?
-    if incoming_version > pres_copy.version && pres_copy.version == pres_object.current_version
-      results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_copy.class.name)
-      update_preserved_copy(pres_copy, incoming_version, incoming_size)
-      results.concat(update_status(pres_copy, Status.ok))
-      results.concat(update_db_object(pres_copy))
-      results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_object.class.name)
-      update_preserved_object(pres_object, incoming_version)
-      results.concat(update_db_object(pres_object))
-    else
-      results << result_hash(UNEXPECTED_VERSION, 'PreservedCopy')
-      results.concat(version_comparison_results(pres_copy, :version))
-      results.concat(version_comparison_results(pres_object, :current_version))
-      # FIXME: TODO: should it update existence check timestamps/status?
+    upd_results = with_active_record_rescue do
+      pres_object = PreservedObject.find_by!(druid: druid)
+      pres_copy = PreservedCopy.find_by!(preserved_object: pres_object, endpoint: endpoint)
+      # FIXME: what if there is more than one associated pres_copy?
+      if incoming_version > pres_copy.version && pres_copy.version == pres_object.current_version
+        results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_copy.class.name)
+        update_preserved_copy(pres_copy, incoming_version, incoming_size)
+        results.concat(update_status(pres_copy, Status.ok))
+        results.concat(update_db_object(pres_copy))
+        results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_object.class.name)
+        update_preserved_object(pres_object, incoming_version)
+        results.concat(update_db_object(pres_object))
+      else
+        results << result_hash(UNEXPECTED_VERSION, 'PreservedCopy')
+        results.concat(version_comparison_results(pres_copy, :version))
+        results.concat(version_comparison_results(pres_object, :current_version))
+        # FIXME: TODO: should it update existence check timestamps/status?
+      end
     end
-    results
+    results.concat(upd_results)
+  end
+
+  def confirm_version_in_catalog
+    results = []
+    confirm_results = with_active_record_rescue do
+      po_db_object = PreservedObject.find_by!(druid: druid)
+      results.concat(confirm_version_on_db_object(po_db_object, :current_version))
+      pc_db_object = PreservedCopy.find_by!(preserved_object: po_db_object, endpoint: endpoint)
+      results.concat(confirm_version_on_db_object(pc_db_object, :version))
+    end
+    results.concat(confirm_results)
   end
 
   def with_active_record_rescue
