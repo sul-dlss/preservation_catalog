@@ -15,6 +15,7 @@ gem 'pg'
 # useful for debugging, even in prod
 gem 'pry-byebug' # Adds step-by-step debugging and stack navigation capabilities to pry using byebug
 gem 'pry-rails' # use pry as the rails console shell instead of IRB
+gem 'ruby-prof' # to profile methods
 # Use Puma as the app server
 gem 'puma', '~> 3.7'
 gem 'rails', '~> 5.1.3'
@@ -44,7 +45,6 @@ group :development do
   # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
   gem 'spring'
   gem 'spring-watcher-listen', '~> 2.0.0'
-  gem 'ruby-prof'
   gem 'hirb' # for db table display via rails console
 end
 

@@ -41,6 +41,20 @@ RSpec.describe MoabToCatalog do
     end
   end
 
+  describe "#seed_from_disk_with_profiling" do
+    let(:m2c) { described_class.new }
+
+    it "spins up a profiler, calling profiling and printing methods on it" do
+      mock_profiler = instance_double(Profiler)
+
+      expect(Profiler).to receive(:new).and_return(mock_profiler)
+      expect(mock_profiler).to receive(:prof)
+      expect(mock_profiler).to receive(:print_results_flat)
+
+      m2c.seed_from_disk_with_profiling
+    end
+  end
+
   describe ".check_existence" do
     let(:subject) { described_class.check_existence(storage_dir, true) }
 

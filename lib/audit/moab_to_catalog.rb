@@ -49,6 +49,12 @@ class MoabToCatalog
     end
   end
 
+  def seed_from_disk_with_profiling
+    profiler = Profiler.new
+    profiler.prof { seed_from_disk }
+    profiler.print_results_flat('seed_from_disk')
+  end
+
   # Shameless green. Code duplication with seed_from_disk
   def check_existence_from_disk
     Settings.moab.storage_roots.each do |storage_root|
