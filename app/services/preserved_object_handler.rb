@@ -91,7 +91,7 @@ class PreservedObjectHandler
     if invalid?
       results << result_hash(INVALID_ARGUMENTS, errors.full_messages)
     else
-      Rails.logger.debug "confirm_version #{druid} called and object exists"
+      Rails.logger.debug "confirm_version #{druid} called"
       confirm_results = with_active_record_rescue do
         po_db_object = PreservedObject.find_by!(druid: druid)
         results.concat(confirm_version_on_db_object(po_db_object, :current_version))
@@ -110,7 +110,7 @@ class PreservedObjectHandler
     if invalid?
       results << result_hash(INVALID_ARGUMENTS, errors.full_messages)
     else
-      Rails.logger.debug "update_version #{druid} called and druid in Catalog"
+      Rails.logger.debug "update_version #{druid} called"
       upd_results = with_active_record_rescue do
         if endpoint.endpoint_type.endpoint_class == 'online'
           results.concat update_online_version

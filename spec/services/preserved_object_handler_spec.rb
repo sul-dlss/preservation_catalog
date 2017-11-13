@@ -324,7 +324,7 @@ RSpec.describe PreservedObjectHandler do
         expect(pc).to have_received(:touch)
       end
       it 'logs a debug message' do
-        msg = "confirm_version #{druid} called and object exists"
+        msg = "confirm_version #{druid} called"
         allow(Rails.logger).to receive(:debug)
         po_handler.confirm_version
         expect(Rails.logger).to have_received(:debug).with(msg)
