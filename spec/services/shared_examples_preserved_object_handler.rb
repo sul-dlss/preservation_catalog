@@ -70,8 +70,14 @@ RSpec.shared_examples "attributes validated" do |method_sym|
 end
 
 RSpec.shared_examples 'druid not in catalog' do |method_sym|
-  let(:druid) { 'rr111rr1111' }
+  let(:druid) { 'bj102hs9687' }
+  let(:version) { 3 }
+  let(:size) { 666 }
+  let(:storage_dir) { 'spec/fixtures/storage_root01/moab_storage_trunk' }
+  let(:ep) { Endpoint.find_by(storage_location: storage_dir) }
+  let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, #{version}, #{size}, #{ep})" }
   let(:exp_msg) { "#{exp_msg_prefix} #<ActiveRecord::RecordNotFound: Couldn't find PreservedObject> db object does not exist" }
+  let(:po_handler) { described_class.new(druid, version, size, ep) }
   let(:results) do
     allow(Rails.logger).to receive(:log)
     # FIXME: couldn't figure out how to put next line into its own test

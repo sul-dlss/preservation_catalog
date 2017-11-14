@@ -178,6 +178,7 @@ class PreservedObjectHandler
       yield
     rescue ActiveRecord::RecordNotFound => e
       results << result_hash(OBJECT_DOES_NOT_EXIST, e.inspect)
+      create_with_validation
     rescue ActiveRecord::ActiveRecordError => e
       results << result_hash(DB_UPDATE_FAILED, "#{e.inspect} #{e.message} #{e.backtrace.inspect}")
     end
