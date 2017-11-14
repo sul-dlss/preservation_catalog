@@ -371,6 +371,26 @@ RSpec.describe PreservedObjectHandler do
     it_behaves_like 'druid not in catalog', :update_version
 
     it_behaves_like 'PreservedCopy does not exist', :update_version
+
+    context 'not in Catalog' do
+      let(:druid) { 'bj102hs9687' }
+      let(:incoming_version) { 3 }
+      let(:incoming_size) { 666 }
+      let(:storage_dir) { 'spec/fixtures/storage_root01/moab_storage_trunk' }
+      let(:ep) { Endpoint.find_by(storage_location: storage_dir) }
+      let(:po_handler) { described_class.new(druid, incoming_version, incoming_size, ep) }
+
+      it 'creates preserved object if not found' do
+        expect(PreservedObject.where(druid: druid)).not_to exist
+        po_handler.update_version
+        expect(PreservedObject.where(druid: druid)).to exist
+      end
+      it 'creates preserved copy if not found' do
+        expect(PreservedCopy.where(preserved_object: PreservedObject.find_by(druid: druid))).not_to exist
+        po_handler.update_version
+        expect(PreservedCopy.where(preserved_object: PreservedObject.find_by(druid: druid))).to exist
+      end
+    end
   end
 
   describe '#confirm_version' do
