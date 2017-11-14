@@ -70,6 +70,7 @@ Metrics/LineLength:
     - 'app/services/preserved_object_handler.rb' # 2 lines 121
     - 'spec/services/preserved_object_handler_create_spec.rb'
     - 'spec/services/preserved_object_handler_spec.rb'
+    - 'spec/services/preserved_object_handler_update_version_spec.rb'
     - 'spec/services/shared_examples_preserved_object_handler.rb'
 
 Metrics/MethodLength:
@@ -114,7 +115,7 @@ RSpec/ExampleLength:
 
 RSpec/InstanceVariable:
   Exclude:
-    - 'spec/services/preserved_object_handler_spec.rb' # we can't use let instead of @
+    - 'spec/services/preserved_object_handler_update_version_spec.rb' # we can't use let instead of @
 
 RSpec/MultipleExpectations:
   Max: 5
@@ -131,6 +132,7 @@ RSpec/NestedGroups:
     - 'spec/lib/audit/moab_to_catalog_spec.rb'
     - 'spec/services/preserved_object_handler_create_spec.rb'
     - 'spec/services/preserved_object_handler_spec.rb'
+    - 'spec/services/preserved_object_handler_update_version_spec.rb'
 
 # --- Style ---
 
