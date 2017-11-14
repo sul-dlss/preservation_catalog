@@ -112,28 +112,29 @@ class PreservedObjectHandler
     results
   end
 
-
-  # If validation doesn't pass then create with Status.invalid - so need another flag to tell create_db_object - 
+  # If validation doesn't pass then create with Status.invalid - so need another flag to tell create_db_object -
   # can jiust call that right?
-  
+
   def update_version_with_validation
     dt = DruidTools::Druid.new(druid)
     object_dir = "#{storage_location}/#{dt.tree.join('/')}"
     moab = Moab::StorageObject.new(druid, object_dir)
     object_validator = Stanford::StorageObjectValidator.new(moab)
     validation_errors = object_validator.validation_errors
-    results = []
-    if invalid?
-      results << result_hash(INVALID_ARGUMENTS, errors.full_messages)
-    else
-      Rails.logger.debug "update_version #{druid} called and druid in Catalog"
-      upd_results = with_active_record_rescue do
-        if endpoint.endpoint_type.endpoint_class == 'online'
-          results.concat update_online_version
-        elsif endpoint.endpoint_type.endpoint_class == 'archive'
+    if validation_errors.empty? #soe status invalid thing
+      results = []
+      if invalid?
+        results << result_hash(INVALID_ARGUMENTS, errors.full_messages)
+      else
+        Rails.logger.debug "update_version #{druid} called and druid in Catalog"
+        upd_results = with_active_record_rescue do
+          if endpoint.endpoint_type.endpoint_class == 'online'
+            results.concat update_online_version
+          elsif endpoint.endpoint_type.endpoint_class == 'archive'
+          end
         end
+        results.concat(upd_results)
       end
-      results.concat(upd_results)
     end
 
     log_results(results)
@@ -199,7 +200,8 @@ class PreservedObjectHandler
     end
     results
   end
-#ADDED IF ELSE STATEMENT TO CALL CREATE WITH A FLAG
+
+  # ADDED IF ELSE STATEMENT TO CALL CREATE WITH A FLAG
   def with_active_record_rescue(validates=false)
     results = []
     begin
@@ -207,10 +209,8 @@ class PreservedObjectHandler
     rescue ActiveRecord::RecordNotFound => e
       results << result_hash(OBJECT_DOES_NOT_EXIST, e.inspect)
       if validates
-        p "I'm in create with validation"
         create_with_validation
       else
-        p "hello :)"
         create
       end
     rescue ActiveRecord::ActiveRecordError => e
