@@ -62,17 +62,10 @@ class PreservedObjectHandler
       results << result_hash(INVALID_ARGUMENTS, errors.full_messages)
     elsif PreservedObject.exists?(druid: druid)
       results << result_hash(OBJECT_ALREADY_EXISTS, 'PreservedObject')
+    elsif moab_validation_errors.empty?
+      results.concat(create_db_objects(Status.default_status, true))
     else
-      dt = DruidTools::Druid.new(druid)
-      object_dir = "#{storage_location}/#{dt.tree.join('/')}"
-      moab = Moab::StorageObject.new(druid, object_dir)
-      object_validator = Stanford::StorageObjectValidator.new(moab)
-      validation_errors = object_validator.validation_errors
-      if validation_errors.empty?
-        results.concat(create_db_objects(Status.default_status, true))
-      else
-        results.concat(create_db_objects(Status.invalid, true))
-      end
+      results.concat(create_db_objects(Status.invalid, true))
     end
 
     log_results(results)
@@ -132,6 +125,13 @@ class PreservedObjectHandler
   end
 
   private
+
+  def moab_validation_errors
+    object_dir = "#{storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}"
+    moab = Moab::StorageObject.new(druid, object_dir)
+    object_validator = Stanford::StorageObjectValidator.new(moab)
+    object_validator.validation_errors
+  end
 
   def create_db_objects(status, validates=false)
     results = []
