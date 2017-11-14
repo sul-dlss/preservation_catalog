@@ -133,25 +133,28 @@ class PreservedObjectHandler
 
   private
 
-  def create_db_objects(status, validate=false)
+  def create_db_objects(status, validates=false)
     results = []
     pp_default = PreservationPolicy.default_preservation_policy
     create_results = with_active_record_rescue do
       po = PreservedObject.create!(druid: druid,
                                    current_version: incoming_version,
                                    preservation_policy: pp_default)
-      pc = PreservedCopy.create!(preserved_object: po,
-                                 version: incoming_version,
-                                 size: incoming_size,
-                                 endpoint: endpoint,
-                                 status: status)
-      if validate
+      pc_attrs = {
+        preserved_object: po,
+        version: incoming_version,
+        size: incoming_size,
+        endpoint: endpoint,
+        status: status
+      }
+
+      if validates
         t = Time.current
         # Returns the value of time as an integer number of seconds since the Epoch.
-        pc.last_audited = t.to_i
-        pc.last_checked_on_storage = t
-        pc.save
+        pc_attrs[:last_audited] = t.to_i
+        pc_attrs[:last_checked_on_storage] = t
       end
+      PreservedCopy.create!(pc_attrs)
       results << result_hash(CREATED_NEW_OBJECT)
     end
     results.concat(create_results)

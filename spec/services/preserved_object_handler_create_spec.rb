@@ -93,7 +93,7 @@ RSpec.describe PreservedObjectHandler do
 
     it_behaves_like 'attributes validated', :create_with_validation
 
-    context 'updates timestamp' do
+    context 'updates validation timestamps' do
       let(:t) { Time.current }
       let(:ep) { Endpoint.find_by(storage_location: storage_dir) }
       let(:po_handler) { described_class.new(valid_druid, incoming_version, incoming_size, ep) }
@@ -125,7 +125,9 @@ RSpec.describe PreservedObjectHandler do
         version: incoming_version,
         size: incoming_size,
         endpoint: ep,
-        status: Status.default_status
+        status: Status.default_status,
+        last_audited: an_instance_of(Integer),
+        last_checked_on_storage: an_instance_of(ActiveSupport::TimeWithZone)
       }
 
       expect(PreservedObject).to receive(:create!).with(po_args).and_call_original
@@ -170,7 +172,9 @@ RSpec.describe PreservedObjectHandler do
           version: incoming_version,
           size: incoming_size,
           endpoint: ep,
-          status: Status.invalid
+          status: Status.invalid,
+          last_audited: an_instance_of(Integer),
+          last_checked_on_storage: an_instance_of(ActiveSupport::TimeWithZone)
         }
 
         expect(PreservedObject).to receive(:create!).with(po_args).and_call_original
