@@ -5,13 +5,11 @@ RSpec.describe PreservedObjectHandler do
   let(:druid) { 'ab123cd4567' }
   let(:incoming_version) { 6 }
   let(:incoming_size) { 9876 }
-  let(:storage_dir) { 'spec/fixtures/storage_root01/moab_storage_trunk' } # we are just going to assume the first rails storage root
   let!(:default_prez_policy) { PreservationPolicy.default_preservation_policy }
   let(:po) { PreservedObject.find_by(druid: druid) }
-  let(:ep) { Endpoint.find_by(storage_location: storage_dir) }
+  let(:ep) { Endpoint.find_by(storage_location: 'spec/fixtures/storage_root01/moab_storage_trunk') }
   let(:pc) { PreservedCopy.find_by(preserved_object: po, endpoint: ep) }
   let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, #{incoming_version}, #{incoming_size}, #{ep})" }
-  let(:updated_status_msg_regex) { Regexp.new(Regexp.escape("#{exp_msg_prefix} PreservedCopy status changed from")) }
   let(:db_update_failed_prefix_regex_escaped) { Regexp.escape("#{exp_msg_prefix} db update failed") }
   let(:po_handler) { described_class.new(druid, incoming_version, incoming_size, ep) }
 
