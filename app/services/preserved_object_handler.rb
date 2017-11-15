@@ -56,7 +56,7 @@ class PreservedObjectHandler
     @endpoint = endpoint
   end
 
-  def create_with_validation
+  def create_after_validation
     results = []
     if invalid?
       results << result_hash(INVALID_ARGUMENTS, errors.full_messages)

@@ -87,11 +87,11 @@ RSpec.describe PreservedObjectHandler do
     end
   end
 
-  describe '#create_with_validation' do
+  describe '#create_after_validation' do
     let(:valid_druid) { 'bp628nk4868' }
     let(:storage_dir) { 'spec/fixtures/storage_root02/moab_storage_trunk' }
 
-    it_behaves_like 'attributes validated', :create_with_validation
+    it_behaves_like 'attributes validated', :create_after_validation
 
     context 'updates validation timestamps' do
       let(:t) { Time.current }
@@ -101,7 +101,7 @@ RSpec.describe PreservedObjectHandler do
       let(:pc_db_obj) { PreservedCopy.find_by(preserved_object: po_db_obj) }
       let(:results) do
         po_handler = described_class.new(valid_druid, incoming_version, incoming_size, ep)
-        po_handler.create_with_validation
+        po_handler.create_after_validation
       end
 
       before { results }
@@ -133,7 +133,7 @@ RSpec.describe PreservedObjectHandler do
       expect(PreservedObject).to receive(:create!).with(po_args).and_call_original
       expect(PreservedCopy).to receive(:create!).with(pc_args).and_call_original
       po_handler = described_class.new(valid_druid, incoming_version, incoming_size, ep)
-      po_handler.create_with_validation
+      po_handler.create_after_validation
     end
 
     it 'calls Stanford::StorageObjectValidator.validation_errors' do
@@ -141,7 +141,7 @@ RSpec.describe PreservedObjectHandler do
       expect(mock_sov).to receive(:validation_errors).and_return([])
       allow(Stanford::StorageObjectValidator).to receive(:new).and_return(mock_sov)
       po_handler = described_class.new(valid_druid, incoming_version, incoming_size, ep)
-      po_handler.create_with_validation
+      po_handler.create_after_validation
     end
 
     context 'when moab is invalid' do
@@ -180,7 +180,7 @@ RSpec.describe PreservedObjectHandler do
         expect(PreservedObject).to receive(:create!).with(po_args).and_call_original
         expect(PreservedCopy).to receive(:create!).with(pc_args).and_call_original
         po_handler = described_class.new(invalid_druid, incoming_version, incoming_size, ep)
-        po_handler.create_with_validation
+        po_handler.create_after_validation
       end
 
       context 'db update error' do
@@ -196,7 +196,7 @@ RSpec.describe PreservedObjectHandler do
                                                        .and_raise(ActiveRecord::ActiveRecordError, 'foo')
             allow(po).to receive(:destroy) # for after() cleanup calls
             po_handler = described_class.new(invalid_druid, incoming_version, incoming_size, ep)
-            po_handler.create_with_validation
+            po_handler.create_after_validation
           end
 
           context 'DB_UPDATE_FAILED error' do
@@ -221,7 +221,7 @@ RSpec.describe PreservedObjectHandler do
 
       let(:po_handler) { described_class.new(valid_druid, incoming_version, incoming_size, ep) }
 
-      let!(:result) { po_handler.create_with_validation }
+      let!(:result) { po_handler.create_after_validation }
       let(:exp_msg_prefix) { "PreservedObjectHandler(#{valid_druid}, #{incoming_version}, #{incoming_size}, #{ep})" }
 
       it '1 result' do

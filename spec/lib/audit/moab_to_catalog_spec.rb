@@ -207,10 +207,10 @@ RSpec.describe MoabToCatalog do
           ).and_return(po_handler)
         end
       end
-      it "call #create_with_validation if object does not exist" do
+      it "call #create_after_validation if object does not exist" do
         expected_argument_list.each do |arg_hash|
           expect(PreservedObject).to receive(:exists?).with(druid: arg_hash[:druid]).and_return(false)
-          expect(arg_hash[:po_handler]).to receive(:create_with_validation)
+          expect(arg_hash[:po_handler]).to receive(:create_after_validation)
         end
         subject
       end
@@ -219,7 +219,7 @@ RSpec.describe MoabToCatalog do
           allow(PreservedObject).to receive(:exists?).with(druid: arg_hash[:druid]).and_return(true)
           exp_msg = "druid: #{arg_hash[:druid]} NOT expected to exist in catalog but was found"
           expect(Rails.logger).to receive(:error).with(exp_msg)
-          expect(arg_hash[:po_handler]).not_to receive(:create_with_validation)
+          expect(arg_hash[:po_handler]).not_to receive(:create_after_validation)
         end
         subject
       end
