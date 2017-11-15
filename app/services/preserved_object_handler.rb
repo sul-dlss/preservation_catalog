@@ -133,7 +133,7 @@ class PreservedObjectHandler
     object_validator.validation_errors
   end
 
-  def create_db_objects(status, validates=false)
+  def create_db_objects(status, validated=false)
     results = []
     pp_default = PreservationPolicy.default_preservation_policy
     create_results = with_active_record_rescue do
@@ -148,7 +148,7 @@ class PreservedObjectHandler
         status: status
       }
 
-      if validates
+      if validated
         t = Time.current
         # Returns the value of time as an integer number of seconds since the Epoch.
         pc_attrs[:last_audited] = t.to_i
