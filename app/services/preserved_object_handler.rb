@@ -127,7 +127,7 @@ class PreservedObjectHandler
   def create_db_objects(status, validated=false)
     results = []
     pp_default = PreservationPolicy.default_preservation_policy
-    create_results = with_active_record_rescue do
+    create_results = with_active_record_transaction_and_rescue do
       po = PreservedObject.create!(druid: druid,
                                    current_version: incoming_version,
                                    preservation_policy: pp_default)
@@ -153,7 +153,7 @@ class PreservedObjectHandler
 
   def update_online_version
     results = []
-    upd_results = with_active_record_rescue do
+    upd_results = with_active_record_transaction_and_rescue do
       pres_object = PreservedObject.find_by!(druid: druid)
       pres_copy = PreservedCopy.find_by!(preserved_object: pres_object, endpoint: endpoint)
       # FIXME: what if there is more than one associated pres_copy?
@@ -177,7 +177,7 @@ class PreservedObjectHandler
 
   def confirm_version_in_catalog
     results = []
-    confirm_results = with_active_record_rescue do
+    confirm_results = with_active_record_transaction_and_rescue do
       po_db_object = PreservedObject.find_by!(druid: druid)
       results.concat(confirm_version_on_db_object(po_db_object, :current_version))
       pc_db_object = PreservedCopy.find_by!(preserved_object: po_db_object, endpoint: endpoint)
@@ -186,10 +186,10 @@ class PreservedObjectHandler
     results.concat(confirm_results)
   end
 
-  def with_active_record_rescue
+  def with_active_record_transaction_and_rescue
     results = []
     begin
-      yield
+      ApplicationRecord.transaction { yield }
     rescue ActiveRecord::RecordNotFound => e
       results << result_hash(OBJECT_DOES_NOT_EXIST, e.inspect)
     rescue ActiveRecord::ActiveRecordError => e
