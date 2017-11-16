@@ -3,7 +3,11 @@
 
 # it should be safe to run this repeatedly, as the methods it calls only add new entries from the configs,
 # and leave existing entries untouched.
-ApplicationRecord.transaction do
+# this should be run very infrequently, and lots of other data relies on what's seeded here, and PG is pretty
+# efficient about locking strategy, so use the strictest transaction isolation level (serializable):
+# http://api.rubyonrails.org/classes/ActiveRecord/ConnectionAdapters/DatabaseStatements.html#method-i-transaction
+# https://www.postgresql.org/docs/current/static/transaction-iso.html
+ApplicationRecord.transaction(isolation: :serializable) do
   PreservationPolicy.seed_from_config
   EndpointType.seed_from_config
   Endpoint.seed_storage_root_endpoints_from_config(

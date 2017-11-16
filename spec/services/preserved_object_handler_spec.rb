@@ -324,7 +324,7 @@ RSpec.describe PreservedObjectHandler do
         expect(pc).to have_received(:touch)
       end
       it 'logs a debug message' do
-        msg = "confirm_version #{druid} called and object exists"
+        msg = "confirm_version #{druid} called"
         allow(Rails.logger).to receive(:debug)
         po_handler.confirm_version
         expect(Rails.logger).to have_received(:debug).with(msg)
@@ -334,5 +334,36 @@ RSpec.describe PreservedObjectHandler do
     it_behaves_like 'druid not in catalog', :confirm_version
 
     it_behaves_like 'PreservedCopy does not exist', :confirm_version
+  end
+
+  describe '#with_active_record_transaction_and_rescue' do
+    context 'bogus endpoint' do
+      let(:wrong_ep) do
+        Endpoint.create!(
+          endpoint_name: 'wrong_endpoint',
+          endpoint_type: Endpoint.default_storage_root_endpoint_type,
+          endpoint_node: 'localhost',
+          storage_location: 'blah',
+          recovery_cost: 1
+        )
+      end
+      let(:bad_po_handler) { described_class.new(druid, 6, incoming_size, wrong_ep) }
+
+      before do
+        po = PreservedObject.create!(druid: druid, current_version: 2, preservation_policy: default_prez_policy)
+        PreservedCopy.create!(
+          preserved_object: po, # TODO: see if we got the preserved object that we expected
+          version: po.current_version,
+          size: 1,
+          endpoint: ep,
+          status: Status.default_status
+        )
+      end
+
+      it '#confirm_version rolls back preserved object if the preserved copy cannot be found' do
+        bad_po_handler.confirm_version
+        expect(PreservedObject.find_by(druid: druid).current_version).to eq 2
+      end
+    end
   end
 end
