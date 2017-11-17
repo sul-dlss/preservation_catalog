@@ -103,7 +103,6 @@ RSpec.describe PreservedObjectHandler do
     context 'updates validation timestamps' do
       let(:t) { Time.current }
       let(:ep) { Endpoint.find_by(storage_location: storage_dir) }
-      let(:po_handler) { described_class.new(valid_druid, incoming_version, incoming_size, ep) }
       let(:po_db_obj) { PreservedObject.find_by(druid: valid_druid) }
       let(:pc_db_obj) { PreservedCopy.find_by(preserved_object: po_db_obj) }
       let(:results) do
@@ -218,6 +217,25 @@ RSpec.describe PreservedObjectHandler do
             end
           end
         end
+      end
+    end
+
+    describe '#moab_validation_errors logging' do
+      it "does not log moab validation errors when moab is valid" do
+        po_handler = described_class.new(valid_druid, incoming_version, incoming_size, ep)
+        exp_msg_prefix = "PreservedObjectHandler(#{valid_druid}, #{incoming_version}, #{incoming_size}, #{ep})"
+        no_errors = "#{exp_msg_prefix} added object to db as it did not exist"
+        expect(Rails.logger).to receive(:log).with(Logger::INFO, no_errors)
+        po_handler.create_after_validation
+      end
+      it "logs moab validation errors when moab is invalid" do
+        invalid_druid = 'yy000yy0000'
+        po_handler = described_class.new(invalid_druid, incoming_version, incoming_size, ep)
+        exp_msg_prefix = "PreservedObjectHandler(#{invalid_druid}, #{incoming_version}, #{incoming_size}, #{ep})"
+        allow(Rails.logger).to receive(:log)
+        errors = "#{exp_msg_prefix} Invalid moab, validation errors: [\"Missing directory: [\\\"manifests\\\"] Version: v0001\"]"
+        expect(Rails.logger).to receive(:log).with(Logger::ERROR, errors)
+        po_handler.create_after_validation
       end
     end
 
