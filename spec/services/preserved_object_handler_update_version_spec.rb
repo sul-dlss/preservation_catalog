@@ -35,19 +35,24 @@ RSpec.describe PreservedObjectHandler do
         let(:updated_pc_db_msg) { "#{exp_msg_prefix} PreservedCopy db object updated" }
         let(:updated_po_db_msg) { "#{exp_msg_prefix} PreservedObject db object updated" }
 
-        it "updates entries with incoming version" do
+        it "updates PreservedCopy with incoming version" do
           expect(pc.version).to eq 2
+          po_handler.update_version
+          expect(pc.reload.version).to be > 2
+          expect(pc.reload.version).to eq incoming_version
+        end
+        it "updates PreservedObject with incoming version" do
           expect(po.current_version).to eq 2
           po_handler.update_version
-          expect(pc.reload.version).to eq incoming_version
+          expect(po.reload.current_version).to be > 2
           expect(po.reload.current_version).to eq incoming_version
         end
-        it 'updates entries with size if included' do
+        it 'updates PreservedCopy size if supplied' do
           expect(pc.size).to eq 1
           po_handler.update_version
           expect(pc.reload.size).to eq incoming_size
         end
-        it 'retains old size if incoming size is nil' do
+        it 'PreservedCopy retains old size if incoming size is nil' do
           expect(pc.size).to eq 1
           po_handler = described_class.new(druid, incoming_version, nil, ep)
           po_handler.update_version
@@ -57,6 +62,16 @@ RSpec.describe PreservedObjectHandler do
           expect(pc.status).to eq Status.unexpected_version
           po_handler.update_version
           expect(pc.reload.status).to eq Status.ok
+        end
+        it 'does not update PreservedCopy last_audited field' do
+          orig_timestamp = pc.last_audited
+          po_handler.update_version
+          expect(pc.reload.last_audited).to eq orig_timestamp
+        end
+        it 'does not update PreservedCopy last_checked_on_storage' do
+          orig_timestamp = pc.last_checked_on_storage
+          po_handler.update_version
+          expect(pc.reload.last_checked_on_storage).to eq orig_timestamp
         end
         it "logs at info level" do
           expect(Rails.logger).to receive(:log).with(Logger::INFO, version_gt_po_msg)
@@ -101,30 +116,41 @@ RSpec.describe PreservedObjectHandler do
         let(:updated_po_db_timestamp_msg) { "#{exp_msg_prefix} PreservedObject updated db timestamp only" }
         let(:updated_pc_db_timestamp_msg) { "#{exp_msg_prefix} PreservedCopy updated db timestamp only" }
 
-        it "entry version stays the same" do
-          pocv = po.current_version
+        it "PreservedCopy version stays the same" do
           pcv = pc.version
           po_handler.update_version
-          expect(po.reload.current_version).to eq pocv
           expect(pc.reload.version).to eq pcv
         end
-        it "entry size stays the same" do
+        it "PreservedObject current_version stays the same" do
+          pocv = po.current_version
+          po_handler.update_version
+          expect(po.reload.current_version).to eq pocv
+        end
+        it "PreservedCopy size stays the same" do
           expect(pc.size).to eq 1
           po_handler.update_version
           expect(pc.reload.size).to eq 1
         end
-        it 'updates status of PreservedCopy to "ok"' do
-          skip("should it update status of PreservedCopy?")
-          expect(pc.status).to eq Status.unexpected_version
+        it 'does not update PreservedCopy last_audited field' do
+          orig_timestamp = pc.last_audited
           po_handler.update_version
-          expect(pc.reload.status).to eq Status.ok
+          expect(pc.reload.last_audited).to eq orig_timestamp
+        end
+        it 'does not update PreservedCopy last_checked_on_storage' do
+          orig_timestamp = pc.last_checked_on_storage
+          po_handler.update_version
+          expect(pc.reload.last_checked_on_storage).to eq orig_timestamp
+        end
+        it 'does not update status of PreservedCopy' do
+          orig_status = pc.status
+          po_handler.update_version
+          expect(pc.reload.status).to eq orig_status
         end
         it "logs at error level" do
           expect(Rails.logger).to receive(:log).with(Logger::ERROR, unexpected_version_msg)
-          skip("should it have status msg change? timestamp change?")
-          # expect(Rails.logger).to receive(:log).with(Logger::INFO, updated_pc_db_timestamp_msg)
-          # expect(Rails.logger).to receive(:log).with(Logger::ERROR, updated_po_db_timestamp_msg)
-          # expect(Rails.logger).to receive(:log).with(Logger::INFO, updated_status_msg_regex)
+          expect(Rails.logger).not_to receive(:log).with(Logger::INFO, updated_pc_db_timestamp_msg)
+          expect(Rails.logger).not_to receive(:log).with(Logger::ERROR, updated_po_db_timestamp_msg)
+          expect(Rails.logger).not_to receive(:log).with(Logger::INFO, updated_status_msg_regex)
           po_handler.update_version
         end
 
@@ -153,15 +179,11 @@ RSpec.describe PreservedObjectHandler do
             expect(msgs).to include(a_string_matching("PreservedObject"))
             expect(msgs).to include(a_string_matching("PreservedCopy"))
           end
-          it "UPDATED_DB_OBJECT_TIMESTAMP_ONLY results" do
-            skip("should it have a timestamp change?")
-            code = PreservedObjectHandler::UPDATED_DB_OBJECT
-            expect(results).to include(a_hash_including(code => updated_pc_db_timestamp_msg))
-            expect(results).to include(a_hash_including(code => updated_po_db_timestamp_msg))
+          it "no UPDATED_DB_OBJECT_TIMESTAMP_ONLY results" do
+            expect(results).not_to include(a_hash_including(PreservedObjectHandler::UPDATED_DB_OBJECT))
           end
-          it 'PC_STATUS_CHANGED result' do
-            skip("should it have status msg change?")
-            expect(results).to include(a_hash_including(PreservedObjectHandler::PC_STATUS_CHANGED => updated_status_msg_regex))
+          it 'no PC_STATUS_CHANGED result' do
+            expect(results).not_to include(a_hash_including(PreservedObjectHandler::PC_STATUS_CHANGED))
           end
         end
       end
@@ -287,8 +309,7 @@ RSpec.describe PreservedObjectHandler do
         expect(pc).to have_received(:save!)
       end
 
-      it 'calls PreservedObject.touch and PreservedCopy.touch if the existing record is NOT altered' do
-        skip('need to determine if we want to update timestamps in this situation')
+      it 'does not call PreservedObject.touch or PreservedCopy.touch if the existing record is NOT altered' do
         po_handler = described_class.new(druid, 1, 1, ep)
         po = instance_double(PreservedObject)
         pc = instance_double(PreservedCopy)
@@ -302,8 +323,8 @@ RSpec.describe PreservedObjectHandler do
         allow(pc).to receive(:changed?).and_return(false)
         allow(pc).to receive(:touch)
         po_handler.update_version
-        expect(po).to have_received(:touch)
-        expect(pc).to have_received(:touch)
+        expect(po).not_to have_received(:touch)
+        expect(pc).not_to have_received(:touch)
       end
 
       it 'logs a debug message' do
