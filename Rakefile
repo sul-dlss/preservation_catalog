@@ -23,11 +23,14 @@ task :seed_catalog, [:profile] => [:environment] do |_t, args|
   end
 
   puts "#{Time.now.utc.iso8601} Seeding the database from all storage roots..."
+  $stdout.flush # sometimes above doesn't end up getting flushed to STDOUT till the last puts when the run finishes
   if args[:profile] == 'profile'
     puts 'When done, check log/profile-flat-seed_from_disk[TIMESTAMP].log for profiling details'
+    $stdout.flush
     MoabToCatalog.seed_from_disk_with_profiling
   elsif args[:profile].nil?
     MoabToCatalog.seed_from_disk
   end
   puts "#{Time.now.utc.iso8601} Done"
+  $stdout.flush
 end
