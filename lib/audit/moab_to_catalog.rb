@@ -40,12 +40,12 @@ class MoabToCatalog
 
   # Shameless green. In order to run several seed "jobs" in parallel, we would have to refactor.
   def self.seed_from_disk
-    Settings.moab.storage_roots.each do |storage_root|
-      start_msg = "#{Time.now.utc.iso8601} Seeding starting for #{storage_root}"
+    Settings.moab.storage_roots.each do |strg_root_name, strg_root_location|
+      start_msg = "#{Time.now.utc.iso8601} Seeding starting for '#{strg_root_name}' at #{strg_root_location}"
       puts start_msg
       Rails.logger.info start_msg
-      seed_catalog("#{storage_root[1]}/#{Settings.moab.storage_trunk}")
-      end_msg = "#{Time.now.utc.iso8601} Seeding ended for #{storage_root}"
+      seed_catalog("#{strg_root_location}/#{Settings.moab.storage_trunk}")
+      end_msg = "#{Time.now.utc.iso8601} Seeding ended for '#{strg_root_name}' at #{strg_root_location}"
       puts end_msg
       Rails.logger.info end_msg
     end
@@ -59,12 +59,12 @@ class MoabToCatalog
 
   # Shameless green. Code duplication with seed_from_disk
   def self.check_existence_from_disk
-    Settings.moab.storage_roots.each do |storage_root|
-      start_msg = "#{Time.now.utc.iso8601} Check_existence starting for #{storage_root}"
+    Settings.moab.storage_roots.each do |strg_root_name, strg_root_location|
+      start_msg = "#{Time.now.utc.iso8601} Check_existence starting for '#{strg_root_name}' at #{strg_root_location}"
       puts start_msg
       Rails.logger.info start_msg
-      check_existence("#{storage_root[1]}/#{Settings.moab.storage_trunk}")
-      end_msg = "#{Time.now.utc.iso8601} Check_existence ended for #{storage_root}"
+      check_existence("#{strg_root_location}/#{Settings.moab.storage_trunk}")
+      end_msg = "#{Time.now.utc.iso8601} Check_existence ended for '#{strg_root_name}' at #{strg_root_location}"
       puts end_msg
       Rails.logger.info end_msg
     end
