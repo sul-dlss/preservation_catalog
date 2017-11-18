@@ -49,7 +49,7 @@ Layout/SpaceInsideBrackets:
 Metrics/AbcSize:
   Exclude:
     - 'app/services/preserved_object_handler.rb' # 2 methods but they seem readable
-    - 'lib/audit/moab_to_catalog.rb' # #seed_from_disk is decidedly readable
+    - 'lib/audit/moab_to_catalog.rb' # .seed_from_disk is decidedly readable
 
 Metrics/BlockLength:
   Exclude:
