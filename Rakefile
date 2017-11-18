@@ -14,7 +14,7 @@ task :travis_setup_postgres do
   sh("psql -U postgres -f db/scripts/pres_test_setup.sql")
 end
 
-require_relative 'lib/audit/moab_to_catalog'
+require 'audit/moab_to_catalog.rb'
 desc 'populate the catalog with the contents of the online storage roots'
 task :seed_catalog, [:profile] => [:environment] do |_t, args|
   unless args[:profile] == 'profile' || args[:profile].nil?
