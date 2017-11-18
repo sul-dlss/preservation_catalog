@@ -54,7 +54,7 @@ class MoabToCatalog
   def seed_from_disk_with_profiling
     profiler = Profiler.new
     profiler.prof { seed_from_disk }
-    profiler.print_results_flat('seed_from_disk')
+    profiler.print_results_flat('profile-flat-seed_from_disk')
   end
 
   # Shameless green. Code duplication with seed_from_disk

@@ -24,7 +24,7 @@ task :seed_catalog, [:profile] => [:environment] do |_t, args|
   m2c = MoabToCatalog.new
   puts "#{Time.now.utc.iso8601} Seeding the database from all storage roots..."
   if args[:profile] == 'profile'
-    puts 'When done, check log/seed_from_disk[TIMESTAMP].log for profiling details'
+    puts 'When done, check log/profile-flat-seed_from_disk[TIMESTAMP].log for profiling details'
     m2c.seed_from_disk_with_profiling
   elsif args[:profile].nil?
     m2c.seed_from_disk
