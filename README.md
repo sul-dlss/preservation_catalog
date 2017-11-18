@@ -67,6 +67,22 @@ RAILS_ENV=production nohup bundle exec rake seed_catalog &
 ```
 By invoking commands via`nohup`, the invoked command doesn't get the kill signal when the terminal session that started it exits.  Output that would've gone to stdout is instead redirected to a file called `nohup.out` in the location from which the command was executed (here, the project root).
 
+#### Reset the catalog for re-seeding
+
+WARNING! this will erase the catalog, and thus require re-seeding from scratch.  It is mostly intended for development purposes, and it is unlikely that you'll need to run this against production once the catalog is in regular use.
+
+* Deploy the branch of the code with which you wish to seed, to the instance which you wish to seed (e.g. master to stage).
+* Reset the database for that instance.  E.g., on production or stage:  `RAILS_ENV=production bundle exec rake db:reset`
+  * note that if you do this in an env that sees itself as production (i.e. production or stage), you'll get a scary warning along the lines of:
+  ```
+  ActiveRecord::ProtectedEnvironmentError: You are attempting to run a destructive action against your 'production' database.
+  If you are sure you want to continue, run the same command with the environment variable:
+  DISABLE_DATABASE_ENVIRONMENT_CHECK=1
+  ```
+  Basically an especially inconvenient confirmation dialogue.  For safety's sake, the full command that skips that warning can be constructed by the user as needed, so as to prevent unintentional copy/paste dismissal when the user might be administering multiple deployment environments simultaneously.  Inadvertent database wipes are no fun.
+  * `db:reset` will make sure db is migrated and seeded.  If you want to be extra sure: `RAILS_ENV=[environment] bundle exec rake db:migrate db:seed`
+
+
 ## Development
 
 ### Running Tests
