@@ -19,6 +19,7 @@ class PreservedObjectHandler
   OBJECT_DOES_NOT_EXIST = 10
   PC_STATUS_CHANGED = 11
   UNEXPECTED_VERSION = 12
+  INVALID_MOAB = 13
 
   RESPONSE_CODE_TO_MESSAGES = {
     INVALID_ARGUMENTS => "encountered validation error(s): %{addl}",
@@ -32,7 +33,8 @@ class PreservedObjectHandler
     OBJECT_ALREADY_EXISTS => "%{addl} db object already exists",
     OBJECT_DOES_NOT_EXIST => "%{addl} db object does not exist",
     PC_STATUS_CHANGED => "PreservedCopy status changed from %{old_status} to %{new_status}",
-    UNEXPECTED_VERSION => "incoming version (%{incoming_version}) has unexpected relationship to %{addl} db version; ERROR!"
+    UNEXPECTED_VERSION => "incoming version (%{incoming_version}) has unexpected relationship to %{addl} db version; ERROR!",
+    INVALID_MOAB => "Invalid moab, validation errors: %{addl}"
   }.freeze
 
   include ActiveModel::Validations
@@ -118,10 +120,20 @@ class PreservedObjectHandler
   private
 
   def moab_validation_errors
+    results = []
     object_dir = "#{storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}"
     moab = Moab::StorageObject.new(druid, object_dir)
     object_validator = Stanford::StorageObjectValidator.new(moab)
-    object_validator.validation_errors
+    errors = object_validator.validation_errors
+    if errors.any?
+      moab_error_msg_list = []
+      errors.each do |error_hash|
+        error_hash.each_value { |moab_error_msgs| moab_error_msg_list << moab_error_msgs }
+      end
+      results << result_hash(INVALID_MOAB, moab_error_msg_list)
+      log_results(results)
+    end
+    errors
   end
 
   def create_db_objects(status, validated=false)
@@ -328,6 +340,7 @@ class PreservedObjectHandler
     when OBJECT_DOES_NOT_EXIST then Logger::ERROR
     when PC_STATUS_CHANGED then Logger::INFO
     when UNEXPECTED_VERSION then Logger::ERROR
+    when INVALID_MOAB then Logger::ERROR
     end
   end
 
