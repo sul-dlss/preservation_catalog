@@ -125,7 +125,7 @@ class PreservedObjectHandler
     moab = Moab::StorageObject.new(druid, object_dir)
     object_validator = Stanford::StorageObjectValidator.new(moab)
     errors = object_validator.validation_errors
-    unless errors.empty?
+    if errors.any?
       moab_error_msg_list = []
       errors.each do |error_hash|
         error_hash.each_value { |moab_error_msgs| moab_error_msg_list << moab_error_msgs }
