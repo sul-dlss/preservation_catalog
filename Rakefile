@@ -14,20 +14,23 @@ task :travis_setup_postgres do
   sh("psql -U postgres -f db/scripts/pres_test_setup.sql")
 end
 
-require_relative 'lib/audit/moab_to_catalog'
+require 'audit/moab_to_catalog.rb'
 desc 'populate the catalog with the contents of the online storage roots'
 task :seed_catalog, [:profile] => [:environment] do |_t, args|
   unless args[:profile] == 'profile' || args[:profile].nil?
     p "Usage: rake seed_catalog || rake seed_catalog[profile]"
     exit
   end
-  m2c = MoabToCatalog.new
+
   puts "#{Time.now.utc.iso8601} Seeding the database from all storage roots..."
+  $stdout.flush # sometimes above doesn't end up getting flushed to STDOUT till the last puts when the run finishes
   if args[:profile] == 'profile'
-    puts 'When done, check log/seed_from_disk[TIMESTAMP].log for profiling details'
-    m2c.seed_from_disk_with_profiling
+    puts 'When done, check log/profile-flat-seed_from_disk[TIMESTAMP].log for profiling details'
+    $stdout.flush
+    MoabToCatalog.seed_from_disk_with_profiling
   elsif args[:profile].nil?
-    m2c.seed_from_disk
+    MoabToCatalog.seed_from_disk
   end
   puts "#{Time.now.utc.iso8601} Done"
+  $stdout.flush
 end

@@ -9,40 +9,40 @@ RSpec.describe MoabToCatalog do
     PreservationPolicy.seed_from_config
   end
 
-  describe "#check_existence_from_disk" do
-    let(:m2c) { described_class.new }
+  describe ".check_existence_from_disk" do
+    let(:subject) { described_class.check_existence_from_disk }
 
     it 'calls check_existence once per storage root' do
       expect(described_class).to receive(:check_existence).exactly(Settings.moab.storage_roots.count).times
-      m2c.check_existence_from_disk
+      subject
     end
 
     it 'calls check_existence with the right arguments' do
       Settings.moab.storage_roots.each do |storage_root|
         expect(described_class).to receive(:check_existence).with("#{storage_root[1]}/#{Settings.moab.storage_trunk}")
       end
-      m2c.check_existence_from_disk
+      subject
     end
   end
 
-  describe "#seed_from_disk" do
-    let(:m2c) { described_class.new }
+  describe ".seed_from_disk" do
+    let(:subject) { described_class.seed_from_disk }
 
     it 'calls seed_catalog once per storage root' do
       expect(described_class).to receive(:seed_catalog).exactly(Settings.moab.storage_roots.count).times
-      m2c.seed_from_disk
+      subject
     end
 
     it 'calls seed_catalog with the right arguments' do
       Settings.moab.storage_roots.each do |storage_root|
         expect(described_class).to receive(:seed_catalog).with("#{storage_root[1]}/#{Settings.moab.storage_trunk}")
       end
-      m2c.seed_from_disk
+      subject
     end
   end
 
-  describe "#seed_from_disk_with_profiling" do
-    let(:m2c) { described_class.new }
+  describe ".seed_from_disk_with_profiling" do
+    let(:subject) { described_class.seed_from_disk_with_profiling }
 
     it "spins up a profiler, calling profiling and printing methods on it" do
       mock_profiler = instance_double(Profiler)
@@ -51,7 +51,7 @@ RSpec.describe MoabToCatalog do
       expect(mock_profiler).to receive(:prof)
       expect(mock_profiler).to receive(:print_results_flat)
 
-      m2c.seed_from_disk_with_profiling
+      subject
     end
   end
 
