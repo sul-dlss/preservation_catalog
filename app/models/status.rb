@@ -19,8 +19,12 @@ class Status < ApplicationRecord
     find_by!(status_text: Settings.default_status)
   end
 
-  def self.invalid
+  def self.invalid_moab
     find_by!(status_text: Settings.statuses.detect { |s| s == 'invalid_moab' })
+  end
+
+  def self.invalid_checksum
+    find_by!(status_text: Settings.statuses.detect { |s| s == 'invalid_checksum' })
   end
 
   def self.unexpected_version
