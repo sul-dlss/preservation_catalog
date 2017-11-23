@@ -49,7 +49,7 @@ Layout/SpaceInsideBrackets:
 Metrics/AbcSize:
   Exclude:
     - 'app/services/preserved_object_handler.rb' # 2 methods but they seem readable
-    - 'lib/audit/moab_to_catalog.rb' # .seed_from_disk is decidedly readable
+    - 'lib/audit/moab_to_catalog.rb' # .seed_catalog_for_all_storage_roots is decidedly readable
 
 Metrics/BlockLength:
   Exclude:
@@ -67,7 +67,8 @@ Metrics/CyclomaticComplexity:
 Metrics/LineLength:
   Max: 120
   Exclude:
-    - 'app/services/preserved_object_handler.rb' # 2 lines 121
+    - 'app/services/preserved_object_handler.rb' # 1 lines 125
+    - 'spec/lib/audit/moab_to_catalog_spec.rb' # 1 line 126
     - 'spec/services/preserved_object_handler_create_spec.rb'
     - 'spec/services/preserved_object_handler_spec.rb'
     - 'spec/services/preserved_object_handler_update_version_spec.rb'

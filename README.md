@@ -58,7 +58,7 @@ With profiling:
 ```ruby
 RAILS_ENV=production bundle exec rake seed_catalog[profile]
 ```
-this will generate a log at, for example, `log/profile-flat-seed_from_disk2017-11-13T13:57:01.log`
+this will generate a log at, for example, `log/profile_flat_seed_catalog_for_all_storage_roots2017-11-13T13:57:01.log`
 
 As an alternative to `screen`, you can also run the task, with or without profiling, in the background under `nohup`. For example:
 

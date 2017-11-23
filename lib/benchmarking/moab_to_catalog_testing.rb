@@ -36,8 +36,8 @@ Stanford::StorageServices.storage_roots.each do |storage_root|
   time_to_check_existence = Benchmark.realtime do
     logger.info "Check for output"
     # RubyProf.start
-    # when creating add true parameter, and if updating leave blank
-    MoabToCatalog.check_existence(File.join(storage_root, Moab::Config.storage_trunk))
+    # when expect_to_create add true parameter
+    MoabToCatalog.check_existence_for_dir(File.join(storage_root, Moab::Config.storage_trunk))
     # TODO: haven't actually tested this, but looks to me like this will only get profiling info for the last
     # storage root that was checked.  one way to collect for everything would be to use the start/pause/resume
     # approach described in the RubyProf docs, presumably with a start/pause above this loop, resume/pause in
