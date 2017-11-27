@@ -29,11 +29,7 @@ class MoabToCatalog
     Stanford::MoabStorageDirectory.find_moab_paths(storage_dir) do |druid, path, _path_match_data|
       moab = Moab::StorageObject.new(druid, path)
       po_handler = PreservedObjectHandler.new(druid, moab.current_version_id, moab.size, endpoint)
-      if PreservedObject.exists?(druid: druid)
-        Rails.logger.error "druid: #{druid} NOT expected to exist in catalog but was found"
-      else
-        results << po_handler.create_after_validation
-      end
+      results << po_handler.create_after_validation
     end
     results
   end
