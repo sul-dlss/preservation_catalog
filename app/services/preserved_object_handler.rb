@@ -37,6 +37,11 @@ class PreservedObjectHandler
     INVALID_MOAB => "Invalid moab, validation errors: %{addl}"
   }.freeze
 
+  DEFAULT_PRESERVATION_POLICY = PreservationPolicy.default_preservation_policy
+  DEFAULT_STATUS = Status.default_status
+  OK_STATUS = Status.ok
+  INVALID_STATUS = Status.invalid
+
   include ActiveModel::Validations
 
   # Note: supplying validations here to allow validation before use, e.g. incoming_version in numeric logic
@@ -65,9 +70,9 @@ class PreservedObjectHandler
     elsif PreservedObject.exists?(druid: druid)
       results << result_hash(OBJECT_ALREADY_EXISTS, 'PreservedObject')
     elsif moab_validation_errors.empty?
-      results.concat(create_db_objects(Status.default_status, true))
+      results.concat(create_db_objects(DEFAULT_STATUS, true))
     else
-      results.concat(create_db_objects(Status.invalid, true))
+      results.concat(create_db_objects(INVALID_STATUS, true))
     end
 
     log_results(results)
@@ -81,7 +86,7 @@ class PreservedObjectHandler
     elsif PreservedObject.exists?(druid: druid)
       results << result_hash(OBJECT_ALREADY_EXISTS, 'PreservedObject')
     else
-      results.concat(create_db_objects(Status.default_status))
+      results.concat(create_db_objects(DEFAULT_STATUS))
     end
 
     log_results(results)
@@ -138,11 +143,10 @@ class PreservedObjectHandler
 
   def create_db_objects(status, validated=false)
     results = []
-    pp_default = PreservationPolicy.default_preservation_policy
     create_results = with_active_record_transaction_and_rescue do
       po = PreservedObject.create!(druid: druid,
                                    current_version: incoming_version,
-                                   preservation_policy: pp_default)
+                                   preservation_policy: DEFAULT_PRESERVATION_POLICY)
       pc_attrs = {
         preserved_object: po,
         version: incoming_version,
@@ -172,7 +176,7 @@ class PreservedObjectHandler
       if incoming_version > pres_copy.version && pres_copy.version == pres_object.current_version
         results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_copy.class.name)
         update_preserved_copy(pres_copy, incoming_version, incoming_size)
-        results.concat(update_status(pres_copy, Status.ok))
+        results.concat(update_status(pres_copy, OK_STATUS))
         results.concat(update_db_object(pres_copy))
         results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_object.class.name)
         update_preserved_object(pres_object, incoming_version)
@@ -240,7 +244,7 @@ class PreservedObjectHandler
     results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, db_object.class.name)
     if db_object.is_a?(PreservedCopy)
       update_preserved_copy(db_object, incoming_version, incoming_size)
-      results.concat(update_status(db_object, Status.ok))
+      results.concat(update_status(db_object, OK_STATUS))
     else
       update_preserved_object(db_object, incoming_version)
     end
@@ -254,7 +258,7 @@ class PreservedObjectHandler
     results = []
 
     if incoming_version == db_object.send(version_symbol)
-      results.concat(update_status(db_object, Status.ok)) if db_object.is_a?(PreservedCopy)
+      results.concat(update_status(db_object, OK_STATUS)) if db_object.is_a?(PreservedCopy)
       results << result_hash(VERSION_MATCHES, db_object.class.name)
     elsif incoming_version > db_object.send(version_symbol)
       results.concat(increase_version(db_object))
