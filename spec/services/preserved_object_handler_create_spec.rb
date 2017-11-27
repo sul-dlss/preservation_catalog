@@ -73,9 +73,8 @@ RSpec.describe PreservedObjectHandler do
       end
 
       it "rolls back pres object creation if the pres copy can't be created (e.g. due to DB constraint violation)" do
-        # so that pres copy creation fails with a constraint violation, since status can't be nil
-        allow(Status).to receive(:default_status).and_return(nil)
-        po_handler.create
+        fail_handler = described_class.new(druid, nil, incoming_size, ep)
+        fail_handler.create
         expect(PreservedObject.where(druid: druid)).not_to exist
       end
     end
