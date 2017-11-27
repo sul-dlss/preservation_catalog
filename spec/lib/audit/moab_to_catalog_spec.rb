@@ -9,40 +9,40 @@ RSpec.describe MoabToCatalog do
     PreservationPolicy.seed_from_config
   end
 
-  describe ".check_existence_from_disk" do
-    let(:subject) { described_class.check_existence_from_disk }
+  describe ".check_existence_for_all_storage_roots" do
+    let(:subject) { described_class.check_existence_for_all_storage_roots }
 
-    it 'calls check_existence once per storage root' do
-      expect(described_class).to receive(:check_existence).exactly(Settings.moab.storage_roots.count).times
+    it 'calls check_existence_for_dir once per storage root' do
+      expect(described_class).to receive(:check_existence_for_dir).exactly(Settings.moab.storage_roots.count).times
       subject
     end
 
-    it 'calls check_existence with the right arguments' do
+    it 'calls check_existence_for_dir with the right arguments' do
       Settings.moab.storage_roots.each do |storage_root|
-        expect(described_class).to receive(:check_existence).with("#{storage_root[1]}/#{Settings.moab.storage_trunk}")
+        expect(described_class).to receive(:check_existence_for_dir).with("#{storage_root[1]}/#{Settings.moab.storage_trunk}")
       end
       subject
     end
   end
 
-  describe ".seed_from_disk" do
-    let(:subject) { described_class.seed_from_disk }
+  describe ".seed_catalog_for_all_storage_roots" do
+    let(:subject) { described_class.seed_catalog_for_all_storage_roots }
 
-    it 'calls seed_catalog once per storage root' do
-      expect(described_class).to receive(:seed_catalog).exactly(Settings.moab.storage_roots.count).times
+    it 'calls seed_catalog_for_dir once per storage root' do
+      expect(described_class).to receive(:seed_catalog_for_dir).exactly(Settings.moab.storage_roots.count).times
       subject
     end
 
-    it 'calls seed_catalog with the right arguments' do
+    it 'calls seed_catalog_for_dir with the right arguments' do
       Settings.moab.storage_roots.each do |storage_root|
-        expect(described_class).to receive(:seed_catalog).with("#{storage_root[1]}/#{Settings.moab.storage_trunk}")
+        expect(described_class).to receive(:seed_catalog_for_dir).with("#{storage_root[1]}/#{Settings.moab.storage_trunk}")
       end
       subject
     end
   end
 
-  describe ".seed_from_disk_with_profiling" do
-    let(:subject) { described_class.seed_from_disk_with_profiling }
+  describe ".seed_catalog_for_all_storage_roots_profiled" do
+    let(:subject) { described_class.seed_catalog_for_all_storage_roots_profiled }
 
     it "spins up a profiler, calling profiling and printing methods on it" do
       mock_profiler = instance_double(Profiler)
@@ -55,8 +55,8 @@ RSpec.describe MoabToCatalog do
     end
   end
 
-  describe ".check_existence" do
-    let(:subject) { described_class.check_existence(storage_dir, true) }
+  describe ".check_existence_for_dir" do
+    let(:subject) { described_class.check_existence_for_dir(storage_dir, true) }
 
     it "calls 'find_moab_paths' with appropriate argument" do
       expect(Stanford::MoabStorageDirectory).to receive(:find_moab_paths).with(storage_dir)
@@ -117,7 +117,7 @@ RSpec.describe MoabToCatalog do
             expect(Rails.logger).to receive(:error).with(exp_msg)
             expect(arg_hash[:po_handler]).to receive(:create)
           end
-          described_class.check_existence(storage_dir, true)
+          described_class.check_existence_for_dir(storage_dir, true)
         end
         it 'does not call #create when expect_to_create is false' do
           expected_argument_list.each do |arg_hash|
@@ -126,7 +126,7 @@ RSpec.describe MoabToCatalog do
             expect(Rails.logger).to receive(:error).with(exp_msg)
             expect(arg_hash[:po_handler]).not_to receive(:create)
           end
-          described_class.check_existence(storage_dir) # expect_to_create is false by default
+          described_class.check_existence_for_dir(storage_dir) # expect_to_create is false by default
         end
       end
 
@@ -144,18 +144,18 @@ RSpec.describe MoabToCatalog do
     end
     it "storage directory doesn't exist (misspelling, read write permissions)" do
       allow(Endpoint).to receive(:find_by!).and_return(instance_double(Endpoint))
-      expect { described_class.check_existence('spec/fixtures/moab_strge_root') }.to raise_error(
+      expect { described_class.check_existence_for_dir('spec/fixtures/moab_strge_root') }.to raise_error(
         SystemCallError, /No such file or directory/
       )
     end
     it "storage directory exists but it is empty" do
       storage_dir = 'spec/fixtures/empty/moab_storage_trunk'
-      expect(described_class.check_existence(storage_dir)).to eq []
+      expect(described_class.check_existence_for_dir(storage_dir)).to eq []
     end
   end
 
-  describe ".seed_catalog" do
-    let(:subject) { described_class.seed_catalog(storage_dir) }
+  describe ".seed_catalog_for_dir" do
+    let(:subject) { described_class.seed_catalog_for_dir(storage_dir) }
 
     it "calls 'find_moab_paths' with appropriate argument" do
       expect(Stanford::MoabStorageDirectory).to receive(:find_moab_paths).with(storage_dir)
@@ -230,13 +230,13 @@ RSpec.describe MoabToCatalog do
     end
     it "storage directory doesn't exist (misspelling, read write permissions)" do
       allow(Endpoint).to receive(:find_by!).and_return(instance_double(Endpoint))
-      expect { described_class.check_existence('spec/fixtures/moab_strge_root') }.to raise_error(
+      expect { described_class.check_existence_for_dir('spec/fixtures/moab_strge_root') }.to raise_error(
         SystemCallError, /No such file or directory/
       )
     end
     it "storage directory exists but it is empty" do
       storage_dir = 'spec/fixtures/empty/moab_storage_trunk'
-      expect(described_class.check_existence(storage_dir)).to eq []
+      expect(described_class.check_existence_for_dir(storage_dir)).to eq []
     end
   end
 end

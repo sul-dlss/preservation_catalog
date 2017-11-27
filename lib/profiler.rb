@@ -3,7 +3,7 @@
 # stops the profiler and returns the results of the profiling.
 # example usage:
 #  profiler = Profiler.new
-#  profiler.prof { MoabToCatalog.seed_catalog(storage_dir) }
+#  profiler.prof { MoabToCatalog.seed_catalog_for_dir(storage_dir) }
 #  profiler.print_results_flat(out_file_id)
 class Profiler
 

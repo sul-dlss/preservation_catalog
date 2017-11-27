@@ -8,7 +8,7 @@ class CatalogToMoab
   #    step 1: ensure load_fixtures_helper works with very rough code here
   # FIXME:  temporarily turning off rubocop
   # rubocop:disable all
-  def self.check_existence
+  def self.check_existence_on_dir
     PreservedCopy.find_each do |pc|
       id = pc.preserved_object.druid
       version = pc.current_version
