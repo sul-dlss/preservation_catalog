@@ -81,6 +81,22 @@ RSpec.describe PreservedObjectHandler do
         )
       end
 
+      it 'stops processing if there is no PreservedCopy' do
+        druid = 'nd000lm0000'
+        diff_ep = Endpoint.create!(
+          endpoint_name: 'diff_endpoint',
+          endpoint_type: Endpoint.default_storage_root_endpoint_type,
+          endpoint_node: 'localhost',
+          storage_location: 'blah',
+          recovery_cost: 1
+        )
+        PreservedObject.create!(druid: druid, current_version: 2, preservation_policy: default_prez_policy)
+        po_handler = described_class.new(druid, 3, incoming_size, diff_ep)
+        results = po_handler.confirm_version
+        expect(results).to include(a_hash_including(PreservedObjectHandler::OBJECT_DOES_NOT_EXIST => a_string_matching("ActiveRecord::RecordNotFound: Couldn't find PreservedCopy> db object does not exist")))
+        expect(PreservedObject.find_by(druid: druid).current_version).to eq 2
+      end
+
       context "incoming and db versions match" do
         let(:po_handler) { described_class.new(druid, 2, 1, ep) }
         let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, 2, 1, #{ep})" }
@@ -256,6 +272,7 @@ RSpec.describe PreservedObjectHandler do
 
             po = instance_double("PreservedObject")
             allow(PreservedObject).to receive(:find_by).with(druid: druid).and_return(po)
+            allow(PreservedCopy).to receive(:find_by).and_return(instance_double("PreservedCopy"))
             allow(po).to receive(:current_version).and_return(1)
             allow(po).to receive(:current_version=).with(incoming_version)
             allow(po).to receive(:changed?).and_return(true)

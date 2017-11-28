@@ -220,8 +220,9 @@ class PreservedObjectHandler
     results = []
     confirm_results = with_active_record_transaction_and_rescue do
       po_db_object = PreservedObject.find_by!(druid: druid)
+      pc_db_object = PreservedCopy.find_by!(preserved_object: po_db_object, endpoint: endpoint) if po_db_object
+      break unless pc_db_object
       results.concat(confirm_version_on_db_object(po_db_object, :current_version))
-      pc_db_object = PreservedCopy.find_by!(preserved_object: po_db_object, endpoint: endpoint)
       results.concat(confirm_version_on_db_object(pc_db_object, :version))
     end
     results.concat(confirm_results)
