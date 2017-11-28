@@ -108,17 +108,12 @@ class PreservedObjectHandler
     else
       Rails.logger.debug "update_version_after_validation #{druid} called"
       if endpoint.endpoint_type.endpoint_class == 'online'
-        upd_results =
-          if moab_validation_errors.empty?
-            with_active_record_transaction_and_rescue do
-              results.concat update_online_version(true, Status.ok)
-            end
-          else
-            with_active_record_transaction_and_rescue do
-              results.concat update_online_version(true, Status.invalid_moab)
-            end
-          end
-        results.concat(upd_results)
+        # NOTE: we deal with active record transactions in update_online_version, not here
+        if moab_validation_errors.empty?
+          results.concat update_online_version(true, Status.ok)
+        else
+          results.concat update_online_version(true, Status.invalid_moab)
+        end
       elsif endpoint.endpoint_type.endpoint_class == 'archive'
         # TODO: perform archive object validation; then create a new PC record for the new
         #  archived version on the endpoint
@@ -135,14 +130,12 @@ class PreservedObjectHandler
       results << result_hash(INVALID_ARGUMENTS, errors.full_messages)
     else
       Rails.logger.debug "update_version #{druid} called"
-      upd_results = with_active_record_transaction_and_rescue do
-        if endpoint.endpoint_type.endpoint_class == 'online'
-          results.concat update_online_version
-        elsif endpoint.endpoint_type.endpoint_class == 'archive'
-          # TODO: create a new PC record for the new archived version on the endpoint
-        end
+      if endpoint.endpoint_type.endpoint_class == 'online'
+        # NOTE: we deal with active record transactions in update_online_version, not here
+        results.concat update_online_version
+      elsif endpoint.endpoint_type.endpoint_class == 'archive'
+        # TODO: create a new PC record for the new archived version on the endpoint
       end
-      results.concat(upd_results)
     end
 
     log_results(results)
