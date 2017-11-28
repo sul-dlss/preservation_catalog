@@ -67,7 +67,7 @@ class PreservedObjectHandler
     elsif moab_validation_errors.empty?
       results.concat(create_db_objects(Status.default_status, true))
     else
-      results.concat(create_db_objects(Status.invalid, true))
+      results.concat(create_db_objects(Status.invalid_moab, true))
     end
 
     log_results(results)

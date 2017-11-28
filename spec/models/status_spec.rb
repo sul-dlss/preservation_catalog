@@ -40,7 +40,7 @@ RSpec.describe Status, type: :model do
       # run it a second time
       Status.seed_from_config
       expect(Status.pluck(:status_text).sort).to eq(
-        %w[expected_version_not_found_on_disk fixity_check_failed invalid_moab not_found_on_disk ok]
+        %w[expected_version_not_found_on_disk fixity_check_failed invalid_checksum invalid_moab not_found_on_disk ok]
       )
     end
 
@@ -50,7 +50,7 @@ RSpec.describe Status, type: :model do
       # run it a second time
       Status.seed_from_config
       expect(Status.pluck(:status_text).sort).to eq(
-        %w[another_status expected_version_not_found_on_disk fixity_check_failed invalid_moab not_found_on_disk ok]
+        %w[another_status expected_version_not_found_on_disk fixity_check_failed invalid_checksum invalid_moab not_found_on_disk ok]
       )
     end
   end

@@ -178,7 +178,7 @@ RSpec.describe PreservedObjectHandler do
           version: incoming_version,
           size: incoming_size,
           endpoint: ep,
-          status: Status.invalid,
+          status: Status.invalid_moab,
           last_audited: an_instance_of(Integer),
           last_checked_on_storage: an_instance_of(ActiveSupport::TimeWithZone)
         }
