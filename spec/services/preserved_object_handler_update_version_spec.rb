@@ -322,7 +322,7 @@ RSpec.describe PreservedObjectHandler do
       end
 
       it 'logs a debug message' do
-        msg = "update_version #{druid} called and druid in Catalog"
+        msg = "update_version #{druid} called"
         allow(Rails.logger).to receive(:debug)
         po_handler.update_version
         expect(Rails.logger).to have_received(:debug).with(msg)
@@ -434,7 +434,7 @@ RSpec.describe PreservedObjectHandler do
         end
 
         it 'logs a debug message' do
-          msg = "update_version_after_validation #{druid} called and druid in Catalog"
+          msg = "update_version_after_validation #{druid} called"
           allow(Rails.logger).to receive(:debug)
           po_handler.update_version_after_validation
           expect(Rails.logger).to have_received(:debug).with(msg)

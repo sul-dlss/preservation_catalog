@@ -106,7 +106,7 @@ class PreservedObjectHandler
     if invalid?
       results << result_hash(INVALID_ARGUMENTS, errors.full_messages)
     else
-      Rails.logger.debug "update_version_after_validation #{druid} called and druid in Catalog"
+      Rails.logger.debug "update_version_after_validation #{druid} called"
       if endpoint.endpoint_type.endpoint_class == 'online'
         upd_results =
           if moab_validation_errors.empty?
@@ -134,7 +134,7 @@ class PreservedObjectHandler
     if invalid?
       results << result_hash(INVALID_ARGUMENTS, errors.full_messages)
     else
-      Rails.logger.debug "update_version #{druid} called and druid in Catalog"
+      Rails.logger.debug "update_version #{druid} called"
       upd_results = with_active_record_transaction_and_rescue do
         if endpoint.endpoint_type.endpoint_class == 'online'
           results.concat update_online_version
