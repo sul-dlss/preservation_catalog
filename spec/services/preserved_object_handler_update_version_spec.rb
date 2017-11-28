@@ -364,7 +364,7 @@ RSpec.describe PreservedObjectHandler do
 
         it 'updates PreservedCopy last_audited' do
           orig_timestamp = pc.last_audited
-          sleep 1
+          sleep 1 # last_audited is bigint, and granularity is second, not fraction thereof
           po_handler.update_version_after_validation
           expect(pc.reload.last_audited).to be > orig_timestamp
         end
@@ -417,7 +417,7 @@ RSpec.describe PreservedObjectHandler do
 
         it 'updates PreservedCopy last_audited' do
           orig_timestamp = pc.last_audited
-          sleep 1
+          sleep 1 # last_audited is bigint, and granularity is second, not fraction thereof
           po_handler.update_version_after_validation
           expect(pc.reload.last_audited).to be > orig_timestamp
         end
@@ -537,7 +537,7 @@ RSpec.describe PreservedObjectHandler do
           end
           it 'updates PreservedCopy last_audited field' do
             orig_timestamp = pc.last_audited
-            sleep 1
+            sleep 1 # last_audited is bigint, and granularity is second, not fraction thereof
             po_handler.update_version_after_validation
             expect(pc.reload.last_audited).to be > orig_timestamp
           end
