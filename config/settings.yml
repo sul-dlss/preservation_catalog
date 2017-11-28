@@ -45,4 +45,4 @@ statuses:
 default_status: ok
 
 provlog:
-  enable: true
+  enable: false
