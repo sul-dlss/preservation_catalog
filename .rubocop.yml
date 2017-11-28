@@ -112,6 +112,10 @@ Rails/SkipsModelValidations:
 
 # --- RSpec ---
 
+RSpec/AnyInstance:
+  Exclude:
+    - spec/services/preserved_object_handler_spec.rb # #increase_version checks class of object (rspec double != PreservedCopy)
+
 RSpec/BeforeAfterAll:
   Exclude:
     - 'spec/load_fixtures_helper.rb' # being careful to avoid state leakage

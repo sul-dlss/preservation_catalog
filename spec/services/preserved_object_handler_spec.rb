@@ -337,33 +337,27 @@ RSpec.describe PreservedObjectHandler do
   end
 
   describe '#with_active_record_transaction_and_rescue' do
-    context 'bogus endpoint' do
-      let(:wrong_ep) do
-        Endpoint.create!(
-          endpoint_name: 'wrong_endpoint',
-          endpoint_type: Endpoint.default_storage_root_endpoint_type,
-          endpoint_node: 'localhost',
-          storage_location: 'blah',
-          recovery_cost: 1
-        )
-      end
-      let(:bad_po_handler) { described_class.new(druid, 6, incoming_size, wrong_ep) }
-
-      before do
-        po = PreservedObject.create!(druid: druid, current_version: 2, preservation_policy: default_prez_policy)
-        PreservedCopy.create!(
-          preserved_object: po, # TODO: see if we got the preserved object that we expected
-          version: po.current_version,
-          size: 1,
-          endpoint: ep,
-          status: Status.default_status
-        )
-      end
-
-      it '#confirm_version rolls back preserved object if the preserved copy cannot be found' do
-        bad_po_handler.confirm_version
-        expect(PreservedObject.find_by(druid: druid).current_version).to eq 2
-      end
+    it '#confirm_version rolls back preserved object if there is a problem updating preserved copy' do
+      wrong_ep = Endpoint.create!(
+        endpoint_name: 'wrong_endpoint',
+        endpoint_type: Endpoint.default_storage_root_endpoint_type,
+        endpoint_node: 'localhost',
+        storage_location: 'blah',
+        recovery_cost: 1
+      )
+      po = PreservedObject.create!(druid: druid, current_version: 2, preservation_policy: default_prez_policy)
+      PreservedCopy.create!(
+        preserved_object: po,
+        version: po.current_version,
+        size: 1,
+        endpoint: wrong_ep,
+        status: Status.default_status
+      )
+      bad_po_handler = described_class.new(druid, 6, incoming_size, wrong_ep)
+      # NOTE: #increase_version checks class of object (rspec double != PreservedCopy)
+      allow_any_instance_of(PreservedCopy).to receive(:save!).and_raise(ActiveRecord::ActiveRecordError)
+      bad_po_handler.confirm_version
+      expect(PreservedObject.find_by(druid: druid).current_version).to eq 2
     end
   end
 end
