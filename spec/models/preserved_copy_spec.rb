@@ -6,7 +6,7 @@ RSpec.describe PreservedCopy, type: :model do
     policy_id = PreservationPolicy.default_preservation_policy.id
     PreservedObject.create!(druid: 'ab123cd4567', current_version: 1, preservation_policy_id: policy_id)
   end
-  let!(:status) { Status.default_status }
+  let!(:status) { "ok" }
   let!(:preserved_copy) do
     PreservedCopy.create!(
       preserved_object_id: preserved_object.id,
@@ -31,7 +31,6 @@ RSpec.describe PreservedCopy, type: :model do
 
   it { is_expected.to belong_to(:endpoint) }
   it { is_expected.to belong_to(:preserved_object) }
-  it { is_expected.to belong_to(:status) }
   it { is_expected.to have_db_index(:last_audited) }
   it { is_expected.to have_db_index(:endpoint_id) }
   it { is_expected.to have_db_index(:preserved_object_id) }

@@ -77,7 +77,7 @@ RSpec.describe PreservedObjectHandler do
           version: po.current_version,
           size: 1,
           endpoint: ep,
-          status: Status.default_status
+          status: "ok"
         )
       end
 
@@ -210,10 +210,12 @@ RSpec.describe PreservedObjectHandler do
         end
         it "logs at error level" do
           expect(Rails.logger).to receive(:log).with(Logger::ERROR, version_less_than_po_msg)
-          expect(Rails.logger).to receive(:log).with(Logger::ERROR, version_less_than_pc_msg)
           expect(Rails.logger).to receive(:log).with(Logger::INFO, updated_po_db_timestamp_msg)
-          expect(Rails.logger).to receive(:log).with(Logger::INFO, updated_pc_db_obj_msg)
           expect(Rails.logger).to receive(:log).with(Logger::INFO, updated_pc_db_status_msg)
+          expect(Rails.logger).to receive(:log).with(Logger::ERROR, version_less_than_pc_msg)
+          expect(Rails.logger).to receive(:log).with(Logger::INFO, updated_pc_db_obj_msg)
+          # require 'byebug'
+          # byebug
           po_handler.confirm_version
         end
         context 'returns' do
@@ -300,7 +302,7 @@ RSpec.describe PreservedObjectHandler do
         allow(pc).to receive(:size=).with(incoming_size)
         allow(pc).to receive(:endpoint).with(ep)
         allow(pc).to receive(:changed?).and_return(true)
-        allow(pc).to receive(:status).and_return(Status.ok)
+        allow(pc).to receive(:status).and_return('ok')
         allow(pc).to receive(:save!)
         po_handler.confirm_version
         expect(po).to have_received(:save!)
@@ -356,7 +358,7 @@ RSpec.describe PreservedObjectHandler do
           version: po.current_version,
           size: 1,
           endpoint: ep,
-          status: Status.default_status
+          status: 'ok'
         )
       end
 
