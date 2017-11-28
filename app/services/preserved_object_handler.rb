@@ -272,6 +272,10 @@ class PreservedObjectHandler
     results
   end
 
+  # FIXME: this needs to go away in favor of ? update_version_after_validation
+  #  it is only used by confirm_version, which should essentially call
+  #  update_version_after_validation if the incoming_version is higher than the db
+  # One big problem with this is the overwriting of the PC status without validating first
   def increase_version(db_object)
     results = []
     results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, db_object.class.name)
@@ -293,6 +297,7 @@ class PreservedObjectHandler
       results.concat(update_status(db_object, Status.ok)) if db_object.is_a?(PreservedCopy)
       results << result_hash(VERSION_MATCHES, db_object.class.name)
     elsif incoming_version > db_object.send(version_symbol)
+      # FIXME: this needs to use the same methods as update_version_after_validation
       results.concat(increase_version(db_object))
     else
       # TODO: needs manual intervention until automatic recovery services implemented
