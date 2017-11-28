@@ -69,6 +69,9 @@ RSpec.describe PreservedObjectHandler do
           it "exception's message" do
             expect(results).to include(a_hash_including(result_code => a_string_matching('foo')))
           end
+          it 'does NOT get CREATED_NEW_OBJECT message' do
+            expect(results).to include(hash_not_including(PreservedObjectHandler::CREATED_NEW_OBJECT))
+          end
         end
       end
 
