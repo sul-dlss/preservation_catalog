@@ -285,7 +285,6 @@ class PreservedObjectHandler
   # TODO: revisit naming
   def confirm_version_on_db_object(db_object, version_symbol)
     results = []
-
     if incoming_version == db_object.send(version_symbol)
       results.concat(update_status(db_object, Status.ok)) if db_object.is_a?(PreservedCopy)
       results << result_hash(VERSION_MATCHES, db_object.class.name)
@@ -297,9 +296,7 @@ class PreservedObjectHandler
       results.concat(update_status(db_object, Status.unexpected_version)) if db_object.is_a?(PreservedCopy)
       results << result_hash(ARG_VERSION_LESS_THAN_DB_OBJECT, db_object.class.name)
     end
-
     results.concat(update_db_object(db_object))
-
     results
   end
 
