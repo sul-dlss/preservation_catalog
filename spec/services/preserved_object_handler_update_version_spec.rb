@@ -377,7 +377,7 @@ RSpec.describe PreservedObjectHandler do
         it 'calls #update_online_version with validated = true and Status.ok' do
           expect(po_handler).to receive(:update_online_version).with(true, Status.ok).and_call_original
           po_handler.update_version_after_validation
-          skip 'test is lame b/c we only indirectly show the effects of #update_online_version in #update_version specs'
+          skip 'test is weak b/c we only indirectly show the effects of #update_online_version in #update_version specs'
         end
 
         it 'updates PreservedCopy status to "ok" if it was "moab_invalid"' do
@@ -488,29 +488,10 @@ RSpec.describe PreservedObjectHandler do
         end
 
         context 'incoming version newer than catalog versions (both) (happy path)' do
-          it 'updates PreservedCopy last_audited' do
-            orig_timestamp = pc.last_audited
-            sleep 1
-            po_handler.update_version_after_validation
-            expect(pc.reload.last_audited).to be > orig_timestamp
-          end
-          it 'updates PreservedCopy last_checked_on_storage' do
-            orig_timestamp = pc.last_checked_on_storage
-            po_handler.update_version_after_validation
-            expect(pc.reload.last_checked_on_storage).to be > orig_timestamp
-          end
-
           it 'calls #update_online_version with validated = true and Status.invalid_moab' do
             expect(po_handler).to receive(:update_online_version).with(true, Status.invalid_moab).and_call_original
             po_handler.update_version_after_validation
-            skip 'test is lame b/c we only indirectly show the effects of #update_online_version in #update_version specs'
-          end
-
-          it 'updates PreservedCopy status to "moab_invalid" if it was "ok"' do
-            pc.status = Status.ok
-            pc.save!
-            po_handler.update_version_after_validation
-            expect(pc.reload.status).to eq Status.invalid_moab
+            skip 'test is weak b/c we only indirectly show the effects of #update_online_version in #update_version specs'
           end
         end
 
