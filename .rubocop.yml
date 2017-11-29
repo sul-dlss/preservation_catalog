@@ -142,6 +142,10 @@ Style/BlockComments:
   Exclude:
     - 'spec/spec_helper.rb' # that's how rspec-rails generates it
 
+Style/BlockDelimiters:
+  Exclude:
+    - 'spec/*/*'  # rspec expect statements look ugly with do-end instead of {}
+
 Style/BracesAroundHashParameters:
   Exclude:
     - app/services/preserved_object_handler.rb # code is clearer with the braces

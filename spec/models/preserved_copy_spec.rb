@@ -29,6 +29,29 @@ RSpec.describe PreservedCopy, type: :model do
     expect(preserved_copy).to be_valid
   end
 
+  it 'defines a status enum with the expected values' do
+    is_expected.to define_enum_for(:status).with(
+      ok: 0,
+      invalid_moab: 1,
+      invalid_checksum: 2,
+      not_found_on_disk: 3,
+      expected_version_not_found_on_disk: 4,
+      fixity_check_failed: 5
+    )
+  end
+
+  it 'is not valid without an existing status' do
+    expect {
+      PreservedCopy.new(
+        preserved_object_id: preserved_object.id,
+        endpoint_id: endpoint.id,
+        version: 0,
+        status: 6,
+        size: 1
+      )
+    }.to raise_error(ArgumentError, "'6' is not a valid status")
+  end
+
   it { is_expected.to belong_to(:endpoint) }
   it { is_expected.to belong_to(:preserved_object) }
   it { is_expected.to have_db_index(:last_audited) }
