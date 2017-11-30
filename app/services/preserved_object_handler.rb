@@ -101,6 +101,29 @@ class PreservedObjectHandler
     results
   end
 
+  def update_version_after_validation
+    results = []
+    if invalid?
+      results << result_hash(INVALID_ARGUMENTS, errors.full_messages)
+    else
+      Rails.logger.debug "update_version_after_validation #{druid} called"
+      if endpoint.endpoint_type.endpoint_class == 'online'
+        # NOTE: we deal with active record transactions in update_online_version, not here
+        if moab_validation_errors.empty?
+          results.concat update_online_version(true, Status.ok)
+        else
+          results.concat update_online_version(true, Status.invalid_moab)
+        end
+      elsif endpoint.endpoint_type.endpoint_class == 'archive'
+        # TODO: perform archive object validation; then create a new PC record for the new
+        #  archived version on the endpoint
+      end
+    end
+
+    log_results(results)
+    results
+  end
+
   def update_version
     results = []
     if invalid?
@@ -108,8 +131,10 @@ class PreservedObjectHandler
     else
       Rails.logger.debug "update_version #{druid} called"
       if endpoint.endpoint_type.endpoint_class == 'online'
-        results.concat(update_online_version)
+        # NOTE: we deal with active record transactions in update_online_version, not here
+        results.concat update_online_version
       elsif endpoint.endpoint_type.endpoint_class == 'archive'
+        # TODO: create a new PC record for the new archived version on the endpoint
       end
     end
 
@@ -163,25 +188,29 @@ class PreservedObjectHandler
     results.concat(create_results)
   end
 
-  def update_online_version
+  # TODO: this is "too complex" per rubocop: shameless green implementation
+  # NOTE: if reduce complexity, remove Metrics/PerceivedComplexity exception in .rubocop.yml
+  def update_online_version(validated=false, status=nil)
     results = []
     upd_results = with_active_record_transaction_and_rescue do
       pres_object = PreservedObject.find_by!(druid: druid)
-      pres_copy = PreservedCopy.find_by!(preserved_object: pres_object, endpoint: endpoint)
+      pres_copy = PreservedCopy.find_by!(preserved_object: pres_object, endpoint: endpoint) if pres_object
       # FIXME: what if there is more than one associated pres_copy?
       if incoming_version > pres_copy.version && pres_copy.version == pres_object.current_version
         results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_copy.class.name)
-        update_preserved_copy(pres_copy, incoming_version, incoming_size)
-        results.concat(update_status(pres_copy, Status.ok))
+        update_preserved_copy_version_etc(pres_copy, incoming_version, incoming_size, validated)
+        results.concat(update_status(pres_copy, status)) if status
         results.concat(update_db_object(pres_copy))
         results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_object.class.name)
-        update_preserved_object(pres_object, incoming_version)
+        pres_object.current_version = incoming_version
         results.concat(update_db_object(pres_object))
       else
         results << result_hash(UNEXPECTED_VERSION, 'PreservedCopy')
         results.concat(version_comparison_results(pres_copy, :version))
         results.concat(version_comparison_results(pres_object, :current_version))
-        # FIXME: TODO: should it update existence check timestamps/status?
+        results.concat(update_status(pres_copy, status)) if status
+        update_pc_validation_timestamps(pres_copy) if validated
+        results.concat(update_db_object(pres_copy)) if pres_copy.changed?
       end
     end
     results.concat(upd_results)
@@ -211,14 +240,16 @@ class PreservedObjectHandler
   end
 
   # expects @incoming_version to be numeric
-  def update_preserved_copy(pres_copy, new_version, new_size)
+  def update_preserved_copy_version_etc(pres_copy, new_version, new_size, validated=false)
     pres_copy.version = new_version
     pres_copy.size = new_size if new_size
+    update_pc_validation_timestamps(pres_copy) if validated
   end
 
-  # expects @incoming_version to be numeric
-  def update_preserved_object(pres_obj, new_version)
-    pres_obj.current_version = new_version
+  def update_pc_validation_timestamps(pres_copy)
+    t = Time.current
+    pres_copy.last_audited = t.to_i
+    pres_copy.last_checked_on_storage = t
   end
 
   # expects @incoming_version to be numeric
@@ -234,17 +265,19 @@ class PreservedObjectHandler
     results
   end
 
+  # FIXME: this needs to go away in favor of ? update_version_after_validation
+  #  it is only used by confirm_version, which should essentially call
+  #  update_version_after_validation if the incoming_version is higher than the db
+  # One big problem with this is the overwriting of the PC status without validating first
   def increase_version(db_object)
     results = []
-
     results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, db_object.class.name)
     if db_object.is_a?(PreservedCopy)
-      update_preserved_copy(db_object, incoming_version, incoming_size)
+      update_preserved_copy_version_etc(db_object, incoming_version, incoming_size)
       results.concat(update_status(db_object, Status.ok))
-    else
-      update_preserved_object(db_object, incoming_version)
+    elsif db_object.is_a?(PreservedObject)
+      db_object.current_version = incoming_version
     end
-
     results
   end
 
@@ -257,6 +290,7 @@ class PreservedObjectHandler
       results.concat(update_status(db_object, Status.ok)) if db_object.is_a?(PreservedCopy)
       results << result_hash(VERSION_MATCHES, db_object.class.name)
     elsif incoming_version > db_object.send(version_symbol)
+      # FIXME: this needs to use the same methods as update_version_after_validation
       results.concat(increase_version(db_object))
     else
       # TODO: needs manual intervention until automatic recovery services implemented

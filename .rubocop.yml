@@ -80,6 +80,10 @@ Metrics/MethodLength:
   Exclude:
     - 'app/services/preserved_object_handler.rb'
 
+Metrics/PerceivedComplexity:
+  Exclude:
+    - 'app/services/preserved_object_handler.rb' # update_online_version shameless green
+
 # --- Naming ---
 
 Naming/FileName:
