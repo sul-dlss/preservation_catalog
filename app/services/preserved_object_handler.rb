@@ -65,9 +65,9 @@ class PreservedObjectHandler
     elsif PreservedObject.exists?(druid: druid)
       results << result_hash(OBJECT_ALREADY_EXISTS, 'PreservedObject')
     elsif moab_validation_errors.empty?
-      results.concat(create_db_objects("ok", true))
+      results.concat(create_db_objects(PreservedCopy.statuses[:ok], true))
     else
-      results.concat(create_db_objects("invalid_moab", true))
+      results.concat(create_db_objects(PreservedCopy.statuses[:invalid_moab], true))
     end
 
     log_results(results)
@@ -81,7 +81,7 @@ class PreservedObjectHandler
     elsif PreservedObject.exists?(druid: druid)
       results << result_hash(OBJECT_ALREADY_EXISTS, 'PreservedObject')
     else
-      results.concat(create_db_objects("ok"))
+      results.concat(create_db_objects(PreservedCopy::DEFAULT_STATUS))
     end
 
     log_results(results)
@@ -172,7 +172,7 @@ class PreservedObjectHandler
       if incoming_version > pres_copy.version && pres_copy.version == pres_object.current_version
         results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_copy.class.name)
         update_preserved_copy(pres_copy, incoming_version, incoming_size)
-        results.concat(update_status(pres_copy, "ok"))
+        results.concat(update_status(pres_copy, PreservedCopy.statuses[:ok]))
         results.concat(update_db_object(pres_copy))
         results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_object.class.name)
         update_preserved_object(pres_object, incoming_version)
@@ -240,7 +240,7 @@ class PreservedObjectHandler
     results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, db_object.class.name)
     if db_object.is_a?(PreservedCopy)
       update_preserved_copy(db_object, incoming_version, incoming_size)
-      results.concat(update_status(db_object, 'ok'))
+      results.concat(update_status(db_object, PreservedCopy.statuses[:ok]))
     else
       update_preserved_object(db_object, incoming_version)
     end
@@ -254,13 +254,13 @@ class PreservedObjectHandler
     results = []
 
     if incoming_version == db_object.send(version_symbol)
-      results.concat(update_status(db_object, 'ok')) if db_object.is_a?(PreservedCopy)
+      results.concat(update_status(db_object, PreservedCopy.statuses[:ok])) if db_object.is_a?(PreservedCopy)
       results << result_hash(VERSION_MATCHES, db_object.class.name)
     elsif incoming_version > db_object.send(version_symbol)
       results.concat(increase_version(db_object))
     else
       # TODO: needs manual intervention until automatic recovery services implemented
-      results.concat(update_status(db_object, 'expected_version_not_found_on_disk')) if db_object.is_a?(PreservedCopy)
+      results.concat(update_status(db_object, PreservedCopy.statuses[:expected_version_not_found_online])) if db_object.is_a?(PreservedCopy)
       results << result_hash(ARG_VERSION_LESS_THAN_DB_OBJECT, db_object.class.name)
     end
 

@@ -24,7 +24,7 @@ RSpec.describe PreservedObjectHandler do
         version: incoming_version,
         size: incoming_size,
         endpoint: ep,
-        status: "ok"
+        status: PreservedCopy.statuses[:ok]
       }
 
       expect(PreservedObject).to receive(:create!).with(po_args).and_call_original
@@ -131,7 +131,7 @@ RSpec.describe PreservedObjectHandler do
         version: incoming_version,
         size: incoming_size,
         endpoint: ep,
-        status: "ok",
+        status: PreservedCopy.statuses[:ok],
         last_audited: an_instance_of(Integer),
         last_checked_on_storage: an_instance_of(ActiveSupport::TimeWithZone)
       }
@@ -178,7 +178,7 @@ RSpec.describe PreservedObjectHandler do
           version: incoming_version,
           size: incoming_size,
           endpoint: ep,
-          status: 'invalid_moab',
+          status: PreservedCopy.statuses[:invalid_moab],
           last_audited: an_instance_of(Integer),
           last_checked_on_storage: an_instance_of(ActiveSupport::TimeWithZone)
         }

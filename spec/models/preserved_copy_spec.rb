@@ -6,7 +6,7 @@ RSpec.describe PreservedCopy, type: :model do
     policy_id = PreservationPolicy.default_preservation_policy.id
     PreservedObject.create!(druid: 'ab123cd4567', current_version: 1, preservation_policy_id: policy_id)
   end
-  let!(:status) { "ok" }
+  let!(:status) { described_class.statuses[:ok] }
   let!(:preserved_copy) do
     PreservedCopy.create!(
       preserved_object_id: preserved_object.id,
@@ -34,8 +34,8 @@ RSpec.describe PreservedCopy, type: :model do
       ok: 0,
       invalid_moab: 1,
       invalid_checksum: 2,
-      not_found_on_disk: 3,
-      expected_version_not_found_on_disk: 4,
+      online_moab_not_found: 3,
+      expected_version_not_found_online: 4,
       fixity_check_failed: 5
     )
   end

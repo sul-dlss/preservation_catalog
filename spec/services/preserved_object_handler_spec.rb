@@ -77,7 +77,7 @@ RSpec.describe PreservedObjectHandler do
           version: po.current_version,
           size: 1,
           endpoint: ep,
-          status: "ok"
+          status: PreservedCopy.statuses[:ok]
         )
       end
 
@@ -193,7 +193,7 @@ RSpec.describe PreservedObjectHandler do
         let(:updated_po_db_timestamp_msg) { "#{exp_msg_prefix} PreservedObject updated db timestamp only" }
         let(:updated_pc_db_obj_msg) { "#{exp_msg_prefix} PreservedCopy db object updated" }
         let(:updated_pc_db_status_msg) do
-          "#{exp_msg_prefix} PreservedCopy status changed from ok to expected_version_not_found_on_disk"
+          "#{exp_msg_prefix} PreservedCopy status changed from #{PreservedCopy.statuses[:ok]} to #{PreservedCopy.statuses[:expected_version_not_found_online]}"
         end
 
         it "entry version stays the same" do
@@ -214,8 +214,6 @@ RSpec.describe PreservedObjectHandler do
           expect(Rails.logger).to receive(:log).with(Logger::INFO, updated_pc_db_status_msg)
           expect(Rails.logger).to receive(:log).with(Logger::ERROR, version_less_than_pc_msg)
           expect(Rails.logger).to receive(:log).with(Logger::INFO, updated_pc_db_obj_msg)
-          # require 'byebug'
-          # byebug
           po_handler.confirm_version
         end
         context 'returns' do
@@ -302,7 +300,7 @@ RSpec.describe PreservedObjectHandler do
         allow(pc).to receive(:size=).with(incoming_size)
         allow(pc).to receive(:endpoint).with(ep)
         allow(pc).to receive(:changed?).and_return(true)
-        allow(pc).to receive(:status).and_return('ok')
+        allow(pc).to receive(:status).and_return(PreservedCopy.statuses[:ok])
         allow(pc).to receive(:save!)
         po_handler.confirm_version
         expect(po).to have_received(:save!)
@@ -358,7 +356,7 @@ RSpec.describe PreservedObjectHandler do
           version: po.current_version,
           size: 1,
           endpoint: ep,
-          status: 'ok'
+          status: PreservedCopy.statuses[:ok]
         )
       end
 
