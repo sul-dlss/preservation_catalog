@@ -34,3 +34,19 @@ task :seed_catalog, [:profile] => [:environment] do |_t, args|
   puts "#{Time.now.utc.iso8601} Done"
   $stdout.flush
 end
+
+desc "Delete single endpoint db data"
+task :drop, [:storage_root] => [:environment] do |_t, args|
+  if args[:storage_root]
+    root = args[:storage_root]
+    puts "You're about to erase all the data for #{root}. Are you sure you want to continue? [y/N]"
+    input = STDIN.gets.chomp
+    if input.casecmp("y").zero? # rubocop prefers casecmp because it is faster than '.downcase =='
+      MoabToCatalog.drop_endpoint(root)
+    else
+      puts "You canceled erasing data from #{root}"
+    end
+  else
+    puts "You need to enter a specific storage root"
+  end
+end

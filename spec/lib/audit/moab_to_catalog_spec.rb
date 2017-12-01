@@ -1,5 +1,6 @@
 require 'rails_helper'
 require_relative "../../../lib/audit/moab_to_catalog.rb"
+require 'stringio'
 
 RSpec.describe MoabToCatalog do
   let(:storage_dir) { 'spec/fixtures/storage_root01/moab_storage_trunk' }
@@ -227,6 +228,42 @@ RSpec.describe MoabToCatalog do
     it "storage directory exists but it is empty" do
       storage_dir = 'spec/fixtures/empty/moab_storage_trunk'
       expect(described_class.check_existence_for_dir(storage_dir)).to eq []
+    end
+  end
+
+  describe ".drop_endpoint" do
+    let(:subject) { described_class.drop_endpoint('fixture_sr1') }
+
+    before do
+      described_class.seed_catalog_for_all_storage_roots
+    end
+
+    it 'drops PreservedCopies that correspond to the given endpoint' do
+      expect(PreservedCopy.count).to eq 6
+      subject
+      expect(PreservedCopy.count).to eq 3
+    end
+
+    it 'drops PreservedObjects that correspond to the given endpoint' do
+      expect(PreservedObject.count).to eq 6
+      subject
+      expect(PreservedObject.count).to eq 3
+    end
+
+    it 'rolls back pres obj delete if pres copy cannot be deleted' do
+      active_record_double1 = instance_double(ActiveRecord::Relation)
+      active_record_double2 = instance_double(ActiveRecord::Relation)
+      allow(PreservedObject).to receive(:left_outer_joins).with(:preserved_copies).and_return(active_record_double1)
+      allow(active_record_double1).to receive(:where).with(preserved_copies: { id: nil }).and_return(active_record_double2)
+      allow(active_record_double2).to receive(:destroy_all).and_raise(ActiveRecord::ActiveRecordError, 'foo')
+      begin
+        subject
+      rescue
+        # Expect this to fail and don't need error handling in the .drop_endpoint class method
+        # let subject still run instead of catching ActiveRecordError and stop the execution
+      end
+      expect(PreservedCopy.count).to eq 6
+      expect(PreservedObject.count).to eq 6
     end
   end
 end
