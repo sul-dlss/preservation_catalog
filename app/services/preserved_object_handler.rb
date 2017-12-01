@@ -164,7 +164,7 @@ class PreservedObjectHandler
   def create_db_objects(status, validated=false)
     results = []
     pp_default = PreservationPolicy.default_preservation_policy
-    create_results = with_active_record_transaction_and_rescue do
+    transaction_results = with_active_record_transaction_and_rescue do
       po = PreservedObject.create!(druid: druid,
                                    current_version: incoming_version,
                                    preservation_policy: pp_default)
@@ -183,45 +183,67 @@ class PreservedObjectHandler
         pc_attrs[:last_checked_on_storage] = t
       end
       PreservedCopy.create!(pc_attrs)
-      results << result_hash(CREATED_NEW_OBJECT)
     end
-    results.concat(create_results)
+
+    if transaction_results.empty?
+      results << result_hash(CREATED_NEW_OBJECT)
+    else
+      results.concat(transaction_results)
+    end
   end
 
   # TODO: this is "too complex" per rubocop: shameless green implementation
   # NOTE: if reduce complexity, remove Metrics/PerceivedComplexity exception in .rubocop.yml
   def update_online_version(validated=false, status=nil)
-    results = []
-    upd_results = with_active_record_transaction_and_rescue do
+    full_results = []
+
+    # don't concat the db update results as we go, since one upd in the series may
+    # fail, causing a rollback and making those results untrue.  instead, concat those
+    # results to the final list once we know the transaction has successfully committed.
+    db_upd_results = []
+
+    transaction_results = with_active_record_transaction_and_rescue do
       pres_object = PreservedObject.find_by!(druid: druid)
       pres_copy = PreservedCopy.find_by!(preserved_object: pres_object, endpoint: endpoint) if pres_object
       # FIXME: what if there is more than one associated pres_copy?
       if incoming_version > pres_copy.version && pres_copy.version == pres_object.current_version
-        results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_copy.class.name)
+        # fine to append this result, because it's true regardless of whether the transaction succeeds
+        full_results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_copy.class.name)
         update_preserved_copy_version_etc(pres_copy, incoming_version, incoming_size, validated)
-        results.concat(update_status(pres_copy, status)) if status
-        results.concat(update_db_object(pres_copy))
-        results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_object.class.name)
+        db_upd_results.concat(update_status(pres_copy, status)) if status
+        db_upd_results.concat(update_db_object(pres_copy))
+        # fine to append this result, because it's true regardless of whether the transaction succeeds
+        full_results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_object.class.name)
         pres_object.current_version = incoming_version
-        results.concat(update_db_object(pres_object))
+        db_upd_results.concat(update_db_object(pres_object))
       else
-        results << result_hash(UNEXPECTED_VERSION, 'PreservedCopy')
-        results.concat(version_comparison_results(pres_copy, :version))
-        results.concat(version_comparison_results(pres_object, :current_version))
-        results.concat(update_status(pres_copy, status)) if status
+        # these just add result codes about object state w/o touching DB, so can append immediately to rull result list
+        full_results << result_hash(UNEXPECTED_VERSION, 'PreservedCopy')
+        full_results.concat(version_comparison_results(pres_copy, :version))
+        full_results.concat(version_comparison_results(pres_object, :current_version))
+
+        # update_status and update_db_object both touch the db, so same circumspect handling of results from them
+        db_upd_results.concat(update_status(pres_copy, status)) if status
         update_pc_validation_timestamps(pres_copy) if validated
-        results.concat(update_db_object(pres_copy)) if pres_copy.changed?
+        db_upd_results.concat(update_db_object(pres_copy)) if pres_copy.changed?
       end
     end
-    results.concat(upd_results)
+
+    # ok, now we're out of the woods:  if we're here, the transaction is over.  and if it produced no results
+    # of its own, it completed and committed successfully.  so if there were no error codes produced from the
+    # transaction running and committing, return the update results, otherwise, return the transaction failure code(s).
+    if transaction_results.empty?
+      full_results.concat(db_upd_results)
+    else
+      full_results.concat(transaction_results)
+    end
   end
 
   def confirm_version_in_catalog
     results = []
     confirm_results = with_active_record_transaction_and_rescue do
       po_db_object = PreservedObject.find_by!(druid: druid)
-      pc_db_object = PreservedCopy.find_by!(preserved_object: po_db_object, endpoint: endpoint) if po_db_object
-      break unless pc_db_object
+      pc_db_object = PreservedCopy.find_by!(preserved_object: po_db_object, endpoint: endpoint)
       results.concat(confirm_version_on_db_object(po_db_object, :current_version))
       results.concat(confirm_version_on_db_object(pc_db_object, :version))
     end
