@@ -81,6 +81,22 @@ RSpec.describe PreservedObjectHandler do
         )
       end
 
+      it 'stops processing if there is no PreservedCopy' do
+        druid = 'nd000lm0000'
+        diff_ep = Endpoint.create!(
+          endpoint_name: 'diff_endpoint',
+          endpoint_type: Endpoint.default_storage_root_endpoint_type,
+          endpoint_node: 'localhost',
+          storage_location: 'blah',
+          recovery_cost: 1
+        )
+        PreservedObject.create!(druid: druid, current_version: 2, preservation_policy: default_prez_policy)
+        po_handler = described_class.new(druid, 3, incoming_size, diff_ep)
+        results = po_handler.confirm_version
+        expect(results).to include(a_hash_including(PreservedObjectHandler::OBJECT_DOES_NOT_EXIST => a_string_matching("ActiveRecord::RecordNotFound: Couldn't find PreservedCopy> db object does not exist")))
+        expect(PreservedObject.find_by(druid: druid).current_version).to eq 2
+      end
+
       context "incoming and db versions match" do
         let(:po_handler) { described_class.new(druid, 2, 1, ep) }
         let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, 2, 1, #{ep})" }
@@ -256,6 +272,7 @@ RSpec.describe PreservedObjectHandler do
 
             po = instance_double("PreservedObject")
             allow(PreservedObject).to receive(:find_by).with(druid: druid).and_return(po)
+            allow(PreservedCopy).to receive(:find_by).and_return(instance_double("PreservedCopy"))
             allow(po).to receive(:current_version).and_return(1)
             allow(po).to receive(:current_version=).with(incoming_version)
             allow(po).to receive(:changed?).and_return(true)
@@ -337,33 +354,20 @@ RSpec.describe PreservedObjectHandler do
   end
 
   describe '#with_active_record_transaction_and_rescue' do
-    context 'bogus endpoint' do
-      let(:wrong_ep) do
-        Endpoint.create!(
-          endpoint_name: 'wrong_endpoint',
-          endpoint_type: Endpoint.default_storage_root_endpoint_type,
-          endpoint_node: 'localhost',
-          storage_location: 'blah',
-          recovery_cost: 1
-        )
-      end
-      let(:bad_po_handler) { described_class.new(druid, 6, incoming_size, wrong_ep) }
-
-      before do
-        po = PreservedObject.create!(druid: druid, current_version: 2, preservation_policy: default_prez_policy)
-        PreservedCopy.create!(
-          preserved_object: po, # TODO: see if we got the preserved object that we expected
-          version: po.current_version,
-          size: 1,
-          endpoint: ep,
-          status: Status.default_status
-        )
-      end
-
-      it '#confirm_version rolls back preserved object if the preserved copy cannot be found' do
-        bad_po_handler.confirm_version
-        expect(PreservedObject.find_by(druid: druid).current_version).to eq 2
-      end
+    it '#confirm_version rolls back preserved object if there is a problem updating preserved copy' do
+      po = PreservedObject.create!(druid: druid, current_version: 2, preservation_policy: default_prez_policy)
+      PreservedCopy.create!(
+        preserved_object: po,
+        version: po.current_version,
+        size: 1,
+        endpoint: ep,
+        status: Status.default_status
+      )
+      bad_po_handler = described_class.new(druid, 6, incoming_size, ep)
+      # NOTE: #increase_version checks class of object (rspec double != PreservedCopy)
+      allow_any_instance_of(PreservedCopy).to receive(:save!).and_raise(ActiveRecord::ActiveRecordError)
+      bad_po_handler.confirm_version
+      expect(PreservedObject.find_by(druid: druid).current_version).to eq 2
     end
   end
 end

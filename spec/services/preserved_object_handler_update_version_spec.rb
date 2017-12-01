@@ -238,6 +238,10 @@ RSpec.describe PreservedObjectHandler do
               it "exception's message" do
                 expect(results).to include(a_hash_including(result_code => a_string_matching('foo')))
               end
+              it 'does NOT get UPDATED_DB_OBJECT message' do
+                expect(results).not_to include(hash_including(PreservedObjectHandler::UPDATED_DB_OBJECT))
+                expect(results).not_to include(hash_including(PreservedObjectHandler::UPDATED_DB_OBJECT_TIMESTAMP_ONLY))
+              end
             end
           end
         end
@@ -275,6 +279,10 @@ RSpec.describe PreservedObjectHandler do
               end
               it "exception's message" do
                 expect(results).to include(a_hash_including(result_code => a_string_matching('foo')))
+              end
+              it 'does NOT get UPDATED_DB_OBJECT message' do
+                expect(results).not_to include(hash_including(PreservedObjectHandler::UPDATED_DB_OBJECT))
+                expect(results).not_to include(hash_including(PreservedObjectHandler::UPDATED_DB_OBJECT_TIMESTAMP_ONLY))
               end
             end
           end
