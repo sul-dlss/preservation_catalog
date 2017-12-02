@@ -26,6 +26,7 @@ moab:
   # 'storage_root2/storage_trunk', etc).
   storage_trunk: 'moab_storage_trunk'
   path_method: druid_tree
+  allow_content_subdirs: true
 
 preservation_policies:
   default_policy_name: 'default'

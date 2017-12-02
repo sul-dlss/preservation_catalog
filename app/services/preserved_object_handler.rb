@@ -149,7 +149,7 @@ class PreservedObjectHandler
     object_dir = "#{storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}"
     moab = Moab::StorageObject.new(druid, object_dir)
     object_validator = Stanford::StorageObjectValidator.new(moab)
-    errors = object_validator.validation_errors
+    errors = object_validator.validation_errors(Settings.moab.allow_content_subdirs)
     if errors.any?
       moab_error_msg_list = []
       errors.each do |error_hash|

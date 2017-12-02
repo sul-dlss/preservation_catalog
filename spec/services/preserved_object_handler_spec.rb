@@ -370,4 +370,13 @@ RSpec.describe PreservedObjectHandler do
       expect(PreservedObject.find_by(druid: druid).current_version).to eq 2
     end
   end
+
+  describe '#moab_validation_errors' do
+    it 'calls validator.validator_errors with moab.allow_content_subdirs from Settings.yml' do
+      sov = instance_double(Moab::StorageObjectValidator)
+      allow(Moab::StorageObjectValidator).to receive(:new).and_return(sov)
+      expect(sov).to receive(:validation_errors).with(true).and_return([])
+      po_handler.create_after_validation
+    end
+  end
 end
