@@ -40,13 +40,14 @@ RSpec.describe PreservedObjectHandler do
       it 'logs an error' do
         po_handler.create
         expect(Rails.logger).to receive(:log).with(Logger::ERROR, exp_msg)
-        po_handler.create
+        new_po_handler = described_class.new(druid, incoming_version, incoming_size, ep)
+        new_po_handler.create
       end
     end
 
     context 'db update error' do
       context 'ActiveRecordError' do
-        let(:result_code) { PreservedObjectHandler::DB_UPDATE_FAILED }
+        let(:result_code) { PreservedObjectHandlerResults::DB_UPDATE_FAILED }
         let(:results) do
           allow(Rails.logger).to receive(:log)
           # FIXME: couldn't figure out how to put next line into its own test
@@ -70,7 +71,7 @@ RSpec.describe PreservedObjectHandler do
             expect(results).to include(a_hash_including(result_code => a_string_matching('foo')))
           end
           it 'does NOT get CREATED_NEW_OBJECT message' do
-            expect(results).not_to include(hash_including(PreservedObjectHandler::CREATED_NEW_OBJECT))
+            expect(results).not_to include(hash_including(PreservedObjectHandlerResults::CREATED_NEW_OBJECT))
           end
         end
       end
@@ -91,7 +92,7 @@ RSpec.describe PreservedObjectHandler do
         expect(result.size).to eq 1
       end
       it 'CREATED_NEW_OBJECT result' do
-        code = PreservedObjectHandler::CREATED_NEW_OBJECT
+        code = PreservedObjectHandlerResults::CREATED_NEW_OBJECT
         expect(result).to include(a_hash_including(code => exp_msg))
       end
     end
@@ -193,7 +194,7 @@ RSpec.describe PreservedObjectHandler do
 
       context 'db update error' do
         context 'ActiveRecordError' do
-          let(:result_code) { PreservedObjectHandler::DB_UPDATE_FAILED }
+          let(:result_code) { PreservedObjectHandlerResults::DB_UPDATE_FAILED }
           let(:results) do
             allow(Rails.logger).to receive(:log)
             # FIXME: couldn't figure out how to put next line into its own test
@@ -256,7 +257,7 @@ RSpec.describe PreservedObjectHandler do
         expect(result.size).to eq 1
       end
       it 'CREATED_NEW_OBJECT result' do
-        code = PreservedObjectHandler::CREATED_NEW_OBJECT
+        code = PreservedObjectHandlerResults::CREATED_NEW_OBJECT
         expect(result).to include(a_hash_including(code => exp_msg))
       end
     end

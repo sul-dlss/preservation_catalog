@@ -19,10 +19,10 @@ RSpec.shared_examples "attributes validated" do |method_sym|
       expect(result.size).to eq 1
     end
     it 'INVALID_ARGUMENTS' do
-      expect(result).to include(a_hash_including(PreservedObjectHandler::INVALID_ARGUMENTS))
+      expect(result).to include(a_hash_including(PreservedObjectHandlerResults::INVALID_ARGUMENTS))
     end
     context 'result message includes' do
-      let(:msg) { result.first[PreservedObjectHandler::INVALID_ARGUMENTS] }
+      let(:msg) { result.first[PreservedObjectHandlerResults::INVALID_ARGUMENTS] }
       let(:exp_msg_prefix) { "PreservedObjectHandler(#{bad_druid}, #{bad_version}, #{bad_size}, #{bad_endpoint})" }
 
       it "prefix" do
@@ -80,7 +80,7 @@ RSpec.shared_examples 'druid not in catalog' do |method_sym|
   end
 
   it 'OBJECT_DOES_NOT_EXIST error' do
-    code = PreservedObjectHandler::OBJECT_DOES_NOT_EXIST
+    code = PreservedObjectHandlerResults::OBJECT_DOES_NOT_EXIST
     expect(results).to include(a_hash_including(code => exp_msg))
   end
 end
@@ -106,7 +106,7 @@ RSpec.shared_examples 'PreservedCopy does not exist' do |method_sym|
   end
 
   it 'OBJECT_DOES_NOT_EXIST error' do
-    code = PreservedObjectHandler::OBJECT_DOES_NOT_EXIST
+    code = PreservedObjectHandlerResults::OBJECT_DOES_NOT_EXIST
     expect(results).to include(a_hash_including(code => exp_msg))
   end
 end

@@ -96,12 +96,12 @@ RSpec.describe PreservedObjectHandler do
             expect(results.size).to eq 4
           end
           it 'ARG_VERSION_GREATER_THAN_DB_OBJECT results' do
-            code = PreservedObjectHandler::ARG_VERSION_GREATER_THAN_DB_OBJECT
+            code = PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT
             expect(results).to include(a_hash_including(code => version_gt_pc_msg))
             expect(results).to include(a_hash_including(code => version_gt_po_msg))
           end
           it "UPDATED_DB_OBJECT results" do
-            code = PreservedObjectHandler::UPDATED_DB_OBJECT
+            code = PreservedObjectHandlerResults::UPDATED_DB_OBJECT
             expect(results).to include(a_hash_including(code => updated_pc_db_msg))
             expect(results).to include(a_hash_including(code => updated_po_db_msg))
           end
@@ -163,14 +163,14 @@ RSpec.describe PreservedObjectHandler do
             expect(results.size).to eq 3
           end
           it 'UNEXPECTED_VERSION result' do
-            code = PreservedObjectHandler::UNEXPECTED_VERSION
+            code = PreservedObjectHandlerResults::UNEXPECTED_VERSION
             expect(results).to include(a_hash_including(code => unexpected_version_msg))
           end
           it 'specific version results' do
             codes = [
-              PreservedObjectHandler::VERSION_MATCHES,
-              PreservedObjectHandler::ARG_VERSION_GREATER_THAN_DB_OBJECT,
-              PreservedObjectHandler::ARG_VERSION_LESS_THAN_DB_OBJECT
+              PreservedObjectHandlerResults::VERSION_MATCHES,
+              PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT,
+              PreservedObjectHandlerResults::ARG_VERSION_LESS_THAN_DB_OBJECT
             ]
             obj_version_results = results.select { |r| codes.include?(r.keys.first) }
             msgs = obj_version_results.map { |r| r.values.first }
@@ -178,10 +178,10 @@ RSpec.describe PreservedObjectHandler do
             expect(msgs).to include(a_string_matching("PreservedCopy"))
           end
           it "no UPDATED_DB_OBJECT_TIMESTAMP_ONLY results" do
-            expect(results).not_to include(a_hash_including(PreservedObjectHandler::UPDATED_DB_OBJECT_TIMESTAMP_ONLY))
+            expect(results).not_to include(a_hash_including(PreservedObjectHandlerResults::UPDATED_DB_OBJECT_TIMESTAMP_ONLY))
           end
           it 'no PC_STATUS_CHANGED result' do
-            expect(results).not_to include(a_hash_including(PreservedObjectHandler::PC_STATUS_CHANGED))
+            expect(results).not_to include(a_hash_including(PreservedObjectHandlerResults::PC_STATUS_CHANGED))
           end
         end
       end
@@ -204,7 +204,7 @@ RSpec.describe PreservedObjectHandler do
       end
 
       context 'db update error' do
-        let(:result_code) { PreservedObjectHandler::DB_UPDATE_FAILED }
+        let(:result_code) { PreservedObjectHandlerResults::DB_UPDATE_FAILED }
 
         context 'PreservedCopy' do
           context 'ActiveRecordError' do
@@ -239,8 +239,8 @@ RSpec.describe PreservedObjectHandler do
                 expect(results).to include(a_hash_including(result_code => a_string_matching('foo')))
               end
               it 'does NOT get UPDATED_DB_OBJECT message' do
-                expect(results).not_to include(hash_including(PreservedObjectHandler::UPDATED_DB_OBJECT))
-                expect(results).not_to include(hash_including(PreservedObjectHandler::UPDATED_DB_OBJECT_TIMESTAMP_ONLY))
+                expect(results).not_to include(hash_including(PreservedObjectHandlerResults::UPDATED_DB_OBJECT))
+                expect(results).not_to include(hash_including(PreservedObjectHandlerResults::UPDATED_DB_OBJECT_TIMESTAMP_ONLY))
               end
             end
           end
@@ -281,8 +281,8 @@ RSpec.describe PreservedObjectHandler do
                 expect(results).to include(a_hash_including(result_code => a_string_matching('foo')))
               end
               it 'does NOT get UPDATED_DB_OBJECT message' do
-                expect(results).not_to include(hash_including(PreservedObjectHandler::UPDATED_DB_OBJECT))
-                expect(results).not_to include(hash_including(PreservedObjectHandler::UPDATED_DB_OBJECT_TIMESTAMP_ONLY))
+                expect(results).not_to include(hash_including(PreservedObjectHandlerResults::UPDATED_DB_OBJECT))
+                expect(results).not_to include(hash_including(PreservedObjectHandlerResults::UPDATED_DB_OBJECT_TIMESTAMP_ONLY))
               end
             end
           end
@@ -559,14 +559,14 @@ RSpec.describe PreservedObjectHandler do
               expect(results.size).to eq 5
             end
             it 'UNEXPECTED_VERSION result' do
-              code = PreservedObjectHandler::UNEXPECTED_VERSION
+              code = PreservedObjectHandlerResults::UNEXPECTED_VERSION
               expect(results).to include(a_hash_including(code => unexpected_version_msg))
             end
             it 'specific version results' do
               codes = [
-                PreservedObjectHandler::VERSION_MATCHES,
-                PreservedObjectHandler::ARG_VERSION_GREATER_THAN_DB_OBJECT,
-                PreservedObjectHandler::ARG_VERSION_LESS_THAN_DB_OBJECT
+                PreservedObjectHandlerResults::VERSION_MATCHES,
+                PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT,
+                PreservedObjectHandlerResults::ARG_VERSION_LESS_THAN_DB_OBJECT
               ]
               obj_version_results = results.select { |r| codes.include?(r.keys.first) }
               msgs = obj_version_results.map { |r| r.values.first }
@@ -574,11 +574,11 @@ RSpec.describe PreservedObjectHandler do
               expect(msgs).to include(a_string_matching("PreservedCopy"))
             end
             it "PreservedCopy UPDATED_DB_OBJECT results" do
-              code = PreservedObjectHandler::UPDATED_DB_OBJECT
+              code = PreservedObjectHandlerResults::UPDATED_DB_OBJECT
               expect(results).to include(a_hash_including(code => updated_pc_db_msg))
             end
             it 'PC_STATUS_CHANGED result' do
-              expect(results).to include(a_hash_including(PreservedObjectHandler::PC_STATUS_CHANGED => updated_status_msg_regex))
+              expect(results).to include(a_hash_including(PreservedObjectHandlerResults::PC_STATUS_CHANGED => updated_status_msg_regex))
             end
           end
         end
@@ -601,7 +601,7 @@ RSpec.describe PreservedObjectHandler do
         end
 
         context 'db update error' do
-          let(:result_code) { PreservedObjectHandler::DB_UPDATE_FAILED }
+          let(:result_code) { PreservedObjectHandlerResults::DB_UPDATE_FAILED }
 
           context 'PreservedCopy' do
             context 'ActiveRecordError' do
