@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20171204194036) do
+ActiveRecord::Schema.define(version: 20171204194408) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -74,11 +74,6 @@ ActiveRecord::Schema.define(version: 20171204194036) do
     t.bigint "preservation_policy_id", null: false
     t.index ["druid"], name: "index_preserved_objects_on_druid", unique: true
     t.index ["preservation_policy_id"], name: "index_preserved_objects_on_preservation_policy_id"
-  end
-
-  create_table "statuses", force: :cascade do |t|
-    t.string "status_text", null: false
-    t.index ["status_text"], name: "index_statuses_on_status_text", unique: true
   end
 
   add_foreign_key "endpoints", "endpoint_types"
