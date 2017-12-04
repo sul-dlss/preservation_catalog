@@ -7,35 +7,7 @@
 # inspired by http://www.thegreatcodeadventure.com/smarter-rails-services-with-active-record-modules/
 class PreservedObjectHandler
 
-  INVALID_ARGUMENTS = 1
-  VERSION_MATCHES = 2
-  ARG_VERSION_GREATER_THAN_DB_OBJECT = 3
-  ARG_VERSION_LESS_THAN_DB_OBJECT = 4
-  UPDATED_DB_OBJECT = 5
-  UPDATED_DB_OBJECT_TIMESTAMP_ONLY = 6
-  CREATED_NEW_OBJECT = 7
-  DB_UPDATE_FAILED = 8
-  OBJECT_ALREADY_EXISTS = 9
-  OBJECT_DOES_NOT_EXIST = 10
-  PC_STATUS_CHANGED = 11
-  UNEXPECTED_VERSION = 12
-  INVALID_MOAB = 13
-
-  RESPONSE_CODE_TO_MESSAGES = {
-    INVALID_ARGUMENTS => "encountered validation error(s): %{addl}",
-    VERSION_MATCHES => "incoming version (%{incoming_version}) matches %{addl} db version",
-    ARG_VERSION_GREATER_THAN_DB_OBJECT => "incoming version (%{incoming_version}) greater than %{addl} db version",
-    ARG_VERSION_LESS_THAN_DB_OBJECT => "incoming version (%{incoming_version}) less than %{addl} db version; ERROR!",
-    UPDATED_DB_OBJECT => "%{addl} db object updated",
-    UPDATED_DB_OBJECT_TIMESTAMP_ONLY => "%{addl} updated db timestamp only",
-    CREATED_NEW_OBJECT => "added object to db as it did not exist",
-    DB_UPDATE_FAILED => "db update failed: %{addl}",
-    OBJECT_ALREADY_EXISTS => "%{addl} db object already exists",
-    OBJECT_DOES_NOT_EXIST => "%{addl} db object does not exist",
-    PC_STATUS_CHANGED => "PreservedCopy status changed from %{old_status} to %{new_status}",
-    UNEXPECTED_VERSION => "incoming version (%{incoming_version}) has unexpected relationship to %{addl} db version; ERROR!",
-    INVALID_MOAB => "Invalid moab, validation errors: %{addl}"
-  }.freeze
+  require 'preserved_object_handler_results.rb'
 
   include ActiveModel::Validations
 
@@ -47,7 +19,7 @@ class PreservedObjectHandler
     record.errors.add(attr, 'must be an actual Endpoint') unless value.is_a?(Endpoint)
   end
 
-  attr_reader :druid, :incoming_version, :incoming_size, :endpoint
+  attr_reader :druid, :incoming_version, :incoming_size, :endpoint, :handler_results
 
   delegate :storage_location, to: :endpoint
 
@@ -56,63 +28,60 @@ class PreservedObjectHandler
     @incoming_version = version_string_to_int(incoming_version)
     @incoming_size = string_to_int(incoming_size)
     @endpoint = endpoint
+    @handler_results = PreservedObjectHandlerResults.new(druid, incoming_version, incoming_size, endpoint)
   end
 
   def create_after_validation
-    results = []
     if invalid?
-      results << result_hash(INVALID_ARGUMENTS, errors.full_messages)
+      handler_results.add_result(PreservedObjectHandlerResults::INVALID_ARGUMENTS, errors.full_messages)
     elsif PreservedObject.exists?(druid: druid)
-      results << result_hash(OBJECT_ALREADY_EXISTS, 'PreservedObject')
+      handler_results.add_result(PreservedObjectHandlerResults::OBJECT_ALREADY_EXISTS, 'PreservedObject')
     elsif moab_validation_errors.empty?
-      results.concat(create_db_objects(PreservedCopy::DEFAULT_STATUS, true))
+      create_db_objects(PreservedCopy::DEFAULT_STATUS, true)
     else
-      results.concat(create_db_objects(PreservedCopy.statuses[:invalid_moab], true))
+      create_db_objects(PreservedCopy.statuses[:invalid_moab], true)
     end
 
-    log_results(results)
-    results
+    handler_results.log_my_results
+    handler_results.result_array
   end
 
   def create
-    results = []
     if invalid?
-      results << result_hash(INVALID_ARGUMENTS, errors.full_messages)
+      handler_results.add_result(PreservedObjectHandlerResults::INVALID_ARGUMENTS, errors.full_messages)
     elsif PreservedObject.exists?(druid: druid)
-      results << result_hash(OBJECT_ALREADY_EXISTS, 'PreservedObject')
+      handler_results.add_result(PreservedObjectHandlerResults::OBJECT_ALREADY_EXISTS, 'PreservedObject')
     else
-      results.concat(create_db_objects(PreservedCopy::DEFAULT_STATUS))
+      create_db_objects(PreservedCopy::DEFAULT_STATUS)
     end
 
-    log_results(results)
-    results
+    handler_results.log_my_results
+    handler_results.result_array
   end
 
   def confirm_version
-    results = []
     if invalid?
-      results << result_hash(INVALID_ARGUMENTS, errors.full_messages)
+      handler_results.add_result(PreservedObjectHandlerResults::INVALID_ARGUMENTS, errors.full_messages)
     else
       Rails.logger.debug "confirm_version #{druid} called"
-      results.concat(confirm_version_in_catalog)
+      confirm_version_in_catalog
     end
 
-    log_results(results)
-    results
+    handler_results.log_my_results
+    handler_results.result_array
   end
 
   def update_version_after_validation
-    results = []
     if invalid?
-      results << result_hash(INVALID_ARGUMENTS, errors.full_messages)
+      handler_results.add_result(PreservedObjectHandlerResults::INVALID_ARGUMENTS, errors.full_messages)
     else
       Rails.logger.debug "update_version_after_validation #{druid} called"
       if endpoint.endpoint_type.endpoint_class == 'online'
         # NOTE: we deal with active record transactions in update_online_version, not here
         if moab_validation_errors.empty?
-          results.concat update_online_version(true, PreservedCopy.statuses[:ok])
+          update_online_version(true, PreservedCopy.statuses[:ok])
         else
-          results.concat update_online_version(true, PreservedCopy.statuses[:invalid_moab])
+          update_online_version(true, PreservedCopy.statuses[:invalid_moab])
         end
       elsif endpoint.endpoint_type.endpoint_class == 'archive'
         # TODO: perform archive object validation; then create a new PC record for the new
@@ -120,51 +89,49 @@ class PreservedObjectHandler
       end
     end
 
-    log_results(results)
-    results
+    handler_results.log_my_results
+    handler_results.result_array
   end
 
   def update_version
-    results = []
     if invalid?
-      results << result_hash(INVALID_ARGUMENTS, errors.full_messages)
+      handler_results.add_result(PreservedObjectHandlerResults::INVALID_ARGUMENTS, errors.full_messages)
     else
       Rails.logger.debug "update_version #{druid} called"
       if endpoint.endpoint_type.endpoint_class == 'online'
         # NOTE: we deal with active record transactions in update_online_version, not here
-        results.concat update_online_version
+        update_online_version
       elsif endpoint.endpoint_type.endpoint_class == 'archive'
         # TODO: create a new PC record for the new archived version on the endpoint
       end
     end
 
-    log_results(results)
-    results
+    handler_results.log_my_results
+    handler_results.result_array
   end
 
   private
 
   def moab_validation_errors
-    results = []
     object_dir = "#{storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}"
     moab = Moab::StorageObject.new(druid, object_dir)
     object_validator = Stanford::StorageObjectValidator.new(moab)
     moab_errors = object_validator.validation_errors(Settings.moab.allow_content_subdirs)
     if moab_errors.any?
-      moab_error_msg_list = []
+      moab_error_msgs = []
       moab_errors.each do |error_hash|
-        error_hash.each_value { |moab_error_msgs| moab_error_msg_list << moab_error_msgs }
+        error_hash.each_value { |msg| moab_error_msgs << msg }
       end
-      results << result_hash(INVALID_MOAB, moab_error_msg_list)
-      log_results(results)
+      PreservedObjectHandlerResults.log_results(
+        [ handler_results.result_hash(PreservedObjectHandlerResults::INVALID_MOAB, moab_error_msgs) ]
+      )
     end
     moab_errors
   end
 
   def create_db_objects(status, validated=false)
-    results = []
     pp_default_id = PreservationPolicy.default_policy_id
-    transaction_results = with_active_record_transaction_and_rescue do
+    transaction_ok = with_active_record_transaction_and_rescue do
       po = PreservedObject.create!(druid: druid,
                                    current_version: incoming_version,
                                    preservation_policy_id: pp_default_id)
@@ -185,81 +152,69 @@ class PreservedObjectHandler
       PreservedCopy.create!(pc_attrs)
     end
 
-    if transaction_results.empty?
-      results << result_hash(CREATED_NEW_OBJECT)
-    else
-      results.concat(transaction_results)
-    end
+    handler_results.add_result(PreservedObjectHandlerResults::CREATED_NEW_OBJECT) if transaction_ok
   end
 
   # TODO: this is "too complex" per rubocop: shameless green implementation
-  # NOTE: if reduce complexity, remove Metrics/PerceivedComplexity exception in .rubocop.yml
+  # NOTE: if we can reduce complexity, remove Metrics/PerceivedComplexity exception in .rubocop.yml
   def update_online_version(validated=false, status=nil)
-    full_results = []
-
-    # don't concat the db update results as we go, since one upd in the series may
-    # fail, causing a rollback and making those results untrue.  instead, concat those
-    # results to the final list once we know the transaction has successfully committed.
-    db_upd_results = []
-
-    transaction_results = with_active_record_transaction_and_rescue do
+    transaction_ok = with_active_record_transaction_and_rescue do
       pres_object = PreservedObject.find_by!(druid: druid)
       pres_copy = PreservedCopy.find_by!(preserved_object: pres_object, endpoint: endpoint) if pres_object
       # FIXME: what if there is more than one associated pres_copy?
       if incoming_version > pres_copy.version && pres_copy.version == pres_object.current_version
-        # fine to append this result, because it's true regardless of whether the transaction succeeds
-        full_results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_copy.class.name)
-        update_preserved_copy_version_etc(pres_copy, incoming_version, incoming_size, validated)
-        db_upd_results.concat(update_status(pres_copy, status)) if status
-        db_upd_results.concat(update_db_object(pres_copy))
-        # fine to append this result, because it's true regardless of whether the transaction succeeds
-        full_results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_object.class.name)
-        pres_object.current_version = incoming_version
-        db_upd_results.concat(update_db_object(pres_object))
-      else
-        # these just add result codes about object state w/o touching DB, so can append immediately to rull result list
-        full_results << result_hash(UNEXPECTED_VERSION, 'PreservedCopy')
-        full_results.concat(version_comparison_results(pres_copy, :version))
-        full_results.concat(version_comparison_results(pres_object, :current_version))
+        # add result codes about object state w/o touching DB
+        handler_results.add_result(
+          PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_copy.class.name
+        )
+        handler_results.add_result(
+          PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_object.class.name
+        )
 
-        # update_status and update_db_object both touch the db, so same circumspect handling of results from them
-        db_upd_results.concat(update_status(pres_copy, status)) if status
+        update_preserved_copy_version_etc(pres_copy, incoming_version, incoming_size, validated)
+        update_status(pres_copy, status) if status
+        update_db_object(pres_copy)
+        pres_object.current_version = incoming_version
+        update_db_object(pres_object)
+      else
+        # add result codes about object state w/o touching DB
+        handler_results.add_result(PreservedObjectHandlerResults::UNEXPECTED_VERSION, 'PreservedCopy')
+        version_comparison_results(pres_copy, :version)
+        version_comparison_results(pres_object, :current_version)
+
+        update_status(pres_copy, status) if status
         update_pc_validation_timestamps(pres_copy) if validated
-        db_upd_results.concat(update_db_object(pres_copy)) if pres_copy.changed?
+        update_db_object(pres_copy) if pres_copy.changed?
       end
     end
 
-    # ok, now we're out of the woods:  if we're here, the transaction is over.  and if it produced no results
-    # of its own, it completed and committed successfully.  so if there were no error codes produced from the
-    # transaction running and committing, return the update results, otherwise, return the transaction failure code(s).
-    if transaction_results.empty?
-      full_results.concat(db_upd_results)
-    else
-      full_results.concat(transaction_results)
-    end
+    handler_results.remove_db_updated_result unless transaction_ok
   end
 
   def confirm_version_in_catalog
-    results = []
-    confirm_results = with_active_record_transaction_and_rescue do
+    transaction_ok = with_active_record_transaction_and_rescue do
       po_db_object = PreservedObject.find_by!(druid: druid)
       pc_db_object = PreservedCopy.find_by!(preserved_object: po_db_object, endpoint: endpoint)
-      results.concat(confirm_version_on_db_object(po_db_object, :current_version))
-      results.concat(confirm_version_on_db_object(pc_db_object, :version))
+      confirm_version_on_db_object(po_db_object, :current_version)
+      confirm_version_on_db_object(pc_db_object, :version)
     end
-    results.concat(confirm_results)
+    handler_results.remove_db_updated_result unless transaction_ok
   end
 
+  # performs passed code wrapped in ActiveRecord transaction via yield
+  # @return true if transaction completed without error; false if ActiveRecordError was raised
   def with_active_record_transaction_and_rescue
-    results = []
     begin
       ApplicationRecord.transaction { yield }
+      return true
     rescue ActiveRecord::RecordNotFound => e
-      results << result_hash(OBJECT_DOES_NOT_EXIST, e.inspect)
+      handler_results.add_result(PreservedObjectHandlerResults::OBJECT_DOES_NOT_EXIST, e.inspect)
     rescue ActiveRecord::ActiveRecordError => e
-      results << result_hash(DB_UPDATE_FAILED, "#{e.inspect} #{e.message} #{e.backtrace.inspect}")
+      handler_results.add_result(
+        PreservedObjectHandlerResults::DB_UPDATE_FAILED, "#{e.inspect} #{e.message} #{e.backtrace.inspect}"
+      )
     end
-    results
+    false
   end
 
   # expects @incoming_version to be numeric
@@ -277,15 +232,13 @@ class PreservedObjectHandler
 
   # expects @incoming_version to be numeric
   def version_comparison_results(db_object, version_symbol)
-    results = []
     if incoming_version == db_object.send(version_symbol)
-      results << result_hash(VERSION_MATCHES, db_object.class.name)
+      handler_results.add_result(PreservedObjectHandlerResults::VERSION_MATCHES, db_object.class.name)
     elsif incoming_version < db_object.send(version_symbol)
-      results << result_hash(ARG_VERSION_LESS_THAN_DB_OBJECT, db_object.class.name)
+      handler_results.add_result(PreservedObjectHandlerResults::ARG_VERSION_LESS_THAN_DB_OBJECT, db_object.class.name)
     elsif incoming_version > db_object.send(version_symbol)
-      results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, db_object.class.name)
+      handler_results.add_result(PreservedObjectHandlerResults::ARG_VERSION_LESS_THAN_DB_OBJECT, db_object.class.name)
     end
-    results
   end
 
   # FIXME: this needs to go away in favor of ? update_version_after_validation
@@ -293,108 +246,52 @@ class PreservedObjectHandler
   #  update_version_after_validation if the incoming_version is higher than the db
   # One big problem with this is the overwriting of the PC status without validating first
   def increase_version(db_object)
-    results = []
-    results << result_hash(ARG_VERSION_GREATER_THAN_DB_OBJECT, db_object.class.name)
+    handler_results.add_result(PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT, db_object.class.name)
     if db_object.is_a?(PreservedCopy)
       update_preserved_copy_version_etc(db_object, incoming_version, incoming_size)
-      results.concat(update_status(db_object, PreservedCopy.statuses[:ok]))
+      update_status(db_object, PreservedCopy.statuses[:ok])
     elsif db_object.is_a?(PreservedObject)
       db_object.current_version = incoming_version
     end
-    results
   end
 
   # expects @incoming_version to be numeric
   # TODO: revisit naming
   def confirm_version_on_db_object(db_object, version_symbol)
-    results = []
     if incoming_version == db_object.send(version_symbol)
-      results.concat(update_status(db_object, PreservedCopy.statuses[:ok])) if db_object.is_a?(PreservedCopy)
-      results << result_hash(VERSION_MATCHES, db_object.class.name)
+      update_status(db_object, PreservedCopy.statuses[:ok]) if db_object.is_a?(PreservedCopy)
+      handler_results.add_result(PreservedObjectHandlerResults::VERSION_MATCHES, db_object.class.name)
     elsif incoming_version > db_object.send(version_symbol)
       # FIXME: this needs to use the same methods as update_version_after_validation
-      results.concat(increase_version(db_object))
+      increase_version(db_object)
     else
       # TODO: needs manual intervention until automatic recovery services implemented
-      results.concat(update_status(db_object, PreservedCopy.statuses[:expected_version_not_found_online])) if db_object.is_a?(PreservedCopy)
-      results << result_hash(ARG_VERSION_LESS_THAN_DB_OBJECT, db_object.class.name)
+      update_status(db_object, PreservedCopy.statuses[:expected_version_not_found_online]) if db_object.is_a?(PreservedCopy)
+      handler_results.add_result(PreservedObjectHandlerResults::ARG_VERSION_LESS_THAN_DB_OBJECT, db_object.class.name)
     end
-    results.concat(update_db_object(db_object))
-    results
+    update_db_object(db_object)
   end
 
   def update_status(preserved_copy, new_status)
-    results = []
     if new_status != PreservedCopy.statuses[preserved_copy.status]
-      results << result_hash(
-        PC_STATUS_CHANGED,
+      handler_results.add_result(
+        PreservedObjectHandlerResults::PC_STATUS_CHANGED,
         { old_status: PreservedCopy.statuses[preserved_copy.status], new_status: new_status }
       )
       preserved_copy.status = new_status
     end
-    results
   end
 
   # TODO: this may need reworking if we need to distinguish db timestamp updates when
   #   version matched vs. incoming version less than db object
   def update_db_object(db_object)
-    results = []
     if db_object.changed?
       db_object.save!
-      results << result_hash(UPDATED_DB_OBJECT, db_object.class.name)
+      handler_results.add_result(PreservedObjectHandlerResults::UPDATED_DB_OBJECT, db_object.class.name)
     else
       # FIXME: we may not want to do this, but instead to update specific timestamp for check
       db_object.touch
-      results << result_hash(UPDATED_DB_OBJECT_TIMESTAMP_ONLY, db_object.class.name)
-    end
-    results
-  end
-
-  def result_hash(response_code, addl=nil)
-    { response_code => result_code_msg(response_code, addl) }
-  end
-
-  def result_code_msg(response_code, addl=nil)
-    arg_hash = { incoming_version: incoming_version }
-    if addl.is_a?(Hash)
-      arg_hash.merge!(addl)
-    else
-      arg_hash[:addl] = addl
-    end
-
-    "#{result_msg_prefix} #{RESPONSE_CODE_TO_MESSAGES[response_code] % arg_hash}"
-  end
-
-  def result_msg_prefix
-    @msg_prefix ||= "PreservedObjectHandler(#{druid}, #{incoming_version}, #{incoming_size}, #{endpoint})"
-  end
-
-  # results = [result1, result2]
-  # result1 = {response_code => msg}
-  # result2 = {response_code => msg}
-  def log_results(results)
-    results.each do |r|
-      severity = logger_severity_level(r.keys.first)
-      msg = r.values.first
-      Rails.logger.log(severity, msg)
-    end
-  end
-
-  def logger_severity_level(result_code)
-    case result_code
-    when INVALID_ARGUMENTS then Logger::ERROR
-    when VERSION_MATCHES then Logger::INFO
-    when ARG_VERSION_GREATER_THAN_DB_OBJECT then Logger::INFO
-    when ARG_VERSION_LESS_THAN_DB_OBJECT then Logger::ERROR
-    when UPDATED_DB_OBJECT then Logger::INFO
-    when UPDATED_DB_OBJECT_TIMESTAMP_ONLY then Logger::INFO
-    when CREATED_NEW_OBJECT then Logger::INFO
-    when DB_UPDATE_FAILED then Logger::ERROR
-    when OBJECT_ALREADY_EXISTS then Logger::ERROR
-    when OBJECT_DOES_NOT_EXIST then Logger::ERROR
-    when PC_STATUS_CHANGED then Logger::INFO
-    when UNEXPECTED_VERSION then Logger::ERROR
-    when INVALID_MOAB then Logger::ERROR
+      handler_results.add_result(PreservedObjectHandlerResults::UPDATED_DB_OBJECT_TIMESTAMP_ONLY, db_object.class.name)
     end
   end
 
