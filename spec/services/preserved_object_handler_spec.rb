@@ -280,7 +280,7 @@ RSpec.describe PreservedObjectHandler do
       it 'calls PreservedObject.save! and PreservedCopy.save! if the existing record is altered' do
         po = instance_double(PreservedObject)
         pc = instance_double(PreservedCopy)
-
+        status = PreservedCopy.statuses[:ok]
         # bad object-oriented form!  type checking like this is to be avoided.  but also, wouldn't
         # it be nice if an rspec double returned `true` when asked if it was an instance or kind of
         # the object type being mocked?  i think that'd be nice.  but that's not what doubles do.
@@ -300,7 +300,8 @@ RSpec.describe PreservedObjectHandler do
         allow(pc).to receive(:size=).with(incoming_size)
         allow(pc).to receive(:endpoint).with(ep)
         allow(pc).to receive(:changed?).and_return(true)
-        allow(pc).to receive(:status).and_return(PreservedCopy.statuses[:ok])
+        allow(pc).to receive(:status).and_return(status)
+        allow(pc).to receive(:status=).with(status)
         allow(pc).to receive(:save!)
         po_handler.confirm_version
         expect(po).to have_received(:save!)

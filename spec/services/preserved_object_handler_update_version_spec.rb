@@ -59,9 +59,9 @@ RSpec.describe PreservedObjectHandler do
           expect(pc.reload.size).to eq 1
         end
         it 'updates status of PreservedCopy to "ok"' do
-          expect(pc.status).to eq PreservedCopy.statuses[:expected_version_not_found_online]
+          expect(PreservedCopy.statuses[pc.status]).to eq PreservedCopy.statuses[:expected_version_not_found_online]
           po_handler.update_version
-          expect(pc.reload.status).to eq PreservedCopy.statuses[:ok]
+          expect(PreservedCopy.statuses[pc.reload.status]).to eq PreservedCopy.statuses[:ok]
         end
         it 'does not update PreservedCopy last_audited field' do
           orig_timestamp = pc.last_audited

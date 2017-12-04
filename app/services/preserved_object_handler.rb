@@ -271,10 +271,10 @@ class PreservedObjectHandler
 
   def update_status(preserved_copy, new_status)
     results = []
-    if new_status != preserved_copy.status
+    if new_status != PreservedCopy.statuses[preserved_copy.status]
       results << result_hash(
         PC_STATUS_CHANGED,
-        { old_status: preserved_copy.status, new_status: new_status }
+        { old_status: PreservedCopy.statuses[preserved_copy.status], new_status: new_status }
       )
       preserved_copy.status = new_status
     end
