@@ -77,7 +77,7 @@ RSpec.describe PreservedObjectHandler do
           version: po.current_version,
           size: 1,
           endpoint: ep,
-          status: Status.default_status
+          status: PreservedCopy::DEFAULT_STATUS
         )
       end
 
@@ -209,7 +209,7 @@ RSpec.describe PreservedObjectHandler do
         let(:updated_po_db_timestamp_msg) { "#{exp_msg_prefix} PreservedObject updated db timestamp only" }
         let(:updated_pc_db_obj_msg) { "#{exp_msg_prefix} PreservedCopy db object updated" }
         let(:updated_pc_db_status_msg) do
-          "#{exp_msg_prefix} PreservedCopy status changed from ok to expected_version_not_found_on_disk"
+          "#{exp_msg_prefix} PreservedCopy status changed from #{PreservedCopy.statuses[:ok]} to #{PreservedCopy.statuses[:expected_version_not_found_online]}"
         end
 
         it "entry version stays the same" do
@@ -226,10 +226,10 @@ RSpec.describe PreservedObjectHandler do
         end
         it "logs at error level" do
           expect(Rails.logger).to receive(:log).with(Logger::ERROR, version_less_than_po_msg)
-          expect(Rails.logger).to receive(:log).with(Logger::ERROR, version_less_than_pc_msg)
           expect(Rails.logger).to receive(:log).with(Logger::INFO, updated_po_db_timestamp_msg)
-          expect(Rails.logger).to receive(:log).with(Logger::INFO, updated_pc_db_obj_msg)
           expect(Rails.logger).to receive(:log).with(Logger::INFO, updated_pc_db_status_msg)
+          expect(Rails.logger).to receive(:log).with(Logger::ERROR, version_less_than_pc_msg)
+          expect(Rails.logger).to receive(:log).with(Logger::INFO, updated_pc_db_obj_msg)
           po_handler.confirm_version
         end
         context 'returns' do
@@ -297,6 +297,7 @@ RSpec.describe PreservedObjectHandler do
       it 'calls PreservedObject.save! and PreservedCopy.save! if the existing record is altered' do
         po = instance_double(PreservedObject)
         pc = instance_double(PreservedCopy)
+        status = PreservedCopy.statuses[:ok]
 
         # bad object-oriented form!  type checking like this is to be avoided.  but also, wouldn't
         # it be nice if an rspec double returned `true` when asked if it was an instance or kind of
@@ -317,7 +318,8 @@ RSpec.describe PreservedObjectHandler do
         allow(pc).to receive(:size=).with(incoming_size)
         allow(pc).to receive(:endpoint).with(ep)
         allow(pc).to receive(:changed?).and_return(true)
-        allow(pc).to receive(:status).and_return(Status.ok)
+        allow(pc).to receive(:status).and_return(status)
+        allow(pc).to receive(:status=).with(status)
         allow(pc).to receive(:save!)
         po_handler.confirm_version
         expect(po).to have_received(:save!)
@@ -361,7 +363,7 @@ RSpec.describe PreservedObjectHandler do
         version: po.current_version,
         size: 1,
         endpoint: ep,
-        status: Status.default_status
+        status: PreservedCopy::DEFAULT_STATUS
       )
       bad_po_handler = described_class.new(druid, 6, incoming_size, ep)
       # NOTE: #increase_version checks class of object (rspec double != PreservedCopy)

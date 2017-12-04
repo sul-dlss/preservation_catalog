@@ -24,7 +24,7 @@ RSpec.describe PreservedObjectHandler do
         version: incoming_version,
         size: incoming_size,
         endpoint: ep,
-        status: Status.default_status
+        status: PreservedCopy::DEFAULT_STATUS
       }
 
       expect(PreservedObject).to receive(:create!).with(po_args).and_call_original
@@ -76,8 +76,8 @@ RSpec.describe PreservedObjectHandler do
       end
 
       it "rolls back pres object creation if the pres copy can't be created (e.g. due to DB constraint violation)" do
-        # so that pres copy creation fails with a constraint violation, since status can't be nil
-        allow(Status).to receive(:default_status).and_return(nil)
+        # so that pres copy creation fails, thus forcing the transaction to be rolled back
+        allow(PreservedCopy).to receive(:create!).and_raise(ActiveRecord::RecordInvalid)
         po_handler.create
         expect(PreservedObject.where(druid: druid)).not_to exist
       end
@@ -134,7 +134,7 @@ RSpec.describe PreservedObjectHandler do
         version: incoming_version,
         size: incoming_size,
         endpoint: ep,
-        status: Status.default_status,
+        status: PreservedCopy::DEFAULT_STATUS,
         last_audited: an_instance_of(Integer),
         last_checked_on_storage: an_instance_of(ActiveSupport::TimeWithZone)
       }
@@ -181,7 +181,7 @@ RSpec.describe PreservedObjectHandler do
           version: incoming_version,
           size: incoming_size,
           endpoint: ep,
-          status: Status.invalid_moab,
+          status: PreservedCopy.statuses[:invalid_moab],
           last_audited: an_instance_of(Integer),
           last_checked_on_storage: an_instance_of(ActiveSupport::TimeWithZone)
         }
