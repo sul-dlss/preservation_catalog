@@ -13,11 +13,9 @@ ApplicationRecord.transaction(isolation: :serializable) do
   Endpoint.seed_storage_root_endpoints_from_config(
     Endpoint.default_storage_root_endpoint_type, [PreservationPolicy.default_preservation_policy]
   )
-  Status.seed_from_config
 end
 
 puts "seeded database.  state of seeded object types after seeding:"
 puts "> PreservationPolicy.all: #{PreservationPolicy.all.to_a}"
 puts "> EndpointType.all: #{EndpointType.all.to_a}"
 puts "> Endpoint.all: #{Endpoint.all.to_a}"
-puts "> Status.all: #{Status.all.to_a}"
