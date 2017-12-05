@@ -43,6 +43,7 @@ task :drop, [:storage_root] => [:environment] do |_t, args|
     input = STDIN.gets.chomp
     if input.casecmp("y").zero? # rubocop prefers casecmp because it is faster than '.downcase =='
       MoabToCatalog.drop_endpoint(root)
+      puts "You have successfully deleted all the data from #{root}"
     else
       puts "You canceled erasing data from #{root}"
     end
