@@ -17,7 +17,7 @@ RSpec.describe PreservedObjectHandler do
       po_args = {
         druid: druid,
         current_version: incoming_version,
-        preservation_policy: PreservationPolicy.default_preservation_policy
+        preservation_policy_id: PreservationPolicy.cached_default_preservation_policy_id
       }
       pc_args = {
         preserved_object: an_instance_of(PreservedObject), # TODO: see if we got the preserved object that we expected
@@ -127,7 +127,7 @@ RSpec.describe PreservedObjectHandler do
       po_args = {
         druid: valid_druid,
         current_version: incoming_version,
-        preservation_policy: PreservationPolicy.default_preservation_policy
+        preservation_policy_id: PreservationPolicy.cached_default_preservation_policy_id
       }
       pc_args = {
         preserved_object: an_instance_of(PreservedObject), # TODO: see if we got the preserved object that we expected
@@ -174,7 +174,7 @@ RSpec.describe PreservedObjectHandler do
         po_args = {
           druid: invalid_druid,
           current_version: incoming_version,
-          preservation_policy: PreservationPolicy.default_preservation_policy
+          preservation_policy_id: PreservationPolicy.cached_default_preservation_policy_id
         }
         pc_args = {
           preserved_object: an_instance_of(PreservedObject), # TODO: see if we got the preserved object that we expected

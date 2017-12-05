@@ -69,4 +69,46 @@ RSpec.describe PreservationPolicy, type: :model do
       expect { PreservationPolicy.default_preservation_policy }.to raise_error(ActiveRecord::RecordNotFound)
     end
   end
+
+  describe '.cached_default_preservation_policy_id' do
+    # clear the cache before each test to reset
+    before { PreservationPolicy.send(:clear_id_cache) }
+
+    # clear the cache once more before we leave, to clean up, because
+    # rspec is going to auto-rollback the pres policy one test creates,
+    # and our Settings change was totally ephemeral
+    after(:all) { PreservationPolicy.send(:clear_id_cache) }
+
+    it 'returns the default preservation policy id' do
+      default_pres_policy_id = PreservationPolicy.default_preservation_policy.id
+      expect(PreservationPolicy.cached_default_preservation_policy_id).to eq default_pres_policy_id
+    end
+
+    it "doesn't re-run the query if a cached value is available" do
+      expect(PreservationPolicy).to receive(:find_by!).once.and_call_original
+      PreservationPolicy.cached_default_preservation_policy_id
+      PreservationPolicy.cached_default_preservation_policy_id
+    end
+
+    it 'clears the cache and looks up fresh values after an event that might make cached values stale' do
+      expect(PreservationPolicy).to receive(:find_by!).twice.and_call_original
+
+      # first lookup, gets cached
+      PreservationPolicy.cached_default_preservation_policy_id
+
+      # pretend we added a new pres policy to settings and re-seeded and now it's the default
+      new_default_pres_policy = PreservationPolicy.create!(preservation_policy_name: 'new_default',
+                                                           archive_ttl: 666,
+                                                           fixity_ttl: 666)
+      new_default_setting = Config::Options.new(default_policy_name: 'new_default')
+      allow(Settings).to receive(:preservation_policies).and_return(new_default_setting)
+
+      # make sure the cached value reflects the change
+      expect(new_default_pres_policy.id).to eq PreservationPolicy.cached_default_preservation_policy_id
+
+      # here we call it a third time, but there were no changes since we last called, so call twice expectation
+      # at start of test should be satisfied
+      PreservationPolicy.cached_default_preservation_policy_id
+    end
+  end
 end

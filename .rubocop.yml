@@ -128,7 +128,9 @@ RSpec/AnyInstance:
 
 RSpec/BeforeAfterAll:
   Exclude:
-    - 'spec/load_fixtures_helper.rb' # being careful to avoid state leakage
+    # we use after(:all) specifically to prevent state leakage
+    - 'spec/load_fixtures_helper.rb'
+    - 'spec/models/preservation_policy_spec.rb'
 
 RSpec/ExampleLength:
   Max: 50
