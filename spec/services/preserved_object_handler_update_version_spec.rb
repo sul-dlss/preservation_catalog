@@ -32,7 +32,7 @@ RSpec.describe PreservedObjectHandler do
           version: po.current_version,
           size: 1,
           endpoint: ep,
-          status: Status.unexpected_version
+          status: PreservedCopy.statuses[:expected_version_not_found_online]
         )
       end
 
@@ -62,9 +62,9 @@ RSpec.describe PreservedObjectHandler do
         end
         it 'does not update status of PreservedCopy' do
           # TODO: not clear what to do here;  it's not 'ok' if we didn't validate ...
-          expect(pc.status).to eq Status.unexpected_version
+          expect(PreservedCopy.statuses[pc.status]).to eq PreservedCopy.statuses[:expected_version_not_found_online]
           po_handler.update_version
-          expect(pc.reload.status).to eq Status.unexpected_version
+          expect(PreservedCopy.statuses[pc.reload.status]).to eq PreservedCopy.statuses[:expected_version_not_found_online]
         end
         it 'does not update PreservedCopy last_audited field' do
           orig_timestamp = pc.last_audited
@@ -221,7 +221,7 @@ RSpec.describe PreservedObjectHandler do
               allow(pc).to receive(:version).and_return(1)
               allow(pc).to receive(:version=)
               allow(pc).to receive(:size=)
-              allow(pc).to receive(:status).and_return(instance_double(Status, status_text: 'ok'))
+              allow(pc).to receive(:status).and_return(PreservedCopy.statuses[:ok])
               allow(pc).to receive(:status=)
               allow(pc).to receive(:changed?).and_return(true)
               allow(pc).to receive(:save!).and_raise(ActiveRecord::ActiveRecordError, 'foo')
@@ -263,7 +263,7 @@ RSpec.describe PreservedObjectHandler do
               allow(pc).to receive(:version).and_return(5)
               allow(pc).to receive(:version=).with(incoming_version)
               allow(pc).to receive(:size=).with(incoming_size)
-              allow(pc).to receive(:status).and_return(instance_double(Status, status_text: 'ok'))
+              allow(pc).to receive(:status).and_return(PreservedCopy.statuses[:ok])
               allow(pc).to receive(:status=)
               allow(pc).to receive(:changed?).and_return(true)
               allow(pc).to receive(:save!)
@@ -302,7 +302,7 @@ RSpec.describe PreservedObjectHandler do
         allow(pc).to receive(:version=).with(incoming_version)
         allow(pc).to receive(:size=).with(incoming_size)
         allow(pc).to receive(:endpoint).with(ep)
-        allow(pc).to receive(:status).and_return(instance_double(Status, status_text: 'ok'))
+        allow(pc).to receive(:status).and_return(PreservedCopy.statuses[:ok])
         allow(pc).to receive(:status=)
         allow(pc).to receive(:changed?).and_return(true)
         allow(pc).to receive(:save!)
@@ -364,7 +364,7 @@ RSpec.describe PreservedObjectHandler do
             version: po.current_version,
             size: 1,
             endpoint: ep,
-            status: Status.ok,
+            status: PreservedCopy.statuses[:ok],
             last_audited: Time.current.to_i,
             last_checked_on_storage: Time.current
           )
@@ -382,17 +382,17 @@ RSpec.describe PreservedObjectHandler do
           expect(pc.reload.last_checked_on_storage).to be > orig_timestamp
         end
 
-        it 'calls #update_online_version with validated = true and Status.ok' do
-          expect(po_handler).to receive(:update_online_version).with(true, Status.ok).and_call_original
+        it 'calls #update_online_version with validated = true and PreservedCopy.statuses[:ok]' do
+          expect(po_handler).to receive(:update_online_version).with(true, PreservedCopy.statuses[:ok]).and_call_original
           po_handler.update_version_after_validation
           skip 'test is weak b/c we only indirectly show the effects of #update_online_version in #update_version specs'
         end
 
         it 'updates PreservedCopy status to "ok" if it was "moab_invalid"' do
-          pc.status = Status.invalid_moab
+          pc.status = PreservedCopy.statuses[:invalid_moab]
           pc.save!
           po_handler.update_version_after_validation
-          expect(pc.reload.status).to eq Status.ok
+          expect(PreservedCopy.statuses[pc.reload.status]).to eq PreservedCopy.statuses[:ok]
         end
       end
 
@@ -417,7 +417,7 @@ RSpec.describe PreservedObjectHandler do
             version: po.current_version,
             size: 1,
             endpoint: ep,
-            status: Status.ok,
+            status: PreservedCopy.statuses[:ok],
             last_audited: Time.current.to_i,
             last_checked_on_storage: Time.current
           )
@@ -435,10 +435,10 @@ RSpec.describe PreservedObjectHandler do
           expect(pc.reload.last_checked_on_storage).to be > orig_timestamp
         end
         it 'ensures PreservedCopy status is invalid' do
-          pc.status = Status.ok
+          pc.status = PreservedCopy.statuses[:ok]
           pc.save!
           po_handler.update_version_after_validation
-          expect(pc.reload.status).to eq Status.invalid_moab
+          expect(PreservedCopy.statuses[pc.reload.status]).to eq PreservedCopy.statuses[:invalid_moab]
         end
 
         it 'logs a debug message' do
@@ -461,7 +461,7 @@ RSpec.describe PreservedObjectHandler do
           allow(pc).to receive(:version=).with(incoming_version)
           allow(pc).to receive(:size=).with(incoming_size)
           allow(pc).to receive(:endpoint).with(ep)
-          allow(pc).to receive(:status).and_return(instance_double(Status, status_text: 'ok'))
+          allow(pc).to receive(:status).and_return(PreservedCopy.statuses[:ok])
           allow(pc).to receive(:status=)
           allow(pc).to receive(:last_audited=)
           allow(pc).to receive(:last_checked_on_storage=)
@@ -484,7 +484,7 @@ RSpec.describe PreservedObjectHandler do
           allow(PreservedCopy).to receive(:find_by).with(preserved_object: po, endpoint: ep).and_return(pc)
           allow(pc).to receive(:version).and_return(1)
           allow(pc).to receive(:endpoint).with(ep)
-          allow(pc).to receive(:status).and_return(instance_double(Status, status_text: 'ok'))
+          allow(pc).to receive(:status).and_return(PreservedCopy.statuses[:ok])
           allow(pc).to receive(:status=)
           allow(pc).to receive(:last_audited=)
           allow(pc).to receive(:last_checked_on_storage=)
@@ -496,8 +496,8 @@ RSpec.describe PreservedObjectHandler do
         end
 
         context 'incoming version newer than catalog versions (both) (happy path)' do
-          it 'calls #update_online_version with validated = true and Status.invalid_moab' do
-            expect(po_handler).to receive(:update_online_version).with(true, Status.invalid_moab).and_call_original
+          it 'calls #update_online_version with validated = true and PreservedCopy.statuses[:invalid_moab]' do
+            expect(po_handler).to receive(:update_online_version).with(true, PreservedCopy.statuses[:invalid_moab]).and_call_original
             po_handler.update_version_after_validation
             skip 'test is weak b/c we only indirectly show the effects of #update_online_version in #update_version specs'
           end
@@ -536,10 +536,10 @@ RSpec.describe PreservedObjectHandler do
             expect(pc.reload.last_checked_on_storage).to be > orig_timestamp
           end
           it 'ensures status of PreservedCopy is invalid' do
-            pc.status = Status.ok
+            pc.status = PreservedCopy.statuses[:ok]
             pc.save!
             po_handler.update_version_after_validation
-            expect(pc.reload.status).to eq Status.invalid_moab
+            expect(PreservedCopy.statuses[pc.reload.status]).to eq PreservedCopy.statuses[:invalid_moab]
           end
           it "logs at error level" do
             expect(Rails.logger).to receive(:log).with(Logger::ERROR, unexpected_version_msg)
@@ -618,7 +618,7 @@ RSpec.describe PreservedObjectHandler do
                 allow(PreservedCopy).to receive(:find_by!).with(preserved_object: po, endpoint: ep).and_return(pc)
                 allow(pc).to receive(:version).and_return(1)
                 allow(pc).to receive(:version=)
-                allow(pc).to receive(:status).and_return(instance_double(Status, status_text: 'ok'))
+                allow(pc).to receive(:status).and_return(PreservedCopy.statuses[:ok])
                 allow(pc).to receive(:status=)
                 allow(pc).to receive(:last_audited=)
                 allow(pc).to receive(:last_checked_on_storage=)
@@ -661,7 +661,7 @@ RSpec.describe PreservedObjectHandler do
                 allow(pc).to receive(:size=).with(incoming_size)
                 allow(pc).to receive(:last_audited=)
                 allow(pc).to receive(:last_checked_on_storage=)
-                allow(pc).to receive(:status).and_return(instance_double(Status, status_text: 'ok'))
+                allow(pc).to receive(:status).and_return(PreservedCopy.statuses[:ok])
                 allow(pc).to receive(:status=)
                 allow(pc).to receive(:changed?).and_return(true)
                 allow(pc).to receive(:save!)
