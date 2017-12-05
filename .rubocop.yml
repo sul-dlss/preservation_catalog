@@ -44,6 +44,16 @@ Layout/SpaceInsideBrackets:
   Exclude:
     - 'config/environments/production.rb' # that's how Rails generates it
 
+# --- Lint ---
+Lint/HandleExceptions:
+  Exclude:
+    - 'spec/lib/audit/moab_to_catalog_spec.rb' # So method does not stop executing and can test the correct case
+
+Lint/RescueWithoutErrorClass:
+  Exclude:
+    - 'spec/lib/audit/moab_to_catalog_spec.rb' # So method does not stop executing and can test the correct case
+
+
 # --- Metrics ---
 
 Metrics/AbcSize:

@@ -65,4 +65,14 @@ class MoabToCatalog
       Rails.logger.info end_msg
     end
   end
+
+  def self.drop_endpoint(endpoint_name)
+    ApplicationRecord.transaction do
+      PreservedCopy.joins(:endpoint).where(
+        "endpoints.endpoint_name = :endpoint_name",
+        endpoint_name: endpoint_name.to_s
+      ).destroy_all
+      PreservedObject.left_outer_joins(:preserved_copies).where(preserved_copies: { id: nil }).destroy_all
+    end
+  end
 end
