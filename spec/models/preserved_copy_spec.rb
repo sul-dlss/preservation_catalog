@@ -6,7 +6,7 @@ RSpec.describe PreservedCopy, type: :model do
     policy_id = PreservationPolicy.default_preservation_policy.id
     PreservedObject.create!(druid: 'ab123cd4567', current_version: 1, preservation_policy_id: policy_id)
   end
-  let!(:status) { described_class.statuses[:ok] }
+  let!(:status) { described_class::DEFAULT_STATUS }
   let!(:preserved_copy) do
     PreservedCopy.create!(
       preserved_object_id: preserved_object.id,

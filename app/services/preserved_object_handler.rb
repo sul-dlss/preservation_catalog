@@ -65,7 +65,7 @@ class PreservedObjectHandler
     elsif PreservedObject.exists?(druid: druid)
       results << result_hash(OBJECT_ALREADY_EXISTS, 'PreservedObject')
     elsif moab_validation_errors.empty?
-      results.concat(create_db_objects(PreservedCopy.statuses[:ok], true))
+      results.concat(create_db_objects(PreservedCopy::DEFAULT_STATUS, true))
     else
       results.concat(create_db_objects(PreservedCopy.statuses[:invalid_moab], true))
     end
