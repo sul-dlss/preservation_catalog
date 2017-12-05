@@ -266,4 +266,29 @@ RSpec.describe MoabToCatalog do
       expect(PreservedObject.count).to eq 6
     end
   end
+
+  describe ".populate_endpoint" do
+    let(:endpoint_name) { 'fixture_sr1' }
+    let(:subject) { described_class.populate_endpoint(endpoint_name) }
+
+    before do
+      described_class.seed_catalog_for_all_storage_roots
+    end
+
+    it "won't change objects in a fully seeded db" do
+      subject
+      expect(PreservedCopy.count).to eq 6
+      expect(PreservedObject.count).to eq 6
+    end
+
+    it 're-adds objects for a dropped endpoint' do
+      described_class.drop_endpoint(endpoint_name)
+      expect(PreservedCopy.count).to eq 3
+      expect(PreservedObject.count).to eq 3
+      subject
+      expect(PreservedCopy.count).to eq 6
+      expect(PreservedObject.count).to eq 6
+    end
+
+  end
 end

@@ -51,3 +51,20 @@ task :drop, [:storage_root] => [:environment] do |_t, args|
     puts "You need to enter a specific storage root"
   end
 end
+
+desc "Populate single endpoint db data"
+task :populate, [:storage_root] => [:environment] do |_t, args|
+  if args[:storage_root]
+    root = args[:storage_root]
+    puts "You're about to populate all the data for #{root}. Are you sure you want to continue? [y/N]"
+    input = STDIN.gets.chomp
+    if input.casecmp("y").zero? # rubocop prefers casecmp because it is faster than '.downcase =='
+      MoabToCatalog.populate_endpoint(root)
+      puts "You have successfully populated all the data for #{root}"
+    else
+      puts "You canceled populating data for #{root}"
+    end
+  else
+    puts "You need to enter a specific storage root"
+  end
+end
