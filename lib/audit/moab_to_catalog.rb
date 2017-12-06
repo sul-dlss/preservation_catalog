@@ -75,4 +75,9 @@ class MoabToCatalog
       PreservedObject.left_outer_joins(:preserved_copies).where(preserved_copies: { id: nil }).destroy_all
     end
   end
+
+  def self.populate_endpoint(endpoint_name)
+    endpoint = Endpoint.find_by!(endpoint_name: endpoint_name)
+    MoabToCatalog.seed_catalog_for_dir(endpoint.storage_location)
+  end
 end
