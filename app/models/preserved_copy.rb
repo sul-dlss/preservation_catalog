@@ -10,7 +10,7 @@ class PreservedCopy < ApplicationRecord
     fixity_check_failed: 5
   }
 
-  DEFAULT_STATUS = statuses[:ok].freeze
+  DEFAULT_STATUS = 'ok'.freeze
 
   belongs_to :preserved_object
   belongs_to :endpoint
