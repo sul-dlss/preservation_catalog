@@ -40,16 +40,42 @@ RSpec.describe PreservedCopy, type: :model do
     )
   end
 
-  it 'is not valid without an existing status' do
-    expect {
-      PreservedCopy.new(
+  context '#status=' do
+    it "validation rejects an int value that's not actually used by the enum" do
+      expect {
+        PreservedCopy.new(
+          preserved_object_id: preserved_object.id,
+          endpoint_id: endpoint.id,
+          version: 0,
+          status: 654,
+          size: 1
+        )
+      }.to raise_error(ArgumentError, "'654' is not a valid status")
+    end
+
+    it "validation rejects a value if it isn't one of the defined enum identifiers" do
+      expect {
+        PreservedCopy.new(
+          preserved_object_id: preserved_object.id,
+          endpoint_id: endpoint.id,
+          version: 0,
+          status: 'INVALID_MOAB',
+          size: 1
+        )
+      }.to raise_error(ArgumentError, "'INVALID_MOAB' is not a valid status")
+    end
+
+    it "will accept a symbol, but will always return a string" do
+      pc = PreservedCopy.new(
         preserved_object_id: preserved_object.id,
         endpoint_id: endpoint.id,
         version: 0,
-        status: 6,
+        status: :invalid_moab,
         size: 1
       )
-    }.to raise_error(ArgumentError, "'6' is not a valid status")
+      expect(pc.status).to be_a(String)
+      expect(pc.status).to eq 'invalid_moab'
+    end
   end
 
   it { is_expected.to belong_to(:endpoint) }
