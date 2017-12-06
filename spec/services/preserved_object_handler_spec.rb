@@ -156,12 +156,14 @@ RSpec.describe PreservedObjectHandler do
         it "updates entry with incoming version" do
           expect(po.current_version).to eq 2
           expect(pc.version).to eq 2
+          allow(po_handler).to receive(:moab_validation_errors).and_return([])
           po_handler.confirm_version
           expect(po.reload.current_version).to eq incoming_version
           expect(pc.reload.version).to eq incoming_version
         end
         it 'updates entry with size if included' do
           expect(pc.size).to eq 1
+          allow(po_handler).to receive(:moab_validation_errors).and_return([])
           po_handler.confirm_version
           expect(pc.reload.size).to eq incoming_size
         end
@@ -172,6 +174,7 @@ RSpec.describe PreservedObjectHandler do
           expect(pc.reload.size).to eq 1
         end
         it "logs at info level" do
+          allow(po_handler).to receive(:moab_validation_errors).and_return([])
           expect(Rails.logger).to receive(:log).with(Logger::INFO, version_gt_po_msg)
           expect(Rails.logger).to receive(:log).with(Logger::INFO, version_gt_pc_msg)
           expect(Rails.logger).to receive(:log).with(Logger::INFO, updated_po_db_msg)
@@ -179,21 +182,24 @@ RSpec.describe PreservedObjectHandler do
           po_handler.confirm_version
         end
         context 'returns' do
-          let!(:results) { po_handler.confirm_version }
+          let(:results) { po_handler.confirm_version }
 
           # results = [result1, result2]
           # result1 = {response_code: msg}
           # result2 = {response_code: msg}
           it '4 results' do
+            allow(po_handler).to receive(:moab_validation_errors).and_return([])
             expect(results).to be_an_instance_of Array
             expect(results.size).to eq 4
           end
           it 'ARG_VERSION_GREATER_THAN_DB_OBJECT results' do
+            allow(po_handler).to receive(:moab_validation_errors).and_return([])
             code = PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT
             expect(results).to include(a_hash_including(code => version_gt_pc_msg))
             expect(results).to include(a_hash_including(code => version_gt_po_msg))
           end
           it 'UPDATED_DB_OBJECT results' do
+            allow(po_handler).to receive(:moab_validation_errors).and_return([])
             code = PreservedObjectHandlerResults::UPDATED_DB_OBJECT
             expect(results).to include(a_hash_including(code => updated_pc_db_msg))
             expect(results).to include(a_hash_including(code => updated_po_db_msg))
@@ -226,14 +232,14 @@ RSpec.describe PreservedObjectHandler do
         end
         it "logs at error level" do
           expect(Rails.logger).to receive(:log).with(Logger::ERROR, version_less_than_po_msg)
+          expect(Rails.logger).to receive(:log).with(Logger::ERROR, version_less_than_pc_msg)
           expect(Rails.logger).to receive(:log).with(Logger::INFO, updated_po_db_timestamp_msg)
           expect(Rails.logger).to receive(:log).with(Logger::INFO, updated_pc_db_status_msg)
-          expect(Rails.logger).to receive(:log).with(Logger::ERROR, version_less_than_pc_msg)
           expect(Rails.logger).to receive(:log).with(Logger::INFO, updated_pc_db_obj_msg)
           po_handler.confirm_version
         end
         context 'returns' do
-          let!(:results) { po_handler.confirm_version }
+          let(:results) { po_handler.confirm_version }
 
           # results = [result1, result2]
           # result1 = {response_code: msg}
@@ -257,6 +263,7 @@ RSpec.describe PreservedObjectHandler do
             expect(results).to include(a_hash_including(code => updated_pc_db_obj_msg))
           end
           it "PreservedCopy PC_STATUS_CHANGED result" do
+            allow(po_handler).to receive(:moab_validation_errors).and_return([])
             code = PreservedObjectHandlerResults::PC_STATUS_CHANGED
             expect(results).to include(a_hash_including(code => updated_pc_db_status_msg))
           end
@@ -272,12 +279,24 @@ RSpec.describe PreservedObjectHandler do
 
             po = instance_double("PreservedObject")
             allow(PreservedObject).to receive(:find_by).with(druid: druid).and_return(po)
-            allow(PreservedCopy).to receive(:find_by).and_return(instance_double("PreservedCopy"))
+            pc = instance_double("PreservedCopy")
+            allow(PreservedCopy).to receive(:find_by).with(preserved_object: po, endpoint: ep).and_return(pc)
             allow(po).to receive(:current_version).and_return(1)
             allow(po).to receive(:current_version=).with(incoming_version)
+            allow(pc).to receive(:version).and_return(1)
+            allow(pc).to receive(:version=).with(incoming_version)
+            allow(pc).to receive(:status).and_return(PreservedCopy::OK_STATUS)
+            allow(pc).to receive(:status=)
+            allow(pc).to receive(:size=).with(incoming_size)
+            allow(pc).to receive(:endpoint).with(ep)
+            allow(pc).to receive(:last_audited=)
+            allow(pc).to receive(:last_checked_on_storage=)
+            allow(pc).to receive(:changed?).and_return(true)
+            allow(pc).to receive(:save!)
             allow(po).to receive(:changed?).and_return(true)
             allow(po).to receive(:save!).and_raise(ActiveRecord::ActiveRecordError, 'foo')
             allow(po).to receive(:destroy) # for after() cleanup calls
+            allow(po_handler).to receive(:moab_validation_errors).and_return([])
             po_handler.confirm_version
           end
 
@@ -298,13 +317,6 @@ RSpec.describe PreservedObjectHandler do
         po = instance_double(PreservedObject)
         pc = instance_double(PreservedCopy)
         status = PreservedCopy::OK_STATUS
-        # bad object-oriented form!  type checking like this is to be avoided.  but also, wouldn't
-        # it be nice if an rspec double returned `true` when asked if it was an instance or kind of
-        # the object type being mocked?  i think that'd be nice.  but that's not what doubles do.
-        allow(po).to receive(:is_a?).with(PreservedObject).and_return(true)
-        allow(po).to receive(:is_a?).with(PreservedCopy).and_return(false)
-        allow(pc).to receive(:is_a?).with(PreservedObject).and_return(false)
-        allow(pc).to receive(:is_a?).with(PreservedCopy).and_return(true)
 
         allow(PreservedObject).to receive(:find_by).with(druid: druid).and_return(po)
         allow(po).to receive(:current_version).and_return(1)
@@ -319,7 +331,10 @@ RSpec.describe PreservedObjectHandler do
         allow(pc).to receive(:changed?).and_return(true)
         allow(pc).to receive(:status).and_return(status)
         allow(pc).to receive(:status=).with(status)
+        allow(pc).to receive(:last_audited=)
+        allow(pc).to receive(:last_checked_on_storage=)
         allow(pc).to receive(:save!)
+        allow(po_handler).to receive(:moab_validation_errors).and_return([])
         po_handler.confirm_version
         expect(po).to have_received(:save!)
         expect(pc).to have_received(:save!)
@@ -344,6 +359,7 @@ RSpec.describe PreservedObjectHandler do
       it 'logs a debug message' do
         msg = "confirm_version #{druid} called"
         allow(Rails.logger).to receive(:debug)
+        allow(po_handler).to receive(:moab_validation_errors).and_return([])
         po_handler.confirm_version
         expect(Rails.logger).to have_received(:debug).with(msg)
       end
@@ -365,6 +381,7 @@ RSpec.describe PreservedObjectHandler do
         status: PreservedCopy::DEFAULT_STATUS
       )
       bad_po_handler = described_class.new(druid, 6, incoming_size, ep)
+      allow(bad_po_handler).to receive(:moab_validation_errors).and_return([])
       # NOTE: #increase_version checks class of object (rspec double != PreservedCopy)
       allow_any_instance_of(PreservedCopy).to receive(:save!).and_raise(ActiveRecord::ActiveRecordError)
       bad_po_handler.confirm_version

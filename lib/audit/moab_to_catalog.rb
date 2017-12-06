@@ -16,6 +16,7 @@ class MoabToCatalog
         results << po_handler.confirm_version
       else
         Rails.logger.error "druid: #{druid} expected to exist in catalog but was not found"
+        # FIXME: might need to call create_after_validation - See Audit Requirement google doc
         results << po_handler.create if expect_to_create
       end
     end
