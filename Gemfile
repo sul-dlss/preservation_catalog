@@ -21,6 +21,8 @@ gem 'puma', '~> 3.7'
 gem 'rails', '~> 5.1.3'
 # Use newrelic for performance monitoring
 gem 'newrelic_rpm'
+# Use honeybadger for error reporting
+gem 'honeybadger'
 
 # Stanford gems
 gem 'moab-versioning' # work with Moab Objects
