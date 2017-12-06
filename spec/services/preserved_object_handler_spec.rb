@@ -209,7 +209,7 @@ RSpec.describe PreservedObjectHandler do
         let(:updated_po_db_timestamp_msg) { "#{exp_msg_prefix} PreservedObject updated db timestamp only" }
         let(:updated_pc_db_obj_msg) { "#{exp_msg_prefix} PreservedCopy db object updated" }
         let(:updated_pc_db_status_msg) do
-          "#{exp_msg_prefix} PreservedCopy status changed from ok to expected_version_not_found_online"
+          "#{exp_msg_prefix} PreservedCopy status changed from ok to expected_version_not_found_on_storage"
         end
 
         it "entry version stays the same" do

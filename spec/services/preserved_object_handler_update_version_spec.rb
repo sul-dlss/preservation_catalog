@@ -32,7 +32,7 @@ RSpec.describe PreservedObjectHandler do
           version: po.current_version,
           size: 1,
           endpoint: ep,
-          status: 'expected_version_not_found_online'
+          status: 'expected_version_not_found_on_storage'
         )
       end
 
@@ -62,9 +62,9 @@ RSpec.describe PreservedObjectHandler do
         end
         it 'does not update status of PreservedCopy' do
           # TODO: not clear what to do here;  it's not 'ok' if we didn't validate ...
-          expect(pc.status).to eq 'expected_version_not_found_online'
+          expect(pc.status).to eq 'expected_version_not_found_on_storage'
           po_handler.update_version
-          expect(pc.reload.status).to eq 'expected_version_not_found_online'
+          expect(pc.reload.status).to eq 'expected_version_not_found_on_storage'
         end
         it 'does not update PreservedCopy last_audited field' do
           orig_timestamp = pc.last_audited

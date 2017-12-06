@@ -35,7 +35,7 @@ RSpec.describe PreservedCopy, type: :model do
       invalid_moab: 1,
       invalid_checksum: 2,
       online_moab_not_found: 3,
-      expected_version_not_found_online: 4,
+      expected_version_not_found_on_storage: 4,
       fixity_check_failed: 5
     )
   end

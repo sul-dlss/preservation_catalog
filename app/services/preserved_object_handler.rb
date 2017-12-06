@@ -264,7 +264,7 @@ class PreservedObjectHandler
       increase_version(db_object)
     else
       # TODO: needs manual intervention until automatic recovery services implemented
-      update_status(db_object, 'expected_version_not_found_online') if db_object.is_a?(PreservedCopy)
+      update_status(db_object, 'expected_version_not_found_on_storage') if db_object.is_a?(PreservedCopy)
       handler_results.add_result(PreservedObjectHandlerResults::ARG_VERSION_LESS_THAN_DB_OBJECT, db_object.class.name)
     end
     update_db_object(db_object)
