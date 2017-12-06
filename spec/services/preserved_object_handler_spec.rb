@@ -382,7 +382,6 @@ RSpec.describe PreservedObjectHandler do
       )
       bad_po_handler = described_class.new(druid, 6, incoming_size, ep)
       allow(bad_po_handler).to receive(:moab_validation_errors).and_return([])
-      # NOTE: #increase_version checks class of object (rspec double != PreservedCopy)
       allow_any_instance_of(PreservedCopy).to receive(:save!).and_raise(ActiveRecord::ActiveRecordError)
       bad_po_handler.confirm_version
       expect(PreservedObject.find_by(druid: druid).current_version).to eq 2

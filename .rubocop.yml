@@ -127,7 +127,7 @@ Rails/SkipsModelValidations:
 
 RSpec/AnyInstance:
   Exclude:
-    - spec/services/preserved_object_handler_spec.rb # #increase_version checks class of object (rspec double != PreservedCopy)
+    - spec/services/preserved_object_handler_spec.rb # Mock object doesn't get returned so need to stub it
 
 RSpec/BeforeAfterAll:
   Exclude:
