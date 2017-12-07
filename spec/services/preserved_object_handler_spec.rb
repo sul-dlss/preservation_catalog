@@ -93,7 +93,7 @@ RSpec.describe PreservedObjectHandler do
         PreservedObject.create!(druid: druid, current_version: 2, preservation_policy: default_prez_policy)
         po_handler = described_class.new(druid, 3, incoming_size, diff_ep)
         results = po_handler.confirm_version
-        expect(results).to include(a_hash_including(PreservedObjectHandler::OBJECT_DOES_NOT_EXIST => a_string_matching("ActiveRecord::RecordNotFound: Couldn't find PreservedCopy> db object does not exist")))
+        expect(results).to include(a_hash_including(PreservedObjectHandlerResults::OBJECT_DOES_NOT_EXIST => a_string_matching("ActiveRecord::RecordNotFound: Couldn't find PreservedCopy> db object does not exist")))
         expect(PreservedObject.find_by(druid: druid).current_version).to eq 2
       end
 
@@ -135,12 +135,12 @@ RSpec.describe PreservedObjectHandler do
             expect(results.size).to eq 4
           end
           it 'VERSION_MATCHES results' do
-            code = PreservedObjectHandler::VERSION_MATCHES
+            code = PreservedObjectHandlerResults::VERSION_MATCHES
             expect(results).to include(a_hash_including(code => version_matches_pc_msg))
             expect(results).to include(a_hash_including(code => version_matches_po_msg))
           end
           it 'UPDATED_DB_OBJECT_TIMESTAMP_ONLY results' do
-            code = PreservedObjectHandler::UPDATED_DB_OBJECT_TIMESTAMP_ONLY
+            code = PreservedObjectHandlerResults::UPDATED_DB_OBJECT_TIMESTAMP_ONLY
             expect(results).to include(a_hash_including(code => updated_pc_db_timestamp_msg))
             expect(results).to include(a_hash_including(code => updated_po_db_timestamp_msg))
           end
@@ -189,12 +189,12 @@ RSpec.describe PreservedObjectHandler do
             expect(results.size).to eq 4
           end
           it 'ARG_VERSION_GREATER_THAN_DB_OBJECT results' do
-            code = PreservedObjectHandler::ARG_VERSION_GREATER_THAN_DB_OBJECT
+            code = PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT
             expect(results).to include(a_hash_including(code => version_gt_pc_msg))
             expect(results).to include(a_hash_including(code => version_gt_po_msg))
           end
           it 'UPDATED_DB_OBJECT results' do
-            code = PreservedObjectHandler::UPDATED_DB_OBJECT
+            code = PreservedObjectHandlerResults::UPDATED_DB_OBJECT
             expect(results).to include(a_hash_including(code => updated_pc_db_msg))
             expect(results).to include(a_hash_including(code => updated_po_db_msg))
           end
@@ -243,28 +243,28 @@ RSpec.describe PreservedObjectHandler do
             expect(results.size).to eq 5
           end
           it 'ARG_VERSION_LESS_THAN_DB_OBJECT results' do
-            code = PreservedObjectHandler::ARG_VERSION_LESS_THAN_DB_OBJECT
+            code = PreservedObjectHandlerResults::ARG_VERSION_LESS_THAN_DB_OBJECT
             expect(results).to include(a_hash_including(code => version_less_than_pc_msg))
             expect(results).to include(a_hash_including(code => version_less_than_po_msg))
           end
           # FIXME: do we want to update timestamp if we found an error (ARG_VERSION_LESS_THAN_DB_OBJECT)
           it "PreservedObject UPDATED_DB_OBJECT_TIMESTAMP_ONLY result" do
-            code = PreservedObjectHandler::UPDATED_DB_OBJECT_TIMESTAMP_ONLY
+            code = PreservedObjectHandlerResults::UPDATED_DB_OBJECT_TIMESTAMP_ONLY
             expect(results).to include(a_hash_including(code => updated_po_db_timestamp_msg))
           end
           it "PreservedCopy UPDATED_DB_OBJECT result" do
-            code = PreservedObjectHandler::UPDATED_DB_OBJECT
+            code = PreservedObjectHandlerResults::UPDATED_DB_OBJECT
             expect(results).to include(a_hash_including(code => updated_pc_db_obj_msg))
           end
           it "PreservedCopy PC_STATUS_CHANGED result" do
-            code = PreservedObjectHandler::PC_STATUS_CHANGED
+            code = PreservedObjectHandlerResults::PC_STATUS_CHANGED
             expect(results).to include(a_hash_including(code => updated_pc_db_status_msg))
           end
         end
       end
       context 'db update error' do
         context 'ActiveRecordError' do
-          let(:result_code) { PreservedObjectHandler::DB_UPDATE_FAILED }
+          let(:result_code) { PreservedObjectHandlerResults::DB_UPDATE_FAILED }
           let(:results) do
             allow(Rails.logger).to receive(:log)
             # FIXME: couldn't figure out how to put next line into its own test

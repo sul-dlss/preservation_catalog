@@ -43,6 +43,7 @@ Layout/SpaceAroundEqualsInParameterDefault:
 Layout/SpaceInsideBrackets:
   Exclude:
     - 'config/environments/production.rb' # that's how Rails generates it
+    - 'app/services/preserved_object_handler.rb' # line 126 is clearer with the spaces
 
 # --- Lint ---
 Lint/HandleExceptions:
@@ -71,13 +72,15 @@ Metrics/ClassLength:
 
 Metrics/CyclomaticComplexity:
   Exclude:
-    - 'app/services/preserved_object_handler.rb' # a method that is simply a case statement
+    - 'app/services/preserved_object_handler.rb' # update_online_version (shameless green)
+    - 'app/services/preserved_object_handler_results.rb' # logger_severity_level is simply a case statement
 
 # because this isn't 1994
 Metrics/LineLength:
   Max: 120
   Exclude:
-    - 'app/services/preserved_object_handler.rb' # 1 lines 125
+    - 'app/services/preserved_object_handler.rb' # line 269 is 121
+    - 'app/services/preserved_object_handler_results.rb' # line 35 is 121
     - 'spec/lib/audit/moab_to_catalog_spec.rb' # 1 line 126
     - 'spec/services/preserved_object_handler_create_spec.rb'
     - 'spec/services/preserved_object_handler_spec.rb'
@@ -183,6 +186,10 @@ Style/FormatString:
 
 Style/FormatStringToken:
   EnforcedStyle: template # using interpolated strings in PreservedObjectHandler
+
+Style/GuardClause:
+  Exclude:
+    - app/services/preserved_object_handler.rb # update_status method easy to read as is
 
 Style/PercentLiteralDelimiters:
   Exclude:
