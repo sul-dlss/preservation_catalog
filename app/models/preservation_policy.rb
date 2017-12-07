@@ -28,12 +28,15 @@ class PreservationPolicy < ApplicationRecord
     end
   end
 
-  def self.default_preservation_policy
+  def self.default_policy
     find_by!(preservation_policy_name: Settings.preservation_policies.default_policy_name)
   end
 
-  def self.cached_default_preservation_policy_id
-    id_cache[:default_preservation_policy_id] ||= default_preservation_policy.id
+  # note that this is cached.  prefer calling this method over .default_policy if an id
+  # will suffice (e.g., you only need the id, not the whole object, to set an association
+  # to a pres policy on another ActiveRecord object).
+  def self.default_policy_id
+    id_cache[:default_policy_id] ||= default_policy.id
   end
 
   private_class_method def self.id_cache

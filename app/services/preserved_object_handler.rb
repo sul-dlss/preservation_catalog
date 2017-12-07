@@ -163,7 +163,7 @@ class PreservedObjectHandler
 
   def create_db_objects(status, validated=false)
     results = []
-    pp_default_id = PreservationPolicy.cached_default_preservation_policy_id
+    pp_default_id = PreservationPolicy.default_policy_id
     transaction_results = with_active_record_transaction_and_rescue do
       po = PreservedObject.create!(druid: druid,
                                    current_version: incoming_version,

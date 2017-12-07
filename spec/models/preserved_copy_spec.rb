@@ -3,7 +3,7 @@ require 'rails_helper'
 RSpec.describe PreservedCopy, type: :model do
   let!(:endpoint) { Endpoint.first }
   let!(:preserved_object) do
-    policy_id = PreservationPolicy.default_preservation_policy.id
+    policy_id = PreservationPolicy.default_policy.id
     PreservedObject.create!(druid: 'ab123cd4567', current_version: 1, preservation_policy_id: policy_id)
   end
   let!(:status) { described_class::DEFAULT_STATUS }

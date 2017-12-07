@@ -56,21 +56,21 @@ RSpec.describe PreservationPolicy, type: :model do
     end
   end
 
-  describe '.default_preservation_policy' do
+  describe '.default_policy' do
     it 'returns the default preservation policy object' do
       # db already seeded
-      expect(PreservationPolicy.default_preservation_policy).to be_a_kind_of PreservationPolicy
+      expect(PreservationPolicy.default_policy).to be_a_kind_of PreservationPolicy
     end
 
     it "raises RecordNotFound if the default policy doesn't exist in the db" do
       # a bit contrived, but just want to test that lack of default PreservationPolicy causes lookup to
       # fail fast.  since db is already seeded, we just make it look up something that we know isn't there.
       allow(Settings.preservation_policies).to receive(:default_policy_name).and_return('nonexistent')
-      expect { PreservationPolicy.default_preservation_policy }.to raise_error(ActiveRecord::RecordNotFound)
+      expect { PreservationPolicy.default_policy }.to raise_error(ActiveRecord::RecordNotFound)
     end
   end
 
-  describe '.cached_default_preservation_policy_id' do
+  describe '.default_policy_id' do
     # clear the cache before each test to reset
     before { PreservationPolicy.send(:clear_id_cache) }
 
@@ -80,21 +80,20 @@ RSpec.describe PreservationPolicy, type: :model do
     after(:all) { PreservationPolicy.send(:clear_id_cache) }
 
     it 'returns the default preservation policy id' do
-      default_pres_policy_id = PreservationPolicy.default_preservation_policy.id
-      expect(PreservationPolicy.cached_default_preservation_policy_id).to eq default_pres_policy_id
+      expect(PreservationPolicy.default_policy_id).to eq PreservationPolicy.default_policy.id
     end
 
     it "doesn't re-run the query if a cached value is available" do
       expect(PreservationPolicy).to receive(:find_by!).once.and_call_original
-      PreservationPolicy.cached_default_preservation_policy_id
-      PreservationPolicy.cached_default_preservation_policy_id
+      PreservationPolicy.default_policy_id
+      PreservationPolicy.default_policy_id
     end
 
     it 'clears the cache and looks up fresh values after an event that might make cached values stale' do
       expect(PreservationPolicy).to receive(:find_by!).twice.and_call_original
 
       # first lookup, gets cached
-      PreservationPolicy.cached_default_preservation_policy_id
+      PreservationPolicy.default_policy_id
 
       # pretend we added a new pres policy to settings and re-seeded and now it's the default
       new_default_pres_policy = PreservationPolicy.create!(preservation_policy_name: 'new_default',
@@ -104,11 +103,11 @@ RSpec.describe PreservationPolicy, type: :model do
       allow(Settings).to receive(:preservation_policies).and_return(new_default_setting)
 
       # make sure the cached value reflects the change
-      expect(new_default_pres_policy.id).to eq PreservationPolicy.cached_default_preservation_policy_id
+      expect(new_default_pres_policy.id).to eq PreservationPolicy.default_policy_id
 
       # here we call it a third time, but there were no changes since we last called, so call twice expectation
       # at start of test should be satisfied
-      PreservationPolicy.cached_default_preservation_policy_id
+      PreservationPolicy.default_policy_id
     end
   end
 end
