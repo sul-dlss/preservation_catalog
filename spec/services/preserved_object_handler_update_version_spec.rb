@@ -408,7 +408,6 @@ RSpec.describe PreservedObjectHandler do
             endpoint.endpoint_node = Settings.endpoints.storage_root_defaults.endpoint_node
             endpoint.storage_location = storage_dir
             endpoint.recovery_cost = Settings.endpoints.storage_root_defaults.recovery_cost
-            # endpoint.preservation_policies = PreservationPolicy.default_preservation_policy
           end
           # these need to be in before loop so it happens before each context below
           PreservedObject.create!(druid: druid, current_version: 2, preservation_policy: default_prez_policy)
