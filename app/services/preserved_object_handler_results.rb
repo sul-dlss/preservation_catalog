@@ -85,7 +85,7 @@ class PreservedObjectHandlerResults
   end
 
   # used when updates wrapped in transaction fail, and there is a need to ensure there is no db updated result
-  def remove_db_updated_result
+  def remove_db_updated_results
     result_array.delete_if { |res_hash| DB_UPDATED_CODES.include?(res_hash.keys.first) }
   end
 

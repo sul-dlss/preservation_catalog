@@ -188,7 +188,7 @@ class PreservedObjectHandler
       end
     end
 
-    handler_results.remove_db_updated_result unless transaction_ok
+    handler_results.remove_db_updated_results unless transaction_ok
   end
 
   def confirm_version_in_catalog
@@ -198,7 +198,7 @@ class PreservedObjectHandler
       confirm_version_on_db_object(po_db_object, :current_version)
       confirm_version_on_db_object(pc_db_object, :version)
     end
-    handler_results.remove_db_updated_result unless transaction_ok
+    handler_results.remove_db_updated_results unless transaction_ok
   end
 
   # performs passed code wrapped in ActiveRecord transaction via yield
