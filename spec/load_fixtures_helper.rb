@@ -36,7 +36,7 @@ def load_fixture_moabs
       po = PreservedObject.create(druid: druid,
                                   current_version: version,
                                   size: size,
-                                  preservation_policy: PreservationPolicy.default_preservation_policy)
+                                  preservation_policy: PreservationPolicy.default_policy)
       PreservedCopy.create(preserved_object_id: po.id,
                            endpoint_id: @storage_dir_to_endpoint_id[storage_dir],
                            current_version: version,

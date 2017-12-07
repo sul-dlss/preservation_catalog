@@ -5,7 +5,7 @@ RSpec.describe PreservedObjectHandler do
   let(:druid) { 'ab123cd4567' }
   let(:incoming_version) { 6 }
   let(:incoming_size) { 9876 }
-  let!(:default_prez_policy) { PreservationPolicy.default_preservation_policy }
+  let!(:default_prez_policy) { PreservationPolicy.default_policy }
   let(:po) { PreservedObject.find_by(druid: druid) }
   let(:ep) { Endpoint.find_by(storage_location: 'spec/fixtures/storage_root01/moab_storage_trunk') }
   let(:pc) { PreservedCopy.find_by(preserved_object: po, endpoint: ep) }
@@ -408,7 +408,6 @@ RSpec.describe PreservedObjectHandler do
             endpoint.endpoint_node = Settings.endpoints.storage_root_defaults.endpoint_node
             endpoint.storage_location = storage_dir
             endpoint.recovery_cost = Settings.endpoints.storage_root_defaults.recovery_cost
-            # endpoint.preservation_policies = PreservationPolicy.default_preservation_policy
           end
           # these need to be in before loop so it happens before each context below
           PreservedObject.create!(druid: druid, current_version: 2, preservation_policy: default_prez_policy)

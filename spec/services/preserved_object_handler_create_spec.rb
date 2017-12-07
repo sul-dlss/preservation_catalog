@@ -17,7 +17,7 @@ RSpec.describe PreservedObjectHandler do
       po_args = {
         druid: druid,
         current_version: incoming_version,
-        preservation_policy: PreservationPolicy.default_preservation_policy
+        preservation_policy_id: PreservationPolicy.default_policy_id
       }
       pc_args = {
         preserved_object: an_instance_of(PreservedObject), # TODO: see if we got the preserved object that we expected
@@ -127,7 +127,7 @@ RSpec.describe PreservedObjectHandler do
       po_args = {
         druid: valid_druid,
         current_version: incoming_version,
-        preservation_policy: PreservationPolicy.default_preservation_policy
+        preservation_policy_id: PreservationPolicy.default_policy_id
       }
       pc_args = {
         preserved_object: an_instance_of(PreservedObject), # TODO: see if we got the preserved object that we expected
@@ -166,7 +166,6 @@ RSpec.describe PreservedObjectHandler do
           endpoint.endpoint_node = Settings.endpoints.storage_root_defaults.endpoint_node
           endpoint.storage_location = storage_dir
           endpoint.recovery_cost = Settings.endpoints.storage_root_defaults.recovery_cost
-          # endpoint.preservation_policies = PreservationPolicy.default_preservation_policy
         end
       end
 
@@ -174,7 +173,7 @@ RSpec.describe PreservedObjectHandler do
         po_args = {
           druid: invalid_druid,
           current_version: incoming_version,
-          preservation_policy: PreservationPolicy.default_preservation_policy
+          preservation_policy_id: PreservationPolicy.default_policy_id
         }
         pc_args = {
           preserved_object: an_instance_of(PreservedObject), # TODO: see if we got the preserved object that we expected

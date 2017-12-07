@@ -61,7 +61,7 @@ RSpec.describe Endpoint, type: :model do
     # would cause this `let` to be evaluated eagerly instead of lazily, and the EndpointType we want in this section
     # doesn't exist till the before block runs.
     let(:strg_rt_endpoint_type) { Endpoint.default_storage_root_endpoint_type }
-    let(:default_pres_policies) { [PreservationPolicy.default_preservation_policy] }
+    let(:default_pres_policies) { [PreservationPolicy.default_policy] }
 
     it 'creates a local online endpoint for each storage root' do
       Settings.moab.storage_roots.each do |storage_root_name, storage_root_location|
