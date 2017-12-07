@@ -63,10 +63,10 @@ ORDER BY endpoint_name asc
 [["storage_root2", 2017-11-18 05:49:54 UTC, 2017-11-18 06:06:50 UTC, "00:16:55.845987", 9122, 0.3132092573e10]]
 ```
 
-#### how many moabs on each storage root are in a status other than 'ok'?
+#### how many moabs on each storage root are in a status other than PreservedCopy::OK_STATUS?
 ```ruby
 # example AR query
-[12] pry(main)> PreservedCopy.joins(:preserved_object, :endpoint).where.not(status: :ok).group(:status, :storage_location).order('preserved_copies.status asc, endpoints.storage_location asc').pluck('preserved_copies.status, endpoints.storage_location, count(preserved_objects.druid)')
+[12] pry(main)> PreservedCopy.joins(:preserved_object, :endpoint).where.not(status: PreservedCopy::OK_STATUS).group(:status, :storage_location).order('preserved_copies.status asc, endpoints.storage_location asc').pluck('preserved_copies.status, endpoints.storage_location, count(preserved_objects.druid)')
 ```
 ```sql
 -- example sql produced by above AR query
