@@ -39,7 +39,7 @@ class PreservedObjectHandler
     elsif moab_validation_errors.empty?
       create_db_objects(PreservedCopy::DEFAULT_STATUS, true)
     else
-      create_db_objects(PreservedCopy.statuses[:invalid_moab], true)
+      create_db_objects(PreservedCopy::INVALID_MOAB_STATUS, true)
     end
 
     handler_results.log_results
@@ -79,9 +79,9 @@ class PreservedObjectHandler
       if endpoint.endpoint_type.endpoint_class == 'online'
         # NOTE: we deal with active record transactions in update_online_version, not here
         if moab_validation_errors.empty?
-          update_online_version(true, PreservedCopy.statuses[:ok])
+          update_online_version(true, PreservedCopy::OK_STATUS)
         else
-          update_online_version(true, PreservedCopy.statuses[:invalid_moab])
+          update_online_version(true, PreservedCopy::INVALID_MOAB_STATUS)
         end
       elsif endpoint.endpoint_type.endpoint_class == 'archive'
         # TODO: perform archive object validation; then create a new PC record for the new
@@ -247,7 +247,7 @@ class PreservedObjectHandler
     handler_results.add_result(PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT, db_object.class.name)
     if db_object.is_a?(PreservedCopy)
       update_preserved_copy_version_etc(db_object, incoming_version, incoming_size)
-      update_status(db_object, PreservedCopy.statuses[:ok])
+      update_status(db_object, PreservedCopy::OK_STATUS)
     elsif db_object.is_a?(PreservedObject)
       db_object.current_version = incoming_version
     end
@@ -257,24 +257,24 @@ class PreservedObjectHandler
   # TODO: revisit naming
   def confirm_version_on_db_object(db_object, version_symbol)
     if incoming_version == db_object.send(version_symbol)
-      update_status(db_object, PreservedCopy.statuses[:ok]) if db_object.is_a?(PreservedCopy)
+      update_status(db_object, PreservedCopy::OK_STATUS) if db_object.is_a?(PreservedCopy)
       handler_results.add_result(PreservedObjectHandlerResults::VERSION_MATCHES, db_object.class.name)
     elsif incoming_version > db_object.send(version_symbol)
       # FIXME: this needs to use the same methods as update_version_after_validation
       increase_version(db_object)
     else
       # TODO: needs manual intervention until automatic recovery services implemented
-      update_status(db_object, PreservedCopy.statuses[:expected_version_not_found_online]) if db_object.is_a?(PreservedCopy)
+      update_status(db_object, PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS) if db_object.is_a?(PreservedCopy)
       handler_results.add_result(PreservedObjectHandlerResults::ARG_VERSION_LESS_THAN_DB_OBJECT, db_object.class.name)
     end
     update_db_object(db_object)
   end
 
   def update_status(preserved_copy, new_status)
-    if new_status != PreservedCopy.statuses[preserved_copy.status]
+    if new_status != preserved_copy.status
       handler_results.add_result(
         PreservedObjectHandlerResults::PC_STATUS_CHANGED,
-        { old_status: PreservedCopy.statuses[preserved_copy.status], new_status: new_status }
+        { old_status: preserved_copy.status, new_status: new_status }
       )
       preserved_copy.status = new_status
     end

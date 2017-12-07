@@ -29,21 +29,20 @@ General advice:
 #### which objects aren't in a good state?
 ```ruby
 # example AR query
-[25] pry(main)> PreservedCopy.joins(:preserved_object, :endpoint, :status).where("statuses.status_text != 'ok'").order('statuses.status_text').pluck('statuses.status_text, preserved_objects.druid, endpoints.storage_location')
+[25] pry(main)> PreservedCopy.joins(:preserved_object, :endpoint).where.not(status: :ok).order('preserved_copies.status asc, endpoints.storage_location asc').pluck(:status, :storage_location, :druid)
 ```
 ```sql
 -- example sql produced by above AR query
-SELECT statuses.status_text, preserved_objects.druid, endpoints.storage_location
+SELECT "preserved_copies"."status", "storage_location", "druid"
 FROM "preserved_copies"
 INNER JOIN "preserved_objects" ON "preserved_objects"."id" = "preserved_copies"."preserved_object_id"
 INNER JOIN "endpoints" ON "endpoints"."id" = "preserved_copies"."endpoint_id"
-INNER JOIN "statuses" ON "statuses"."id" = "preserved_copies"."status_id"
-WHERE (statuses.status_text != 'ok')
-ORDER BY statuses.status_text
+WHERE ("preserved_copies"."status" != $1)
+ORDER BY preserved_copies.status asc, endpoints.storage_location asc
 ```
 ```ruby
 # example result, one bad object on disk 2
-[["invalid_moab", "ab123cd456", "/storage_root2/storage_trunk"]]
+[["invalid_moab", "/storage_root2/storage_trunk", "ab123cd456"]]
 ```
 
 #### catalog seeding just ran for the first time.  how long did it take to crawl each storage root, how many moabs does each have, what's the average moab size?
@@ -64,21 +63,20 @@ ORDER BY endpoint_name asc
 [["storage_root2", 2017-11-18 05:49:54 UTC, 2017-11-18 06:06:50 UTC, "00:16:55.845987", 9122, 0.3132092573e10]]
 ```
 
-#### how many moabs on each storage root are in a status other than 'ok'?
+#### how many moabs on each storage root are in a status other than PreservedCopy::OK_STATUS?
 ```ruby
 # example AR query
-[12] pry(main)> PreservedCopy.joins(:preserved_object, :endpoint, :status).where("statuses.status_text != 'ok'").group('statuses.status_text, endpoints.storage_location').order('statuses.status_text asc, endpoints.storage_location asc').pluck('statuses.status_text, endpoints.storage_location, count(preserved_objects.druid)')
+[12] pry(main)> PreservedCopy.joins(:preserved_object, :endpoint).where.not(status: PreservedCopy::OK_STATUS).group(:status, :storage_location).order('preserved_copies.status asc, endpoints.storage_location asc').pluck('preserved_copies.status, endpoints.storage_location, count(preserved_objects.druid)')
 ```
 ```sql
 -- example sql produced by above AR query
-SELECT statuses.status_text, endpoints.storage_location, count(preserved_objects.druid)
+SELECT preserved_copies.status, endpoints.storage_location, count(preserved_objects.druid)
 FROM "preserved_copies"
 INNER JOIN "preserved_objects" ON "preserved_objects"."id" = "preserved_copies"."preserved_object_id"
 INNER JOIN "endpoints" ON "endpoints"."id" = "preserved_copies"."endpoint_id"
-INNER JOIN "statuses" ON "statuses"."id" = "preserved_copies"."status_id"
-WHERE (statuses.status_text != 'ok')
-GROUP BY statuses.status_text, endpoints.storage_location
-ORDER BY statuses.status_text asc, endpoints.storage_location asc
+WHERE ("preserved_copies"."status" != $1)
+GROUP BY "preserved_copies"."status", "storage_location"
+ORDER BY preserved_copies.status asc, endpoints.storage_location asc
 ```
 ```ruby
 # example result, some moabs that failed structural validation

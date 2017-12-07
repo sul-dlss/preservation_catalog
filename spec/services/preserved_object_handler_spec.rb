@@ -209,7 +209,7 @@ RSpec.describe PreservedObjectHandler do
         let(:updated_po_db_timestamp_msg) { "#{exp_msg_prefix} PreservedObject updated db timestamp only" }
         let(:updated_pc_db_obj_msg) { "#{exp_msg_prefix} PreservedCopy db object updated" }
         let(:updated_pc_db_status_msg) do
-          "#{exp_msg_prefix} PreservedCopy status changed from #{PreservedCopy.statuses[:ok]} to #{PreservedCopy.statuses[:expected_version_not_found_online]}"
+          "#{exp_msg_prefix} PreservedCopy status changed from ok to expected_vers_not_found_on_storage"
         end
 
         it "entry version stays the same" do
@@ -297,7 +297,7 @@ RSpec.describe PreservedObjectHandler do
       it 'calls PreservedObject.save! and PreservedCopy.save! if the existing record is altered' do
         po = instance_double(PreservedObject)
         pc = instance_double(PreservedCopy)
-        status = PreservedCopy.statuses[:ok]
+        status = PreservedCopy::OK_STATUS
         # bad object-oriented form!  type checking like this is to be avoided.  but also, wouldn't
         # it be nice if an rspec double returned `true` when asked if it was an instance or kind of
         # the object type being mocked?  i think that'd be nice.  but that's not what doubles do.
