@@ -82,15 +82,17 @@ WARNING! this will erase the catalog, and thus require re-seeding from scratch. 
   Basically an especially inconvenient confirmation dialogue.  For safety's sake, the full command that skips that warning can be constructed by the user as needed, so as to prevent unintentional copy/paste dismissal when the user might be administering multiple deployment environments simultaneously.  Inadvertent database wipes are no fun.
   * `db:reset` will make sure db is migrated and seeded.  If you want to be extra sure: `RAILS_ENV=[environment] bundle exec rake db:migrate db:seed`
 
-#### Drop or populate the catalog for a single endpoint
+### Drop or Populate the catalog for a single endpoint
 
-There are rake tasks for clearing out all database entries for a single endpoint. To run either of the rake tasks, invoke them as follows, prepending the `RAILS_ENV` and giving the name of the endpoint as an argument (note that the argument is not a string):
+- To run either of the rake tasks below, give the name of the enpdoint (from settings/development.yml) as an argument.
+
+#### Drop all database entries:
 
 ```ruby
 RAILS_ENV=production bundle exec rake drop[services-disk01]
 ```
 
-will clear out all database entries for the single endpoint name specified. The following will populate the database for the single endpoint name specified:
+#### Populate the catalog:
 
 ```ruby
 RAILS_ENV=production bundle exec rake populate[services-disk01]
