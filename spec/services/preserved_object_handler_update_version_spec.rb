@@ -555,9 +555,9 @@ RSpec.describe PreservedObjectHandler do
             # results = [result1, result2]
             # result1 = {response_code: msg}
             # result2 = {response_code: msg}
-            it '5 results' do
+            it '6 results' do
               expect(results).to be_an_instance_of Array
-              expect(results.size).to eq 5
+              expect(results.size).to eq 6
             end
             it 'UNEXPECTED_VERSION result' do
               code = PreservedObjectHandlerResults::UNEXPECTED_VERSION

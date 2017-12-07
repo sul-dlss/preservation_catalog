@@ -42,7 +42,7 @@ class PreservedObjectHandler
       create_db_objects(PreservedCopy.statuses[:invalid_moab], true)
     end
 
-    handler_results.log_my_results
+    handler_results.log_results
     handler_results.result_array
   end
 
@@ -55,7 +55,7 @@ class PreservedObjectHandler
       create_db_objects(PreservedCopy::DEFAULT_STATUS)
     end
 
-    handler_results.log_my_results
+    handler_results.log_results
     handler_results.result_array
   end
 
@@ -67,7 +67,7 @@ class PreservedObjectHandler
       confirm_version_in_catalog
     end
 
-    handler_results.log_my_results
+    handler_results.log_results
     handler_results.result_array
   end
 
@@ -89,7 +89,7 @@ class PreservedObjectHandler
       end
     end
 
-    handler_results.log_my_results
+    handler_results.log_results
     handler_results.result_array
   end
 
@@ -106,7 +106,7 @@ class PreservedObjectHandler
       end
     end
 
-    handler_results.log_my_results
+    handler_results.log_results
     handler_results.result_array
   end
 
@@ -122,9 +122,7 @@ class PreservedObjectHandler
       moab_errors.each do |error_hash|
         error_hash.each_value { |msg| moab_error_msgs << msg }
       end
-      PreservedObjectHandlerResults.log_results(
-        [ handler_results.result_hash(PreservedObjectHandlerResults::INVALID_MOAB, moab_error_msgs) ]
-      )
+      handler_results.add_result(PreservedObjectHandlerResults::INVALID_MOAB, moab_error_msgs)
     end
     moab_errors
   end

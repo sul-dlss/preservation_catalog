@@ -43,17 +43,6 @@ class PreservedObjectHandlerResults
     PC_STATUS_CHANGED
   ].freeze
 
-  # results = [result1, result2]
-  # result1 = {response_code => msg}
-  # result2 = {response_code => msg}
-  def self.log_results(results)
-    results.each do |r|
-      severity = logger_severity_level(r.keys.first)
-      msg = r.values.first
-      Rails.logger.log(severity, msg)
-    end
-  end
-
   def self.logger_severity_level(result_code)
     case result_code
     when INVALID_ARGUMENTS then Logger::ERROR
@@ -93,8 +82,15 @@ class PreservedObjectHandlerResults
     { code => result_code_msg(code, msg_args) }
   end
 
-  def log_my_results
-    self.class.log_results(result_array)
+  # result_array = [result1, result2]
+  # result1 = {response_code => msg}
+  # result2 = {response_code => msg}
+  def log_results
+    result_array.each do |r|
+      severity = self.class.logger_severity_level(r.keys.first)
+      msg = r.values.first
+      Rails.logger.log(severity, msg)
+    end
   end
 
   private
