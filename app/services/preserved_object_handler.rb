@@ -237,7 +237,7 @@ class PreservedObjectHandler
     elsif incoming_version < db_object.send(version_symbol)
       handler_results.add_result(PreservedObjectHandlerResults::ARG_VERSION_LESS_THAN_DB_OBJECT, db_object.class.name)
     elsif incoming_version > db_object.send(version_symbol)
-      handler_results.add_result(PreservedObjectHandlerResults::ARG_VERSION_LESS_THAN_DB_OBJECT, db_object.class.name)
+      handler_results.add_result(PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT, db_object.class.name)
     end
   end
 

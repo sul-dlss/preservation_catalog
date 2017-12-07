@@ -167,6 +167,7 @@ RSpec.describe PreservedObjectHandler do
             expect(results).to include(a_hash_including(code => unexpected_version_msg))
           end
           it 'specific version results' do
+            # NOTE this is not checking that we have the CORRECT specific code
             codes = [
               PreservedObjectHandlerResults::VERSION_MATCHES,
               PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT,
