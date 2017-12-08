@@ -70,3 +70,10 @@ task :populate, [:storage_root] => [:environment] do |_t, args|
     puts "You need to enter a specific storage root"
   end
 end
+
+desc "Fire off M2C existence check on 1 endpoint"
+task :M2C, [:storage_root, :boolean] => [:environment] do |_t, args|
+  root = args[:storage_root].to_sym
+  storage_dir = "#{Settings.moab.storage_roots[root]}/#{Settings.moab.storage_trunk}"
+  MoabToCatalog.check_existence_for_dir(storage_dir, args[:boolean])
+end
