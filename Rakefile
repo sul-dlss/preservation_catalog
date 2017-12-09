@@ -42,6 +42,7 @@ task :drop, [:storage_root] => [:environment] do |_t, args|
     puts "You're about to erase all the data for #{root}. Are you sure you want to continue? [y/N]"
     input = STDIN.gets.chomp
     if input.casecmp("y").zero? # rubocop prefers casecmp because it is faster than '.downcase =='
+      puts "Starting to drop the db for #{root}"
       MoabToCatalog.drop_endpoint(root)
       puts "You have successfully deleted all the data from #{root}"
     else
@@ -59,6 +60,7 @@ task :populate, [:storage_root] => [:environment] do |_t, args|
     puts "You're about to populate all the data for #{root}. Are you sure you want to continue? [y/N]"
     input = STDIN.gets.chomp
     if input.casecmp("y").zero? # rubocop prefers casecmp because it is faster than '.downcase =='
+      puts "Starting to populate db for #{root}"
       MoabToCatalog.populate_endpoint(root)
       puts "You have successfully populated all the data for #{root}"
     else
