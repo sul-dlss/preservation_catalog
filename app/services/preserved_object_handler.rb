@@ -59,6 +59,10 @@ class PreservedObjectHandler
     handler_results.result_array
   end
 
+  def check_existence
+    # this is just a stub
+  end
+
   def confirm_version
     if invalid?
       handler_results.add_result(PreservedObjectHandlerResults::INVALID_ARGUMENTS, errors.full_messages)

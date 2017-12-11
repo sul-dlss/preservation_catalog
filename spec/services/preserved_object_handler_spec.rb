@@ -354,6 +354,12 @@ RSpec.describe PreservedObjectHandler do
     it_behaves_like 'PreservedCopy does not exist', :confirm_version
   end
 
+  describe '#check_existence' do
+    it 'stubbed spec for now' do
+      skip
+    end
+  end
+
   describe '#with_active_record_transaction_and_rescue' do
     it '#confirm_version rolls back preserved object if there is a problem updating preserved copy' do
       po = PreservedObject.create!(druid: druid, current_version: 2, preservation_policy: default_prez_policy)
