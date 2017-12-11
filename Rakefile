@@ -71,9 +71,40 @@ task :populate, [:storage_root] => [:environment] do |_t, args|
   end
 end
 
-desc "Fire off M2C existence check on 1 endpoint"
-task :M2C, [:storage_root, :boolean] => [:environment] do |_t, args|
+desc "Fire off M2C existence check on a single storage root"
+task :m2c_exist_single_root, [:storage_root, :boolean, :profile] => [:environment] do |_t, args|
+  unless args[:profile] == 'profile' || args[:profile].nil?
+    p "Usage: rake m2c_exist_single_root[fixture_sr1,false] || rake m2c_exist_single_root[fixture_sr1, false, profile]"
+    exit
+  end
   root = args[:storage_root].to_sym
   storage_dir = "#{Settings.moab.storage_roots[root]}/#{Settings.moab.storage_trunk}"
-  MoabToCatalog.check_existence_for_dir(storage_dir, args[:boolean])
+  puts "#{Time.now.utc.iso8601} Running moab to catalog existence check for #{storage_dir}"
+  $stdout.flush # sometimes above doesn't end up getting flushed to STDOUT till the last puts when the run finishes
+  if args[:profile] == 'profile'
+    puts "When done, check log/profile_flat_check_existence_for_dir[TIMESTAMP].log for profiling details"
+    $stdout.flush
+    MoabToCatalog.check_existence_for_dir_profiled(storage_dir, args[:boolean])
+  elsif args[:profile].nil?
+    MoabToCatalog.check_existence_for_dir(storage_dir, args[:boolean])
+  end
+  puts "#{Time.now.utc.iso8601} Done"
+  $stdout.flush
+end
+
+desc "Fire off M2C existence check on all storage roots"
+task :m2c_exist_all_storage_roots, [:profile] => [:environment] do |_t, args|
+  unless args[:profile] == 'profile' || args[:profile].nil?
+    p "Usage: rake m2c_exist_all_storage_roots || rake m2c_exist_all_storage_roots[profile]"
+    exit
+  end
+
+  if args[:profile] == 'profile'
+    puts "When done, check log/profile_flat_check_existence_for_all_storage_roots[TIMESTAMP].log for profiling details"
+    MoabToCatalog.check_existence_for_all_storage_roots_profiled
+  elsif args[:profile].nil?
+    MoabToCatalog.check_existence_for_all_storage_roots
+  end
+  puts "#{Time.now.utc.iso8601} Done"
+  $stdout.flush
 end
