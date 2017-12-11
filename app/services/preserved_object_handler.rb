@@ -68,7 +68,11 @@ class PreservedObjectHandler
       handler_results.add_result(PreservedObjectHandlerResults::INVALID_ARGUMENTS, errors.full_messages)
     else
       Rails.logger.debug "confirm_version #{druid} called"
-      confirm_version_in_catalog
+      if endpoint.endpoint_type.endpoint_class == 'online'
+        confirm_online_version
+      elsif endpoint.endpoint_type.endpoint_class == 'archive'
+        # TODO: do some confirmation with archive version
+      end
     end
 
     handler_results.log_results
@@ -193,12 +197,31 @@ class PreservedObjectHandler
     handler_results.remove_db_updated_results unless transaction_ok
   end
 
-  def confirm_version_in_catalog
+  def confirm_online_version
     transaction_ok = with_active_record_transaction_and_rescue do
       po_db_object = PreservedObject.find_by!(druid: druid)
       pc_db_object = PreservedCopy.find_by!(preserved_object: po_db_object, endpoint: endpoint)
-      confirm_version_on_db_object(po_db_object, :current_version)
-      confirm_version_on_db_object(pc_db_object, :version)
+
+      if incoming_version > po_db_object.current_version && po_db_object.current_version == pc_db_object.version
+        handler_results.add_result(PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT, po_db_object.class.name)
+        po_db_object.current_version = incoming_version
+        handler_results.add_result(PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT, pc_db_object.class.name)
+        if moab_validation_errors.empty?
+          update_status(pc_db_object, PreservedCopy::OK_STATUS)
+        else
+          update_status(pc_db_object, PreservedCopy::INVALID_MOAB_STATUS)
+        end
+        update_preserved_copy_version_etc(pc_db_object, incoming_version, incoming_size, true)
+      elsif incoming_version == po_db_object.current_version && po_db_object.current_version == pc_db_object.version
+        handler_results.add_result(PreservedObjectHandlerResults::VERSION_MATCHES, po_db_object.class.name)
+        handler_results.add_result(PreservedObjectHandlerResults::VERSION_MATCHES, pc_db_object.class.name)
+      else
+        handler_results.add_result(PreservedObjectHandlerResults::ARG_VERSION_LESS_THAN_DB_OBJECT, po_db_object.class.name)
+        update_status(pc_db_object, PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS)
+        handler_results.add_result(PreservedObjectHandlerResults::ARG_VERSION_LESS_THAN_DB_OBJECT, pc_db_object.class.name)
+      end
+      update_db_object(pc_db_object)
+      update_db_object(po_db_object)
     end
     handler_results.remove_db_updated_results unless transaction_ok
   end
@@ -241,37 +264,6 @@ class PreservedObjectHandler
     elsif incoming_version > db_object.send(version_symbol)
       handler_results.add_result(PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT, db_object.class.name)
     end
-  end
-
-  # FIXME: this needs to go away in favor of ? update_version_after_validation
-  #  it is only used by confirm_version, which should essentially call
-  #  update_version_after_validation if the incoming_version is higher than the db
-  # One big problem with this is the overwriting of the PC status without validating first
-  def increase_version(db_object)
-    handler_results.add_result(PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT, db_object.class.name)
-    if db_object.is_a?(PreservedCopy)
-      update_preserved_copy_version_etc(db_object, incoming_version, incoming_size)
-      update_status(db_object, PreservedCopy::OK_STATUS)
-    elsif db_object.is_a?(PreservedObject)
-      db_object.current_version = incoming_version
-    end
-  end
-
-  # expects @incoming_version to be numeric
-  # TODO: revisit naming
-  def confirm_version_on_db_object(db_object, version_symbol)
-    if incoming_version == db_object.send(version_symbol)
-      update_status(db_object, PreservedCopy::OK_STATUS) if db_object.is_a?(PreservedCopy)
-      handler_results.add_result(PreservedObjectHandlerResults::VERSION_MATCHES, db_object.class.name)
-    elsif incoming_version > db_object.send(version_symbol)
-      # FIXME: this needs to use the same methods as update_version_after_validation
-      increase_version(db_object)
-    else
-      # TODO: needs manual intervention until automatic recovery services implemented
-      update_status(db_object, PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS) if db_object.is_a?(PreservedCopy)
-      handler_results.add_result(PreservedObjectHandlerResults::ARG_VERSION_LESS_THAN_DB_OBJECT, db_object.class.name)
-    end
-    update_db_object(db_object)
   end
 
   def update_status(preserved_copy, new_status)
