@@ -27,6 +27,7 @@ class MoabToCatalog
     profiler.prof { check_existence_for_dir(storage_dir, expect_to_create) }
     profiler.print_results_flat('profiler_flat_check_existence_for_dir')
   end
+
   # NOTE: shameless green! code duplication with check_existence_for_dir
   def self.seed_catalog_for_dir(storage_dir)
     results = []

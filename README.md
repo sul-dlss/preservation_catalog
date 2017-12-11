@@ -58,7 +58,7 @@ With profiling:
 ```ruby
 RAILS_ENV=production bundle exec rake seed_catalog[profile]
 ```
-this will generate a log at, for example, `log/profile_flat_seed_catalog_for_all_storage_roots2017-11-13T13:57:01.log`
+this will generate a log at, for example, `log/profile_flat_seed_catalog_for_all_storage_roots2017-11-13T13:57:01.txt`
 
 As an alternative to `screen`, you can also run the task, with or without profiling, in the background under `nohup`. For example:
 
@@ -98,7 +98,30 @@ RAILS_ENV=production bundle exec rake drop[services-disk01]
 RAILS_ENV=production bundle exec rake populate[services-disk01]
 ```
 
+### Run Moab to Catalog existence check for a single root and for all storage roots
 
+#### Single Root
+- Without profiling
+```ruby
+bundle exec rake m2c_exist_single_root[fixture_sr1,false]
+```
+- With profiling:
+```ruby
+bundle exec rake m2c_exist_single_root[fixture_sr1,false,profile]
+```
+this will generate a log at, for example, ```log/profiler_flat_check_existence_for_dir2017-12-11T14:34:06-flat.txt
+```
+
+### All Roots
+- Without profiling:
+```ruby
+bundle exec rake m2c_exist_all_storage_roots
+```
+- Without profiling:
+```ruby
+bundle exec rake m2c_exist_all_storage_roots[profile]
+```
+this will generate a log at, for example, ```log/profile_flas_check_existence_for_all_storage_roots2017-12-11T14:25:31-flat.txt```
 ## Development
 
 ### Running Tests
