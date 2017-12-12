@@ -71,17 +71,20 @@ end
 
 RSpec.shared_examples 'druid not in catalog' do |method_sym|
   let(:druid) { 'rr111rr1111' }
-  let(:exp_msg) { "#{exp_msg_prefix} #<ActiveRecord::RecordNotFound: Couldn't find PreservedObject> db object does not exist" }
+  # let(:exp_msg) { "#{exp_msg_prefix} #<ActiveRecord::RecordNotFound: Couldn't find PreservedObject> db object does not exist" }
+  let(:escaped_exp_msg) { Regexp.escape("#{exp_msg_prefix}") + ".* PreservedObject.* db object does not exist" }
   let(:results) do
     allow(Rails.logger).to receive(:log)
     # FIXME: couldn't figure out how to put next line into its own test
-    expect(Rails.logger).to receive(:log).with(Logger::ERROR, /#{Regexp.escape(exp_msg)}/)
+    # expect(Rails.logger).to receive(:log).with(Logger::ERROR, /#{Regexp.escape(exp_msg)}/)
+    expect(Rails.logger).to receive(:log).with(Logger::ERROR, /#{escaped_exp_msg}/)
     po_handler.send(method_sym)
   end
 
   it 'OBJECT_DOES_NOT_EXIST error' do
+    # exp_msg = Regexp.escape("#{exp_msg_prefix}") + ".* PreservedObject.* db object does not exist"
     code = PreservedObjectHandlerResults::OBJECT_DOES_NOT_EXIST
-    expect(results).to include(a_hash_including(code => exp_msg))
+    expect(results).to include(a_hash_including(code => a_string_matching(escaped_exp_msg)))
   end
 end
 
@@ -116,6 +119,9 @@ RSpec.shared_examples 'unexpected version' do |incoming_version|
   let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, #{incoming_version}, 1, #{ep})" }
   let(:version_msg_prefix) { "#{exp_msg_prefix} incoming version (#{incoming_version})" }
   let(:unexpected_version_msg) { "#{version_msg_prefix} has unexpected relationship to PreservedCopy db version; ERROR!" }
+  let(:updated_po_db_timestamp_msg) { "#{exp_msg_prefix} PreservedObject updated db timestamp only" }
+  let(:updated_pc_db_timestamp_msg) { "#{exp_msg_prefix} PreservedCopy updated db timestamp only" }
+  let(:updated_status_msg_regex) { Regexp.new(Regexp.escape("#{exp_msg_prefix} PreservedCopy status changed from")) }
 
   it "PreservedCopy version stays the same" do
     pcv = pc.version

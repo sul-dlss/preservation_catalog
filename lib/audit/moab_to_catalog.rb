@@ -6,18 +6,13 @@ require 'profiler.rb'
 class MoabToCatalog
 
   # NOTE: shameless green! code duplication with seed_catalog_for_dir
-  def self.check_existence_for_dir(storage_dir, expect_to_create=false)
+  def self.check_existence_for_dir(storage_dir)
     results = []
     endpoint = Endpoint.find_by!(storage_location: storage_dir)
     Stanford::MoabStorageDirectory.find_moab_paths(storage_dir) do |druid, path, _path_match_data|
       moab = Moab::StorageObject.new(druid, path)
       po_handler = PreservedObjectHandler.new(druid, moab.current_version_id, moab.size, endpoint)
-      if PreservedObject.exists?(druid: druid)
-        results << po_handler.confirm_version
-      else
-        Rails.logger.error "druid: #{druid} expected to exist in catalog but was not found"
-        results << po_handler.create if expect_to_create
-      end
+      results.concat po_handler.check_existence
     end
     results
   end
