@@ -85,6 +85,10 @@ class PreservedObjectHandlerResults
     { code => result_code_msg(code, msg_args) }
   end
 
+  def contains_result_code?(code)
+    result_array.detect { |result_hash| result_hash.keys.include?(code) } != nil
+  end
+
   # result_array = [result1, result2]
   # result1 = {response_code => msg}
   # result2 = {response_code => msg}
