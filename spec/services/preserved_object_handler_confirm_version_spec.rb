@@ -141,14 +141,19 @@ RSpec.describe PreservedObjectHandler do
               expect(pc.reload.status).to eq PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
             end
             it 'last_audited' do
-              orig = pc.last_audited
+              orig = Time.current.to_i
+              pc.last_audited = orig
+              pc.save!
+              sleep 1 # last_audited is bigint, and granularity is second, not fraction thereof
               po_handler.confirm_version
-              expect(pc.reload.last_audited).not_to eq orig
+              expect(pc.reload.last_audited).to be > orig
             end
             it 'last_checked_on_storage' do
-              orig = pc.last_checked_on_storage
+              orig = Time.current
+              pc.last_checked_on_storage = orig
+              pc.save!
               po_handler.confirm_version
-              expect(pc.reload.last_checked_on_storage).not_to eq orig
+              expect(pc.reload.last_checked_on_storage).to be > orig
             end
             it 'updated_at' do
               orig = pc.updated_at
@@ -285,7 +290,7 @@ RSpec.describe PreservedObjectHandler do
         end
       end
 
-      it 'calls PreservedCopy.save! if the existing record is altered' do
+      it 'calls PreservedCopy.save! (but not PreservedObject.save!) if the existing record is altered' do
         po = instance_double(PreservedObject)
         pc = instance_double(PreservedCopy)
         status = PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
@@ -303,7 +308,7 @@ RSpec.describe PreservedObjectHandler do
         expect(po).not_to have_received(:save!)
         expect(pc).to have_received(:save!)
       end
-      it 'calls PreservedObject.touch and PreservedCopy.touch if the existing record is NOT altered' do
+      it 'calls PreservedCopy.touch (but not PreservedObject.touch) if the existing record is NOT altered' do
         po_handler = described_class.new(druid, 1, 1, ep)
         po = instance_double(PreservedObject)
         pc = instance_double(PreservedCopy)
