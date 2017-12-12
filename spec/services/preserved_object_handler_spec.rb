@@ -67,6 +67,7 @@ RSpec.describe PreservedObjectHandler do
   end
 
   describe '#check_existence' do
+    # FIXME: move the actual specs to a separate file?
     it 'stubbed spec for now' do
       skip
     end
