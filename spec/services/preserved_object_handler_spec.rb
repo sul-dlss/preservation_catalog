@@ -67,9 +67,78 @@ RSpec.describe PreservedObjectHandler do
   end
 
   describe '#check_existence' do
-    # FIXME: move the actual specs to a separate file?
-    it 'stubbed spec for now' do
-      skip
+    context "(calls create or confirm_version)" do
+      it 'calls #create_after_validation when the object does not exit' do
+        expect(PreservedObject).to receive(:exists?).with(druid: druid).and_return(false)
+        no_exist_msg = "#{exp_msg_prefix} PreservedObject db object does not exist"
+        expect(Rails.logger).to receive(:log).with(Logger::ERROR, no_exist_msg)
+        # because create_after_validation isn't called, we don't check
+        # for the usual result codes it would return (doesn't exist and add to the db)
+        expect(po_handler).to receive(:create_after_validation)
+        po_handler.check_existence
+      end
+
+      it 'calls confirm_version when the object exists' do
+        expect(PreservedObject).to receive(:exists?).with(druid: druid).and_return(true)
+        expect(po_handler).to receive(:confirm_version)
+        po_handler.check_existence
+      end
+
+      it 'calls update_version_after_validation when confirm_version returns ARG_VERSION_GREATER_THAN_DB_OBJECT' do
+        expect(PreservedObject).to receive(:exists?).with(druid: druid).and_return(true)
+        # only thing we care about here from confirm_version implementation is that it adds the result code we
+        # want to test against, so just have it do that if it runs
+        allow(po_handler).to receive(:confirm_version) do
+          po_handler.handler_results.add_result(
+            PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT, 'PreservedObject'
+          )
+        end
+        expect(po_handler).to receive(:update_version_after_validation)
+        po_handler.check_existence
+      end
+    end
+
+    it_behaves_like 'attributes validated', :check_existence
+
+    context 'result handling' do
+      let(:version_matches_po_msg) { "#{exp_msg_prefix} incoming version (6) matches PreservedObject db version" }
+      let(:version_matches_pc_msg) { "#{exp_msg_prefix} incoming version (6) matches PreservedCopy db version" }
+      let(:updated_pc_db_msg) { "#{exp_msg_prefix} PreservedCopy db object updated" }
+
+      before do
+        allow(po_handler).to receive(:moab_validation_errors).and_return([])
+        allow(PreservedObject).to receive(:exists?).with(druid: druid).and_return(true)
+        allow(po_handler).to receive(:confirm_version) do
+          po_handler.handler_results.add_result(PreservedObjectHandlerResults::VERSION_MATCHES, 'PreservedObject')
+          po_handler.handler_results.add_result(PreservedObjectHandlerResults::VERSION_MATCHES, 'PreservedCopy')
+          po_handler.handler_results.add_result(PreservedObjectHandlerResults::UPDATED_DB_OBJECT, 'PreservedCopy')
+        end
+      end
+
+      it 'returns the right number of result codes' do
+        results = po_handler.check_existence
+        expect(results.size).to eq 3
+      end
+
+      it 'VERSION_MATCHES results' do
+        results = po_handler.check_existence
+        code = PreservedObjectHandlerResults::VERSION_MATCHES
+        expect(results).to include(a_hash_including(code => version_matches_pc_msg))
+        expect(results).to include(a_hash_including(code => version_matches_po_msg))
+      end
+
+      it 'UPDATED_DB_OBJECT PreservedCopy result' do
+        results = po_handler.check_existence
+        code = PreservedObjectHandlerResults::UPDATED_DB_OBJECT
+        expect(results).to include(a_hash_including(code => updated_pc_db_msg))
+      end
+
+      it "logs at info level" do
+        expect(Rails.logger).to receive(:log).with(Logger::INFO, version_matches_po_msg)
+        expect(Rails.logger).to receive(:log).with(Logger::INFO, version_matches_pc_msg)
+        expect(Rails.logger).to receive(:log).with(Logger::INFO, updated_pc_db_msg)
+        po_handler.check_existence
+      end
     end
   end
 

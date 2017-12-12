@@ -60,7 +60,19 @@ class PreservedObjectHandler
   end
 
   def check_existence
-    # this is just a stub
+    if invalid?
+      handler_results.add_result(PreservedObjectHandlerResults::INVALID_ARGUMENTS, errors.full_messages)
+    elsif PreservedObject.exists?(druid: druid)
+      confirm_version
+      if handler_results.contains_result_code? PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT
+        update_version_after_validation
+      end
+    else
+      handler_results.add_result(PreservedObjectHandlerResults::OBJECT_DOES_NOT_EXIST, 'PreservedObject')
+      create_after_validation
+    end
+    handler_results.log_results
+    handler_results.result_array
   end
 
   def confirm_version
