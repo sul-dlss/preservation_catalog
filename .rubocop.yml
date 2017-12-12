@@ -14,6 +14,7 @@ AllCops:
     - '**/*.md'
     - 'bin/**/*'
     - 'config/**/*.yml'
+    - 'config/environments/*.rb'
     - 'db/**/*'
     - 'script/**/*'
     - 'vendor/**/*'
@@ -42,7 +43,6 @@ Layout/SpaceAroundEqualsInParameterDefault:
 
 Layout/SpaceInsideBrackets:
   Exclude:
-    - 'config/environments/production.rb' # that's how Rails generates it
     - 'app/services/preserved_object_handler.rb' # line 126 is clearer with the spaces
 
 # --- Lint ---
@@ -59,8 +59,8 @@ Lint/RescueWithoutErrorClass:
 
 Metrics/AbcSize:
   Exclude:
-    - 'app/services/preserved_object_handler.rb' # 2 methods but they seem readable
-    - 'lib/audit/moab_to_catalog.rb' # .seed_catalog_for_all_storage_roots is decidedly readable
+    - 'app/services/preserved_object_handler.rb' # methods still readable; shameless green
+    - 'lib/audit/moab_to_catalog.rb' # .xxx_for_all_storage_roots is decidedly readable
 
 Metrics/BlockLength:
   Exclude:
@@ -82,16 +82,14 @@ Metrics/LineLength:
     - 'app/services/preserved_object_handler.rb' # line 269 is 121
     - 'app/services/preserved_object_handler_results.rb' # line 35 is 121
     - 'spec/lib/audit/moab_to_catalog_spec.rb' # 1 line 126
+    - 'spec/services/preserved_object_handler_confirm_version_spec.rb'
     - 'spec/services/preserved_object_handler_create_spec.rb'
-    - 'spec/services/preserved_object_handler_spec.rb'
     - 'spec/services/preserved_object_handler_update_version_spec.rb'
     - 'spec/services/shared_examples_preserved_object_handler.rb'
     - 'spec/models/status_spec.rb' # Line length of 132 for better readability
 
 Metrics/MethodLength:
   Max: 25
-  Exclude:
-    - 'app/services/preserved_object_handler.rb'
 
 Metrics/PerceivedComplexity:
   Exclude:
@@ -108,10 +106,6 @@ Naming/FileName:
 
 # --- Rails ---
 
-Rails/FilePath:
-  Exclude:
-    - 'config/environments/development.rb' # that's how Rails generates it
-
 Rails/HasAndBelongsToMany:
   Enabled: false
 
@@ -125,10 +119,6 @@ Rails/SkipsModelValidations:
 
 # --- RSpec ---
 
-RSpec/AnyInstance:
-  Exclude:
-    - spec/services/preserved_object_handler_spec.rb # #increase_version checks class of object (rspec double != PreservedCopy)
-
 RSpec/BeforeAfterAll:
   Exclude:
     # we use after(:all) specifically to prevent state leakage
@@ -136,18 +126,18 @@ RSpec/BeforeAfterAll:
     - 'spec/models/preservation_policy_spec.rb'
 
 RSpec/ExampleLength:
-  Max: 50
+  Max: 25
 
 RSpec/InstanceVariable:
   Exclude:
     - 'spec/services/preserved_object_handler_update_version_spec.rb' # we can't use let instead of @
 
-RSpec/MultipleExpectations:
-  Max: 5
-
 # we like 'expect(x).to receive' better than 'have_received'
 RSpec/MessageSpies:
   Enabled: false
+
+RSpec/MultipleExpectations:
+  Max: 5
 
 RSpec/NamedSubject:
   Enabled: false
@@ -155,8 +145,8 @@ RSpec/NamedSubject:
 RSpec/NestedGroups:
   Exclude:
     - 'spec/lib/audit/moab_to_catalog_spec.rb'
+    - 'spec/services/preserved_object_handler_confirm_version_spec.rb'
     - 'spec/services/preserved_object_handler_create_spec.rb'
-    - 'spec/services/preserved_object_handler_spec.rb'
     - 'spec/services/preserved_object_handler_update_version_spec.rb'
 
 # --- Style ---
@@ -167,7 +157,7 @@ Style/BlockComments:
 
 Style/BlockDelimiters:
   Exclude:
-    - 'spec/*/*'  # rspec expect statements look ugly with do-end instead of {}
+    - 'spec/*/*' # rspec expect statements look ugly with do-end instead of {}
 
 Style/BracesAroundHashParameters:
   Exclude:
@@ -180,12 +170,8 @@ Style/Documentation:
     - 'app/models/application_record.rb' # that's how Rails generates it
     - 'config/application.rb' # that's how Rails generates it
 
-Style/FormatString:
-  Exclude:
-    - 'app/services/preserved_object_handler.rb' # using interpolated strings
-
 Style/FormatStringToken:
-  EnforcedStyle: template # using interpolated strings in PreservedObjectHandler
+  EnforcedStyle: template # using interpolated strings in PreservedObjectHandlerResults
 
 Style/GuardClause:
   Exclude:
@@ -201,4 +187,4 @@ Style/StringLiterals:
 
 Style/SymbolArray:
   Exclude:
-    - 'Rakefile' # because [:spec, :rubocop ] isn't a big deal
+    - 'Rakefile' # because [:spec, :rubocop] isn't a big deal
