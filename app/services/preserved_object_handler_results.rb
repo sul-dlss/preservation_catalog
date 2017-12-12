@@ -19,6 +19,7 @@ class PreservedObjectHandlerResults
   PC_STATUS_CHANGED = 11
   UNEXPECTED_VERSION = 12
   INVALID_MOAB = 13
+  PC_PO_VERSION_MISMATCH = 14
 
   RESPONSE_CODE_TO_MESSAGES = {
     INVALID_ARGUMENTS => "encountered validation error(s): %{addl}",
@@ -33,7 +34,8 @@ class PreservedObjectHandlerResults
     OBJECT_DOES_NOT_EXIST => "%{addl} db object does not exist",
     PC_STATUS_CHANGED => "PreservedCopy status changed from %{old_status} to %{new_status}",
     UNEXPECTED_VERSION => "incoming version (%{incoming_version}) has unexpected relationship to %{addl} db version; ERROR!",
-    INVALID_MOAB => "Invalid moab, validation errors: %{addl}"
+    INVALID_MOAB => "Invalid moab, validation errors: %{addl}",
+    PC_PO_VERSION_MISMATCH => "PreservedCopy online moab version does not match PreservedObject current_version"
   }.freeze
 
   DB_UPDATED_CODES = [
@@ -58,6 +60,7 @@ class PreservedObjectHandlerResults
     when PC_STATUS_CHANGED then Logger::INFO
     when UNEXPECTED_VERSION then Logger::ERROR
     when INVALID_MOAB then Logger::ERROR
+    when PC_PO_VERSION_MISMATCH then Logger::ERROR
     end
   end
 
