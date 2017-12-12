@@ -24,7 +24,8 @@ RSpec.describe PreservedObjectHandler do
         version: incoming_version,
         size: incoming_size,
         endpoint: ep,
-        status: PreservedCopy::DEFAULT_STATUS
+        status: PreservedCopy::DEFAULT_STATUS # NOTE this particular status
+        # NOTE lack of validation timestamps here
       }
 
       expect(PreservedObject).to receive(:create!).with(po_args).and_call_original
@@ -104,7 +105,7 @@ RSpec.describe PreservedObjectHandler do
 
     it_behaves_like 'attributes validated', :create_after_validation
 
-    context 'updates validation timestamps' do
+    context 'sets validation timestamps' do
       let(:t) { Time.current }
       let(:ep) { Endpoint.find_by(storage_location: storage_dir) }
       let(:po_db_obj) { PreservedObject.find_by(druid: valid_druid) }
@@ -135,7 +136,7 @@ RSpec.describe PreservedObjectHandler do
         version: incoming_version,
         size: incoming_size,
         endpoint: ep,
-        status: PreservedCopy::DEFAULT_STATUS,
+        status: PreservedCopy::OK_STATUS, # NOTE this particular status
         last_audited: an_instance_of(Integer),
         last_checked_on_storage: an_instance_of(ActiveSupport::TimeWithZone)
       }
@@ -170,7 +171,7 @@ RSpec.describe PreservedObjectHandler do
         end
       end
 
-      it 'creates preserved object and preserved copy object with status "invalid_moab"' do
+      it 'creates preserved object as well as preserved copy object with "invalid_moab" status' do
         po_args = {
           druid: invalid_druid,
           current_version: incoming_version,
@@ -181,7 +182,7 @@ RSpec.describe PreservedObjectHandler do
           version: incoming_version,
           size: incoming_size,
           endpoint: ep,
-          status: PreservedCopy::INVALID_MOAB_STATUS,
+          status: PreservedCopy::INVALID_MOAB_STATUS, # NOTE this particular status
           last_audited: an_instance_of(Integer),
           last_checked_on_storage: an_instance_of(ActiveSupport::TimeWithZone)
         }
