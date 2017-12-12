@@ -26,6 +26,19 @@ RSpec.describe MoabToCatalog do
     end
   end
 
+  describe ".check_existence_for_all_storage_roots_profiled" do
+    let(:subject) { described_class.check_existence_for_all_storage_roots_profiled }
+
+    it "spins up a profiler, calling profiling and printing methods on it" do
+      mock_profiler = instance_double(Profiler)
+      expect(Profiler).to receive(:new).and_return(mock_profiler)
+      expect(mock_profiler).to receive(:prof)
+      expect(mock_profiler).to receive(:print_results_flat)
+
+      subject
+    end
+  end
+
   describe ".seed_catalog_for_all_storage_roots" do
     let(:subject) { described_class.seed_catalog_for_all_storage_roots }
 
@@ -152,6 +165,20 @@ RSpec.describe MoabToCatalog do
     it "storage directory exists but it is empty" do
       storage_dir = 'spec/fixtures/empty/moab_storage_trunk'
       expect(described_class.check_existence_for_dir(storage_dir)).to eq []
+    end
+  end
+
+  describe ".check_existence_for_dir_profiled" do
+    let(:storage_dir) { "spec/fixtures/storage_root01/moab_storage_trunk" }
+    let(:subject) { described_class.check_existence_for_dir_profiled(storage_dir) }
+
+    it "spins up a profiler, calling profiling and printing methods on it" do
+      mock_profiler = instance_double(Profiler)
+      expect(Profiler).to receive(:new).and_return(mock_profiler)
+      expect(mock_profiler).to receive(:prof)
+      expect(mock_profiler).to receive(:print_results_flat)
+
+      subject
     end
   end
 
