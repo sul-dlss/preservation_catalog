@@ -23,15 +23,15 @@ task :seed_catalog, [:profile] => [:environment] do |_t, args|
   end
 
   puts "#{Time.now.utc.iso8601} Seeding the database from all storage roots..."
-  $stdout.flush # sometimes above doesn't end up getting flushed to STDOUT till the last puts when the run finishes
+  $stdout.flush # sometimes above is not visible (flushed) until last puts (when run finishes)
   if args[:profile] == 'profile'
-    puts 'When done, check log/profile_flat_seed_catalog_for_all_storage_roots[TIMESTAMP].log for profiling details'
+    puts 'When done, check log/profile_flat_seed_catalog_for_all_storage_roots[TIMESTAMP].txt for profiling details'
     $stdout.flush
     MoabToCatalog.seed_catalog_for_all_storage_roots_profiled
   elsif args[:profile].nil?
     MoabToCatalog.seed_catalog_for_all_storage_roots
   end
-  puts "#{Time.now.utc.iso8601} Done"
+  puts "#{Time.now.utc.iso8601} Seeding the catalog for all storage roots is done"
   $stdout.flush
 end
 
@@ -72,23 +72,23 @@ task :populate, [:storage_root] => [:environment] do |_t, args|
 end
 
 desc "Fire off M2C existence check on a single storage root"
-task :m2c_exist_single_root, [:storage_root, :boolean, :profile] => [:environment] do |_t, args|
+task :m2c_exist_single_root, [:storage_root, :profile] => [:environment] do |_t, args|
   unless args[:profile] == 'profile' || args[:profile].nil?
-    p "Usage: rake m2c_exist_single_root[fixture_sr1,false] || rake m2c_exist_single_root[fixture_sr1, false, profile]"
+    p "Usage: rake m2c_exist_single_root[fixture_sr1] || rake m2c_exist_single_root[fixture_sr1,profile]"
     exit
   end
   root = args[:storage_root].to_sym
   storage_dir = "#{Settings.moab.storage_roots[root]}/#{Settings.moab.storage_trunk}"
-  puts "#{Time.now.utc.iso8601} Running moab to catalog existence check for #{storage_dir}"
-  $stdout.flush # sometimes above doesn't end up getting flushed to STDOUT till the last puts when the run finishes
+  puts "#{Time.now.utc.iso8601} Running Moab to Catalog Existence Check for #{storage_dir}"
+  $stdout.flush # sometimes above is not visible (flushed) until last puts (when run finishes)
   if args[:profile] == 'profile'
-    puts "When done, check log/profile_flat_check_existence_for_dir[TIMESTAMP].log for profiling details"
+    puts "When done, check log/profile_flat_check_existence_for_dir[TIMESTAMP].txt for profiling details"
     $stdout.flush
-    MoabToCatalog.check_existence_for_dir_profiled(storage_dir, args[:boolean])
+    MoabToCatalog.check_existence_for_dir_profiled(storage_dir)
   elsif args[:profile].nil?
-    MoabToCatalog.check_existence_for_dir(storage_dir, args[:boolean])
+    MoabToCatalog.check_existence_for_dir(storage_dir)
   end
-  puts "#{Time.now.utc.iso8601} Done"
+  puts "#{Time.now.utc.iso8601} Moab to Catalog Existence Check for a single storage root is done"
   $stdout.flush
 end
 
@@ -100,11 +100,11 @@ task :m2c_exist_all_storage_roots, [:profile] => [:environment] do |_t, args|
   end
 
   if args[:profile] == 'profile'
-    puts "When done, check log/profile_flat_check_existence_for_all_storage_roots[TIMESTAMP].log for profiling details"
+    puts "When done, check log/profile_flat_check_existence_for_all_storage_roots[TIMESTAMP].txt for profiling details"
     MoabToCatalog.check_existence_for_all_storage_roots_profiled
   elsif args[:profile].nil?
     MoabToCatalog.check_existence_for_all_storage_roots
   end
-  puts "#{Time.now.utc.iso8601} Done"
+  puts "#{Time.now.utc.iso8601} Moab to Catalog Existence Check for all storage roots are done"
   $stdout.flush
 end

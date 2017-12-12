@@ -103,11 +103,11 @@ RAILS_ENV=production bundle exec rake populate[services-disk01]
 #### Single Root
 - Without profiling
 ```ruby
-bundle exec rake m2c_exist_single_root[fixture_sr1,false]
+bundle exec rake m2c_exist_single_root[fixture_sr1]
 ```
 - With profiling:
 ```ruby
-bundle exec rake m2c_exist_single_root[fixture_sr1,false,profile]
+bundle exec rake m2c_exist_single_root[fixture_sr1,profile]
 ```
 this will generate a log at, for example, ```log/profiler_flat_check_existence_for_dir2017-12-11T14:34:06-flat.txt
 ```
@@ -117,7 +117,7 @@ this will generate a log at, for example, ```log/profiler_flat_check_existence_f
 ```ruby
 bundle exec rake m2c_exist_all_storage_roots
 ```
-- Without profiling:
+- With profiling:
 ```ruby
 bundle exec rake m2c_exist_all_storage_roots[profile]
 ```

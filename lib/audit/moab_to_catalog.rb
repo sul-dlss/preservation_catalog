@@ -22,9 +22,9 @@ class MoabToCatalog
     results
   end
 
-  def self.check_existence_for_dir_profiled(storage_dir, expect_to_create=false)
+  def self.check_existence_for_dir_profiled(storage_dir)
     profiler = Profiler.new
-    profiler.prof { check_existence_for_dir(storage_dir, expect_to_create) }
+    profiler.prof { check_existence_for_dir(storage_dir) }
     profiler.print_results_flat('profiler_flat_check_existence_for_dir')
   end
 
