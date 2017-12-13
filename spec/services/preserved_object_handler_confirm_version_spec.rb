@@ -56,14 +56,19 @@ RSpec.describe PreservedObjectHandler do
         context 'PreservedCopy' do
           context 'changed' do
             it 'last_audited' do
-              orig = pc.last_audited
+              orig = Time.current.to_i
+              pc.last_audited = orig
+              pc.save!
+              sleep 1 # last_audited is bigint, and granularity is second, not fraction thereof
               po_handler.confirm_version
-              expect(pc.reload.last_audited).not_to eq orig
+              expect(pc.reload.last_audited).to be > orig
             end
             it 'last_checked_on_storage' do
-              orig = pc.last_checked_on_storage
+              orig = Time.current
+              pc.last_checked_on_storage = orig
+              pc.save!
               po_handler.confirm_version
-              expect(pc.reload.last_checked_on_storage).not_to eq orig
+              expect(pc.reload.last_checked_on_storage).to be > orig
             end
             it 'updated_at' do
               orig = pc.updated_at
