@@ -16,7 +16,7 @@ class Profiler
   end
 
   def print_results_flat(out_file_id)
-    File.open "log/#{out_file_id}#{Time.current.localtime.strftime('%FT%T')}-flat.txt", 'w' do |file|
+    File.open "log/profile_#{out_file_id}#{Time.current.localtime.strftime('%FT%T')}-flat.txt", 'w' do |file|
       RubyProf::FlatPrinterWithLineNumbers.new(@results).print(file)
     end
   end

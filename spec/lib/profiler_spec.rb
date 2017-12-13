@@ -20,7 +20,7 @@ RSpec.describe Profiler do
     it 'returns the printer and prints to the path we pass in' do
       printer = instance_double(RubyProf::FlatPrinterWithLineNumbers)
       profiler.prof { 'we just want #prof to run' }
-      expected_filepath = "log/test#{Time.current.localtime.strftime('%FT%T')}-flat.txt"
+      expected_filepath = "log/profile_test#{Time.current.localtime.strftime('%FT%T')}-flat.txt"
       expect(RubyProf::FlatPrinterWithLineNumbers).to receive(:new).with(profiler.results).and_return(printer)
       expect(printer).to receive(:print) do |file|
         # this expectation might need to relax
