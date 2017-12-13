@@ -19,6 +19,11 @@ General advice:
     * more background and advice from the PG wiki: https://wiki.postgresql.org/wiki/Serializable
   * If there is actually little contention in practice, the PG docs seem to indicate that specifying isolation level, even something as strict as `serializable`, should have little to no overhead (though it could increase chances of failed updates if there is actual resource contention, though code should already be prepared to handle failed DB updates gracefully).  As such, there seems to be little risk to erring on the side of a strong isolation level when in doubt.
   * *probably shouldn't* do it this way: http://api.rubyonrails.org/classes/ActiveRecord/Locking/Pessimistic.html
+* You should likely be catching ActiveRecord exceptions outside of the transaction block, as you likely want to abort the transaction after the first ActiveRecord exception anyway.  In other words, wrap transactions in exception handling, and not vice versa.  See "Exception handling and rolling back": http://api.rubyonrails.org/classes/ActiveRecord/Transactions/ClassMethods.html
+* Use for ActiveRecord enums (http://edgeapi.rubyonrails.org/classes/ActiveRecord/Enum.html):
+  * Instead of using plain string values everywhere, define class constants for the string values, and use those class constants both when defining the enum, and when referring to enum values in other parts of the codebase.
+  * In the enum definition, explicitly map each enum string to its underlying integer value, and leave a note admonishing future developers not to change enums that are already in use in production (or to think about the needed migration).  This is to prevent unintentional re-mapping of existing enum values.
+  * Example:  https://github.com/sul-dlss/preservation_catalog/blob/master/app/models/preserved_copy.rb
 
 
 
