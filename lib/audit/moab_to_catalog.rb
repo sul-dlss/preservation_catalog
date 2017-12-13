@@ -25,7 +25,7 @@ class MoabToCatalog
   def self.check_existence_for_dir_profiled(storage_dir)
     profiler = Profiler.new
     profiler.prof { check_existence_for_dir(storage_dir) }
-    profiler.print_results_flat('profiler_flat_check_existence_for_dir')
+    profiler.print_results_flat('profiler_check_existence_for_dir')
   end
 
   # NOTE: shameless green! code duplication with check_existence_for_dir
@@ -56,7 +56,7 @@ class MoabToCatalog
   def self.seed_catalog_for_all_storage_roots_profiled
     profiler = Profiler.new
     profiler.prof { seed_catalog_for_all_storage_roots }
-    profiler.print_results_flat('profile_flat_seed_catalog_for_all_storage_roots')
+    profiler.print_results_flat('profile_seed_catalog_for_all_storage_roots')
   end
 
   # Shameless green. Code duplication with seed_catalog_for_all_storage_roots
@@ -75,7 +75,7 @@ class MoabToCatalog
   def self.check_existence_for_all_storage_roots_profiled
     profiler = Profiler.new
     profiler.prof { check_existence_for_all_storage_roots }
-    profiler.print_results_flat('profile_flat_check_existence_for_all_storage_roots')
+    profiler.print_results_flat('profile_check_existence_for_all_storage_roots')
   end
 
   def self.drop_endpoint(endpoint_name)
