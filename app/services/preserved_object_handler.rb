@@ -213,7 +213,7 @@ class PreservedObjectHandler
       if incoming_version == pres_copy.version
         handler_results.add_result(PreservedObjectHandlerResults::VERSION_MATCHES, pres_copy.class.name)
         handler_results.add_result(PreservedObjectHandlerResults::VERSION_MATCHES, pres_object.class.name)
-      elsif incoming_version != pres_copy.version
+      else
         handler_results.add_result(PreservedObjectHandlerResults::UNEXPECTED_VERSION, pres_copy.class.name)
         update_status(pres_copy, PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS)
       end

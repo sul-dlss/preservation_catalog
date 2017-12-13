@@ -109,8 +109,7 @@ bundle exec rake m2c_exist_single_root[fixture_sr1]
 ```ruby
 bundle exec rake m2c_exist_single_root[fixture_sr1,profile]
 ```
-this will generate a log at, for example, ```log/profiler_flat_check_existence_for_dir2017-12-11T14:34:06-flat.txt
-```
+this will generate a log at, for example, ```log/profiler_flat_check_existence_for_dir2017-12-11T14:34:06.txt```
 
 ### All Roots
 - Without profiling:
@@ -121,7 +120,7 @@ bundle exec rake m2c_exist_all_storage_roots
 ```ruby
 bundle exec rake m2c_exist_all_storage_roots[profile]
 ```
-this will generate a log at, for example, ```log/profile_flas_check_existence_for_all_storage_roots2017-12-11T14:25:31-flat.txt```
+this will generate a log at, for example, ```log/profile_flat_check_existence_for_all_storage_roots2017-12-11T14:25:31.txt```
 ## Development
 
 ### Running Tests

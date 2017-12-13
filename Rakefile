@@ -88,7 +88,7 @@ task :m2c_exist_single_root, [:storage_root, :profile] => [:environment] do |_t,
   elsif args[:profile].nil?
     MoabToCatalog.check_existence_for_dir(storage_dir)
   end
-  puts "#{Time.now.utc.iso8601} Moab to Catalog Existence Check for a single storage root is done"
+  puts "#{Time.now.utc.iso8601} Moab to Catalog Existence Check for #{storage_dir} is done"
   $stdout.flush
 end
 
