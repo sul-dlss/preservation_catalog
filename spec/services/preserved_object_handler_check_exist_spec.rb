@@ -72,9 +72,9 @@ RSpec.describe PreservedObjectHandler do
           end
         end
         it 'PreservedObject is not updated' do
-          orig_timestamp = po.updated_at
+          orig = po.updated_at
           po_handler.check_existence
-          expect(po.reload.updated_at).to eq orig_timestamp
+          expect(po.reload.updated_at).to eq orig
         end
         it "logs at info level" do
           expect(Rails.logger).to receive(:log).with(Logger::INFO, version_matches_po_msg)
@@ -116,7 +116,6 @@ RSpec.describe PreservedObjectHandler do
         let(:updated_pc_db_msg) { "#{exp_msg_prefix} PreservedCopy db object updated" }
         let(:updated_po_db_msg) { "#{exp_msg_prefix} PreservedObject db object updated" }
         let(:updated_status_msg_regex) { Regexp.new(Regexp.escape("#{exp_msg_prefix} PreservedCopy status changed from")) }
-
 
         it 'calls Stanford::StorageObjectValidator.validation_errors for moab' do
           # FIXME: prefer the first code below but since even the second version doesn't pass, leaving it for now
@@ -275,13 +274,17 @@ RSpec.describe PreservedObjectHandler do
           context 'PreservedCopy' do
             context 'changed' do
               it 'last_audited' do
-                orig = pc.last_audited
+                orig = Time.current.to_i
+                pc.last_audited = orig
+                pc.save!
                 sleep 1 # last_audited is bigint, and granularity is second, not fraction thereof
                 po_handler.check_existence
                 expect(pc.reload.last_audited).to be > orig
               end
               it 'last_checked_on_storage' do
-                orig = pc.last_checked_on_storage
+                orig = Time.current
+                pc.last_checked_on_storage = orig
+                pc.save!
                 po_handler.check_existence
                 expect(pc.reload.last_checked_on_storage).to be > orig
               end
@@ -321,14 +324,11 @@ RSpec.describe PreservedObjectHandler do
           end
 
           it 'logs at error level' do
-            invalid_druid = 'yy000yy0000'
-            po_handler = described_class.new(invalid_druid, incoming_version, incoming_size, ep)
             exp_msg_prefix = "PreservedObjectHandler(#{invalid_druid}, #{incoming_version}, #{incoming_size}, #{ep})"
             allow(Rails.logger).to receive(:log)
-            errors = "#{exp_msg_prefix} Invalid moab, validation errors: [\"Missing directory: [\\\"manifests\\\"] Version: v0001\"]"
-            expect(Rails.logger).to receive(:log).with(Logger::ERROR, errors)
+            errors = "#{exp_msg_prefix} Invalid moab, validation errors:"
+            expect(Rails.logger).to receive(:log).with(Logger::ERROR, a_string_matching(errors))
             po_handler.check_existence
-            fail 'want to refactor and shorten this test'
           end
 
           context 'returns' do
@@ -364,95 +364,6 @@ RSpec.describe PreservedObjectHandler do
       context 'incoming version < db version' do
         it_behaves_like 'unexpected version', 1
       end
-
-      # context 'incoming version does NOT match db version' do
-      #   let(:po_handler) { described_class.new(druid, 1, 666, ep) }
-      #   let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, 1, 666, #{ep})" }
-      #   let(:unexpected_version_pc_msg) {
-      #     "#{exp_msg_prefix} incoming version (1) has unexpected relationship to PreservedCopy db version; ERROR!"
-      #   }
-      #   let(:updated_pc_db_status_msg) {
-      #     "#{exp_msg_prefix} PreservedCopy status changed from ok to expected_vers_not_found_on_storage"
-      #   }
-      #   let(:updated_pc_db_obj_msg) { "#{exp_msg_prefix} PreservedCopy db object updated" }
-      #
-      #   context 'PreservedCopy' do
-      #     context 'changed' do
-      #       it 'status to expected_vers_not_found_on_storage' do
-      #         expect(pc.status).to eq PreservedCopy::OK_STATUS
-      #         po_handler.check_existence
-      #         expect(pc.reload.status).to eq PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
-      #       end
-      #       it 'last_audited' do
-      #         orig = Time.current.to_i
-      #         pc.last_audited = orig
-      #         pc.save!
-      #         sleep 1 # last_audited is bigint, and granularity is second, not fraction thereof
-      #         po_handler.check_existence
-      #         expect(pc.reload.last_audited).to be > orig
-      #       end
-      #       it 'last_checked_on_storage' do
-      #         orig = Time.current
-      #         pc.last_checked_on_storage = orig
-      #         pc.save!
-      #         po_handler.check_existence
-      #         expect(pc.reload.last_checked_on_storage).to be > orig
-      #       end
-      #       it 'updated_at' do
-      #         orig = pc.updated_at
-      #         po_handler.check_existence
-      #         expect(pc.reload.updated_at).to be > orig
-      #       end
-      #     end
-      #     context 'unchanged' do
-      #       it 'version' do
-      #         orig = pc.version
-      #         po_handler.check_existence
-      #         expect(pc.reload.version).to eq orig
-      #       end
-      #       it 'size' do
-      #         orig = pc.size
-      #         po_handler.check_existence
-      #         expect(pc.reload.size).to eq orig
-      #       end
-      #     end
-      #   end
-      #   it 'PreservedObject is not updated' do
-      #     orig_timestamp = po.updated_at
-      #     po_handler.check_existence
-      #     expect(po.reload.updated_at).to eq orig_timestamp
-      #   end
-      #
-      #   it "logs at error level" do
-      #     expect(Rails.logger).to receive(:log).with(Logger::INFO, updated_pc_db_status_msg)
-      #     expect(Rails.logger).to receive(:log).with(Logger::ERROR, unexpected_version_pc_msg)
-      #     expect(Rails.logger).to receive(:log).with(Logger::INFO, updated_pc_db_obj_msg)
-      #     po_handler.check_existence
-      #   end
-      #   context 'returns' do
-      #     let!(:results) { po_handler.check_existence }
-      #
-      #     # results = [result1, result2]
-      #     # result1 = {response_code: msg}
-      #     # result2 = {response_code: msg}
-      #     it '3 results' do
-      #       expect(results).to be_an_instance_of Array
-      #       expect(results.size).to eq 3
-      #     end
-      #     it 'UNEXPECTED_VERSION PreservedCopy result' do
-      #       code = PreservedObjectHandlerResults::UNEXPECTED_VERSION
-      #       expect(results).to include(a_hash_including(code => unexpected_version_pc_msg))
-      #     end
-      #     it 'UPDATED_DB_OBJECT PreservedCopy result' do
-      #       code = PreservedObjectHandlerResults::UPDATED_DB_OBJECT
-      #       expect(results).to include(a_hash_including(code => updated_pc_db_obj_msg))
-      #     end
-      #     it "PC_STATUS_CHANGED PreservedCopy result" do
-      #       code = PreservedObjectHandlerResults::PC_STATUS_CHANGED
-      #       expect(results).to include(a_hash_including(code => updated_pc_db_status_msg))
-      #     end
-      #   end
-      # end
 
       context 'PreservedCopy version does NOT match PreservedObject current_version (online Moab)' do
         before do
@@ -520,8 +431,20 @@ RSpec.describe PreservedObjectHandler do
           end
 
           context 'transaction is rolled back' do
-            it 'does something' do
-              fail 'we need to write test for checking rolled back transaction'
+            it 'PreservedCopy is not updated' do
+              # FIXME: TODO: perhaps this is failing because the logic is wrong????
+              orig = Time.current
+              pc.updated_at = orig
+              pc.save!
+              po_handler.check_existence
+              expect(pc.reload.updated_at).to eq orig
+            end
+            it 'PreservedObject is not updated' do
+              orig = Time.current
+              po.updated_at = orig
+              po.save!
+              po_handler.check_existence
+              expect(po.reload.updated_at).to eq orig
             end
           end
 
