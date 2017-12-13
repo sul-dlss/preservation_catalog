@@ -45,9 +45,21 @@ For more info on postgres commands, see https://www.postgresql.org/docs/
 
 ## Usage Instructions
 
+### General Info About Running These Rake Tasks
+
+- You can monitor the progress of most rake tasks by tailing `log/production.log`, or by querying the database from Rails console using ActiveRecord. The tasks for large storage_roots can take a while -- check [the repo wiki for stats](https://github.com/sul-dlss/preservation_catalog/wiki) on the timing of past runs (and some suggested overview queries). Profiling will add some overhead.
+
+- Rake tasks must be run from the root directory of the project, with whatever `RAILS_ENV` is appropriate. Because the task can take days when run over all storage roots, consider running it in a [screen session](http://thingsilearned.com/2009/05/26/gnu-screen-super-basic-tutorial/) so you don't need to keep your connection open but can still see the output.
+
+As an alternative to `screen`, you can also run tasks in the background using `nohup` so the invoked command is not killed when you exist your session. Output that would've gone to stdout is instead redirected to a file called `nohup.out`, or you can redirect the output explicitly.  For example:
+
+```ruby
+RAILS_ENV=production nohup bundle exec rake seed_catalog >seed_whole_catalog_nohup-2017-12-12.txt &
+```
+
 ### Seed the catalog
 
-Seeding the catalog presumes an empty or nearly empty database -- otherwise running the seed task will throw `druid NOT expected to exist in catalog but was found` errors for each found object. You can monitor the progress of the seed task by tailing `log/production.log`, or by querying the database from Rails console using ActiveRecord. The seed task can take a while -- check [the repo wiki for stats](https://github.com/sul-dlss/preservation_catalog/wiki/Stats) on the timing of past runs (and some suggested overview queries). You can expect profiling runs will add overhead. The following rake tasks should be run from the root directory of the project, with whatever `RAILS_ENV` is appropriate. Because the task can take days when run over all storage roots, consider running it in a [screen session](http://thingsilearned.com/2009/05/26/gnu-screen-super-basic-tutorial/).
+Seeding the catalog presumes an empty or nearly empty database -- otherwise running the seed task will throw `druid NOT expected to exist in catalog but was found` errors for each found object.
 
 Without profiling:
 ```ruby
@@ -60,12 +72,6 @@ RAILS_ENV=production bundle exec rake seed_catalog[profile]
 ```
 this will generate a log at, for example, `log/profile_flat_seed_catalog_for_all_storage_roots2017-11-13T13:57:01.txt`
 
-As an alternative to `screen`, you can also run the task, with or without profiling, in the background under `nohup`. For example:
-
-```ruby
-RAILS_ENV=production nohup bundle exec rake seed_catalog &
-```
-By invoking commands via`nohup`, the invoked command doesn't get the kill signal when the terminal session that started it exits.  Output that would've gone to stdout is instead redirected to a file called `nohup.out` in the location from which the command was executed (here, the project root).
 
 #### Reset the catalog for re-seeding
 
@@ -84,44 +90,45 @@ WARNING! this will erase the catalog, and thus require re-seeding from scratch. 
 
 ### Drop or Populate the catalog for a single endpoint
 
-- To run either of the rake tasks below, give the name of the enpdoint (from settings/development.yml) as an argument.
+- To run either of the rake tasks below, give the name of the moab storage_root (e.g. from settings/development.yml) as an argument.
 
 #### Drop all database entries:
 
 ```ruby
-RAILS_ENV=production bundle exec rake drop[services-disk01]
+RAILS_ENV=production bundle exec rake drop[fixture_sr1]
 ```
 
 #### Populate the catalog:
 
 ```ruby
-RAILS_ENV=production bundle exec rake populate[services-disk01]
+RAILS_ENV=production bundle exec rake populate[fixture_sr1]
 ```
 
 ### Run Moab to Catalog existence check for a single root and for all storage roots
 
+- To run rake tasks below, give the name of the moab storage_root (e.g. from settings/development.yml) as an argument.
+
 #### Single Root
 - Without profiling
 ```ruby
-bundle exec rake m2c_exist_single_root[fixture_sr1]
+RAILS_ENV=production bundle exec rake m2c_exist_single_root[fixture_sr1]
 ```
 - With profiling:
 ```ruby
-bundle exec rake m2c_exist_single_root[fixture_sr1,profile]
+RAILS_ENV=production bundle exec rake m2c_exist_single_root[fixture_sr1,profile]
 ```
-this will generate a log at, for example, ```log/profiler_flat_check_existence_for_dir2017-12-11T14:34:06-flat.txt
-```
+this will generate a log at, for example, ```log/profiler_flat_check_existence_for_dir2017-12-11T14:34:06-flat.txt```
 
-### All Roots
+#### All Roots
 - Without profiling:
 ```ruby
-bundle exec rake m2c_exist_all_storage_roots
+RAILS_ENV=production bundle exec rake m2c_exist_all_storage_roots
 ```
 - With profiling:
 ```ruby
-bundle exec rake m2c_exist_all_storage_roots[profile]
+RAILS_ENV=production bundle exec rake m2c_exist_all_storage_roots[profile]
 ```
-this will generate a log at, for example, ```log/profile_flas_check_existence_for_all_storage_roots2017-12-11T14:25:31-flat.txt```
+this will generate a log at, for example, ```log/profile_flat_check_existence_for_all_storage_roots2017-12-11T14:25:31-flat.txt```
 ## Development
 
 ### Running Tests
