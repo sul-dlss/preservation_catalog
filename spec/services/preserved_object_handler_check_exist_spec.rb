@@ -72,9 +72,9 @@ RSpec.describe PreservedObjectHandler do
           end
         end
         it 'PreservedObject is not updated' do
-          orig_timestamp = po.updated_at
+          orig = po.updated_at
           po_handler.check_existence
-          expect(po.reload.updated_at).to eq orig_timestamp
+          expect(po.reload.updated_at).to eq orig
         end
         it "logs at info level" do
           expect(Rails.logger).to receive(:log).with(Logger::INFO, version_matches_po_msg)
@@ -116,7 +116,6 @@ RSpec.describe PreservedObjectHandler do
         let(:updated_pc_db_msg) { "#{exp_msg_prefix} PreservedCopy db object updated" }
         let(:updated_po_db_msg) { "#{exp_msg_prefix} PreservedObject db object updated" }
         let(:updated_status_msg_regex) { Regexp.new(Regexp.escape("#{exp_msg_prefix} PreservedCopy status changed from")) }
-
 
         it 'calls Stanford::StorageObjectValidator.validation_errors for moab' do
           # FIXME: prefer the first code below but since even the second version doesn't pass, leaving it for now
@@ -275,13 +274,17 @@ RSpec.describe PreservedObjectHandler do
           context 'PreservedCopy' do
             context 'changed' do
               it 'last_audited' do
-                orig = pc.last_audited
+                orig = Time.current.to_i
+                pc.last_audited = orig
+                pc.save!
                 sleep 1 # last_audited is bigint, and granularity is second, not fraction thereof
                 po_handler.check_existence
                 expect(pc.reload.last_audited).to be > orig
               end
               it 'last_checked_on_storage' do
-                orig = pc.last_checked_on_storage
+                orig = Time.current
+                pc.last_checked_on_storage = orig
+                pc.save!
                 po_handler.check_existence
                 expect(pc.reload.last_checked_on_storage).to be > orig
               end
@@ -321,14 +324,11 @@ RSpec.describe PreservedObjectHandler do
           end
 
           it 'logs at error level' do
-            invalid_druid = 'yy000yy0000'
-            po_handler = described_class.new(invalid_druid, incoming_version, incoming_size, ep)
             exp_msg_prefix = "PreservedObjectHandler(#{invalid_druid}, #{incoming_version}, #{incoming_size}, #{ep})"
             allow(Rails.logger).to receive(:log)
-            errors = "#{exp_msg_prefix} Invalid moab, validation errors: [\"Missing directory: [\\\"manifests\\\"] Version: v0001\"]"
-            expect(Rails.logger).to receive(:log).with(Logger::ERROR, errors)
+            errors = "#{exp_msg_prefix} Invalid moab, validation errors:"
+            expect(Rails.logger).to receive(:log).with(Logger::ERROR, a_string_matching(errors))
             po_handler.check_existence
-            fail 'want to refactor and shorten this test'
           end
 
           context 'returns' do
@@ -364,95 +364,6 @@ RSpec.describe PreservedObjectHandler do
       context 'incoming version < db version' do
         it_behaves_like 'unexpected version', 1
       end
-
-      # context 'incoming version does NOT match db version' do
-      #   let(:po_handler) { described_class.new(druid, 1, 666, ep) }
-      #   let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, 1, 666, #{ep})" }
-      #   let(:unexpected_version_pc_msg) {
-      #     "#{exp_msg_prefix} incoming version (1) has unexpected relationship to PreservedCopy db version; ERROR!"
-      #   }
-      #   let(:updated_pc_db_status_msg) {
-      #     "#{exp_msg_prefix} PreservedCopy status changed from ok to expected_vers_not_found_on_storage"
-      #   }
-      #   let(:updated_pc_db_obj_msg) { "#{exp_msg_prefix} PreservedCopy db object updated" }
-      #
-      #   context 'PreservedCopy' do
-      #     context 'changed' do
-      #       it 'status to expected_vers_not_found_on_storage' do
-      #         expect(pc.status).to eq PreservedCopy::OK_STATUS
-      #         po_handler.check_existence
-      #         expect(pc.reload.status).to eq PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
-      #       end
-      #       it 'last_audited' do
-      #         orig = Time.current.to_i
-      #         pc.last_audited = orig
-      #         pc.save!
-      #         sleep 1 # last_audited is bigint, and granularity is second, not fraction thereof
-      #         po_handler.check_existence
-      #         expect(pc.reload.last_audited).to be > orig
-      #       end
-      #       it 'last_checked_on_storage' do
-      #         orig = Time.current
-      #         pc.last_checked_on_storage = orig
-      #         pc.save!
-      #         po_handler.check_existence
-      #         expect(pc.reload.last_checked_on_storage).to be > orig
-      #       end
-      #       it 'updated_at' do
-      #         orig = pc.updated_at
-      #         po_handler.check_existence
-      #         expect(pc.reload.updated_at).to be > orig
-      #       end
-      #     end
-      #     context 'unchanged' do
-      #       it 'version' do
-      #         orig = pc.version
-      #         po_handler.check_existence
-      #         expect(pc.reload.version).to eq orig
-      #       end
-      #       it 'size' do
-      #         orig = pc.size
-      #         po_handler.check_existence
-      #         expect(pc.reload.size).to eq orig
-      #       end
-      #     end
-      #   end
-      #   it 'PreservedObject is not updated' do
-      #     orig_timestamp = po.updated_at
-      #     po_handler.check_existence
-      #     expect(po.reload.updated_at).to eq orig_timestamp
-      #   end
-      #
-      #   it "logs at error level" do
-      #     expect(Rails.logger).to receive(:log).with(Logger::INFO, updated_pc_db_status_msg)
-      #     expect(Rails.logger).to receive(:log).with(Logger::ERROR, unexpected_version_pc_msg)
-      #     expect(Rails.logger).to receive(:log).with(Logger::INFO, updated_pc_db_obj_msg)
-      #     po_handler.check_existence
-      #   end
-      #   context 'returns' do
-      #     let!(:results) { po_handler.check_existence }
-      #
-      #     # results = [result1, result2]
-      #     # result1 = {response_code: msg}
-      #     # result2 = {response_code: msg}
-      #     it '3 results' do
-      #       expect(results).to be_an_instance_of Array
-      #       expect(results.size).to eq 3
-      #     end
-      #     it 'UNEXPECTED_VERSION PreservedCopy result' do
-      #       code = PreservedObjectHandlerResults::UNEXPECTED_VERSION
-      #       expect(results).to include(a_hash_including(code => unexpected_version_pc_msg))
-      #     end
-      #     it 'UPDATED_DB_OBJECT PreservedCopy result' do
-      #       code = PreservedObjectHandlerResults::UPDATED_DB_OBJECT
-      #       expect(results).to include(a_hash_including(code => updated_pc_db_obj_msg))
-      #     end
-      #     it "PC_STATUS_CHANGED PreservedCopy result" do
-      #       code = PreservedObjectHandlerResults::PC_STATUS_CHANGED
-      #       expect(results).to include(a_hash_including(code => updated_pc_db_status_msg))
-      #     end
-      #   end
-      # end
 
       context 'PreservedCopy version does NOT match PreservedObject current_version (online Moab)' do
         before do
@@ -520,8 +431,20 @@ RSpec.describe PreservedObjectHandler do
           end
 
           context 'transaction is rolled back' do
-            it 'does something' do
-              fail 'we need to write test for checking rolled back transaction'
+            it 'PreservedCopy is not updated' do
+              # FIXME: TODO: perhaps this is failing because the logic is wrong????
+              orig = Time.current
+              pc.updated_at = orig
+              pc.save!
+              po_handler.check_existence
+              expect(pc.reload.updated_at).to eq orig
+            end
+            it 'PreservedObject is not updated' do
+              orig = Time.current
+              po.updated_at = orig
+              po.save!
+              po_handler.check_existence
+              expect(po.reload.updated_at).to eq orig
             end
           end
 
@@ -592,27 +515,204 @@ RSpec.describe PreservedObjectHandler do
       #  then this will no longer be correct?
       it_behaves_like 'PreservedCopy does not exist', :check_existence
 
-      # it 'stops processing if there is no PreservedCopy' do
-      #   druid = 'nd000lm0000'
-      #   diff_ep = Endpoint.create!(
-      #     endpoint_name: 'diff_endpoint',
-      #     endpoint_type: Endpoint.default_storage_root_endpoint_type,
-      #     endpoint_node: 'localhost',
-      #     storage_location: 'blah',
-      #     recovery_cost: 1
-      #   )
-      #   PreservedObject.create!(druid: druid, current_version: 2, preservation_policy: default_prez_policy)
-      #   po_handler = described_class.new(druid, 3, incoming_size, diff_ep)
-      #   results = po_handler.check_existence
-      #   code = PreservedObjectHandlerResults::OBJECT_DOES_NOT_EXIST
-      #   exp_str = "ActiveRecord::RecordNotFound: Couldn't find PreservedCopy> db object does not exist"
-      #   expect(results).to include(a_hash_including(code => a_string_matching(exp_str)))
-      #   expect(PreservedObject.find_by(druid: druid).current_version).to eq 2
-      # end
-
       context 'adds to catalog after validation' do
-        it 'does something' do
-          fail 'need tests showing validation and create happen when object not in db'
+        let(:diff_ep) do
+          diff_ep = Endpoint.create!(
+            endpoint_name: 'diff_endpoint',
+            endpoint_type: Endpoint.default_storage_root_endpoint_type,
+            endpoint_node: 'localhost',
+            storage_location: 'blah',
+            recovery_cost: 1
+          )
+        end
+        let(:new_druid) { 'nd000lm0000' }
+        let(:incoming_version) { 2 }
+        let(:po_handler) { described_class.new(druid, incoming_version, incoming_size, diff_ep) }
+        before do
+          PreservedObject.create!(druid: druid, current_version: incoming_version, preservation_policy: default_prez_policy)
+        end
+
+        it 'calls Stanford::StorageObjectValidator.validation_errors for moab' do
+          # FIXME: prefer the first code below but since even the second version doesn't pass, leaving it for now
+          # mock_sov = instance_double(Stanford::StorageObjectValidator)
+          # expect(mock_sov).to receive(:validation_errors).and_return([])
+          # allow(Stanford::StorageObjectValidator).to receive(:new).and_return(mock_sov)
+          # po_handler.check_existence
+
+          expect(po_handler).to receive(:moab_validation_errors)
+          po_handler.check_existence
+        end
+
+        context 'moab is valid' do
+          context 'PreservedCopy created' do
+            it 'does something' do
+              fail 'write tests'
+            end
+          end
+          context 'PreservedObject created' do
+            it 'does something' do
+              fail 'write tests'
+            end
+          end
+          it 'logs at ??INFO?? level' do
+            fail 'what level should logging be?  What logging should there be?'
+          end
+          context 'returns' do
+            it 'does something' do
+              fail 'write tests'
+            end
+          end
+
+          context 'db update error' do
+            context 'ActiveRecordError' do
+              let(:result_code) { PreservedObjectHandlerResults::DB_UPDATE_FAILED }
+              let(:results) do
+                allow(Rails.logger).to receive(:log)
+                # FIXME: couldn't figure out how to put next line into its own test
+                expect(Rails.logger).to receive(:log).with(Logger::ERROR, /#{db_update_failed_prefix_regex_escaped}/)
+
+                po = instance_double("PreservedObject")
+                allow(PreservedObject).to receive(:create!).with(hash_including(druid: invalid_druid)).and_return(po)
+                allow(PreservedCopy).to receive(:create!).and_raise(ActiveRecord::ActiveRecordError, 'foo')
+                po_handler = described_class.new(invalid_druid, incoming_version, incoming_size, ep)
+                po_handler.check_existence
+              end
+
+              context 'transaction is rolled back' do
+                it 'PreservedCopy does not exist' do
+                  expect(PreservedCopy.find_by(endpoint: ep)).to be_nil
+                end
+                it 'PreservedObject does not exist' do
+                  expect(PreservedObject.find_by(druid: invalid_druid)).to be_nil
+                end
+              end
+
+              context 'DB_UPDATE_FAILED error' do
+                it 'prefix' do
+                  expect(results).to include(a_hash_including(result_code => a_string_matching(db_update_failed_prefix_regex_escaped)))
+                end
+                it 'specific exception raised' do
+                  expect(results).to include(a_hash_including(result_code => a_string_matching('ActiveRecord::ActiveRecordError')))
+                end
+                it "exception's message" do
+                  expect(results).to include(a_hash_including(result_code => a_string_matching('foo')))
+                end
+              end
+            end
+          end
+        end
+
+        context 'moab is invalid' do
+          let(:storage_dir) { 'spec/fixtures/bad_root01/bad_moab_storage_trunk' }
+          let(:ep) { Endpoint.find_by(storage_location: storage_dir) }
+          let(:invalid_druid) { 'xx000xx0000' }
+          let(:exp_msg_prefix) { "PreservedObjectHandler(#{invalid_druid}, #{incoming_version}, #{incoming_size}, #{ep})" }
+
+          before do
+            # add storage root with the invalid moab to the Endpoints table
+            Endpoint.find_or_create_by!(endpoint_name: 'bad_fixture_dir') do |endpoint|
+              endpoint.endpoint_type = Endpoint.default_storage_root_endpoint_type
+              endpoint.endpoint_node = Settings.endpoints.storage_root_defaults.endpoint_node
+              endpoint.storage_location = storage_dir
+              endpoint.recovery_cost = Settings.endpoints.storage_root_defaults.recovery_cost
+            end
+          end
+
+          it 'creates PreservedObject; PreservedCopy with "invalid_moab" status' do
+            po_args = {
+              druid: invalid_druid,
+              current_version: incoming_version,
+              preservation_policy_id: PreservationPolicy.default_policy_id
+            }
+            pc_args = {
+              preserved_object: an_instance_of(PreservedObject), # TODO: see if we got the preserved object that we expected
+              version: incoming_version,
+              size: incoming_size,
+              endpoint: ep,
+              status: PreservedCopy::INVALID_MOAB_STATUS, # NOTE this particular status
+              last_audited: an_instance_of(Integer),
+              last_checked_on_storage: an_instance_of(ActiveSupport::TimeWithZone)
+            }
+
+            expect(PreservedObject).to receive(:create!).with(po_args).and_call_original
+            expect(PreservedCopy).to receive(:create!).with(pc_args).and_call_original
+            po_handler = described_class.new(invalid_druid, incoming_version, incoming_size, ep)
+            po_handler.check_existence
+          end
+
+          context 'logging' do
+            it "moab validation errors" do
+              allow(Rails.logger).to receive(:log).with(any_args)
+              log_msg = "#{exp_msg_prefix} Invalid moab, validation errors: "
+              expect(Rails.logger).to receive(:log).with(Logger::ERROR, a_string_matching(log_msg)).twice
+              po_handler = described_class.new(invalid_druid, incoming_version, incoming_size, ep)
+              po_handler.check_existence
+            end
+            it 'not sure what logging we REALLY want - maybe a single WARN?' do
+              fail 'need to get requirements on what exactly we want in logs'
+            end
+            it 'object does not exist error' do
+              allow(Rails.logger).to receive(:log)
+              log_msg_regex = "#{exp_msg_prefix} .* db object does not exist"
+              expect(Rails.logger).to receive(:log).with(Logger::ERROR, a_string_matching(log_msg_regex))
+              po_handler = described_class.new(invalid_druid, incoming_version, incoming_size, ep)
+              po_handler.check_existence
+            end
+            it 'created db object message' do
+              allow(Rails.logger).to receive(:log)
+              log_msg = "#{exp_msg_prefix} added object to db as it did not exist"
+              expect(Rails.logger).to receive(:log).with(Logger::INFO, log_msg)
+              po_handler = described_class.new(invalid_druid, incoming_version, incoming_size, ep)
+              po_handler.check_existence
+            end
+          end
+
+          it 'logs at ??INFO?? level' do
+            fail 'what level should logging be?  What logging should there be?'
+          end
+          context 'returns' do
+            it 'does something' do
+              fail 'write tests'
+            end
+          end
+
+          context 'db update error' do
+            context 'ActiveRecordError' do
+              let(:result_code) { PreservedObjectHandlerResults::DB_UPDATE_FAILED }
+              let(:results) do
+                allow(Rails.logger).to receive(:log)
+                # FIXME: couldn't figure out how to put next line into its own test
+                expect(Rails.logger).to receive(:log).with(Logger::ERROR, /#{db_update_failed_prefix_regex_escaped}/)
+
+                po = instance_double("PreservedObject")
+                allow(PreservedObject).to receive(:create!).with(hash_including(druid: invalid_druid)).and_return(po)
+                allow(PreservedCopy).to receive(:create!).and_raise(ActiveRecord::ActiveRecordError, 'foo')
+                po_handler = described_class.new(invalid_druid, incoming_version, incoming_size, ep)
+                po_handler.check_existence
+              end
+
+              context 'transaction is rolled back' do
+                it 'PreservedCopy does not exist' do
+                  expect(PreservedCopy.find_by(endpoint: ep)).to be_nil
+                end
+                it 'PreservedObject does not exist' do
+                  expect(PreservedObject.find_by(druid: invalid_druid)).to be_nil
+                end
+              end
+
+              context 'DB_UPDATE_FAILED error' do
+                it 'prefix' do
+                  expect(results).to include(a_hash_including(result_code => a_string_matching(db_update_failed_prefix_regex_escaped)))
+                end
+                it 'specific exception raised' do
+                  expect(results).to include(a_hash_including(result_code => a_string_matching('ActiveRecord::ActiveRecordError')))
+                end
+                it "exception's message" do
+                  expect(results).to include(a_hash_including(result_code => a_string_matching('foo')))
+                end
+              end
+            end
+          end
         end
       end
     end
