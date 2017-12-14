@@ -118,19 +118,18 @@ RSpec.describe PreservedObjectHandler do
         let(:updated_status_msg_regex) { Regexp.new(Regexp.escape("#{exp_msg_prefix} PreservedCopy status changed from")) }
 
         it 'calls Stanford::StorageObjectValidator.validation_errors for moab' do
-          # FIXME: prefer the first code below but since even the second version doesn't pass, leaving it for now
-          # mock_sov = instance_double(Stanford::StorageObjectValidator)
-          # expect(mock_sov).to receive(:validation_errors).and_return([])
-          # allow(Stanford::StorageObjectValidator).to receive(:new).and_return(mock_sov)
-          # po_handler.check_existence
-
-          expect(po_handler).to receive(:moab_validation_errors)
+          mock_sov = instance_double(Stanford::StorageObjectValidator)
+          expect(mock_sov).to receive(:validation_errors).and_return([])
+          allow(Stanford::StorageObjectValidator).to receive(:new).and_return(mock_sov)
           po_handler.check_existence
         end
 
         context 'when moab is valid' do
           context 'PreservedCopy' do
             context 'changed' do
+              before do
+                allow(po_handler).to receive(:moab_validation_errors).and_return([])
+              end
               it 'version to incoming_version' do
                 orig = pc.version
                 po_handler.check_existence
@@ -171,6 +170,9 @@ RSpec.describe PreservedObjectHandler do
               end
             end
             context 'unchanged' do
+              before do
+                allow(po_handler).to receive(:moab_validation_errors).and_return([])
+              end
               it 'status if former status was ok' do
                 pc.status = PreservedCopy::OK_STATUS
                 pc.save!
@@ -196,6 +198,9 @@ RSpec.describe PreservedObjectHandler do
           end
           context 'PreservedObject' do
             context 'changed' do
+              before do
+                allow(po_handler).to receive(:moab_validation_errors).and_return([])
+              end
               it 'current_version' do
                 orig = po.current_version
                 po_handler.check_existence
@@ -211,6 +216,7 @@ RSpec.describe PreservedObjectHandler do
           end
 
           it "logs at info level" do
+            allow(po_handler).to receive(:moab_validation_errors).and_return([])
             expect(Rails.logger).to receive(:log).with(Logger::INFO, version_gt_po_msg)
             expect(Rails.logger).to receive(:log).with(Logger::INFO, version_gt_pc_msg)
             expect(Rails.logger).to receive(:log).with(Logger::INFO, updated_po_db_msg)
@@ -220,12 +226,16 @@ RSpec.describe PreservedObjectHandler do
           end
 
           context 'returns' do
-            let!(:results) { po_handler.check_existence }
+            let(:results) { po_handler.check_existence }
 
+            before do
+              allow(po_handler).to receive(:moab_validation_errors).and_return([])
+            end
             # results = [result1, result2]
             # result1 = {response_code: msg}
             # result2 = {response_code: msg}
             it '4 results' do
+              puts "RESULTS: #{results}"
               expect(results).to be_an_instance_of Array
               expect(results.size).to eq 4
             end
@@ -249,6 +259,7 @@ RSpec.describe PreservedObjectHandler do
           let(:invalid_druid) { 'xx000xx0000' }
           let(:invalid_storage_dir) { 'spec/fixtures/bad_root01/bad_moab_storage_trunk' }
           let(:invalid_ep) { Endpoint.find_by(storage_location: invalid_storage_dir) }
+          let(:invalid_po_handler) { described_class.new(invalid_druid, incoming_version, incoming_size, invalid_ep) }
 
           before do
             # add storage root with the invalid moab to the Endpoints table
@@ -259,10 +270,10 @@ RSpec.describe PreservedObjectHandler do
               endpoint.recovery_cost = Settings.endpoints.storage_root_defaults.recovery_cost
             end
             # these need to be in before loop so it happens before each context below
-            PreservedObject.create!(druid: invalid_druid, current_version: 2, preservation_policy: default_prez_policy)
+            invalid_po = PreservedObject.create!(druid: invalid_druid, current_version: 2, preservation_policy: default_prez_policy)
             PreservedCopy.create!(
-              preserved_object: po, # TODO: see if we got the preserved object that we expected
-              version: po.current_version,
+              preserved_object: invalid_po, # TODO: see if we got the preserved object that we expected
+              version: invalid_po.current_version,
               size: 1,
               endpoint: invalid_ep,
               status: PreservedCopy::OK_STATUS,
@@ -271,64 +282,68 @@ RSpec.describe PreservedObjectHandler do
             )
           end
 
+          let(:invalid_po) { PreservedObject.find_by(druid: invalid_druid) }
+          let(:invalid_pc) { PreservedCopy.find_by(preserved_object: invalid_po ) }
           context 'PreservedCopy' do
             context 'changed' do
               it 'last_audited' do
                 orig = Time.current.to_i
-                pc.last_audited = orig
-                pc.save!
+                invalid_pc.last_audited = orig
+                invalid_pc.save!
                 sleep 1 # last_audited is bigint, and granularity is second, not fraction thereof
-                po_handler.check_existence
-                expect(pc.reload.last_audited).to be > orig
+                invalid_po_handler.check_existence
+                expect(invalid_pc.reload.last_audited).to be > orig
               end
               it 'last_checked_on_storage' do
                 orig = Time.current
-                pc.last_checked_on_storage = orig
-                pc.save!
-                po_handler.check_existence
-                expect(pc.reload.last_checked_on_storage).to be > orig
+                invalid_pc.last_checked_on_storage = orig
+                invalid_pc.save!
+                invalid_po_handler.check_existence
+                expect(invalid_pc.reload.last_checked_on_storage).to be > orig
               end
               it 'updated_at' do
-                orig = pc.updated_at
-                po_handler.check_existence
-                expect(pc.reload.updated_at).to be > orig
+                orig = invalid_pc.updated_at
+                invalid_po_handler.check_existence
+                expect(invalid_pc.reload.updated_at).to be > orig
               end
-              it 'ensures status becomes invalid_moab' do
-                pc.status = PreservedCopy::OK_STATUS
-                pc.save!
-                po_handler.check_existence
-                expect(pc.reload.status).to eq PreservedCopy::INVALID_MOAB_STATUS
-                pc.status = PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
-                pc.save!
-                po_handler.check_existence
-                expect(pc.reload.status).to eq PreservedCopy::INVALID_MOAB_STATUS
+              it 'ensures status becomes invalid_moab from ok' do
+                invalid_pc.status = PreservedCopy::OK_STATUS
+                invalid_pc.save!
+                invalid_po_handler.check_existence
+                expect(invalid_pc.reload.status).to eq PreservedCopy::INVALID_MOAB_STATUS
+              end
+              it 'ensures status becomes invalid_moab from expected_vers_not_found_on_storage' do
+                invalid_pc.status = PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
+                invalid_pc.save!
+                invalid_po_handler.check_existence
+                expect(invalid_pc.reload.status).to eq PreservedCopy::INVALID_MOAB_STATUS
               end
             end
             context 'unchanged' do
               it 'version' do
-                orig = pc.version
-                po_handler.check_existence
-                expect(pc.reload.version).to eq orig
+                orig = invalid_pc.version
+                invalid_po_handler.check_existence
+                expect(invalid_pc.reload.version).to eq orig
               end
               it 'size' do
-                orig = pc.size
-                po_handler.check_existence
-                expect(pc.reload.size).to eq orig
+                orig = invalid_pc.size
+                invalid_po_handler.check_existence
+                expect(invalid_pc.reload.size).to eq orig
               end
             end
           end
           it 'PreservedObject is not updated' do
-            orig_timestamp = po.updated_at
-            po_handler.confirm_version
-            expect(po.reload.updated_at).to eq orig_timestamp
+            orig_timestamp = invalid_po.updated_at
+            invalid_po_handler.confirm_version
+            expect(invalid_po.reload.updated_at).to eq orig_timestamp
           end
 
           it 'logs at error level' do
-            exp_msg_prefix = "PreservedObjectHandler(#{invalid_druid}, #{incoming_version}, #{incoming_size}, #{ep})"
+            exp_msg_prefix = "PreservedObjectHandler(#{invalid_druid}, #{incoming_version}, #{incoming_size}, #{invalid_ep})"
             allow(Rails.logger).to receive(:log)
-            errors = "#{exp_msg_prefix} Invalid moab, validation errors:"
+            errors = Regexp.escape("#{exp_msg_prefix} Invalid moab, validation errors:")
             expect(Rails.logger).to receive(:log).with(Logger::ERROR, a_string_matching(errors))
-            po_handler.check_existence
+            invalid_po_handler.check_existence
           end
 
           context 'returns' do
@@ -462,24 +477,6 @@ RSpec.describe PreservedObjectHandler do
         end
       end
 
-      it 'calls PreservedCopy.save! (but not PreservedObject.save!) if the existing record is altered' do
-        po = instance_double(PreservedObject)
-        pc = instance_double(PreservedCopy)
-        status = PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
-        allow(PreservedObject).to receive(:find_by).with(druid: druid).and_return(po)
-        allow(po).to receive(:current_version).and_return(1)
-        allow(po).to receive(:save!)
-        allow(PreservedCopy).to receive(:find_by).with(preserved_object: po, endpoint: ep).and_return(pc)
-        allow(pc).to receive(:version).and_return(1)
-        allow(pc).to receive(:status).and_return(status)
-        allow(pc).to receive(:last_audited=)
-        allow(pc).to receive(:last_checked_on_storage=)
-        allow(pc).to receive(:changed?).and_return(true)
-        allow(pc).to receive(:save!)
-        po_handler.check_existence
-        expect(po).not_to have_received(:save!)
-        expect(pc).to have_received(:save!)
-      end
       it 'calls PreservedCopy.touch (but not PreservedObject.touch) if the existing record is NOT altered' do
         po_handler = described_class.new(druid, 1, 1, ep)
         po = instance_double(PreservedObject)
@@ -500,6 +497,7 @@ RSpec.describe PreservedObjectHandler do
       it 'logs a debug message' do
         msg = "check_existence #{druid} called"
         allow(Rails.logger).to receive(:debug)
+        allow(po_handler).to receive(:moab_validation_errors).and_return([])
         po_handler.check_existence
         expect(Rails.logger).to have_received(:debug).with(msg)
       end
