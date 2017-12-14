@@ -260,6 +260,9 @@ RSpec.describe PreservedObjectHandler do
           let(:invalid_storage_dir) { 'spec/fixtures/bad_root01/bad_moab_storage_trunk' }
           let(:invalid_ep) { Endpoint.find_by(storage_location: invalid_storage_dir) }
           let(:invalid_po_handler) { described_class.new(invalid_druid, incoming_version, incoming_size, invalid_ep) }
+          let(:exp_msg_prefix) do
+            "PreservedObjectHandler(#{invalid_druid}, #{incoming_version}, #{incoming_size}, #{invalid_ep})"
+          end
 
           before do
             # add storage root with the invalid moab to the Endpoints table
@@ -339,7 +342,6 @@ RSpec.describe PreservedObjectHandler do
           end
 
           it 'logs at error level' do
-            exp_msg_prefix = "PreservedObjectHandler(#{invalid_druid}, #{incoming_version}, #{incoming_size}, #{invalid_ep})"
             allow(Rails.logger).to receive(:log)
             errors = Regexp.escape("#{exp_msg_prefix} Invalid moab, validation errors:")
             expect(Rails.logger).to receive(:log).with(Logger::ERROR, a_string_matching(errors))
@@ -347,7 +349,7 @@ RSpec.describe PreservedObjectHandler do
           end
 
           context 'returns' do
-            let!(:results) { po_handler.check_existence }
+            let!(:results) { invalid_po_handler.check_existence }
 
             # results = [result1, result2]
             # result1 = {response_code: msg}
@@ -426,39 +428,23 @@ RSpec.describe PreservedObjectHandler do
         context 'ActiveRecordError' do
           let(:result_code) { PreservedObjectHandlerResults::DB_UPDATE_FAILED }
           let(:incoming_version) { 2 }
-          let(:results) do
-            allow(Rails.logger).to receive(:log)
-            # FIXME: couldn't figure out how to put next line into its own test
-            expect(Rails.logger).to receive(:log).with(Logger::ERROR, /#{db_update_failed_prefix_regex_escaped}/)
 
-            po = instance_double("PreservedObject")
-            allow(PreservedObject).to receive(:find_by).with(druid: druid).and_return(po)
-            pc = instance_double("PreservedCopy")
-            allow(PreservedCopy).to receive(:find_by).and_return(pc)
-            allow(pc).to receive(:version).and_return(2)
-            allow(pc).to receive(:status)
-            allow(pc).to receive(:last_audited=)
-            allow(pc).to receive(:last_checked_on_storage=)
-            allow(pc).to receive(:changed?).and_return(true)
+          let(:results) do
+            allow(PreservedObject).to receive(:find_by!).with(druid: druid).and_return(po)
+            allow(PreservedCopy).to receive(:find_by!).with(preserved_object: po, endpoint: ep).and_return(pc)
             allow(pc).to receive(:save!).and_raise(ActiveRecord::ActiveRecordError, 'foo')
-            allow(po).to receive(:current_version).and_return(2)
             po_handler.check_existence
           end
 
           context 'transaction is rolled back' do
             it 'PreservedCopy is not updated' do
-              # FIXME: TODO: perhaps this is failing because the logic is wrong????
-              orig = Time.current
-              pc.updated_at = orig
-              pc.save!
-              po_handler.check_existence
+              orig = pc.updated_at
+              results
               expect(pc.reload.updated_at).to eq orig
             end
             it 'PreservedObject is not updated' do
-              orig = Time.current
-              po.updated_at = orig
-              po.save!
-              po_handler.check_existence
+              orig = po.updated_at
+              results
               expect(po.reload.updated_at).to eq orig
             end
           end
@@ -507,14 +493,20 @@ RSpec.describe PreservedObjectHandler do
       let(:exp_po_not_exist_msg) { "#{exp_msg_prefix} PreservedObject db object does not exist" }
       let(:exp_obj_created_msg) { "#{exp_msg_prefix} added object to db as it did not exist" }
 
-      # FIXME: if requirements change to a single message for "object does not exist" and "created object"
-      #  then this will no longer be correct?
-      # NOTE: this pertains to PreservedObject
-      it_behaves_like 'druid not in catalog', :check_existence
+      context 'presume validity and test other common behavior' do
+        before do
+          allow(po_handler).to receive(:moab_validation_errors).and_return([])
+        end
 
-      # FIXME: if requirements change to a single message for "object does not exist" and "created object"
-      #  then this will no longer be correct?
-      it_behaves_like 'PreservedCopy does not exist', :check_existence
+        # FIXME: if requirements change to a single message for "object does not exist" and "created object"
+        #  then this will no longer be correct?
+        # NOTE: this pertains to PreservedObject
+        it_behaves_like 'druid not in catalog', :check_existence
+
+        # FIXME: if requirements change to a single message for "object does not exist" and "created object"
+        #  then this will no longer be correct?
+        it_behaves_like 'PreservedCopy does not exist', :check_existence
+      end
 
       context 'adds to catalog after validation' do
         let(:valid_druid) { 'bp628nk4868' }

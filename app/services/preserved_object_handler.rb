@@ -84,13 +84,23 @@ class PreservedObjectHandler
             update_pc_validation_timestamps(pres_copy)
             update_db_object(pres_copy)
           elsif incoming_version != pres_copy.version
+            version_comp_result = if incoming_version > pres_copy.version
+                PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT
+              else
+                PreservedObjectHandlerResults::ARG_VERSION_LESS_THAN_DB_OBJECT
+              end
+            handler_results.add_result(version_comp_result, pres_copy.class.name)
+            handler_results.add_result(version_comp_result, pres_object.class.name)
             # update_version_after_validation
             if endpoint.endpoint_type.endpoint_class == 'online'
               # NOTE: we deal with active record transactions in update_online_version, not here
               if moab_validation_errors.empty?
                 update_online_version(true, PreservedCopy::OK_STATUS)
               else
-                update_online_version(true, PreservedCopy::INVALID_MOAB_STATUS)
+                # update_online_version(true, PreservedCopy::INVALID_MOAB_STATUS)
+                update_status(pres_copy, PreservedCopy::INVALID_MOAB_STATUS)
+                update_pc_validation_timestamps(pres_copy)
+                update_db_object(pres_copy)
               end
             elsif endpoint.endpoint_type.endpoint_class == 'archive'
               # TODO: perform archive object validation; then create a new PC record for the new
