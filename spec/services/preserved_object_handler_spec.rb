@@ -67,37 +67,6 @@ RSpec.describe PreservedObjectHandler do
   end
 
   describe '#check_existence' do
-    context "(calls create or confirm_version)" do
-      it 'calls #create_after_validation when the object does not exit' do
-        expect(PreservedObject).to receive(:exists?).with(druid: druid).and_return(false)
-        no_exist_msg = "#{exp_msg_prefix} PreservedObject db object does not exist"
-        expect(Rails.logger).to receive(:log).with(Logger::ERROR, no_exist_msg)
-        # because create_after_validation isn't called, we don't check
-        # for the usual result codes it would return (doesn't exist and add to the db)
-        expect(po_handler).to receive(:create_after_validation)
-        po_handler.check_existence
-      end
-
-      it 'calls confirm_version when the object exists' do
-        expect(PreservedObject).to receive(:exists?).with(druid: druid).and_return(true)
-        expect(po_handler).to receive(:confirm_version)
-        po_handler.check_existence
-      end
-
-      it 'calls update_version_after_validation when confirm_version returns ARG_VERSION_GREATER_THAN_DB_OBJECT' do
-        expect(PreservedObject).to receive(:exists?).with(druid: druid).and_return(true)
-        # only thing we care about here from confirm_version implementation is that it adds the result code we
-        # want to test against, so just have it do that if it runs
-        allow(po_handler).to receive(:confirm_version) do
-          po_handler.handler_results.add_result(
-            PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT, 'PreservedObject'
-          )
-        end
-        expect(po_handler).to receive(:update_version_after_validation)
-        po_handler.check_existence
-      end
-    end
-
     it_behaves_like 'attributes validated', :check_existence
 
     context 'result handling' do
