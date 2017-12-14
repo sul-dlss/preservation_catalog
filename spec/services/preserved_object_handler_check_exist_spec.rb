@@ -504,6 +504,9 @@ RSpec.describe PreservedObjectHandler do
     end
 
     context 'object not in db' do
+      let(:exp_po_not_exist_msg) { "#{exp_msg_prefix} PreservedObject db object does not exist" }
+      let(:exp_obj_created_msg) { "#{exp_msg_prefix} added object to db as it did not exist" }
+
       # FIXME: if requirements change to a single message for "object does not exist" and "created object"
       #  then this will no longer be correct?
       # NOTE: this pertains to PreservedObject
@@ -514,50 +517,81 @@ RSpec.describe PreservedObjectHandler do
       it_behaves_like 'PreservedCopy does not exist', :check_existence
 
       context 'adds to catalog after validation' do
-        let(:diff_ep) do
-          diff_ep = Endpoint.create!(
-            endpoint_name: 'diff_endpoint',
-            endpoint_type: Endpoint.default_storage_root_endpoint_type,
-            endpoint_node: 'localhost',
-            storage_location: 'blah',
-            recovery_cost: 1
-          )
-        end
-        let(:new_druid) { 'nd000lm0000' }
+        let(:valid_druid) { 'bp628nk4868' }
+        let(:storage_dir) { 'spec/fixtures/storage_root02/moab_storage_trunk' }
+        let(:ep) { Endpoint.find_by(storage_location: storage_dir) }
         let(:incoming_version) { 2 }
-        let(:po_handler) { described_class.new(druid, incoming_version, incoming_size, diff_ep) }
-        before do
-          PreservedObject.create!(druid: druid, current_version: incoming_version, preservation_policy: default_prez_policy)
-        end
+        let(:po_handler) { described_class.new(valid_druid, incoming_version, incoming_size, ep) }
 
         it 'calls Stanford::StorageObjectValidator.validation_errors for moab' do
-          # FIXME: prefer the first code below but since even the second version doesn't pass, leaving it for now
-          # mock_sov = instance_double(Stanford::StorageObjectValidator)
-          # expect(mock_sov).to receive(:validation_errors).and_return([])
-          # allow(Stanford::StorageObjectValidator).to receive(:new).and_return(mock_sov)
-          # po_handler.check_existence
-
-          expect(po_handler).to receive(:moab_validation_errors)
+          mock_sov = instance_double(Stanford::StorageObjectValidator)
+          expect(mock_sov).to receive(:validation_errors).and_return([])
+          allow(Stanford::StorageObjectValidator).to receive(:new).and_return(mock_sov)
           po_handler.check_existence
         end
 
         context 'moab is valid' do
-          context 'PreservedCopy created' do
-            it 'does something' do
-              fail 'write tests'
+          let(:exp_msg_prefix) { "PreservedObjectHandler(#{valid_druid}, #{incoming_version}, #{incoming_size}, #{ep})" }
+
+          it 'PreservedObject created' do
+            po_args = {
+              druid: valid_druid,
+              current_version: incoming_version,
+              preservation_policy_id: PreservationPolicy.default_policy_id
+            }
+            expect(PreservedObject).to receive(:create!).with(po_args).and_call_original
+            po_handler.check_existence
+          end
+          it 'PreservedCopy created' do
+            pc_args = {
+              preserved_object: an_instance_of(PreservedObject), # TODO: see if we got the preserved object that we expected
+              version: incoming_version,
+              size: incoming_size,
+              endpoint: ep,
+              status: PreservedCopy::OK_STATUS, # NOTE this particular status
+              last_audited: an_instance_of(Integer),
+              last_checked_on_storage: an_instance_of(ActiveSupport::TimeWithZone)
+            }
+            expect(PreservedCopy).to receive(:create!).with(pc_args).and_call_original
+            po_handler.check_existence
+          end
+
+          context 'logging' do
+            it 'not sure what logging we REALLY want - maybe a single WARN?' do
+              fail 'need to get requirements on what exactly we want in logs'
+            end
+            it 'object does not exist error' do
+              allow(Rails.logger).to receive(:log)
+              expect(Rails.logger).to receive(:log).with(Logger::ERROR, exp_po_not_exist_msg)
+              po_handler.check_existence
+            end
+            it 'created db object message' do
+              allow(Rails.logger).to receive(:log)
+              expect(Rails.logger).to receive(:log).with(Logger::INFO, exp_obj_created_msg)
+              po_handler.check_existence
             end
           end
-          context 'PreservedObject created' do
-            it 'does something' do
-              fail 'write tests'
-            end
-          end
-          it 'logs at ??INFO?? level' do
-            fail 'what level should logging be?  What logging should there be?'
-          end
+
           context 'returns' do
-            it 'does something' do
-              fail 'write tests'
+            let!(:results) { po_handler.check_existence }
+
+            # results = [result1, result2]
+            # result1 = {response_code: msg}
+            # result2 = {response_code: msg}
+            it '2 results' do
+              expect(results).to be_an_instance_of Array
+              expect(results.size).to eq 2
+            end
+            it 'not sure what results we REALLY want' do
+              fail 'need to get requirements on what exactly we want in results'
+            end
+            it 'OBJECT_DOES_NOT_EXIST results' do
+              code = PreservedObjectHandlerResults::OBJECT_DOES_NOT_EXIST
+              expect(results).to include(a_hash_including(code => exp_po_not_exist_msg))
+            end
+            it 'CREATED_NEW_OBJECT result' do
+              code = PreservedObjectHandlerResults::CREATED_NEW_OBJECT
+              expect(results).to include(a_hash_including(code => exp_obj_created_msg))
             end
           end
 
@@ -570,9 +604,8 @@ RSpec.describe PreservedObjectHandler do
                 expect(Rails.logger).to receive(:log).with(Logger::ERROR, /#{db_update_failed_prefix_regex_escaped}/)
 
                 po = instance_double("PreservedObject")
-                allow(PreservedObject).to receive(:create!).with(hash_including(druid: invalid_druid)).and_return(po)
+                allow(PreservedObject).to receive(:create!).with(hash_including(druid: valid_druid)).and_return(po)
                 allow(PreservedCopy).to receive(:create!).and_raise(ActiveRecord::ActiveRecordError, 'foo')
-                po_handler = described_class.new(invalid_druid, incoming_version, incoming_size, ep)
                 po_handler.check_existence
               end
 
@@ -581,7 +614,7 @@ RSpec.describe PreservedObjectHandler do
                   expect(PreservedCopy.find_by(endpoint: ep)).to be_nil
                 end
                 it 'PreservedObject does not exist' do
-                  expect(PreservedObject.find_by(druid: invalid_druid)).to be_nil
+                  expect(PreservedObject.find_by(druid: valid_druid)).to be_nil
                 end
               end
 
@@ -605,6 +638,8 @@ RSpec.describe PreservedObjectHandler do
           let(:ep) { Endpoint.find_by(storage_location: storage_dir) }
           let(:invalid_druid) { 'xx000xx0000' }
           let(:exp_msg_prefix) { "PreservedObjectHandler(#{invalid_druid}, #{incoming_version}, #{incoming_size}, #{ep})" }
+          let(:exp_moab_errs_msg) { "#{exp_msg_prefix} Invalid moab, validation errors: [\"Missing directory: [\\\"data\\\", \\\"manifests\\\"] Version: v0001\"]" }
+          let(:po_handler) { described_class.new(invalid_druid, incoming_version, incoming_size, ep) }
 
           before do
             # add storage root with the invalid moab to the Endpoints table
@@ -640,10 +675,8 @@ RSpec.describe PreservedObjectHandler do
 
           context 'logging' do
             it "moab validation errors" do
-              allow(Rails.logger).to receive(:log).with(any_args)
-              log_msg = "#{exp_msg_prefix} Invalid moab, validation errors: "
-              expect(Rails.logger).to receive(:log).with(Logger::ERROR, a_string_matching(log_msg)).twice
-              po_handler = described_class.new(invalid_druid, incoming_version, incoming_size, ep)
+              allow(Rails.logger).to receive(:log)
+              expect(Rails.logger).to receive(:log).with(Logger::ERROR, exp_moab_errs_msg)
               po_handler.check_existence
             end
             it 'not sure what logging we REALLY want - maybe a single WARN?' do
@@ -651,26 +684,40 @@ RSpec.describe PreservedObjectHandler do
             end
             it 'object does not exist error' do
               allow(Rails.logger).to receive(:log)
-              log_msg_regex = "#{exp_msg_prefix} .* db object does not exist"
-              expect(Rails.logger).to receive(:log).with(Logger::ERROR, a_string_matching(log_msg_regex))
-              po_handler = described_class.new(invalid_druid, incoming_version, incoming_size, ep)
+              expect(Rails.logger).to receive(:log).with(Logger::ERROR, exp_po_not_exist_msg)
               po_handler.check_existence
             end
             it 'created db object message' do
               allow(Rails.logger).to receive(:log)
-              log_msg = "#{exp_msg_prefix} added object to db as it did not exist"
-              expect(Rails.logger).to receive(:log).with(Logger::INFO, log_msg)
-              po_handler = described_class.new(invalid_druid, incoming_version, incoming_size, ep)
+              expect(Rails.logger).to receive(:log).with(Logger::INFO, exp_obj_created_msg)
               po_handler.check_existence
             end
           end
 
-          it 'logs at ??INFO?? level' do
-            fail 'what level should logging be?  What logging should there be?'
-          end
           context 'returns' do
-            it 'does something' do
-              fail 'write tests'
+            let!(:results) { po_handler.check_existence }
+
+            # results = [result1, result2]
+            # result1 = {response_code: msg}
+            # result2 = {response_code: msg}
+            it '3 results' do
+              expect(results).to be_an_instance_of Array
+              expect(results.size).to eq 3
+            end
+            it 'not sure what results we REALLY want' do
+              fail 'need to get requirements on what exactly we want in results'
+            end
+            it 'INVALID_MOAB result' do
+              code = PreservedObjectHandlerResults::INVALID_MOAB
+              expect(results).to include(a_hash_including(code => exp_moab_errs_msg))
+            end
+            it 'OBJECT_DOES_NOT_EXIST results' do
+              code = PreservedObjectHandlerResults::OBJECT_DOES_NOT_EXIST
+              expect(results).to include(a_hash_including(code => exp_po_not_exist_msg))
+            end
+            it 'CREATED_NEW_OBJECT result' do
+              code = PreservedObjectHandlerResults::CREATED_NEW_OBJECT
+              expect(results).to include(a_hash_including(code => exp_obj_created_msg))
             end
           end
 
