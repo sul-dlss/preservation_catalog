@@ -54,14 +54,23 @@ task :drop, [:storage_root] => [:environment] do |_t, args|
 end
 
 desc "Populate single endpoint db data"
-task :populate, [:storage_root] => [:environment] do |_t, args|
-  if args[:storage_root]
-    root = args[:storage_root]
+task :populate, [:storage_root, :profile] => [:environment] do |_t, args|
+  unless args[:profile] == 'profile' || args[:profile].nil?
+    p "Usage: rake populate[fixture_sr1] || rake populate[fixture_sr1,profile]"
+    exit
+  end
+  root = args[:storage_root]
+  if args[:storage_root] != 'profile'
     puts "You're about to populate all the data for #{root}. Are you sure you want to continue? [y/N]"
     input = STDIN.gets.chomp
     if input.casecmp("y").zero? # rubocop prefers casecmp because it is faster than '.downcase =='
-      puts "#{Time.now.utc.iso8601} Starting to populate db for #{root}"
-      MoabToCatalog.populate_endpoint(root)
+      puts " #{Time.now.utc.iso8601} Starting to populate db for #{root}"
+      if args[:profile]
+        puts "When done, check log/profile_populate_endpoint.txt for profiling details"
+        MoabToCatalog.populate_endpoint_profiled(root)
+      else
+        MoabToCatalog.populate_endpoint(root)
+      end
       puts "#{Time.now.utc.iso8601} You have successfully populated all the data for #{root}"
     else
       puts "You canceled populating data for #{root}"
