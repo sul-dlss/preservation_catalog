@@ -27,6 +27,7 @@ gem 'honeybadger'
 # Stanford gems
 gem 'moab-versioning' # work with Moab Objects
 gem 'druid-tools' # for druid validation and druid-tree parsing
+gem 'dor-workflow-service'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console

@@ -133,6 +133,10 @@ class PreservedObjectHandler
       end
       handler_results.add_result(PreservedObjectHandlerResults::INVALID_MOAB, moab_error_msgs)
     end
+    if moab_errors.any?
+      reta = ReportErrorsToArgo.new("dh966tq9465")
+      reta.send_errors("moab-valid", "#{moab_errors}")
+    end
     moab_errors
   end
 

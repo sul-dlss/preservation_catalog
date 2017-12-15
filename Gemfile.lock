@@ -81,6 +81,7 @@ GEM
       deep_merge (~> 1.1.1)
     confstruct (1.0.2)
       hashie (~> 3.3)
+    connection_pool (2.2.1)
     coveralls (0.8.21)
       json (>= 1.8, < 3)
       simplecov (~> 0.14.1)
@@ -95,8 +96,17 @@ GEM
       capistrano-one_time_key
       capistrano-shared_configs
     docile (1.1.5)
+    dor-workflow-service (2.2.1)
+      activesupport (>= 3.2.1, < 6)
+      confstruct (>= 0.2.7, < 2)
+      faraday (~> 0.9, >= 0.9.2)
+      net-http-persistent (>= 2.9.4, < 4.a)
+      nokogiri (~> 1.6)
+      retries
     druid-tools (1.0.0)
     erubi (1.6.1)
+    faraday (0.13.1)
+      multipart-post (>= 1.2, < 3)
     ffi (1.9.18)
     globalid (0.4.0)
       activesupport (>= 4.2.0)
@@ -130,6 +140,9 @@ GEM
       nokogiri-happymapper
       systemu
     multi_json (1.12.2)
+    multipart-post (2.0.0)
+    net-http-persistent (3.0.0)
+      connection_pool (~> 2.2)
     net-scp (1.2.1)
       net-ssh (>= 2.6.5)
     net-ssh (4.2.0)
@@ -189,6 +202,7 @@ GEM
     rb-fsevent (0.10.2)
     rb-inotify (0.9.10)
       ffi (>= 0.5.0, < 2)
+    retries (0.0.5)
     rspec-core (3.6.0)
       rspec-support (~> 3.6.0)
     rspec-expectations (3.6.0)
@@ -261,6 +275,7 @@ DEPENDENCIES
   config
   coveralls
   dlss-capistrano
+  dor-workflow-service
   druid-tools
   hirb
   honeybadger

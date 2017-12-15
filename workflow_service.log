@@ -1,0 +1,31 @@
+# Logfile created on 2017-12-15 11:17:40 -0800 by logger.rb/56815
+I, [2017-12-15T11:18:08.070862 #64516]  INFO -- : [Attempt 1] get https://sul-lyberservices-test.stanford.edu/workflow//dor/objects/druid:fs022tg5307/workflows/
+I, [2017-12-15T11:27:40.135319 #64516]  INFO -- : [Attempt 1] put https://sul-lyberservices-test.stanford.edu/workflow//dor/objects/druid:bb103bp3125/workflows/preservationWF
+W, [2017-12-15T11:27:40.527086 #64516]  WARN -- : [Attempt 1] Faraday::ClientError: the server responded with status 400; 0.391702 seconds elapsed.
+I, [2017-12-15T11:27:41.029583 #64516]  INFO -- : [Attempt 2] put https://sul-lyberservices-test.stanford.edu/workflow//dor/objects/druid:bb103bp3125/workflows/preservationWF
+I, [2017-12-15T11:29:45.185333 #64516]  INFO -- : [Attempt 1] put https://sul-lyberservices-test.stanford.edu/workflow//dor/objects/druid:bb103bp3125/workflows/preservationWF
+W, [2017-12-15T11:29:45.288781 #64516]  WARN -- : [Attempt 1] Faraday::ClientError: the server responded with status 400; 0.103443 seconds elapsed.
+I, [2017-12-15T11:29:45.790249 #64516]  INFO -- : [Attempt 2] put https://sul-lyberservices-test.stanford.edu/workflow//dor/objects/druid:bb103bp3125/workflows/preservationWF
+I, [2017-12-15T11:33:09.590722 #64516]  INFO -- : [Attempt 1] put https://sul-lyberservices-test.stanford.edu/workflow//dor/objects/druid:fs022tg5307/workflows/preservationWF
+W, [2017-12-15T11:33:09.705024 #64516]  WARN -- : [Attempt 1] Faraday::ClientError: the server responded with status 400; 0.114298 seconds elapsed.
+I, [2017-12-15T11:33:10.207474 #64516]  INFO -- : [Attempt 2] put https://sul-lyberservices-test.stanford.edu/workflow//dor/objects/druid:fs022tg5307/workflows/preservationWF
+I, [2017-12-15T11:36:19.012303 #64516]  INFO -- : [Attempt 1] put https://sul-lyberservices-test.stanford.edu/workflow//dor/objects/druid:bb103bp3125/workflows/preservationWF
+W, [2017-12-15T11:36:20.242259 #64516]  WARN -- : [Attempt 1] Faraday::ClientError: the server responded with status 400; 1.22995 seconds elapsed.
+I, [2017-12-15T11:36:20.744642 #64516]  INFO -- : [Attempt 2] put https://sul-lyberservices-test.stanford.edu/workflow//dor/objects/druid:bb103bp3125/workflows/preservationWF
+I, [2017-12-15T11:40:46.148141 #64516]  INFO -- : [Attempt 1] put https://sul-lyberservices-test.stanford.edu/workflow//dor/objects/druid:bb103bp3125/workflows/preservationWF
+W, [2017-12-15T11:40:46.244638 #64516]  WARN -- : [Attempt 1] Faraday::ClientError: the server responded with status 400; 0.096519 seconds elapsed.
+I, [2017-12-15T11:40:46.746746 #64516]  INFO -- : [Attempt 2] put https://sul-lyberservices-test.stanford.edu/workflow//dor/objects/druid:bb103bp3125/workflows/preservationWF
+I, [2017-12-15T11:40:59.986374 #64516]  INFO -- : [Attempt 1] put https://sul-lyberservices-test.stanford.edu/workflow//dor/objects/druid:bb103bp3125/workflows/preservationWF
+I, [2017-12-15T11:41:41.764069 #64516]  INFO -- : [Attempt 1] put https://sul-lyberservices-test.stanford.edu/workflow//dor/objects/druid:dh966tq9465/workflows/preservationWF
+I, [2017-12-15T11:46:46.559029 #64516]  INFO -- : [Attempt 1] put https://sul-lyberservices-test.stanford.edu/workflow//dor/objects/druid:dh966tq9465/workflows/preservationWF/moab-valid
+I, [2017-12-15T14:27:38.384314 #66303]  INFO -- : [Attempt 1] put https://sul-lyberservices-test.stanford.edu/workflow//dor/objects/druid:dh966tq9465/workflows/preservationWF
+I, [2017-12-15T14:27:38.822992 #66303]  INFO -- : [Attempt 1] put https://sul-lyberservices-test.stanford.edu/workflow//dor/objects/druid:dh966tq9465/workflows/preservationWF/moab-valid
+I, [2017-12-15T15:52:58.164087 #67162]  INFO -- : [Attempt 1] put https://sul-lyberservices-test.stanford.edu/workflow//dor/objects/druid:dh966tq9465/workflows/preservationWF/moab-valid
+I, [2017-12-15T15:54:08.756171 #67193]  INFO -- : [Attempt 1] get https://sul-lyberservices-test.stanford.edu/workflow//dor/objects/druid:dh966tq9465/workflows/
+I, [2017-12-15T15:54:08.882638 #67193]  INFO -- : [Attempt 1] put https://sul-lyberservices-test.stanford.edu/workflow//dor/objects/druid:dh966tq9465/workflows/preservationWF/moab-valid
+I, [2017-12-15T15:54:55.990624 #67193]  INFO -- : [Attempt 1] get https://sul-lyberservices-test.stanford.edu/workflow//dor/objects/druid:dh966tq9465/workflows/
+I, [2017-12-15T15:55:42.483112 #67193]  INFO -- : [Attempt 1] delete https://sul-lyberservices-test.stanford.edu/workflow//dor/objects/druid:dh966tq9465/workflows/preservationWF
+I, [2017-12-15T15:56:33.965112 #67223]  INFO -- : [Attempt 1] delete https://sul-lyberservices-test.stanford.edu/workflow//dor/objects/druid:dh966tq9465/workflows/preservationWF
+I, [2017-12-15T15:57:00.691325 #67244]  INFO -- : [Attempt 1] get https://sul-lyberservices-test.stanford.edu/workflow//dor/objects/druid:dh966tq9465/workflows/
+I, [2017-12-15T15:57:00.838338 #67244]  INFO -- : [Attempt 1] put https://sul-lyberservices-test.stanford.edu/workflow//dor/objects/druid:dh966tq9465/workflows/preservationWF
+I, [2017-12-15T15:57:01.060945 #67244]  INFO -- : [Attempt 1] put https://sul-lyberservices-test.stanford.edu/workflow//dor/objects/druid:dh966tq9465/workflows/preservationWF/moab-valid
