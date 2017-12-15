@@ -64,10 +64,7 @@ class PreservedObjectHandler
       handler_results.add_result(PreservedObjectHandlerResults::INVALID_ARGUMENTS, errors.full_messages)
     elsif PreservedObject.exists?(druid: druid)
       Rails.logger.debug "check_existence #{druid} called"
-      # confirm_version
       if endpoint.endpoint_type.endpoint_class == 'online'
-        # NOTE: we deal with active record transactions in confirm_online_version, not here
-        # confirm_online_version
         transaction_ok = with_active_record_transaction_and_rescue do
           pres_object = PreservedObject.find_by!(druid: druid)
           # FIXME: what if there is more than one associated pres_copy?
@@ -83,7 +80,7 @@ class PreservedObjectHandler
             handler_results.add_result(PreservedObjectHandlerResults::VERSION_MATCHES, pres_object.class.name)
             update_pc_validation_timestamps(pres_copy)
             update_db_object(pres_copy)
-          elsif incoming_version != pres_copy.version
+          else
             version_comp_result = if incoming_version > pres_copy.version
                 PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT
               else
@@ -91,9 +88,7 @@ class PreservedObjectHandler
               end
             handler_results.add_result(version_comp_result, pres_copy.class.name)
             handler_results.add_result(version_comp_result, pres_object.class.name)
-            # update_version_after_validation
             if endpoint.endpoint_type.endpoint_class == 'online'
-              # NOTE: we deal with active record transactions in update_online_version, not here
               if moab_validation_errors.empty?
                 update_preserved_copy_version_etc(pres_copy, incoming_version, incoming_size, true)
                 update_status(pres_copy, PreservedCopy::OK_STATUS)
@@ -109,24 +104,19 @@ class PreservedObjectHandler
               # TODO: perform archive object validation; then create a new PC record for the new
               #  archived version on the endpoint
             end
-            # end extract from update_version_after_validation
           end
         end
         handler_results.remove_db_updated_results unless transaction_ok
-        # end extract from confirm_online_version
       elsif endpoint.endpoint_type.endpoint_class == 'archive'
         # TODO: note that an endpoint PC version might not match PO.current_version
       end
-      # end extract from confirm_version
     else
       handler_results.add_result(PreservedObjectHandlerResults::OBJECT_DOES_NOT_EXIST, 'PreservedObject')
-      # create_after_validation
       if moab_validation_errors.empty?
         create_db_objects(PreservedCopy::DEFAULT_STATUS, true)
       else
         create_db_objects(PreservedCopy::INVALID_MOAB_STATUS, true)
       end
-      # end extract from create_after_validation
     end
     handler_results.log_results
     handler_results.result_array
