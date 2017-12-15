@@ -95,9 +95,12 @@ class PreservedObjectHandler
             if endpoint.endpoint_type.endpoint_class == 'online'
               # NOTE: we deal with active record transactions in update_online_version, not here
               if moab_validation_errors.empty?
-                update_online_version(true, PreservedCopy::OK_STATUS)
+                update_preserved_copy_version_etc(pres_copy, incoming_version, incoming_size, true)
+                update_status(pres_copy, PreservedCopy::OK_STATUS)
+                update_db_object(pres_copy)
+                pres_object.current_version = incoming_version
+                update_db_object(pres_object)
               else
-                # update_online_version(true, PreservedCopy::INVALID_MOAB_STATUS)
                 update_status(pres_copy, PreservedCopy::INVALID_MOAB_STATUS)
                 update_pc_validation_timestamps(pres_copy)
                 update_db_object(pres_copy)

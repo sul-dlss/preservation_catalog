@@ -66,51 +66,6 @@ RSpec.describe PreservedObjectHandler do
     end
   end
 
-  describe '#check_existence' do
-    it_behaves_like 'attributes validated', :check_existence
-
-    context 'result handling' do
-      let(:version_matches_po_msg) { "#{exp_msg_prefix} incoming version (6) matches PreservedObject db version" }
-      let(:version_matches_pc_msg) { "#{exp_msg_prefix} incoming version (6) matches PreservedCopy db version" }
-      let(:updated_pc_db_msg) { "#{exp_msg_prefix} PreservedCopy db object updated" }
-
-      before do
-        allow(po_handler).to receive(:moab_validation_errors).and_return([])
-        allow(PreservedObject).to receive(:exists?).with(druid: druid).and_return(true)
-        allow(po_handler).to receive(:confirm_version) do
-          po_handler.handler_results.add_result(PreservedObjectHandlerResults::VERSION_MATCHES, 'PreservedObject')
-          po_handler.handler_results.add_result(PreservedObjectHandlerResults::VERSION_MATCHES, 'PreservedCopy')
-          po_handler.handler_results.add_result(PreservedObjectHandlerResults::UPDATED_DB_OBJECT, 'PreservedCopy')
-        end
-      end
-
-      it 'returns the right number of result codes' do
-        results = po_handler.check_existence
-        expect(results.size).to eq 3
-      end
-
-      it 'VERSION_MATCHES results' do
-        results = po_handler.check_existence
-        code = PreservedObjectHandlerResults::VERSION_MATCHES
-        expect(results).to include(a_hash_including(code => version_matches_pc_msg))
-        expect(results).to include(a_hash_including(code => version_matches_po_msg))
-      end
-
-      it 'UPDATED_DB_OBJECT PreservedCopy result' do
-        results = po_handler.check_existence
-        code = PreservedObjectHandlerResults::UPDATED_DB_OBJECT
-        expect(results).to include(a_hash_including(code => updated_pc_db_msg))
-      end
-
-      it "logs at info level" do
-        expect(Rails.logger).to receive(:log).with(Logger::INFO, version_matches_po_msg)
-        expect(Rails.logger).to receive(:log).with(Logger::INFO, version_matches_pc_msg)
-        expect(Rails.logger).to receive(:log).with(Logger::INFO, updated_pc_db_msg)
-        po_handler.check_existence
-      end
-    end
-  end
-
   describe '#with_active_record_transaction_and_rescue' do
     it '#confirm_version rolls back preserved object if there is a problem updating preserved copy' do
       po = PreservedObject.create!(druid: druid, current_version: 2, preservation_policy: default_prez_policy)

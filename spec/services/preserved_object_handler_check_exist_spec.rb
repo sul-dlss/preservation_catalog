@@ -235,7 +235,6 @@ RSpec.describe PreservedObjectHandler do
             # result1 = {response_code: msg}
             # result2 = {response_code: msg}
             it '4 results' do
-              puts "RESULTS: #{results}"
               expect(results).to be_an_instance_of Array
               expect(results.size).to eq 4
             end
@@ -354,9 +353,9 @@ RSpec.describe PreservedObjectHandler do
             # results = [result1, result2]
             # result1 = {response_code: msg}
             # result2 = {response_code: msg}
-            it '4 results' do
+            it '5 results' do
               expect(results).to be_an_instance_of Array
-              expect(results.size).to eq 4
+              expect(results.size).to eq 5
             end
             it 'ARG_VERSION_GREATER_THAN_DB_OBJECT results' do
               code = PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT
