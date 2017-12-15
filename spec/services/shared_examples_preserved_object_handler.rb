@@ -72,7 +72,7 @@ end
 RSpec.shared_examples 'druid not in catalog' do |method_sym|
   let(:druid) { 'rr111rr1111' }
   # let(:exp_msg) { "#{exp_msg_prefix} #<ActiveRecord::RecordNotFound: Couldn't find PreservedObject> db object does not exist" }
-  let(:escaped_exp_msg) { Regexp.escape("#{exp_msg_prefix}") + ".* PreservedObject.* db object does not exist" }
+  let(:escaped_exp_msg) { Regexp.escape(exp_msg_prefix) + ".* PreservedObject.* db object does not exist" }
   let(:results) do
     allow(Rails.logger).to receive(:log)
     # FIXME: couldn't figure out how to put next line into its own test
