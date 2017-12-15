@@ -92,4 +92,10 @@ class MoabToCatalog
     endpoint = Endpoint.find_by!(endpoint_name: endpoint_name)
     MoabToCatalog.seed_catalog_for_dir(endpoint.storage_location)
   end
+
+  def self.populate_endpoint_profiled(endpoint_name)
+    profiler = Profiler.new
+    profiler.prof { populate_endpoint(endpoint_name) }
+    profiler.print_results_flat('populate_endpoint')
+  end
 end

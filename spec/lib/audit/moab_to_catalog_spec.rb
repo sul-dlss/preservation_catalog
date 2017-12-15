@@ -318,4 +318,18 @@ RSpec.describe MoabToCatalog do
     end
 
   end
+
+  describe ".populate_endpoint.profiled" do
+    let(:root) { 'fixture_sr1' }
+    let(:subject) { described_class.populate_endpoint_profiled(root) }
+
+    it "spins up a profiler, calling profiling and printing methods on it" do
+      mock_profiler = instance_double(Profiler)
+      expect(Profiler).to receive(:new).and_return(mock_profiler)
+      expect(mock_profiler).to receive(:prof)
+      expect(mock_profiler).to receive(:print_results_flat).with('populate_endpoint')
+
+      subject
+    end
+  end
 end
