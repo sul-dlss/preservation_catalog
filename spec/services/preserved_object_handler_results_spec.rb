@@ -32,9 +32,10 @@ RSpec.describe PreservedObjectHandlerResults do
     it 'adds a hash entry to the result_array' do
       expect(pohr.result_array.size).to eq 0
       code = PreservedObjectHandlerResults::PC_PO_VERSION_MISMATCH
-      pohr.add_result(code)
+      addl_hash = { pc_version: 1, po_version: 2 }
+      pohr.add_result(code, addl_hash)
       expect(pohr.result_array.size).to eq 1
-      exp_msg = "#{pohr.msg_prefix} #{PreservedObjectHandlerResults::RESPONSE_CODE_TO_MESSAGES[code]}"
+      exp_msg = "#{pohr.msg_prefix} #{PreservedObjectHandlerResults::RESPONSE_CODE_TO_MESSAGES[code] % addl_hash}"
       expect(pohr.result_array.first).to eq code => exp_msg
     end
     it 'can take a single result code argument' do
