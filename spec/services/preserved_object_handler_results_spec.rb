@@ -57,4 +57,14 @@ RSpec.describe PreservedObjectHandlerResults do
       skip
     end
   end
+  context '#contains_result_code?' do
+    it 'returns true if the result code is there, false if not' do
+      expect(pohr.result_array.size).to eq 0
+      added_code = PreservedObjectHandlerResults::PC_PO_VERSION_MISMATCH
+      other_code = PreservedObjectHandlerResults::VERSION_MATCHES
+      pohr.add_result(added_code)
+      expect(pohr.contains_result_code?(added_code)).to eq true
+      expect(pohr.contains_result_code?(other_code)).to eq false
+    end
+  end
 end
