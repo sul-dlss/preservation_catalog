@@ -82,10 +82,10 @@ class PreservedObjectHandler
             update_db_object(pres_copy)
           else
             version_comp_result = if incoming_version > pres_copy.version
-                PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT
-              else
-                PreservedObjectHandlerResults::ARG_VERSION_LESS_THAN_DB_OBJECT
-              end
+                                    PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT
+                                  else
+                                    PreservedObjectHandlerResults::ARG_VERSION_LESS_THAN_DB_OBJECT
+                                  end
             handler_results.add_result(version_comp_result, pres_copy.class.name)
             handler_results.add_result(version_comp_result, pres_object.class.name)
             if endpoint.endpoint_type.endpoint_class == 'online'

@@ -187,7 +187,7 @@ RSpec.describe PreservedObjectHandler do
               end
             end
             it 'what about other statuses????' do
-              fail 'need to know what to do when status does NOT start as ok or invalid moab'
+              skip 'need to know what to do when status does NOT start as ok or invalid moab'
               pc.status = PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
               pc.save!
               po_handler.check_existence
@@ -249,7 +249,7 @@ RSpec.describe PreservedObjectHandler do
               expect(results).to include(a_hash_including(code => updated_po_db_msg))
             end
             it 'what results/logging desired for incoming version > catalog' do
-              fail 'we need clarification of requirements on results/logging in this case'
+              skip 'we need clarification of requirements on results/logging in this case'
             end
           end
         end
@@ -259,6 +259,8 @@ RSpec.describe PreservedObjectHandler do
           let(:invalid_storage_dir) { 'spec/fixtures/bad_root01/bad_moab_storage_trunk' }
           let(:invalid_ep) { Endpoint.find_by(storage_location: invalid_storage_dir) }
           let(:invalid_po_handler) { described_class.new(invalid_druid, incoming_version, incoming_size, invalid_ep) }
+          let(:invalid_po) { PreservedObject.find_by(druid: invalid_druid) }
+          let(:invalid_pc) { PreservedCopy.find_by(preserved_object: invalid_po) }
           let(:exp_msg_prefix) do
             "PreservedObjectHandler(#{invalid_druid}, #{incoming_version}, #{incoming_size}, #{invalid_ep})"
           end
@@ -272,7 +274,11 @@ RSpec.describe PreservedObjectHandler do
               endpoint.recovery_cost = Settings.endpoints.storage_root_defaults.recovery_cost
             end
             # these need to be in before loop so it happens before each context below
-            invalid_po = PreservedObject.create!(druid: invalid_druid, current_version: 2, preservation_policy: default_prez_policy)
+            invalid_po = PreservedObject.create!(
+              druid: invalid_druid,
+              current_version: 2,
+              preservation_policy: default_prez_policy
+            )
             PreservedCopy.create!(
               preserved_object: invalid_po, # TODO: see if we got the preserved object that we expected
               version: invalid_po.current_version,
@@ -284,8 +290,6 @@ RSpec.describe PreservedObjectHandler do
             )
           end
 
-          let(:invalid_po) { PreservedObject.find_by(druid: invalid_druid) }
-          let(:invalid_pc) { PreservedCopy.find_by(preserved_object: invalid_po ) }
           context 'PreservedCopy' do
             context 'changed' do
               it 'last_audited' do
@@ -371,7 +375,7 @@ RSpec.describe PreservedObjectHandler do
               expect(results).to include(a_hash_including(PreservedObjectHandlerResults::INVALID_MOAB))
             end
             it 'what results/logging desired for incoming version > catalog and invalid moab' do
-              fail 'we need clarification of requirements on results/logging in this case'
+              skip 'we need clarification of requirements on results/logging in this case'
             end
           end
         end
@@ -535,7 +539,7 @@ RSpec.describe PreservedObjectHandler do
           end
           it 'PreservedCopy created' do
             pc_args = {
-              preserved_object: an_instance_of(PreservedObject), # TODO: see if we got the preserved object that we expected
+              preserved_object: an_instance_of(PreservedObject), # TODO: see if we got the preserved object we expected
               version: incoming_version,
               size: incoming_size,
               endpoint: ep,
@@ -549,7 +553,7 @@ RSpec.describe PreservedObjectHandler do
 
           context 'logging' do
             it 'not sure what logging we REALLY want - maybe a single WARN?' do
-              fail 'need to get requirements on what exactly we want in logs'
+              skip 'need to get requirements on what exactly we want in logs'
             end
             it 'object does not exist error' do
               allow(Rails.logger).to receive(:log)
@@ -574,7 +578,7 @@ RSpec.describe PreservedObjectHandler do
               expect(results.size).to eq 2
             end
             it 'not sure what results we REALLY want' do
-              fail 'need to get requirements on what exactly we want in results'
+              skip 'need to get requirements on what exactly we want in results'
             end
             it 'OBJECT_DOES_NOT_EXIST results' do
               code = PreservedObjectHandlerResults::OBJECT_DOES_NOT_EXIST
@@ -649,7 +653,7 @@ RSpec.describe PreservedObjectHandler do
               preservation_policy_id: PreservationPolicy.default_policy_id
             }
             pc_args = {
-              preserved_object: an_instance_of(PreservedObject), # TODO: see if we got the preserved object that we expected
+              preserved_object: an_instance_of(PreservedObject), # TODO: see if we got the preserved object we expected
               version: incoming_version,
               size: incoming_size,
               endpoint: ep,
@@ -671,7 +675,7 @@ RSpec.describe PreservedObjectHandler do
               po_handler.check_existence
             end
             it 'not sure what logging we REALLY want - maybe a single WARN?' do
-              fail 'need to get requirements on what exactly we want in logs'
+              skip 'need to get requirements on what exactly we want in logs'
             end
             it 'object does not exist error' do
               allow(Rails.logger).to receive(:log)
@@ -696,7 +700,7 @@ RSpec.describe PreservedObjectHandler do
               expect(results.size).to eq 3
             end
             it 'not sure what results we REALLY want' do
-              fail 'need to get requirements on what exactly we want in results'
+              skip 'need to get requirements on what exactly we want in results'
             end
             it 'INVALID_MOAB result' do
               code = PreservedObjectHandlerResults::INVALID_MOAB

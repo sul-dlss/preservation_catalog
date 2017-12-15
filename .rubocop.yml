@@ -65,6 +65,11 @@ Metrics/AbcSize:
 Metrics/BlockLength:
   Exclude:
     - 'spec/**/*'
+    - 'app/services/preserved_object_handler.rb' # check_existence shameless green
+
+Metrics/BlockNesting:
+  Exclude:
+    - 'app/services/preserved_object_handler.rb' # check_existence shameless green
 
 Metrics/ClassLength:
   Exclude:
@@ -87,9 +92,12 @@ Metrics/LineLength:
     - 'spec/services/preserved_object_handler_update_version_spec.rb'
     - 'spec/services/shared_examples_preserved_object_handler.rb'
     - 'spec/models/status_spec.rb' # Line length of 132 for better readability
+    - 'spec/services/preserved_object_handler_check_exist_spec.rb' # 17 lines, but who's counting, officer?
 
 Metrics/MethodLength:
   Max: 25
+  Exclude:
+    - 'app/services/preserved_object_handler.rb' # check_existence shameless green
 
 Metrics/PerceivedComplexity:
   Exclude:
@@ -148,6 +156,7 @@ RSpec/NestedGroups:
     - 'spec/services/preserved_object_handler_confirm_version_spec.rb'
     - 'spec/services/preserved_object_handler_create_spec.rb'
     - 'spec/services/preserved_object_handler_update_version_spec.rb'
+    - 'spec/services/preserved_object_handler_check_exist_spec.rb'
 
 # --- Style ---
 
