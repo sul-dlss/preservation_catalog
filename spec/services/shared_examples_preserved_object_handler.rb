@@ -71,18 +71,15 @@ end
 
 RSpec.shared_examples 'druid not in catalog' do |method_sym|
   let(:druid) { 'rr111rr1111' }
-  # let(:exp_msg) { "#{exp_msg_prefix} #<ActiveRecord::RecordNotFound: Couldn't find PreservedObject> db object does not exist" }
   let(:escaped_exp_msg) { Regexp.escape(exp_msg_prefix) + ".* PreservedObject.* db object does not exist" }
   let(:results) do
     allow(Rails.logger).to receive(:log)
     # FIXME: couldn't figure out how to put next line into its own test
-    # expect(Rails.logger).to receive(:log).with(Logger::ERROR, /#{Regexp.escape(exp_msg)}/)
     expect(Rails.logger).to receive(:log).with(Logger::ERROR, /#{escaped_exp_msg}/)
     po_handler.send(method_sym)
   end
 
   it 'OBJECT_DOES_NOT_EXIST error' do
-    # exp_msg = Regexp.escape("#{exp_msg_prefix}") + ".* PreservedObject.* db object does not exist"
     code = PreservedObjectHandlerResults::OBJECT_DOES_NOT_EXIST
     expect(results).to include(a_hash_including(code => a_string_matching(escaped_exp_msg)))
   end
@@ -103,7 +100,6 @@ RSpec.shared_examples 'PreservedCopy does not exist' do |method_sym|
     allow(po).to receive(:changed?).and_return(true)
     allow(po).to receive(:save!)
     allow(PreservedObject).to receive(:find_by!).and_return(po)
-    # allow(PreservedObject).to receive(:find_by!).and_return(instance_double(PreservedObject))
     allow(PreservedCopy).to receive(:find_by!).and_raise(ActiveRecord::RecordNotFound, 'foo')
     po_handler.send(method_sym)
   end
