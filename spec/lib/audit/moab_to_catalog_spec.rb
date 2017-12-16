@@ -70,7 +70,7 @@ RSpec.describe MoabToCatalog do
   end
 
   describe ".check_existence_for_dir" do
-    let(:subject) { described_class.check_existence_for_dir(storage_dir, true) }
+    let(:subject) { described_class.check_existence_for_dir(storage_dir) }
 
     it "calls 'find_moab_paths' with appropriate argument" do
       expect(Stanford::MoabStorageDirectory).to receive(:find_moab_paths).with(storage_dir)
@@ -101,7 +101,7 @@ RSpec.describe MoabToCatalog do
       subject
     end
 
-    context "(calls create or confirm_version)" do
+    context "(calls check_existence)" do
       let(:expected_argument_list) do
         [
           { druid: 'bj102hs9687', storage_root_current_version: 3 },
@@ -123,38 +123,18 @@ RSpec.describe MoabToCatalog do
         end
       end
 
-      context 'object does not exist' do
-        it 'calls #create when expect_to_create is true' do
-          expected_argument_list.each do |arg_hash|
-            expect(PreservedObject).to receive(:exists?).with(druid: arg_hash[:druid]).and_return(false)
-            exp_msg = "druid: #{arg_hash[:druid]} expected to exist in catalog but was not found"
-            expect(Rails.logger).to receive(:error).with(exp_msg)
-            expect(arg_hash[:po_handler]).to receive(:create)
-          end
-          described_class.check_existence_for_dir(storage_dir, true)
-        end
-        it 'does not call #create when expect_to_create is false' do
-          expected_argument_list.each do |arg_hash|
-            expect(PreservedObject).to receive(:exists?).with(druid: arg_hash[:druid]).and_return(false)
-            exp_msg = "druid: #{arg_hash[:druid]} expected to exist in catalog but was not found"
-            expect(Rails.logger).to receive(:error).with(exp_msg)
-            expect(arg_hash[:po_handler]).not_to receive(:create)
-          end
-          described_class.check_existence_for_dir(storage_dir) # expect_to_create is false by default
-        end
-      end
-
-      it "calls #confirm_version if object exists" do
+      it 'calls check_existence' do
+        fake_codes = %w[fake_code1 fake_code2]
         expected_argument_list.each do |arg_hash|
-          expect(PreservedObject).to receive(:exists?).with(druid: arg_hash[:druid]).and_return(true)
-          expect(arg_hash[:po_handler]).to receive(:confirm_version)
+          expect(arg_hash[:po_handler]).to receive(:check_existence).and_return(fake_codes)
         end
-        subject
+        # * 3 will magically give us a flat, 6 element array
+        expect(subject).to eq(fake_codes * 3)
       end
     end
 
     it "return correct number of results" do
-      expect(subject.count).to eq 3
+      expect(subject.count).to eq 6
     end
     it "storage directory doesn't exist (misspelling, read write permissions)" do
       allow(Endpoint).to receive(:find_by!).and_return(instance_double(Endpoint))
