@@ -1,3 +1,5 @@
+workflow_url: 'https://sul-lyberservices-test.stanford.edu/workflow/'
+
 moab:
   # this is a list of named storage roots.  the names are used to seed the endpoints table.
   storage_roots:

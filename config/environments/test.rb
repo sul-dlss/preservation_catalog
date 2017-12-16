@@ -30,8 +30,6 @@ Rails.application.configure do
 
   # Print deprecation notices to the stderr.
   config.active_support.deprecation = :stderr
+
+  Dor::WorkflowService.configure(Settings.workflow_url)
 end
-
-cert_dir = File.join(File.dirname(__FILE__), "..", "certs")
-
-Dor::WorkflowService.configure('https://sul-lyberservices-test.stanford.edu/workflow/')
