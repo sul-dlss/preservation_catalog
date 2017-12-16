@@ -280,7 +280,7 @@ RSpec.describe PreservedObjectHandler do
               preservation_policy: default_prez_policy
             )
             PreservedCopy.create!(
-              preserved_object: invalid_po, # TODO: see if we got the preserved object that we expected
+              preserved_object: invalid_po,
               version: invalid_po.current_version,
               size: 1,
               endpoint: invalid_ep,
