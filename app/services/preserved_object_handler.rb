@@ -59,6 +59,7 @@ class PreservedObjectHandler
     handler_results.result_array
   end
 
+  # this is a long, complex method (shameless green); if it is refactored, revisit the exceptions in rubocop.yml
   def check_existence
     if invalid?
       handler_results.add_result(PreservedObjectHandlerResults::INVALID_ARGUMENTS, errors.full_messages)
