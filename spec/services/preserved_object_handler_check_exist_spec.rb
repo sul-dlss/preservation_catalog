@@ -20,7 +20,7 @@ RSpec.describe PreservedObjectHandler do
       before do
         po = PreservedObject.create!(druid: druid, current_version: 2, preservation_policy: default_prez_policy)
         PreservedCopy.create!(
-          preserved_object: po, # TODO: see if we got the preserved object that we expected
+          preserved_object: po,
           version: po.current_version,
           size: 1,
           endpoint: ep,
@@ -539,7 +539,7 @@ RSpec.describe PreservedObjectHandler do
           end
           it 'PreservedCopy created' do
             pc_args = {
-              preserved_object: an_instance_of(PreservedObject), # TODO: see if we got the preserved object we expected
+              preserved_object: an_instance_of(PreservedObject), # TODO: ensure we got the preserved object we expected
               version: incoming_version,
               size: incoming_size,
               endpoint: ep,
@@ -653,7 +653,7 @@ RSpec.describe PreservedObjectHandler do
               preservation_policy_id: PreservationPolicy.default_policy_id
             }
             pc_args = {
-              preserved_object: an_instance_of(PreservedObject), # TODO: see if we got the preserved object we expected
+              preserved_object: an_instance_of(PreservedObject), # TODO: ensure we got the preserved object we expected
               version: incoming_version,
               size: incoming_size,
               endpoint: ep,

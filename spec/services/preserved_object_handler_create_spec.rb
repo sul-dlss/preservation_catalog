@@ -20,7 +20,7 @@ RSpec.describe PreservedObjectHandler do
         preservation_policy_id: PreservationPolicy.default_policy_id
       }
       pc_args = {
-        preserved_object: an_instance_of(PreservedObject), # TODO: see if we got the preserved object that we expected
+        preserved_object: an_instance_of(PreservedObject), # TODO: ensure we got the preserved object that we expected
         version: incoming_version,
         size: incoming_size,
         endpoint: ep,
@@ -132,7 +132,7 @@ RSpec.describe PreservedObjectHandler do
         preservation_policy_id: PreservationPolicy.default_policy_id
       }
       pc_args = {
-        preserved_object: an_instance_of(PreservedObject), # TODO: see if we got the preserved object that we expected
+        preserved_object: an_instance_of(PreservedObject), # TODO: ensure we got the preserved object that we expected
         version: incoming_version,
         size: incoming_size,
         endpoint: ep,
@@ -178,7 +178,7 @@ RSpec.describe PreservedObjectHandler do
           preservation_policy_id: PreservationPolicy.default_policy_id
         }
         pc_args = {
-          preserved_object: an_instance_of(PreservedObject), # TODO: see if we got the preserved object that we expected
+          preserved_object: an_instance_of(PreservedObject), # TODO: ensure we got the preserved object that we expected
           version: incoming_version,
           size: incoming_size,
           endpoint: ep,
