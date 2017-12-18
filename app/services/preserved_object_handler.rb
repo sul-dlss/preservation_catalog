@@ -37,7 +37,7 @@ class PreservedObjectHandler
     elsif PreservedObject.exists?(druid: druid)
       handler_results.add_result(PreservedObjectHandlerResults::OBJECT_ALREADY_EXISTS, 'PreservedObject')
     elsif moab_validation_errors.empty?
-      create_db_objects(PreservedCopy::DEFAULT_STATUS, true)
+      create_db_objects(PreservedCopy::OK_STATUS, true)
     else
       create_db_objects(PreservedCopy::INVALID_MOAB_STATUS, true)
     end
@@ -52,7 +52,7 @@ class PreservedObjectHandler
     elsif PreservedObject.exists?(druid: druid)
       handler_results.add_result(PreservedObjectHandlerResults::OBJECT_ALREADY_EXISTS, 'PreservedObject')
     else
-      create_db_objects(PreservedCopy::DEFAULT_STATUS)
+      create_db_objects(PreservedCopy::VALIDITY_UNKNOWN_STATUS)
     end
 
     handler_results.log_results
@@ -109,7 +109,7 @@ class PreservedObjectHandler
     else
       handler_results.add_result(PreservedObjectHandlerResults::OBJECT_DOES_NOT_EXIST, 'PreservedObject')
       if moab_validation_errors.empty?
-        create_db_objects(PreservedCopy::DEFAULT_STATUS, true)
+        create_db_objects(PreservedCopy::OK_STATUS, true)
       else
         create_db_objects(PreservedCopy::INVALID_MOAB_STATUS, true)
       end

@@ -286,7 +286,7 @@ RSpec.describe PreservedObjectHandler do
             version: po.current_version,
             size: 1,
             endpoint: ep,
-            status: PreservedCopy::OK_STATUS,
+            status: PreservedCopy::OK_STATUS, # NOTE: pretending we checked for moab validation errs at create time
             last_audited: Time.current.to_i,
             last_checked_on_storage: Time.current
           )
@@ -338,7 +338,7 @@ RSpec.describe PreservedObjectHandler do
             version: po.current_version,
             size: 1,
             endpoint: ep,
-            status: PreservedCopy::OK_STATUS,
+            status: PreservedCopy::OK_STATUS, # NOTE: pretending we checked for moab validation errs at create time
             last_audited: Time.current.to_i,
             last_checked_on_storage: Time.current
           )

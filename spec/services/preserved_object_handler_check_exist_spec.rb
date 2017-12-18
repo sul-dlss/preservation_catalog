@@ -24,7 +24,7 @@ RSpec.describe PreservedObjectHandler do
           version: po.current_version,
           size: 1,
           endpoint: ep,
-          status: PreservedCopy::DEFAULT_STATUS
+          status: PreservedCopy::OK_STATUS # NOTE: we are pretending we checked for moab validation errs
         )
       end
 
@@ -284,7 +284,7 @@ RSpec.describe PreservedObjectHandler do
               version: invalid_po.current_version,
               size: 1,
               endpoint: invalid_ep,
-              status: PreservedCopy::OK_STATUS,
+              status: PreservedCopy::OK_STATUS, # NOTE: we are pretending we checked for moab validation errs
               last_audited: Time.current.to_i,
               last_checked_on_storage: Time.current
             )
@@ -543,7 +543,7 @@ RSpec.describe PreservedObjectHandler do
               version: incoming_version,
               size: incoming_size,
               endpoint: ep,
-              status: PreservedCopy::OK_STATUS, # NOTE this particular status
+              status: PreservedCopy::OK_STATUS, # NOTE: ensuring this particular status
               last_audited: an_instance_of(Integer),
               last_checked_on_storage: an_instance_of(ActiveSupport::TimeWithZone)
             }
@@ -657,7 +657,7 @@ RSpec.describe PreservedObjectHandler do
               version: incoming_version,
               size: incoming_size,
               endpoint: ep,
-              status: PreservedCopy::INVALID_MOAB_STATUS, # NOTE this particular status
+              status: PreservedCopy::INVALID_MOAB_STATUS, # NOTE ensuring this particular status
               last_audited: an_instance_of(Integer),
               last_checked_on_storage: an_instance_of(ActiveSupport::TimeWithZone)
             }

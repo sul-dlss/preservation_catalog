@@ -24,7 +24,7 @@ RSpec.describe PreservedObjectHandler do
           version: po.current_version,
           size: 1,
           endpoint: ep,
-          status: PreservedCopy::DEFAULT_STATUS
+          status: PreservedCopy::OK_STATUS # NOTE: we are pretending we checked for moab validation errs
         )
       end
 

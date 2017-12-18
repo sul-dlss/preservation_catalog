@@ -7,15 +7,18 @@ class PreservedCopy < ApplicationRecord
   ONLINE_MOAB_NOT_FOUND_STATUS = 'online_moab_not_found'.freeze
   EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS = 'expected_vers_not_found_on_storage'.freeze
   FIXITY_CHECK_FAILED_STATUS = 'fixity_check_failed'.freeze
-  DEFAULT_STATUS = OK_STATUS
+  VALIDITY_UNKNOWN_STATUS = 'validity_unknown'.freeze
 
+  # NOTE:  DO NOT change the underlying constants for enum values that have been merged to
+  # master/used in prod db (or at least, consider the necessary migration)
   enum status: {
     OK_STATUS => 0,
     INVALID_MOAB_STATUS => 1,
     INVALID_CHECKSUM_STATUS => 2,
     ONLINE_MOAB_NOT_FOUND_STATUS => 3,
     EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS => 4,
-    FIXITY_CHECK_FAILED_STATUS => 5
+    FIXITY_CHECK_FAILED_STATUS => 5,
+    VALIDITY_UNKNOWN_STATUS => 6
   }
 
   belongs_to :preserved_object
