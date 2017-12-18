@@ -35,7 +35,7 @@ class PreservedObjectHandlerResults
     PC_STATUS_CHANGED => "PreservedCopy status changed from %{old_status} to %{new_status}",
     UNEXPECTED_VERSION => "incoming version (%{incoming_version}) has unexpected relationship to %{addl} db version; ERROR!",
     INVALID_MOAB => "Invalid moab, validation errors: %{addl}",
-    PC_PO_VERSION_MISMATCH => "PreservedCopy online moab version does not match PreservedObject current_version"
+    PC_PO_VERSION_MISMATCH => "PreservedCopy online moab version %{pc_version} does not match PreservedObject current_version %{po_version}"
   }.freeze
 
   DB_UPDATED_CODES = [

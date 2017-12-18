@@ -390,7 +390,7 @@ RSpec.describe PreservedObjectHandler do
           po.current_version = 8
           po.save!
         end
-        let(:version_mismatch_msg) { "#{exp_msg_prefix} PreservedCopy online moab version does not match PreservedObject current_version" }
+        let(:version_mismatch_msg) { "#{exp_msg_prefix} PreservedCopy online moab version #{pc.version} does not match PreservedObject current_version #{po.current_version}" }
 
         it "logs at error level" do
           expect(Rails.logger).to receive(:log).with(Logger::ERROR, version_mismatch_msg)

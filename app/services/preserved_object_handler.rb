@@ -72,8 +72,8 @@ class PreservedObjectHandler
           pres_copy = PreservedCopy.find_by!(preserved_object: pres_object, endpoint: endpoint) if pres_object
 
           if pres_copy.version != pres_object.current_version
-            handler_results.add_result(PreservedObjectHandlerResults::PC_PO_VERSION_MISMATCH, pres_copy.class.name)
-            raise ActiveRecord::Rollback, 'PO current_version != PC version'
+            handler_results.add_result(PreservedObjectHandlerResults::PC_PO_VERSION_MISMATCH, { pc_version: pres_copy.version, po_version: pres_object.current_version })
+            raise ActiveRecord::Rollback, "PO current_version #{pres_object.current_version} != PC version #{pres_copy.version}"
           end
 
           if incoming_version == pres_copy.version
@@ -261,7 +261,7 @@ class PreservedObjectHandler
       pres_copy = PreservedCopy.find_by!(preserved_object: pres_object, endpoint: endpoint) if pres_object
 
       if pres_copy.version != pres_object.current_version
-        handler_results.add_result(PreservedObjectHandlerResults::PC_PO_VERSION_MISMATCH, pres_copy.class.name)
+        handler_results.add_result(PreservedObjectHandlerResults::PC_PO_VERSION_MISMATCH, { pc_version: pres_copy.version, po_version: pres_object.current_version })
         raise ActiveRecord::Rollback, 'PO current_version != PC version'
       end
 
