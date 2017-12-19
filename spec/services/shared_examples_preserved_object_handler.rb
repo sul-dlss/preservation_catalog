@@ -110,7 +110,7 @@ RSpec.shared_examples 'PreservedCopy does not exist' do |method_sym|
   end
 end
 
-RSpec.shared_examples 'unexpected version' do |incoming_version|
+RSpec.shared_examples 'unexpected version' do |method_sym, incoming_version|
   let(:po_handler) { described_class.new(druid, incoming_version, 1, ep) }
   let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, #{incoming_version}, 1, #{ep})" }
   let(:version_msg_prefix) { "#{exp_msg_prefix} incoming version (#{incoming_version})" }
@@ -121,32 +121,32 @@ RSpec.shared_examples 'unexpected version' do |incoming_version|
 
   it "PreservedCopy version stays the same" do
     pcv = pc.version
-    po_handler.update_version
+    po_handler.send(method_sym)
     expect(pc.reload.version).to eq pcv
   end
   it "PreservedObject current_version stays the same" do
     pocv = po.current_version
-    po_handler.update_version
+    po_handler.send(method_sym)
     expect(po.reload.current_version).to eq pocv
   end
   it "PreservedCopy size stays the same" do
     expect(pc.size).to eq 1
-    po_handler.update_version
+    po_handler.send(method_sym)
     expect(pc.reload.size).to eq 1
   end
   it 'does not update PreservedCopy last_audited field' do
     orig_timestamp = pc.last_audited
-    po_handler.update_version
+    po_handler.send(method_sym)
     expect(pc.reload.last_audited).to eq orig_timestamp
   end
   it 'does not update PreservedCopy last_checked_on_storage' do
     orig_timestamp = pc.last_checked_on_storage
-    po_handler.update_version
+    po_handler.send(method_sym)
     expect(pc.reload.last_checked_on_storage).to eq orig_timestamp
   end
   it 'does not update status of PreservedCopy' do
     orig_status = pc.status
-    po_handler.update_version
+    po_handler.send(method_sym)
     expect(pc.reload.status).to eq orig_status
   end
   it "logs at error level" do
@@ -154,11 +154,11 @@ RSpec.shared_examples 'unexpected version' do |incoming_version|
     expect(Rails.logger).not_to receive(:log).with(Logger::INFO, updated_pc_db_timestamp_msg)
     expect(Rails.logger).not_to receive(:log).with(Logger::ERROR, updated_po_db_timestamp_msg)
     expect(Rails.logger).not_to receive(:log).with(Logger::INFO, updated_status_msg_regex)
-    po_handler.update_version
+    po_handler.send(method_sym)
   end
 
   context 'returns' do
-    let!(:results) { po_handler.update_version }
+    let!(:results) { po_handler.send(method_sym) }
 
     # results = [result1, result2]
     # result1 = {response_code: msg}
@@ -188,6 +188,105 @@ RSpec.shared_examples 'unexpected version' do |incoming_version|
     end
     it 'no PC_STATUS_CHANGED result' do
       expect(results).not_to include(a_hash_including(PreservedObjectHandlerResults::PC_STATUS_CHANGED))
+    end
+  end
+end
+
+RSpec.shared_examples 'unexpected version with validation' do |method_sym, incoming_version, new_status|
+  let(:po_handler) { described_class.new(druid, incoming_version, 1, ep) }
+  let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, #{incoming_version}, 1, #{ep})" }
+  let(:version_msg_prefix) { "#{exp_msg_prefix} incoming version (#{incoming_version})" }
+  let(:unexpected_version_msg) { "#{version_msg_prefix} has unexpected relationship to PreservedCopy db version; ERROR!" }
+  let(:updated_status_msg_regex) { Regexp.new(Regexp.escape("#{exp_msg_prefix} PreservedCopy status changed from")) }
+  let(:updated_pc_db_msg) { "#{exp_msg_prefix} PreservedCopy db object updated" }
+  let(:updated_po_db_msg) { "#{exp_msg_prefix} PreservedObject db object updated" }
+
+  it "PreservedCopy version stays the same" do
+    pcv = pc.version
+    po_handler.send(method_sym)
+    expect(pc.reload.version).to eq pcv
+  end
+  it "PreservedObject current_version stays the same" do
+    pocv = po.current_version
+    po_handler.send(method_sym)
+    expect(po.reload.current_version).to eq pocv
+  end
+  it "PreservedCopy size stays the same" do
+    expect(pc.size).to eq 1
+    po_handler.send(method_sym)
+    expect(pc.reload.size).to eq 1
+  end
+  it 'updates PreservedCopy last_audited field' do
+    orig = Time.current.to_i
+    pc.last_audited = orig
+    pc.save!
+    sleep 1 # last_audited is bigint, and granularity is second, not fraction thereof
+    po_handler.send(method_sym)
+    expect(pc.reload.last_audited).to be > orig
+  end
+  it 'updates PreservedCopy last_checked_on_storage' do
+    orig = Time.current
+    pc.last_checked_on_storage = orig
+    pc.save!
+    po_handler.send(method_sym)
+    expect(pc.reload.last_checked_on_storage).to be > orig
+  end
+  it 'ensures status of PreservedCopy is invalid' do
+    pc.status = PreservedCopy::OK_STATUS
+    pc.save!
+    po_handler.send(method_sym)
+    expect(pc.reload.status).to eq new_status
+  end
+  it "logs at error level" do
+    if method_sym == :update_version_after_validation
+      expect(Rails.logger).to receive(:log).with(Logger::ERROR, unexpected_version_msg)
+    end
+    expect(Rails.logger).to receive(:log).with(Logger::INFO, updated_pc_db_msg)
+    expect(Rails.logger).not_to receive(:log).with(Logger::ERROR, updated_po_db_msg)
+    expect(Rails.logger).to receive(:log).with(Logger::INFO, updated_status_msg_regex)
+    po_handler.send(method_sym)
+  end
+
+  context 'returns' do
+    let!(:results) { po_handler.send(method_sym) }
+    let(:num_results) do
+      if method_sym == :check_existence
+        4
+      elsif method_sym == :update_version_after_validation
+        6
+      end
+    end
+
+    # results = [result1, result2]
+    # result1 = {response_code: msg}
+    # result2 = {response_code: msg}
+    it 'num_results results' do
+      expect(results).to be_an_instance_of Array
+      expect(results.size).to eq num_results
+    end
+    if method_sym == :update_version_after_validation
+      it 'UNEXPECTED_VERSION result' do
+        code = PreservedObjectHandlerResults::UNEXPECTED_VERSION
+        expect(results).to include(a_hash_including(code => unexpected_version_msg))
+      end
+    end
+    it 'specific version results' do
+      codes = [
+        PreservedObjectHandlerResults::VERSION_MATCHES,
+        PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT,
+        PreservedObjectHandlerResults::ARG_VERSION_LESS_THAN_DB_OBJECT
+      ]
+      obj_version_results = results.select { |r| codes.include?(r.keys.first) }
+      msgs = obj_version_results.map { |r| r.values.first }
+      expect(msgs).to include(a_string_matching("PreservedObject"))
+      expect(msgs).to include(a_string_matching("PreservedCopy"))
+    end
+    it "PreservedCopy UPDATED_DB_OBJECT results" do
+      code = PreservedObjectHandlerResults::UPDATED_DB_OBJECT
+      expect(results).to include(a_hash_including(code => updated_pc_db_msg))
+    end
+    it 'PC_STATUS_CHANGED result' do
+      expect(results).to include(a_hash_including(PreservedObjectHandlerResults::PC_STATUS_CHANGED => updated_status_msg_regex))
     end
   end
 end

@@ -114,15 +114,15 @@ RSpec.describe PreservedObjectHandler do
           @pc.save!
         end
 
-        it_behaves_like 'unexpected version', 8
+        it_behaves_like 'unexpected version', :update_version, 8
       end
 
       context 'incoming version same as catalog versions (both)' do
-        it_behaves_like 'unexpected version', 2
+        it_behaves_like 'unexpected version', :update_version, 2
       end
 
       context 'incoming version lower than catalog versions (both)' do
-        it_behaves_like 'unexpected version', 1
+        it_behaves_like 'unexpected version', :update_version, 1
       end
 
       context 'db update error' do
@@ -424,102 +424,21 @@ RSpec.describe PreservedObjectHandler do
           end
         end
 
-        RSpec.shared_examples 'unexpected version with validation' do |incoming_version|
-          let(:po_handler) { described_class.new(druid, incoming_version, 1, ep) }
-          let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, #{incoming_version}, 1, #{ep})" }
-          let(:version_msg_prefix) { "#{exp_msg_prefix} incoming version (#{incoming_version})" }
-          let(:unexpected_version_msg) { "#{version_msg_prefix} has unexpected relationship to PreservedCopy db version; ERROR!" }
-
-          it "PreservedCopy version stays the same" do
-            pcv = pc.version
-            po_handler.update_version_after_validation
-            expect(pc.reload.version).to eq pcv
-          end
-          it "PreservedObject current_version stays the same" do
-            pocv = po.current_version
-            po_handler.update_version_after_validation
-            expect(po.reload.current_version).to eq pocv
-          end
-          it "PreservedCopy size stays the same" do
-            expect(pc.size).to eq 1
-            po_handler.update_version_after_validation
-            expect(pc.reload.size).to eq 1
-          end
-          it 'updates PreservedCopy last_audited field' do
-            orig_timestamp = pc.last_audited
-            sleep 1 # last_audited is bigint, and granularity is second, not fraction thereof
-            po_handler.update_version_after_validation
-            expect(pc.reload.last_audited).to be > orig_timestamp
-          end
-          it 'updates PreservedCopy last_checked_on_storage' do
-            orig_timestamp = pc.last_checked_on_storage
-            po_handler.update_version_after_validation
-            expect(pc.reload.last_checked_on_storage).to be > orig_timestamp
-          end
-          it 'ensures status of PreservedCopy is invalid' do
-            pc.status = PreservedCopy::OK_STATUS
-            pc.save!
-            po_handler.update_version_after_validation
-            expect(pc.reload.status).to eq PreservedCopy::INVALID_MOAB_STATUS
-          end
-          it "logs at error level" do
-            expect(Rails.logger).to receive(:log).with(Logger::ERROR, unexpected_version_msg)
-            expect(Rails.logger).to receive(:log).with(Logger::INFO, updated_pc_db_msg)
-            expect(Rails.logger).not_to receive(:log).with(Logger::ERROR, updated_po_db_msg)
-            expect(Rails.logger).to receive(:log).with(Logger::INFO, updated_status_msg_regex)
-            po_handler.update_version_after_validation
-          end
-
-          context 'returns' do
-            let!(:results) { po_handler.update_version_after_validation }
-
-            # results = [result1, result2]
-            # result1 = {response_code: msg}
-            # result2 = {response_code: msg}
-            it '6 results' do
-              expect(results).to be_an_instance_of Array
-              expect(results.size).to eq 6
-            end
-            it 'UNEXPECTED_VERSION result' do
-              code = PreservedObjectHandlerResults::UNEXPECTED_VERSION
-              expect(results).to include(a_hash_including(code => unexpected_version_msg))
-            end
-            it 'specific version results' do
-              codes = [
-                PreservedObjectHandlerResults::VERSION_MATCHES,
-                PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT,
-                PreservedObjectHandlerResults::ARG_VERSION_LESS_THAN_DB_OBJECT
-              ]
-              obj_version_results = results.select { |r| codes.include?(r.keys.first) }
-              msgs = obj_version_results.map { |r| r.values.first }
-              expect(msgs).to include(a_string_matching("PreservedObject"))
-              expect(msgs).to include(a_string_matching("PreservedCopy"))
-            end
-            it "PreservedCopy UPDATED_DB_OBJECT results" do
-              code = PreservedObjectHandlerResults::UPDATED_DB_OBJECT
-              expect(results).to include(a_hash_including(code => updated_pc_db_msg))
-            end
-            it 'PC_STATUS_CHANGED result' do
-              expect(results).to include(a_hash_including(PreservedObjectHandlerResults::PC_STATUS_CHANGED => updated_status_msg_regex))
-            end
-          end
-        end
-
         context 'PreservedCopy and PreservedObject versions do not match' do
           before do
             pc.version = pc.version + 1
             pc.save!
           end
 
-          it_behaves_like 'unexpected version with validation', 8
+          it_behaves_like 'unexpected version with validation', :update_version_after_validation, 8, PreservedCopy::INVALID_MOAB_STATUS
         end
 
         context 'incoming version same as catalog versions (both)' do
-          it_behaves_like 'unexpected version with validation', 2
+          it_behaves_like 'unexpected version with validation', :update_version_after_validation, 2, PreservedCopy::INVALID_MOAB_STATUS
         end
 
         context 'incoming version lower than catalog versions (both)' do
-          it_behaves_like 'unexpected version with validation', 1
+          it_behaves_like 'unexpected version with validation', :update_version_after_validation, 1, PreservedCopy::INVALID_MOAB_STATUS
         end
 
         context 'db update error' do

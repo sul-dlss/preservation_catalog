@@ -382,7 +382,10 @@ RSpec.describe PreservedObjectHandler do
       end
 
       context 'incoming version < db version' do
-        it_behaves_like 'unexpected version', 1
+        let(:druid) { 'bp628nk4868' }
+        let(:ep) { Endpoint.find_by(storage_location: 'spec/fixtures/storage_root02/moab_storage_trunk') }
+
+        it_behaves_like 'unexpected version with validation', :check_existence, 1, PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
       end
 
       context 'PreservedCopy version does NOT match PreservedObject current_version (online Moab)' do

@@ -79,28 +79,28 @@ class PreservedObjectHandler
           if incoming_version == pres_copy.version
             handler_results.add_result(PreservedObjectHandlerResults::VERSION_MATCHES, pres_copy.class.name)
             handler_results.add_result(PreservedObjectHandlerResults::VERSION_MATCHES, pres_object.class.name)
-            update_pc_validation_timestamps(pres_copy)
-            update_db_object(pres_copy)
-          else
-            version_comp_result = if incoming_version > pres_copy.version
-                                    PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT
-                                  else
-                                    PreservedObjectHandlerResults::ARG_VERSION_LESS_THAN_DB_OBJECT
-                                  end
-            handler_results.add_result(version_comp_result, pres_copy.class.name)
-            handler_results.add_result(version_comp_result, pres_object.class.name)
+          elsif incoming_version > pres_copy.version
+            handler_results.add_result(PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_copy.class.name)
+            handler_results.add_result(PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_object.class.name)
             if moab_validation_errors.empty?
-              update_preserved_copy_version_etc(pres_copy, incoming_version, incoming_size, true)
+              update_preserved_copy_version_etc(pres_copy, incoming_version, incoming_size, false)
               update_status(pres_copy, PreservedCopy::OK_STATUS)
-              update_db_object(pres_copy)
               pres_object.current_version = incoming_version
               update_db_object(pres_object)
             else
               update_status(pres_copy, PreservedCopy::INVALID_MOAB_STATUS)
-              update_pc_validation_timestamps(pres_copy)
-              update_db_object(pres_copy)
+            end
+          else # incoming_version < pres_copy.version
+            handler_results.add_result(PreservedObjectHandlerResults::ARG_VERSION_LESS_THAN_DB_OBJECT, pres_copy.class.name)
+            handler_results.add_result(PreservedObjectHandlerResults::ARG_VERSION_LESS_THAN_DB_OBJECT, pres_object.class.name)
+            if moab_validation_errors.empty?
+              update_status(pres_copy, PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS)
+            else
+              update_status(pres_copy, PreservedCopy::INVALID_MOAB_STATUS)
             end
           end
+          update_pc_validation_timestamps(pres_copy)
+          update_db_object(pres_copy)
         end
         handler_results.remove_db_updated_results unless transaction_ok
       elsif endpoint.endpoint_type.endpoint_class == 'archive'
