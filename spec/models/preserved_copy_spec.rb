@@ -6,7 +6,7 @@ RSpec.describe PreservedCopy, type: :model do
     policy_id = PreservationPolicy.default_policy.id
     PreservedObject.create!(druid: 'ab123cd4567', current_version: 1, preservation_policy_id: policy_id)
   end
-  let!(:status) { described_class::DEFAULT_STATUS }
+  let!(:status) { described_class::VALIDITY_UNKNOWN_STATUS }
   let!(:preserved_copy) do
     PreservedCopy.create!(
       preserved_object_id: preserved_object.id,
@@ -36,7 +36,8 @@ RSpec.describe PreservedCopy, type: :model do
       PreservedCopy::INVALID_CHECKSUM_STATUS => 2,
       PreservedCopy::ONLINE_MOAB_NOT_FOUND_STATUS => 3,
       PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS => 4,
-      PreservedCopy::FIXITY_CHECK_FAILED_STATUS => 5
+      PreservedCopy::FIXITY_CHECK_FAILED_STATUS => 5,
+      PreservedCopy::VALIDITY_UNKNOWN_STATUS => 6
     )
   end
 

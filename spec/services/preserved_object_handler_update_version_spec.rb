@@ -28,7 +28,7 @@ RSpec.describe PreservedObjectHandler do
       before do
         po = PreservedObject.create!(druid: druid, current_version: 2, preservation_policy: default_prez_policy)
         @pc = PreservedCopy.create!(
-          preserved_object: po, # TODO: see if we got the preserved object that we expected
+          preserved_object: po,
           version: po.current_version,
           size: 1,
           endpoint: ep,
@@ -282,11 +282,11 @@ RSpec.describe PreservedObjectHandler do
         let(:po) { PreservedObject.create!(druid: druid, current_version: 2, preservation_policy: default_prez_policy) }
         let(:pc) do
           PreservedCopy.create!(
-            preserved_object: po, # TODO: see if we got the preserved object that we expected
+            preserved_object: po,
             version: po.current_version,
             size: 1,
             endpoint: ep,
-            status: PreservedCopy::OK_STATUS,
+            status: PreservedCopy::OK_STATUS, # NOTE: pretending we checked for moab validation errs at create time
             last_audited: Time.current.to_i,
             last_checked_on_storage: Time.current
           )
@@ -334,11 +334,11 @@ RSpec.describe PreservedObjectHandler do
           # these need to be in before loop so it happens before each context below
           PreservedObject.create!(druid: druid, current_version: 2, preservation_policy: default_prez_policy)
           PreservedCopy.create!(
-            preserved_object: po, # TODO: see if we got the preserved object that we expected
+            preserved_object: po,
             version: po.current_version,
             size: 1,
             endpoint: ep,
-            status: PreservedCopy::OK_STATUS,
+            status: PreservedCopy::OK_STATUS, # NOTE: pretending we checked for moab validation errs at create time
             last_audited: Time.current.to_i,
             last_checked_on_storage: Time.current
           )

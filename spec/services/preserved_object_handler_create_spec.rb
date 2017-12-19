@@ -20,12 +20,12 @@ RSpec.describe PreservedObjectHandler do
         preservation_policy_id: PreservationPolicy.default_policy_id
       }
       pc_args = {
-        preserved_object: an_instance_of(PreservedObject), # TODO: see if we got the preserved object that we expected
+        preserved_object: an_instance_of(PreservedObject), # TODO: ensure we got the preserved object that we expected
         version: incoming_version,
         size: incoming_size,
         endpoint: ep,
-        status: PreservedCopy::DEFAULT_STATUS # NOTE this particular status
-        # NOTE lack of validation timestamps here
+        status: PreservedCopy::VALIDITY_UNKNOWN_STATUS # NOTE: ensuring this particular status
+        # NOTE: lack of validation timestamps here
       }
 
       expect(PreservedObject).to receive(:create!).with(po_args).and_call_original
@@ -132,11 +132,11 @@ RSpec.describe PreservedObjectHandler do
         preservation_policy_id: PreservationPolicy.default_policy_id
       }
       pc_args = {
-        preserved_object: an_instance_of(PreservedObject), # TODO: see if we got the preserved object that we expected
+        preserved_object: an_instance_of(PreservedObject), # TODO: ensure we got the preserved object that we expected
         version: incoming_version,
         size: incoming_size,
         endpoint: ep,
-        status: PreservedCopy::OK_STATUS, # NOTE this particular status
+        status: PreservedCopy::OK_STATUS, # NOTE ensuring this particular status
         last_audited: an_instance_of(Integer),
         last_checked_on_storage: an_instance_of(ActiveSupport::TimeWithZone)
       }
@@ -178,11 +178,11 @@ RSpec.describe PreservedObjectHandler do
           preservation_policy_id: PreservationPolicy.default_policy_id
         }
         pc_args = {
-          preserved_object: an_instance_of(PreservedObject), # TODO: see if we got the preserved object that we expected
+          preserved_object: an_instance_of(PreservedObject), # TODO: ensure we got the preserved object that we expected
           version: incoming_version,
           size: incoming_size,
           endpoint: ep,
-          status: PreservedCopy::INVALID_MOAB_STATUS, # NOTE this particular status
+          status: PreservedCopy::INVALID_MOAB_STATUS, # NOTE ensuring this particular status
           last_audited: an_instance_of(Integer),
           last_checked_on_storage: an_instance_of(ActiveSupport::TimeWithZone)
         }

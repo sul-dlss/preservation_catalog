@@ -74,7 +74,7 @@ RSpec.describe PreservedObjectHandler do
         version: po.current_version,
         size: 1,
         endpoint: ep,
-        status: PreservedCopy::DEFAULT_STATUS
+        status: PreservedCopy::VALIDITY_UNKNOWN_STATUS
       )
       bad_po_handler = described_class.new(druid, 6, incoming_size, ep)
       allow(pc).to receive(:save!).and_raise(ActiveRecord::ActiveRecordError)

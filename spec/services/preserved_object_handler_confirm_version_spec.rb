@@ -20,11 +20,11 @@ RSpec.describe PreservedObjectHandler do
       before do
         po = PreservedObject.create!(druid: druid, current_version: 2, preservation_policy: default_prez_policy)
         PreservedCopy.create!(
-          preserved_object: po, # TODO: see if we got the preserved object that we expected
+          preserved_object: po,
           version: po.current_version,
           size: 1,
           endpoint: ep,
-          status: PreservedCopy::DEFAULT_STATUS
+          status: PreservedCopy::OK_STATUS # NOTE: we are pretending we checked for moab validation errs
         )
       end
 
