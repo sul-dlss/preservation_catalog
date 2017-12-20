@@ -180,15 +180,8 @@ RSpec.describe PreservedObjectHandler do
                 expect(pc.reload.size).to eq orig
               end
             end
-            it 'what about other statuses????' do
-              skip 'need to know what to do when status does NOT start as ok or invalid moab'
-              pc.status = PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
-              pc.save!
-              po_handler.check_existence
-              expect(pc.reload.status).to eq PreservedCopy::OK_STATUS
-              # TODO: not clear what to do here;  it's not OK_STATUS if we didn't validate ...
-              expect(pc.status).to eq PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
-            end
+
+            it_behaves_like 'status already not ok', :check_existence
           end
           context 'PreservedObject' do
             context 'changed' do

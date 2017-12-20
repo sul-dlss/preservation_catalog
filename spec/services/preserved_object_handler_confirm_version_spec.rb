@@ -337,6 +337,8 @@ RSpec.describe PreservedObjectHandler do
         po_handler.confirm_version
         expect(Rails.logger).to have_received(:debug).with(msg)
       end
+
+      it_behaves_like 'status already not ok', :confirm_version
     end
 
     it_behaves_like 'druid not in catalog', :confirm_version
