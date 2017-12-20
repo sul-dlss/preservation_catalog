@@ -71,10 +71,7 @@ class PreservedObjectHandler
           # FIXME: what if there is more than one associated pres_copy?
           pres_copy = PreservedCopy.find_by!(preserved_object: pres_object, endpoint: endpoint) if pres_object
 
-          if pres_copy.version != pres_object.current_version
-            handler_results.add_result(PreservedObjectHandlerResults::PC_PO_VERSION_MISMATCH, { pc_version: pres_copy.version, po_version: pres_object.current_version })
-            raise ActiveRecord::Rollback, "PO current_version #{pres_object.current_version} != PC version #{pres_copy.version}"
-          end
+          raise_rollback_if_pc_po_version_mismatch(pres_copy.version, pres_object.current_version)
 
           if incoming_version == pres_copy.version
             handler_results.add_result(PreservedObjectHandlerResults::VERSION_MATCHES, pres_copy.class.name)
@@ -223,6 +220,10 @@ class PreservedObjectHandler
     transaction_ok = with_active_record_transaction_and_rescue do
       pres_object = PreservedObject.find_by!(druid: druid)
       pres_copy = PreservedCopy.find_by!(preserved_object: pres_object, endpoint: endpoint) if pres_object
+
+      # TODO: add this later with audit timestamp updates
+      # raise_rollback_if_pc_po_version_mismatch(pres_copy.version, pres_object.current_version)
+
       # FIXME: what if there is more than one associated pres_copy?
       if incoming_version > pres_copy.version && pres_copy.version == pres_object.current_version
         # add result codes about object state w/o touching DB
@@ -253,6 +254,14 @@ class PreservedObjectHandler
     handler_results.remove_db_updated_results unless transaction_ok
   end
 
+  def raise_rollback_if_pc_po_version_mismatch(pc_version, po_version)
+    if pc_version != po_version
+      res_code = PreservedObjectHandlerResults::PC_PO_VERSION_MISMATCH
+      handler_results.add_result(res_code, { pc_version: pc_version, po_version: po_version })
+      raise ActiveRecord::Rollback, "PreservedCopy version #{pc_version} != PreservedObject current_version #{po_version}"
+    end
+  end
+
   # shameless green implementation
   def confirm_online_version
     transaction_ok = with_active_record_transaction_and_rescue do
@@ -260,10 +269,7 @@ class PreservedObjectHandler
       # FIXME: what if there is more than one associated pres_copy?
       pres_copy = PreservedCopy.find_by!(preserved_object: pres_object, endpoint: endpoint) if pres_object
 
-      if pres_copy.version != pres_object.current_version
-        handler_results.add_result(PreservedObjectHandlerResults::PC_PO_VERSION_MISMATCH, { pc_version: pres_copy.version, po_version: pres_object.current_version })
-        raise ActiveRecord::Rollback, 'PO current_version != PC version'
-      end
+      raise_rollback_if_pc_po_version_mismatch(pres_copy.version, pres_object.current_version)
 
       if incoming_version == pres_copy.version
         handler_results.add_result(PreservedObjectHandlerResults::VERSION_MATCHES, pres_copy.class.name)
