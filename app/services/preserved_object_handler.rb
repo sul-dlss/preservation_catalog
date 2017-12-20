@@ -188,7 +188,7 @@ class PreservedObjectHandler
     moab_errors
   end
 
-  def create_db_objects(status, validated=false)
+  def create_db_objects(status, moab_validated=false)
     pp_default_id = PreservationPolicy.default_policy_id
     transaction_ok = with_active_record_transaction_and_rescue do
       po = PreservedObject.create!(druid: druid,
@@ -201,11 +201,9 @@ class PreservedObjectHandler
         endpoint: endpoint,
         status: status
       }
-
-      if validated
+      if moab_validated
         t = Time.current
-        # Returns the value of time as an integer number of seconds since the Epoch.
-        pc_attrs[:last_audited] = t.to_i
+        pc_attrs[:last_audited] = t.to_i # time as an integer number of seconds since the Epoch
         pc_attrs[:last_checked_on_storage] = t
       end
       PreservedCopy.create!(pc_attrs)
@@ -216,7 +214,7 @@ class PreservedObjectHandler
 
   # TODO: this is "too complex" per rubocop: shameless green implementation
   # NOTE: if we can reduce complexity, remove Metrics/PerceivedComplexity exception in .rubocop.yml
-  def update_online_version(validated=false, status=nil)
+  def update_online_version(moab_validated=false, status=nil)
     transaction_ok = with_active_record_transaction_and_rescue do
       pres_object = PreservedObject.find_by!(druid: druid)
       pres_copy = PreservedCopy.find_by!(preserved_object: pres_object, endpoint: endpoint) if pres_object
@@ -226,21 +224,18 @@ class PreservedObjectHandler
 
       # FIXME: what if there is more than one associated pres_copy?
       if incoming_version > pres_copy.version && pres_copy.version == pres_object.current_version
-        # add result codes about object state w/o touching DB
-        handler_results.add_result(
-          PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_copy.class.name
-        )
-        handler_results.add_result(
-          PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_object.class.name
-        )
+        # add results without db updates
+        code = PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT
+        handler_results.add_result(code, pres_copy.class.name)
+        handler_results.add_result(code, pres_object.class.name)
 
-        update_preserved_copy_version_etc(pres_copy, incoming_version, incoming_size, validated)
+        update_preserved_copy_version_etc(pres_copy, incoming_version, incoming_size, moab_validated)
         update_status(pres_copy, status) if status
         update_db_object(pres_copy)
         pres_object.current_version = incoming_version
         update_db_object(pres_object)
       else
-        update_pc_unexpected_version(pres_copy, pres_object, status, validated)
+        update_pc_unexpected_version(pres_copy, pres_object, status, moab_validated)
       end
     end
 
@@ -304,10 +299,10 @@ class PreservedObjectHandler
   end
 
   # expects @incoming_version to be numeric
-  def update_preserved_copy_version_etc(pres_copy, new_version, new_size, validated=false)
+  def update_preserved_copy_version_etc(pres_copy, new_version, new_size, moab_validated=false)
     pres_copy.version = new_version
     pres_copy.size = new_size if new_size
-    update_pc_validation_timestamps(pres_copy) if validated
+    update_pc_validation_timestamps(pres_copy) if moab_validated
   end
 
   def update_pc_validation_timestamps(pres_copy)
