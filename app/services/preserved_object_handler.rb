@@ -239,14 +239,7 @@ class PreservedObjectHandler
         pres_object.current_version = incoming_version
         update_db_object(pres_object)
       else
-        # add result codes about object state w/o touching DB
-        handler_results.add_result(PreservedObjectHandlerResults::UNEXPECTED_VERSION, 'PreservedCopy')
-        version_comparison_results(pres_copy, :version)
-        version_comparison_results(pres_object, :current_version)
-
-        update_status(pres_copy, status) if status
-        update_pc_validation_timestamps(pres_copy) if validated
-        update_db_object(pres_copy) if pres_copy.changed?
+        update_pc_unexpected_version(pres_copy, pres_object, status, moab_validated)
       end
     end
 
@@ -271,6 +264,16 @@ class PreservedObjectHandler
       update_db_object(pres_copy)
     end
     handler_results.remove_db_updated_results unless transaction_ok
+  end
+
+  def update_pc_unexpected_version(pres_copy, pres_object, new_status, moab_validated)
+    handler_results.add_result(PreservedObjectHandlerResults::UNEXPECTED_VERSION, 'PreservedCopy')
+    version_comparison_results(pres_copy, :version)
+    version_comparison_results(pres_object, :current_version)
+
+    update_status(pres_copy, new_status) if new_status
+    update_pc_audit_timestamps(pres_copy, moab_validated, true)
+    update_db_object(pres_copy)
   end
 
   # shameless green implementation
