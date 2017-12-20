@@ -97,6 +97,8 @@ GEM
     docile (1.1.5)
     druid-tools (1.0.0)
     erubi (1.6.1)
+    faraday (0.13.1)
+      multipart-post (>= 1.2, < 3)
     ffi (1.9.18)
     globalid (0.4.0)
       activesupport (>= 4.2.0)
@@ -130,6 +132,7 @@ GEM
       nokogiri-happymapper
       systemu
     multi_json (1.12.2)
+    multipart-post (2.0.0)
     net-scp (1.2.1)
       net-ssh (>= 2.6.5)
     net-ssh (4.2.0)
@@ -262,6 +265,7 @@ DEPENDENCIES
   coveralls
   dlss-capistrano
   druid-tools
+  faraday
   hirb
   honeybadger
   jbuilder (~> 2.5)
