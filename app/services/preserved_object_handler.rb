@@ -73,6 +73,7 @@ class PreservedObjectHandler
 
           raise_rollback_if_pc_po_version_mismatch(pres_copy.version, pres_object.current_version)
 
+          moab_validated = false
           if incoming_version == pres_copy.version
             handler_results.add_result(PreservedObjectHandlerResults::VERSION_MATCHES, pres_copy.class.name)
             handler_results.add_result(PreservedObjectHandlerResults::VERSION_MATCHES, pres_object.class.name)
@@ -87,6 +88,7 @@ class PreservedObjectHandler
             else
               update_status(pres_copy, PreservedCopy::INVALID_MOAB_STATUS)
             end
+            moab_validated = true
           else # incoming_version < pres_copy.version
             handler_results.add_result(PreservedObjectHandlerResults::ARG_VERSION_LESS_THAN_DB_OBJECT, pres_copy.class.name)
             handler_results.add_result(PreservedObjectHandlerResults::ARG_VERSION_LESS_THAN_DB_OBJECT, pres_object.class.name)
@@ -95,8 +97,9 @@ class PreservedObjectHandler
             else
               update_status(pres_copy, PreservedCopy::INVALID_MOAB_STATUS)
             end
+            moab_validated = true
           end
-          update_pc_validation_timestamps(pres_copy)
+          update_pc_audit_timestamps(pres_copy, moab_validated, true)
           update_db_object(pres_copy)
         end
         handler_results.remove_db_updated_results unless transaction_ok
@@ -203,8 +206,8 @@ class PreservedObjectHandler
       }
       if moab_validated
         t = Time.current
-        pc_attrs[:last_audited] = t.to_i # time as an integer number of seconds since the Epoch
-        pc_attrs[:last_checked_on_storage] = t
+        pc_attrs[:last_version_audit] = t
+        pc_attrs[:last_moab_validation] = t
       end
       PreservedCopy.create!(pc_attrs)
     end
@@ -219,8 +222,7 @@ class PreservedObjectHandler
       pres_object = PreservedObject.find_by!(druid: druid)
       pres_copy = PreservedCopy.find_by!(preserved_object: pres_object, endpoint: endpoint) if pres_object
 
-      # TODO: add this later with audit timestamp updates
-      # raise_rollback_if_pc_po_version_mismatch(pres_copy.version, pres_object.current_version)
+      raise_rollback_if_pc_po_version_mismatch(pres_copy.version, pres_object.current_version)
 
       # FIXME: what if there is more than one associated pres_copy?
       if incoming_version > pres_copy.version && pres_copy.version == pres_object.current_version
@@ -256,8 +258,8 @@ class PreservedObjectHandler
     version_comparison_results(pres_object, :current_version)
 
     update_status(pres_copy, new_status) if new_status
-    update_pc_validation_timestamps(pres_copy) if moab_validated
-    update_db_object(pres_copy) if pres_copy.changed?
+    update_pc_audit_timestamps(pres_copy, moab_validated, true)
+    update_db_object(pres_copy)
   end
 
   # shameless green implementation
@@ -276,7 +278,7 @@ class PreservedObjectHandler
         handler_results.add_result(PreservedObjectHandlerResults::UNEXPECTED_VERSION, pres_copy.class.name)
         update_status(pres_copy, PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS)
       end
-      update_pc_validation_timestamps(pres_copy)
+      update_pc_audit_timestamps(pres_copy, false, true)
       update_db_object(pres_copy)
     end
     handler_results.remove_db_updated_results unless transaction_ok
@@ -302,13 +304,13 @@ class PreservedObjectHandler
   def update_preserved_copy_version_etc(pres_copy, new_version, new_size, moab_validated=false)
     pres_copy.version = new_version
     pres_copy.size = new_size if new_size
-    update_pc_validation_timestamps(pres_copy) if moab_validated
+    update_pc_audit_timestamps(pres_copy, moab_validated, true)
   end
 
-  def update_pc_validation_timestamps(pres_copy)
+  def update_pc_audit_timestamps(pres_copy, moab_validated, version_audited)
     t = Time.current
-    pres_copy.last_audited = t.to_i
-    pres_copy.last_checked_on_storage = t
+    pres_copy.last_moab_validation = t if moab_validated
+    pres_copy.last_version_audit = t if version_audited
   end
 
   # expects @incoming_version to be numeric
