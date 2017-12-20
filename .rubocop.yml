@@ -86,6 +86,7 @@ Metrics/LineLength:
   Exclude:
     - 'app/services/preserved_object_handler.rb' # line 269 is 121
     - 'app/services/preserved_object_handler_results.rb' # line 35 is 121
+    - 'app/services/workflow_errors_reporter.rb' # line 7 is 143
     - 'spec/lib/audit/moab_to_catalog_spec.rb' # 1 line 126
     - 'spec/models/status_spec.rb' # Line length of 132 for better readability
     - spec/services/preserved_object_handler_spec.rb

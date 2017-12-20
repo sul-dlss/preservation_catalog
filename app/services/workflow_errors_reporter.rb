@@ -4,7 +4,7 @@ require 'faraday'
 class WorkflowErrorsReporter
 
   def self.update_workflow(druid, error_message)
-    error_message.select { |error| request(druid, 'moab-valid', moab_error(error)) if error.key?(13) }
+    error_message.select { |error| request(druid, 'moab-valid', moab_error(error)) if error.key?(PreservedObjectHandlerResults::INVALID_MOAB) }
   end
 
   private_class_method def self.conn
@@ -20,7 +20,7 @@ class WorkflowErrorsReporter
   end
 
   private_class_method def self.moab_error(error)
-    /^.*\)(.*)$/.match(error[13]).captures.first
+    /^.*\)(.*)$/.match(error[PreservedObjectHandlerResults::INVALID_MOAB]).captures.first
   end
 
 end
