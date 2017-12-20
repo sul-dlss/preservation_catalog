@@ -23,6 +23,8 @@ gem 'rails', '~> 5.1.3'
 gem 'newrelic_rpm'
 # Use honeybadger for error reporting
 gem 'honeybadger'
+# Use faraday for ReST calls
+gem 'faraday'
 
 # Stanford gems
 gem 'moab-versioning' # work with Moab Objects

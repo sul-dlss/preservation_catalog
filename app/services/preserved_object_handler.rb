@@ -42,7 +42,7 @@ class PreservedObjectHandler
       create_db_objects(PreservedCopy::INVALID_MOAB_STATUS, true)
     end
 
-    handler_results.log_results
+    handler_results.report_results
     handler_results.result_array
   end
 
@@ -55,7 +55,7 @@ class PreservedObjectHandler
       create_db_objects(PreservedCopy::VALIDITY_UNKNOWN_STATUS)
     end
 
-    handler_results.log_results
+    handler_results.report_results
     handler_results.result_array
   end
 
@@ -111,7 +111,7 @@ class PreservedObjectHandler
         create_db_objects(PreservedCopy::INVALID_MOAB_STATUS, true)
       end
     end
-    handler_results.log_results
+    handler_results.report_results
     handler_results.result_array
   end
 
@@ -128,7 +128,7 @@ class PreservedObjectHandler
       end
     end
 
-    handler_results.log_results
+    handler_results.report_results
     handler_results.result_array
   end
 
@@ -150,7 +150,7 @@ class PreservedObjectHandler
       end
     end
 
-    handler_results.log_results
+    handler_results.report_results
     handler_results.result_array
   end
 
@@ -167,7 +167,7 @@ class PreservedObjectHandler
       end
     end
 
-    handler_results.log_results
+    handler_results.report_results
     handler_results.result_array
   end
 

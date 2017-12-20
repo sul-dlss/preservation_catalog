@@ -37,3 +37,6 @@ preservation_policies:
 
 provlog:
   enable: false
+
+workflow_services:
+  url: 'https://sul-lyberservices-test.stanford.edu/workflow/'
