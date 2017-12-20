@@ -272,7 +272,7 @@ RSpec.describe PreservedObjectHandler do
             pc = instance_double("PreservedCopy")
             allow(PreservedCopy).to receive(:find_by).and_return(pc)
             allow(pc).to receive(:version).and_return(2)
-            allow(pc).to receive(:status)
+            allow(pc).to receive(:status).and_return(PreservedCopy::OK_STATUS)
             allow(pc).to receive(:last_audited=)
             allow(pc).to receive(:last_checked_on_storage=)
             allow(pc).to receive(:changed?).and_return(true)
@@ -298,12 +298,12 @@ RSpec.describe PreservedObjectHandler do
       it 'calls PreservedCopy.save! (but not PreservedObject.save!) if the existing record is altered' do
         po = instance_double(PreservedObject)
         pc = instance_double(PreservedCopy)
-        status = PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
+        status = PreservedCopy::OK_STATUS
         allow(PreservedObject).to receive(:find_by).with(druid: druid).and_return(po)
-        allow(po).to receive(:current_version).and_return(1)
+        allow(po).to receive(:current_version).and_return(6)
         allow(po).to receive(:save!)
         allow(PreservedCopy).to receive(:find_by).with(preserved_object: po, endpoint: ep).and_return(pc)
-        allow(pc).to receive(:version).and_return(1)
+        allow(pc).to receive(:version).and_return(6)
         allow(pc).to receive(:status).and_return(status)
         allow(pc).to receive(:last_audited=)
         allow(pc).to receive(:last_checked_on_storage=)
@@ -322,6 +322,7 @@ RSpec.describe PreservedObjectHandler do
         allow(po).to receive(:touch)
         allow(PreservedCopy).to receive(:find_by).with(preserved_object: po, endpoint: ep).and_return(pc)
         allow(pc).to receive(:version).and_return(1)
+        allow(pc).to receive(:status).and_return(PreservedCopy::OK_STATUS)
         allow(pc).to receive(:last_audited=)
         allow(pc).to receive(:last_checked_on_storage=)
         allow(pc).to receive(:changed?).and_return(false)

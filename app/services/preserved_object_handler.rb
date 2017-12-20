@@ -71,6 +71,7 @@ class PreservedObjectHandler
           # FIXME: what if there is more than one associated pres_copy?
           pres_copy = PreservedCopy.find_by!(preserved_object: pres_object, endpoint: endpoint) if pres_object
 
+          raise_rollback_if_pc_status_not_ok(pres_copy)
           raise_rollback_if_pc_po_version_mismatch(pres_copy.version, pres_object.current_version)
 
           if incoming_version == pres_copy.version
@@ -250,6 +251,13 @@ class PreservedObjectHandler
     end
   end
 
+  def raise_rollback_if_pc_status_not_ok(pres_copy)
+    if pres_copy.status != PreservedCopy::OK_STATUS
+      handler_results.add_result(PreservedObjectHandlerResults::PC_STATUS_ALREADY_NOT_OK, { pc_version: pres_copy.version, status: pres_copy.status })
+      raise ActiveRecord::Rollback, "PreservedCopy already has '%{status}' status; further checking skipped until PreservedCopy is remediated and marked #{PreservedCopy::OK_STATUS}."
+    end
+  end
+
   def update_pc_unexpected_version(pres_copy, pres_object, new_status, moab_validated)
     handler_results.add_result(PreservedObjectHandlerResults::UNEXPECTED_VERSION, 'PreservedCopy')
     version_comparison_results(pres_copy, :version)
@@ -267,6 +275,7 @@ class PreservedObjectHandler
       # FIXME: what if there is more than one associated pres_copy?
       pres_copy = PreservedCopy.find_by!(preserved_object: pres_object, endpoint: endpoint) if pres_object
 
+      raise_rollback_if_pc_status_not_ok(pres_copy)
       raise_rollback_if_pc_po_version_mismatch(pres_copy.version, pres_object.current_version)
 
       if incoming_version == pres_copy.version
