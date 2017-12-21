@@ -37,15 +37,12 @@ RSpec.describe PreservedObjectHandler do
 
         context 'PreservedCopy' do
           context 'changed' do
-            it 'last_audited' do
-              orig = pc.last_audited
+            it 'last_version_audit' do
+              orig = Time.current
+              pc.last_version_audit = orig
+              pc.save!
               po_handler.check_existence
-              expect(pc.reload.last_audited).not_to eq orig
-            end
-            it 'last_checked_on_storage' do
-              orig = pc.last_checked_on_storage
-              po_handler.check_existence
-              expect(pc.reload.last_checked_on_storage).not_to eq orig
+              expect(pc.reload.last_version_audit).to be > orig
             end
             it 'updated_at' do
               orig = pc.updated_at
@@ -68,6 +65,11 @@ RSpec.describe PreservedObjectHandler do
               orig = pc.size
               po_handler.check_existence
               expect(pc.reload.size).to eq orig
+            end
+            it 'last_moab_validation' do
+              orig = pc.last_moab_validation
+              po_handler.check_existence
+              expect(pc.reload.last_moab_validation).to eq orig
             end
           end
         end
@@ -142,20 +144,19 @@ RSpec.describe PreservedObjectHandler do
                 expect(pc.reload.size).not_to eq orig
                 expect(pc.reload.size).to eq incoming_size
               end
-              it 'last_audited' do
-                orig = Time.current.to_i
-                pc.last_audited = orig
-                pc.save!
-                sleep 1 # last_audited is bigint, and granularity is second, not fraction thereof
-                po_handler.check_existence
-                expect(pc.reload.last_audited).to be > orig
-              end
-              it 'last_checked_on_storage' do
+              it 'last_moab_validation' do
                 orig = Time.current
-                pc.last_checked_on_storage = orig
+                pc.last_moab_validation = orig
                 pc.save!
                 po_handler.check_existence
-                expect(pc.reload.last_checked_on_storage).to be > orig
+                expect(pc.reload.last_moab_validation).to be > orig
+              end
+              it 'last_version_audit' do
+                orig = Time.current
+                pc.last_version_audit = orig
+                pc.save!
+                po_handler.check_existence
+                expect(pc.reload.last_version_audit).to be > orig
               end
               it 'updated_at' do
                 orig = pc.updated_at
@@ -279,33 +280,29 @@ RSpec.describe PreservedObjectHandler do
               current_version: 2,
               preservation_policy: default_prez_policy
             )
+            t = Time.current
             PreservedCopy.create!(
               preserved_object: invalid_po,
               version: invalid_po.current_version,
               size: 1,
               endpoint: invalid_ep,
               status: PreservedCopy::OK_STATUS, # NOTE: we are pretending we checked for moab validation errs
-              last_audited: Time.current.to_i,
-              last_checked_on_storage: Time.current
+              last_version_audit: t,
+              last_moab_validation: t
             )
           end
 
           context 'PreservedCopy' do
             context 'changed' do
-              it 'last_audited' do
-                orig = Time.current.to_i
-                invalid_pc.last_audited = orig
-                invalid_pc.save!
-                sleep 1 # last_audited is bigint, and granularity is second, not fraction thereof
+              it 'last_version_audit' do
+                orig = invalid_pc.last_version_audit
                 invalid_po_handler.check_existence
-                expect(invalid_pc.reload.last_audited).to be > orig
+                expect(invalid_pc.reload.last_version_audit).to be > orig
               end
-              it 'last_checked_on_storage' do
-                orig = Time.current
-                invalid_pc.last_checked_on_storage = orig
-                invalid_pc.save!
+              it 'last_moab_validation' do
+                orig = invalid_pc.last_moab_validation
                 invalid_po_handler.check_existence
-                expect(invalid_pc.reload.last_checked_on_storage).to be > orig
+                expect(invalid_pc.reload.last_moab_validation).to be > orig
               end
               it 'updated_at' do
                 orig = invalid_pc.updated_at
@@ -445,8 +442,7 @@ RSpec.describe PreservedObjectHandler do
         allow(po).to receive(:touch)
         allow(PreservedCopy).to receive(:find_by).with(preserved_object: po, endpoint: ep).and_return(pc)
         allow(pc).to receive(:version).and_return(1)
-        allow(pc).to receive(:last_audited=)
-        allow(pc).to receive(:last_checked_on_storage=)
+        allow(pc).to receive(:last_version_audit=)
         allow(pc).to receive(:changed?).and_return(false)
         allow(pc).to receive(:touch)
         po_handler.check_existence
@@ -514,8 +510,8 @@ RSpec.describe PreservedObjectHandler do
               size: incoming_size,
               endpoint: ep,
               status: PreservedCopy::OK_STATUS, # NOTE: ensuring this particular status
-              last_audited: an_instance_of(Integer),
-              last_checked_on_storage: an_instance_of(ActiveSupport::TimeWithZone)
+              last_moab_validation: an_instance_of(ActiveSupport::TimeWithZone),
+              last_version_audit: an_instance_of(ActiveSupport::TimeWithZone)
             }
             expect(PreservedCopy).to receive(:create!).with(pc_args).and_call_original
             po_handler.check_existence
@@ -628,8 +624,8 @@ RSpec.describe PreservedObjectHandler do
               size: incoming_size,
               endpoint: ep,
               status: PreservedCopy::INVALID_MOAB_STATUS, # NOTE ensuring this particular status
-              last_audited: an_instance_of(Integer),
-              last_checked_on_storage: an_instance_of(ActiveSupport::TimeWithZone)
+              last_moab_validation: an_instance_of(ActiveSupport::TimeWithZone),
+              last_version_audit: an_instance_of(ActiveSupport::TimeWithZone)
             }
 
             expect(PreservedObject).to receive(:create!).with(po_args).and_call_original
