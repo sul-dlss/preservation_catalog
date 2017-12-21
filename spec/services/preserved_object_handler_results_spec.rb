@@ -16,7 +16,7 @@ RSpec.describe PreservedObjectHandlerResults do
 
   context '#new' do
     it 'assigns msg_prefix' do
-      exp = "PreservedObjectHandler(#{druid}, #{incoming_version}, #{incoming_size}, #{endpoint})"
+      exp = "PreservedObjectHandler(#{druid}, #{incoming_version}, #{incoming_size}, #{endpoint.endpoint_name})"
       expect(pohr.msg_prefix).to eq exp
     end
     it 'sets result_array to []' do

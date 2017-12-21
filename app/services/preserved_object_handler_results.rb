@@ -68,7 +68,7 @@ class PreservedObjectHandlerResults
 
   def initialize(druid, incoming_version, incoming_size, endpoint)
     @incoming_version = incoming_version
-    @msg_prefix = "PreservedObjectHandler(#{druid}, #{incoming_version}, #{incoming_size}, #{endpoint})"
+    @msg_prefix = "PreservedObjectHandler(#{druid}, #{incoming_version}, #{incoming_size}, #{endpoint.endpoint_name if endpoint})"
     @result_array = []
   end
 

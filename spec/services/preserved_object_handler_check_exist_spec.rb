@@ -9,7 +9,7 @@ RSpec.describe PreservedObjectHandler do
   let(:po) { PreservedObject.find_by(druid: druid) }
   let(:ep) { Endpoint.find_by(storage_location: 'spec/fixtures/storage_root01/moab_storage_trunk') }
   let(:pc) { PreservedCopy.find_by(preserved_object: po, endpoint: ep) }
-  let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, #{incoming_version}, #{incoming_size}, #{ep})" }
+  let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, #{incoming_version}, #{incoming_size}, #{ep.endpoint_name})" }
   let(:db_update_failed_prefix_regex_escaped) { Regexp.escape("#{exp_msg_prefix} db update failed") }
   let(:po_handler) { described_class.new(druid, incoming_version, incoming_size, ep) }
 
@@ -30,7 +30,7 @@ RSpec.describe PreservedObjectHandler do
 
       context "incoming and db versions match" do
         let(:po_handler) { described_class.new(druid, 2, 1, ep) }
-        let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, 2, 1, #{ep})" }
+        let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, 2, 1, #{ep.endpoint_name})" }
         let(:version_matches_po_msg) { "#{exp_msg_prefix} incoming version (2) matches PreservedObject db version" }
         let(:version_matches_pc_msg) { "#{exp_msg_prefix} incoming version (2) matches PreservedCopy db version" }
         let(:updated_pc_db_msg) { "#{exp_msg_prefix} PreservedCopy db object updated" }
@@ -262,7 +262,7 @@ RSpec.describe PreservedObjectHandler do
           let(:invalid_po) { PreservedObject.find_by(druid: invalid_druid) }
           let(:invalid_pc) { PreservedCopy.find_by(preserved_object: invalid_po) }
           let(:exp_msg_prefix) do
-            "PreservedObjectHandler(#{invalid_druid}, #{incoming_version}, #{incoming_size}, #{invalid_ep})"
+            "PreservedObjectHandler(#{invalid_druid}, #{incoming_version}, #{incoming_size}, #{invalid_ep.endpoint_name})"
           end
 
           before do
@@ -529,7 +529,7 @@ RSpec.describe PreservedObjectHandler do
         end
 
         context 'moab is valid' do
-          let(:exp_msg_prefix) { "PreservedObjectHandler(#{valid_druid}, #{incoming_version}, #{incoming_size}, #{ep})" }
+          let(:exp_msg_prefix) { "PreservedObjectHandler(#{valid_druid}, #{incoming_version}, #{incoming_size}, #{ep.endpoint_name})" }
 
           it 'PreservedObject created' do
             po_args = {
@@ -635,7 +635,7 @@ RSpec.describe PreservedObjectHandler do
           let(:storage_dir) { 'spec/fixtures/bad_root01/bad_moab_storage_trunk' }
           let(:ep) { Endpoint.find_by(storage_location: storage_dir) }
           let(:invalid_druid) { 'xx000xx0000' }
-          let(:exp_msg_prefix) { "PreservedObjectHandler(#{invalid_druid}, #{incoming_version}, #{incoming_size}, #{ep})" }
+          let(:exp_msg_prefix) { "PreservedObjectHandler(#{invalid_druid}, #{incoming_version}, #{incoming_size}, #{ep.endpoint_name})" }
           let(:exp_moab_errs_msg) { "#{exp_msg_prefix} Invalid moab, validation errors: [\"Missing directory: [\\\"data\\\", \\\"manifests\\\"] Version: v0001\"]" }
           let(:po_handler) { described_class.new(invalid_druid, incoming_version, incoming_size, ep) }
 

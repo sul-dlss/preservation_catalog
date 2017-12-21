@@ -23,7 +23,7 @@ RSpec.shared_examples "attributes validated" do |method_sym|
     end
     context 'result message includes' do
       let(:msg) { result.first[PreservedObjectHandlerResults::INVALID_ARGUMENTS] }
-      let(:exp_msg_prefix) { "PreservedObjectHandler(#{bad_druid}, #{bad_version}, #{bad_size}, #{bad_endpoint})" }
+      let(:exp_msg_prefix) { "PreservedObjectHandler(#{bad_druid}, #{bad_version}, #{bad_size}, #{bad_endpoint.endpoint_name if bad_endpoint})" }
 
       it "prefix" do
         expect(msg).to match(Regexp.escape("#{exp_msg_prefix} encountered validation error(s): "))
@@ -45,25 +45,25 @@ RSpec.shared_examples "attributes validated" do |method_sym|
 
   it 'bad druid error is written to Rails log' do
     po_handler = described_class.new(bad_druid, incoming_version, incoming_size, ep)
-    err_msg = "PreservedObjectHandler(#{bad_druid}, #{incoming_version}, #{incoming_size}, #{ep}) encountered validation error(s): [\"#{bad_druid_msg}\"]"
+    err_msg = "PreservedObjectHandler(#{bad_druid}, #{incoming_version}, #{incoming_size}, #{ep.endpoint_name}) encountered validation error(s): [\"#{bad_druid_msg}\"]"
     expect(Rails.logger).to receive(:log).with(Logger::ERROR, err_msg)
     po_handler.send(method_sym)
   end
   it 'bad version error is written to Rails log' do
     po_handler = described_class.new(druid, bad_version, incoming_size, ep)
-    err_msg = "PreservedObjectHandler(#{druid}, #{bad_version}, #{incoming_size}, #{ep}) encountered validation error(s): [\"#{bad_version_msg}\"]"
+    err_msg = "PreservedObjectHandler(#{druid}, #{bad_version}, #{incoming_size}, #{ep.endpoint_name}) encountered validation error(s): [\"#{bad_version_msg}\"]"
     expect(Rails.logger).to receive(:log).with(Logger::ERROR, err_msg)
     po_handler.send(method_sym)
   end
   it 'bad size error is written to Rails log' do
     po_handler = described_class.new(druid, incoming_version, bad_size, ep)
-    err_msg = "PreservedObjectHandler(#{druid}, #{incoming_version}, #{bad_size}, #{ep}) encountered validation error(s): [\"#{bad_size_msg}\"]"
+    err_msg = "PreservedObjectHandler(#{druid}, #{incoming_version}, #{bad_size}, #{ep.endpoint_name}) encountered validation error(s): [\"#{bad_size_msg}\"]"
     expect(Rails.logger).to receive(:log).with(Logger::ERROR, err_msg)
     po_handler.send(method_sym)
   end
   it 'bad endpoint is written to Rails log' do
     po_handler = described_class.new(druid, incoming_version, incoming_size, bad_endpoint)
-    err_msg = "PreservedObjectHandler(#{druid}, #{incoming_version}, #{incoming_size}, #{bad_endpoint}) encountered validation error(s): [\"#{bad_endpoint_msg}\"]"
+    err_msg = "PreservedObjectHandler(#{druid}, #{incoming_version}, #{incoming_size}, ) encountered validation error(s): [\"#{bad_endpoint_msg}\"]"
     expect(Rails.logger).to receive(:log).with(Logger::ERROR, err_msg)
     po_handler.send(method_sym)
   end
@@ -112,7 +112,7 @@ end
 
 RSpec.shared_examples 'unexpected version' do |method_sym, incoming_version|
   let(:po_handler) { described_class.new(druid, incoming_version, 1, ep) }
-  let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, #{incoming_version}, 1, #{ep})" }
+  let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, #{incoming_version}, 1, #{ep.endpoint_name if ep})" }
   let(:version_msg_prefix) { "#{exp_msg_prefix} incoming version (#{incoming_version})" }
   let(:unexpected_version_msg) { "#{version_msg_prefix} has unexpected relationship to PreservedCopy db version; ERROR!" }
   let(:updated_po_db_timestamp_msg) { "#{exp_msg_prefix} PreservedObject updated db timestamp only" }
@@ -194,7 +194,7 @@ end
 
 RSpec.shared_examples 'unexpected version with validation' do |method_sym, incoming_version, new_status|
   let(:po_handler) { described_class.new(druid, incoming_version, 1, ep) }
-  let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, #{incoming_version}, 1, #{ep})" }
+  let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, #{incoming_version}, 1, #{ep.endpoint_name if ep})" }
   let(:version_msg_prefix) { "#{exp_msg_prefix} incoming version (#{incoming_version})" }
   let(:unexpected_version_msg) { "#{version_msg_prefix} has unexpected relationship to PreservedCopy db version; ERROR!" }
   let(:updated_status_msg_regex) { Regexp.new(Regexp.escape("#{exp_msg_prefix} PreservedCopy status changed from")) }
