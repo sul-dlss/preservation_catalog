@@ -340,7 +340,7 @@ RSpec.describe PreservedObjectHandler do
           end
           it 'PreservedObject is not updated' do
             orig_timestamp = invalid_po.updated_at
-            invalid_po_handler.confirm_version
+            invalid_po_handler.check_existence
             expect(invalid_po.reload.updated_at).to eq orig_timestamp
           end
 
