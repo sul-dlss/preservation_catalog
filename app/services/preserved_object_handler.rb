@@ -71,11 +71,9 @@ class PreservedObjectHandler
           # FIXME: what if there is more than one associated pres_copy?
           pres_copy = PreservedCopy.find_by!(preserved_object: pres_object, endpoint: endpoint) if pres_object
 
-          if pres_copy.version != pres_object.current_version
-            handler_results.add_result(PreservedObjectHandlerResults::PC_PO_VERSION_MISMATCH, { pc_version: pres_copy.version, po_version: pres_object.current_version })
-            raise ActiveRecord::Rollback, "PO current_version #{pres_object.current_version} != PC version #{pres_copy.version}"
-          end
+          raise_rollback_if_pc_po_version_mismatch(pres_copy.version, pres_object.current_version)
 
+          moab_validated = false
           if incoming_version == pres_copy.version
             handler_results.add_result(PreservedObjectHandlerResults::VERSION_MATCHES, pres_copy.class.name)
             handler_results.add_result(PreservedObjectHandlerResults::VERSION_MATCHES, pres_object.class.name)
@@ -90,6 +88,7 @@ class PreservedObjectHandler
             else
               update_status(pres_copy, PreservedCopy::INVALID_MOAB_STATUS)
             end
+            moab_validated = true
           else # incoming_version < pres_copy.version
             handler_results.add_result(PreservedObjectHandlerResults::ARG_VERSION_LESS_THAN_DB_OBJECT, pres_copy.class.name)
             handler_results.add_result(PreservedObjectHandlerResults::ARG_VERSION_LESS_THAN_DB_OBJECT, pres_object.class.name)
@@ -98,8 +97,9 @@ class PreservedObjectHandler
             else
               update_status(pres_copy, PreservedCopy::INVALID_MOAB_STATUS)
             end
+            moab_validated = true
           end
-          update_pc_validation_timestamps(pres_copy)
+          update_pc_audit_timestamps(pres_copy, moab_validated, true)
           update_db_object(pres_copy)
         end
         handler_results.remove_db_updated_results unless transaction_ok
@@ -141,11 +141,11 @@ class PreservedObjectHandler
     else
       Rails.logger.debug "update_version_after_validation #{druid} called"
       if endpoint.endpoint_type.endpoint_class == 'online'
-        # NOTE: we deal with active record transactions in update_online_version, not here
         if moab_validation_errors.empty?
+          # NOTE: we deal with active record transactions in update_online_version, not here
           update_online_version(true, PreservedCopy::OK_STATUS)
         else
-          update_online_version(true, PreservedCopy::INVALID_MOAB_STATUS)
+          update_pc_invalid_moab
         end
       elsif endpoint.endpoint_type.endpoint_class == 'archive'
         # TODO: perform archive object validation; then create a new PC record for the new
@@ -164,7 +164,7 @@ class PreservedObjectHandler
       Rails.logger.debug "update_version #{druid} called"
       if endpoint.endpoint_type.endpoint_class == 'online'
         # NOTE: we deal with active record transactions in update_online_version, not here
-        update_online_version
+        update_online_version(false, nil, true)
       elsif endpoint.endpoint_type.endpoint_class == 'archive'
         # TODO: create a new PC record for the new archived version on the endpoint
       end
@@ -191,7 +191,7 @@ class PreservedObjectHandler
     moab_errors
   end
 
-  def create_db_objects(status, validated=false)
+  def create_db_objects(status, moab_validated=false)
     pp_default_id = PreservationPolicy.default_policy_id
     transaction_ok = with_active_record_transaction_and_rescue do
       po = PreservedObject.create!(druid: druid,
@@ -204,12 +204,10 @@ class PreservedObjectHandler
         endpoint: endpoint,
         status: status
       }
-
-      if validated
+      if moab_validated
         t = Time.current
-        # Returns the value of time as an integer number of seconds since the Epoch.
-        pc_attrs[:last_audited] = t.to_i
-        pc_attrs[:last_checked_on_storage] = t
+        pc_attrs[:last_version_audit] = t
+        pc_attrs[:last_moab_validation] = t
       end
       PreservedCopy.create!(pc_attrs)
     end
@@ -219,38 +217,64 @@ class PreservedObjectHandler
 
   # TODO: this is "too complex" per rubocop: shameless green implementation
   # NOTE: if we can reduce complexity, remove Metrics/PerceivedComplexity exception in .rubocop.yml
-  def update_online_version(validated=false, status=nil)
+  def update_online_version(moab_validated=false, status=nil, set_status_to_unexp_version=false)
     transaction_ok = with_active_record_transaction_and_rescue do
       pres_object = PreservedObject.find_by!(druid: druid)
       pres_copy = PreservedCopy.find_by!(preserved_object: pres_object, endpoint: endpoint) if pres_object
+
+      raise_rollback_if_pc_po_version_mismatch(pres_copy.version, pres_object.current_version)
+
       # FIXME: what if there is more than one associated pres_copy?
       if incoming_version > pres_copy.version && pres_copy.version == pres_object.current_version
-        # add result codes about object state w/o touching DB
-        handler_results.add_result(
-          PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_copy.class.name
-        )
-        handler_results.add_result(
-          PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_object.class.name
-        )
+        # add results without db updates
+        code = PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT
+        handler_results.add_result(code, pres_copy.class.name)
+        handler_results.add_result(code, pres_object.class.name)
 
-        update_preserved_copy_version_etc(pres_copy, incoming_version, incoming_size, validated)
-        update_status(pres_copy, status) if status
+        update_preserved_copy_version_etc(pres_copy, incoming_version, incoming_size, moab_validated)
+        update_status(pres_copy, status) if status && moab_validated
         update_db_object(pres_copy)
         pres_object.current_version = incoming_version
         update_db_object(pres_object)
       else
-        # add result codes about object state w/o touching DB
-        handler_results.add_result(PreservedObjectHandlerResults::UNEXPECTED_VERSION, 'PreservedCopy')
-        version_comparison_results(pres_copy, :version)
-        version_comparison_results(pres_object, :current_version)
-
-        update_status(pres_copy, status) if status
-        update_pc_validation_timestamps(pres_copy) if validated
-        update_db_object(pres_copy) if pres_copy.changed?
+        if set_status_to_unexp_version
+          status = PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
+        end
+        update_pc_unexpected_version(pres_copy, pres_object, status, moab_validated)
       end
     end
 
     handler_results.remove_db_updated_results unless transaction_ok
+  end
+
+  def raise_rollback_if_pc_po_version_mismatch(pc_version, po_version)
+    if pc_version != po_version
+      res_code = PreservedObjectHandlerResults::PC_PO_VERSION_MISMATCH
+      handler_results.add_result(res_code, { pc_version: pc_version, po_version: po_version })
+      raise ActiveRecord::Rollback, "PreservedCopy version #{pc_version} != PreservedObject current_version #{po_version}"
+    end
+  end
+
+  def update_pc_invalid_moab
+    transaction_ok = with_active_record_transaction_and_rescue do
+      pres_object = PreservedObject.find_by!(druid: druid)
+      pres_copy = PreservedCopy.find_by!(preserved_object: pres_object, endpoint: endpoint) if pres_object
+      # FIXME: what if there is more than one associated pres_copy?
+      update_status(pres_copy, PreservedCopy::INVALID_MOAB_STATUS)
+      update_pc_audit_timestamps(pres_copy, true, false)
+      update_db_object(pres_copy)
+    end
+    handler_results.remove_db_updated_results unless transaction_ok
+  end
+
+  def update_pc_unexpected_version(pres_copy, pres_object, new_status, moab_validated)
+    handler_results.add_result(PreservedObjectHandlerResults::UNEXPECTED_VERSION, 'PreservedCopy')
+    version_comparison_results(pres_copy, :version)
+    version_comparison_results(pres_object, :current_version)
+
+    update_status(pres_copy, new_status) if new_status
+    update_pc_audit_timestamps(pres_copy, moab_validated, true)
+    update_db_object(pres_copy)
   end
 
   # shameless green implementation
@@ -260,10 +284,7 @@ class PreservedObjectHandler
       # FIXME: what if there is more than one associated pres_copy?
       pres_copy = PreservedCopy.find_by!(preserved_object: pres_object, endpoint: endpoint) if pres_object
 
-      if pres_copy.version != pres_object.current_version
-        handler_results.add_result(PreservedObjectHandlerResults::PC_PO_VERSION_MISMATCH, { pc_version: pres_copy.version, po_version: pres_object.current_version })
-        raise ActiveRecord::Rollback, 'PO current_version != PC version'
-      end
+      raise_rollback_if_pc_po_version_mismatch(pres_copy.version, pres_object.current_version)
 
       if incoming_version == pres_copy.version
         handler_results.add_result(PreservedObjectHandlerResults::VERSION_MATCHES, pres_copy.class.name)
@@ -272,7 +293,7 @@ class PreservedObjectHandler
         handler_results.add_result(PreservedObjectHandlerResults::UNEXPECTED_VERSION, pres_copy.class.name)
         update_status(pres_copy, PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS)
       end
-      update_pc_validation_timestamps(pres_copy)
+      update_pc_audit_timestamps(pres_copy, false, true)
       update_db_object(pres_copy)
     end
     handler_results.remove_db_updated_results unless transaction_ok
@@ -295,16 +316,16 @@ class PreservedObjectHandler
   end
 
   # expects @incoming_version to be numeric
-  def update_preserved_copy_version_etc(pres_copy, new_version, new_size, validated=false)
+  def update_preserved_copy_version_etc(pres_copy, new_version, new_size, moab_validated=false)
     pres_copy.version = new_version
     pres_copy.size = new_size if new_size
-    update_pc_validation_timestamps(pres_copy) if validated
+    update_pc_audit_timestamps(pres_copy, moab_validated, true)
   end
 
-  def update_pc_validation_timestamps(pres_copy)
+  def update_pc_audit_timestamps(pres_copy, moab_validated, version_audited)
     t = Time.current
-    pres_copy.last_audited = t.to_i
-    pres_copy.last_checked_on_storage = t
+    pres_copy.last_moab_validation = t if moab_validated
+    pres_copy.last_version_audit = t if version_audited
   end
 
   # expects @incoming_version to be numeric

@@ -7,7 +7,7 @@ RSpec.describe PreservedObjectHandler do
   let(:incoming_size) { 9876 }
   let(:storage_dir) { 'spec/fixtures/storage_root01/moab_storage_trunk' }
   let(:ep) { Endpoint.find_by(storage_location: storage_dir) }
-  let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, #{incoming_version}, #{incoming_size}, #{ep})" }
+  let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, #{incoming_version}, #{incoming_size}, #{ep.endpoint_name})" }
   let(:db_update_failed_prefix_regex_escaped) { Regexp.escape("#{exp_msg_prefix} db update failed") }
   let(:po_handler) { described_class.new(druid, incoming_version, incoming_size, ep) }
   let(:exp_msg) { "#{exp_msg_prefix} added object to db as it did not exist" }
@@ -117,11 +117,11 @@ RSpec.describe PreservedObjectHandler do
 
       before { results }
 
-      it "sets last_audited with Epoch time" do
-        expect(pc_db_obj.last_audited).to be_within(10).of(t.to_i)
+      it "sets last_moab_validation with current time" do
+        expect(pc_db_obj.last_moab_validation).to be_within(10).of(t)
       end
-      it "sets last_checked_on_storage with current time" do
-        expect(pc_db_obj.last_checked_on_storage).to be_within(10).of(t)
+      it "sets last_version_audit with current time" do
+        expect(pc_db_obj.last_version_audit).to be_within(10).of(t)
       end
     end
 
@@ -137,8 +137,8 @@ RSpec.describe PreservedObjectHandler do
         size: incoming_size,
         endpoint: ep,
         status: PreservedCopy::OK_STATUS, # NOTE ensuring this particular status
-        last_audited: an_instance_of(Integer),
-        last_checked_on_storage: an_instance_of(ActiveSupport::TimeWithZone)
+        last_moab_validation: an_instance_of(ActiveSupport::TimeWithZone),
+        last_version_audit: an_instance_of(ActiveSupport::TimeWithZone)
       }
 
       expect(PreservedObject).to receive(:create!).with(po_args).and_call_original
@@ -159,7 +159,7 @@ RSpec.describe PreservedObjectHandler do
       let(:storage_dir) { 'spec/fixtures/bad_root01/bad_moab_storage_trunk' }
       let(:ep) { Endpoint.find_by(storage_location: storage_dir) }
       let(:invalid_druid) { 'xx000xx0000' }
-      let(:exp_msg_prefix) { "PreservedObjectHandler(#{invalid_druid}, #{incoming_version}, #{incoming_size}, #{ep})" }
+      let(:exp_msg_prefix) { "PreservedObjectHandler(#{invalid_druid}, #{incoming_version}, #{incoming_size}, #{ep.endpoint_name})" }
 
       # here we add the storage root with the invalid moab to the Endpoints table
       before do
@@ -183,8 +183,8 @@ RSpec.describe PreservedObjectHandler do
           size: incoming_size,
           endpoint: ep,
           status: PreservedCopy::INVALID_MOAB_STATUS, # NOTE ensuring this particular status
-          last_audited: an_instance_of(Integer),
-          last_checked_on_storage: an_instance_of(ActiveSupport::TimeWithZone)
+          last_moab_validation: an_instance_of(ActiveSupport::TimeWithZone),
+          last_version_audit: an_instance_of(ActiveSupport::TimeWithZone)
         }
 
         expect(PreservedObject).to receive(:create!).with(po_args).and_call_original
@@ -227,7 +227,7 @@ RSpec.describe PreservedObjectHandler do
     describe '#moab_validation_errors logging' do
       it "does not log moab validation errors when moab is valid" do
         po_handler = described_class.new(valid_druid, incoming_version, incoming_size, ep)
-        exp_msg_prefix = "PreservedObjectHandler(#{valid_druid}, #{incoming_version}, #{incoming_size}, #{ep})"
+        exp_msg_prefix = "PreservedObjectHandler(#{valid_druid}, #{incoming_version}, #{incoming_size}, #{ep.endpoint_name})"
         no_errors = "#{exp_msg_prefix} added object to db as it did not exist"
         expect(Rails.logger).to receive(:log).with(Logger::INFO, no_errors)
         po_handler.create_after_validation
@@ -235,7 +235,7 @@ RSpec.describe PreservedObjectHandler do
       it "logs moab validation errors when moab is invalid" do
         invalid_druid = 'yy000yy0000'
         po_handler = described_class.new(invalid_druid, incoming_version, incoming_size, ep)
-        exp_msg_prefix = "PreservedObjectHandler(#{invalid_druid}, #{incoming_version}, #{incoming_size}, #{ep})"
+        exp_msg_prefix = "PreservedObjectHandler(#{invalid_druid}, #{incoming_version}, #{incoming_size}, #{ep.endpoint_name})"
         allow(Rails.logger).to receive(:log)
         errors = "#{exp_msg_prefix} Invalid moab, validation errors: [\"Missing directory: [\\\"manifests\\\"] Version: v0001\"]"
         expect(Rails.logger).to receive(:log).with(Logger::ERROR, errors)
@@ -251,7 +251,7 @@ RSpec.describe PreservedObjectHandler do
       let(:po_handler) { described_class.new(valid_druid, incoming_version, incoming_size, ep) }
 
       let!(:result) { po_handler.create_after_validation }
-      let(:exp_msg_prefix) { "PreservedObjectHandler(#{valid_druid}, #{incoming_version}, #{incoming_size}, #{ep})" }
+      let(:exp_msg_prefix) { "PreservedObjectHandler(#{valid_druid}, #{incoming_version}, #{incoming_size}, #{ep.endpoint_name})" }
 
       it '1 result' do
         expect(result).to be_an_instance_of Array
