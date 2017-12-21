@@ -393,41 +393,8 @@ RSpec.describe PreservedObjectHandler do
           po.current_version = 8
           po.save!
         end
-        let(:version_mismatch_msg) { "#{exp_msg_prefix} PreservedCopy online moab version #{pc.version} does not match PreservedObject current_version #{po.current_version}" }
 
-        it "logs at error level" do
-          expect(Rails.logger).to receive(:log).with(Logger::ERROR, version_mismatch_msg)
-          po_handler.check_existence
-        end
-        it 'does not update PreservedCopy' do
-          orig_timestamp = pc.updated_at
-          po_handler.check_existence
-          expect(pc.reload.updated_at).to eq orig_timestamp
-        end
-        it 'does not update PreservedObject' do
-          orig_timestamp = po.reload.updated_at
-          po_handler.check_existence
-          expect(po.reload.updated_at).to eq orig_timestamp
-        end
-        context 'returns' do
-          let!(:results) { po_handler.check_existence }
-
-          # results = [result1, result2]
-          # result1 = {response_code: msg}
-          # result2 = {response_code: msg}
-          it '1 result' do
-            expect(results).to be_an_instance_of Array
-            expect(results.size).to eq 1
-          end
-          it 'PC_PO_VERSION_MISMATCH result' do
-            code = PreservedObjectHandlerResults::PC_PO_VERSION_MISMATCH
-            expect(results).to include(hash_including(code => version_mismatch_msg))
-          end
-          it 'does NOT get UPDATED_DB_OBJECT message' do
-            expect(results).not_to include(hash_including(PreservedObjectHandlerResults::UPDATED_DB_OBJECT))
-            expect(results).not_to include(hash_including(PreservedObjectHandlerResults::UPDATED_DB_OBJECT_TIMESTAMP_ONLY))
-          end
-        end
+        it_behaves_like 'PreservedObject current_version does not match online PC version', :update_version, 3, 2, 8
       end
 
       context 'db update error' do
