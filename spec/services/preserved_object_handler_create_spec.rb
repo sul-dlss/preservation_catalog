@@ -117,11 +117,11 @@ RSpec.describe PreservedObjectHandler do
 
       before { results }
 
-      it "sets last_audited with Epoch time" do
-        expect(pc_db_obj.last_audited).to be_within(10).of(t.to_i)
+      it "sets last_moab_validation with current time" do
+        expect(pc_db_obj.last_moab_validation).to be_within(10).of(t)
       end
-      it "sets last_checked_on_storage with current time" do
-        expect(pc_db_obj.last_checked_on_storage).to be_within(10).of(t)
+      it "sets last_version_audit with current time" do
+        expect(pc_db_obj.last_version_audit).to be_within(10).of(t)
       end
     end
 
@@ -137,8 +137,8 @@ RSpec.describe PreservedObjectHandler do
         size: incoming_size,
         endpoint: ep,
         status: PreservedCopy::OK_STATUS, # NOTE ensuring this particular status
-        last_audited: an_instance_of(Integer),
-        last_checked_on_storage: an_instance_of(ActiveSupport::TimeWithZone)
+        last_moab_validation: an_instance_of(ActiveSupport::TimeWithZone),
+        last_version_audit: an_instance_of(ActiveSupport::TimeWithZone)
       }
 
       expect(PreservedObject).to receive(:create!).with(po_args).and_call_original
@@ -183,8 +183,8 @@ RSpec.describe PreservedObjectHandler do
           size: incoming_size,
           endpoint: ep,
           status: PreservedCopy::INVALID_MOAB_STATUS, # NOTE ensuring this particular status
-          last_audited: an_instance_of(Integer),
-          last_checked_on_storage: an_instance_of(ActiveSupport::TimeWithZone)
+          last_moab_validation: an_instance_of(ActiveSupport::TimeWithZone),
+          last_version_audit: an_instance_of(ActiveSupport::TimeWithZone)
         }
 
         expect(PreservedObject).to receive(:create!).with(po_args).and_call_original
