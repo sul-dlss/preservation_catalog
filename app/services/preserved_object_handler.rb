@@ -145,7 +145,7 @@ class PreservedObjectHandler
           # NOTE: we deal with active record transactions in update_online_version, not here
           update_online_version(true, PreservedCopy::OK_STATUS)
         else
-          update_online_version(true, PreservedCopy::INVALID_MOAB_STATUS)
+          update_pc_invalid_moab
         end
       elsif endpoint.endpoint_type.endpoint_class == 'archive'
         # TODO: perform archive object validation; then create a new PC record for the new
@@ -253,6 +253,18 @@ class PreservedObjectHandler
       handler_results.add_result(res_code, { pc_version: pc_version, po_version: po_version })
       raise ActiveRecord::Rollback, "PreservedCopy version #{pc_version} != PreservedObject current_version #{po_version}"
     end
+  end
+
+  def update_pc_invalid_moab
+    transaction_ok = with_active_record_transaction_and_rescue do
+      pres_object = PreservedObject.find_by!(druid: druid)
+      pres_copy = PreservedCopy.find_by!(preserved_object: pres_object, endpoint: endpoint) if pres_object
+      # FIXME: what if there is more than one associated pres_copy?
+      update_status(pres_copy, PreservedCopy::INVALID_MOAB_STATUS)
+      update_pc_audit_timestamps(pres_copy, true, false)
+      update_db_object(pres_copy)
+    end
+    handler_results.remove_db_updated_results unless transaction_ok
   end
 
   def update_pc_unexpected_version(pres_copy, pres_object, new_status, moab_validated)
