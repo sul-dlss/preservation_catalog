@@ -94,6 +94,7 @@ Metrics/LineLength:
     - 'spec/services/shared_examples_preserved_object_handler.rb'
     - 'spec/models/status_spec.rb' # Line length of 132 for better readability
     - 'spec/services/preserved_object_handler_check_exist_spec.rb' # 17 lines, but who's counting, officer?
+    - 'spec/services/workflow_errors_reporter_spec.rb' # lines for body and error_msg kept long for readability
 
 Metrics/MethodLength:
   Max: 25
