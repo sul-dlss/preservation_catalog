@@ -138,8 +138,8 @@ class PreservedObjectHandler
     else
       Rails.logger.debug "update_version_after_validation #{druid} called"
       if endpoint.endpoint_type.endpoint_class == 'online'
-        # NOTE: we deal with active record transactions in update_online_version, not here
         if moab_validation_errors.empty?
+          # NOTE: we deal with active record transactions in update_online_version, not here
           update_online_version(true, PreservedCopy::OK_STATUS)
         else
           update_online_version(true, PreservedCopy::INVALID_MOAB_STATUS)
