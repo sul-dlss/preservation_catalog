@@ -164,7 +164,7 @@ class PreservedObjectHandler
       Rails.logger.debug "update_version #{druid} called"
       if endpoint.endpoint_type.endpoint_class == 'online'
         # NOTE: we deal with active record transactions in update_online_version, not here
-        update_online_version
+        update_online_version(false, nil, true)
       elsif endpoint.endpoint_type.endpoint_class == 'archive'
         # TODO: create a new PC record for the new archived version on the endpoint
       end
@@ -217,7 +217,7 @@ class PreservedObjectHandler
 
   # TODO: this is "too complex" per rubocop: shameless green implementation
   # NOTE: if we can reduce complexity, remove Metrics/PerceivedComplexity exception in .rubocop.yml
-  def update_online_version(moab_validated=false, status=nil)
+  def update_online_version(moab_validated=false, status=nil, set_status_to_unexp_version=false)
     transaction_ok = with_active_record_transaction_and_rescue do
       pres_object = PreservedObject.find_by!(druid: druid)
       pres_copy = PreservedCopy.find_by!(preserved_object: pres_object, endpoint: endpoint) if pres_object
@@ -232,11 +232,14 @@ class PreservedObjectHandler
         handler_results.add_result(code, pres_object.class.name)
 
         update_preserved_copy_version_etc(pres_copy, incoming_version, incoming_size, moab_validated)
-        update_status(pres_copy, status) if status
+        update_status(pres_copy, status) if status && moab_validated
         update_db_object(pres_copy)
         pres_object.current_version = incoming_version
         update_db_object(pres_object)
       else
+        if set_status_to_unexp_version
+          status = PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
+        end
         update_pc_unexpected_version(pres_copy, pres_object, status, moab_validated)
       end
     end
