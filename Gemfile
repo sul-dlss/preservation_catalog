@@ -40,6 +40,7 @@ group :development, :test do
   # Ruby static code analyzer http://rubocop.readthedocs.io/en/latest/
   gem 'rubocop', '~> 0.50.0', require: false # avoid code churn due to rubocop changes
   gem 'rubocop-rspec'
+  gem 'webmock'
 end
 
 group :development do

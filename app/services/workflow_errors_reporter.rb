@@ -8,11 +8,16 @@ class WorkflowErrorsReporter
   end
 
   private_class_method def self.conn
-    @conn ||= Faraday.new(url: Settings.workflow_services.url)
+    if Settings.workflow_services.url.present?
+      @connection ||= Faraday.new(url: Settings.workflow_services.url)
+      Rails.logger.log(warn, 'no workflow hookup - assume you are in test or dev environment')
+    end
+    @connection
   end
 
   private_class_method def self.request(druid, process_name, error_message)
-    conn.put do |request|
+    return unless conn
+    @connection.put do |request|
       request.headers['content-type'] = "application/xml"
       request.url  "/workflow/dor/objects/druid:#{druid}/workflows/preservationWF/#{process_name}"
       request.body = "<process name='#{process_name}' status='error' errorMessage='#{error_message}'/>"
