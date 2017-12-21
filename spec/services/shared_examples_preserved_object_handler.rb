@@ -290,3 +290,123 @@ RSpec.shared_examples 'unexpected version with validation' do |method_sym, incom
     end
   end
 end
+
+RSpec.shared_examples 'update for invalid moab' do |method_sym|
+  let(:updated_status_msg_regex) { Regexp.new(Regexp.escape("#{exp_msg_prefix} PreservedCopy status changed from")) }
+  let(:invalid_moab_msg) { "#{exp_msg_prefix} Invalid moab, validation errors: [\"Missing directory: [\\\"data\\\", \\\"manifests\\\"] Version: v0001\"]" }
+  let(:updated_pc_db_msg) { "#{exp_msg_prefix} PreservedCopy db object updated" }
+  let(:updated_po_db_msg) { "#{exp_msg_prefix} PreservedObject db object updated" }
+
+  context 'PreservedCopy' do
+    context 'changed' do
+      it 'last_moab_validation' do
+        orig = pc.last_moab_validation
+        po_handler.send(method_sym)
+        expect(pc.reload.last_moab_validation).to be > orig
+      end
+      it 'status' do
+        orig = pc.status
+        po_handler.send(method_sym)
+        expect(pc.reload.status).to eq PreservedCopy::INVALID_MOAB_STATUS
+        expect(pc.status).not_to eq orig
+      end
+    end
+    context 'unchanged' do
+      it 'last_version_audit' do
+        orig = pc.last_version_audit
+        po_handler.send(method_sym)
+        expect(pc.reload.last_version_audit).to eq orig
+      end
+      it 'size' do
+        orig = pc.size
+        po_handler.send(method_sym)
+        expect(pc.reload.size).to eq orig
+      end
+      it 'version' do
+        orig = pc.version
+        po_handler.send(method_sym)
+        expect(pc.reload.version).to eq orig
+      end
+    end
+  end
+  it 'does not update PreservedObject' do
+    orig = po.reload.updated_at
+    po_handler.send(method_sym)
+    expect(po.reload.updated_at).to eq orig
+  end
+
+  it "logs at error level" do
+    expect(Rails.logger).to receive(:log).with(Logger::ERROR, invalid_moab_msg)
+    expect(Rails.logger).to receive(:log).with(Logger::INFO, updated_pc_db_msg)
+    expect(Rails.logger).to receive(:log).with(Logger::INFO, updated_status_msg_regex)
+    po_handler.send(method_sym)
+  end
+
+  context 'returns' do
+    let!(:results) { po_handler.send(method_sym) }
+
+    # results = [result1, result2]
+    # result1 = {response_code: msg}
+    # result2 = {response_code: msg}
+    it '3 results' do
+      expect(results).to be_an_instance_of Array
+      expect(results.size).to eq 3
+    end
+    it 'INVALID_MOAB result' do
+      code = PreservedObjectHandlerResults::INVALID_MOAB
+      expect(results).to include(hash_including(code => invalid_moab_msg))
+    end
+    it 'PC_STATUS_CHANGED result' do
+      expect(results).to include(a_hash_including(PreservedObjectHandlerResults::PC_STATUS_CHANGED => updated_status_msg_regex))
+    end
+    it 'UPDATED_DB_OBJECT for PreservedCopy' do
+      expect(results).to include(hash_including(PreservedObjectHandlerResults::UPDATED_DB_OBJECT => updated_pc_db_msg))
+    end
+    it 'does NOT get UPDATED_DB_OBJECT message for PreservedObject' do
+      expect(results).not_to include(hash_including(PreservedObjectHandlerResults::UPDATED_DB_OBJECT => updated_po_db_msg))
+      expect(results).not_to include(hash_including(PreservedObjectHandlerResults::UPDATED_DB_OBJECT_TIMESTAMP_ONLY))
+    end
+  end
+end
+
+RSpec.shared_examples 'PreservedObject current_version does not match online PC version' do |method_sym, incoming_version, pc_v, po_v|
+  let(:po_handler) { described_class.new(druid, incoming_version, 1, ep) }
+  let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, #{incoming_version}, 1, #{ep.endpoint_name if ep})" }
+  let(:version_mismatch_msg) { "#{exp_msg_prefix} PreservedCopy online moab version #{pc_v} does not match PreservedObject current_version #{po_v}" }
+
+  it 'does not update PreservedCopy' do
+    orig = pc.updated_at
+    po_handler.send(method_sym)
+    expect(pc.reload.updated_at).to eq orig
+  end
+  it 'does not update PreservedObject' do
+    orig = po.reload.updated_at
+    po_handler.send(method_sym)
+    expect(po.reload.updated_at).to eq orig
+  end
+
+  it "logs at error level" do
+    expect(Rails.logger).to receive(:log).with(Logger::ERROR, version_mismatch_msg)
+    po_handler.send(method_sym)
+  end
+
+  context 'returns' do
+    let!(:results) { po_handler.send(method_sym) }
+
+    # results = [result1, result2]
+    # result1 = {response_code: msg}
+    # result2 = {response_code: msg}
+    it '1 result' do
+      expect(results).to be_an_instance_of Array
+      expect(results.size).to eq 1
+    end
+    it 'PC_PO_VERSION_MISMATCH result' do
+      code = PreservedObjectHandlerResults::PC_PO_VERSION_MISMATCH
+      expect(results).to include(hash_including(code => version_mismatch_msg))
+    end
+    it 'does NOT get UPDATED_DB_OBJECT message' do
+      expect(results).not_to include(hash_including(PreservedObjectHandlerResults::UPDATED_DB_OBJECT))
+      expect(results).not_to include(hash_including(PreservedObjectHandlerResults::UPDATED_DB_OBJECT_TIMESTAMP_ONLY))
+    end
+  end
+end

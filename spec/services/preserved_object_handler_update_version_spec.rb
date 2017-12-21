@@ -114,7 +114,7 @@ RSpec.describe PreservedObjectHandler do
           @pc.save!
         end
 
-        it_behaves_like 'unexpected version', :update_version, 8
+        it_behaves_like 'PreservedObject current_version does not match online PC version', :update_version, 3, 3, 2
       end
 
       context 'incoming version same as catalog versions (both)' do
@@ -430,7 +430,7 @@ RSpec.describe PreservedObjectHandler do
             pc.save!
           end
 
-          it_behaves_like 'unexpected version with validation', :update_version_after_validation, 8, PreservedCopy::INVALID_MOAB_STATUS
+          it_behaves_like 'update for invalid moab', :update_version_after_validation
         end
 
         context 'incoming version same as catalog versions (both)' do
