@@ -81,7 +81,9 @@ RSpec.describe PreservedCopy, type: :model do
 
   it { is_expected.to belong_to(:endpoint) }
   it { is_expected.to belong_to(:preserved_object) }
-  it { is_expected.to have_db_index(:last_audited) }
+  it { is_expected.to have_db_index(:last_version_audit) }
+  it { is_expected.to have_db_index(:last_moab_validation) }
+  it { is_expected.to have_db_index(:last_checksum_validation) }
   it { is_expected.to have_db_index(:endpoint_id) }
   it { is_expected.to have_db_index(:preserved_object_id) }
 end
