@@ -25,6 +25,8 @@ gem 'newrelic_rpm'
 gem 'honeybadger'
 # Use faraday for ReST calls
 gem 'faraday'
+# Use retries for handling exceptions and retries
+gem 'retries'
 
 # Stanford gems
 gem 'moab-versioning' # work with Moab Objects

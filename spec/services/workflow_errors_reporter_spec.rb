@@ -19,4 +19,10 @@ RSpec.describe WorkflowErrorsReporter do
       expect(described_class.update_workflow('jj925bx9565', error_msg)).to eq [error_msg[1]]
     end
   end
+  describe '.request' do
+    it 'rescues for Faraday::Error' do
+      allow(described_class).to receive(:request).and_raise(Faraday::Error)
+      expect { described_class.request('jj925bx9565', 'moab-valid', 'Foo() error') }.to raise_error(Faraday::Error)
+    end
+  end
 end
