@@ -96,6 +96,7 @@ class PreservedObjectHandlerResults
       msg = r.values.first
       Rails.logger.log(severity, msg)
     end
+    result_array
   end
 
   private

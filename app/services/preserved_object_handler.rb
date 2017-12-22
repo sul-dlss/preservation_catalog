@@ -43,7 +43,6 @@ class PreservedObjectHandler
     end
 
     handler_results.report_results
-    handler_results.result_array
   end
 
   def create
@@ -56,7 +55,6 @@ class PreservedObjectHandler
     end
 
     handler_results.report_results
-    handler_results.result_array
   end
 
   # this is a long, complex method (shameless green); if it is refactored, revisit the exceptions in rubocop.yml
@@ -112,7 +110,6 @@ class PreservedObjectHandler
       end
     end
     handler_results.report_results
-    handler_results.result_array
   end
 
   def confirm_version
@@ -129,7 +126,6 @@ class PreservedObjectHandler
     end
 
     handler_results.report_results
-    handler_results.result_array
   end
 
   def update_version_after_validation
@@ -151,7 +147,6 @@ class PreservedObjectHandler
     end
 
     handler_results.report_results
-    handler_results.result_array
   end
 
   def update_version
@@ -168,7 +163,6 @@ class PreservedObjectHandler
     end
 
     handler_results.report_results
-    handler_results.result_array
   end
 
   private
