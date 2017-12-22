@@ -290,3 +290,79 @@ RSpec.shared_examples 'unexpected version with validation' do |method_sym, incom
     end
   end
 end
+
+RSpec.shared_examples 'status already not ok' do |method_sym|
+  let(:pc_status_already_not_ok_msg) { Regexp.new(Regexp.escape("#{exp_msg_prefix} PreservedCopy status changed from")) }
+  let(:status_alread_bad_msg) do
+    "#{exp_msg_prefix} "\
+    "PreservedCopy version #{incoming_version} already has '#{PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS}' status; "\
+    "further checking skipped until PreservedCopy is remediated and marked #{PreservedCopy::OK_STATUS}."
+  end
+
+  before do
+    po.current_version = incoming_version
+    pc.version = incoming_version
+    pc.status = PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
+    po.save!
+    pc.save!
+  end
+
+  it 'skips further validation' do
+    expect(Stanford::StorageObjectValidator).not_to receive(:new)
+    po_handler.send(method_sym)
+  end
+
+  it "doesn't update the timestamp fields" do
+    original_timestamps = {
+      pc_updated_at: pc.updated_at,
+      pc_last_audited: pc.last_audited,
+      pc_last_checked_on_storage: pc.last_checked_on_storage,
+      pc_last_checksum_validation: pc.last_checksum_validation,
+      po_updated_at: po.updated_at
+    }
+
+    po_handler.send(method_sym)
+    po.reload
+    pc.reload
+
+    comparison_timestamps = {
+      pc_updated_at: pc.updated_at,
+      pc_last_audited: pc.last_audited,
+      pc_last_checked_on_storage: pc.last_checked_on_storage,
+      pc_last_checksum_validation: pc.last_checksum_validation,
+      po_updated_at: po.updated_at
+    }
+    expect(original_timestamps).to eq comparison_timestamps
+  end
+
+  it "doesn't call save or touch" do
+    po = instance_double(PreservedObject)
+    allow(PreservedObject).to receive(:find_by!).and_return(po)
+    pc = instance_double(PreservedCopy)
+    allow(pc).to receive(:status).and_return(PreservedCopy::INVALID_MOAB_STATUS)
+    allow(PreservedCopy).to receive(:find_by!).and_return(pc)
+    expect(po).not_to receive(:save!)
+    expect(pc).not_to receive(:save!)
+    expect(po).not_to receive(:touch)
+    expect(pc).not_to receive(:touch)
+  end
+
+  context 'returns' do
+    let!(:results) { po_handler.send(method_sym) }
+
+    it '1 result' do
+      expect(results).to be_an_instance_of Array
+      expect(results.size).to eq 1
+    end
+
+    it 'PC_STATUS_ALREADY_NOT_OK result' do
+      code = PreservedObjectHandlerResults::PC_STATUS_ALREADY_NOT_OK
+      expect(results).to include(a_hash_including(code => status_alread_bad_msg))
+    end
+  end
+
+  it 'logs at error level' do
+    expect(Rails.logger).to receive(:log).with(Logger::ERROR, status_alread_bad_msg)
+    po_handler.send(method_sym)
+  end
+end

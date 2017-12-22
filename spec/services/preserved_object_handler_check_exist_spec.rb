@@ -162,12 +162,6 @@ RSpec.describe PreservedObjectHandler do
                 po_handler.check_existence
                 expect(pc.reload.updated_at).to be > orig
               end
-              it 'status becomes "ok" if it was invalid_moab (b/c after validation)' do
-                pc.status = PreservedCopy::INVALID_MOAB_STATUS
-                pc.save!
-                po_handler.check_existence
-                expect(pc.reload.status).to eq PreservedCopy::OK_STATUS
-              end
             end
             context 'unchanged' do
               before do
@@ -186,15 +180,8 @@ RSpec.describe PreservedObjectHandler do
                 expect(pc.reload.size).to eq orig
               end
             end
-            it 'what about other statuses????' do
-              skip 'need to know what to do when status does NOT start as ok or invalid moab'
-              pc.status = PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
-              pc.save!
-              po_handler.check_existence
-              expect(pc.reload.status).to eq PreservedCopy::OK_STATUS
-              # TODO: not clear what to do here;  it's not OK_STATUS if we didn't validate ...
-              expect(pc.status).to eq PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
-            end
+
+            it_behaves_like 'status already not ok', :check_existence
           end
           context 'PreservedObject' do
             context 'changed' do
@@ -314,12 +301,6 @@ RSpec.describe PreservedObjectHandler do
               end
               it 'ensures status becomes invalid_moab from ok' do
                 invalid_pc.status = PreservedCopy::OK_STATUS
-                invalid_pc.save!
-                invalid_po_handler.check_existence
-                expect(invalid_pc.reload.status).to eq PreservedCopy::INVALID_MOAB_STATUS
-              end
-              it 'ensures status becomes invalid_moab from expected_vers_not_found_on_storage' do
-                invalid_pc.status = PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
                 invalid_pc.save!
                 invalid_po_handler.check_existence
                 expect(invalid_pc.reload.status).to eq PreservedCopy::INVALID_MOAB_STATUS
@@ -477,6 +458,7 @@ RSpec.describe PreservedObjectHandler do
         allow(po).to receive(:current_version).and_return(1)
         allow(po).to receive(:touch)
         allow(PreservedCopy).to receive(:find_by).with(preserved_object: po, endpoint: ep).and_return(pc)
+        allow(pc).to receive(:status).and_return(PreservedCopy::OK_STATUS)
         allow(pc).to receive(:version).and_return(1)
         allow(pc).to receive(:last_audited=)
         allow(pc).to receive(:last_checked_on_storage=)
