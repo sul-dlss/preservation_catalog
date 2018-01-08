@@ -25,4 +25,18 @@ RSpec.describe WorkflowErrorsReporter do
       expect { described_class.request('jj925bx9565', 'moab-valid', 'Foo() error') }.to raise_error(Faraday::Error)
     end
   end
+
+  describe '.update_workflow with invalid workflow_services.url' do
+    before do
+      stub_request(:put, "https://sul-lyberservices-test.stanford.edu/workflow/dor/objects/druid:jj925bx9565/workflows/preservationWF/moab-valid")
+        .with(body: "<process name='moab-valid' status='error' errorMessage=' Invalid Moab'/>",
+              headers: { 'Content-Type' => 'application/xml' })
+        .to_return(status: 200, body: "", headers: {})
+    end
+    it 'returns Rails warning' do
+      Settings.workflow_services.url = ''
+      expect(Rails.logger).to receive(:warn).with('no workflow hookup - assume you are in test or dev environment')
+      described_class.update_workflow('jj925bx9565', [{ 13 => "Foo() Invalid Moab" }])
+    end
+  end
 end
