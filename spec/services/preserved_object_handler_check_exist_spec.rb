@@ -391,7 +391,7 @@ RSpec.describe PreservedObjectHandler do
           po.save!
         end
 
-        it_behaves_like 'PreservedObject current_version does not match online PC version', :update_version, 3, 2, 8
+        it_behaves_like 'PreservedObject current_version does not match online PC version', :check_existence, 3, 2, 8
       end
 
       context 'db update error' do
