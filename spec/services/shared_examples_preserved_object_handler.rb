@@ -180,13 +180,6 @@ RSpec.shared_examples 'unexpected version' do |method_sym, incoming_version|
 
   context 'returns' do
     let!(:results) { po_handler.send(method_sym) }
-    let(:num_results) do
-      if method_sym == :update_version
-        5
-      else
-        4
-      end
-    end
 
     # results = [result1, result2]
     # result1 = {response_code: msg}
