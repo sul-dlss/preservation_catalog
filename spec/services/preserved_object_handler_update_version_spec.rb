@@ -545,6 +545,7 @@ RSpec.describe PreservedObjectHandler do
               end
             end
           end
+          # PreservedObject won't get updated if moab is invalid
         end
       end
     end
