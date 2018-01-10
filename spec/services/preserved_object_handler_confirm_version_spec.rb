@@ -55,20 +55,12 @@ RSpec.describe PreservedObjectHandler do
 
         context 'PreservedCopy' do
           context 'changed' do
-            it 'last_audited' do
-              orig = Time.current.to_i
-              pc.last_audited = orig
-              pc.save!
-              sleep 1 # last_audited is bigint, and granularity is second, not fraction thereof
-              po_handler.confirm_version
-              expect(pc.reload.last_audited).to be > orig
-            end
-            it 'last_checked_on_storage' do
+            it 'last_version_audit' do
               orig = Time.current
-              pc.last_checked_on_storage = orig
+              pc.last_version_audit = orig
               pc.save!
               po_handler.confirm_version
-              expect(pc.reload.last_checked_on_storage).to be > orig
+              expect(pc.reload.last_version_audit).to be > orig
             end
             it 'updated_at' do
               orig = pc.updated_at
@@ -91,6 +83,11 @@ RSpec.describe PreservedObjectHandler do
               orig = pc.size
               po_handler.confirm_version
               expect(pc.reload.size).to eq orig
+            end
+            it 'last_moab_validation' do
+              orig = pc.last_moab_validation
+              po_handler.confirm_version
+              expect(pc.reload.last_moab_validation).to eq orig
             end
           end
         end
@@ -145,20 +142,12 @@ RSpec.describe PreservedObjectHandler do
               po_handler.confirm_version
               expect(pc.reload.status).to eq PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
             end
-            it 'last_audited' do
-              orig = Time.current.to_i
-              pc.last_audited = orig
-              pc.save!
-              sleep 1 # last_audited is bigint, and granularity is second, not fraction thereof
-              po_handler.confirm_version
-              expect(pc.reload.last_audited).to be > orig
-            end
-            it 'last_checked_on_storage' do
+            it 'last_version_audit' do
               orig = Time.current
-              pc.last_checked_on_storage = orig
+              pc.last_version_audit = orig
               pc.save!
               po_handler.confirm_version
-              expect(pc.reload.last_checked_on_storage).to be > orig
+              expect(pc.reload.last_version_audit).to be > orig
             end
             it 'updated_at' do
               orig = pc.updated_at
@@ -176,6 +165,11 @@ RSpec.describe PreservedObjectHandler do
               orig = pc.size
               po_handler.confirm_version
               expect(pc.reload.size).to eq orig
+            end
+            it 'last_moab_validation' do
+              orig = pc.last_moab_validation
+              po_handler.confirm_version
+              expect(pc.reload.last_moab_validation).to eq orig
             end
           end
         end
@@ -221,41 +215,8 @@ RSpec.describe PreservedObjectHandler do
           po.current_version = 8
           po.save!
         end
-        let(:version_mismatch_msg) { "#{exp_msg_prefix} PreservedCopy online moab version #{pc.version} does not match PreservedObject current_version #{po.current_version}" }
 
-        it "logs at error level" do
-          expect(Rails.logger).to receive(:log).with(Logger::ERROR, version_mismatch_msg)
-          po_handler.confirm_version
-        end
-        it 'does not update PreservedCopy' do
-          orig_timestamp = pc.updated_at
-          po_handler.confirm_version
-          expect(pc.reload.updated_at).to eq orig_timestamp
-        end
-        it 'does not update PreservedObject' do
-          orig_timestamp = po.reload.updated_at
-          po_handler.confirm_version
-          expect(po.reload.updated_at).to eq orig_timestamp
-        end
-        context 'returns' do
-          let!(:results) { po_handler.confirm_version }
-
-          # results = [result1, result2]
-          # result1 = {response_code: msg}
-          # result2 = {response_code: msg}
-          it '1 result' do
-            expect(results).to be_an_instance_of Array
-            expect(results.size).to eq 1
-          end
-          it 'PC_PO_VERSION_MISMATCH result' do
-            code = PreservedObjectHandlerResults::PC_PO_VERSION_MISMATCH
-            expect(results).to include(hash_including(code => version_mismatch_msg))
-          end
-          it 'does NOT get UPDATED_DB_OBJECT message' do
-            expect(results).not_to include(hash_including(PreservedObjectHandlerResults::UPDATED_DB_OBJECT))
-            expect(results).not_to include(hash_including(PreservedObjectHandlerResults::UPDATED_DB_OBJECT_TIMESTAMP_ONLY))
-          end
-        end
+        it_behaves_like 'PreservedObject current_version does not match online PC version', :confirm_version, 3, 2, 8
       end
 
       context 'db update error' do
@@ -273,8 +234,7 @@ RSpec.describe PreservedObjectHandler do
             allow(PreservedCopy).to receive(:find_by).and_return(pc)
             allow(pc).to receive(:version).and_return(2)
             allow(pc).to receive(:status)
-            allow(pc).to receive(:last_audited=)
-            allow(pc).to receive(:last_checked_on_storage=)
+            allow(pc).to receive(:last_version_audit=)
             allow(pc).to receive(:changed?).and_return(true)
             allow(pc).to receive(:save!).and_raise(ActiveRecord::ActiveRecordError, 'foo')
             allow(po).to receive(:current_version).and_return(2)
@@ -305,8 +265,7 @@ RSpec.describe PreservedObjectHandler do
         allow(PreservedCopy).to receive(:find_by).with(preserved_object: po, endpoint: ep).and_return(pc)
         allow(pc).to receive(:version).and_return(1)
         allow(pc).to receive(:status).and_return(status)
-        allow(pc).to receive(:last_audited=)
-        allow(pc).to receive(:last_checked_on_storage=)
+        allow(pc).to receive(:last_version_audit=)
         allow(pc).to receive(:changed?).and_return(true)
         allow(pc).to receive(:save!)
         po_handler.confirm_version
@@ -322,8 +281,7 @@ RSpec.describe PreservedObjectHandler do
         allow(po).to receive(:touch)
         allow(PreservedCopy).to receive(:find_by).with(preserved_object: po, endpoint: ep).and_return(pc)
         allow(pc).to receive(:version).and_return(1)
-        allow(pc).to receive(:last_audited=)
-        allow(pc).to receive(:last_checked_on_storage=)
+        allow(pc).to receive(:last_version_audit=)
         allow(pc).to receive(:changed?).and_return(false)
         allow(pc).to receive(:touch)
         po_handler.confirm_version
