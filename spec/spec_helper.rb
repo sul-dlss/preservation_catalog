@@ -1,6 +1,7 @@
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 
 require 'coveralls'
+require 'webmock/rspec'
 Coveralls.wear!('rails')
 
 RSpec.configure do |config|

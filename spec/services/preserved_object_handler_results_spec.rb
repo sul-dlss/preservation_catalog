@@ -23,7 +23,7 @@ RSpec.describe PreservedObjectHandlerResults do
       expect(pohr.result_array).to eq []
     end
   end
-  context '#log_results' do
+  context '#report_results' do
     it 'needs tests' do
       skip
     end

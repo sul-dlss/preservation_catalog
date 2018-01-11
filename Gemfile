@@ -23,6 +23,10 @@ gem 'rails', '~> 5.1.3'
 gem 'newrelic_rpm'
 # Use honeybadger for error reporting
 gem 'honeybadger'
+# Use faraday for ReST calls
+gem 'faraday'
+# Use retries for handling exceptions and retries
+gem 'retries'
 
 # Stanford gems
 gem 'moab-versioning' # work with Moab Objects
@@ -38,6 +42,7 @@ group :development, :test do
   # Ruby static code analyzer http://rubocop.readthedocs.io/en/latest/
   gem 'rubocop', '~> 0.50.0', require: false # avoid code churn due to rubocop changes
   gem 'rubocop-rspec'
+  gem 'webmock'
 end
 
 group :development do

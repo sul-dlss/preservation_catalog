@@ -42,8 +42,7 @@ class PreservedObjectHandler
       create_db_objects(PreservedCopy::INVALID_MOAB_STATUS, true)
     end
 
-    handler_results.log_results
-    handler_results.result_array
+    handler_results.report_results
   end
 
   def create
@@ -55,8 +54,7 @@ class PreservedObjectHandler
       create_db_objects(PreservedCopy::VALIDITY_UNKNOWN_STATUS)
     end
 
-    handler_results.log_results
-    handler_results.result_array
+    handler_results.report_results
   end
 
   # this is a long, complex method (shameless green); if it is refactored, revisit the exceptions in rubocop.yml
@@ -114,8 +112,7 @@ class PreservedObjectHandler
         create_db_objects(PreservedCopy::INVALID_MOAB_STATUS, true)
       end
     end
-    handler_results.log_results
-    handler_results.result_array
+    handler_results.report_results
   end
 
   def confirm_version
@@ -131,8 +128,7 @@ class PreservedObjectHandler
       end
     end
 
-    handler_results.log_results
-    handler_results.result_array
+    handler_results.report_results
   end
 
   def update_version_after_validation
@@ -153,8 +149,7 @@ class PreservedObjectHandler
       end
     end
 
-    handler_results.log_results
-    handler_results.result_array
+    handler_results.report_results
   end
 
   def update_version
@@ -170,8 +165,7 @@ class PreservedObjectHandler
       end
     end
 
-    handler_results.log_results
-    handler_results.result_array
+    handler_results.report_results
   end
 
   private

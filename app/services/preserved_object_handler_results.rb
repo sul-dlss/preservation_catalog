@@ -64,9 +64,10 @@ class PreservedObjectHandlerResults
     end
   end
 
-  attr_reader :result_array, :incoming_version, :msg_prefix
+  attr_reader :result_array, :incoming_version, :msg_prefix, :druid
 
   def initialize(druid, incoming_version, incoming_size, endpoint)
+    @druid = druid
     @incoming_version = incoming_version
     @msg_prefix = "PreservedObjectHandler(#{druid}, #{incoming_version}, #{incoming_size}, #{endpoint.endpoint_name if endpoint})"
     @result_array = []
@@ -88,12 +89,14 @@ class PreservedObjectHandlerResults
   # result_array = [result1, result2]
   # result1 = {response_code => msg}
   # result2 = {response_code => msg}
-  def log_results
+  def report_results
+    WorkflowErrorsReporter.update_workflow(druid, result_array)
     result_array.each do |r|
       severity = self.class.logger_severity_level(r.keys.first)
       msg = r.values.first
       Rails.logger.log(severity, msg)
     end
+    result_array
   end
 
   private
