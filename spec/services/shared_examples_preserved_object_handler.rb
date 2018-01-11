@@ -69,6 +69,18 @@ RSpec.shared_examples "attributes validated" do |method_sym|
   end
 end
 
+# TODO: change log_results to report_results after upcoming PR
+RSpec.shared_examples 'calls PreservedObjectHandlerResults.log_results' do |method_sym|
+  it '' do
+    mock_results = instance_double(PreservedObjectHandlerResults)
+    allow(mock_results).to receive(:add_result)
+    allow(mock_results).to receive(:result_array) # TODO: remove this when switch to report_results call
+    expect(mock_results).to receive(:log_results) # TODO: change this when switch to report_results call
+    expect(PreservedObjectHandlerResults).to receive(:new).and_return(mock_results)
+    po_handler.send(method_sym)
+  end
+end
+
 RSpec.shared_examples 'druid not in catalog' do |method_sym|
   let(:druid) { 'rr111rr1111' }
   let(:escaped_exp_msg) { Regexp.escape(exp_msg_prefix) + ".* PreservedObject.* db object does not exist" }

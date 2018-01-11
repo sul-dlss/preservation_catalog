@@ -23,11 +23,34 @@ RSpec.describe PreservedObjectHandlerResults do
       expect(pohr.result_array).to eq []
     end
   end
+
   context '#log_results' do
-    it 'needs tests' do
-      skip
+    before do
+      code = PreservedObjectHandlerResults::PC_PO_VERSION_MISMATCH
+      addl_hash = { pc_version: 1, po_version: 2 }
+      pohr.add_result(code, addl_hash)
+    end
+    context 'writes to Rails log' do
+      it 'with msg_prefix' do
+        expect(Rails.logger).to receive(:log).with(Logger::ERROR, a_string_matching(Regexp.escape(pohr.msg_prefix)))
+        pohr.log_results
+      end
+      it 'for each result' do
+        code = PreservedObjectHandlerResults::PC_STATUS_CHANGED
+        status_details = { old_status: PreservedCopy::INVALID_MOAB_STATUS, new_status: PreservedCopy::OK_STATUS }
+        pohr.add_result(code, status_details)
+        code = PreservedObjectHandlerResults::UPDATED_DB_OBJECT
+        db_obj_details = 'PreservedCopy'
+        pohr.add_result(code, db_obj_details)
+        not_matched_str = 'does not match PreservedObject current_version'
+        expect(Rails.logger).to receive(:log).with(Logger::ERROR, a_string_matching(not_matched_str))
+        expect(Rails.logger).to receive(:log).with(Logger::INFO, a_string_matching(PreservedCopy::INVALID_MOAB_STATUS))
+        expect(Rails.logger).to receive(:log).with(Logger::INFO, a_string_matching(db_obj_details))
+        pohr.log_results
+      end
     end
   end
+
   context '#add_result' do
     it 'adds a hash entry to the result_array' do
       expect(pohr.result_array.size).to eq 0
@@ -48,11 +71,13 @@ RSpec.describe PreservedObjectHandlerResults do
       expect(pohr.result_array.first).to eq code => "#{pohr.msg_prefix} incoming version (6) matches foo db version"
     end
   end
+
   context '#remove_db_updated_results' do
     it 'needs tests' do
       skip
     end
   end
+
   context '#result_hash' do
     it 'needs tests' do
       skip
