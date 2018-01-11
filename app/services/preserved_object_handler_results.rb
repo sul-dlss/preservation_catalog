@@ -38,6 +38,15 @@ class PreservedObjectHandlerResults
     PC_PO_VERSION_MISMATCH => "PreservedCopy online moab version %{pc_version} does not match PreservedObject current_version %{po_version}"
   }.freeze
 
+  WORKFLOW_REPORT_CODES = [
+    ARG_VERSION_LESS_THAN_DB_OBJECT,
+    DB_UPDATE_FAILED,
+    OBJECT_ALREADY_EXISTS,
+    OBJECT_DOES_NOT_EXIST,
+    UNEXPECTED_VERSION,
+    PC_PO_VERSION_MISMATCH
+  ].freeze
+
   DB_UPDATED_CODES = [
     UPDATED_DB_OBJECT,
     UPDATED_DB_OBJECT_TIMESTAMP_ONLY,
@@ -86,20 +95,41 @@ class PreservedObjectHandlerResults
     { code => result_code_msg(code, msg_args) }
   end
 
-  # result_array = [result1, result2]
-  # result1 = {response_code => msg}
-  # result2 = {response_code => msg}
+  # output results to Rails.logger and send errors to WorkflowErrorsReporter
+  # @return result_array
   def report_results
-    WorkflowErrorsReporter.update_workflow(druid, result_array)
+    candidate_workflow_results = []
     result_array.each do |r|
-      severity = self.class.logger_severity_level(r.keys.first)
-      msg = r.values.first
-      Rails.logger.log(severity, msg)
+      log_result(r)
+      if r.key?(PreservedObjectHandlerResults::INVALID_MOAB)
+        WorkflowErrorsReporter.update_workflow(druid, 'moab-valid', r.values.first)
+      elsif WORKFLOW_REPORT_CODES.include?(r.keys.first)
+        candidate_workflow_results << r
+      end
     end
+    stack_trace = caller(1..1).first[/.+?(?=:in)/]
+    report_errors_to_workflows(candidate_workflow_results, stack_trace)
     result_array
   end
 
+  def report_errors_to_workflows(candidate_workflow_results, stack_trace)
+    value_array = []
+    candidate_workflow_results.each do |x|
+      x.each_value do |val|
+        value_array << val
+      end
+    end
+    value_array << stack_trace
+    WorkflowErrorsReporter.update_workflow(druid, 'preservation-audit', value_array.join(" || "))
+  end
+
   private
+
+  def log_result(result)
+    severity = self.class.logger_severity_level(result.keys.first)
+    msg = result.values.first
+    Rails.logger.log(severity, msg)
+  end
 
   def result_code_msg(code, addl=nil)
     arg_hash = { incoming_version: incoming_version }

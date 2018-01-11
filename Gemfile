@@ -25,7 +25,7 @@ gem 'newrelic_rpm'
 gem 'honeybadger'
 # Use faraday for ReST calls
 gem 'faraday'
-# Use retries for handling exceptions and retries
+# For more robust handling of network glitches
 gem 'retries'
 
 # Stanford gems
