@@ -81,6 +81,22 @@ RSpec.describe PreservedObjectHandler do
       bad_po_handler.confirm_version
       expect(PreservedObject.find_by(druid: druid).current_version).to eq 2
     end
+
+    context 'ActiveRecordError gives DB_UPDATE_FAILED error with rich details' do
+      let(:result_code) { PreservedObjectHandlerResults::DB_UPDATE_FAILED }
+      let(:results) do
+        allow(PreservedObject).to receive(:create!).with(hash_including(druid: druid))
+                                                   .and_raise(ActiveRecord::ActiveRecordError, 'specific_err_msg')
+        po_handler.create
+      end
+
+      it 'specific exception raised' do
+        expect(results).to include(a_hash_including(result_code => a_string_matching('ActiveRecord::ActiveRecordError')))
+      end
+      it "exception's message" do
+        expect(results).to include(a_hash_including(result_code => a_string_matching('specific_err_msg')))
+      end
+    end
   end
 
   describe '#moab_validation_errors' do
