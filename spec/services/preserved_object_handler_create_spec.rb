@@ -179,6 +179,12 @@ RSpec.describe PreservedObjectHandler do
         po_handler.create_after_validation
       end
 
+      it 'includes invalid moab result' do
+        results = po_handler.create_after_validation
+        code = PreservedObjectHandlerResults::INVALID_MOAB
+        expect(results).to include(a_hash_including(code => a_string_matching('Invalid moab, validation errors:')))
+      end
+
       context 'db update error' do
         context 'ActiveRecordError' do
           let(:results) do
@@ -203,12 +209,6 @@ RSpec.describe PreservedObjectHandler do
           expect(PreservedObject.where(druid: druid)).not_to exist
         end
       end
-    end
-
-    it 'includes invalid moab result' do
-      results = po_handler.create_after_validation
-      code = PreservedObjectHandlerResults::INVALID_MOAB
-      expect(results).to include(a_hash_including(code => a_string_matching('Invalid moab, validation errors:')))
     end
 
     context 'returns' do
