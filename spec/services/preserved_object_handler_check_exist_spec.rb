@@ -187,6 +187,7 @@ RSpec.describe PreservedObjectHandler do
                 expect(pc.reload.size).to eq orig
               end
             end
+            # TODO: other statuses should get corrected
             it 'what about other statuses????' do
               skip 'need to know what to do when status does NOT start as ok or invalid moab'
               pc.status = PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
@@ -441,6 +442,7 @@ RSpec.describe PreservedObjectHandler do
         allow(po).to receive(:current_version).and_return(1)
         allow(po).to receive(:touch)
         allow(PreservedCopy).to receive(:find_by).with(preserved_object: po, endpoint: ep).and_return(pc)
+        allow(pc).to receive(:status).and_return(PreservedCopy::OK_STATUS)
         allow(pc).to receive(:version).and_return(1)
         allow(pc).to receive(:last_version_audit=)
         allow(pc).to receive(:changed?).and_return(false)

@@ -71,11 +71,16 @@ class PreservedObjectHandler
 
           raise_rollback_if_pc_po_version_mismatch(pres_copy.version, pres_object.current_version)
 
+          incoming_vers_eq_pc_vers = (incoming_version == pres_copy.version)
+          incoming_vers_gt_pc_vers = (incoming_version > pres_copy.version)
+          found_expected_version = (incoming_vers_eq_pc_vers || incoming_vers_gt_pc_vers)
+          check_status_if_not_ok(pres_copy, found_expected_version)
+
           ran_moab_validation = false
-          if incoming_version == pres_copy.version
+          if incoming_vers_eq_pc_vers
             handler_results.add_result(PreservedObjectHandlerResults::VERSION_MATCHES, pres_copy.class.name)
             handler_results.add_result(PreservedObjectHandlerResults::VERSION_MATCHES, pres_object.class.name)
-          elsif incoming_version > pres_copy.version
+          elsif incoming_vers_gt_pc_vers
             handler_results.add_result(PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_copy.class.name)
             handler_results.add_result(PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_object.class.name)
             ran_moab_validation = true
@@ -261,6 +266,36 @@ class PreservedObjectHandler
     handler_results.remove_db_updated_results unless transaction_ok
   end
 
+  def check_status_if_not_ok(pres_copy, found_expected_version)
+    if pres_copy.status != PreservedCopy::OK_STATUS
+      set_status_as_seen_on_disk(pres_copy, found_expected_version)
+    end
+  end
+
+  # given a PreservedCopy instance and whether the caller found the expected version of it on disk, this will perform
+  # other validations of what's on disk, and will update the status accordingly
+  def set_status_as_seen_on_disk(pres_copy, found_expected_version)
+    # TODO: do the check that'd set PreservedCopy::ONLINE_MOAB_NOT_FOUND_STATUS
+    # TODO: nothing in the code seems to set ONLINE_MOAB_NOT_FOUND_STATUS atm, but everything we're checking right now is M2C and thus found by definition
+
+    unless moab_validation_errors.empty?
+      update_status(pres_copy, PreservedCopy::INVALID_MOAB_STATUS)
+      return
+    end
+
+    unless found_expected_version
+      update_status(pres_copy, PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS)
+      return
+    end
+
+    # TODO: do the check that'd set INVALID_CHECKSUM_STATUS
+
+    # TODO: do the check that'd set FIXITY_CHECK_FAILED_STATUS
+
+    # should automatically get things out of VALIDITY_UNKNOWN_STATUS, because if we fall through to here, we can set status to ok
+    update_status(pres_copy, PreservedCopy::OK_STATUS)
+  end
+
   def update_pc_unexpected_version(pres_copy, pres_object, new_status, ran_moab_validation)
     handler_results.add_result(PreservedObjectHandlerResults::UNEXPECTED_VERSION, 'PreservedCopy')
     version_comparison_results(pres_copy, :version)
@@ -280,7 +315,10 @@ class PreservedObjectHandler
 
       raise_rollback_if_pc_po_version_mismatch(pres_copy.version, pres_object.current_version)
 
-      if incoming_version == pres_copy.version
+      found_expected_version = (incoming_version == pres_copy.version)
+      check_status_if_not_ok(pres_copy, found_expected_version)
+
+      if found_expected_version
         handler_results.add_result(PreservedObjectHandlerResults::VERSION_MATCHES, pres_copy.class.name)
         handler_results.add_result(PreservedObjectHandlerResults::VERSION_MATCHES, pres_object.class.name)
       else
