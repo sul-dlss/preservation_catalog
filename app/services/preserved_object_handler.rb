@@ -82,11 +82,13 @@ class PreservedObjectHandler
           elsif incoming_vers_gt_pc_vers
             handler_results.add_result(PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_copy.class.name)
             handler_results.add_result(PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_object.class.name)
+            # we're not too worried if the version increased, but we normally expect it to be kept current
+            # by calls from ingest robots, so validate to make sure all's well.
             if moab_validation_errors.empty?
               update_preserved_copy_version_etc(pres_copy, incoming_version, incoming_size)
-              update_status(pres_copy, PreservedCopy::OK_STATUS)
               pres_object.current_version = incoming_version
               update_db_object(pres_object)
+              # don't have to set status here: check_status_if_not_ok_or_unexpected_version should've corrected a bad status
             else
               update_status(pres_copy, PreservedCopy::INVALID_MOAB_STATUS)
             end
@@ -168,19 +170,25 @@ class PreservedObjectHandler
   private
 
   def moab_validation_errors
-    object_dir = "#{storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}"
-    moab = Moab::StorageObject.new(druid, object_dir)
-    object_validator = Stanford::StorageObjectValidator.new(moab)
-    moab_errors = object_validator.validation_errors(Settings.moab.allow_content_subdirs)
-    @ran_moab_validation = true
-    if moab_errors.any?
-      moab_error_msgs = []
-      moab_errors.each do |error_hash|
-        error_hash.each_value { |msg| moab_error_msgs << msg }
+    # validation is a bit expensive, so memoize the result.  keeps us from having to worry about a
+    # performance hit if a caller wants to check whether there are validation errors from more than
+    # one conditional statement.
+    @moab_errors ||=
+      begin
+        object_dir = "#{storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}"
+        moab = Moab::StorageObject.new(druid, object_dir)
+        object_validator = Stanford::StorageObjectValidator.new(moab)
+        moab_errors = object_validator.validation_errors(Settings.moab.allow_content_subdirs)
+        @ran_moab_validation = true
+        if moab_errors.any?
+          moab_error_msgs = []
+          moab_errors.each do |error_hash|
+            error_hash.each_value { |msg| moab_error_msgs << msg }
+          end
+          handler_results.add_result(PreservedObjectHandlerResults::INVALID_MOAB, moab_error_msgs)
+        end
+        moab_errors
       end
-      handler_results.add_result(PreservedObjectHandlerResults::INVALID_MOAB, moab_error_msgs)
-    end
-    moab_errors
   end
 
   def ran_moab_validation?
@@ -263,9 +271,6 @@ class PreservedObjectHandler
     handler_results.remove_db_updated_results unless transaction_ok
   end
 
-  # TODO: what if this checked status in the case of version mismatcch also?  would that simplify
-  # check_existence and/or confirm_version in their handling after calling this?  could they just
-  # deal with the result code wranging after calling this if it also checked status on vers mismatch?
   def check_status_if_not_ok_or_unexpected_version(pres_copy, found_expected_version)
     # if pres_copy.status != PreservedCopy::OK_STATUS
     unless pres_copy.status == PreservedCopy::OK_STATUS && found_expected_version
@@ -275,7 +280,7 @@ class PreservedObjectHandler
 
   # given a PreservedCopy instance and whether the caller found the expected version of it on disk, this will perform
   # other validations of what's on disk, and will update the status accordingly
-  # FIXME: this method needs to update validation timestamps, and tests need to get fixed to reflect that
+  # FIXME: this method probably needs to update validation timestamps?  and tests would need to get fixed to reflect that.
   def set_status_as_seen_on_disk(pres_copy, found_expected_version)
     # TODO: do the check that'd set PreservedCopy::ONLINE_MOAB_NOT_FOUND_STATUS
     # TODO: nothing in the code seems to set ONLINE_MOAB_NOT_FOUND_STATUS atm, but everything we're checking right now is M2C and thus found by definition
