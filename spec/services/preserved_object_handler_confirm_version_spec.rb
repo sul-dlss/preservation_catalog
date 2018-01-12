@@ -160,6 +160,10 @@ RSpec.describe PreservedObjectHandler do
         }
         let(:updated_pc_db_obj_msg) { "#{exp_msg_prefix} PreservedCopy db object updated" }
 
+        before do
+          allow(po_handler).to receive(:moab_validation_errors).and_return([])
+        end
+
         context 'PreservedCopy' do
           context 'changed' do
             it 'status to expected_vers_not_found_on_storage' do
@@ -309,6 +313,7 @@ RSpec.describe PreservedObjectHandler do
       it 'logs a debug message' do
         msg = "confirm_version #{druid} called"
         allow(Rails.logger).to receive(:debug)
+        allow(po_handler).to receive(:moab_validation_errors).and_return([])
         po_handler.confirm_version
         expect(Rails.logger).to have_received(:debug).with(msg)
       end

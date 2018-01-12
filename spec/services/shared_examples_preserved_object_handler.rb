@@ -539,7 +539,6 @@ RSpec.shared_examples 'PreservedCopy already has a status other than OK_STATUS, 
     expect(pc.reload.status).to eq PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
   end
   it 'had OK_STATUS, but is now INVALID_MOAB_STATUS' do
-    skip 'currently fails because confirm_version does not validate when an unexpected version is encountered'
     pc.status = PreservedCopy::OK_STATUS
     pc.save!
     allow(po_handler).to receive(:moab_validation_errors).and_return([{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }])
@@ -561,7 +560,6 @@ RSpec.shared_examples 'PreservedCopy already has a status other than OK_STATUS, 
     expect(pc.reload.status).to eq PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
   end
   it 'had VALIDITY_UNKNOWN_STATUS, but is now INVALID_MOAB_STATUS' do
-    skip 'currently fails because confirm_version overrides what check_status_if_not_ok had set earlier in the method'
     pc.status = PreservedCopy::VALIDITY_UNKNOWN_STATUS
     pc.save!
     allow(po_handler).to receive(:moab_validation_errors).and_return([{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }])
