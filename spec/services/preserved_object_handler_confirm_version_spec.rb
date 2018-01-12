@@ -124,6 +124,31 @@ RSpec.describe PreservedObjectHandler do
         end
       end
 
+      context 'PreservedCopy already has a status other than OK_STATUS' do
+        it_behaves_like 'PreservedCopy already has a status other than OK_STATUS, and incoming_version == pc.version', :confirm_version
+
+        it_behaves_like 'PreservedCopy already has a status other than OK_STATUS, and incoming_version < pc.version', :confirm_version
+
+        context 'incoming_version > db version' do
+          let(:incoming_version) { pc.version + 1 }
+
+          it 'had OK_STATUS, but is now EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS' do
+            pc.status = PreservedCopy::OK_STATUS
+            pc.save!
+            allow(po_handler).to receive(:moab_validation_errors).and_return([])
+            po_handler.confirm_version
+            expect(pc.reload.status).to eq PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
+          end
+          it 'had INVALID_MOAB_STATUS, structure seems to be remediated, but is now EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS' do
+            pc.status = PreservedCopy::INVALID_MOAB_STATUS
+            pc.save!
+            allow(po_handler).to receive(:moab_validation_errors).and_return([])
+            po_handler.confirm_version
+            expect(pc.reload.status).to eq PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
+          end
+        end
+      end
+
       context 'incoming version does NOT match db version' do
         let(:po_handler) { described_class.new(druid, 1, 666, ep) }
         let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, 1, 666, #{ep.endpoint_name})" }
