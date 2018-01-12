@@ -131,6 +131,7 @@ RSpec.describe PreservedObjectHandler do
             context 'changed' do
               before do
                 allow(po_handler).to receive(:moab_validation_errors).and_return([])
+                allow(po_handler).to receive(:ran_moab_validation?).and_return(true)
               end
               it 'version to incoming_version' do
                 orig = pc.version
