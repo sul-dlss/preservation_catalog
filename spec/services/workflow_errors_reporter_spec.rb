@@ -26,7 +26,7 @@ RSpec.describe WorkflowErrorsReporter do
       stub_request(:put, full_url)
         .with(body: body, headers: headers)
         .to_return(status: 400, body: "", headers: {})
-      expect(Rails.logger).to receive(:warn).with("#{druid} - unable to update workflow #<Faraday::ClientError response={:status=>400, :headers=>{}, :body=>\"\"}>")
+      expect(Rails.logger).to receive(:warn).with("#{druid} - unable to update workflow for preservationWF moab-valid #<Faraday::ClientError response={:status=>400, :headers=>{}, :body=>\"\"}>. Error message: #{result}")
       described_class.update_workflow(druid, 'moab-valid', result)
     end
 

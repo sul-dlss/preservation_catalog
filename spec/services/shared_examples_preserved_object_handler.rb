@@ -69,7 +69,6 @@ RSpec.shared_examples "attributes validated" do |method_sym|
   end
 end
 
-# TODO: change log_results to report_results after upcoming PR
 RSpec.shared_examples 'calls PreservedObjectHandlerResults.report_results' do |method_sym|
   it '' do
     mock_results = instance_double(PreservedObjectHandlerResults)

@@ -10,11 +10,11 @@ class WorkflowErrorsReporter
         Rails.logger.debug("#{druid} - sent error to workflow service for preservationWF #{process_name}")
       else
         # Note: status == 400 will be handled by the rescue clause
-        Rails.logger.warn("#{druid} - unable to update workflow: #{response.body}")
+        Rails.logger.warn("#{druid} - unable to update workflow for preservationWF #{process_name}: #{response.body}. Error message: #{error_message}")
       end
     end
   rescue StandardError => e
-    Rails.logger.warn("#{druid} - unable to update workflow #{e.inspect}")
+    Rails.logger.warn("#{druid} - unable to update workflow for preservationWF #{process_name} #{e.inspect}. Error message: #{error_message}")
   end
 
   private_class_method def self.http_workflow_request(druid, process_name, error_message)
