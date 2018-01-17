@@ -11,11 +11,11 @@ RSpec.configure do |rspec|
 end
 
 RSpec.shared_context "fixture moabs in db" do
-  before(:all) do
+  before do
     setup
     load_fixture_moabs
   end
-  after(:all) do
+  after do
     # TODO: danger - if there are objects in the test db we want to keep
     Settings.moab.storage_roots.each_value do |storage_root|
       storage_dir = File.join(storage_root, Settings.moab.storage_trunk)
@@ -35,11 +35,11 @@ def load_fixture_moabs
       size = Stanford::StorageServices.object_size(druid)
       po = PreservedObject.create(druid: druid,
                                   current_version: version,
-                                  size: size,
                                   preservation_policy: PreservationPolicy.default_policy)
       PreservedCopy.create(preserved_object_id: po.id,
                            endpoint_id: @storage_dir_to_endpoint_id[storage_dir],
-                           current_version: version,
+                           version: version,
+                           size: size,
                            status: PreservedCopy::VALIDITY_UNKNOWN_STATUS)
     end
   end
@@ -48,9 +48,12 @@ end
 def setup
   @moab_storage_dirs = []
   @storage_dir_to_endpoint_id = {}
-  Settings.moab.storage_roots.each_value do |storage_root|
+  # FIXME: I couldn't get .each_value to work ... try again?
+  # rubocop:disable Performance/HashEachMethods
+  Settings.moab.storage_roots.each do |_name, storage_root|
     storage_dir = File.join(storage_root, Settings.moab.storage_trunk)
     @moab_storage_dirs << storage_dir
     @storage_dir_to_endpoint_id[storage_dir] = Endpoint.find_by(storage_location: storage_dir).id
   end
+  # rubocop:enable Performance/HashEachMethods
 end
