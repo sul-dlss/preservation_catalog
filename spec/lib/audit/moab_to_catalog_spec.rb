@@ -33,7 +33,7 @@ RSpec.describe MoabToCatalog do
       mock_profiler = instance_double(Profiler)
       expect(Profiler).to receive(:new).and_return(mock_profiler)
       expect(mock_profiler).to receive(:prof)
-      expect(mock_profiler).to receive(:print_results_flat).with('check_existence_for_all_storage_roots')
+      expect(mock_profiler).to receive(:print_results_flat).with('M2C_check_existence_for_all_storage_roots')
 
       subject
     end
@@ -156,7 +156,7 @@ RSpec.describe MoabToCatalog do
       mock_profiler = instance_double(Profiler)
       expect(Profiler).to receive(:new).and_return(mock_profiler)
       expect(mock_profiler).to receive(:prof)
-      expect(mock_profiler).to receive(:print_results_flat).with('check_existence_for_dir')
+      expect(mock_profiler).to receive(:print_results_flat).with('M2C_check_existence_for_dir')
 
       subject
     end
