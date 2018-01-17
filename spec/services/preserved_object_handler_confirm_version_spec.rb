@@ -224,16 +224,12 @@ RSpec.describe PreservedObjectHandler do
           let(:result_code) { PreservedObjectHandlerResults::DB_UPDATE_FAILED }
           let(:incoming_version) { 2 }
           let(:results) do
-            allow(Rails.logger).to receive(:log)
-            # FIXME: couldn't figure out how to put next line into its own test
-            expect(Rails.logger).to receive(:log).with(Logger::ERROR, /#{db_update_failed_prefix_regex_escaped}/)
 
             po = instance_double("PreservedObject")
             allow(PreservedObject).to receive(:find_by).with(druid: druid).and_return(po)
             pc = instance_double("PreservedCopy")
             allow(PreservedCopy).to receive(:find_by).and_return(pc)
             allow(pc).to receive(:version).and_return(2)
-            allow(pc).to receive(:status)
             allow(pc).to receive(:last_version_audit=)
             allow(pc).to receive(:changed?).and_return(true)
             allow(pc).to receive(:save!).and_raise(ActiveRecord::ActiveRecordError, 'foo')
@@ -241,16 +237,8 @@ RSpec.describe PreservedObjectHandler do
             po_handler.confirm_version
           end
 
-          context 'DB_UPDATE_FAILED error' do
-            it 'prefix' do
-              expect(results).to include(a_hash_including(result_code => a_string_matching(db_update_failed_prefix_regex_escaped)))
-            end
-            it 'specific exception raised' do
-              expect(results).to include(a_hash_including(result_code => a_string_matching('ActiveRecord::ActiveRecordError')))
-            end
-            it "exception's message" do
-              expect(results).to include(a_hash_including(result_code => a_string_matching('foo')))
-            end
+          it 'DB_UPDATE_FAILED error' do
+            expect(results).to include(a_hash_including(PreservedObjectHandlerResults::DB_UPDATE_FAILED))
           end
         end
       end
