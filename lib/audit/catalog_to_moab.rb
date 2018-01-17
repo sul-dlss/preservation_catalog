@@ -68,7 +68,7 @@ class CatalogToMoab
       p "hooray - #{id} versions match: #{catalog_version}"
       results.add_result(PreservedObjectHandlerResults::VERSION_MATCHES, preserved_copy.class.name)
       # TODO:  original spec asks for verifying files????  read audit requirements
-      results.log_results
+      results.report_results
     elsif catalog_version < moab_version
       results.add_result(PreservedObjectHandlerResults::UNEXPECTED_VERSION, preserved_copy.class.name)
       p "boo - #{id} catalog has #{catalog_version} but moab has #{moab_version}"
@@ -83,7 +83,7 @@ class CatalogToMoab
       else
         update_status(preserved_copy, PreservedCopy::INVALID_MOAB_STATUS)
       end
-      results.log_results
+      results.report_results
     end
 
     # TODO: call these methods on PreservedCopy object
