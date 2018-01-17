@@ -1,20 +1,20 @@
 require 'faraday'
 require 'retries'
-# send errors to preservationWF workflow for an object via ReST calls.
+# send errors to preservationAuditWF workflow for an object via ReST calls.
 class WorkflowErrorsReporter
 
   def self.update_workflow(druid, process_name, error_message)
     response = http_workflow_request(druid, process_name, error_message)
     if response
       if response.status == 204
-        Rails.logger.debug("#{druid} - sent error to workflow service for preservationWF #{process_name}")
+        Rails.logger.debug("#{druid} - sent error to workflow service for preservationAuditWF #{process_name}")
       else
         # Note: status == 400 will be handled by the rescue clause
-        Rails.logger.warn("#{druid} - unable to update workflow for preservationWF #{process_name}: #{response.body}. Error message: #{error_message}")
+        Rails.logger.warn("#{druid} - unable to update workflow for preservationAuditWF #{process_name}: #{response.body}. Error message: #{error_message}")
       end
     end
   rescue StandardError => e
-    Rails.logger.warn("#{druid} - unable to update workflow for preservationWF #{process_name} #{e.inspect}. Error message: #{error_message}")
+    Rails.logger.warn("#{druid} - unable to update workflow for preservationAuditWF #{process_name} #{e.inspect}. Error message: #{error_message}")
   end
 
   private_class_method def self.http_workflow_request(druid, process_name, error_message)
@@ -25,7 +25,7 @@ class WorkflowErrorsReporter
     with_retries(max_tries: 3, handler: handler, rescue: Faraday::Error) do
       conn.put do |request|
         request.headers['content-type'] = "application/xml"
-        request.url  "/workflow/dor/objects/druid:#{druid}/workflows/preservationWF/#{process_name}"
+        request.url  "/workflow/dor/objects/druid:#{druid}/workflows/preservationAuditWF/#{process_name}"
         request.body = "<process name='#{process_name} status='error' errorMessage='#{error_message}'/>"
       end
     end

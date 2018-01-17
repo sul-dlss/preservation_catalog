@@ -2,7 +2,7 @@ require 'rails_helper'
 
 RSpec.describe WorkflowErrorsReporter do
   let(:full_url) do
-    'https://sul-lyberservices-test.stanford.edu/workflow/dor/objects/druid:jj925bx9565/workflows/preservationWF/moab-valid'
+    'https://sul-lyberservices-test.stanford.edu/workflow/dor/objects/druid:jj925bx9565/workflows/preservationAuditWF/moab-valid'
   end
   let(:headers) { { 'Content-Type' => 'application/xml' } }
   let(:result) do
@@ -17,7 +17,7 @@ RSpec.describe WorkflowErrorsReporter do
       stub_request(:put, full_url)
         .with(body: body, headers: headers)
         .to_return(status: 204, body: '', headers: {})
-      expect(Rails.logger).to receive(:debug).with("#{druid} - sent error to workflow service for preservationWF moab-valid")
+      expect(Rails.logger).to receive(:debug).with("#{druid} - sent error to workflow service for preservationAuditWF moab-valid")
       described_class.update_workflow(druid, 'moab-valid', result)
     end
 
@@ -26,7 +26,7 @@ RSpec.describe WorkflowErrorsReporter do
       stub_request(:put, full_url)
         .with(body: body, headers: headers)
         .to_return(status: 400, body: "", headers: {})
-      expect(Rails.logger).to receive(:warn).with("#{druid} - unable to update workflow for preservationWF moab-valid #<Faraday::ClientError response={:status=>400, :headers=>{}, :body=>\"\"}>. Error message: #{result}")
+      expect(Rails.logger).to receive(:warn).with("#{druid} - unable to update workflow for preservationAuditWF moab-valid #<Faraday::ClientError response={:status=>400, :headers=>{}, :body=>\"\"}>. Error message: #{result}")
       described_class.update_workflow(druid, 'moab-valid', result)
     end
 
