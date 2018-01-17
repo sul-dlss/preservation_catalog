@@ -78,6 +78,7 @@ RSpec.describe PreservedObjectHandler do
       )
       bad_po_handler = described_class.new(druid, 6, incoming_size, ep)
       allow(pc).to receive(:save!).and_raise(ActiveRecord::ActiveRecordError)
+      allow(bad_po_handler).to receive(:moab_validation_errors).and_return([])
       bad_po_handler.confirm_version
       expect(PreservedObject.find_by(druid: druid).current_version).to eq 2
     end

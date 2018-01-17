@@ -131,6 +131,7 @@ RSpec.describe PreservedObjectHandler do
             context 'changed' do
               before do
                 allow(po_handler).to receive(:moab_validation_errors).and_return([])
+                allow(po_handler).to receive(:ran_moab_validation?).and_return(true)
               end
               it 'version to incoming_version' do
                 orig = pc.version
@@ -186,15 +187,6 @@ RSpec.describe PreservedObjectHandler do
                 po_handler.check_existence
                 expect(pc.reload.size).to eq orig
               end
-            end
-            it 'what about other statuses????' do
-              skip 'need to know what to do when status does NOT start as ok or invalid moab'
-              pc.status = PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
-              pc.save!
-              po_handler.check_existence
-              expect(pc.reload.status).to eq PreservedCopy::OK_STATUS
-              # TODO: not clear what to do here;  it's not OK_STATUS if we didn't validate ...
-              expect(pc.status).to eq PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
             end
           end
           context 'PreservedObject' do
@@ -385,6 +377,38 @@ RSpec.describe PreservedObjectHandler do
         it_behaves_like 'unexpected version with validation', :check_existence, 1, PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
       end
 
+      context 'PreservedCopy already has a status other than OK_STATUS' do
+        it_behaves_like 'PreservedCopy already has a status other than OK_STATUS, and incoming_version == pc.version', :check_existence
+
+        it_behaves_like 'PreservedCopy already has a status other than OK_STATUS, and incoming_version < pc.version', :check_existence
+
+        context 'incoming_version > db version' do
+          let(:incoming_version) { pc.version + 1 }
+
+          it 'had OK_STATUS, version increased, should still have OK_STATUS' do
+            pc.status = PreservedCopy::OK_STATUS
+            pc.save!
+            allow(po_handler).to receive(:moab_validation_errors).and_return([])
+            po_handler.check_existence
+            expect(pc.reload.status).to eq PreservedCopy::OK_STATUS
+          end
+          it 'had INVALID_MOAB_STATUS, was remediated, should now have OK_STATUS' do
+            pc.status = PreservedCopy::INVALID_MOAB_STATUS
+            pc.save!
+            allow(po_handler).to receive(:moab_validation_errors).and_return([])
+            po_handler.check_existence
+            expect(pc.reload.status).to eq PreservedCopy::OK_STATUS
+          end
+          it 'had EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS, seems to have an acceptable version now' do
+            pc.status = PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
+            pc.save!
+            allow(po_handler).to receive(:moab_validation_errors).and_return([])
+            po_handler.check_existence
+            expect(pc.reload.status).to eq PreservedCopy::OK_STATUS
+          end
+        end
+      end
+
       context 'PreservedCopy version does NOT match PreservedObject current_version (online Moab)' do
         before do
           po.current_version = 8
@@ -441,6 +465,7 @@ RSpec.describe PreservedObjectHandler do
         allow(po).to receive(:current_version).and_return(1)
         allow(po).to receive(:touch)
         allow(PreservedCopy).to receive(:find_by).with(preserved_object: po, endpoint: ep).and_return(pc)
+        allow(pc).to receive(:status).and_return(PreservedCopy::OK_STATUS)
         allow(pc).to receive(:version).and_return(1)
         allow(pc).to receive(:last_version_audit=)
         allow(pc).to receive(:changed?).and_return(false)

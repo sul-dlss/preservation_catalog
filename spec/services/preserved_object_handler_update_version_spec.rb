@@ -364,7 +364,7 @@ RSpec.describe PreservedObjectHandler do
         end
 
         it 'calls #update_online_version with validated = true and status = "ok"' do
-          expect(po_handler).to receive(:update_online_version).with(true, PreservedCopy::OK_STATUS).and_call_original
+          expect(po_handler).to receive(:update_online_version).with(PreservedCopy::OK_STATUS).and_call_original
           po_handler.update_version_after_validation
           skip 'test is weak b/c we only indirectly show the effects of #update_online_version in #update_version specs'
         end

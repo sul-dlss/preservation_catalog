@@ -124,6 +124,31 @@ RSpec.describe PreservedObjectHandler do
         end
       end
 
+      context 'PreservedCopy already has a status other than OK_STATUS' do
+        it_behaves_like 'PreservedCopy already has a status other than OK_STATUS, and incoming_version == pc.version', :confirm_version
+
+        it_behaves_like 'PreservedCopy already has a status other than OK_STATUS, and incoming_version < pc.version', :confirm_version
+
+        context 'incoming_version > db version' do
+          let(:incoming_version) { pc.version + 1 }
+
+          it 'had OK_STATUS, but is now EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS' do
+            pc.status = PreservedCopy::OK_STATUS
+            pc.save!
+            allow(po_handler).to receive(:moab_validation_errors).and_return([])
+            po_handler.confirm_version
+            expect(pc.reload.status).to eq PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
+          end
+          it 'had INVALID_MOAB_STATUS, structure seems to be remediated, but is now EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS' do
+            pc.status = PreservedCopy::INVALID_MOAB_STATUS
+            pc.save!
+            allow(po_handler).to receive(:moab_validation_errors).and_return([])
+            po_handler.confirm_version
+            expect(pc.reload.status).to eq PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
+          end
+        end
+      end
+
       context 'incoming version does NOT match db version' do
         let(:po_handler) { described_class.new(druid, 1, 666, ep) }
         let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, 1, 666, #{ep.endpoint_name})" }
@@ -134,6 +159,10 @@ RSpec.describe PreservedObjectHandler do
           "#{exp_msg_prefix} PreservedCopy status changed from ok to expected_vers_not_found_on_storage"
         }
         let(:updated_pc_db_obj_msg) { "#{exp_msg_prefix} PreservedCopy db object updated" }
+
+        before do
+          allow(po_handler).to receive(:moab_validation_errors).and_return([])
+        end
 
         context 'PreservedCopy' do
           context 'changed' do
@@ -230,10 +259,13 @@ RSpec.describe PreservedObjectHandler do
             pc = instance_double("PreservedCopy")
             allow(PreservedCopy).to receive(:find_by).and_return(pc)
             allow(pc).to receive(:version).and_return(2)
+            allow(pc).to receive(:status)
+            allow(pc).to receive(:status=)
             allow(pc).to receive(:last_version_audit=)
             allow(pc).to receive(:changed?).and_return(true)
             allow(pc).to receive(:save!).and_raise(ActiveRecord::ActiveRecordError, 'foo')
             allow(po).to receive(:current_version).and_return(2)
+            allow(po_handler).to receive(:moab_validation_errors).and_return([])
             po_handler.confirm_version
           end
 
@@ -256,6 +288,7 @@ RSpec.describe PreservedObjectHandler do
         allow(pc).to receive(:last_version_audit=)
         allow(pc).to receive(:changed?).and_return(true)
         allow(pc).to receive(:save!)
+        allow(po_handler).to receive(:moab_validation_errors).and_return([])
         po_handler.confirm_version
         expect(po).not_to have_received(:save!)
         expect(pc).to have_received(:save!)
@@ -268,6 +301,7 @@ RSpec.describe PreservedObjectHandler do
         allow(po).to receive(:current_version).and_return(1)
         allow(po).to receive(:touch)
         allow(PreservedCopy).to receive(:find_by).with(preserved_object: po, endpoint: ep).and_return(pc)
+        allow(pc).to receive(:status).and_return(PreservedCopy::OK_STATUS)
         allow(pc).to receive(:version).and_return(1)
         allow(pc).to receive(:last_version_audit=)
         allow(pc).to receive(:changed?).and_return(false)
@@ -279,6 +313,7 @@ RSpec.describe PreservedObjectHandler do
       it 'logs a debug message' do
         msg = "confirm_version #{druid} called"
         allow(Rails.logger).to receive(:debug)
+        allow(po_handler).to receive(:moab_validation_errors).and_return([])
         po_handler.confirm_version
         expect(Rails.logger).to have_received(:debug).with(msg)
       end
