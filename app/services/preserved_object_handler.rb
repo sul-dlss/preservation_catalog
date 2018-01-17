@@ -72,11 +72,11 @@ class PreservedObjectHandler
           raise_rollback_if_pc_po_version_mismatch(pres_copy.version, pres_object.current_version)
 
           if incoming_version == pres_copy.version
-            check_status_if_not_ok_or_unexpected_version(pres_copy, true)
+            set_status_as_seen_on_disk(pres_copy, true) unless pres_copy.status == PreservedCopy::OK_STATUS
             handler_results.add_result(PreservedObjectHandlerResults::VERSION_MATCHES, pres_copy.class.name)
             handler_results.add_result(PreservedObjectHandlerResults::VERSION_MATCHES, pres_object.class.name)
           elsif incoming_version > pres_copy.version
-            check_status_if_not_ok_or_unexpected_version(pres_copy, true)
+            set_status_as_seen_on_disk(pres_copy, true) unless pres_copy.status == PreservedCopy::OK_STATUS
             handler_results.add_result(PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_copy.class.name)
             handler_results.add_result(PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_object.class.name)
             if moab_validation_errors.empty?
@@ -87,7 +87,7 @@ class PreservedObjectHandler
               update_status(pres_copy, PreservedCopy::INVALID_MOAB_STATUS)
             end
           else # incoming_version < pres_copy.version
-            check_status_if_not_ok_or_unexpected_version(pres_copy, false)
+            set_status_as_seen_on_disk(pres_copy, false)
             handler_results.add_result(PreservedObjectHandlerResults::ARG_VERSION_LESS_THAN_DB_OBJECT, pres_copy.class.name)
             handler_results.add_result(PreservedObjectHandlerResults::ARG_VERSION_LESS_THAN_DB_OBJECT, pres_object.class.name)
           end
@@ -263,12 +263,6 @@ class PreservedObjectHandler
     handler_results.remove_db_updated_results unless transaction_ok
   end
 
-  def check_status_if_not_ok_or_unexpected_version(pres_copy, found_expected_version)
-    unless pres_copy.status == PreservedCopy::OK_STATUS && found_expected_version
-      set_status_as_seen_on_disk(pres_copy, found_expected_version)
-    end
-  end
-
   # given a PreservedCopy instance and whether the caller found the expected version of it on disk, this will perform
   # other validations of what's on disk, and will update the status accordingly
   def set_status_as_seen_on_disk(pres_copy, found_expected_version)
@@ -312,11 +306,11 @@ class PreservedObjectHandler
       raise_rollback_if_pc_po_version_mismatch(pres_copy.version, pres_object.current_version)
 
       if incoming_version == pres_copy.version
-        check_status_if_not_ok_or_unexpected_version(pres_copy, true)
+        set_status_as_seen_on_disk(pres_copy, true) unless pres_copy.status == PreservedCopy::OK_STATUS
         handler_results.add_result(PreservedObjectHandlerResults::VERSION_MATCHES, pres_copy.class.name)
         handler_results.add_result(PreservedObjectHandlerResults::VERSION_MATCHES, pres_object.class.name)
       else
-        check_status_if_not_ok_or_unexpected_version(pres_copy, false)
+        set_status_as_seen_on_disk(pres_copy, false)
         handler_results.add_result(PreservedObjectHandlerResults::UNEXPECTED_VERSION, pres_copy.class.name)
       end
       update_pc_audit_timestamps(pres_copy, true)
