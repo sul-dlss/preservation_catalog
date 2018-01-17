@@ -2,19 +2,20 @@ require_relative '../../../lib/audit/catalog_to_moab.rb'
 require_relative '../../load_fixtures_helper.rb'
 
 RSpec.describe CatalogToMoab do
-  include_context 'fixture moabs in db'
   let(:last_checked_version_b4_date) { (Time.now.utc - 1.day).iso8601 }
   let(:storage_dir) { 'spec/fixtures/storage_root01/moab_storage_trunk' }
 
   context '.check_version_on_dir' do
+    include_context 'fixture moabs in db'
     let(:subject) { described_class.check_version_on_dir(last_checked_version_b4_date, storage_dir) }
 
     # NOTE: this test will be removed once we test other things
     it 'test_of_load_fixtures_helper (eventually will be testing code for .check_version_on_dir)' do
       subject
     end
-    it 'does something' do
-      skip('TODO: implement method (probably elsewhere) and write test saying we call the method?')
+    it 'calls .check_catalog_version' do
+      expect(described_class).to receive(:check_catalog_version).at_least(3).times
+      described_class.check_version_on_dir(last_checked_version_b4_date, storage_dir)
     end
   end
 
