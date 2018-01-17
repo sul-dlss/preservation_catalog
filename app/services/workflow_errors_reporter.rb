@@ -26,7 +26,7 @@ class WorkflowErrorsReporter
       conn.put do |request|
         request.headers['content-type'] = "application/xml"
         request.url  "/workflow/dor/objects/druid:#{druid}/workflows/preservationAuditWF/#{process_name}"
-        request.body = "<process name='#{process_name} status='error' errorMessage='#{error_message}'/>"
+        request.body = "<process name='#{process_name}' status='error' errorMessage='#{error_message}'/>"
       end
     end
   end
