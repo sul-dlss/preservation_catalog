@@ -24,7 +24,7 @@ RSpec.describe PreservedObjectHandlerResults do
     end
   end
 
-  context '#log_results' do
+  context '#report_results' do
     before do
       code = PreservedObjectHandlerResults::PC_PO_VERSION_MISMATCH
       addl_hash = { pc_version: 1, po_version: 2 }
@@ -33,7 +33,7 @@ RSpec.describe PreservedObjectHandlerResults do
     context 'writes to Rails log' do
       it 'with msg_prefix' do
         expect(Rails.logger).to receive(:log).with(Logger::ERROR, a_string_matching(Regexp.escape(pohr.msg_prefix)))
-        pohr.log_results
+        pohr.report_results
       end
       it 'for each result' do
         code = PreservedObjectHandlerResults::PC_STATUS_CHANGED
@@ -46,7 +46,7 @@ RSpec.describe PreservedObjectHandlerResults do
         expect(Rails.logger).to receive(:log).with(Logger::ERROR, a_string_matching(not_matched_str))
         expect(Rails.logger).to receive(:log).with(Logger::INFO, a_string_matching(PreservedCopy::INVALID_MOAB_STATUS))
         expect(Rails.logger).to receive(:log).with(Logger::INFO, a_string_matching(db_obj_details))
-        pohr.log_results
+        pohr.report_results
       end
     end
   end

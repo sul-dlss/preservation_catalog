@@ -42,7 +42,7 @@ RSpec.describe PreservedObjectHandler do
       expect(results).to include(a_hash_including(code => a_string_matching('PreservedObject db object already exists')))
     end
 
-    it_behaves_like 'calls PreservedObjectHandlerResults.log_results', :create
+    it_behaves_like 'calls PreservedObjectHandlerResults.report_results', :create
 
     context 'db update error' do
       context 'ActiveRecordError' do
@@ -88,7 +88,7 @@ RSpec.describe PreservedObjectHandler do
 
     it_behaves_like 'attributes validated', :create_after_validation
 
-    it_behaves_like 'calls PreservedObjectHandlerResults.log_results', :create_after_validation
+    it_behaves_like 'calls PreservedObjectHandlerResults.report_results', :create_after_validation
 
     context 'sets validation timestamps' do
       let(:t) { Time.current }
