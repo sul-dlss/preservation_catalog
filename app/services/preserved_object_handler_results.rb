@@ -107,12 +107,13 @@ class PreservedObjectHandlerResults
         candidate_workflow_results << r
       end
     end
-    stack_trace = caller(1..1).first[/.+?(?=:in)/]
+    stack_trace = caller(1..1).first[/`\S+/].chop[1..-1]
     report_errors_to_workflows(candidate_workflow_results, stack_trace)
     result_array
   end
 
   def report_errors_to_workflows(candidate_workflow_results, stack_trace)
+    return if candidate_workflow_results.empty?
     value_array = []
     candidate_workflow_results.each do |x|
       x.each_value do |val|
