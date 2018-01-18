@@ -24,11 +24,15 @@ class WorkflowErrorsReporter
     end
     with_retries(max_tries: 3, handler: handler, rescue: Faraday::Error) do
       conn.put do |request|
-        request.headers['content-type'] = "application/xml"
-        request.url  "/workflow/dor/objects/druid:#{druid}/workflows/preservationAuditWF/#{process_name}"
-        request.body = "<process name='#{process_name} status='error' errorMessage='#{error_message}'/>"
+        request_params(request, druid, process_name, error_message)
       end
     end
+  end
+
+  private_class_method def self.request_params(request, druid, process_name, error_message)
+    request.headers['content-type'] = "application/xml"
+    request.url  "/workflow/dor/objects/druid:#{druid}/workflows/preservationAuditWF/#{process_name}"
+    request.body = "<process name='#{process_name}' status='error' errorMessage='#{error_message}'/>"
   end
 
   private_class_method def self.conn
