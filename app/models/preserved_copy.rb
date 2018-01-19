@@ -30,4 +30,10 @@ class PreservedCopy < ApplicationRecord
   validates :size, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
   validates :status, inclusion: { in: statuses.keys }
   validates :version, presence: true
+
+  def update_audit_timestamps(moab_validated, version_audited)
+    t = Time.current
+    self.last_moab_validation = t if moab_validated
+    self.last_version_audit = t if version_audited
+  end
 end

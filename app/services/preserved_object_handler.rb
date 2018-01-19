@@ -91,7 +91,7 @@ class PreservedObjectHandler
             handler_results.add_result(PreservedObjectHandlerResults::ARG_VERSION_LESS_THAN_DB_OBJECT, pres_copy.class.name)
             handler_results.add_result(PreservedObjectHandlerResults::ARG_VERSION_LESS_THAN_DB_OBJECT, pres_object.class.name)
           end
-          update_pc_audit_timestamps(pres_copy, true)
+          pres_copy.update_audit_timestamps(ran_moab_validation?, true)
           update_db_object(pres_copy)
         end
         handler_results.remove_db_updated_results unless transaction_ok
@@ -257,7 +257,7 @@ class PreservedObjectHandler
       pres_copy = PreservedCopy.find_by!(preserved_object: pres_object, endpoint: endpoint) if pres_object
       # FIXME: what if there is more than one associated pres_copy?
       update_status(pres_copy, PreservedCopy::INVALID_MOAB_STATUS)
-      update_pc_audit_timestamps(pres_copy, false)
+      pres_copy.update_audit_timestamps(ran_moab_validation?, false)
       update_db_object(pres_copy)
     end
     handler_results.remove_db_updated_results unless transaction_ok
@@ -292,7 +292,7 @@ class PreservedObjectHandler
     version_comparison_results(pres_object, :current_version)
 
     update_status(pres_copy, new_status) if new_status
-    update_pc_audit_timestamps(pres_copy, true)
+    pres_copy.update_audit_timestamps(ran_moab_validation?, true)
     update_db_object(pres_copy)
   end
 
@@ -313,7 +313,7 @@ class PreservedObjectHandler
         set_status_as_seen_on_disk(pres_copy, false)
         handler_results.add_result(PreservedObjectHandlerResults::UNEXPECTED_VERSION, pres_copy.class.name)
       end
-      update_pc_audit_timestamps(pres_copy, true)
+      pres_copy.update_audit_timestamps(ran_moab_validation?, true)
       update_db_object(pres_copy)
     end
     handler_results.remove_db_updated_results unless transaction_ok
@@ -339,13 +339,7 @@ class PreservedObjectHandler
   def update_preserved_copy_version_etc(pres_copy, new_version, new_size)
     pres_copy.version = new_version
     pres_copy.size = new_size if new_size
-    update_pc_audit_timestamps(pres_copy, true)
-  end
-
-  def update_pc_audit_timestamps(pres_copy, version_audited)
-    t = Time.current
-    pres_copy.last_moab_validation = t if ran_moab_validation?
-    pres_copy.last_version_audit = t if version_audited
+    pres_copy.update_audit_timestamps(ran_moab_validation?, true)
   end
 
   # expects @incoming_version to be numeric
