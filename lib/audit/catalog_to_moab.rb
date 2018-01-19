@@ -5,20 +5,14 @@ require 'profiler.rb'
 class CatalogToMoab
 
   # allows for sharding/parallelization by storage_dir
-  # FIXME: remove rubocop exception here when we actually do the SQL call
-  # rubocop:disable Lint/UnusedMethodArgument
   def self.check_version_on_dir(last_checked_b4_date, storage_dir)
-    # FIXME: ensure last_checked_version_b4_date is in the right format
-
-    # sql = '' # get all PC with last_version_audit date < threshold_date
-    #  build a params hash and send it to find_each  in order to chunk it
-
-    # FIXME: chunked SQL query results looped through here
-    PreservedCopy.find_each do |pc|
+    pcs = PreservedCopy
+          .where('last_version_audit < ? OR last_version_audit IS NULL', last_checked_b4_date)
+          .order('last_version_audit IS NOT NULL, last_version_audit ASC')
+    pcs.find_each do |pc|
       check_catalog_version(pc, storage_dir)
     end
   end
-  # rubocop:enable Lint/UnusedMethodArgument
 
   def self.check_version_on_dir_profiled(last_checked_b4_date, storage_dir)
     profiler = Profiler.new

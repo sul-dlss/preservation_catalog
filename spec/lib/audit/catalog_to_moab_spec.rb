@@ -17,6 +17,15 @@ RSpec.describe CatalogToMoab do
       expect(described_class).to receive(:check_catalog_version).at_least(3).times
       described_class.check_version_on_dir(last_checked_version_b4_date, storage_dir)
     end
+    it 'will not check a PreservedCopy with a future last_version_audit date' do
+      expect(described_class).to receive(:check_catalog_version).exactly(6).times
+      described_class.check_version_on_dir(last_checked_version_b4_date, storage_dir)
+      pc = PreservedCopy.first
+      pc.last_version_audit = (Time.now.utc + 1.day).iso8601
+      pc.save
+      expect(described_class).to receive(:check_catalog_version).exactly(5).times
+      described_class.check_version_on_dir(last_checked_version_b4_date, storage_dir)
+    end
   end
 
   context ".check_version_on_dir_profiled" do
