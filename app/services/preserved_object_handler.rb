@@ -80,7 +80,7 @@ class PreservedObjectHandler
             handler_results.add_result(PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_copy.class.name)
             handler_results.add_result(PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_object.class.name)
             if moab_validation_errors.empty?
-              update_preserved_copy_version_etc(pres_copy, incoming_version, incoming_size)
+              pres_copy.upd_audstamps_version_size(ran_moab_validation?, incoming_version, incoming_size)
               pres_object.current_version = incoming_version
               update_db_object(pres_object)
             else
@@ -227,7 +227,7 @@ class PreservedObjectHandler
         handler_results.add_result(code, pres_copy.class.name)
         handler_results.add_result(code, pres_object.class.name)
 
-        update_preserved_copy_version_etc(pres_copy, incoming_version, incoming_size)
+        pres_copy.upd_audstamps_version_size(ran_moab_validation?, incoming_version, incoming_size)
         update_status(pres_copy, status) if status && ran_moab_validation?
         update_db_object(pres_copy)
         pres_object.current_version = incoming_version
@@ -333,13 +333,6 @@ class PreservedObjectHandler
       )
     end
     false
-  end
-
-  # expects @incoming_version to be numeric
-  def update_preserved_copy_version_etc(pres_copy, new_version, new_size)
-    pres_copy.version = new_version
-    pres_copy.size = new_size if new_size
-    pres_copy.update_audit_timestamps(ran_moab_validation?, true)
   end
 
   # expects @incoming_version to be numeric
