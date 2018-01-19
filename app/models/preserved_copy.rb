@@ -45,4 +45,10 @@ class PreservedCopy < ApplicationRecord
     self.size = new_size if new_size
     update_audit_timestamps(moab_validated, true)
   end
+
+  def update_status(new_status)
+    return unless new_status != status
+    yield
+    self.status = new_status
+  end
 end

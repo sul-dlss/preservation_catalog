@@ -347,12 +347,11 @@ class PreservedObjectHandler
   end
 
   def update_status(preserved_copy, new_status)
-    if new_status != preserved_copy.status
+    preserved_copy.update_status(new_status) do
       handler_results.add_result(
         PreservedObjectHandlerResults::PC_STATUS_CHANGED,
         { old_status: preserved_copy.status, new_status: new_status }
       )
-      preserved_copy.status = new_status
     end
   end
 
