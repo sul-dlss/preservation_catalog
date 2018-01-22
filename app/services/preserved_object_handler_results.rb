@@ -107,7 +107,8 @@ class PreservedObjectHandlerResults
         candidate_workflow_results << r
       end
     end
-    stack_trace = caller(1..1).first[/`\S+/].chop[1..-1]
+    stack_trace = caller(0..1).join("\n")
+    # stack_trace = caller(1..1).first[/`\S+/].chop[1..-1]
     report_errors_to_workflows(candidate_workflow_results, stack_trace)
     result_array
   end
