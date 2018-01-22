@@ -47,6 +47,8 @@ For more info on postgres commands, see https://www.postgresql.org/docs/
 
 ### General Info About Running These Rake Tasks
 
+- Note: If the rake task takes multiple arguments, DO NOT put a space in between the commas.
+
 - You can monitor the progress of most rake tasks by tailing `log/production.log`, or by querying the database from Rails console using ActiveRecord. The tasks for large storage_roots can take a while -- check [the repo wiki for stats](https://github.com/sul-dlss/preservation_catalog/wiki) on the timing of past runs (and some suggested overview queries). Profiling will add some overhead.
 
 - Rake tasks must be run from the root directory of the project, with whatever `RAILS_ENV` is appropriate. Because the task can take days when run over all storage roots, consider running it in a [screen session](http://thingsilearned.com/2009/05/26/gnu-screen-super-basic-tutorial/) so you don't need to keep your connection open but can still see the output.
@@ -130,6 +132,38 @@ RAILS_ENV=production bundle exec rake m2c_exist_all_storage_roots
 RAILS_ENV=production bundle exec rake m2c_exist_all_storage_roots[profile]
 ```
 this will generate a log at, for example, ```log/profile_check_existence_for_all_storage_roots2017-12-11T14:25:31-flat.txt```
+
+### Run Catalog to Moab existence check for a single root or for all storage roots
+
+- Given a catalog entry for an online moab, ensure that the online moab exists and that the catalog version matches the online moab version.
+
+- To run rake tasks below, give a date and the name of the moab storage_root (e.g. from settings/development.yml) as arguments.
+
+- The (date/timestamp) argument is a threshold:  it will run the check on all catalog entries which last had a version check BEFORE the argument. It should be in the format 2018-01-22 22:54:48 UTC.
+
+#### Single Root
+- Without profiling
+```ruby
+RAILS_ENV=production bundle exec rake c2m_check_version_on_dir[2018-01-22 22:54:48 UTC,fixture_sr1]
+```
+- With profiling
+```ruby
+RAILS_ENV=production bundle exec rake c2m_check_version_on_dir[2018-01-22 22:54:48 UTC,fixture_sr1,profile]
+```
+this will generate a log at, for example,
+```log/profile_c2m_check_version_on_dir2018-01-01T14:25:31-flat.txt```
+
+#### All Roots
+- Without profiling:
+```ruby
+RAILS_ENV=production bundle exec rake c2m_check_version_all_dirs
+```
+- With profiling:
+```ruby
+RAILS_ENV=production bundle exec rake c2m_check_version_all_dirs[profile]
+```
+this will generate a log at, for example,
+```log/profile_c2m_check_version_all_roots2018-01-01T14:25:31-flat.txt```
 
 ## Development
 
