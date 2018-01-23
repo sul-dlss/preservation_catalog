@@ -40,19 +40,16 @@ class CatalogToMoab
     profiler.print_results_flat('C2M_check_version_all_dirs')
   end
 
-  # TODO:  you need to write tests for this!!!
-  # FIXME:  temporarily turning off rubocop until we migrate the code to its final home
-  # rubocop:disable all
-  private_class_method def self.check_catalog_version(preserved_copy, storage_dir)
+  private_class_method def self.check_catalog_version(preserved_copy, _storage_dir)
     # TODO: Pohandler.ensure_po_version_matches_this_pc_version (for non-archived, online moab) - see #483
 
-    id = preserved_copy.preserved_object.druid
+    druid = preserved_copy.preserved_object.druid
     catalog_version = preserved_copy.version
     storage_location = preserved_copy.endpoint.storage_location # FIXME: or just, storage_dir?
-    results = PreservedObjectHandlerResults.new(id, nil, nil, preserved_copy.endpoint)
-    object_dir = "#{storage_location}/#{DruidTools::Druid.new(id).tree.join('/')}"
+    results = PreservedObjectHandlerResults.new(druid, nil, nil, preserved_copy.endpoint)
+    object_dir = "#{storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}"
 
-    moab = Moab::StorageObject.new(id, object_dir)
+    moab = Moab::StorageObject.new(druid, object_dir)
     # TODO: report error if moab doesn't exist - see #482
 
     moab_version = moab.current_version_id
@@ -60,25 +57,22 @@ class CatalogToMoab
     # TODO: anything special if preserved_copy.status is not OK_STATUS? - see #480
 
     if catalog_version == moab_version
-      p "hooray - #{id} versions match: #{catalog_version}"
       results.add_result(PreservedObjectHandlerResults::VERSION_MATCHES, preserved_copy.class.name)
       # TODO:  original spec asks for verifying files????  read audit requirements - see #481
       results.report_results
     elsif catalog_version < moab_version
       results.add_result(PreservedObjectHandlerResults::UNEXPECTED_VERSION, preserved_copy.class.name)
-      p "boo - #{id} catalog has #{catalog_version} but moab has #{moab_version}"
-      # update the catalog
       # TODO: avoid repetitious results ... (leave out line above??) - see #484
-      pohandler = PreservedObjectHandler.new(id, moab_version, moab.size, preserved_copy.endpoint)
+      pohandler = PreservedObjectHandler.new(druid, moab_version, moab.size, preserved_copy.endpoint)
       pohandler.update_version_after_validation # results reported by this call
     else # catalog_version > moab_version
-      p "boo - #{id} catalog has #{catalog_version} but moab has #{moab_version}"
       results.add_result(PreservedObjectHandlerResults::UNEXPECTED_VERSION, preserved_copy.class.name)
-      if moab_validation_errors.empty?
-        update_status(preserved_copy, PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS)
-      else
-        update_status(preserved_copy, PreservedCopy::INVALID_MOAB_STATUS)
-      end
+      # TODO: can moab_validation_errors be a class method or otherwise callable from here and POHandler? - see #491
+      # if moab_validation_errors.empty?
+      #   update_status(preserved_copy, PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS)
+      # else
+      #   update_status(preserved_copy, PreservedCopy::INVALID_MOAB_STATUS)
+      # end
       results.report_results
     end
 
@@ -86,6 +80,5 @@ class CatalogToMoab
     # update_pc_audit_timestamps(preserved_copy, ran_moab_validation, true) - see #477
     # update_db_object(preserved_copy) - see #478
   end
-  # rubocop:enable all
 
 end
