@@ -59,19 +59,15 @@ class CatalogToMoab
     # TODO: anything special if preserved_copy.status is not OK_STATUS? - see #480
 
     if catalog_version == moab_version
-      p "hooray - #{druid} versions match: #{catalog_version}"
       results.add_result(PreservedObjectHandlerResults::VERSION_MATCHES, preserved_copy.class.name)
       # TODO:  original spec asks for verifying files????  read audit requirements - see #481
       results.report_results
     elsif catalog_version < moab_version
       results.add_result(PreservedObjectHandlerResults::UNEXPECTED_VERSION, preserved_copy.class.name)
-      p "boo - #{druid} catalog has #{catalog_version} but moab has #{moab_version}"
-      # update the catalog
       # TODO: avoid repetitious results ... (leave out line above??) - see #484
       pohandler = PreservedObjectHandler.new(druid, moab_version, moab.size, preserved_copy.endpoint)
       pohandler.update_version_after_validation # results reported by this call
     else # catalog_version > moab_version
-      p "boo - #{druid} catalog has #{catalog_version} but moab has #{moab_version}"
       results.add_result(PreservedObjectHandlerResults::UNEXPECTED_VERSION, preserved_copy.class.name)
       # TODO: can moab_validation_errors be a class method or otherwise callable from here and POHandler? - see #491
       # if moab_validation_errors.empty?
