@@ -40,7 +40,6 @@ class CatalogToMoab
     profiler.print_results_flat('C2M_check_version_all_dirs')
   end
 
-  # TODO:  you need to write tests for this!!!
   # FIXME:  temporarily turning off rubocop until we migrate the code to its final home
   # rubocop:disable all
   private_class_method def self.check_catalog_version(preserved_copy, storage_dir)
@@ -74,11 +73,12 @@ class CatalogToMoab
     else # catalog_version > moab_version
       p "boo - #{druid} catalog has #{catalog_version} but moab has #{moab_version}"
       results.add_result(PreservedObjectHandlerResults::UNEXPECTED_VERSION, preserved_copy.class.name)
-      if moab_validation_errors.empty?
-        update_status(preserved_copy, PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS)
-      else
-        update_status(preserved_copy, PreservedCopy::INVALID_MOAB_STATUS)
-      end
+      # TODO: can moab_validation_errors be a class method or otherwise callable from here and POHandler? - see #491
+      # if moab_validation_errors.empty?
+      #   update_status(preserved_copy, PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS)
+      # else
+      #   update_status(preserved_copy, PreservedCopy::INVALID_MOAB_STATUS)
+      # end
       results.report_results
     end
 
