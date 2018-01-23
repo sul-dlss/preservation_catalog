@@ -180,4 +180,18 @@ RSpec.describe PreservedCopy, type: :model do
       expect(pc.changed?).to eq true
     end
   end
+
+  context '#matches_po_current_version?' do
+    it 'returns true when its version matches its preserved objects current version' do
+      preserved_copy.version = 666
+      preserved_copy.preserved_object.current_version = 666
+      expect(preserved_copy.matches_po_current_version?).to be true
+    end
+
+    it 'returns false when its version does not match its preserved objects current version' do
+      preserved_copy.version = 666
+      preserved_copy.preserved_object.current_version = 777
+      expect(preserved_copy.matches_po_current_version?).to be false
+    end
+  end
 end
