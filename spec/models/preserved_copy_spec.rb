@@ -86,4 +86,98 @@ RSpec.describe PreservedCopy, type: :model do
   it { is_expected.to have_db_index(:last_checksum_validation) }
   it { is_expected.to have_db_index(:endpoint_id) }
   it { is_expected.to have_db_index(:preserved_object_id) }
+
+  describe '#update_audit_timestamps' do
+    let(:pc) do
+      PreservedCopy.new(
+        preserved_object_id: preserved_object.id,
+        endpoint_id: endpoint.id,
+        version: 0,
+        status: PreservedCopy::INVALID_MOAB_STATUS,
+        size: 1
+      )
+    end
+
+    it 'updates last_moab_validation time if moab_validated is true' do
+      expect(pc.last_moab_validation).to be nil
+      pc.update_audit_timestamps(true, false)
+      expect(pc.last_moab_validation).not_to be nil
+    end
+    it 'does not update last_moab_validation time if moab_validated is false' do
+      expect(pc.last_moab_validation).to be nil
+      pc.update_audit_timestamps(false, false)
+      expect(pc.last_moab_validation).to be nil
+    end
+    it 'updates last_version_audit time if version_audited is true' do
+      expect(pc.last_version_audit).to be nil
+      pc.update_audit_timestamps(false, true)
+      expect(pc.last_version_audit).not_to be nil
+    end
+    it 'does not update last_version_audit time if version_audited is false' do
+      expect(pc.last_version_audit).to be nil
+      pc.update_audit_timestamps(false, false)
+      expect(pc.last_version_audit).to be nil
+    end
+  end
+
+  describe '#upd_audstamps_version_size' do
+    let(:pc) do
+      PreservedCopy.new(
+        preserved_object_id: preserved_object.id,
+        endpoint_id: endpoint.id,
+        version: 0,
+        status: PreservedCopy::INVALID_MOAB_STATUS,
+        size: 1
+      )
+    end
+
+    it 'updates version' do
+      pc.upd_audstamps_version_size(false, 3, nil)
+      expect(pc.version).to eq 3
+    end
+
+    it 'updates size if size is not nil' do
+      pc.upd_audstamps_version_size(false, 0, 123)
+      expect(pc.size).to eq 123
+    end
+
+    it 'does not update size if size is nil' do
+      pc.upd_audstamps_version_size(false, 0, nil)
+      expect(pc.size).to eq 1
+    end
+
+    it 'calls update_audit_timestamps with the appropriate params' do
+      expect(pc).to receive(:update_audit_timestamps).with(false, true)
+      pc.upd_audstamps_version_size(false, 3, nil)
+    end
+  end
+
+  describe '#update_status' do
+    let(:pc) do
+      # using create here, because if the object has never been saved, #changed? will always return true
+      PreservedCopy.create(
+        preserved_object_id: preserved_object.id,
+        endpoint_id: endpoint.id,
+        version: 0,
+        status: PreservedCopy::INVALID_MOAB_STATUS,
+        size: 1
+      )
+    end
+
+    it 'does nothing if the status has not changed' do
+      ran_the_block = false
+      pc.update_status(PreservedCopy::INVALID_MOAB_STATUS) { ran_the_block = true }
+      expect(pc.status).to eq PreservedCopy::INVALID_MOAB_STATUS
+      expect(ran_the_block).to eq false
+      expect(pc.changed?).to eq false
+    end
+
+    it 'runs the block and updates the status if the status has changed' do
+      ran_the_block = false
+      pc.update_status(PreservedCopy::OK_STATUS) { ran_the_block = true }
+      expect(pc.status).to eq PreservedCopy::OK_STATUS
+      expect(ran_the_block).to eq true
+      expect(pc.changed?).to eq true
+    end
+  end
 end

@@ -30,4 +30,25 @@ class PreservedCopy < ApplicationRecord
   validates :size, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
   validates :status, inclusion: { in: statuses.keys }
   validates :version, presence: true
+
+  def update_audit_timestamps(moab_validated, version_audited)
+    t = Time.current
+    self.last_moab_validation = t if moab_validated
+    self.last_version_audit = t if version_audited
+  end
+
+  # moab_validated must not be nil. boolean indicating whether validation has been run (regardless of result).
+  # new_version is expected to be numeric
+  # new_size is expected to be numeric if provided (nil is allowed)
+  def upd_audstamps_version_size(moab_validated, new_version, new_size)
+    self.version = new_version
+    self.size = new_size if new_size
+    update_audit_timestamps(moab_validated, true)
+  end
+
+  def update_status(new_status)
+    return unless new_status != status
+    yield
+    self.status = new_status
+  end
 end

@@ -467,7 +467,7 @@ RSpec.describe PreservedObjectHandler do
         allow(PreservedCopy).to receive(:find_by).with(preserved_object: po, endpoint: ep).and_return(pc)
         allow(pc).to receive(:status).and_return(PreservedCopy::OK_STATUS)
         allow(pc).to receive(:version).and_return(1)
-        allow(pc).to receive(:last_version_audit=)
+        allow(pc).to receive(:update_audit_timestamps)
         allow(pc).to receive(:changed?).and_return(false)
         allow(pc).to receive(:touch)
         po_handler.check_existence
