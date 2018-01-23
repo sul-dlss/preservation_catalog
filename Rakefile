@@ -2,6 +2,8 @@
 # for example lib/tasks/capistrano.rake, and they will automatically be available to Rake.
 
 require_relative 'config/application'
+require 'audit/moab_to_catalog.rb'
+require 'audit/catalog_to_moab.rb'
 
 Rails.application.load_tasks
 
@@ -14,7 +16,6 @@ task :travis_setup_postgres do
   sh("psql -U postgres -f db/scripts/pres_test_setup.sql")
 end
 
-require 'audit/moab_to_catalog.rb'
 desc 'populate the catalog with the contents of the online storage roots'
 task :seed_catalog, [:profile] => [:environment] do |_t, args|
   unless args[:profile] == 'profile' || args[:profile].nil?
@@ -115,5 +116,43 @@ task :m2c_exist_all_storage_roots, [:profile] => [:environment] do |_t, args|
     MoabToCatalog.check_existence_for_all_storage_roots
   end
   puts "#{Time.now.utc.iso8601} Moab to Catalog Existence Check for all storage roots are done"
+  $stdout.flush
+end
+
+desc "Fire off c2m version check on a single storage root"
+task :c2m_check_version_on_dir, [:last_checked_b4_date, :storage_root, :profile] => [:environment] do |_t, args|
+  unless args[:profile] == 'profile' || args[:profile].nil?
+    p "usage: rake c2m_check_version_on_dir[last_checked_b4_date, fixture_sr1] || rake c2m_check_version_on_dir[last_checked_b4_date,fixture_sr1,profile]"
+    exit
+  end
+  root = args[:storage_root].to_sym
+  storage_dir = "#{Settings.moab.storage_roots[root]}/#{Settings.moab.storage_trunk}"
+  last_checked = args[:last_checked_b4_date].to_sym
+
+  if args[:profile] == 'profile'
+    puts "When done, check log/profile_c2m_check_version_on_dir[TIMESTAMP].txt for profiling details"
+    CatalogToMoab.check_version_on_dir_profiled(last_checked, storage_dir)
+  elsif args[:profile].nil?
+    CatalogToMoab.check_version_on_dir(last_checked, storage_dir)
+  end
+  puts "#{Time.now.utc.iso8601} Catalog to Moab version check on #{storage_dir} is done."
+  $stdout.flush
+end
+
+desc "Fire off c2m version check on all storage roots"
+task :c2m_check_version_all_dirs, [:last_checked_b4_date, :profile] => [:environment] do |_t, args|
+  unless args[:profile] == 'profile' || args[:profile].nil?
+    p "usage: rake c2m_check_version_all_dirs[last_checked_b4_date] || rake c2m_check_version_all_dirs[last_checked_b4_date,profile]"
+    exit
+  end
+  last_checked = args[:last_checked_b4_date].to_sym
+
+  if args[:profile] == 'profile'
+    puts "When done, check log/profile_c2m_check_version_all_roots[TIMESTAMP].txt for profiling details"
+    CatalogToMoab.check_version_all_dirs_profiled(last_checked)
+  elsif args[:profile].nil?
+    CatalogToMoab.check_version_all_dirs(last_checked)
+  end
+  puts "#{Time.now.utc.iso8601} Catalog to Moab version check on all roots is done."
   $stdout.flush
 end
