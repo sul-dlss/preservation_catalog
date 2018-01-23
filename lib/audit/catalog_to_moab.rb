@@ -40,9 +40,7 @@ class CatalogToMoab
     profiler.print_results_flat('C2M_check_version_all_dirs')
   end
 
-  # FIXME:  temporarily turning off rubocop until we migrate the code to its final home
-  # rubocop:disable all
-  private_class_method def self.check_catalog_version(preserved_copy, storage_dir)
+  private_class_method def self.check_catalog_version(preserved_copy, _storage_dir)
     # TODO: Pohandler.ensure_po_version_matches_this_pc_version (for non-archived, online moab) - see #483
 
     druid = preserved_copy.preserved_object.druid
@@ -82,6 +80,5 @@ class CatalogToMoab
     # update_pc_audit_timestamps(preserved_copy, ran_moab_validation, true) - see #477
     # update_db_object(preserved_copy) - see #478
   end
-  # rubocop:enable all
 
 end
