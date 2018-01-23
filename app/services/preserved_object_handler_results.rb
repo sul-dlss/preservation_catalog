@@ -91,10 +91,6 @@ class PreservedObjectHandlerResults
     result_array.delete_if { |res_hash| DB_UPDATED_CODES.include?(res_hash.keys.first) }
   end
 
-  def result_hash(code, msg_args=nil)
-    { code => result_code_msg(code, msg_args) }
-  end
-
   # output results to Rails.logger and send errors to WorkflowErrorsReporter
   # @return result_array
   def report_results
@@ -107,24 +103,28 @@ class PreservedObjectHandlerResults
         candidate_workflow_results << r
       end
     end
-    stack_trace = caller(1..1).first[/`\S+/].chop[1..-1]
+    stack_trace = caller(0..1).join("\n")
     report_errors_to_workflows(candidate_workflow_results, stack_trace)
     result_array
+  end
+
+  private
+
+  def result_hash(code, msg_args=nil)
+    { code => result_code_msg(code, msg_args) }
   end
 
   def report_errors_to_workflows(candidate_workflow_results, stack_trace)
     return if candidate_workflow_results.empty?
     value_array = []
-    candidate_workflow_results.each do |x|
-      x.each_value do |val|
+    candidate_workflow_results.each do |result_hash|
+      result_hash.each_value do |val|
         value_array << val
       end
     end
     value_array << stack_trace
     WorkflowErrorsReporter.update_workflow(druid, 'preservation-audit', value_array.join(" || "))
   end
-
-  private
 
   def log_result(result)
     severity = self.class.logger_severity_level(result.keys.first)
