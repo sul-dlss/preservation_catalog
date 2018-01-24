@@ -11,7 +11,8 @@ class CatalogToMoab
           .where('last_version_audit < ? OR last_version_audit IS NULL', last_checked_b4_date)
           .order('last_version_audit IS NOT NULL, last_version_audit ASC')
     pcs.find_each do |pc|
-      check_catalog_version(pc, storage_dir)
+      c2m = CatalogToMoab.new(pc, storage_dir)
+      c2m.check_catalog_version
     end
   end
 
@@ -40,15 +41,25 @@ class CatalogToMoab
     profiler.print_results_flat('C2M_check_version_all_dirs')
   end
 
-  private_class_method def self.check_catalog_version(preserved_copy, _storage_dir)
+  # ----  INSTANCE code below this line ---------------------------
+
+  attr_reader :preserved_copy, :storage_dir
+
+  def initialize(preserved_copy, storage_dir)
+    @preserved_copy = preserved_copy
+    @storage_dir = storage_dir
+  end
+
+  def check_catalog_version
     # TODO: Pohandler.ensure_po_version_matches_this_pc_version (for non-archived, online moab) - see #483
 
     druid = preserved_copy.preserved_object.druid
     catalog_version = preserved_copy.version
-    storage_location = preserved_copy.endpoint.storage_location # FIXME: or just, storage_dir?
+
+    # TODO: use storage_dir to compute object_dir - see #496
+    storage_location = preserved_copy.endpoint.storage_location
     results = PreservedObjectHandlerResults.new(druid, nil, nil, preserved_copy.endpoint)
     object_dir = "#{storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}"
-
     moab = Moab::StorageObject.new(druid, object_dir)
     # TODO: report error if moab doesn't exist - see #482
 
@@ -80,5 +91,4 @@ class CatalogToMoab
     # update_pc_audit_timestamps(preserved_copy, ran_moab_validation, true) - see #477
     # update_db_object(preserved_copy) - see #478
   end
-
 end
