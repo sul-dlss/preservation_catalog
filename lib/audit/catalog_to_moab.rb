@@ -51,22 +51,20 @@ class CatalogToMoab
   end
 
   def check_catalog_version
-    # TODO: Pohandler.ensure_po_version_matches_this_pc_version (for non-archived, online moab) - see #483
-
     druid = preserved_copy.preserved_object.druid
-    catalog_version = preserved_copy.version
-
-    # TODO: use storage_dir to compute object_dir - see #496
-    storage_location = preserved_copy.endpoint.storage_location
     results = PreservedObjectHandlerResults.new(druid, nil, nil, preserved_copy.endpoint)
-    object_dir = "#{storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}"
-    moab = Moab::StorageObject.new(druid, object_dir)
-    # TODO: report error if moab doesn't exist - see #482
 
-    moab_version = moab.current_version_id
+    # TODO: Pohandler.ensure_po_version_matches_this_pc_version (for non-archived, online moab) - see #483
 
     # TODO: anything special if preserved_copy.status is not OK_STATUS? - see #480
 
+    object_dir = "#{storage_dir}/#{DruidTools::Druid.new(druid).tree.join('/')}"
+    moab = Moab::StorageObject.new(druid, object_dir)
+
+    # TODO: report error if moab doesn't exist - see #482
+
+    moab_version = moab.current_version_id
+    catalog_version = preserved_copy.version
     if catalog_version == moab_version
       results.add_result(PreservedObjectHandlerResults::VERSION_MATCHES, preserved_copy.class.name)
       # TODO:  original spec asks for verifying files????  read audit requirements - see #481
