@@ -32,7 +32,7 @@ class WorkflowErrorsReporter
   private_class_method def self.request_params(request, druid, process_name, error_message)
     request.headers['content-type'] = "application/xml"
     request.url  "/workflow/dor/objects/druid:#{druid}/workflows/preservationAuditWF/#{process_name}"
-    request.body = "<process name='#{process_name}' status='error' errorMessage='#{error_message}'/>"
+    request.body = "<process name='#{process_name}' status='error' errorMessage='#{CGI.escapeHTML(error_message)}'/>"
   end
 
   private_class_method def self.conn
