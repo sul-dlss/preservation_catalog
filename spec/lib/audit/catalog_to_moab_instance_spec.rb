@@ -59,6 +59,17 @@ RSpec.describe CatalogToMoab do
       c2m.check_catalog_version
     end
 
+    it 'calls online_moab_found?(druid, storage_dir)' do
+      c2m.check_catalog_version
+    end
+
+    context 'moab is nil (exists in catalog but not online' do
+      it 'adds an ONLINE_MOAB_DOES_NOT_EXIST result' do
+      end
+      it 'stops processing .check_catalog_version' do
+      end
+    end
+
     context 'preserved_copy version != current_version of preserved_object' do
       it 'adds a PC_PO_VERSION_MISMATCH result and returns' do
         pres_copy.version = 666
