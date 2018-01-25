@@ -164,6 +164,7 @@ class PreservedObjectHandler
 
   private
 
+  # TODO: near duplicate of method in catalog_to_moab - extract superclass or moab wrapper class??
   def moab_validation_errors
     @moab_errors ||=
       begin
@@ -183,6 +184,7 @@ class PreservedObjectHandler
       end
   end
 
+  # TODO: duplicate of method in catalog_to_moab - extract superclass or moab wrapper class??
   def ran_moab_validation?
     @ran_moab_validation ||= false
   end
@@ -346,6 +348,7 @@ class PreservedObjectHandler
     end
   end
 
+  # TODO: near duplicate of method in catalog_to_moab - extract superclass or moab wrapper class??
   def update_status(preserved_copy, new_status)
     preserved_copy.update_status(new_status) do
       handler_results.add_result(
