@@ -45,18 +45,17 @@ class CatalogToMoab
 
   # ----  INSTANCE code below this line ---------------------------
 
-  attr_reader :preserved_copy, :storage_dir, :results, :moab
+  attr_reader :preserved_copy, :storage_dir, :druid, :results, :moab
 
   def initialize(preserved_copy, storage_dir)
     @preserved_copy = preserved_copy
     @storage_dir = storage_dir
+    @druid = preserved_copy.preserved_object.druid
+    @results = PreservedObjectHandlerResults.new(druid, nil, nil, preserved_copy.endpoint)
   end
 
   # shameless green implementation
   def check_catalog_version
-    druid = preserved_copy.preserved_object.druid
-    @results = PreservedObjectHandlerResults.new(druid, nil, nil, preserved_copy.endpoint)
-
     unless preserved_copy.matches_po_current_version?
       results.add_result(PreservedObjectHandlerResults::PC_PO_VERSION_MISMATCH,
                          pc_version: preserved_copy.version,

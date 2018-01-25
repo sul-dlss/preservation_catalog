@@ -18,6 +18,8 @@ RSpec.describe CatalogToMoab do
       c2m = described_class.new(pres_copy, storage_dir)
       expect(c2m.preserved_copy).to eq pres_copy
       expect(c2m.storage_dir).to eq storage_dir
+      expect(c2m.druid).to eq druid
+      expect(c2m.results).to be_an_instance_of PreservedObjectHandlerResults
     end
   end
 
