@@ -61,13 +61,13 @@ Metrics/AbcSize:
   Exclude:
     - 'app/services/preserved_object_handler.rb' # methods still readable; shameless green
     - 'app/services/preserved_object_handler_results.rb' # method still readable
-    - 'lib/audit/moab_to_catalog.rb' # .xxx_for_all_storage_roots is decidedly readable
     - 'lib/audit/catalog_to_moab.rb' # .check_version_all_dirs is decidedly readable
+    - 'lib/audit/moab_to_catalog.rb' # .xxx_for_all_storage_roots is decidedly readable
 
 Metrics/BlockLength:
   Exclude:
-    - 'spec/**/*'
     - 'app/services/preserved_object_handler.rb' # check_existence shameless green
+    - 'spec/**/*'
 
 Metrics/BlockNesting:
   Exclude:
@@ -87,10 +87,10 @@ Metrics/CyclomaticComplexity:
 Metrics/LineLength:
   Max: 120
   Exclude:
+    - 'Rakefile' # Line length 133 for better readability
     - 'app/services/preserved_object_handler.rb' # line 269 is 121
     - 'app/services/preserved_object_handler_results.rb' # line 35 is 121
     - 'app/services/workflow_errors_reporter.rb' # line 7 is 143
-    - 'Rakefile' # Line length 133 for better readability
     - 'spec/lib/audit/moab_to_catalog_spec.rb' # 1 line 126
     - 'spec/models/status_spec.rb' # Line length of 132 for better readability
     - 'spec/services/preserved_object_handler_check_exist_spec.rb' # 17 lines, but who's counting, officer?
@@ -105,6 +105,7 @@ Metrics/MethodLength:
   Max: 25
   Exclude:
     - 'app/services/preserved_object_handler.rb' # check_existence shameless green
+    - 'lib/audit/catalog_to_moab.rb' # check_catalog_version shameless green
 
 Metrics/PerceivedComplexity:
   Exclude:
@@ -126,8 +127,8 @@ Rails/HasAndBelongsToMany:
 
 Rails/Output:
   Exclude:
-    - 'lib/audit/moab_to_catalog.rb' # use puts statements for following progress of long job
     - 'lib/audit/catalog_to_moab.rb' # use puts statements for following progress of long job
+    - 'lib/audit/moab_to_catalog.rb' # use puts statements for following progress of long job
 
 Rails/SkipsModelValidations:
   Exclude:
@@ -138,7 +139,6 @@ Rails/SkipsModelValidations:
 RSpec/BeforeAfterAll:
   Exclude:
     # we use after(:all) specifically to prevent state leakage
-    - 'spec/load_fixtures_helper.rb'
     - 'spec/models/preservation_policy_spec.rb'
 
 RSpec/ExampleLength:
@@ -160,11 +160,12 @@ RSpec/NamedSubject:
 
 RSpec/NestedGroups:
   Exclude:
+    - 'spec/lib/audit/catalog_to_moab_instance_spec.rb'
     - 'spec/lib/audit/moab_to_catalog_spec.rb'
+    - 'spec/services/preserved_object_handler_check_exist_spec.rb'
     - 'spec/services/preserved_object_handler_confirm_version_spec.rb'
     - 'spec/services/preserved_object_handler_create_spec.rb'
     - 'spec/services/preserved_object_handler_update_version_spec.rb'
-    - 'spec/services/preserved_object_handler_check_exist_spec.rb'
 
 # --- Style ---
 
@@ -178,7 +179,8 @@ Style/BlockDelimiters:
 
 Style/BracesAroundHashParameters:
   Exclude:
-    - app/services/preserved_object_handler.rb # code is clearer with the braces
+    - app/services/preserved_object_handler.rb # #update_status is clearer with the braces
+    - lib/audit/catalog_to_moab.rb # #update_status is clearer with the braces
 
 Style/Documentation:
   Exclude:
