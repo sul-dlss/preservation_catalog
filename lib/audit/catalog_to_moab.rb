@@ -93,6 +93,8 @@ class CatalogToMoab
 
     preserved_copy.update_audit_timestamps(ran_moab_validation?, true)
 
+    # TODO: We need to save preserved copy.  Do we want to use something like
+    #  PreservedObjectHandler.update_db_object? - see #478
     # update_db_object(preserved_copy) - see #478
   end
 
