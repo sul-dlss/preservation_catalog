@@ -63,11 +63,11 @@ RSpec.describe CatalogToMoab do
     end
 
     it 'calls online_moab_found?(druid, storage_dir)' do
-      expect(c2m).to receive(:online_moab_found?).with(druid, storage_dir)
+      expect(c2m).to receive(:online_moab_found).with(druid, storage_dir)
       c2m.check_catalog_version
     end
 
-    context 'moab is nil (exists in catalog but not online' do
+    context 'moab is nil (exists in catalog but not online)' do
       it 'adds an ONLINE_MOAB_DOES_NOT_EXIST result' do
         allow(Moab::StorageObject).to receive(:new).with(druid, instance_of(String)).and_return(nil)
         pohandler_results = instance_double(PreservedObjectHandlerResults, report_results: nil)
