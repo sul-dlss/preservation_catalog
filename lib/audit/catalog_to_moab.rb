@@ -45,16 +45,18 @@ class CatalogToMoab
 
   # ----  INSTANCE code below this line ---------------------------
 
-  attr_reader :preserved_copy, :storage_dir
+  attr_reader :preserved_copy, :storage_dir, :results, :moab
 
   def initialize(preserved_copy, storage_dir)
     @preserved_copy = preserved_copy
     @storage_dir = storage_dir
   end
 
+  # shameless green implementation
   def check_catalog_version
     druid = preserved_copy.preserved_object.druid
-    results = PreservedObjectHandlerResults.new(druid, nil, nil, preserved_copy.endpoint)
+    @results = PreservedObjectHandlerResults.new(druid, nil, nil, preserved_copy.endpoint)
+
     unless preserved_copy.matches_po_current_version?
       results.add_result(PreservedObjectHandlerResults::PC_PO_VERSION_MISMATCH,
                          pc_version: preserved_copy.version,
@@ -65,7 +67,7 @@ class CatalogToMoab
     # TODO: anything special if preserved_copy.status is not OK_STATUS? - see #480
 
     object_dir = "#{storage_dir}/#{DruidTools::Druid.new(druid).tree.join('/')}"
-    moab = Moab::StorageObject.new(druid, object_dir)
+    @moab = Moab::StorageObject.new(druid, object_dir)
 
     # TODO: report error if moab doesn't exist - see #482
 
@@ -82,12 +84,11 @@ class CatalogToMoab
       pohandler.update_version_after_validation # results reported by this call
     else # catalog_version > moab_version
       results.add_result(PreservedObjectHandlerResults::UNEXPECTED_VERSION, preserved_copy.class.name)
-      # TODO: can moab_validation_errors be a class method or otherwise callable from here and POHandler? - see #491
-      # if moab_validation_errors.empty?
-      #   update_status(preserved_copy, PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS)
-      # else
-      #   update_status(preserved_copy, PreservedCopy::INVALID_MOAB_STATUS)
-      # end
+      if moab_validation_errors.empty?
+        update_status(PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS)
+      else
+        update_status(PreservedCopy::INVALID_MOAB_STATUS)
+      end
       results.report_results
     end
 
@@ -95,4 +96,40 @@ class CatalogToMoab
     # update_pc_audit_timestamps(preserved_copy, ran_moab_validation, true) - see #477
     # update_db_object(preserved_copy) - see #478
   end
+
+  private
+
+  # TODO: near duplicate of method in POHandler - extract superclass or moab wrapper class?
+  def moab_validation_errors
+    @moab_errors ||=
+      begin
+        object_validator = Stanford::StorageObjectValidator.new(moab)
+        moab_errors = object_validator.validation_errors(Settings.moab.allow_content_subdirs)
+        @ran_moab_validation = true
+        if moab_errors.any?
+          moab_error_msgs = []
+          moab_errors.each do |error_hash|
+            error_hash.each_value { |msg| moab_error_msgs << msg }
+          end
+          results.add_result(PreservedObjectHandlerResults::INVALID_MOAB, moab_error_msgs)
+        end
+        moab_errors
+      end
+  end
+
+  # TODO: duplicate of method in POHandler - extract superclass or moab wrapper class??
+  def ran_moab_validation?
+    @ran_moab_validation ||= false
+  end
+
+  # TODO: near duplicate of method in POHandler - extract superclass or moab wrapper class??
+  def update_status(new_status)
+    preserved_copy.update_status(new_status) do
+      results.add_result(
+        PreservedObjectHandlerResults::PC_STATUS_CHANGED,
+        { old_status: preserved_copy.status, new_status: new_status }
+      )
+    end
+  end
+
 end

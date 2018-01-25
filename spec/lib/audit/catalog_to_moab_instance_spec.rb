@@ -125,11 +125,53 @@ RSpec.describe CatalogToMoab do
         allow(PreservedObjectHandlerResults).to receive(:new).and_return(pohandler_results)
         c2m.check_catalog_version
       end
-      it 'does moab validation' do
-        skip 'add tests after #491'
+
+      it 'calls Stanford::StorageObjectValidator.validation_errors for moab' do
+        mock_sov = instance_double(Stanford::StorageObjectValidator)
+        expect(mock_sov).to receive(:validation_errors).and_return([])
+        allow(Stanford::StorageObjectValidator).to receive(:new).and_return(mock_sov)
+        c2m.check_catalog_version
       end
-      it 'updates status' do
-        skip 'add tests after #491, #477'
+      it 'valid moab sets status to EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS' do
+        orig = pres_copy.status
+        c2m.check_catalog_version
+        new_status = pres_copy.reload.status
+        skip 'uncomment rest of tests after #478 - we need to save the object'
+        expect(new_status).not_to eq orig
+        expect(new_status).to eq PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
+      end
+      context 'invalid moab' do
+        before do
+          mock_sov = instance_double(Stanford::StorageObjectValidator)
+          allow(mock_sov).to receive(:validation_errors).and_return([foo: 'error message'])
+          allow(Stanford::StorageObjectValidator).to receive(:new).and_return(mock_sov)
+        end
+        it 'sets status to INVALID_MOAB_STATUS' do
+          orig = pres_copy.status
+          c2m.check_catalog_version
+          new_status = pres_copy.reload.status
+          skip 'uncomment rest of tests after #478 - we need to save the object'
+          expect(new_status).not_to eq orig
+          expect(new_status).to eq PreservedCopy::INVALID_MOAB_STATUS
+        end
+        it 'adds an INVALID_MOAB result' do
+          pohandler_results = instance_double(PreservedObjectHandlerResults, report_results: nil)
+          expect(pohandler_results).to receive(:add_result).with(
+            PreservedObjectHandlerResults::INVALID_MOAB, anything
+          )
+          allow(pohandler_results).to receive(:add_result).with(any_args)
+          allow(PreservedObjectHandlerResults).to receive(:new).and_return(pohandler_results)
+          c2m.check_catalog_version
+        end
+      end
+      it 'adds a PC_STATUS_CHANGED result' do
+        pohandler_results = instance_double(PreservedObjectHandlerResults, report_results: nil)
+        expect(pohandler_results).to receive(:add_result).with(
+          PreservedObjectHandlerResults::PC_STATUS_CHANGED, a_hash_including(:old_status, :new_status)
+        )
+        allow(pohandler_results).to receive(:add_result).with(any_args)
+        allow(PreservedObjectHandlerResults).to receive(:new).and_return(pohandler_results)
+        c2m.check_catalog_version
       end
     end
   end
