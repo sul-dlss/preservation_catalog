@@ -91,8 +91,8 @@ class CatalogToMoab
       results.report_results
     end
 
-    # TODO: call these methods on PreservedCopy object
-    # update_pc_audit_timestamps(preserved_copy, ran_moab_validation, true) - see #477
+    preserved_copy.update_audit_timestamps(ran_moab_validation?, true)
+
     # update_db_object(preserved_copy) - see #478
   end
 

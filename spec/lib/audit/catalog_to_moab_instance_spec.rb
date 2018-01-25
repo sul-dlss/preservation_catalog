@@ -47,7 +47,8 @@ RSpec.describe CatalogToMoab do
     end
 
     it 'calls PreservedCopy.update_audit_timestamps' do
-      skip 'add this test after #477 is merged'
+      expect(pres_copy).to receive(:update_audit_timestamps).with(anything, true)
+      c2m.check_catalog_version
     end
 
     it 'calls PreservedCopy.save!' do
