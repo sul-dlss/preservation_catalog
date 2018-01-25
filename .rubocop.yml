@@ -105,6 +105,7 @@ Metrics/MethodLength:
   Max: 25
   Exclude:
     - 'app/services/preserved_object_handler.rb' # check_existence shameless green
+    - 'lib/audit/catalog_to_moab.rb' # check_catalog_version (assuming in the future) shameless green
 
 Metrics/PerceivedComplexity:
   Exclude:

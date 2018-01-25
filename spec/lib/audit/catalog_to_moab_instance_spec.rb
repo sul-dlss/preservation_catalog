@@ -59,14 +59,28 @@ RSpec.describe CatalogToMoab do
       c2m.check_catalog_version
     end
 
+    # The way I understand this test is that b/c its an instance variable the
+    # initialized object will receive the method call?
     it 'calls online_moab_found?(druid, storage_dir)' do
+      expect(c2m).to receive(:online_moab_found?).with(druid, storage_dir)
       c2m.check_catalog_version
     end
 
     context 'moab is nil (exists in catalog but not online' do
       it 'adds an ONLINE_MOAB_DOES_NOT_EXIST result' do
+        allow(Moab::StorageObject).to receive(:new).with(druid, instance_of(String)).and_return(nil)
+        pohandler_results = instance_double(PreservedObjectHandlerResults, report_results: nil)
+        allow(PreservedObjectHandlerResults).to receive(:new).and_return(pohandler_results)
+        expect(pohandler_results).to receive(:add_result).with(
+          PreservedObjectHandlerResults::ONLINE_MOAB_DOES_NOT_EXIST
+        )
+        c2m.check_catalog_version
       end
       it 'stops processing .check_catalog_version' do
+        moab = instance_double(Moab::StorageObject)
+        allow(Moab::StorageObject).to receive(:new).with(druid, instance_of(String)).and_return(nil)
+        expect(moab).not_to receive(:current_version_id)
+        c2m.check_catalog_version
       end
     end
 
@@ -84,6 +98,34 @@ RSpec.describe CatalogToMoab do
         c2m.check_catalog_version
       end
     end
+
+    # it 'calls .moab_found_on_disk?(moab,results)' do
+    #   moab = instance_double(Moab::StorageObject)
+    #   allow(Moab::StorageObject).to receive(:new).with(druid, instance_of(String)).and_return(moab)
+    #   pohandler_results = instance_double(PreservedObjectHandlerResults)
+    #   allow(PreservedObjectHandlerResults).to receive(:new).and_return(pohandler_results)
+    #   expect(described_class).to receive(:moab_found_on_disk?).with(moab, pohandler_results)
+    #   described_class.send(:check_catalog_version, pres_copy, nil)
+    # end
+
+    # context 'moab is nil (exists in catalog but not on disk)' do
+    #   it 'adds an ONLINE_MOAB_DOES_NOT_EXIST result' do
+    #     allow(Moab::StorageObject).to receive(:new).with(druid, instance_of(String)).and_return(nil)
+    #     pohandler_results = instance_double(PreservedObjectHandlerResults, report_results: nil)
+    #     allow(PreservedObjectHandlerResults).to receive(:new).and_return(pohandler_results)
+    #     expect(pohandler_results).to receive(:add_result).with(
+    #       PreservedObjectHandlerResults::ONLINE_MOAB_DOES_NOT_EXIST
+    #     )
+    #     c2m.check_catalog_version
+    #     # described_class.send(:check_catalog_version, pres_copy, nil)
+    #   end
+    #   it 'stops processing .check_catalog_version' do
+    #     moab = instance_double(Moab::StorageObject)
+    #     expect(moab).not_to receive(:current_version_id)
+    #     c2m.check_catalog_version
+    #     # described_class.send(:check_catalog_version, pres_copy, nil)
+    #   end
+    # end
 
     context 'catalog version == moab version (happy path)' do
       it 'adds a VERSION_MATCHES result' do

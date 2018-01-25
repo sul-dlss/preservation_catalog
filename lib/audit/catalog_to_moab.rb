@@ -61,16 +61,14 @@ class CatalogToMoab
                          po_version: preserved_copy.preserved_object.current_version)
       return
     end
-
     # TODO: anything special if preserved_copy.status is not OK_STATUS? - see #480
+    unless online_moab_found?(druid, storage_dir)
+      results.add_result(PreservedObjectHandlerResults::ONLINE_MOAB_DOES_NOT_EXIST)
+      results.report_results
+      return
+    end
 
-    object_dir = "#{storage_dir}/#{DruidTools::Druid.new(druid).tree.join('/')}"
-    moab = Moab::StorageObject.new(druid, object_dir)
-
-
-    return unless moab_found_on_disk?(moab, results)
-
-    moab_version = moab.current_version_id
+    moab_version = @moab.current_version_id
     catalog_version = preserved_copy.version
     if catalog_version == moab_version
       results.add_result(PreservedObjectHandlerResults::VERSION_MATCHES, preserved_copy.class.name)
@@ -79,7 +77,7 @@ class CatalogToMoab
     elsif catalog_version < moab_version
       results.add_result(PreservedObjectHandlerResults::UNEXPECTED_VERSION, preserved_copy.class.name)
       # TODO: avoid repetitious results ... (leave out line above??) - see #484
-      pohandler = PreservedObjectHandler.new(druid, moab_version, moab.size, preserved_copy.endpoint)
+      pohandler = PreservedObjectHandler.new(druid, moab_version, @moab.size, preserved_copy.endpoint)
       pohandler.update_version_after_validation # results reported by this call
     else # catalog_version > moab_version
       results.add_result(PreservedObjectHandlerResults::UNEXPECTED_VERSION, preserved_copy.class.name)
@@ -96,14 +94,12 @@ class CatalogToMoab
     # update_pc_audit_timestamps(preserved_copy, ran_moab_validation, true) - see #477
     # update_db_object(preserved_copy) - see #478
   end
-  
-  def moab_found_on_disk?(moab, results)
-    unless moab
-      results.add_result(PreservedObjectHandlerResults::ONLINE_MOAB_DOES_NOT_EXIST)
-      results.report_results
-      return false
+
+  def online_moab_found?(druid, storage_dir)
+    @moab ||= begin
+      object_dir = "#{storage_dir}/#{DruidTools::Druid.new(druid).tree.join('/')}"
+      Moab::StorageObject.new(druid, object_dir)
     end
-    true
   end
 
 end
