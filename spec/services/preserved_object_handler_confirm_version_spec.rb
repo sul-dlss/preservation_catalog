@@ -264,6 +264,7 @@ RSpec.describe PreservedObjectHandler do
             allow(pc).to receive(:update_audit_timestamps)
             allow(pc).to receive(:changed?).and_return(true)
             allow(pc).to receive(:save!).and_raise(ActiveRecord::ActiveRecordError, 'foo')
+            allow(pc).to receive(:matches_po_current_version?).and_return(true)
             allow(po).to receive(:current_version).and_return(2)
             allow(po_handler).to receive(:moab_validation_errors).and_return([])
             po_handler.confirm_version
@@ -288,6 +289,7 @@ RSpec.describe PreservedObjectHandler do
         allow(pc).to receive(:update_audit_timestamps)
         allow(pc).to receive(:changed?).and_return(true)
         allow(pc).to receive(:save!)
+        allow(pc).to receive(:matches_po_current_version?).and_return(true)
         allow(po_handler).to receive(:moab_validation_errors).and_return([])
         po_handler.confirm_version
         expect(po).not_to have_received(:save!)
@@ -306,6 +308,7 @@ RSpec.describe PreservedObjectHandler do
         allow(pc).to receive(:update_audit_timestamps)
         allow(pc).to receive(:changed?).and_return(false)
         allow(pc).to receive(:touch)
+        allow(pc).to receive(:matches_po_current_version?).and_return(true)
         po_handler.confirm_version
         expect(po).not_to have_received(:touch)
         expect(pc).to have_received(:touch)

@@ -69,7 +69,7 @@ class PreservedObjectHandler
           # FIXME: what if there is more than one associated pres_copy?
           pres_copy = PreservedCopy.find_by!(preserved_object: pres_object, endpoint: endpoint) if pres_object
 
-          raise_rollback_if_pc_po_version_mismatch(pres_copy.version, pres_object.current_version)
+          raise_rollback_if_pc_po_version_mismatch(pres_copy)
 
           if incoming_version == pres_copy.version
             set_status_as_seen_on_disk(pres_copy, true) unless pres_copy.status == PreservedCopy::OK_STATUS
@@ -220,7 +220,7 @@ class PreservedObjectHandler
       pres_object = PreservedObject.find_by!(druid: druid)
       pres_copy = PreservedCopy.find_by!(preserved_object: pres_object, endpoint: endpoint) if pres_object
 
-      raise_rollback_if_pc_po_version_mismatch(pres_copy.version, pres_object.current_version)
+      raise_rollback_if_pc_po_version_mismatch(pres_copy)
 
       # FIXME: what if there is more than one associated pres_copy?
       if incoming_version > pres_copy.version && pres_copy.version == pres_object.current_version
@@ -245,8 +245,10 @@ class PreservedObjectHandler
     handler_results.remove_db_updated_results unless transaction_ok
   end
 
-  def raise_rollback_if_pc_po_version_mismatch(pc_version, po_version)
-    if pc_version != po_version
+  def raise_rollback_if_pc_po_version_mismatch(pres_copy)
+    unless pres_copy.matches_po_current_version?
+      pc_version = pres_copy.version
+      po_version = pres_copy.preserved_object.current_version
       res_code = PreservedObjectHandlerResults::PC_PO_VERSION_MISMATCH
       handler_results.add_result(res_code, { pc_version: pc_version, po_version: po_version })
       raise ActiveRecord::Rollback, "PreservedCopy version #{pc_version} != PreservedObject current_version #{po_version}"
@@ -305,7 +307,7 @@ class PreservedObjectHandler
       # FIXME: what if there is more than one associated pres_copy?
       pres_copy = PreservedCopy.find_by!(preserved_object: pres_object, endpoint: endpoint) if pres_object
 
-      raise_rollback_if_pc_po_version_mismatch(pres_copy.version, pres_object.current_version)
+      raise_rollback_if_pc_po_version_mismatch(pres_copy)
 
       if incoming_version == pres_copy.version
         set_status_as_seen_on_disk(pres_copy, true) unless pres_copy.status == PreservedCopy::OK_STATUS

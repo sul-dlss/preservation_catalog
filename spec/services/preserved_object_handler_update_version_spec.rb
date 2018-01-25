@@ -160,6 +160,7 @@ RSpec.describe PreservedObjectHandler do
               allow(pc).to receive(:update_audit_timestamps)
               allow(pc).to receive(:changed?).and_return(true)
               allow(pc).to receive(:save!).and_raise(ActiveRecord::ActiveRecordError, 'foo')
+              allow(pc).to receive(:matches_po_current_version?).and_return(true)
               po_handler.update_version
             end
 
@@ -202,6 +203,7 @@ RSpec.describe PreservedObjectHandler do
               allow(pc).to receive(:update_audit_timestamps)
               allow(pc).to receive(:changed?).and_return(true)
               allow(pc).to receive(:save!)
+              allow(pc).to receive(:matches_po_current_version?).and_return(true)
               po_handler.update_version
             end
 
@@ -241,6 +243,7 @@ RSpec.describe PreservedObjectHandler do
         allow(pc).to receive(:update_audit_timestamps)
         allow(pc).to receive(:changed?).and_return(true)
         allow(pc).to receive(:save!)
+        allow(pc).to receive(:matches_po_current_version?).and_return(true)
         po_handler.update_version
         expect(po).to have_received(:save!)
         expect(pc).to have_received(:save!)
@@ -259,6 +262,7 @@ RSpec.describe PreservedObjectHandler do
         allow(pc).to receive(:update_status)
         allow(pc).to receive(:changed?).and_return(true)
         allow(pc).to receive(:save!)
+        allow(pc).to receive(:matches_po_current_version?).and_return(true)
         po_handler = described_class.new(druid, 1, 1, ep)
         po_handler.update_version
         expect(po).not_to have_received(:touch)
