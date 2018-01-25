@@ -63,11 +63,11 @@ class CatalogToMoab
       return
     end
 
-    # TODO: anything special if preserved_copy.status is not OK_STATUS? - see #480
-
     unless online_moab_found?(druid, storage_dir)
+      update_status(PreservedCopy::ONLINE_MOAB_NOT_FOUND_STATUS)
       results.add_result(AuditResults::ONLINE_MOAB_DOES_NOT_EXIST)
       results.report_results
+      preserved_copy.save!
       return
     end
 
@@ -75,20 +75,18 @@ class CatalogToMoab
     results.actual_version = moab_version
     catalog_version = preserved_copy.version
     if catalog_version == moab_version
+      set_status_as_seen_on_disk(true) unless preserved_copy.status == PreservedCopy::OK_STATUS
       results.add_result(AuditResults::VERSION_MATCHES, preserved_copy.class.name)
       results.report_results
     elsif catalog_version < moab_version
+      set_status_as_seen_on_disk(true)
       results.add_result(AuditResults::UNEXPECTED_VERSION, preserved_copy.class.name)
       # TODO: avoid repetitious results ... (leave out line above??) - see #484
       pohandler = PreservedObjectHandler.new(druid, moab_version, moab.size, preserved_copy.endpoint)
       pohandler.update_version_after_validation # results reported by this call
     else # catalog_version > moab_version
+      set_status_as_seen_on_disk(false)
       results.add_result(AuditResults::UNEXPECTED_VERSION, preserved_copy.class.name)
-      if moab_validation_errors.empty?
-        update_status(PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS)
-      else
-        update_status(PreservedCopy::INVALID_MOAB_STATUS)
-      end
       results.report_results
     end
 
@@ -140,4 +138,24 @@ class CatalogToMoab
     false
   end
 
+  # given whether the caller found the expected version of preserved_copy on disk, this will perform
+  # other validations of what's on disk, and will update the status accordingly.
+  # TODO: near duplicate of method in POHandler - extract superclass or moab wrapper class??
+  def set_status_as_seen_on_disk(found_expected_version)
+    unless moab_validation_errors.empty?
+      update_status(PreservedCopy::INVALID_MOAB_STATUS)
+      return
+    end
+
+    unless found_expected_version
+      update_status(PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS)
+      return
+    end
+
+    # TODO: do the check that'd set INVALID_CHECKSUM_STATUS
+
+    # TODO: do the check that'd set FIXITY_CHECK_FAILED_STATUS
+
+    update_status(PreservedCopy::OK_STATUS)
+  end
 end

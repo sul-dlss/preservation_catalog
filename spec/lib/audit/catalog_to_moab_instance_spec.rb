@@ -29,7 +29,9 @@ RSpec.describe CatalogToMoab do
     let(:pres_copy) do
       po = PreservedObject.find_by(druid: druid)
       ep = Endpoint.find_by(storage_location: storage_dir).id
-      PreservedCopy.find_by(preserved_object: po, endpoint: ep)
+      pc = PreservedCopy.find_by(preserved_object: po, endpoint: ep)
+      pc.update(status: PreservedCopy::OK_STATUS)
+      pc
     end
     let(:object_dir) { "#{storage_dir}/#{DruidTools::Druid.new(druid).tree.join('/')}" }
     let(:c2m) { described_class.new(pres_copy, storage_dir) }
@@ -40,7 +42,7 @@ RSpec.describe CatalogToMoab do
     end
 
     it 'gets the current version on disk from the Moab::StorageObject' do
-      moab = instance_double(Moab::StorageObject)
+      moab = instance_double(Moab::StorageObject, object_pathname: object_dir)
       allow(Moab::StorageObject).to receive(:new).with(druid, instance_of(String)).and_return(moab)
       expect(moab).to receive(:current_version_id).and_return(3)
       c2m.check_catalog_version
