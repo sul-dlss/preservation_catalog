@@ -8,7 +8,9 @@ class CatalogToMoab
   def self.check_version_on_dir(last_checked_b4_date, storage_dir)
     # TODO: ensure last_checked_version_b4_date is in the right format for query - see #485
     pcs = PreservedCopy
-          .where('last_version_audit < ? OR last_version_audit IS NULL', last_checked_b4_date)
+          .joins(:endpoint)
+          .where(endpoints: { storage_location: storage_dir })
+          .where('last_version_audit IS NULL or last_version_audit < ?', last_checked_b4_date)
           .order('last_version_audit IS NOT NULL, last_version_audit ASC')
     pcs.find_each do |pc|
       c2m = CatalogToMoab.new(pc, storage_dir)

@@ -12,18 +12,18 @@ RSpec.describe CatalogToMoab do
     it 'creates an instance and calls #check_catalog_version' do
       c2m_mock = instance_double(described_class)
       allow(described_class).to receive(:new).and_return(c2m_mock)
-      expect(c2m_mock).to receive(:check_catalog_version).exactly(6).times # FIXME: will reduce to 3 for PR #497
+      expect(c2m_mock).to receive(:check_catalog_version).exactly(3).times
       described_class.check_version_on_dir(last_checked_version_b4_date, storage_dir)
     end
     it 'will not check a PreservedCopy with a future last_version_audit date' do
       c2m_mock = instance_double(described_class)
       allow(described_class).to receive(:new).and_return(c2m_mock)
-      expect(c2m_mock).to receive(:check_catalog_version).exactly(6).times # FIXME: will reduce to 3 for PR #497
+      expect(c2m_mock).to receive(:check_catalog_version).exactly(3).times
       described_class.check_version_on_dir(last_checked_version_b4_date, storage_dir)
       pc = PreservedCopy.first
       pc.last_version_audit = (Time.now.utc + 1.day).iso8601
       pc.save
-      expect(c2m_mock).to receive(:check_catalog_version).exactly(5).times # FIXME: will reduce to 3 for PR #497
+      expect(c2m_mock).to receive(:check_catalog_version).exactly(2).times
       described_class.check_version_on_dir(last_checked_version_b4_date, storage_dir)
     end
   end
