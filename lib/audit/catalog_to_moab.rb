@@ -67,7 +67,8 @@ class CatalogToMoab
     object_dir = "#{storage_dir}/#{DruidTools::Druid.new(druid).tree.join('/')}"
     moab = Moab::StorageObject.new(druid, object_dir)
 
-    # TODO: report error if moab doesn't exist - see #482
+
+    return unless moab_found_on_disk?(moab, results)
 
     moab_version = moab.current_version_id
     catalog_version = preserved_copy.version
@@ -95,4 +96,14 @@ class CatalogToMoab
     # update_pc_audit_timestamps(preserved_copy, ran_moab_validation, true) - see #477
     # update_db_object(preserved_copy) - see #478
   end
+  
+  def moab_found_on_disk?(moab, results)
+    unless moab
+      results.add_result(PreservedObjectHandlerResults::ONLINE_MOAB_DOES_NOT_EXIST)
+      results.report_results
+      return false
+    end
+    true
+  end
+
 end
