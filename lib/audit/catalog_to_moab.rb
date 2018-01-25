@@ -25,7 +25,7 @@ class CatalogToMoab
   end
 
   def self.check_version_all_dirs(last_checked_b4_date)
-    # FIXME: ensure last_checked_version_b4_date is in the right format
+    # FIXME: ensure last_checked_version_b4_date is in the right format - see #485
     Settings.moab.storage_roots.each do |strg_root_name, strg_root_location|
       start_msg = "#{Time.now.utc.iso8601} C2M check_version starting for '#{strg_root_name}' at #{strg_root_location}"
       puts start_msg
