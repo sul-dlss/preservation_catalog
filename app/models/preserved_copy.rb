@@ -51,4 +51,8 @@ class PreservedCopy < ApplicationRecord
     yield
     self.status = new_status
   end
+
+  def matches_po_current_version?
+    version == preserved_object.current_version
+  end
 end

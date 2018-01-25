@@ -59,6 +59,21 @@ RSpec.describe CatalogToMoab do
       c2m.check_catalog_version
     end
 
+    context 'preserved_copy version != current_version of preserved_object' do
+      it 'adds a PC_PO_VERSION_MISMATCH result and returns' do
+        pres_copy.version = 666
+        pohandler_results = instance_double(PreservedObjectHandlerResults, report_results: nil)
+        allow(PreservedObjectHandlerResults).to receive(:new).and_return(pohandler_results)
+        expect(pohandler_results).to receive(:add_result).with(
+          PreservedObjectHandlerResults::PC_PO_VERSION_MISMATCH,
+          pc_version: pres_copy.version,
+          po_version: pres_copy.preserved_object.current_version
+        )
+        expect(Moab::StorageObject).not_to receive(:new).with(druid, a_string_matching(object_dir)).and_call_original
+        c2m.check_catalog_version
+      end
+    end
+
     context 'catalog version == moab version (happy path)' do
       it 'adds a VERSION_MATCHES result' do
         pohandler_results = instance_double(PreservedObjectHandlerResults, report_results: nil)

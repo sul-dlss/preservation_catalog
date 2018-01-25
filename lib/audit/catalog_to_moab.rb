@@ -55,8 +55,12 @@ class CatalogToMoab
   def check_catalog_version
     druid = preserved_copy.preserved_object.druid
     results = PreservedObjectHandlerResults.new(druid, nil, nil, preserved_copy.endpoint)
-
-    # TODO: Pohandler.ensure_po_version_matches_this_pc_version (for non-archived, online moab) - see #483
+    unless preserved_copy.matches_po_current_version?
+      results.add_result(PreservedObjectHandlerResults::PC_PO_VERSION_MISMATCH,
+                         pc_version: preserved_copy.version,
+                         po_version: preserved_copy.preserved_object.current_version)
+      return
+    end
 
     # TODO: anything special if preserved_copy.status is not OK_STATUS? - see #480
 
