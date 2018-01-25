@@ -65,10 +65,11 @@ class CatalogToMoab
 
     # TODO: anything special if preserved_copy.status is not OK_STATUS? - see #480
 
-    object_dir = "#{storage_dir}/#{DruidTools::Druid.new(druid).tree.join('/')}"
-    @moab = Moab::StorageObject.new(druid, object_dir)
-
-    # TODO: report error if moab doesn't exist - see #482
+    unless online_moab_found?(druid, storage_dir)
+      results.add_result(PreservedObjectHandlerResults::ONLINE_MOAB_DOES_NOT_EXIST)
+      results.report_results
+      return
+    end
 
     moab_version = moab.current_version_id
     catalog_version = preserved_copy.version
@@ -130,6 +131,13 @@ class CatalogToMoab
         PreservedObjectHandlerResults::PC_STATUS_CHANGED,
         { old_status: preserved_copy.status, new_status: new_status }
       )
+    end
+  end
+
+  def online_moab_found?(druid, storage_dir)
+    @moab ||= begin
+      object_dir = "#{storage_dir}/#{DruidTools::Druid.new(druid).tree.join('/')}"
+      Moab::StorageObject.new(druid, object_dir)
     end
   end
 
