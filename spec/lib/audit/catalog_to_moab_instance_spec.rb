@@ -62,8 +62,8 @@ RSpec.describe CatalogToMoab do
       c2m.check_catalog_version
     end
 
-    it 'calls online_moab_found?(druid, storage_dir)' do
-      expect(c2m).to receive(:online_moab_found).with(druid, storage_dir)
+    it 'calls online_moab_found(druid, storage_dir)' do
+      expect(c2m).to receive(:online_moab_found?).with(druid, storage_dir)
       c2m.check_catalog_version
     end
 
