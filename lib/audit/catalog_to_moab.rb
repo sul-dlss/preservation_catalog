@@ -75,7 +75,6 @@ class CatalogToMoab
     catalog_version = preserved_copy.version
     if catalog_version == moab_version
       results.add_result(PreservedObjectHandlerResults::VERSION_MATCHES, preserved_copy.class.name)
-      # TODO:  original spec asks for verifying files????  read audit requirements - see #481
       results.report_results
     elsif catalog_version < moab_version
       results.add_result(PreservedObjectHandlerResults::UNEXPECTED_VERSION, preserved_copy.class.name)
