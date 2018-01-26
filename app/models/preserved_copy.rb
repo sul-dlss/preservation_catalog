@@ -31,6 +31,13 @@ class PreservedCopy < ApplicationRecord
   validates :status, inclusion: { in: statuses.keys }
   validates :version, presence: true
 
+  scope :least_recent_version_audit, lambda { |last_checked_b4_date, storage_dir|
+    joins(:endpoint)
+      .where(endpoints: { storage_location: storage_dir })
+      .where('last_version_audit IS NULL or last_version_audit < ?', last_checked_b4_date)
+      .order('last_version_audit IS NOT NULL, last_version_audit ASC')
+  }
+
   def update_audit_timestamps(moab_validated, version_audited)
     t = Time.current
     self.last_moab_validation = t if moab_validated
@@ -54,12 +61,5 @@ class PreservedCopy < ApplicationRecord
 
   def matches_po_current_version?
     version == preserved_object.current_version
-  end
-
-  def self.least_recent_version_audit(last_checked_b4_date, storage_dir)
-    joins(:endpoint)
-      .where(endpoints: { storage_location: storage_dir })
-      .where('last_version_audit IS NULL or last_version_audit < ?', last_checked_b4_date)
-      .order('last_version_audit IS NOT NULL, last_version_audit ASC')
   end
 end
