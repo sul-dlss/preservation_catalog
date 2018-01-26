@@ -193,6 +193,7 @@ Style/FormatStringToken:
 Style/GuardClause:
   Exclude:
     - app/services/preserved_object_handler.rb # update_status method easy to read as is
+    - lib/audit/catalog_to_moab.rb # wrapping method on line 17 is more readable
 
 Style/PercentLiteralDelimiters:
   Exclude:

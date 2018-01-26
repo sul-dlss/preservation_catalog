@@ -194,4 +194,46 @@ RSpec.describe PreservedCopy, type: :model do
       expect(preserved_copy.matches_po_current_version?).to be false
     end
   end
+
+  context '.least_recent_version_audit(last_checked_b4_date, storage_dir)' do
+    let!(:newer_timestamp_pc) do
+      PreservedCopy.create!(
+        preserved_object_id: preserved_object.id,
+        endpoint_id: endpoint.id,
+        version: 1,
+        status: status,
+        size: 1,
+        last_version_audit: (Time.now.utc - 1.day)
+      )
+    end
+    let!(:older_timestamp_pc) do
+      PreservedCopy.create!(
+        preserved_object_id: preserved_object.id,
+        endpoint_id: endpoint.id,
+        version: 1,
+        status: status,
+        size: 1,
+        last_version_audit: (Time.now.utc - 2.days)
+      )
+    end
+    let!(:future_timestamp_pc) do
+      PreservedCopy.create!(
+        preserved_object_id: preserved_object.id,
+        endpoint_id: endpoint.id,
+        version: 1,
+        status: status,
+        size: 1,
+        last_version_audit: (Time.now.utc + 1.day)
+      )
+    end
+    let!(:nil_timestamp_pc) { preserved_copy }
+    let!(:pcs_ordered_by_query) { PreservedCopy.least_recent_version_audit(Time.now.utc, endpoint.storage_location) }
+
+    it 'returns PreservedCopies with nils first, then old to new timestamps' do
+      expect(pcs_ordered_by_query).to eq [nil_timestamp_pc, older_timestamp_pc, newer_timestamp_pc]
+    end
+    it 'returns no PreservedCopies with future timestamps' do
+      expect(pcs_ordered_by_query).not_to include future_timestamp_pc
+    end
+  end
 end
