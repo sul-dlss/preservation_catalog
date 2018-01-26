@@ -78,7 +78,30 @@ RSpec.describe CatalogToMoab do
         expect(pohandler_results).to receive(:add_result).with(
           AuditResults::ONLINE_MOAB_DOES_NOT_EXIST
         )
+        expect(pohandler_results).to receive(:add_result).with(
+          AuditResults::PC_STATUS_CHANGED, old_status: "ok", new_status: "online_moab_not_found"
+        )
         c2m.check_catalog_version
+      end
+      context 'updates status correctly' do
+        before do
+          allow(Moab::StorageObject).to receive(:new).with(druid, instance_of(String)).and_return(nil)
+        end
+
+        [
+          PreservedCopy::VALIDITY_UNKNOWN_STATUS,
+          PreservedCopy::OK_STATUS,
+          PreservedCopy::ONLINE_MOAB_NOT_FOUND_STATUS,
+          PreservedCopy::INVALID_MOAB_STATUS,
+          PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
+        ].each do |orig_status|
+          it "had #{orig_status}, should now have ONLINE_MOAB_NOT_FOUND_STATUS" do
+            pres_copy.status = orig_status
+            pres_copy.save!
+            c2m.check_catalog_version
+            expect(pres_copy.reload.status).to eq PreservedCopy::ONLINE_MOAB_NOT_FOUND_STATUS
+          end
+        end
       end
       it 'stops processing .check_catalog_version' do
         moab = instance_double(Moab::StorageObject)
@@ -112,6 +135,43 @@ RSpec.describe CatalogToMoab do
         )
         c2m.check_catalog_version
       end
+
+      context 'check whether PreservedCopy already has a status other than OK_STATUS, re-check status if so' do
+        [
+          PreservedCopy::VALIDITY_UNKNOWN_STATUS,
+          PreservedCopy::OK_STATUS,
+          PreservedCopy::ONLINE_MOAB_NOT_FOUND_STATUS,
+          PreservedCopy::INVALID_MOAB_STATUS,
+          PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
+        ].each do |orig_status|
+          it "had #{orig_status}, should now have OK_STATUS" do
+            pres_copy.status = orig_status
+            pres_copy.save!
+            allow(c2m).to receive(:moab_validation_errors).and_return([])
+            c2m.check_catalog_version
+            expect(pres_copy.reload.status).to eq PreservedCopy::OK_STATUS
+          end
+        end
+
+        # PreservedCopy::OK_STATUS intentionally omitted, since we don't check status on disk
+        # if versions match
+        [
+          PreservedCopy::VALIDITY_UNKNOWN_STATUS,
+          PreservedCopy::ONLINE_MOAB_NOT_FOUND_STATUS,
+          PreservedCopy::INVALID_MOAB_STATUS,
+          PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
+        ].each do |orig_status|
+          it "had #{orig_status}, should now have INVALID_MOAB_STATUS" do
+            pres_copy.status = orig_status
+            pres_copy.save!
+            allow(c2m).to receive(:moab_validation_errors).and_return(
+              [{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }]
+            )
+            c2m.check_catalog_version
+            expect(pres_copy.reload.status).to eq PreservedCopy::INVALID_MOAB_STATUS
+          end
+        end
+      end
     end
 
     context 'catalog version < moab version' do
@@ -135,6 +195,46 @@ RSpec.describe CatalogToMoab do
         expect(PreservedObjectHandler).to receive(:new).and_return(pohandler)
         expect(pohandler).to receive(:update_version_after_validation)
         c2m.check_catalog_version
+      end
+
+      context 'check whether PreservedCopy already has a status other than OK_STATUS, re-check status if so' do
+        [
+          PreservedCopy::VALIDITY_UNKNOWN_STATUS,
+          PreservedCopy::OK_STATUS,
+          PreservedCopy::ONLINE_MOAB_NOT_FOUND_STATUS,
+          PreservedCopy::INVALID_MOAB_STATUS,
+          PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
+        ].each do |orig_status|
+          it "had #{orig_status}, should now have OK_STATUS" do
+            pres_copy.status = orig_status
+            pres_copy.save!
+            mock_sov = instance_double(Stanford::StorageObjectValidator)
+            allow(mock_sov).to receive(:validation_errors).and_return([])
+            allow(Stanford::StorageObjectValidator).to receive(:new).and_return(mock_sov)
+            c2m.check_catalog_version
+            expect(pres_copy.reload.status).to eq PreservedCopy::OK_STATUS
+          end
+        end
+
+        [
+          PreservedCopy::VALIDITY_UNKNOWN_STATUS,
+          PreservedCopy::OK_STATUS,
+          PreservedCopy::ONLINE_MOAB_NOT_FOUND_STATUS,
+          PreservedCopy::INVALID_MOAB_STATUS,
+          PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
+        ].each do |orig_status|
+          it "had #{orig_status}, should now have INVALID_MOAB_STATUS" do
+            pres_copy.status = orig_status
+            pres_copy.save!
+            mock_sov = instance_double(Stanford::StorageObjectValidator)
+            allow(mock_sov).to receive(:validation_errors).and_return(
+              [{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }]
+            )
+            allow(Stanford::StorageObjectValidator).to receive(:new).and_return(mock_sov)
+            c2m.check_catalog_version
+            expect(pres_copy.reload.status).to eq PreservedCopy::INVALID_MOAB_STATUS
+          end
+        end
       end
     end
 
@@ -199,6 +299,42 @@ RSpec.describe CatalogToMoab do
         allow(pohandler_results).to receive(:add_result).with(any_args)
         allow(AuditResults).to receive(:new).and_return(pohandler_results)
         c2m.check_catalog_version
+      end
+
+      context 'check whether PreservedCopy already has a status other than OK_STATUS, re-check status if so' do
+        [
+          PreservedCopy::VALIDITY_UNKNOWN_STATUS,
+          PreservedCopy::OK_STATUS,
+          PreservedCopy::ONLINE_MOAB_NOT_FOUND_STATUS,
+          PreservedCopy::INVALID_MOAB_STATUS,
+          PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
+        ].each do |orig_status|
+          it "had #{orig_status}, should now have EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS" do
+            pres_copy.status = orig_status
+            pres_copy.save!
+            allow(c2m).to receive(:moab_validation_errors).and_return([])
+            c2m.check_catalog_version
+            expect(pres_copy.reload.status).to eq PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
+          end
+        end
+
+        [
+          PreservedCopy::VALIDITY_UNKNOWN_STATUS,
+          PreservedCopy::OK_STATUS,
+          PreservedCopy::ONLINE_MOAB_NOT_FOUND_STATUS,
+          PreservedCopy::INVALID_MOAB_STATUS,
+          PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
+        ].each do |orig_status|
+          it "had #{orig_status}, should now have INVALID_MOAB_STATUS" do
+            pres_copy.status = orig_status
+            pres_copy.save!
+            allow(c2m).to receive(:moab_validation_errors).and_return(
+              [{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }]
+            )
+            c2m.check_catalog_version
+            expect(pres_copy.reload.status).to eq PreservedCopy::INVALID_MOAB_STATUS
+          end
+        end
       end
     end
   end
