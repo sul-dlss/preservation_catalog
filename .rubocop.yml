@@ -132,10 +132,6 @@ Rails/Output:
     - 'lib/audit/catalog_to_moab.rb' # use puts statements for following progress of long job
     - 'lib/audit/moab_to_catalog.rb' # use puts statements for following progress of long job
 
-Rails/SkipsModelValidations:
-  Exclude:
-    - 'app/services/preserved_object_handler.rb' # we're using touch on purpose
-
 # --- RSpec ---
 
 RSpec/BeforeAfterAll:

@@ -82,7 +82,7 @@ class PreservedObjectHandler
             if moab_validation_errors.empty?
               pres_copy.upd_audstamps_version_size(ran_moab_validation?, incoming_version, incoming_size)
               pres_object.current_version = incoming_version
-              update_db_object(pres_object)
+              pres_object.save!
             else
               update_status(pres_copy, PreservedCopy::INVALID_MOAB_STATUS)
             end
@@ -92,7 +92,7 @@ class PreservedObjectHandler
             handler_results.add_result(PreservedObjectHandlerResults::ARG_VERSION_LESS_THAN_DB_OBJECT, pres_object.class.name)
           end
           pres_copy.update_audit_timestamps(ran_moab_validation?, true)
-          update_db_object(pres_copy)
+          pres_copy.save!
         end
         handler_results.remove_db_updated_results unless transaction_ok
       elsif endpoint.endpoint_type.endpoint_class == 'archive'
@@ -231,9 +231,9 @@ class PreservedObjectHandler
 
         pres_copy.upd_audstamps_version_size(ran_moab_validation?, incoming_version, incoming_size)
         update_status(pres_copy, status) if status && ran_moab_validation?
-        update_db_object(pres_copy)
+        pres_copy.save!
         pres_object.current_version = incoming_version
-        update_db_object(pres_object)
+        pres_object.save!
       else
         if set_status_to_unexp_version
           status = PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
@@ -262,7 +262,7 @@ class PreservedObjectHandler
       # FIXME: what if there is more than one associated pres_copy?
       update_status(pres_copy, PreservedCopy::INVALID_MOAB_STATUS)
       pres_copy.update_audit_timestamps(ran_moab_validation?, false)
-      update_db_object(pres_copy)
+      pres_copy.save!
     end
     handler_results.remove_db_updated_results unless transaction_ok
   end
@@ -297,7 +297,7 @@ class PreservedObjectHandler
 
     update_status(pres_copy, new_status) if new_status
     pres_copy.update_audit_timestamps(ran_moab_validation?, true)
-    update_db_object(pres_copy)
+    pres_copy.save!
   end
 
   # shameless green implementation
@@ -318,7 +318,7 @@ class PreservedObjectHandler
         handler_results.add_result(PreservedObjectHandlerResults::UNEXPECTED_VERSION, pres_copy.class.name)
       end
       pres_copy.update_audit_timestamps(ran_moab_validation?, true)
-      update_db_object(pres_copy)
+      pres_copy.save!
     end
     handler_results.remove_db_updated_results unless transaction_ok
   end
@@ -357,19 +357,6 @@ class PreservedObjectHandler
         PreservedObjectHandlerResults::PC_STATUS_CHANGED,
         { old_status: preserved_copy.status, new_status: new_status }
       )
-    end
-  end
-
-  # TODO: this may need reworking if we need to distinguish db timestamp updates when
-  #   version matched vs. incoming version less than db object
-  def update_db_object(db_object)
-    if db_object.changed?
-      db_object.save!
-      handler_results.add_result(PreservedObjectHandlerResults::UPDATED_DB_OBJECT, db_object.class.name)
-    else
-      # FIXME: we may not want to do this, but instead to update specific timestamp for check
-      db_object.touch
-      handler_results.add_result(PreservedObjectHandlerResults::UPDATED_DB_OBJECT_TIMESTAMP_ONLY, db_object.class.name)
     end
   end
 

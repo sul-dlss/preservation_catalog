@@ -39,13 +39,9 @@ RSpec.describe PreservedObjectHandlerResults do
         code = PreservedObjectHandlerResults::PC_STATUS_CHANGED
         status_details = { old_status: PreservedCopy::INVALID_MOAB_STATUS, new_status: PreservedCopy::OK_STATUS }
         pohr.add_result(code, status_details)
-        code = PreservedObjectHandlerResults::UPDATED_DB_OBJECT
-        db_obj_details = 'PreservedCopy'
-        pohr.add_result(code, db_obj_details)
         not_matched_str = 'does not match PreservedObject current_version'
         expect(Rails.logger).to receive(:log).with(Logger::ERROR, a_string_matching(not_matched_str))
         expect(Rails.logger).to receive(:log).with(Logger::INFO, a_string_matching(PreservedCopy::INVALID_MOAB_STATUS))
-        expect(Rails.logger).to receive(:log).with(Logger::INFO, a_string_matching(db_obj_details))
         pohr.report_results
       end
     end

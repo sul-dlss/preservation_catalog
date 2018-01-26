@@ -51,7 +51,6 @@ RSpec.describe PreservedObjectHandler do
         let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, 2, 1, #{ep.endpoint_name})" }
         let(:version_matches_po_msg) { "#{exp_msg_prefix} incoming version (2) matches PreservedObject db version" }
         let(:version_matches_pc_msg) { "#{exp_msg_prefix} incoming version (2) matches PreservedCopy db version" }
-        let(:updated_pc_db_msg) { "#{exp_msg_prefix} PreservedCopy db object updated" }
 
         context 'PreservedCopy' do
           context 'changed' do
@@ -99,7 +98,6 @@ RSpec.describe PreservedObjectHandler do
         it "logs at info level" do
           expect(Rails.logger).to receive(:log).with(Logger::INFO, version_matches_po_msg)
           expect(Rails.logger).to receive(:log).with(Logger::INFO, version_matches_pc_msg)
-          expect(Rails.logger).to receive(:log).with(Logger::INFO, updated_pc_db_msg)
           po_handler.confirm_version
         end
         context 'returns' do
@@ -108,18 +106,14 @@ RSpec.describe PreservedObjectHandler do
           # results = [result1, result2]
           # result1 = {response_code: msg}
           # result2 = {response_code: msg}
-          it '3 results' do
+          it '2 results' do
             expect(results).to be_an_instance_of Array
-            expect(results.size).to eq 3
+            expect(results.size).to eq 2
           end
           it 'VERSION_MATCHES results' do
             code = PreservedObjectHandlerResults::VERSION_MATCHES
             expect(results).to include(a_hash_including(code => version_matches_pc_msg))
             expect(results).to include(a_hash_including(code => version_matches_po_msg))
-          end
-          it 'UPDATED_DB_OBJECT PreservedCopy result' do
-            code = PreservedObjectHandlerResults::UPDATED_DB_OBJECT
-            expect(results).to include(a_hash_including(code => updated_pc_db_msg))
           end
         end
       end
@@ -158,7 +152,6 @@ RSpec.describe PreservedObjectHandler do
         let(:updated_pc_db_status_msg) {
           "#{exp_msg_prefix} PreservedCopy status changed from ok to expected_vers_not_found_on_storage"
         }
-        let(:updated_pc_db_obj_msg) { "#{exp_msg_prefix} PreservedCopy db object updated" }
 
         before do
           allow(po_handler).to receive(:moab_validation_errors).and_return([])
@@ -211,7 +204,6 @@ RSpec.describe PreservedObjectHandler do
         it "logs at error level" do
           expect(Rails.logger).to receive(:log).with(Logger::INFO, updated_pc_db_status_msg)
           expect(Rails.logger).to receive(:log).with(Logger::ERROR, unexpected_version_pc_msg)
-          expect(Rails.logger).to receive(:log).with(Logger::INFO, updated_pc_db_obj_msg)
           po_handler.confirm_version
         end
         context 'returns' do
@@ -220,17 +212,13 @@ RSpec.describe PreservedObjectHandler do
           # results = [result1, result2]
           # result1 = {response_code: msg}
           # result2 = {response_code: msg}
-          it '3 results' do
+          it '2 results' do
             expect(results).to be_an_instance_of Array
-            expect(results.size).to eq 3
+            expect(results.size).to eq 2
           end
           it 'UNEXPECTED_VERSION PreservedCopy result' do
             code = PreservedObjectHandlerResults::UNEXPECTED_VERSION
             expect(results).to include(a_hash_including(code => unexpected_version_pc_msg))
-          end
-          it 'UPDATED_DB_OBJECT PreservedCopy result' do
-            code = PreservedObjectHandlerResults::UPDATED_DB_OBJECT
-            expect(results).to include(a_hash_including(code => updated_pc_db_obj_msg))
           end
           it "PC_STATUS_CHANGED PreservedCopy result" do
             code = PreservedObjectHandlerResults::PC_STATUS_CHANGED
@@ -307,11 +295,11 @@ RSpec.describe PreservedObjectHandler do
         allow(pc).to receive(:version).and_return(1)
         allow(pc).to receive(:update_audit_timestamps)
         allow(pc).to receive(:changed?).and_return(false)
-        allow(pc).to receive(:touch)
+        allow(pc).to receive(:save!)
         allow(pc).to receive(:matches_po_current_version?).and_return(true)
         po_handler.confirm_version
         expect(po).not_to have_received(:touch)
-        expect(pc).to have_received(:touch)
+        expect(pc).to have_received(:save!)
       end
       it 'logs a debug message' do
         msg = "confirm_version #{druid} called"

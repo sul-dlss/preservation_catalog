@@ -14,10 +14,6 @@ RSpec.describe PreservedObjectHandler do
   let(:db_update_failed_prefix_regex_escaped) { Regexp.escape("#{exp_msg_prefix} db update failed") }
   let(:version_gt_pc_msg) { "#{exp_msg_prefix} incoming version (#{incoming_version}) greater than PreservedCopy db version" }
   let(:version_gt_po_msg) { "#{exp_msg_prefix} incoming version (#{incoming_version}) greater than PreservedObject db version" }
-  let(:updated_pc_db_msg) { "#{exp_msg_prefix} PreservedCopy db object updated" }
-  let(:updated_po_db_msg) { "#{exp_msg_prefix} PreservedObject db object updated" }
-  let(:updated_po_db_timestamp_msg) { "#{exp_msg_prefix} PreservedObject updated db timestamp only" }
-  let(:updated_pc_db_timestamp_msg) { "#{exp_msg_prefix} PreservedCopy updated db timestamp only" }
 
   let(:po_handler) { described_class.new(druid, incoming_version, incoming_size, ep) }
 
@@ -92,8 +88,6 @@ RSpec.describe PreservedObjectHandler do
         it "logs at info level" do
           expect(Rails.logger).to receive(:log).with(Logger::INFO, version_gt_po_msg)
           expect(Rails.logger).to receive(:log).with(Logger::INFO, version_gt_pc_msg)
-          expect(Rails.logger).to receive(:log).with(Logger::INFO, updated_po_db_msg)
-          expect(Rails.logger).to receive(:log).with(Logger::INFO, updated_pc_db_msg)
           expect(Rails.logger).not_to receive(:log).with(Logger::INFO, updated_status_msg_regex)
           po_handler.update_version
         end
@@ -104,19 +98,14 @@ RSpec.describe PreservedObjectHandler do
           # results = [result1, result2]
           # result1 = {response_code: msg}
           # result2 = {response_code: msg}
-          it '4 results' do
+          it '2 results' do
             expect(results).to be_an_instance_of Array
-            expect(results.size).to eq 4
+            expect(results.size).to eq 2
           end
           it 'ARG_VERSION_GREATER_THAN_DB_OBJECT results' do
             code = PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT
             expect(results).to include(a_hash_including(code => version_gt_pc_msg))
             expect(results).to include(a_hash_including(code => version_gt_po_msg))
-          end
-          it "UPDATED_DB_OBJECT results" do
-            code = PreservedObjectHandlerResults::UPDATED_DB_OBJECT
-            expect(results).to include(a_hash_including(code => updated_pc_db_msg))
-            expect(results).to include(a_hash_including(code => updated_po_db_msg))
           end
         end
       end
@@ -174,10 +163,6 @@ RSpec.describe PreservedObjectHandler do
               it "exception's message" do
                 expect(results).to include(a_hash_including(result_code => a_string_matching('foo')))
               end
-              it 'does NOT get UPDATED_DB_OBJECT message' do
-                expect(results).not_to include(hash_including(PreservedObjectHandlerResults::UPDATED_DB_OBJECT))
-                expect(results).not_to include(hash_including(PreservedObjectHandlerResults::UPDATED_DB_OBJECT_TIMESTAMP_ONLY))
-              end
             end
           end
         end
@@ -216,10 +201,6 @@ RSpec.describe PreservedObjectHandler do
               end
               it "exception's message" do
                 expect(results).to include(a_hash_including(result_code => a_string_matching('foo')))
-              end
-              it 'does NOT get UPDATED_DB_OBJECT message' do
-                expect(results).not_to include(hash_including(PreservedObjectHandlerResults::UPDATED_DB_OBJECT))
-                expect(results).not_to include(hash_including(PreservedObjectHandlerResults::UPDATED_DB_OBJECT_TIMESTAMP_ONLY))
               end
             end
           end

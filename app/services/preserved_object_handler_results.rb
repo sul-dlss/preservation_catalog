@@ -10,25 +10,21 @@ class PreservedObjectHandlerResults
   VERSION_MATCHES = 2
   ARG_VERSION_GREATER_THAN_DB_OBJECT = 3
   ARG_VERSION_LESS_THAN_DB_OBJECT = 4
-  UPDATED_DB_OBJECT = 5
-  UPDATED_DB_OBJECT_TIMESTAMP_ONLY = 6
-  CREATED_NEW_OBJECT = 7
-  DB_UPDATE_FAILED = 8
-  OBJECT_ALREADY_EXISTS = 9
-  OBJECT_DOES_NOT_EXIST = 10
-  PC_STATUS_CHANGED = 11
-  UNEXPECTED_VERSION = 12
-  INVALID_MOAB = 13
-  PC_PO_VERSION_MISMATCH = 14
-  ONLINE_MOAB_DOES_NOT_EXIST = 15
+  CREATED_NEW_OBJECT = 5
+  DB_UPDATE_FAILED = 6
+  OBJECT_ALREADY_EXISTS = 7
+  OBJECT_DOES_NOT_EXIST = 8
+  PC_STATUS_CHANGED = 9
+  UNEXPECTED_VERSION = 10
+  INVALID_MOAB = 11
+  PC_PO_VERSION_MISMATCH = 12
+  ONLINE_MOAB_DOES_NOT_EXIST = 13
 
   RESPONSE_CODE_TO_MESSAGES = {
     INVALID_ARGUMENTS => "encountered validation error(s): %{addl}",
     VERSION_MATCHES => "incoming version (%{incoming_version}) matches %{addl} db version",
     ARG_VERSION_GREATER_THAN_DB_OBJECT => "incoming version (%{incoming_version}) greater than %{addl} db version",
     ARG_VERSION_LESS_THAN_DB_OBJECT => "incoming version (%{incoming_version}) less than %{addl} db version; ERROR!",
-    UPDATED_DB_OBJECT => "%{addl} db object updated",
-    UPDATED_DB_OBJECT_TIMESTAMP_ONLY => "%{addl} updated db timestamp only",
     CREATED_NEW_OBJECT => "added object to db as it did not exist",
     DB_UPDATE_FAILED => "db update failed: %{addl}",
     OBJECT_ALREADY_EXISTS => "%{addl} db object already exists",
@@ -51,8 +47,6 @@ class PreservedObjectHandlerResults
   ].freeze
 
   DB_UPDATED_CODES = [
-    UPDATED_DB_OBJECT,
-    UPDATED_DB_OBJECT_TIMESTAMP_ONLY,
     CREATED_NEW_OBJECT,
     PC_STATUS_CHANGED
   ].freeze
@@ -63,8 +57,6 @@ class PreservedObjectHandlerResults
     when VERSION_MATCHES then Logger::INFO
     when ARG_VERSION_GREATER_THAN_DB_OBJECT then Logger::INFO
     when ARG_VERSION_LESS_THAN_DB_OBJECT then Logger::ERROR
-    when UPDATED_DB_OBJECT then Logger::INFO
-    when UPDATED_DB_OBJECT_TIMESTAMP_ONLY then Logger::INFO
     when CREATED_NEW_OBJECT then Logger::INFO
     when DB_UPDATE_FAILED then Logger::ERROR
     when OBJECT_ALREADY_EXISTS then Logger::ERROR
