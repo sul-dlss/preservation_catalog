@@ -194,4 +194,18 @@ RSpec.describe PreservedCopy, type: :model do
       expect(preserved_copy.matches_po_current_version?).to be false
     end
   end
+
+  context '.least_recent_version_audit(last_checked_b4_date, storage_dir)' do
+    let(:db_query) {
+      described_class.least_recent_version_audit(Time.now.utc, 'spec/fixtures/storage_root01/moab_storage_trunk')
+    }
+
+    it 'returns an ActiveRecord::Relation' do
+      expect(db_query).to be_a(ActiveRecord::Relation)
+    end
+
+    it 'returns the preserved_copy in the db' do
+      expect(db_query).to include(preserved_copy)
+    end
+  end
 end

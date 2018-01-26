@@ -55,4 +55,11 @@ class PreservedCopy < ApplicationRecord
   def matches_po_current_version?
     version == preserved_object.current_version
   end
+
+  def self.least_recent_version_audit(last_checked_b4_date, storage_dir)
+    joins(:endpoint)
+      .where(endpoints: { storage_location: storage_dir })
+      .where('last_version_audit IS NULL or last_version_audit < ?', last_checked_b4_date)
+      .order('last_version_audit IS NOT NULL, last_version_audit ASC')
+  end
 end

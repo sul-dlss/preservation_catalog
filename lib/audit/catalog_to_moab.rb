@@ -7,11 +7,7 @@ class CatalogToMoab
   # allows for sharding/parallelization by storage_dir
   def self.check_version_on_dir(last_checked_b4_date, storage_dir)
     # TODO: ensure last_checked_version_b4_date is in the right format for query - see #485
-    pcs = PreservedCopy
-          .joins(:endpoint)
-          .where(endpoints: { storage_location: storage_dir })
-          .where('last_version_audit IS NULL or last_version_audit < ?', last_checked_b4_date)
-          .order('last_version_audit IS NOT NULL, last_version_audit ASC')
+    pcs = PreservedCopy.least_recent_version_audit(last_checked_b4_date, storage_dir)
     pcs.find_each do |pc|
       c2m = CatalogToMoab.new(pc, storage_dir)
       c2m.check_catalog_version
@@ -92,7 +88,15 @@ class CatalogToMoab
     end
 
     preserved_copy.update_audit_timestamps(ran_moab_validation?, true)
+<<<<<<< HEAD
     preserved_copy.save!
+=======
+    # This may not be the best way to save the preserved_copy!
+    preserved_copy.save!
+    # TODO: We need to save preserved copy.  Do we want to use something like
+    #  PreservedObjectHandler.update_db_object? - see #478
+    # update_db_object(preserved_copy) - see #478
+>>>>>>> Refactor to spec for ordering in c2m SQL query
   end
 
   private

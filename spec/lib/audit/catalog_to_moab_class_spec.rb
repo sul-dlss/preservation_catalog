@@ -26,6 +26,25 @@ RSpec.describe CatalogToMoab do
       expect(c2m_mock).to receive(:check_catalog_version).exactly(2).times
       described_class.check_version_on_dir(last_checked_version_b4_date, storage_dir)
     end
+    it 'checks a PreservedCopy previously audited before one that is not audited' do
+      last_checked_version_b4_date = Time.now.utc
+      pcs_before_check = PreservedCopy.least_recent_version_audit(last_checked_version_b4_date, storage_dir)
+      before_druids = pcs_before_check.map { |pc| pc.preserved_object.druid }
+      last_pc = pcs_before_check.last
+
+      described_class.check_version_on_dir(last_checked_version_b4_date, storage_dir)
+
+      last_pc.reload.last_version_audit = (last_pc.last_version_audit - 2.days)
+      last_pc.save
+
+      # the test breaks unless we use Time.now.utc next
+      pcs_after_check = PreservedCopy.least_recent_version_audit(Time.now.utc, storage_dir)
+      after_druids = pcs_after_check.map { |pc| pc.preserved_object.druid }
+
+      expect(before_druids.first).to eq(after_druids.second)
+      expect(before_druids.second).to eq(after_druids.third)
+      expect(before_druids.third).to eq(after_druids.first)
+    end
   end
 
   context ".check_version_on_dir_profiled" do
