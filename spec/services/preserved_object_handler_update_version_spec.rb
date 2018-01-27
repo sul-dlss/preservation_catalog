@@ -230,11 +230,12 @@ RSpec.describe PreservedObjectHandler do
         expect(pc).to have_received(:save!)
       end
 
-      it 'does not call PreservedObject.touch when PreservedCopy only has timestamp updates' do
+      it 'does not call PreservedObject.save when PreservedCopy only has timestamp updates' do
         po = instance_double(PreservedObject)
         allow(PreservedObject).to receive(:find_by).with(druid: druid).and_return(po)
         allow(po).to receive(:current_version).and_return(1)
         allow(po).to receive(:touch)
+        allow(po).to receive(:save!)
         pc = instance_double(PreservedCopy)
         allow(PreservedCopy).to receive(:find_by).with(preserved_object: po, endpoint: ep).and_return(pc)
         allow(pc).to receive(:version).and_return(1)
@@ -246,7 +247,7 @@ RSpec.describe PreservedObjectHandler do
         allow(pc).to receive(:matches_po_current_version?).and_return(true)
         po_handler = described_class.new(druid, 1, 1, ep)
         po_handler.update_version
-        expect(po).not_to have_received(:touch)
+        expect(po).not_to have_received(:save!)
         expect(pc).to have_received(:save!)
       end
 
@@ -439,10 +440,10 @@ RSpec.describe PreservedObjectHandler do
           expect(Rails.logger).to have_received(:debug).with(msg)
         end
 
-        it 'does not call PreservedObject.touch when PreservedCopy only has timestamp updates' do
+        it 'does not call PreservedObject.save! when PreservedCopy only has timestamp updates' do
           po = instance_double(PreservedObject)
           allow(PreservedObject).to receive(:find_by).with(druid: druid).and_return(po)
-          allow(po).to receive(:touch)
+          allow(po).to receive(:save!)
           pc = instance_double(PreservedCopy)
           allow(PreservedCopy).to receive(:find_by).with(preserved_object: po, endpoint: ep).and_return(pc)
           allow(pc).to receive(:version).and_return(1)
@@ -456,7 +457,7 @@ RSpec.describe PreservedObjectHandler do
           allow(pc).to receive(:save!)
           allow(po_handler).to receive(:moab_validation_errors).and_return(['foo'])
           po_handler.update_version_after_validation
-          expect(po).not_to have_received(:touch)
+          expect(po).not_to have_received(:save!)
           expect(pc).to have_received(:save!)
         end
 
