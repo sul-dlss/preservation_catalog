@@ -223,7 +223,7 @@ class PreservedObjectHandler
       raise_rollback_if_pc_po_version_mismatch(pres_copy)
 
       # FIXME: what if there is more than one associated pres_copy?
-      if incoming_version > pres_copy.version && pres_copy.version == pres_object.current_version
+      if incoming_version > pres_copy.version && pres_copy.matches_po_current_version?
         # add results without db updates
         code = PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT
         handler_results.add_result(code, pres_copy.class.name)
