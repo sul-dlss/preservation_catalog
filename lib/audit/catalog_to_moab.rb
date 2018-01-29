@@ -88,15 +88,7 @@ class CatalogToMoab
     end
 
     preserved_copy.update_audit_timestamps(ran_moab_validation?, true)
-<<<<<<< HEAD
     preserved_copy.save!
-=======
-    # This may not be the best way to save the preserved_copy!
-    preserved_copy.save!
-    # TODO: We need to save preserved copy.  Do we want to use something like
-    #  PreservedObjectHandler.update_db_object? - see #478
-    # update_db_object(preserved_copy) - see #478
->>>>>>> Refactor to spec for ordering in c2m SQL query
   end
 
   private
