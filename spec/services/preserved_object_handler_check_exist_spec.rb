@@ -33,7 +33,6 @@ RSpec.describe PreservedObjectHandler do
         let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, 2, 1, #{ep.endpoint_name})" }
         let(:version_matches_po_msg) { "#{exp_msg_prefix} incoming version (2) matches PreservedObject db version" }
         let(:version_matches_pc_msg) { "#{exp_msg_prefix} incoming version (2) matches PreservedCopy db version" }
-        let(:updated_pc_db_msg) { "#{exp_msg_prefix} PreservedCopy db object updated" }
 
         context 'PreservedCopy' do
           context 'changed' do
@@ -81,7 +80,6 @@ RSpec.describe PreservedObjectHandler do
         it "logs at info level" do
           expect(Rails.logger).to receive(:log).with(Logger::INFO, version_matches_po_msg)
           expect(Rails.logger).to receive(:log).with(Logger::INFO, version_matches_pc_msg)
-          expect(Rails.logger).to receive(:log).with(Logger::INFO, updated_pc_db_msg)
           po_handler.check_existence
         end
         it 'does not validate moab' do
@@ -94,18 +92,14 @@ RSpec.describe PreservedObjectHandler do
           # results = [result1, result2]
           # result1 = {response_code: msg}
           # result2 = {response_code: msg}
-          it '3 results' do
+          it '2 results' do
             expect(results).to be_an_instance_of Array
-            expect(results.size).to eq 3
+            expect(results.size).to eq 2
           end
           it 'VERSION_MATCHES results' do
             code = PreservedObjectHandlerResults::VERSION_MATCHES
             expect(results).to include(a_hash_including(code => version_matches_pc_msg))
             expect(results).to include(a_hash_including(code => version_matches_po_msg))
-          end
-          it 'UPDATED_DB_OBJECT PreservedCopy result' do
-            code = PreservedObjectHandlerResults::UPDATED_DB_OBJECT
-            expect(results).to include(a_hash_including(code => updated_pc_db_msg))
           end
         end
       end
@@ -115,8 +109,6 @@ RSpec.describe PreservedObjectHandler do
         let(:incoming_size) { 9876 }
         let(:version_gt_pc_msg) { "#{exp_msg_prefix} incoming version (#{incoming_version}) greater than PreservedCopy db version" }
         let(:version_gt_po_msg) { "#{exp_msg_prefix} incoming version (#{incoming_version}) greater than PreservedObject db version" }
-        let(:updated_pc_db_msg) { "#{exp_msg_prefix} PreservedCopy db object updated" }
-        let(:updated_po_db_msg) { "#{exp_msg_prefix} PreservedObject db object updated" }
         let(:updated_status_msg_regex) { Regexp.new(Regexp.escape("#{exp_msg_prefix} PreservedCopy status changed from")) }
 
         it 'calls Stanford::StorageObjectValidator.validation_errors for moab' do
@@ -212,8 +204,6 @@ RSpec.describe PreservedObjectHandler do
             allow(po_handler).to receive(:moab_validation_errors).and_return([])
             expect(Rails.logger).to receive(:log).with(Logger::INFO, version_gt_po_msg)
             expect(Rails.logger).to receive(:log).with(Logger::INFO, version_gt_pc_msg)
-            expect(Rails.logger).to receive(:log).with(Logger::INFO, updated_po_db_msg)
-            expect(Rails.logger).to receive(:log).with(Logger::INFO, updated_pc_db_msg)
             expect(Rails.logger).not_to receive(:log).with(Logger::INFO, updated_status_msg_regex)
             po_handler.check_existence
           end
@@ -227,19 +217,14 @@ RSpec.describe PreservedObjectHandler do
             # results = [result1, result2]
             # result1 = {response_code: msg}
             # result2 = {response_code: msg}
-            it '4 results' do
+            it '2 results' do
               expect(results).to be_an_instance_of Array
-              expect(results.size).to eq 4
+              expect(results.size).to eq 2
             end
             it 'ARG_VERSION_GREATER_THAN_DB_OBJECT results' do
               code = PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT
               expect(results).to include(a_hash_including(code => version_gt_pc_msg))
               expect(results).to include(a_hash_including(code => version_gt_po_msg))
-            end
-            it "UPDATED_DB_OBJECT results" do
-              code = PreservedObjectHandlerResults::UPDATED_DB_OBJECT
-              expect(results).to include(a_hash_including(code => updated_pc_db_msg))
-              expect(results).to include(a_hash_including(code => updated_po_db_msg))
             end
             it 'what results/logging desired for incoming version > catalog' do
               skip 'we need clarification of requirements on results/logging in this case'
@@ -346,19 +331,14 @@ RSpec.describe PreservedObjectHandler do
             # results = [result1, result2]
             # result1 = {response_code: msg}
             # result2 = {response_code: msg}
-            it '5 results' do
+            it '4 results' do
               expect(results).to be_an_instance_of Array
-              expect(results.size).to eq 5
+              expect(results.size).to eq 4
             end
             it 'ARG_VERSION_GREATER_THAN_DB_OBJECT results' do
               code = PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT
               expect(results).to include(a_hash_including(code => version_gt_pc_msg))
               expect(results).to include(a_hash_including(code => version_gt_po_msg))
-            end
-            it "UPDATED_DB_OBJECT results" do
-              code = PreservedObjectHandlerResults::UPDATED_DB_OBJECT
-              expect(results).to include(a_hash_including(code => updated_pc_db_msg))
-              expect(results).to include(hash_not_including(code => updated_po_db_msg))
             end
             it 'INVALID_MOAB result' do
               expect(results).to include(a_hash_including(PreservedObjectHandlerResults::INVALID_MOAB))
@@ -457,23 +437,23 @@ RSpec.describe PreservedObjectHandler do
         end
       end
 
-      it 'calls PreservedCopy.touch (but not PreservedObject.touch) if the existing record is NOT altered' do
+      it 'calls PreservedCopy.save! (but not PreservedObject.save!) if the existing record is NOT altered' do
         po_handler = described_class.new(druid, 1, 1, ep)
         po = instance_double(PreservedObject)
         pc = instance_double(PreservedCopy)
         allow(PreservedObject).to receive(:find_by!).with(druid: druid).and_return(po)
         allow(po).to receive(:current_version).and_return(1)
-        allow(po).to receive(:touch)
+        allow(po).to receive(:save!)
         allow(PreservedCopy).to receive(:find_by!).with(preserved_object: po, endpoint: ep).and_return(pc)
         allow(pc).to receive(:matches_po_current_version?).and_return(true)
         allow(pc).to receive(:status).and_return(PreservedCopy::OK_STATUS)
         allow(pc).to receive(:version).and_return(1)
         allow(pc).to receive(:update_audit_timestamps)
         allow(pc).to receive(:changed?).and_return(false)
-        allow(pc).to receive(:touch)
+        allow(pc).to receive(:save!)
         po_handler.check_existence
-        expect(po).not_to have_received(:touch)
-        expect(pc).to have_received(:touch)
+        expect(po).not_to have_received(:save!)
+        expect(pc).to have_received(:save!)
       end
       it 'logs a debug message' do
         msg = "check_existence #{druid} called"

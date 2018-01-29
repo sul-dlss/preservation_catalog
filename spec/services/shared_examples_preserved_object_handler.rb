@@ -197,7 +197,7 @@ RSpec.shared_examples 'unexpected version' do |method_sym, incoming_version|
     # result2 = {response_code: msg}
     it "number of results" do
       expect(results).to be_an_instance_of Array
-      expect(results.size).to eq 5
+      expect(results.size).to eq 4
     end
     it 'UNEXPECTED_VERSION result' do
       code = PreservedObjectHandlerResults::UNEXPECTED_VERSION
@@ -215,9 +215,6 @@ RSpec.shared_examples 'unexpected version' do |method_sym, incoming_version|
       expect(msgs).to include(a_string_matching("PreservedObject"))
       expect(msgs).to include(a_string_matching("PreservedCopy"))
     end
-    it "UPDATED_DB_OBJECT result for PreservedCopy" do
-      expect(results).to include(a_hash_including(PreservedObjectHandlerResults::UPDATED_DB_OBJECT => a_string_matching('PreservedCopy db object updated')))
-    end
     if method_sym == :update_version
       it 'PC_STATUS_CHANGED result' do
         expect(results).to include(a_hash_including(PreservedObjectHandlerResults::PC_STATUS_CHANGED))
@@ -226,10 +223,6 @@ RSpec.shared_examples 'unexpected version' do |method_sym, incoming_version|
       it 'no PC_STATUS_CHANGED result' do
         expect(results).not_to include(a_hash_including(PreservedObjectHandlerResults::PC_STATUS_CHANGED))
       end
-    end
-    it "no UPDATED_DB_OBJECT result for PreservedObject" do
-      expect(results).not_to include(a_hash_including(PreservedObjectHandlerResults::UPDATED_DB_OBJECT => a_string_matching('PreservedObject db object updated')))
-      expect(results).not_to include(a_hash_including(PreservedObjectHandlerResults::UPDATED_DB_OBJECT_TIMESTAMP_ONLY))
     end
   end
 end
@@ -240,8 +233,6 @@ RSpec.shared_examples 'unexpected version with validation' do |method_sym, incom
   let(:version_msg_prefix) { "#{exp_msg_prefix} incoming version (#{incoming_version})" }
   let(:unexpected_version_msg) { "#{version_msg_prefix} has unexpected relationship to PreservedCopy db version; ERROR!" }
   let(:updated_status_msg_regex) { Regexp.new(Regexp.escape("#{exp_msg_prefix} PreservedCopy status changed from")) }
-  let(:updated_pc_db_msg) { "#{exp_msg_prefix} PreservedCopy db object updated" }
-  let(:updated_po_db_msg) { "#{exp_msg_prefix} PreservedObject db object updated" }
 
   context 'PreservedCopy' do
     context 'changed' do
@@ -300,8 +291,6 @@ RSpec.shared_examples 'unexpected version with validation' do |method_sym, incom
   it "logs at error level" do
     allow(Rails.logger).to receive(:log).with(Logger::ERROR, unexpected_version_msg)
     expect(Rails.logger).to receive(:log).with(Logger::ERROR, any_args).at_least(1).times
-    expect(Rails.logger).to receive(:log).with(Logger::INFO, updated_pc_db_msg)
-    expect(Rails.logger).not_to receive(:log).with(Logger::ERROR, updated_po_db_msg)
     expect(Rails.logger).to receive(:log).with(Logger::INFO, updated_status_msg_regex)
     po_handler.send(method_sym)
   end
@@ -310,9 +299,9 @@ RSpec.shared_examples 'unexpected version with validation' do |method_sym, incom
     let!(:results) { po_handler.send(method_sym) }
     let(:num_results) do
       if method_sym == :check_existence
-        4
-      elsif method_sym == :update_version_after_validation
         3
+      elsif method_sym == :update_version_after_validation
+        2
       end
     end
 
@@ -344,10 +333,6 @@ RSpec.shared_examples 'unexpected version with validation' do |method_sym, incom
         expect(msgs).to include(a_string_matching("PreservedCopy"))
       end
     end
-    it "PreservedCopy UPDATED_DB_OBJECT results" do
-      code = PreservedObjectHandlerResults::UPDATED_DB_OBJECT
-      expect(results).to include(a_hash_including(code => updated_pc_db_msg))
-    end
     it 'PC_STATUS_CHANGED result' do
       expect(results).to include(a_hash_including(PreservedObjectHandlerResults::PC_STATUS_CHANGED => updated_status_msg_regex))
     end
@@ -357,8 +342,6 @@ end
 RSpec.shared_examples 'update for invalid moab' do |method_sym|
   let(:updated_status_msg_regex) { Regexp.new(Regexp.escape("#{exp_msg_prefix} PreservedCopy status changed from")) }
   let(:invalid_moab_msg) { "#{exp_msg_prefix} Invalid moab, validation errors: [\"Missing directory: [\\\"data\\\", \\\"manifests\\\"] Version: v0001\"]" }
-  let(:updated_pc_db_msg) { "#{exp_msg_prefix} PreservedCopy db object updated" }
-  let(:updated_po_db_msg) { "#{exp_msg_prefix} PreservedObject db object updated" }
 
   context 'PreservedCopy' do
     context 'changed' do
@@ -400,7 +383,6 @@ RSpec.shared_examples 'update for invalid moab' do |method_sym|
 
   it "logs at error level" do
     expect(Rails.logger).to receive(:log).with(Logger::ERROR, invalid_moab_msg)
-    expect(Rails.logger).to receive(:log).with(Logger::INFO, updated_pc_db_msg)
     expect(Rails.logger).to receive(:log).with(Logger::INFO, updated_status_msg_regex)
     po_handler.send(method_sym)
   end
@@ -413,7 +395,7 @@ RSpec.shared_examples 'update for invalid moab' do |method_sym|
     # result2 = {response_code: msg}
     it '3 results' do
       expect(results).to be_an_instance_of Array
-      expect(results.size).to eq 3
+      expect(results.size).to eq 2
     end
     it 'INVALID_MOAB result' do
       code = PreservedObjectHandlerResults::INVALID_MOAB
@@ -421,13 +403,6 @@ RSpec.shared_examples 'update for invalid moab' do |method_sym|
     end
     it 'PC_STATUS_CHANGED result' do
       expect(results).to include(a_hash_including(PreservedObjectHandlerResults::PC_STATUS_CHANGED => updated_status_msg_regex))
-    end
-    it 'UPDATED_DB_OBJECT for PreservedCopy' do
-      expect(results).to include(hash_including(PreservedObjectHandlerResults::UPDATED_DB_OBJECT => updated_pc_db_msg))
-    end
-    it 'does NOT get UPDATED_DB_OBJECT message for PreservedObject' do
-      expect(results).not_to include(hash_including(PreservedObjectHandlerResults::UPDATED_DB_OBJECT => updated_po_db_msg))
-      expect(results).not_to include(hash_including(PreservedObjectHandlerResults::UPDATED_DB_OBJECT_TIMESTAMP_ONLY))
     end
   end
 end
@@ -466,10 +441,6 @@ RSpec.shared_examples 'PreservedObject current_version does not match online PC 
     it 'PC_PO_VERSION_MISMATCH result' do
       code = PreservedObjectHandlerResults::PC_PO_VERSION_MISMATCH
       expect(results).to include(hash_including(code => version_mismatch_msg))
-    end
-    it 'does NOT get UPDATED_DB_OBJECT message' do
-      expect(results).not_to include(hash_including(PreservedObjectHandlerResults::UPDATED_DB_OBJECT))
-      expect(results).not_to include(hash_including(PreservedObjectHandlerResults::UPDATED_DB_OBJECT_TIMESTAMP_ONLY))
     end
   end
 end
