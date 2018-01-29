@@ -52,7 +52,8 @@ RSpec.describe CatalogToMoab do
     end
 
     it 'calls PreservedCopy.save!' do
-      skip 'add this test after #478; update_at is changed ... what else?  and it calls save! ?'
+      expect(pres_copy).to receive(:save!)
+      c2m.check_catalog_version
     end
 
     it 'calls POHandlerResults.report_results' do
@@ -162,7 +163,6 @@ RSpec.describe CatalogToMoab do
         orig = pres_copy.status
         c2m.check_catalog_version
         new_status = pres_copy.reload.status
-        skip 'uncomment rest of tests after #478 - we need to save the object'
         expect(new_status).not_to eq orig
         expect(new_status).to eq PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
       end
@@ -176,7 +176,6 @@ RSpec.describe CatalogToMoab do
           orig = pres_copy.status
           c2m.check_catalog_version
           new_status = pres_copy.reload.status
-          skip 'uncomment rest of tests after #478 - we need to save the object'
           expect(new_status).not_to eq orig
           expect(new_status).to eq PreservedCopy::INVALID_MOAB_STATUS
         end
