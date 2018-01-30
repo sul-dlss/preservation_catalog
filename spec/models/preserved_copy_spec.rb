@@ -200,12 +200,8 @@ RSpec.describe PreservedCopy, type: :model do
       described_class.least_recent_version_audit(Time.now.utc, 'spec/fixtures/storage_root01/moab_storage_trunk')
     }
 
-    it 'returns an ActiveRecord::Relation' do
-      expect(db_query).to be_a(ActiveRecord::Relation)
-    end
-
-    it 'returns the preserved_copy in the db' do
-      expect(db_query).to include(preserved_copy)
+    it 'returns all PreservedCopy objects, in any order' do
+      expect(db_query).to match_array([preserved_copy])
     end
   end
 end
