@@ -51,13 +51,13 @@ class CatalogToMoab
     @preserved_copy = preserved_copy
     @storage_dir = storage_dir
     @druid = preserved_copy.preserved_object.druid
-    @results = PreservedObjectHandlerResults.new(druid, nil, nil, preserved_copy.endpoint)
+    @results = AuditResults.new(druid, nil, nil, preserved_copy.endpoint)
   end
 
   # shameless green implementation
   def check_catalog_version
     unless preserved_copy.matches_po_current_version?
-      results.add_result(PreservedObjectHandlerResults::PC_PO_VERSION_MISMATCH,
+      results.add_result(AuditResults::PC_PO_VERSION_MISMATCH,
                          pc_version: preserved_copy.version,
                          po_version: preserved_copy.preserved_object.current_version)
       return
@@ -66,7 +66,7 @@ class CatalogToMoab
     # TODO: anything special if preserved_copy.status is not OK_STATUS? - see #480
 
     unless online_moab_found?(druid, storage_dir)
-      results.add_result(PreservedObjectHandlerResults::ONLINE_MOAB_DOES_NOT_EXIST)
+      results.add_result(AuditResults::ONLINE_MOAB_DOES_NOT_EXIST)
       results.report_results
       return
     end
@@ -74,15 +74,15 @@ class CatalogToMoab
     moab_version = moab.current_version_id
     catalog_version = preserved_copy.version
     if catalog_version == moab_version
-      results.add_result(PreservedObjectHandlerResults::VERSION_MATCHES, preserved_copy.class.name)
+      results.add_result(AuditResults::VERSION_MATCHES, preserved_copy.class.name)
       results.report_results
     elsif catalog_version < moab_version
-      results.add_result(PreservedObjectHandlerResults::UNEXPECTED_VERSION, preserved_copy.class.name)
+      results.add_result(AuditResults::UNEXPECTED_VERSION, preserved_copy.class.name)
       # TODO: avoid repetitious results ... (leave out line above??) - see #484
       pohandler = PreservedObjectHandler.new(druid, moab_version, moab.size, preserved_copy.endpoint)
       pohandler.update_version_after_validation # results reported by this call
     else # catalog_version > moab_version
-      results.add_result(PreservedObjectHandlerResults::UNEXPECTED_VERSION, preserved_copy.class.name)
+      results.add_result(AuditResults::UNEXPECTED_VERSION, preserved_copy.class.name)
       if moab_validation_errors.empty?
         update_status(PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS)
       else
@@ -109,7 +109,7 @@ class CatalogToMoab
           moab_errors.each do |error_hash|
             error_hash.each_value { |msg| moab_error_msgs << msg }
           end
-          results.add_result(PreservedObjectHandlerResults::INVALID_MOAB, moab_error_msgs)
+          results.add_result(AuditResults::INVALID_MOAB, moab_error_msgs)
         end
         moab_errors
       end
@@ -124,7 +124,7 @@ class CatalogToMoab
   def update_status(new_status)
     preserved_copy.update_status(new_status) do
       results.add_result(
-        PreservedObjectHandlerResults::PC_STATUS_CHANGED,
+        AuditResults::PC_STATUS_CHANGED,
         { old_status: preserved_copy.status, new_status: new_status }
       )
     end

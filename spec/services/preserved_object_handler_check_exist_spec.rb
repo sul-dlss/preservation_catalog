@@ -97,7 +97,7 @@ RSpec.describe PreservedObjectHandler do
             expect(results.size).to eq 2
           end
           it 'VERSION_MATCHES results' do
-            code = PreservedObjectHandlerResults::VERSION_MATCHES
+            code = AuditResults::VERSION_MATCHES
             expect(results).to include(a_hash_including(code => version_matches_pc_msg))
             expect(results).to include(a_hash_including(code => version_matches_po_msg))
           end
@@ -222,7 +222,7 @@ RSpec.describe PreservedObjectHandler do
               expect(results.size).to eq 2
             end
             it 'ARG_VERSION_GREATER_THAN_DB_OBJECT results' do
-              code = PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT
+              code = AuditResults::ARG_VERSION_GREATER_THAN_DB_OBJECT
               expect(results).to include(a_hash_including(code => version_gt_pc_msg))
               expect(results).to include(a_hash_including(code => version_gt_po_msg))
             end
@@ -336,12 +336,12 @@ RSpec.describe PreservedObjectHandler do
               expect(results.size).to eq 4
             end
             it 'ARG_VERSION_GREATER_THAN_DB_OBJECT results' do
-              code = PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT
+              code = AuditResults::ARG_VERSION_GREATER_THAN_DB_OBJECT
               expect(results).to include(a_hash_including(code => version_gt_pc_msg))
               expect(results).to include(a_hash_including(code => version_gt_po_msg))
             end
             it 'INVALID_MOAB result' do
-              expect(results).to include(a_hash_including(PreservedObjectHandlerResults::INVALID_MOAB))
+              expect(results).to include(a_hash_including(AuditResults::INVALID_MOAB))
             end
             it 'what results/logging desired for incoming version > catalog and invalid moab' do
               skip 'we need clarification of requirements on results/logging in this case'
@@ -400,7 +400,7 @@ RSpec.describe PreservedObjectHandler do
 
       context 'db update error' do
         context 'ActiveRecordError' do
-          let(:result_code) { PreservedObjectHandlerResults::DB_UPDATE_FAILED }
+          let(:result_code) { AuditResults::DB_UPDATE_FAILED }
           let(:incoming_version) { 2 }
 
           let(:results) do
@@ -553,18 +553,18 @@ RSpec.describe PreservedObjectHandler do
               skip 'need to get requirements on what exactly we want in results'
             end
             it 'OBJECT_DOES_NOT_EXIST results' do
-              code = PreservedObjectHandlerResults::OBJECT_DOES_NOT_EXIST
+              code = AuditResults::OBJECT_DOES_NOT_EXIST
               expect(results).to include(a_hash_including(code => exp_po_not_exist_msg))
             end
             it 'CREATED_NEW_OBJECT result' do
-              code = PreservedObjectHandlerResults::CREATED_NEW_OBJECT
+              code = AuditResults::CREATED_NEW_OBJECT
               expect(results).to include(a_hash_including(code => exp_obj_created_msg))
             end
           end
 
           context 'db update error' do
             context 'ActiveRecordError' do
-              let(:result_code) { PreservedObjectHandlerResults::DB_UPDATE_FAILED }
+              let(:result_code) { AuditResults::DB_UPDATE_FAILED }
               let(:results) do
                 allow(Rails.logger).to receive(:log)
                 # FIXME: couldn't figure out how to put next line into its own test
@@ -675,22 +675,22 @@ RSpec.describe PreservedObjectHandler do
               skip 'need to get requirements on what exactly we want in results'
             end
             it 'INVALID_MOAB result' do
-              code = PreservedObjectHandlerResults::INVALID_MOAB
+              code = AuditResults::INVALID_MOAB
               expect(results).to include(a_hash_including(code => exp_moab_errs_msg))
             end
             it 'OBJECT_DOES_NOT_EXIST results' do
-              code = PreservedObjectHandlerResults::OBJECT_DOES_NOT_EXIST
+              code = AuditResults::OBJECT_DOES_NOT_EXIST
               expect(results).to include(a_hash_including(code => exp_po_not_exist_msg))
             end
             it 'CREATED_NEW_OBJECT result' do
-              code = PreservedObjectHandlerResults::CREATED_NEW_OBJECT
+              code = AuditResults::CREATED_NEW_OBJECT
               expect(results).to include(a_hash_including(code => exp_obj_created_msg))
             end
           end
 
           context 'db update error' do
             context 'ActiveRecordError' do
-              let(:result_code) { PreservedObjectHandlerResults::DB_UPDATE_FAILED }
+              let(:result_code) { AuditResults::DB_UPDATE_FAILED }
               let(:results) do
                 allow(Rails.logger).to receive(:log)
                 # FIXME: couldn't figure out how to put next line into its own test

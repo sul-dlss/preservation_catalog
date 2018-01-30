@@ -1,10 +1,16 @@
-# PreservedObjectHandler results are an array of hash objects, like so:
-#   results = [result1, result2]
+# AuditResults allows the correct granularity of information to be reported in various contexts.
+#   By collecting all the result information in this class, we keep the audit check code cleaner, and
+#   enable an easy way to provide:
+#    - the correct HTTP response code for ReST calls routed via controller
+#    - error information reported to workflows
+#    - information to Rails log
+#    - in the future, this may also include reporting to the provenance database as well
+#
+# All results are kept in the result_array attribute, which is returned by the report_results method.
+#   result_array = [result1, result2]
 #   result1 = {response_code => msg}
 #   result2 = {response_code => msg}
-#
-# This class extracts out the result specific logic from PreservedObjectHandler to make the code more readable
-class PreservedObjectHandlerResults
+class AuditResults
 
   INVALID_ARGUMENTS = 1
   VERSION_MATCHES = 2
@@ -88,12 +94,15 @@ class PreservedObjectHandlerResults
   end
 
   # output results to Rails.logger and send errors to WorkflowErrorsReporter
-  # @return result_array
+  # @return Array<Hash>
+  #   results = [result1, result2]
+  #   result1 = {response_code => msg}
+  #   result2 = {response_code => msg}
   def report_results
     candidate_workflow_results = []
     result_array.each do |r|
       log_result(r)
-      if r.key?(PreservedObjectHandlerResults::INVALID_MOAB)
+      if r.key?(INVALID_MOAB)
         WorkflowErrorsReporter.update_workflow(druid, 'moab-valid', r.values.first)
       elsif WORKFLOW_REPORT_CODES.include?(r.keys.first)
         candidate_workflow_results << r

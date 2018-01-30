@@ -103,7 +103,7 @@ RSpec.describe PreservedObjectHandler do
             expect(results.size).to eq 2
           end
           it 'ARG_VERSION_GREATER_THAN_DB_OBJECT results' do
-            code = PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT
+            code = AuditResults::ARG_VERSION_GREATER_THAN_DB_OBJECT
             expect(results).to include(a_hash_including(code => version_gt_pc_msg))
             expect(results).to include(a_hash_including(code => version_gt_po_msg))
           end
@@ -128,7 +128,7 @@ RSpec.describe PreservedObjectHandler do
       end
 
       context 'db update error' do
-        let(:result_code) { PreservedObjectHandlerResults::DB_UPDATE_FAILED }
+        let(:result_code) { AuditResults::DB_UPDATE_FAILED }
 
         context 'PreservedCopy' do
           context 'ActiveRecordError' do
@@ -487,7 +487,7 @@ RSpec.describe PreservedObjectHandler do
         end
 
         context 'db update error' do
-          let(:result_code) { PreservedObjectHandlerResults::DB_UPDATE_FAILED }
+          let(:result_code) { AuditResults::DB_UPDATE_FAILED }
 
           context 'PreservedCopy' do
             context 'ActiveRecordError' do

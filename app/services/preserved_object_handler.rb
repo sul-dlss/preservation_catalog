@@ -7,7 +7,7 @@
 # inspired by http://www.thegreatcodeadventure.com/smarter-rails-services-with-active-record-modules/
 class PreservedObjectHandler
 
-  require 'preserved_object_handler_results.rb'
+  require 'audit_results.rb'
 
   include ActiveModel::Validations
 
@@ -28,14 +28,14 @@ class PreservedObjectHandler
     @incoming_version = version_string_to_int(incoming_version)
     @incoming_size = string_to_int(incoming_size)
     @endpoint = endpoint
-    @handler_results = PreservedObjectHandlerResults.new(druid, incoming_version, incoming_size, endpoint)
+    @handler_results = AuditResults.new(druid, incoming_version, incoming_size, endpoint)
   end
 
   def create_after_validation
     if invalid?
-      handler_results.add_result(PreservedObjectHandlerResults::INVALID_ARGUMENTS, errors.full_messages)
+      handler_results.add_result(AuditResults::INVALID_ARGUMENTS, errors.full_messages)
     elsif PreservedObject.exists?(druid: druid)
-      handler_results.add_result(PreservedObjectHandlerResults::OBJECT_ALREADY_EXISTS, 'PreservedObject')
+      handler_results.add_result(AuditResults::OBJECT_ALREADY_EXISTS, 'PreservedObject')
     elsif moab_validation_errors.empty?
       create_db_objects(PreservedCopy::OK_STATUS)
     else
@@ -47,9 +47,9 @@ class PreservedObjectHandler
 
   def create
     if invalid?
-      handler_results.add_result(PreservedObjectHandlerResults::INVALID_ARGUMENTS, errors.full_messages)
+      handler_results.add_result(AuditResults::INVALID_ARGUMENTS, errors.full_messages)
     elsif PreservedObject.exists?(druid: druid)
-      handler_results.add_result(PreservedObjectHandlerResults::OBJECT_ALREADY_EXISTS, 'PreservedObject')
+      handler_results.add_result(AuditResults::OBJECT_ALREADY_EXISTS, 'PreservedObject')
     else
       create_db_objects(PreservedCopy::VALIDITY_UNKNOWN_STATUS)
     end
@@ -60,7 +60,7 @@ class PreservedObjectHandler
   # this is a long, complex method (shameless green); if it is refactored, revisit the exceptions in rubocop.yml
   def check_existence
     if invalid?
-      handler_results.add_result(PreservedObjectHandlerResults::INVALID_ARGUMENTS, errors.full_messages)
+      handler_results.add_result(AuditResults::INVALID_ARGUMENTS, errors.full_messages)
     elsif PreservedObject.exists?(druid: druid)
       Rails.logger.debug "check_existence #{druid} called"
       if endpoint.endpoint_type.endpoint_class == 'online'
@@ -73,12 +73,12 @@ class PreservedObjectHandler
 
           if incoming_version == pres_copy.version
             set_status_as_seen_on_disk(pres_copy, true) unless pres_copy.status == PreservedCopy::OK_STATUS
-            handler_results.add_result(PreservedObjectHandlerResults::VERSION_MATCHES, pres_copy.class.name)
-            handler_results.add_result(PreservedObjectHandlerResults::VERSION_MATCHES, pres_object.class.name)
+            handler_results.add_result(AuditResults::VERSION_MATCHES, pres_copy.class.name)
+            handler_results.add_result(AuditResults::VERSION_MATCHES, pres_object.class.name)
           elsif incoming_version > pres_copy.version
             set_status_as_seen_on_disk(pres_copy, true) unless pres_copy.status == PreservedCopy::OK_STATUS
-            handler_results.add_result(PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_copy.class.name)
-            handler_results.add_result(PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_object.class.name)
+            handler_results.add_result(AuditResults::ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_copy.class.name)
+            handler_results.add_result(AuditResults::ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_object.class.name)
             if moab_validation_errors.empty?
               pres_copy.upd_audstamps_version_size(ran_moab_validation?, incoming_version, incoming_size)
               pres_object.current_version = incoming_version
@@ -88,8 +88,8 @@ class PreservedObjectHandler
             end
           else # incoming_version < pres_copy.version
             set_status_as_seen_on_disk(pres_copy, false)
-            handler_results.add_result(PreservedObjectHandlerResults::ARG_VERSION_LESS_THAN_DB_OBJECT, pres_copy.class.name)
-            handler_results.add_result(PreservedObjectHandlerResults::ARG_VERSION_LESS_THAN_DB_OBJECT, pres_object.class.name)
+            handler_results.add_result(AuditResults::ARG_VERSION_LESS_THAN_DB_OBJECT, pres_copy.class.name)
+            handler_results.add_result(AuditResults::ARG_VERSION_LESS_THAN_DB_OBJECT, pres_object.class.name)
           end
           pres_copy.update_audit_timestamps(ran_moab_validation?, true)
           pres_copy.save!
@@ -99,7 +99,7 @@ class PreservedObjectHandler
         # TODO: note that an endpoint PC version might not match PO.current_version
       end
     else
-      handler_results.add_result(PreservedObjectHandlerResults::OBJECT_DOES_NOT_EXIST, 'PreservedObject')
+      handler_results.add_result(AuditResults::OBJECT_DOES_NOT_EXIST, 'PreservedObject')
       if moab_validation_errors.empty?
         create_db_objects(PreservedCopy::OK_STATUS)
       else
@@ -111,7 +111,7 @@ class PreservedObjectHandler
 
   def confirm_version
     if invalid?
-      handler_results.add_result(PreservedObjectHandlerResults::INVALID_ARGUMENTS, errors.full_messages)
+      handler_results.add_result(AuditResults::INVALID_ARGUMENTS, errors.full_messages)
     else
       Rails.logger.debug "confirm_version #{druid} called"
       if endpoint.endpoint_type.endpoint_class == 'online'
@@ -127,7 +127,7 @@ class PreservedObjectHandler
 
   def update_version_after_validation
     if invalid?
-      handler_results.add_result(PreservedObjectHandlerResults::INVALID_ARGUMENTS, errors.full_messages)
+      handler_results.add_result(AuditResults::INVALID_ARGUMENTS, errors.full_messages)
     else
       Rails.logger.debug "update_version_after_validation #{druid} called"
       if endpoint.endpoint_type.endpoint_class == 'online'
@@ -148,7 +148,7 @@ class PreservedObjectHandler
 
   def update_version
     if invalid?
-      handler_results.add_result(PreservedObjectHandlerResults::INVALID_ARGUMENTS, errors.full_messages)
+      handler_results.add_result(AuditResults::INVALID_ARGUMENTS, errors.full_messages)
     else
       Rails.logger.debug "update_version #{druid} called"
       if endpoint.endpoint_type.endpoint_class == 'online'
@@ -178,7 +178,7 @@ class PreservedObjectHandler
           moab_errors.each do |error_hash|
             error_hash.each_value { |msg| moab_error_msgs << msg }
           end
-          handler_results.add_result(PreservedObjectHandlerResults::INVALID_MOAB, moab_error_msgs)
+          handler_results.add_result(AuditResults::INVALID_MOAB, moab_error_msgs)
         end
         moab_errors
       end
@@ -210,7 +210,7 @@ class PreservedObjectHandler
       PreservedCopy.create!(pc_attrs)
     end
 
-    handler_results.add_result(PreservedObjectHandlerResults::CREATED_NEW_OBJECT) if transaction_ok
+    handler_results.add_result(AuditResults::CREATED_NEW_OBJECT) if transaction_ok
   end
 
   # TODO: this is "too complex" per rubocop: shameless green implementation
@@ -225,7 +225,7 @@ class PreservedObjectHandler
       # FIXME: what if there is more than one associated pres_copy?
       if incoming_version > pres_copy.version && pres_copy.matches_po_current_version?
         # add results without db updates
-        code = PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT
+        code = AuditResults::ARG_VERSION_GREATER_THAN_DB_OBJECT
         handler_results.add_result(code, pres_copy.class.name)
         handler_results.add_result(code, pres_object.class.name)
 
@@ -249,7 +249,7 @@ class PreservedObjectHandler
     unless pres_copy.matches_po_current_version?
       pc_version = pres_copy.version
       po_version = pres_copy.preserved_object.current_version
-      res_code = PreservedObjectHandlerResults::PC_PO_VERSION_MISMATCH
+      res_code = AuditResults::PC_PO_VERSION_MISMATCH
       handler_results.add_result(res_code, { pc_version: pc_version, po_version: po_version })
       raise ActiveRecord::Rollback, "PreservedCopy version #{pc_version} != PreservedObject current_version #{po_version}"
     end
@@ -291,7 +291,7 @@ class PreservedObjectHandler
   end
 
   def update_pc_unexpected_version(pres_copy, pres_object, new_status)
-    handler_results.add_result(PreservedObjectHandlerResults::UNEXPECTED_VERSION, 'PreservedCopy')
+    handler_results.add_result(AuditResults::UNEXPECTED_VERSION, 'PreservedCopy')
     version_comparison_results(pres_copy, :version)
     version_comparison_results(pres_object, :current_version)
 
@@ -311,11 +311,11 @@ class PreservedObjectHandler
 
       if incoming_version == pres_copy.version
         set_status_as_seen_on_disk(pres_copy, true) unless pres_copy.status == PreservedCopy::OK_STATUS
-        handler_results.add_result(PreservedObjectHandlerResults::VERSION_MATCHES, pres_copy.class.name)
-        handler_results.add_result(PreservedObjectHandlerResults::VERSION_MATCHES, pres_object.class.name)
+        handler_results.add_result(AuditResults::VERSION_MATCHES, pres_copy.class.name)
+        handler_results.add_result(AuditResults::VERSION_MATCHES, pres_object.class.name)
       else
         set_status_as_seen_on_disk(pres_copy, false)
-        handler_results.add_result(PreservedObjectHandlerResults::UNEXPECTED_VERSION, pres_copy.class.name)
+        handler_results.add_result(AuditResults::UNEXPECTED_VERSION, pres_copy.class.name)
       end
       pres_copy.update_audit_timestamps(ran_moab_validation?, true)
       pres_copy.save!
@@ -330,10 +330,10 @@ class PreservedObjectHandler
       ApplicationRecord.transaction { yield }
       return true
     rescue ActiveRecord::RecordNotFound => e
-      handler_results.add_result(PreservedObjectHandlerResults::OBJECT_DOES_NOT_EXIST, e.inspect)
+      handler_results.add_result(AuditResults::OBJECT_DOES_NOT_EXIST, e.inspect)
     rescue ActiveRecord::ActiveRecordError => e
       handler_results.add_result(
-        PreservedObjectHandlerResults::DB_UPDATE_FAILED, "#{e.inspect} #{e.message} #{e.backtrace.inspect}"
+        AuditResults::DB_UPDATE_FAILED, "#{e.inspect} #{e.message} #{e.backtrace.inspect}"
       )
     end
     false
@@ -342,11 +342,11 @@ class PreservedObjectHandler
   # expects @incoming_version to be numeric
   def version_comparison_results(db_object, version_symbol)
     if incoming_version == db_object.send(version_symbol)
-      handler_results.add_result(PreservedObjectHandlerResults::VERSION_MATCHES, db_object.class.name)
+      handler_results.add_result(AuditResults::VERSION_MATCHES, db_object.class.name)
     elsif incoming_version < db_object.send(version_symbol)
-      handler_results.add_result(PreservedObjectHandlerResults::ARG_VERSION_LESS_THAN_DB_OBJECT, db_object.class.name)
+      handler_results.add_result(AuditResults::ARG_VERSION_LESS_THAN_DB_OBJECT, db_object.class.name)
     elsif incoming_version > db_object.send(version_symbol)
-      handler_results.add_result(PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT, db_object.class.name)
+      handler_results.add_result(AuditResults::ARG_VERSION_GREATER_THAN_DB_OBJECT, db_object.class.name)
     end
   end
 
@@ -354,7 +354,7 @@ class PreservedObjectHandler
   def update_status(preserved_copy, new_status)
     preserved_copy.update_status(new_status) do
       handler_results.add_result(
-        PreservedObjectHandlerResults::PC_STATUS_CHANGED,
+        AuditResults::PC_STATUS_CHANGED,
         { old_status: preserved_copy.status, new_status: new_status }
       )
     end

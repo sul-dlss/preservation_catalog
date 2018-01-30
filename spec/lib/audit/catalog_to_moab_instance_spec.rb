@@ -19,7 +19,7 @@ RSpec.describe CatalogToMoab do
       expect(c2m.preserved_copy).to eq pres_copy
       expect(c2m.storage_dir).to eq storage_dir
       expect(c2m.druid).to eq druid
-      expect(c2m.results).to be_an_instance_of PreservedObjectHandlerResults
+      expect(c2m.results).to be_an_instance_of AuditResults
     end
   end
 
@@ -57,8 +57,8 @@ RSpec.describe CatalogToMoab do
     end
 
     it 'calls POHandlerResults.report_results' do
-      pohandler_results = instance_double(PreservedObjectHandlerResults, add_result: nil)
-      allow(PreservedObjectHandlerResults).to receive(:new).and_return(pohandler_results)
+      pohandler_results = instance_double(AuditResults, add_result: nil)
+      allow(AuditResults).to receive(:new).and_return(pohandler_results)
       expect(pohandler_results).to receive(:report_results)
       c2m.check_catalog_version
     end
@@ -71,10 +71,10 @@ RSpec.describe CatalogToMoab do
     context 'moab is nil (exists in catalog but not online)' do
       it 'adds an ONLINE_MOAB_DOES_NOT_EXIST result' do
         allow(Moab::StorageObject).to receive(:new).with(druid, instance_of(String)).and_return(nil)
-        pohandler_results = instance_double(PreservedObjectHandlerResults, report_results: nil)
-        allow(PreservedObjectHandlerResults).to receive(:new).and_return(pohandler_results)
+        pohandler_results = instance_double(AuditResults, report_results: nil)
+        allow(AuditResults).to receive(:new).and_return(pohandler_results)
         expect(pohandler_results).to receive(:add_result).with(
-          PreservedObjectHandlerResults::ONLINE_MOAB_DOES_NOT_EXIST
+          AuditResults::ONLINE_MOAB_DOES_NOT_EXIST
         )
         c2m.check_catalog_version
       end
@@ -89,10 +89,10 @@ RSpec.describe CatalogToMoab do
     context 'preserved_copy version != current_version of preserved_object' do
       it 'adds a PC_PO_VERSION_MISMATCH result and returns' do
         pres_copy.version = 666
-        pohandler_results = instance_double(PreservedObjectHandlerResults, report_results: nil)
-        allow(PreservedObjectHandlerResults).to receive(:new).and_return(pohandler_results)
+        pohandler_results = instance_double(AuditResults, report_results: nil)
+        allow(AuditResults).to receive(:new).and_return(pohandler_results)
         expect(pohandler_results).to receive(:add_result).with(
-          PreservedObjectHandlerResults::PC_PO_VERSION_MISMATCH,
+          AuditResults::PC_PO_VERSION_MISMATCH,
           pc_version: pres_copy.version,
           po_version: pres_copy.preserved_object.current_version
         )
@@ -103,10 +103,10 @@ RSpec.describe CatalogToMoab do
 
     context 'catalog version == moab version (happy path)' do
       it 'adds a VERSION_MATCHES result' do
-        pohandler_results = instance_double(PreservedObjectHandlerResults, report_results: nil)
-        allow(PreservedObjectHandlerResults).to receive(:new).and_return(pohandler_results)
+        pohandler_results = instance_double(AuditResults, report_results: nil)
+        allow(AuditResults).to receive(:new).and_return(pohandler_results)
         expect(pohandler_results).to receive(:add_result).with(
-          PreservedObjectHandlerResults::VERSION_MATCHES, 'PreservedCopy'
+          AuditResults::VERSION_MATCHES, 'PreservedCopy'
         )
         c2m.check_catalog_version
       end
@@ -120,12 +120,12 @@ RSpec.describe CatalogToMoab do
       end
 
       it 'adds an UNEXPECTED_VERSION result' do
-        pohandler_results = instance_double(PreservedObjectHandlerResults, report_results: nil)
+        pohandler_results = instance_double(AuditResults, report_results: nil)
         expect(pohandler_results).to receive(:add_result).with(
-          PreservedObjectHandlerResults::UNEXPECTED_VERSION, 'PreservedCopy'
+          AuditResults::UNEXPECTED_VERSION, 'PreservedCopy'
         )
         allow(pohandler_results).to receive(:add_result).with(any_args)
-        allow(PreservedObjectHandlerResults).to receive(:new).and_return(pohandler_results)
+        allow(AuditResults).to receive(:new).and_return(pohandler_results)
         c2m.check_catalog_version
       end
       it 'calls PreservedObjectHandler.update_version_after_validation' do
@@ -144,12 +144,12 @@ RSpec.describe CatalogToMoab do
       end
 
       it 'adds an UNEXPECTED_VERSION result' do
-        pohandler_results = instance_double(PreservedObjectHandlerResults, report_results: nil)
+        pohandler_results = instance_double(AuditResults, report_results: nil)
         expect(pohandler_results).to receive(:add_result).with(
-          PreservedObjectHandlerResults::UNEXPECTED_VERSION, 'PreservedCopy'
+          AuditResults::UNEXPECTED_VERSION, 'PreservedCopy'
         )
         allow(pohandler_results).to receive(:add_result).with(any_args)
-        allow(PreservedObjectHandlerResults).to receive(:new).and_return(pohandler_results)
+        allow(AuditResults).to receive(:new).and_return(pohandler_results)
         c2m.check_catalog_version
       end
 
@@ -180,22 +180,22 @@ RSpec.describe CatalogToMoab do
           expect(new_status).to eq PreservedCopy::INVALID_MOAB_STATUS
         end
         it 'adds an INVALID_MOAB result' do
-          pohandler_results = instance_double(PreservedObjectHandlerResults, report_results: nil)
+          pohandler_results = instance_double(AuditResults, report_results: nil)
           expect(pohandler_results).to receive(:add_result).with(
-            PreservedObjectHandlerResults::INVALID_MOAB, anything
+            AuditResults::INVALID_MOAB, anything
           )
           allow(pohandler_results).to receive(:add_result).with(any_args)
-          allow(PreservedObjectHandlerResults).to receive(:new).and_return(pohandler_results)
+          allow(AuditResults).to receive(:new).and_return(pohandler_results)
           c2m.check_catalog_version
         end
       end
       it 'adds a PC_STATUS_CHANGED result' do
-        pohandler_results = instance_double(PreservedObjectHandlerResults, report_results: nil)
+        pohandler_results = instance_double(AuditResults, report_results: nil)
         expect(pohandler_results).to receive(:add_result).with(
-          PreservedObjectHandlerResults::PC_STATUS_CHANGED, a_hash_including(:old_status, :new_status)
+          AuditResults::PC_STATUS_CHANGED, a_hash_including(:old_status, :new_status)
         )
         allow(pohandler_results).to receive(:add_result).with(any_args)
-        allow(PreservedObjectHandlerResults).to receive(:new).and_return(pohandler_results)
+        allow(AuditResults).to receive(:new).and_return(pohandler_results)
         c2m.check_catalog_version
       end
     end
