@@ -39,7 +39,7 @@ RSpec.describe WorkflowErrorsReporter do
       described_class.update_workflow(druid, 'moab-valid', result)
     end
 
-    it 'make sure request get correct params' do
+    it 'make sure request gets correct params' do
       process_name = 'moab-valid'
       error_msg = "Invalid moab, validation error...ential version directories."
       mock_request = instance_double(Faraday::Request)

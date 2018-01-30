@@ -73,8 +73,7 @@ RSpec.shared_examples 'calls PreservedObjectHandlerResults.report_results' do |m
   it '' do
     mock_results = instance_double(PreservedObjectHandlerResults)
     allow(mock_results).to receive(:add_result)
-    allow(mock_results).to receive(:result_array) # TODO: remove this when switch to report_results call
-    expect(mock_results).to receive(:report_results) # TODO: change this when switch to report_results call
+    expect(mock_results).to receive(:report_results)
     expect(PreservedObjectHandlerResults).to receive(:new).and_return(mock_results)
     po_handler.send(method_sym)
   end
