@@ -60,6 +60,7 @@ RSpec.describe AuditResults do
         pohr.report_results
       end
     end
+
     context 'sends errors to workflows' do
       it 'INVALID_MOAB reported with details about the failures' do
         result_code = AuditResults::INVALID_MOAB
@@ -155,6 +156,9 @@ RSpec.describe AuditResults do
       expect(pohr.result_array.size).to eq 4
       pohr.remove_db_updated_results
       expect(pohr.result_array.size).to eq 2
+      pohr.result_array.each do |result_hash|
+        expect(AuditResults::DB_UPDATED_CODES).not_to include(result_hash.keys.first)
+      end
       expect(pohr.result_array).not_to include(a_hash_including(AuditResults::CREATED_NEW_OBJECT))
       expect(pohr.result_array).not_to include(a_hash_including(AuditResults::PC_STATUS_CHANGED))
     end
