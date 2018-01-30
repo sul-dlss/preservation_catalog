@@ -26,7 +26,7 @@ RSpec.describe WorkflowErrorsReporter do
         .with(body: body,
               headers: headers)
         .to_return(status: 400, body: "", headers: {})
-      expect(Rails.logger).to receive(:warn).with("#{druid} - unable to update workflow for preservationAuditWF moab-valid #<Faraday::ClientError response={:status=>400, :headers=>{}, :body=>\"\"}>. Error message: Invalid moab, validation error...ential version directories.")
+      expect(Rails.logger).to receive(:error).with("#{druid} - unable to update workflow for preservationAuditWF moab-valid #<Faraday::ClientError response={:status=>400, :headers=>{}, :body=>\"\"}>. Error message: Invalid moab, validation error...ential version directories.")
       described_class.update_workflow(druid, 'moab-valid', result)
     end
 
