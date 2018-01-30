@@ -84,7 +84,7 @@ RSpec.describe PreservedObjectHandler do
     end
 
     context 'ActiveRecordError gives DB_UPDATE_FAILED error with rich details' do
-      let(:result_code) { PreservedObjectHandlerResults::DB_UPDATE_FAILED }
+      let(:result_code) { AuditResults::DB_UPDATE_FAILED }
       let(:results) do
         allow(PreservedObject).to receive(:create!).with(hash_including(druid: druid))
                                                    .and_raise(ActiveRecord::ActiveRecordError, 'specific_err_msg')

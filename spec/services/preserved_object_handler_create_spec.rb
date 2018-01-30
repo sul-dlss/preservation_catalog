@@ -38,11 +38,11 @@ RSpec.describe PreservedObjectHandler do
       po_handler.create
       new_po_handler = described_class.new(druid, incoming_version, incoming_size, ep)
       results = new_po_handler.create
-      code = PreservedObjectHandlerResults::OBJECT_ALREADY_EXISTS
+      code = AuditResults::OBJECT_ALREADY_EXISTS
       expect(results).to include(a_hash_including(code => a_string_matching('PreservedObject db object already exists')))
     end
 
-    it_behaves_like 'calls PreservedObjectHandlerResults.report_results', :create
+    it_behaves_like 'calls AuditResults.report_results', :create
 
     context 'db update error' do
       context 'ActiveRecordError' do
@@ -53,10 +53,10 @@ RSpec.describe PreservedObjectHandler do
         end
 
         it 'DB_UPDATE_FAILED result' do
-          expect(results).to include(a_hash_including(PreservedObjectHandlerResults::DB_UPDATE_FAILED))
+          expect(results).to include(a_hash_including(AuditResults::DB_UPDATE_FAILED))
         end
         it 'does NOT get CREATED_NEW_OBJECT result' do
-          expect(results).not_to include(hash_including(PreservedObjectHandlerResults::CREATED_NEW_OBJECT))
+          expect(results).not_to include(hash_including(AuditResults::CREATED_NEW_OBJECT))
         end
       end
 
@@ -75,7 +75,7 @@ RSpec.describe PreservedObjectHandler do
         expect(result.size).to eq 1
       end
       it 'CREATED_NEW_OBJECT result' do
-        code = PreservedObjectHandlerResults::CREATED_NEW_OBJECT
+        code = AuditResults::CREATED_NEW_OBJECT
         expect(result).to include(a_hash_including(code => exp_msg))
       end
     end
@@ -88,7 +88,7 @@ RSpec.describe PreservedObjectHandler do
 
     it_behaves_like 'attributes validated', :create_after_validation
 
-    it_behaves_like 'calls PreservedObjectHandlerResults.report_results', :create_after_validation
+    it_behaves_like 'calls AuditResults.report_results', :create_after_validation
 
     context 'sets validation timestamps' do
       let(:t) { Time.current }
@@ -180,7 +180,7 @@ RSpec.describe PreservedObjectHandler do
 
       it 'includes invalid moab result' do
         results = po_handler.create_after_validation
-        code = PreservedObjectHandlerResults::INVALID_MOAB
+        code = AuditResults::INVALID_MOAB
         expect(results).to include(a_hash_including(code => a_string_matching('Invalid moab, validation errors:')))
       end
 
@@ -194,10 +194,10 @@ RSpec.describe PreservedObjectHandler do
           end
 
           it 'DB_UPDATE_FAILED result' do
-            expect(results).to include(a_hash_including(PreservedObjectHandlerResults::DB_UPDATE_FAILED))
+            expect(results).to include(a_hash_including(AuditResults::DB_UPDATE_FAILED))
           end
           it 'does NOT get CREATED_NEW_OBJECT result' do
-            expect(results).not_to include(hash_including(PreservedObjectHandlerResults::CREATED_NEW_OBJECT))
+            expect(results).not_to include(hash_including(AuditResults::CREATED_NEW_OBJECT))
           end
         end
 
@@ -219,7 +219,7 @@ RSpec.describe PreservedObjectHandler do
         expect(result.size).to eq 1
       end
       it 'CREATED_NEW_OBJECT result' do
-        code = PreservedObjectHandlerResults::CREATED_NEW_OBJECT
+        code = AuditResults::CREATED_NEW_OBJECT
         expect(result).to include(a_hash_including(code => exp_msg))
       end
     end

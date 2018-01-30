@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-RSpec.describe PreservedObjectHandlerResults do
+RSpec.describe AuditResults do
   let(:druid) { 'ab123cd4567' }
   let(:incoming_version) { 6 }
   let(:incoming_size) { 666 }
@@ -9,7 +9,7 @@ RSpec.describe PreservedObjectHandlerResults do
 
   context '.logger_severity_level' do
     it 'PC_PO_VERSION_MISMATCH is an ERROR' do
-      code = PreservedObjectHandlerResults::PC_PO_VERSION_MISMATCH
+      code = AuditResults::PC_PO_VERSION_MISMATCH
       expect(described_class.logger_severity_level(code)).to eq Logger::ERROR
     end
   end
@@ -33,7 +33,7 @@ RSpec.describe PreservedObjectHandlerResults do
   context '#report_results' do
     context 'writes to Rails log' do
       before do
-        code = PreservedObjectHandlerResults::PC_PO_VERSION_MISMATCH
+        code = AuditResults::PC_PO_VERSION_MISMATCH
         addl_hash = { pc_version: 1, po_version: 2 }
         pohr.add_result(code, addl_hash)
       end
@@ -42,7 +42,7 @@ RSpec.describe PreservedObjectHandlerResults do
         pohr.report_results
       end
       it 'for each result' do
-        code = PreservedObjectHandlerResults::PC_STATUS_CHANGED
+        code = AuditResults::PC_STATUS_CHANGED
         status_details = { old_status: PreservedCopy::INVALID_MOAB_STATUS, new_status: PreservedCopy::OK_STATUS }
         pohr.add_result(code, status_details)
         not_matched_str = 'does not match PreservedObject current_version'
@@ -53,7 +53,7 @@ RSpec.describe PreservedObjectHandlerResults do
     end
     context 'sends errors to workflows' do
       it 'INVALID_MOAB reported with details about the failures' do
-        result_code = PreservedObjectHandlerResults::INVALID_MOAB
+        result_code = AuditResults::INVALID_MOAB
         moab_valid_errs = [
           "Version directory name not in 'v00xx' format: original-v1",
           "Version v0005: No files present in manifest dir"
@@ -64,13 +64,13 @@ RSpec.describe PreservedObjectHandlerResults do
         pohr.report_results
       end
       it "does not send results that aren't in WORKFLOW_REPORT_CODES" do
-        code = PreservedObjectHandlerResults::CREATED_NEW_OBJECT
+        code = AuditResults::CREATED_NEW_OBJECT
         pohr.add_result(code)
         expect(WorkflowErrorsReporter).not_to receive(:update_workflow)
         pohr.report_results
       end
       it 'sends results in WORKFLOW_REPORT_CODES errors' do
-        code = PreservedObjectHandlerResults::PC_PO_VERSION_MISMATCH
+        code = AuditResults::PC_PO_VERSION_MISMATCH
         addl_hash = { pc_version: 1, po_version: 2 }
         pohr.add_result(code, addl_hash)
         wf_err_msg = pohr.send(:result_code_msg, code, addl_hash)
@@ -80,11 +80,11 @@ RSpec.describe PreservedObjectHandlerResults do
         pohr.report_results
       end
       it 'multiple errors are concatenated together with || separator' do
-        code1 = PreservedObjectHandlerResults::PC_PO_VERSION_MISMATCH
+        code1 = AuditResults::PC_PO_VERSION_MISMATCH
         result_msg_args1 = { pc_version: 1, po_version: 2 }
         pohr.add_result(code1, result_msg_args1)
         wf_err_msg1 = pohr.send(:result_code_msg, code1, result_msg_args1)
-        code2 = PreservedObjectHandlerResults::OBJECT_ALREADY_EXISTS
+        code2 = AuditResults::OBJECT_ALREADY_EXISTS
         result_msg_args2 = 'foo'
         pohr.add_result(code2, result_msg_args2)
         wf_err_msg2 = pohr.send(:result_code_msg, code2, result_msg_args2)
@@ -94,12 +94,12 @@ RSpec.describe PreservedObjectHandlerResults do
         pohr.report_results
       end
       it 'includes a truncated stack trace at the end' do
-        code = PreservedObjectHandlerResults::PC_PO_VERSION_MISMATCH
+        code = AuditResults::PC_PO_VERSION_MISMATCH
         addl_hash = { pc_version: 1, po_version: 2 }
         pohr.add_result(code, addl_hash)
         exp_regex = Regexp.new(" || \
-          .*preservation_catalog/app/services/preserved_object_handler_results.rb \
-          .*preservation_catalog/spec/services/preserved_object_handler_results_spec.rb .*in <top (required)>")
+          .*preservation_catalog/app/services/audit_results.rb \
+          .*preservation_catalog/spec/services/audit_results_spec.rb .*in <top (required)>")
         expect(WorkflowErrorsReporter).to receive(:update_workflow).with(
           druid, 'preservation-audit', a_string_ending_with(exp_regex)
         )
@@ -111,18 +111,18 @@ RSpec.describe PreservedObjectHandlerResults do
   context '#add_result' do
     it 'adds a hash entry to the result_array' do
       expect(pohr.result_array.size).to eq 0
-      code = PreservedObjectHandlerResults::PC_PO_VERSION_MISMATCH
+      code = AuditResults::PC_PO_VERSION_MISMATCH
       addl_hash = { pc_version: 1, po_version: 2 }
       pohr.add_result(code, addl_hash)
       expect(pohr.result_array.size).to eq 1
-      exp_msg = "#{pohr.msg_prefix} #{PreservedObjectHandlerResults::RESPONSE_CODE_TO_MESSAGES[code] % addl_hash}"
+      exp_msg = "#{pohr.msg_prefix} #{AuditResults::RESPONSE_CODE_TO_MESSAGES[code] % addl_hash}"
       expect(pohr.result_array.first).to eq code => exp_msg
     end
     it 'can take a single result code argument' do
       # see above
     end
     it 'can take a second msg_args argument' do
-      code = PreservedObjectHandlerResults::VERSION_MATCHES
+      code = AuditResults::VERSION_MATCHES
       pohr.add_result(code, 'foo')
       expect(pohr.result_array.size).to eq 1
       expect(pohr.result_array.first).to eq code => "#{pohr.msg_prefix} incoming version (6) matches foo db version"
@@ -131,28 +131,28 @@ RSpec.describe PreservedObjectHandlerResults do
 
   context '#remove_db_updated_results' do
     before do
-      code = PreservedObjectHandlerResults::PC_PO_VERSION_MISMATCH
+      code = AuditResults::PC_PO_VERSION_MISMATCH
       result_msg_args = { pc_version: 1, po_version: 2 }
       pohr.add_result(code, result_msg_args)
-      code = PreservedObjectHandlerResults::PC_STATUS_CHANGED
+      code = AuditResults::PC_STATUS_CHANGED
       result_msg_args = { old_status: PreservedCopy::OK_STATUS, new_status: PreservedCopy::INVALID_MOAB_STATUS }
       pohr.add_result(code, result_msg_args)
-      code = PreservedObjectHandlerResults::CREATED_NEW_OBJECT
+      code = AuditResults::CREATED_NEW_OBJECT
       pohr.add_result(code)
-      code = PreservedObjectHandlerResults::INVALID_MOAB
+      code = AuditResults::INVALID_MOAB
       pohr.add_result(code, 'foo')
     end
     it 'removes results matching DB_UPDATED_CODES' do
       expect(pohr.result_array.size).to eq 4
       pohr.remove_db_updated_results
       expect(pohr.result_array.size).to eq 2
-      expect(pohr.result_array).not_to include(a_hash_including(PreservedObjectHandlerResults::CREATED_NEW_OBJECT))
-      expect(pohr.result_array).not_to include(a_hash_including(PreservedObjectHandlerResults::PC_STATUS_CHANGED))
+      expect(pohr.result_array).not_to include(a_hash_including(AuditResults::CREATED_NEW_OBJECT))
+      expect(pohr.result_array).not_to include(a_hash_including(AuditResults::PC_STATUS_CHANGED))
     end
     it 'keeps results not matching DB_UPDATED_CODES' do
       pohr.remove_db_updated_results
-      expect(pohr.result_array).to include(a_hash_including(PreservedObjectHandlerResults::PC_PO_VERSION_MISMATCH))
-      expect(pohr.result_array).to include(a_hash_including(PreservedObjectHandlerResults::INVALID_MOAB))
+      expect(pohr.result_array).to include(a_hash_including(AuditResults::PC_PO_VERSION_MISMATCH))
+      expect(pohr.result_array).to include(a_hash_including(AuditResults::INVALID_MOAB))
     end
   end
 end

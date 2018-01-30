@@ -40,7 +40,7 @@ RSpec.describe PreservedObjectHandler do
         PreservedObject.create!(druid: druid, current_version: 2, preservation_policy: default_prez_policy)
         po_handler = described_class.new(druid, 3, incoming_size, diff_ep)
         results = po_handler.confirm_version
-        code = PreservedObjectHandlerResults::OBJECT_DOES_NOT_EXIST
+        code = AuditResults::OBJECT_DOES_NOT_EXIST
         exp_str = "ActiveRecord::RecordNotFound: Couldn't find PreservedCopy> db object does not exist"
         expect(results).to include(a_hash_including(code => a_string_matching(exp_str)))
         expect(PreservedObject.find_by(druid: druid).current_version).to eq 2
@@ -111,7 +111,7 @@ RSpec.describe PreservedObjectHandler do
             expect(results.size).to eq 2
           end
           it 'VERSION_MATCHES results' do
-            code = PreservedObjectHandlerResults::VERSION_MATCHES
+            code = AuditResults::VERSION_MATCHES
             expect(results).to include(a_hash_including(code => version_matches_pc_msg))
             expect(results).to include(a_hash_including(code => version_matches_po_msg))
           end
@@ -217,11 +217,11 @@ RSpec.describe PreservedObjectHandler do
             expect(results.size).to eq 2
           end
           it 'UNEXPECTED_VERSION PreservedCopy result' do
-            code = PreservedObjectHandlerResults::UNEXPECTED_VERSION
+            code = AuditResults::UNEXPECTED_VERSION
             expect(results).to include(a_hash_including(code => unexpected_version_pc_msg))
           end
           it "PC_STATUS_CHANGED PreservedCopy result" do
-            code = PreservedObjectHandlerResults::PC_STATUS_CHANGED
+            code = AuditResults::PC_STATUS_CHANGED
             expect(results).to include(a_hash_including(code => updated_pc_db_status_msg))
           end
         end
@@ -238,7 +238,7 @@ RSpec.describe PreservedObjectHandler do
 
       context 'db update error' do
         context 'ActiveRecordError' do
-          let(:result_code) { PreservedObjectHandlerResults::DB_UPDATE_FAILED }
+          let(:result_code) { AuditResults::DB_UPDATE_FAILED }
           let(:incoming_version) { 2 }
           let(:results) do
 
@@ -259,7 +259,7 @@ RSpec.describe PreservedObjectHandler do
           end
 
           it 'DB_UPDATE_FAILED error' do
-            expect(results).to include(a_hash_including(PreservedObjectHandlerResults::DB_UPDATE_FAILED))
+            expect(results).to include(a_hash_including(AuditResults::DB_UPDATE_FAILED))
           end
         end
       end

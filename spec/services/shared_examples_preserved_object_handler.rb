@@ -19,10 +19,10 @@ RSpec.shared_examples "attributes validated" do |method_sym|
       expect(result.size).to eq 1
     end
     it 'INVALID_ARGUMENTS' do
-      expect(result).to include(a_hash_including(PreservedObjectHandlerResults::INVALID_ARGUMENTS))
+      expect(result).to include(a_hash_including(AuditResults::INVALID_ARGUMENTS))
     end
     context 'result message includes' do
-      let(:msg) { result.first[PreservedObjectHandlerResults::INVALID_ARGUMENTS] }
+      let(:msg) { result.first[AuditResults::INVALID_ARGUMENTS] }
       let(:exp_msg_prefix) { "PreservedObjectHandler(#{bad_druid}, #{bad_version}, #{bad_size}, #{bad_endpoint.endpoint_name if bad_endpoint})" }
 
       it "prefix" do
@@ -69,12 +69,12 @@ RSpec.shared_examples "attributes validated" do |method_sym|
   end
 end
 
-RSpec.shared_examples 'calls PreservedObjectHandlerResults.report_results' do |method_sym|
+RSpec.shared_examples 'calls AuditResults.report_results' do |method_sym|
   it '' do
-    mock_results = instance_double(PreservedObjectHandlerResults)
+    mock_results = instance_double(AuditResults)
     allow(mock_results).to receive(:add_result)
     expect(mock_results).to receive(:report_results)
-    expect(PreservedObjectHandlerResults).to receive(:new).and_return(mock_results)
+    expect(AuditResults).to receive(:new).and_return(mock_results)
     po_handler.send(method_sym)
   end
 end
@@ -90,7 +90,7 @@ RSpec.shared_examples 'druid not in catalog' do |method_sym|
   end
 
   it 'OBJECT_DOES_NOT_EXIST error' do
-    code = PreservedObjectHandlerResults::OBJECT_DOES_NOT_EXIST
+    code = AuditResults::OBJECT_DOES_NOT_EXIST
     expect(results).to include(a_hash_including(code => a_string_matching(escaped_exp_msg)))
   end
 end
@@ -115,7 +115,7 @@ RSpec.shared_examples 'PreservedCopy does not exist' do |method_sym|
   end
 
   it 'OBJECT_DOES_NOT_EXIST error' do
-    code = PreservedObjectHandlerResults::OBJECT_DOES_NOT_EXIST
+    code = AuditResults::OBJECT_DOES_NOT_EXIST
     expect(results).to include(a_hash_including(code => exp_msg))
   end
 end
@@ -199,15 +199,15 @@ RSpec.shared_examples 'unexpected version' do |method_sym, incoming_version|
       expect(results.size).to eq 4
     end
     it 'UNEXPECTED_VERSION result' do
-      code = PreservedObjectHandlerResults::UNEXPECTED_VERSION
+      code = AuditResults::UNEXPECTED_VERSION
       expect(results).to include(a_hash_including(code => unexpected_version_msg))
     end
     it 'specific version results' do
       # NOTE this is not checking that we have the CORRECT specific code
       codes = [
-        PreservedObjectHandlerResults::VERSION_MATCHES,
-        PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT,
-        PreservedObjectHandlerResults::ARG_VERSION_LESS_THAN_DB_OBJECT
+        AuditResults::VERSION_MATCHES,
+        AuditResults::ARG_VERSION_GREATER_THAN_DB_OBJECT,
+        AuditResults::ARG_VERSION_LESS_THAN_DB_OBJECT
       ]
       obj_version_results = results.select { |r| codes.include?(r.keys.first) }
       msgs = obj_version_results.map { |r| r.values.first }
@@ -216,11 +216,11 @@ RSpec.shared_examples 'unexpected version' do |method_sym, incoming_version|
     end
     if method_sym == :update_version
       it 'PC_STATUS_CHANGED result' do
-        expect(results).to include(a_hash_including(PreservedObjectHandlerResults::PC_STATUS_CHANGED))
+        expect(results).to include(a_hash_including(AuditResults::PC_STATUS_CHANGED))
       end
     else
       it 'no PC_STATUS_CHANGED result' do
-        expect(results).not_to include(a_hash_including(PreservedObjectHandlerResults::PC_STATUS_CHANGED))
+        expect(results).not_to include(a_hash_including(AuditResults::PC_STATUS_CHANGED))
       end
     end
   end
@@ -313,27 +313,27 @@ RSpec.shared_examples 'unexpected version with validation' do |method_sym, incom
     end
     if method_sym == :update_version_after_validation
       it 'UNEXPECTED_VERSION result unless INVALID_MOAB' do
-        unless results.find { |r| r.keys.first == PreservedObjectHandlerResults::INVALID_MOAB }
-          code = PreservedObjectHandlerResults::UNEXPECTED_VERSION
+        unless results.find { |r| r.keys.first == AuditResults::INVALID_MOAB }
+          code = AuditResults::UNEXPECTED_VERSION
           expect(results).to include(a_hash_including(code => unexpected_version_msg))
         end
       end
     end
     it 'specific version results' do
       codes = [
-        PreservedObjectHandlerResults::VERSION_MATCHES,
-        PreservedObjectHandlerResults::ARG_VERSION_GREATER_THAN_DB_OBJECT,
-        PreservedObjectHandlerResults::ARG_VERSION_LESS_THAN_DB_OBJECT
+        AuditResults::VERSION_MATCHES,
+        AuditResults::ARG_VERSION_GREATER_THAN_DB_OBJECT,
+        AuditResults::ARG_VERSION_LESS_THAN_DB_OBJECT
       ]
       obj_version_results = results.select { |r| codes.include?(r.keys.first) }
       msgs = obj_version_results.map { |r| r.values.first }
-      unless results.find { |r| r.keys.first == PreservedObjectHandlerResults::INVALID_MOAB }
+      unless results.find { |r| r.keys.first == AuditResults::INVALID_MOAB }
         expect(msgs).to include(a_string_matching("PreservedObject"))
         expect(msgs).to include(a_string_matching("PreservedCopy"))
       end
     end
     it 'PC_STATUS_CHANGED result' do
-      expect(results).to include(a_hash_including(PreservedObjectHandlerResults::PC_STATUS_CHANGED => updated_status_msg_regex))
+      expect(results).to include(a_hash_including(AuditResults::PC_STATUS_CHANGED => updated_status_msg_regex))
     end
   end
 end
@@ -397,11 +397,11 @@ RSpec.shared_examples 'update for invalid moab' do |method_sym|
       expect(results.size).to eq 2
     end
     it 'INVALID_MOAB result' do
-      code = PreservedObjectHandlerResults::INVALID_MOAB
+      code = AuditResults::INVALID_MOAB
       expect(results).to include(hash_including(code => invalid_moab_msg))
     end
     it 'PC_STATUS_CHANGED result' do
-      expect(results).to include(a_hash_including(PreservedObjectHandlerResults::PC_STATUS_CHANGED => updated_status_msg_regex))
+      expect(results).to include(a_hash_including(AuditResults::PC_STATUS_CHANGED => updated_status_msg_regex))
     end
   end
 end
@@ -438,7 +438,7 @@ RSpec.shared_examples 'PreservedObject current_version does not match online PC 
       expect(results.size).to eq 1
     end
     it 'PC_PO_VERSION_MISMATCH result' do
-      code = PreservedObjectHandlerResults::PC_PO_VERSION_MISMATCH
+      code = AuditResults::PC_PO_VERSION_MISMATCH
       expect(results).to include(hash_including(code => version_mismatch_msg))
     end
   end
