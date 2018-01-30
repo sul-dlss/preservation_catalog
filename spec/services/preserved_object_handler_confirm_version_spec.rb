@@ -95,17 +95,10 @@ RSpec.describe PreservedObjectHandler do
           po_handler.confirm_version
           expect(po.reload.updated_at).to eq orig_timestamp
         end
-        it "logs at info level" do
-          expect(Rails.logger).to receive(:log).with(Logger::INFO, version_matches_po_msg)
-          expect(Rails.logger).to receive(:log).with(Logger::INFO, version_matches_pc_msg)
-          po_handler.confirm_version
-        end
+        it_behaves_like 'calls AuditResults.report_results', :confirm_version
         context 'returns' do
           let!(:results) { po_handler.confirm_version }
 
-          # results = [result1, result2]
-          # result1 = {response_code: msg}
-          # result2 = {response_code: msg}
           it '2 results' do
             expect(results).to be_an_instance_of Array
             expect(results.size).to eq 2
@@ -144,6 +137,7 @@ RSpec.describe PreservedObjectHandler do
       end
 
       context 'incoming version does NOT match db version' do
+        let(:druid) { 'bj102hs9687' } # for shared_examples 'calls AuditResults.report_results'
         let(:po_handler) { described_class.new(druid, 1, 666, ep) }
         let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, 1, 666, #{ep.endpoint_name})" }
         let(:unexpected_version_pc_msg) {
@@ -153,76 +147,73 @@ RSpec.describe PreservedObjectHandler do
           "#{exp_msg_prefix} PreservedCopy status changed from ok to expected_vers_not_found_on_storage"
         }
 
-        before do
-          allow(po_handler).to receive(:moab_validation_errors).and_return([])
-        end
+        it_behaves_like 'calls AuditResults.report_results', :confirm_version
 
-        context 'PreservedCopy' do
-          context 'changed' do
-            it 'status to expected_vers_not_found_on_storage' do
-              expect(pc.status).to eq PreservedCopy::OK_STATUS
-              po_handler.confirm_version
-              expect(pc.reload.status).to eq PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
-            end
-            it 'last_version_audit' do
-              orig = Time.current
-              pc.last_version_audit = orig
-              pc.save!
-              po_handler.confirm_version
-              expect(pc.reload.last_version_audit).to be > orig
-            end
-            it 'updated_at' do
-              orig = pc.updated_at
-              po_handler.confirm_version
-              expect(pc.reload.updated_at).to be > orig
-            end
+        context '' do
+          before do
+            # Note this context cannot work with shared_examples 'calls AuditResults.report_results
+            allow(po_handler).to receive(:moab_validation_errors).and_return([])
           end
-          context 'unchanged' do
-            it 'version' do
-              orig = pc.version
-              po_handler.confirm_version
-              expect(pc.reload.version).to eq orig
-            end
-            it 'size' do
-              orig = pc.size
-              po_handler.confirm_version
-              expect(pc.reload.size).to eq orig
-            end
-            it 'last_moab_validation' do
-              orig = pc.last_moab_validation
-              po_handler.confirm_version
-              expect(pc.reload.last_moab_validation).to eq orig
-            end
-          end
-        end
-        it 'PreservedObject is not updated' do
-          orig_timestamp = po.updated_at
-          po_handler.confirm_version
-          expect(po.reload.updated_at).to eq orig_timestamp
-        end
 
-        it "logs at error level" do
-          expect(Rails.logger).to receive(:log).with(Logger::INFO, updated_pc_db_status_msg)
-          expect(Rails.logger).to receive(:log).with(Logger::ERROR, unexpected_version_pc_msg)
-          po_handler.confirm_version
-        end
-        context 'returns' do
-          let!(:results) { po_handler.confirm_version }
+          context 'PreservedCopy' do
+            context 'changed' do
+              it 'status to expected_vers_not_found_on_storage' do
+                expect(pc.status).to eq PreservedCopy::OK_STATUS
+                po_handler.confirm_version
+                expect(pc.reload.status).to eq PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
+              end
+              it 'last_version_audit' do
+                orig = Time.current
+                pc.last_version_audit = orig
+                pc.save!
+                po_handler.confirm_version
+                expect(pc.reload.last_version_audit).to be > orig
+              end
+              it 'updated_at' do
+                orig = pc.updated_at
+                po_handler.confirm_version
+                expect(pc.reload.updated_at).to be > orig
+              end
+            end
+            context 'unchanged' do
+              it 'version' do
+                orig = pc.version
+                po_handler.confirm_version
+                expect(pc.reload.version).to eq orig
+              end
+              it 'size' do
+                orig = pc.size
+                po_handler.confirm_version
+                expect(pc.reload.size).to eq orig
+              end
+              it 'last_moab_validation' do
+                orig = pc.last_moab_validation
+                po_handler.confirm_version
+                expect(pc.reload.last_moab_validation).to eq orig
+              end
+            end
+          end
+          it 'PreservedObject is not updated' do
+            orig_timestamp = po.updated_at
+            po_handler.confirm_version
+            expect(po.reload.updated_at).to eq orig_timestamp
+          end
 
-          # results = [result1, result2]
-          # result1 = {response_code: msg}
-          # result2 = {response_code: msg}
-          it '2 results' do
-            expect(results).to be_an_instance_of Array
-            expect(results.size).to eq 2
-          end
-          it 'UNEXPECTED_VERSION PreservedCopy result' do
-            code = AuditResults::UNEXPECTED_VERSION
-            expect(results).to include(a_hash_including(code => unexpected_version_pc_msg))
-          end
-          it "PC_STATUS_CHANGED PreservedCopy result" do
-            code = AuditResults::PC_STATUS_CHANGED
-            expect(results).to include(a_hash_including(code => updated_pc_db_status_msg))
+          context 'returns' do
+            let!(:results) { po_handler.confirm_version }
+
+            it '2 results' do
+              expect(results).to be_an_instance_of Array
+              expect(results.size).to eq 2
+            end
+            it 'UNEXPECTED_VERSION PreservedCopy result' do
+              code = AuditResults::UNEXPECTED_VERSION
+              expect(results).to include(a_hash_including(code => unexpected_version_pc_msg))
+            end
+            it "PC_STATUS_CHANGED PreservedCopy result" do
+              code = AuditResults::PC_STATUS_CHANGED
+              expect(results).to include(a_hash_including(code => updated_pc_db_status_msg))
+            end
           end
         end
       end
