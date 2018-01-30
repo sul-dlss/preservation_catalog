@@ -32,25 +32,35 @@ RSpec.describe AuditResults do
 
   context '#report_results' do
     context 'writes to Rails log' do
+      let(:version_not_matched_str) { 'does not match PreservedObject current_version' }
+      let(:result_code) { AuditResults::PC_PO_VERSION_MISMATCH }
+
       before do
-        code = AuditResults::PC_PO_VERSION_MISMATCH
         addl_hash = { pc_version: 1, po_version: 2 }
-        pohr.add_result(code, addl_hash)
+        pohr.add_result(result_code, addl_hash)
       end
       it 'with msg_prefix' do
         expect(Rails.logger).to receive(:log).with(Logger::ERROR, a_string_matching(Regexp.escape(pohr.msg_prefix)))
         pohr.report_results
       end
-      it 'for each result' do
-        code = AuditResults::PC_STATUS_CHANGED
+      it 'with severity assigned by .logger_severity_level' do
+        expect(described_class).to receive(:logger_severity_level).with(result_code).and_return(Logger::FATAL)
+        expect(Rails.logger).to receive(:log).with(Logger::FATAL, a_string_matching(version_not_matched_str))
+        pohr.report_results
+      end
+      it 'for every result' do
+        result_code2 = AuditResults::PC_STATUS_CHANGED
         status_details = { old_status: PreservedCopy::INVALID_MOAB_STATUS, new_status: PreservedCopy::OK_STATUS }
-        pohr.add_result(code, status_details)
-        not_matched_str = 'does not match PreservedObject current_version'
-        expect(Rails.logger).to receive(:log).with(Logger::ERROR, a_string_matching(not_matched_str))
-        expect(Rails.logger).to receive(:log).with(Logger::INFO, a_string_matching(PreservedCopy::INVALID_MOAB_STATUS))
+        pohr.add_result(result_code2, status_details)
+        severity_level = described_class.logger_severity_level(result_code)
+        expect(Rails.logger).to receive(:log).with(severity_level, a_string_matching(version_not_matched_str))
+        severity_level = described_class.logger_severity_level(result_code2)
+        status_changed_str = "PreservedCopy status changed from #{PreservedCopy::INVALID_MOAB_STATUS}"
+        expect(Rails.logger).to receive(:log).with(severity_level, a_string_matching(status_changed_str))
         pohr.report_results
       end
     end
+
     context 'sends errors to workflows' do
       it 'INVALID_MOAB reported with details about the failures' do
         result_code = AuditResults::INVALID_MOAB
@@ -146,6 +156,9 @@ RSpec.describe AuditResults do
       expect(pohr.result_array.size).to eq 4
       pohr.remove_db_updated_results
       expect(pohr.result_array.size).to eq 2
+      pohr.result_array.each do |result_hash|
+        expect(AuditResults::DB_UPDATED_CODES).not_to include(result_hash.keys.first)
+      end
       expect(pohr.result_array).not_to include(a_hash_including(AuditResults::CREATED_NEW_OBJECT))
       expect(pohr.result_array).not_to include(a_hash_including(AuditResults::PC_STATUS_CHANGED))
     end
