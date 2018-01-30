@@ -17,6 +17,8 @@ RSpec.describe PreservedObjectHandler do
     it_behaves_like 'attributes validated', :check_existence
 
     context 'druid in db' do
+      let(:druid) { 'bj102hs9687' }
+
       before do
         po = PreservedObject.create!(druid: druid, current_version: 2, preservation_policy: default_prez_policy)
         PreservedCopy.create!(
@@ -77,11 +79,7 @@ RSpec.describe PreservedObjectHandler do
           po_handler.check_existence
           expect(po.reload.updated_at).to eq orig
         end
-        it "logs at info level" do
-          expect(Rails.logger).to receive(:log).with(Logger::INFO, version_matches_po_msg)
-          expect(Rails.logger).to receive(:log).with(Logger::INFO, version_matches_pc_msg)
-          po_handler.check_existence
-        end
+        it_behaves_like 'calls AuditResults.report_results', :check_existence
         it 'does not validate moab' do
           expect(po_handler).not_to receive(:moab_validation_errors)
           po_handler.check_existence
@@ -89,9 +87,6 @@ RSpec.describe PreservedObjectHandler do
         context 'returns' do
           let!(:results) { po_handler.check_existence }
 
-          # results = [result1, result2]
-          # result1 = {response_code: msg}
-          # result2 = {response_code: msg}
           it '2 results' do
             expect(results).to be_an_instance_of Array
             expect(results.size).to eq 2
@@ -109,7 +104,6 @@ RSpec.describe PreservedObjectHandler do
         let(:incoming_size) { 9876 }
         let(:version_gt_pc_msg) { "#{exp_msg_prefix} incoming version (#{incoming_version}) greater than PreservedCopy db version" }
         let(:version_gt_po_msg) { "#{exp_msg_prefix} incoming version (#{incoming_version}) greater than PreservedObject db version" }
-        let(:updated_status_msg_regex) { Regexp.new(Regexp.escape("#{exp_msg_prefix} PreservedCopy status changed from")) }
 
         it 'calls Stanford::StorageObjectValidator.validation_errors for moab' do
           mock_sov = instance_double(Stanford::StorageObjectValidator)
@@ -200,13 +194,7 @@ RSpec.describe PreservedObjectHandler do
             end
           end
 
-          it "logs at info level" do
-            allow(po_handler).to receive(:moab_validation_errors).and_return([])
-            expect(Rails.logger).to receive(:log).with(Logger::INFO, version_gt_po_msg)
-            expect(Rails.logger).to receive(:log).with(Logger::INFO, version_gt_pc_msg)
-            expect(Rails.logger).not_to receive(:log).with(Logger::INFO, updated_status_msg_regex)
-            po_handler.check_existence
-          end
+          it_behaves_like 'calls AuditResults.report_results', :check_existence
 
           context 'returns' do
             let(:results) { po_handler.check_existence }
@@ -214,9 +202,6 @@ RSpec.describe PreservedObjectHandler do
             before do
               allow(po_handler).to receive(:moab_validation_errors).and_return([])
             end
-            # results = [result1, result2]
-            # result1 = {response_code: msg}
-            # result2 = {response_code: msg}
             it '2 results' do
               expect(results).to be_an_instance_of Array
               expect(results.size).to eq 2
@@ -318,19 +303,11 @@ RSpec.describe PreservedObjectHandler do
             expect(invalid_po.reload.updated_at).to eq orig_timestamp
           end
 
-          it 'logs at error level' do
-            allow(Rails.logger).to receive(:log)
-            errors = Regexp.escape("#{exp_msg_prefix} Invalid moab, validation errors:")
-            expect(Rails.logger).to receive(:log).with(Logger::ERROR, a_string_matching(errors))
-            invalid_po_handler.check_existence
-          end
+          it_behaves_like 'calls AuditResults.report_results', :check_existence
 
           context 'returns' do
             let!(:results) { invalid_po_handler.check_existence }
 
-            # results = [result1, result2]
-            # result1 = {response_code: msg}
-            # result2 = {response_code: msg}
             it '4 results' do
               expect(results).to be_an_instance_of Array
               expect(results.size).to eq 4
@@ -523,28 +500,11 @@ RSpec.describe PreservedObjectHandler do
             po_handler.check_existence
           end
 
-          context 'logging' do
-            it 'not sure what logging we REALLY want - maybe a single WARN?' do
-              skip 'need to get requirements on what exactly we want in logs'
-            end
-            it 'object does not exist error' do
-              allow(Rails.logger).to receive(:log)
-              expect(Rails.logger).to receive(:log).with(Logger::ERROR, exp_po_not_exist_msg)
-              po_handler.check_existence
-            end
-            it 'created db object message' do
-              allow(Rails.logger).to receive(:log)
-              expect(Rails.logger).to receive(:log).with(Logger::INFO, exp_obj_created_msg)
-              po_handler.check_existence
-            end
-          end
+          it_behaves_like 'calls AuditResults.report_results', :check_existence
 
           context 'returns' do
             let!(:results) { po_handler.check_existence }
 
-            # results = [result1, result2]
-            # result1 = {response_code: msg}
-            # result2 = {response_code: msg}
             it '2 results' do
               expect(results).to be_an_instance_of Array
               expect(results.size).to eq 2
@@ -567,9 +527,6 @@ RSpec.describe PreservedObjectHandler do
               let(:result_code) { AuditResults::DB_UPDATE_FAILED }
               let(:results) do
                 allow(Rails.logger).to receive(:log)
-                # FIXME: couldn't figure out how to put next line into its own test
-                expect(Rails.logger).to receive(:log).with(Logger::ERROR, /#{db_update_failed_prefix_regex_escaped}/)
-
                 po = instance_double("PreservedObject")
                 allow(PreservedObject).to receive(:create!).with(hash_including(druid: valid_druid)).and_return(po)
                 allow(PreservedCopy).to receive(:create!).and_raise(ActiveRecord::ActiveRecordError, 'foo')
@@ -640,33 +597,11 @@ RSpec.describe PreservedObjectHandler do
             po_handler.check_existence
           end
 
-          context 'logging' do
-            it "moab validation errors" do
-              allow(Rails.logger).to receive(:log)
-              expect(Rails.logger).to receive(:log).with(Logger::ERROR, exp_moab_errs_msg)
-              po_handler.check_existence
-            end
-            it 'not sure what logging we REALLY want - maybe a single WARN?' do
-              skip 'need to get requirements on what exactly we want in logs'
-            end
-            it 'object does not exist error' do
-              allow(Rails.logger).to receive(:log)
-              expect(Rails.logger).to receive(:log).with(Logger::ERROR, exp_po_not_exist_msg)
-              po_handler.check_existence
-            end
-            it 'created db object message' do
-              allow(Rails.logger).to receive(:log)
-              expect(Rails.logger).to receive(:log).with(Logger::INFO, exp_obj_created_msg)
-              po_handler.check_existence
-            end
-          end
+          it_behaves_like 'calls AuditResults.report_results', :check_existence
 
           context 'returns' do
             let!(:results) { po_handler.check_existence }
 
-            # results = [result1, result2]
-            # result1 = {response_code: msg}
-            # result2 = {response_code: msg}
             it '3 results' do
               expect(results).to be_an_instance_of Array
               expect(results.size).to eq 3
@@ -693,8 +628,6 @@ RSpec.describe PreservedObjectHandler do
               let(:result_code) { AuditResults::DB_UPDATE_FAILED }
               let(:results) do
                 allow(Rails.logger).to receive(:log)
-                # FIXME: couldn't figure out how to put next line into its own test
-                expect(Rails.logger).to receive(:log).with(Logger::ERROR, /#{db_update_failed_prefix_regex_escaped}/)
 
                 po = instance_double("PreservedObject")
                 allow(PreservedObject).to receive(:create!).with(hash_including(druid: invalid_druid)).and_return(po)
