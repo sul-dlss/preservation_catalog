@@ -5,7 +5,7 @@ class PreservedCopy < ApplicationRecord
   INVALID_MOAB_STATUS = 'invalid_moab'.freeze
   INVALID_CHECKSUM_STATUS = 'invalid_checksum'.freeze
   ONLINE_MOAB_NOT_FOUND_STATUS = 'online_moab_not_found'.freeze
-  EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS = 'expected_vers_not_found_on_storage'.freeze
+  EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS = 'unexpected_version_on_storage'.freeze
   VALIDITY_UNKNOWN_STATUS = 'validity_unknown'.freeze
 
   # NOTE:  DO NOT change the underlying constants for enum values that have been merged to

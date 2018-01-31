@@ -272,7 +272,7 @@ RSpec.describe PreservedObjectHandler do
                 invalid_po_handler.check_existence
                 expect(invalid_pc.reload.status).to eq PreservedCopy::INVALID_MOAB_STATUS
               end
-              it 'ensures status becomes invalid_moab from expected_vers_not_found_on_storage' do
+              it 'ensures status becomes invalid_moab from unexpected_version_on_storage' do
                 invalid_pc.status = PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
                 invalid_pc.save!
                 invalid_po_handler.check_existence
