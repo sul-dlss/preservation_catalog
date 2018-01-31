@@ -203,5 +203,17 @@ RSpec.describe PreservedCopy, type: :model do
     it 'returns all PreservedCopy objects, in any order' do
       expect(db_query).to match_array([preserved_copy])
     end
+
+    context '.normalize_date(date)' do
+      it 'given a String timestamp, returns a Time object' do
+        expect(described_class.send(:normalize_date, '2018-01-22T18:54:48')).to be_an_instance_of(Time)
+      end
+      it 'given a Time Object, returns the same Time object' do
+        expect(described_class.send(:normalize_date, Time.now.utc)).to be_an_instance_of(Time)
+      end
+      it 'given nil, returns the start of teh Epoch Time object' do
+        expect(described_class.send(:normalize_date, nil)).to be_an_instance_of(Time)
+      end
+    end
   end
 end
