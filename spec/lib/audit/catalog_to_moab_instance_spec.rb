@@ -93,7 +93,7 @@ RSpec.describe CatalogToMoab do
           PreservedCopy::OK_STATUS,
           PreservedCopy::ONLINE_MOAB_NOT_FOUND_STATUS,
           PreservedCopy::INVALID_MOAB_STATUS,
-          PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
+          PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
         ].each do |orig_status|
           it "had #{orig_status}, should now have ONLINE_MOAB_NOT_FOUND_STATUS" do
             pres_copy.status = orig_status
@@ -142,7 +142,7 @@ RSpec.describe CatalogToMoab do
           PreservedCopy::OK_STATUS,
           PreservedCopy::ONLINE_MOAB_NOT_FOUND_STATUS,
           PreservedCopy::INVALID_MOAB_STATUS,
-          PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
+          PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
         ].each do |orig_status|
           it "had #{orig_status}, should now have OK_STATUS" do
             pres_copy.status = orig_status
@@ -159,7 +159,7 @@ RSpec.describe CatalogToMoab do
           PreservedCopy::VALIDITY_UNKNOWN_STATUS,
           PreservedCopy::ONLINE_MOAB_NOT_FOUND_STATUS,
           PreservedCopy::INVALID_MOAB_STATUS,
-          PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
+          PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
         ].each do |orig_status|
           it "had #{orig_status}, should now have INVALID_MOAB_STATUS" do
             pres_copy.status = orig_status
@@ -203,7 +203,7 @@ RSpec.describe CatalogToMoab do
           PreservedCopy::OK_STATUS,
           PreservedCopy::ONLINE_MOAB_NOT_FOUND_STATUS,
           PreservedCopy::INVALID_MOAB_STATUS,
-          PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
+          PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
         ].each do |orig_status|
           it "had #{orig_status}, should now have OK_STATUS" do
             pres_copy.status = orig_status
@@ -221,7 +221,7 @@ RSpec.describe CatalogToMoab do
           PreservedCopy::OK_STATUS,
           PreservedCopy::ONLINE_MOAB_NOT_FOUND_STATUS,
           PreservedCopy::INVALID_MOAB_STATUS,
-          PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
+          PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
         ].each do |orig_status|
           it "had #{orig_status}, should now have INVALID_MOAB_STATUS" do
             pres_copy.status = orig_status
@@ -261,12 +261,12 @@ RSpec.describe CatalogToMoab do
         allow(Stanford::StorageObjectValidator).to receive(:new).and_return(mock_sov)
         c2m.check_catalog_version
       end
-      it 'valid moab sets status to EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS' do
+      it 'valid moab sets status to UNEXPECTED_VERSION_ON_STORAGE_STATUS' do
         orig = pres_copy.status
         c2m.check_catalog_version
         new_status = pres_copy.reload.status
         expect(new_status).not_to eq orig
-        expect(new_status).to eq PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
+        expect(new_status).to eq PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
       end
       context 'invalid moab' do
         before do
@@ -307,14 +307,14 @@ RSpec.describe CatalogToMoab do
           PreservedCopy::OK_STATUS,
           PreservedCopy::ONLINE_MOAB_NOT_FOUND_STATUS,
           PreservedCopy::INVALID_MOAB_STATUS,
-          PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
+          PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
         ].each do |orig_status|
           it "had #{orig_status}, should now have EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS" do
             pres_copy.status = orig_status
             pres_copy.save!
             allow(c2m).to receive(:moab_validation_errors).and_return([])
             c2m.check_catalog_version
-            expect(pres_copy.reload.status).to eq PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
+            expect(pres_copy.reload.status).to eq PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
           end
         end
 
@@ -323,7 +323,7 @@ RSpec.describe CatalogToMoab do
           PreservedCopy::OK_STATUS,
           PreservedCopy::ONLINE_MOAB_NOT_FOUND_STATUS,
           PreservedCopy::INVALID_MOAB_STATUS,
-          PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
+          PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
         ].each do |orig_status|
           it "had #{orig_status}, should now have INVALID_MOAB_STATUS" do
             pres_copy.status = orig_status

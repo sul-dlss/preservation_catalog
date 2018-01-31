@@ -105,10 +105,10 @@ RSpec.shared_examples 'unexpected version' do |method_sym, actual_version|
         expect(pc.reload.last_version_audit).to be > orig
       end
       if method_sym == :update_version
-        it 'status becomes EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS' do
+        it 'status becomes UNEXPECTED_VERSION_ON_STORAGE_STATUS' do
           orig = pc.status
           po_handler.send(method_sym)
-          expect(pc.reload.status).to eq PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
+          expect(pc.reload.status).to eq PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
           expect(pc.status).not_to eq orig
         end
       end
@@ -130,7 +130,7 @@ RSpec.shared_examples 'unexpected version' do |method_sym, actual_version|
         expect(pc.reload.last_moab_validation).to eq orig
       end
       if method_sym != :update_version
-        it 'status becomes EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS' do
+        it 'status becomes UNEXPECTED_VERSION_ON_STORAGE_STATUS' do
           orig = pc.status
           po_handler.send(method_sym)
           expect(pc.status).to eq orig
@@ -385,15 +385,15 @@ RSpec.shared_examples 'PreservedCopy already has a status other than OK_STATUS, 
     po_handler.send(method_sym)
     expect(pc.reload.status).to eq PreservedCopy::OK_STATUS
   end
-  it 'had EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS, but is now OK' do
-    pc.status = PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
+  it 'had UNEXPECTED_VERSION_ON_STORAGE_STATUS, but is now OK' do
+    pc.status = PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
     pc.save!
     allow(po_handler).to receive(:moab_validation_errors).and_return([])
     po_handler.send(method_sym)
     expect(pc.reload.status).to eq PreservedCopy::OK_STATUS
   end
-  it 'had EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS, but is now INVALID_MOAB_STATUS' do
-    pc.status = PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
+  it 'had UNEXPECTED_VERSION_ON_STORAGE_STATUS, but is now INVALID_MOAB_STATUS' do
+    pc.status = PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
     pc.save!
     allow(po_handler).to receive(:moab_validation_errors).and_return([{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }])
     po_handler.send(method_sym)
@@ -420,8 +420,8 @@ RSpec.shared_examples 'PreservedCopy already has a status other than OK_STATUS, 
     po_handler.send(method_sym)
     expect(pc.reload.status).to eq PreservedCopy::INVALID_MOAB_STATUS
   end
-  it 'had EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS, seems to have an acceptable version now' do
-    pc.status = PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
+  it 'had UNEXPECTED_VERSION_ON_STORAGE_STATUS, seems to have an acceptable version now' do
+    pc.status = PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
     pc.save!
     allow(po_handler).to receive(:moab_validation_errors).and_return([])
     po_handler.send(method_sym)
@@ -432,12 +432,12 @@ end
 RSpec.shared_examples 'PreservedCopy already has a status other than OK_STATUS, and incoming_version < pc.version' do |method_sym|
   let(:incoming_version) { pc.version - 1 }
 
-  it 'had OK_STATUS, but is now EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS' do
+  it 'had OK_STATUS, but is now UNEXPECTED_VERSION_ON_STORAGE_STATUS' do
     pc.status = PreservedCopy::OK_STATUS
     pc.save!
     allow(po_handler).to receive(:moab_validation_errors).and_return([])
     po_handler.send(method_sym)
-    expect(pc.reload.status).to eq PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
+    expect(pc.reload.status).to eq PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
   end
   it 'had OK_STATUS, but is now INVALID_MOAB_STATUS' do
     pc.status = PreservedCopy::OK_STATUS
@@ -446,19 +446,19 @@ RSpec.shared_examples 'PreservedCopy already has a status other than OK_STATUS, 
     po_handler.send(method_sym)
     expect(pc.reload.status).to eq PreservedCopy::INVALID_MOAB_STATUS
   end
-  it 'had INVALID_MOAB_STATUS, was made to a valid moab, but is now EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS' do
+  it 'had INVALID_MOAB_STATUS, was made to a valid moab, but is now UNEXPECTED_VERSION_ON_STORAGE_STATUS' do
     pc.status = PreservedCopy::INVALID_MOAB_STATUS
     pc.save!
     allow(po_handler).to receive(:moab_validation_errors).and_return([])
     po_handler.send(method_sym)
-    expect(pc.reload.status).to eq PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
+    expect(pc.reload.status).to eq PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
   end
-  it 'had EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS, still seeing an unexpected version' do
-    pc.status = PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
+  it 'had UNEXPECTED_VERSION_ON_STORAGE_STATUS, still seeing an unexpected version' do
+    pc.status = PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
     pc.save!
     allow(po_handler).to receive(:moab_validation_errors).and_return([])
     po_handler.send(method_sym)
-    expect(pc.reload.status).to eq PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
+    expect(pc.reload.status).to eq PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
   end
   it 'had VALIDITY_UNKNOWN_STATUS, but is now INVALID_MOAB_STATUS' do
     pc.status = PreservedCopy::VALIDITY_UNKNOWN_STATUS
@@ -467,11 +467,11 @@ RSpec.shared_examples 'PreservedCopy already has a status other than OK_STATUS, 
     po_handler.send(method_sym)
     expect(pc.reload.status).to eq PreservedCopy::INVALID_MOAB_STATUS
   end
-  it 'had VALIDITY_UNKNOWN_STATUS, but is now EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS' do
+  it 'had VALIDITY_UNKNOWN_STATUS, but is now UNEXPECTED_VERSION_ON_STORAGE_STATUS' do
     pc.status = PreservedCopy::VALIDITY_UNKNOWN_STATUS
     pc.save!
     allow(po_handler).to receive(:moab_validation_errors).and_return([])
     po_handler.send(method_sym)
-    expect(pc.reload.status).to eq PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
+    expect(pc.reload.status).to eq PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
   end
 end

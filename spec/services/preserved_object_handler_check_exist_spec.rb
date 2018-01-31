@@ -273,7 +273,7 @@ RSpec.describe PreservedObjectHandler do
                 expect(invalid_pc.reload.status).to eq PreservedCopy::INVALID_MOAB_STATUS
               end
               it 'ensures status becomes invalid_moab from unexpected_version_on_storage' do
-                invalid_pc.status = PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
+                invalid_pc.status = PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
                 invalid_pc.save!
                 invalid_po_handler.check_existence
                 expect(invalid_pc.reload.status).to eq PreservedCopy::INVALID_MOAB_STATUS
@@ -323,7 +323,7 @@ RSpec.describe PreservedObjectHandler do
         let(:druid) { 'bp628nk4868' }
         let(:ep) { Endpoint.find_by(storage_location: 'spec/fixtures/storage_root02/moab_storage_trunk') }
 
-        it_behaves_like 'unexpected version with validation', :check_existence, 1, PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
+        it_behaves_like 'unexpected version with validation', :check_existence, 1, PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
       end
 
       context 'PreservedCopy already has a status other than OK_STATUS' do
@@ -348,8 +348,8 @@ RSpec.describe PreservedObjectHandler do
             po_handler.check_existence
             expect(pc.reload.status).to eq PreservedCopy::OK_STATUS
           end
-          it 'had EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS, seems to have an acceptable version now' do
-            pc.status = PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
+          it 'had UNEXPECTED_VERSION_ON_STORAGE_STATUS, seems to have an acceptable version now' do
+            pc.status = PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
             pc.save!
             allow(po_handler).to receive(:moab_validation_errors).and_return([])
             po_handler.check_existence
