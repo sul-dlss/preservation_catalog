@@ -154,8 +154,6 @@ class CatalogToMoab
 
     # TODO: do the check that'd set INVALID_CHECKSUM_STATUS
 
-    # TODO: do the check that'd set FIXITY_CHECK_FAILED_STATUS
-
     update_status(PreservedCopy::OK_STATUS)
   end
 end

@@ -283,8 +283,6 @@ class PreservedObjectHandler
 
     # TODO: do the check that'd set INVALID_CHECKSUM_STATUS
 
-    # TODO: do the check that'd set FIXITY_CHECK_FAILED_STATUS
-
     update_status(pres_copy, PreservedCopy::OK_STATUS)
   end
 
