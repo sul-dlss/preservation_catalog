@@ -12,19 +12,19 @@
 #   result2 = {response_code => msg}
 class AuditResults
 
-  INVALID_ARGUMENTS = 1
-  VERSION_MATCHES = 2
-  ARG_VERSION_GREATER_THAN_DB_OBJECT = 3
-  ARG_VERSION_LESS_THAN_DB_OBJECT = 4
-  CREATED_NEW_OBJECT = 5
-  DB_UPDATE_FAILED = 6
-  OBJECT_ALREADY_EXISTS = 7
-  OBJECT_DOES_NOT_EXIST = 8
-  PC_STATUS_CHANGED = 9
-  UNEXPECTED_VERSION = 10
-  INVALID_MOAB = 11
-  PC_PO_VERSION_MISMATCH = 12
-  ONLINE_MOAB_DOES_NOT_EXIST = 13
+  INVALID_ARGUMENTS = :invalid_arguments
+  VERSION_MATCHES = :version_matches
+  ARG_VERSION_GREATER_THAN_DB_OBJECT = :arg_version_greater_than_db
+  ARG_VERSION_LESS_THAN_DB_OBJECT = :arg_version_less_than_db
+  CREATED_NEW_OBJECT = :created_new_object
+  DB_UPDATE_FAILED = :db_update_failed
+  OBJECT_ALREADY_EXISTS = :object_already_exists
+  OBJECT_DOES_NOT_EXIST = :object_does_not_exist
+  PC_STATUS_CHANGED = :pc_status_changed
+  UNEXPECTED_VERSION = :unexpected_version
+  INVALID_MOAB = :invalid_moab
+  PC_PO_VERSION_MISMATCH = :pc_po_version_mismatch
+  ONLINE_MOAB_DOES_NOT_EXIST = :online_moab_does_not_exist
 
   RESPONSE_CODE_TO_MESSAGES = {
     INVALID_ARGUMENTS => "encountered validation error(s): %{addl}",
