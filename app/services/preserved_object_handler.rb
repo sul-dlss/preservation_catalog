@@ -270,9 +270,6 @@ class PreservedObjectHandler
   # given a PreservedCopy instance and whether the caller found the expected version of it on disk, this will perform
   # other validations of what's on disk, and will update the status accordingly
   def set_status_as_seen_on_disk(pres_copy, found_expected_version)
-    # TODO: when we implement C2M, we should add a check here to look for the object on disk, and set PreservedCopy::ONLINE_MOAB_NOT_FOUND_STATUS
-    # if needed.  or maybe the caller will have done that already, since it needs to try reading the moab to obtain incoming_version?
-
     unless moab_validation_errors.empty?
       update_status(pres_copy, PreservedCopy::INVALID_MOAB_STATUS)
       return
