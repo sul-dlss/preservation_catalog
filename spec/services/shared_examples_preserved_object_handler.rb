@@ -42,31 +42,6 @@ RSpec.shared_examples "attributes validated" do |method_sym|
       end
     end
   end
-
-  it 'bad druid error is written to Rails log' do
-    po_handler = described_class.new(bad_druid, incoming_version, incoming_size, ep)
-    err_msg = "PreservedObjectHandler(#{bad_druid}, #{incoming_version}, #{incoming_size}, #{ep.endpoint_name}) encountered validation error(s): [\"#{bad_druid_msg}\"]"
-    expect(Rails.logger).to receive(:log).with(Logger::ERROR, err_msg)
-    po_handler.send(method_sym)
-  end
-  it 'bad version error is written to Rails log' do
-    po_handler = described_class.new(druid, bad_version, incoming_size, ep)
-    err_msg = "PreservedObjectHandler(#{druid}, #{bad_version}, #{incoming_size}, #{ep.endpoint_name}) encountered validation error(s): [\"#{bad_version_msg}\"]"
-    expect(Rails.logger).to receive(:log).with(Logger::ERROR, err_msg)
-    po_handler.send(method_sym)
-  end
-  it 'bad size error is written to Rails log' do
-    po_handler = described_class.new(druid, incoming_version, bad_size, ep)
-    err_msg = "PreservedObjectHandler(#{druid}, #{incoming_version}, #{bad_size}, #{ep.endpoint_name}) encountered validation error(s): [\"#{bad_size_msg}\"]"
-    expect(Rails.logger).to receive(:log).with(Logger::ERROR, err_msg)
-    po_handler.send(method_sym)
-  end
-  it 'bad endpoint is written to Rails log' do
-    po_handler = described_class.new(druid, incoming_version, incoming_size, bad_endpoint)
-    err_msg = "PreservedObjectHandler(#{druid}, #{incoming_version}, #{incoming_size}, ) encountered validation error(s): [\"#{bad_endpoint_msg}\"]"
-    expect(Rails.logger).to receive(:log).with(Logger::ERROR, err_msg)
-    po_handler.send(method_sym)
-  end
 end
 
 RSpec.shared_examples 'calls AuditResults.report_results' do |method_sym|
@@ -125,9 +100,6 @@ RSpec.shared_examples 'unexpected version' do |method_sym, incoming_version|
   let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, #{incoming_version}, 1, #{ep.endpoint_name if ep})" }
   let(:version_msg_prefix) { "#{exp_msg_prefix} incoming version (#{incoming_version})" }
   let(:unexpected_version_msg) { "#{version_msg_prefix} has unexpected relationship to PreservedCopy db version; ERROR!" }
-  let(:updated_po_db_timestamp_msg) { "#{exp_msg_prefix} PreservedObject updated db timestamp only" }
-  let(:updated_pc_db_timestamp_msg) { "#{exp_msg_prefix} PreservedCopy updated db timestamp only" }
-  let(:updated_status_msg_regex) { Regexp.new(Regexp.escape("#{exp_msg_prefix} PreservedCopy status changed from")) }
 
   context 'PreservedCopy' do
     context 'changed' do
@@ -180,20 +152,9 @@ RSpec.shared_examples 'unexpected version' do |method_sym, incoming_version|
     end
   end
 
-  it "logs at error level" do
-    expect(Rails.logger).to receive(:log).with(Logger::ERROR, unexpected_version_msg)
-    expect(Rails.logger).not_to receive(:log).with(Logger::INFO, updated_pc_db_timestamp_msg)
-    expect(Rails.logger).not_to receive(:log).with(Logger::ERROR, updated_po_db_timestamp_msg)
-    allow(Rails.logger).to receive(:log).with(Logger::INFO, updated_status_msg_regex)
-    po_handler.send(method_sym)
-  end
-
   context 'returns' do
     let!(:results) { po_handler.send(method_sym) }
 
-    # results = [result1, result2]
-    # result1 = {response_code: msg}
-    # result2 = {response_code: msg}
     it "number of results" do
       expect(results).to be_an_instance_of Array
       expect(results.size).to eq 4
@@ -287,12 +248,6 @@ RSpec.shared_examples 'unexpected version with validation' do |method_sym, incom
     po_handler.send(method_sym)
     expect(pc.reload.status).to eq new_status
   end
-  it "logs at error level" do
-    allow(Rails.logger).to receive(:log).with(Logger::ERROR, unexpected_version_msg)
-    expect(Rails.logger).to receive(:log).with(Logger::ERROR, any_args).at_least(1).times
-    expect(Rails.logger).to receive(:log).with(Logger::INFO, updated_status_msg_regex)
-    po_handler.send(method_sym)
-  end
 
   context 'returns' do
     let!(:results) { po_handler.send(method_sym) }
@@ -304,9 +259,6 @@ RSpec.shared_examples 'unexpected version with validation' do |method_sym, incom
       end
     end
 
-    # results = [result1, result2]
-    # result1 = {response_code: msg}
-    # result2 = {response_code: msg}
     it "number of results" do
       expect(results).to be_an_instance_of Array
       expect(results.size).to eq num_results
@@ -380,18 +332,9 @@ RSpec.shared_examples 'update for invalid moab' do |method_sym|
     expect(po.reload.updated_at).to eq orig
   end
 
-  it "logs at error level" do
-    expect(Rails.logger).to receive(:log).with(Logger::ERROR, invalid_moab_msg)
-    expect(Rails.logger).to receive(:log).with(Logger::INFO, updated_status_msg_regex)
-    po_handler.send(method_sym)
-  end
-
   context 'returns' do
     let!(:results) { po_handler.send(method_sym) }
 
-    # results = [result1, result2]
-    # result1 = {response_code: msg}
-    # result2 = {response_code: msg}
     it '3 results' do
       expect(results).to be_an_instance_of Array
       expect(results.size).to eq 2
@@ -422,17 +365,9 @@ RSpec.shared_examples 'PreservedObject current_version does not match online PC 
     expect(po.reload.updated_at).to eq orig
   end
 
-  it "logs at error level" do
-    expect(Rails.logger).to receive(:log).with(Logger::ERROR, version_mismatch_msg)
-    po_handler.send(method_sym)
-  end
-
   context 'returns' do
     let!(:results) { po_handler.send(method_sym) }
 
-    # results = [result1, result2]
-    # result1 = {response_code: msg}
-    # result2 = {response_code: msg}
     it '1 result' do
       expect(results).to be_an_instance_of Array
       expect(results.size).to eq 1
