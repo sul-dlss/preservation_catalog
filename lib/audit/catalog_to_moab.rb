@@ -51,7 +51,7 @@ class CatalogToMoab
     @preserved_copy = preserved_copy
     @storage_dir = storage_dir
     @druid = preserved_copy.preserved_object.druid
-    @results = AuditResults.new(druid, nil, nil, preserved_copy.endpoint)
+    @results = AuditResults.new(druid, nil, preserved_copy.endpoint)
   end
 
   # shameless green implementation

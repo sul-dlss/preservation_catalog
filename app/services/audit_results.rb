@@ -77,10 +77,10 @@ class AuditResults
 
   attr_reader :result_array, :incoming_version, :msg_prefix, :druid
 
-  def initialize(druid, incoming_version, incoming_size, endpoint)
+  def initialize(druid, incoming_version, endpoint)
     @druid = druid
     @incoming_version = incoming_version
-    @msg_prefix = "PreservedObjectHandler(#{druid}, #{incoming_version}, #{incoming_size}, #{endpoint.endpoint_name if endpoint})"
+    @msg_prefix = "PreservedObjectHandler(#{druid}, #{incoming_version}, #{endpoint.endpoint_name if endpoint})"
     @result_array = []
   end
 

@@ -28,7 +28,7 @@ class PreservedObjectHandler
     @incoming_version = version_string_to_int(incoming_version)
     @incoming_size = string_to_int(incoming_size)
     @endpoint = endpoint
-    @handler_results = AuditResults.new(druid, incoming_version, incoming_size, endpoint)
+    @handler_results = AuditResults.new(druid, incoming_version, endpoint)
   end
 
   def create_after_validation

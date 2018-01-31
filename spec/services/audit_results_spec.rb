@@ -3,9 +3,8 @@ require 'rails_helper'
 RSpec.describe AuditResults do
   let(:druid) { 'ab123cd4567' }
   let(:incoming_version) { 6 }
-  let(:incoming_size) { 666 }
   let(:endpoint) { Endpoint.find_by(storage_location: 'spec/fixtures/storage_root01/moab_storage_trunk') }
-  let(:pohr) { described_class.new(druid, incoming_version, incoming_size, endpoint) }
+  let(:pohr) { described_class.new(druid, incoming_version, endpoint) }
 
   context '.logger_severity_level' do
     it 'PC_PO_VERSION_MISMATCH is an ERROR' do
@@ -16,7 +15,7 @@ RSpec.describe AuditResults do
 
   context '#new' do
     it 'assigns msg_prefix' do
-      exp = "PreservedObjectHandler(#{druid}, #{incoming_version}, #{incoming_size}, #{endpoint.endpoint_name})"
+      exp = "PreservedObjectHandler(#{druid}, #{incoming_version}, #{endpoint.endpoint_name})"
       expect(pohr.msg_prefix).to eq exp
     end
     it 'sets result_array attr to []' do
