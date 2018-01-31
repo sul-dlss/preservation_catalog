@@ -57,7 +57,7 @@ RSpec.describe CatalogToMoab do
     end
 
     it 'calls POHandlerResults.report_results' do
-      pohandler_results = instance_double(AuditResults, add_result: nil)
+      pohandler_results = instance_double(AuditResults, add_result: nil, :actual_version= => nil)
       allow(AuditResults).to receive(:new).and_return(pohandler_results)
       expect(pohandler_results).to receive(:report_results)
       c2m.check_catalog_version
@@ -103,7 +103,7 @@ RSpec.describe CatalogToMoab do
 
     context 'catalog version == moab version (happy path)' do
       it 'adds a VERSION_MATCHES result' do
-        pohandler_results = instance_double(AuditResults, report_results: nil)
+        pohandler_results = instance_double(AuditResults, report_results: nil, :actual_version= => nil)
         allow(AuditResults).to receive(:new).and_return(pohandler_results)
         expect(pohandler_results).to receive(:add_result).with(
           AuditResults::VERSION_MATCHES, 'PreservedCopy'
@@ -120,7 +120,7 @@ RSpec.describe CatalogToMoab do
       end
 
       it 'adds an UNEXPECTED_VERSION result' do
-        pohandler_results = instance_double(AuditResults, report_results: nil)
+        pohandler_results = instance_double(AuditResults, report_results: nil, :actual_version= => nil)
         expect(pohandler_results).to receive(:add_result).with(
           AuditResults::UNEXPECTED_VERSION, 'PreservedCopy'
         )
@@ -144,7 +144,7 @@ RSpec.describe CatalogToMoab do
       end
 
       it 'adds an UNEXPECTED_VERSION result' do
-        pohandler_results = instance_double(AuditResults, report_results: nil)
+        pohandler_results = instance_double(AuditResults, report_results: nil, :actual_version= => nil)
         expect(pohandler_results).to receive(:add_result).with(
           AuditResults::UNEXPECTED_VERSION, 'PreservedCopy'
         )
@@ -180,7 +180,7 @@ RSpec.describe CatalogToMoab do
           expect(new_status).to eq PreservedCopy::INVALID_MOAB_STATUS
         end
         it 'adds an INVALID_MOAB result' do
-          pohandler_results = instance_double(AuditResults, report_results: nil)
+          pohandler_results = instance_double(AuditResults, report_results: nil, :actual_version= => nil)
           expect(pohandler_results).to receive(:add_result).with(
             AuditResults::INVALID_MOAB, anything
           )
@@ -190,7 +190,7 @@ RSpec.describe CatalogToMoab do
         end
       end
       it 'adds a PC_STATUS_CHANGED result' do
-        pohandler_results = instance_double(AuditResults, report_results: nil)
+        pohandler_results = instance_double(AuditResults, report_results: nil, :actual_version= => nil)
         expect(pohandler_results).to receive(:add_result).with(
           AuditResults::PC_STATUS_CHANGED, a_hash_including(:old_status, :new_status)
         )

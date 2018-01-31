@@ -72,6 +72,7 @@ class CatalogToMoab
     end
 
     moab_version = moab.current_version_id
+    results.actual_version = moab_version
     catalog_version = preserved_copy.version
     if catalog_version == moab_version
       results.add_result(AuditResults::VERSION_MATCHES, preserved_copy.class.name)
