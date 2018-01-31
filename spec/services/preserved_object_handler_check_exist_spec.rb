@@ -211,9 +211,6 @@ RSpec.describe PreservedObjectHandler do
               expect(results).to include(a_hash_including(code => version_gt_pc_msg))
               expect(results).to include(a_hash_including(code => version_gt_po_msg))
             end
-            it 'what results/logging desired for incoming version > catalog' do
-              skip 'we need clarification of requirements on results/logging in this case'
-            end
           end
         end
 
@@ -319,9 +316,6 @@ RSpec.describe PreservedObjectHandler do
             end
             it 'INVALID_MOAB result' do
               expect(results).to include(a_hash_including(AuditResults::INVALID_MOAB))
-            end
-            it 'what results/logging desired for incoming version > catalog and invalid moab' do
-              skip 'we need clarification of requirements on results/logging in this case'
             end
           end
         end
@@ -509,9 +503,6 @@ RSpec.describe PreservedObjectHandler do
               expect(results).to be_an_instance_of Array
               expect(results.size).to eq 2
             end
-            it 'not sure what results we REALLY want' do
-              skip 'need to get requirements on what exactly we want in results'
-            end
             it 'OBJECT_DOES_NOT_EXIST results' do
               code = AuditResults::OBJECT_DOES_NOT_EXIST
               expect(results).to include(a_hash_including(code => exp_po_not_exist_msg))
@@ -605,9 +596,6 @@ RSpec.describe PreservedObjectHandler do
             it '3 results' do
               expect(results).to be_an_instance_of Array
               expect(results.size).to eq 3
-            end
-            it 'not sure what results we REALLY want' do
-              skip 'need to get requirements on what exactly we want in results'
             end
             it 'INVALID_MOAB result' do
               code = AuditResults::INVALID_MOAB
