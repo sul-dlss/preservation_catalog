@@ -91,10 +91,10 @@ RSpec.shared_examples 'PreservedCopy does not exist' do |method_sym|
   end
 end
 
-RSpec.shared_examples 'unexpected version' do |method_sym, incoming_version|
-  let(:po_handler) { described_class.new(druid, incoming_version, 1, ep) }
-  let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, #{incoming_version}, #{ep.endpoint_name if ep})" }
-  let(:version_msg_prefix) { "#{exp_msg_prefix} incoming version (#{incoming_version})" }
+RSpec.shared_examples 'unexpected version' do |method_sym, actual_version|
+  let(:po_handler) { described_class.new(druid, actual_version, 1, ep) }
+  let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, #{actual_version}, #{ep.endpoint_name if ep})" }
+  let(:version_msg_prefix) { "#{exp_msg_prefix} actual version (#{actual_version})" }
   let(:unexpected_version_msg) { "#{version_msg_prefix} has unexpected relationship to PreservedCopy db version; ERROR!" }
 
   context 'PreservedCopy' do
@@ -186,7 +186,7 @@ end
 RSpec.shared_examples 'unexpected version with validation' do |method_sym, incoming_version, new_status|
   let(:po_handler) { described_class.new(druid, incoming_version, 1, ep) }
   let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, #{incoming_version}, #{ep.endpoint_name if ep})" }
-  let(:version_msg_prefix) { "#{exp_msg_prefix} incoming version (#{incoming_version})" }
+  let(:version_msg_prefix) { "#{exp_msg_prefix} actual version (#{incoming_version})" }
   let(:unexpected_version_msg) { "#{version_msg_prefix} has unexpected relationship to PreservedCopy db version; ERROR!" }
   let(:updated_status_msg_regex) { Regexp.new(Regexp.escape("#{exp_msg_prefix} PreservedCopy status changed from")) }
 

@@ -2,9 +2,9 @@ require 'rails_helper'
 
 RSpec.describe AuditResults do
   let(:druid) { 'ab123cd4567' }
-  let(:incoming_version) { 6 }
+  let(:actual_version) { 6 }
   let(:endpoint) { Endpoint.find_by(storage_location: 'spec/fixtures/storage_root01/moab_storage_trunk') }
-  let(:pohr) { described_class.new(druid, incoming_version, endpoint) }
+  let(:pohr) { described_class.new(druid, actual_version, endpoint) }
 
   context '.logger_severity_level' do
     it 'PC_PO_VERSION_MISMATCH is an ERROR' do
@@ -15,7 +15,7 @@ RSpec.describe AuditResults do
 
   context '#new' do
     it 'assigns msg_prefix' do
-      exp = "PreservedObjectHandler(#{druid}, #{incoming_version}, #{endpoint.endpoint_name})"
+      exp = "PreservedObjectHandler(#{druid}, #{actual_version}, #{endpoint.endpoint_name})"
       expect(pohr.msg_prefix).to eq exp
     end
     it 'sets result_array attr to []' do
@@ -24,8 +24,8 @@ RSpec.describe AuditResults do
     it 'sets druid attr to arg' do
       expect(pohr.druid).to eq druid
     end
-    it 'sets incoming_version attr to arg' do
-      expect(pohr.incoming_version).to eq incoming_version
+    it 'sets actual_version attr to arg' do
+      expect(pohr.actual_version).to eq actual_version
     end
   end
 
@@ -134,7 +134,7 @@ RSpec.describe AuditResults do
       code = AuditResults::VERSION_MATCHES
       pohr.add_result(code, 'foo')
       expect(pohr.result_array.size).to eq 1
-      expect(pohr.result_array.first).to eq code => "#{pohr.msg_prefix} incoming version (6) matches foo db version"
+      expect(pohr.result_array.first).to eq code => "#{pohr.msg_prefix} actual version (6) matches foo db version"
     end
   end
 

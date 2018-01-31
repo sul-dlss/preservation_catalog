@@ -28,15 +28,15 @@ class AuditResults
 
   RESPONSE_CODE_TO_MESSAGES = {
     INVALID_ARGUMENTS => "encountered validation error(s): %{addl}",
-    VERSION_MATCHES => "incoming version (%{incoming_version}) matches %{addl} db version",
-    ARG_VERSION_GREATER_THAN_DB_OBJECT => "incoming version (%{incoming_version}) greater than %{addl} db version",
-    ARG_VERSION_LESS_THAN_DB_OBJECT => "incoming version (%{incoming_version}) less than %{addl} db version; ERROR!",
+    VERSION_MATCHES => "actual version (%{actual_version}) matches %{addl} db version",
+    ARG_VERSION_GREATER_THAN_DB_OBJECT => "actual version (%{actual_version}) greater than %{addl} db version",
+    ARG_VERSION_LESS_THAN_DB_OBJECT => "actual version (%{actual_version}) less than %{addl} db version; ERROR!",
     CREATED_NEW_OBJECT => "added object to db as it did not exist",
     DB_UPDATE_FAILED => "db update failed: %{addl}",
     OBJECT_ALREADY_EXISTS => "%{addl} db object already exists",
     OBJECT_DOES_NOT_EXIST => "%{addl} db object does not exist",
     PC_STATUS_CHANGED => "PreservedCopy status changed from %{old_status} to %{new_status}",
-    UNEXPECTED_VERSION => "incoming version (%{incoming_version}) has unexpected relationship to %{addl} db version; ERROR!",
+    UNEXPECTED_VERSION => "actual version (%{actual_version}) has unexpected relationship to %{addl} db version; ERROR!",
     INVALID_MOAB => "Invalid moab, validation errors: %{addl}",
     PC_PO_VERSION_MISMATCH => "PreservedCopy online moab version %{pc_version} does not match PreservedObject current_version %{po_version}",
     ONLINE_MOAB_DOES_NOT_EXIST => "db has moab that is not found online"
@@ -75,12 +75,13 @@ class AuditResults
     end
   end
 
-  attr_reader :result_array, :incoming_version, :msg_prefix, :druid
+  attr_reader :result_array, :msg_prefix, :druid
+  attr_accessor :actual_version
 
-  def initialize(druid, incoming_version, endpoint)
+  def initialize(druid, actual_version, endpoint)
     @druid = druid
-    @incoming_version = incoming_version
-    @msg_prefix = "PreservedObjectHandler(#{druid}, #{incoming_version}, #{endpoint.endpoint_name if endpoint})"
+    @actual_version = actual_version
+    @msg_prefix = "PreservedObjectHandler(#{druid}, #{actual_version}, #{endpoint.endpoint_name if endpoint})"
     @result_array = []
   end
 
@@ -138,7 +139,7 @@ class AuditResults
   end
 
   def result_code_msg(code, addl=nil)
-    arg_hash = { incoming_version: incoming_version }
+    arg_hash = { actual_version: actual_version }
     if addl.is_a?(Hash)
       arg_hash.merge!(addl)
     else

@@ -49,8 +49,8 @@ RSpec.describe PreservedObjectHandler do
       context "incoming and db versions match" do
         let(:po_handler) { described_class.new(druid, 2, 1, ep) }
         let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, 2, #{ep.endpoint_name})" }
-        let(:version_matches_po_msg) { "#{exp_msg_prefix} incoming version (2) matches PreservedObject db version" }
-        let(:version_matches_pc_msg) { "#{exp_msg_prefix} incoming version (2) matches PreservedCopy db version" }
+        let(:version_matches_po_msg) { "#{exp_msg_prefix} actual version (2) matches PreservedObject db version" }
+        let(:version_matches_pc_msg) { "#{exp_msg_prefix} actual version (2) matches PreservedCopy db version" }
 
         context 'PreservedCopy' do
           context 'changed' do
@@ -141,7 +141,7 @@ RSpec.describe PreservedObjectHandler do
         let(:po_handler) { described_class.new(druid, 1, 666, ep) }
         let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, 1, #{ep.endpoint_name})" }
         let(:unexpected_version_pc_msg) {
-          "#{exp_msg_prefix} incoming version (1) has unexpected relationship to PreservedCopy db version; ERROR!"
+          "#{exp_msg_prefix} actual version (1) has unexpected relationship to PreservedCopy db version; ERROR!"
         }
         let(:updated_pc_db_status_msg) {
           "#{exp_msg_prefix} PreservedCopy status changed from ok to expected_vers_not_found_on_storage"

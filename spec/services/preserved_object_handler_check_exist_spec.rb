@@ -33,8 +33,8 @@ RSpec.describe PreservedObjectHandler do
       context "incoming and db versions match" do
         let(:po_handler) { described_class.new(druid, 2, 1, ep) }
         let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, 2, #{ep.endpoint_name})" }
-        let(:version_matches_po_msg) { "#{exp_msg_prefix} incoming version (2) matches PreservedObject db version" }
-        let(:version_matches_pc_msg) { "#{exp_msg_prefix} incoming version (2) matches PreservedCopy db version" }
+        let(:version_matches_po_msg) { "#{exp_msg_prefix} actual version (2) matches PreservedObject db version" }
+        let(:version_matches_pc_msg) { "#{exp_msg_prefix} actual version (2) matches PreservedCopy db version" }
 
         context 'PreservedCopy' do
           context 'changed' do
@@ -100,9 +100,8 @@ RSpec.describe PreservedObjectHandler do
       end
 
       context "incoming version > db version" do
-        # let(:incoming_version) { 6 }
-        let(:version_gt_pc_msg) { "#{exp_msg_prefix} incoming version (#{incoming_version}) greater than PreservedCopy db version" }
-        let(:version_gt_po_msg) { "#{exp_msg_prefix} incoming version (#{incoming_version}) greater than PreservedObject db version" }
+        let(:version_gt_pc_msg) { "#{exp_msg_prefix} actual version (#{incoming_version}) greater than PreservedCopy db version" }
+        let(:version_gt_po_msg) { "#{exp_msg_prefix} actual version (#{incoming_version}) greater than PreservedObject db version" }
 
         it 'calls Stanford::StorageObjectValidator.validation_errors for moab' do
           mock_sov = instance_double(Stanford::StorageObjectValidator)
