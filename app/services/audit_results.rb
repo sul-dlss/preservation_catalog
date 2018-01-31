@@ -75,13 +75,13 @@ class AuditResults
     end
   end
 
-  attr_reader :result_array, :msg_prefix, :druid
+  attr_reader :result_array, :druid, :endpoint
   attr_accessor :actual_version
 
   def initialize(druid, actual_version, endpoint)
     @druid = druid
     @actual_version = actual_version
-    @msg_prefix = "PreservedObjectHandler(#{druid}, #{actual_version}, #{endpoint.endpoint_name if endpoint})"
+    @endpoint = endpoint
     @result_array = []
   end
 
@@ -135,7 +135,7 @@ class AuditResults
   def log_result(result)
     severity = self.class.logger_severity_level(result.keys.first)
     msg = result.values.first
-    Rails.logger.log(severity, msg)
+    Rails.logger.log(severity, "#{msg_prefix} #{msg}")
   end
 
   def result_code_msg(code, addl=nil)
@@ -146,6 +146,10 @@ class AuditResults
       arg_hash[:addl] = addl
     end
 
-    "#{msg_prefix} #{RESPONSE_CODE_TO_MESSAGES[code] % arg_hash}"
+    RESPONSE_CODE_TO_MESSAGES[code] % arg_hash
+  end
+
+  def msg_prefix
+    @msg_prefix ||= "FIXME: some-audit-check(#{druid}, #{endpoint.endpoint_name if endpoint})"
   end
 end

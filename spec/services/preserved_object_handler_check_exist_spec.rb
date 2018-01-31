@@ -9,8 +9,7 @@ RSpec.describe PreservedObjectHandler do
   let(:po) { PreservedObject.find_by(druid: druid) }
   let(:ep) { Endpoint.find_by(storage_location: 'spec/fixtures/storage_root01/moab_storage_trunk') }
   let(:pc) { PreservedCopy.find_by(preserved_object: po, endpoint: ep) }
-  let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, #{incoming_version}, #{ep.endpoint_name})" }
-  let(:db_update_failed_prefix_regex_escaped) { Regexp.escape("#{exp_msg_prefix} db update failed") }
+  let(:db_update_failed_prefix) { "db update failed" }
   let(:po_handler) { described_class.new(druid, incoming_version, incoming_size, ep) }
 
   describe '#check_existence' do
@@ -32,9 +31,8 @@ RSpec.describe PreservedObjectHandler do
 
       context "incoming and db versions match" do
         let(:po_handler) { described_class.new(druid, 2, 1, ep) }
-        let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, 2, #{ep.endpoint_name})" }
-        let(:version_matches_po_msg) { "#{exp_msg_prefix} actual version (2) matches PreservedObject db version" }
-        let(:version_matches_pc_msg) { "#{exp_msg_prefix} actual version (2) matches PreservedCopy db version" }
+        let(:version_matches_po_msg) { "actual version (2) matches PreservedObject db version" }
+        let(:version_matches_pc_msg) { "actual version (2) matches PreservedCopy db version" }
 
         context 'PreservedCopy' do
           context 'changed' do
@@ -100,8 +98,8 @@ RSpec.describe PreservedObjectHandler do
       end
 
       context "incoming version > db version" do
-        let(:version_gt_pc_msg) { "#{exp_msg_prefix} actual version (#{incoming_version}) greater than PreservedCopy db version" }
-        let(:version_gt_po_msg) { "#{exp_msg_prefix} actual version (#{incoming_version}) greater than PreservedObject db version" }
+        let(:version_gt_pc_msg) { "actual version (#{incoming_version}) greater than PreservedCopy db version" }
+        let(:version_gt_po_msg) { "actual version (#{incoming_version}) greater than PreservedObject db version" }
 
         it 'calls Stanford::StorageObjectValidator.validation_errors for moab' do
           mock_sov = instance_double(Stanford::StorageObjectValidator)
@@ -219,9 +217,6 @@ RSpec.describe PreservedObjectHandler do
           let(:invalid_po_handler) { described_class.new(invalid_druid, incoming_version, incoming_size, invalid_ep) }
           let(:invalid_po) { PreservedObject.find_by(druid: invalid_druid) }
           let(:invalid_pc) { PreservedCopy.find_by(preserved_object: invalid_po) }
-          let(:exp_msg_prefix) do
-            "PreservedObjectHandler(#{invalid_druid}, #{incoming_version}, #{invalid_ep.endpoint_name})"
-          end
 
           before do
             # add storage root with the invalid moab to the Endpoints table
@@ -394,7 +389,7 @@ RSpec.describe PreservedObjectHandler do
 
           context 'DB_UPDATE_FAILED error' do
             it 'prefix' do
-              expect(results).to include(a_hash_including(result_code => a_string_matching(db_update_failed_prefix_regex_escaped)))
+              expect(results).to include(a_hash_including(result_code => a_string_matching(db_update_failed_prefix)))
             end
             it 'specific exception raised' do
               expect(results).to include(a_hash_including(result_code => a_string_matching('ActiveRecord::ActiveRecordError')))
@@ -434,8 +429,8 @@ RSpec.describe PreservedObjectHandler do
     end
 
     context 'object not in db' do
-      let(:exp_po_not_exist_msg) { "#{exp_msg_prefix} PreservedObject db object does not exist" }
-      let(:exp_obj_created_msg) { "#{exp_msg_prefix} added object to db as it did not exist" }
+      let(:exp_po_not_exist_msg) { "PreservedObject db object does not exist" }
+      let(:exp_obj_created_msg) { "added object to db as it did not exist" }
 
       context 'presume validity and test other common behavior' do
         before do
@@ -467,8 +462,6 @@ RSpec.describe PreservedObjectHandler do
         end
 
         context 'moab is valid' do
-          let(:exp_msg_prefix) { "PreservedObjectHandler(#{valid_druid}, #{incoming_version}, #{ep.endpoint_name})" }
-
           it 'PreservedObject created' do
             po_args = {
               druid: valid_druid,
@@ -533,7 +526,7 @@ RSpec.describe PreservedObjectHandler do
 
               context 'DB_UPDATE_FAILED error' do
                 it 'prefix' do
-                  expect(results).to include(a_hash_including(result_code => a_string_matching(db_update_failed_prefix_regex_escaped)))
+                  expect(results).to include(a_hash_including(result_code => a_string_matching(db_update_failed_prefix)))
                 end
                 it 'specific exception raised' do
                   expect(results).to include(a_hash_including(result_code => a_string_matching('ActiveRecord::ActiveRecordError')))
@@ -550,8 +543,7 @@ RSpec.describe PreservedObjectHandler do
           let(:storage_dir) { 'spec/fixtures/bad_root01/bad_moab_storage_trunk' }
           let(:ep) { Endpoint.find_by(storage_location: storage_dir) }
           let(:invalid_druid) { 'xx000xx0000' }
-          let(:exp_msg_prefix) { "PreservedObjectHandler(#{invalid_druid}, #{incoming_version}, #{ep.endpoint_name})" }
-          let(:exp_moab_errs_msg) { "#{exp_msg_prefix} Invalid moab, validation errors: [\"Missing directory: [\\\"data\\\", \\\"manifests\\\"] Version: v0001\"]" }
+          let(:exp_moab_errs_msg) { "Invalid moab, validation errors: [\"Missing directory: [\\\"data\\\", \\\"manifests\\\"] Version: v0001\"]" }
           let(:po_handler) { described_class.new(invalid_druid, incoming_version, incoming_size, ep) }
 
           before do
@@ -633,7 +625,7 @@ RSpec.describe PreservedObjectHandler do
 
               context 'DB_UPDATE_FAILED error' do
                 it 'prefix' do
-                  expect(results).to include(a_hash_including(result_code => a_string_matching(db_update_failed_prefix_regex_escaped)))
+                  expect(results).to include(a_hash_including(result_code => a_string_matching(db_update_failed_prefix)))
                 end
                 it 'specific exception raised' do
                   expect(results).to include(a_hash_including(result_code => a_string_matching('ActiveRecord::ActiveRecordError')))

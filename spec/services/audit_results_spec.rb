@@ -14,10 +14,6 @@ RSpec.describe AuditResults do
   end
 
   context '#new' do
-    it 'assigns msg_prefix' do
-      exp = "PreservedObjectHandler(#{druid}, #{actual_version}, #{endpoint.endpoint_name})"
-      expect(audit_results.msg_prefix).to eq exp
-    end
     it 'sets result_array attr to []' do
       expect(audit_results.result_array).to eq []
     end
@@ -39,7 +35,8 @@ RSpec.describe AuditResults do
         audit_results.add_result(result_code, addl_hash)
       end
       it 'with msg_prefix' do
-        expect(Rails.logger).to receive(:log).with(Logger::ERROR, a_string_matching(Regexp.escape(audit_results.msg_prefix)))
+        expected = audit_results.send(:msg_prefix)
+        expect(Rails.logger).to receive(:log).with(Logger::ERROR, a_string_matching(Regexp.escape(expected)))
         audit_results.report_results
       end
       it 'with severity assigned by .logger_severity_level' do
@@ -57,6 +54,14 @@ RSpec.describe AuditResults do
         status_changed_str = "PreservedCopy status changed from #{PreservedCopy::INVALID_MOAB_STATUS}"
         expect(Rails.logger).to receive(:log).with(severity_level, a_string_matching(status_changed_str))
         audit_results.report_results
+      end
+      it 'actual_version number is in log message when set after initialization' do
+        my_results = described_class.new(druid, nil, endpoint)
+        result_code = AuditResults::VERSION_MATCHES
+        my_results.actual_version = 666 # NOTE: must be set before "add_result" call
+        my_results.add_result(result_code, 'foo')
+        expect(Rails.logger).to receive(:log).with(anything, a_string_matching('666'))
+        my_results.report_results
       end
     end
 
@@ -124,7 +129,7 @@ RSpec.describe AuditResults do
       addl_hash = { pc_version: 1, po_version: 2 }
       audit_results.add_result(code, addl_hash)
       expect(audit_results.result_array.size).to eq 1
-      exp_msg = "#{audit_results.msg_prefix} #{AuditResults::RESPONSE_CODE_TO_MESSAGES[code] % addl_hash}"
+      exp_msg = AuditResults::RESPONSE_CODE_TO_MESSAGES[code] % addl_hash
       expect(audit_results.result_array.first).to eq code => exp_msg
     end
     it 'can take a single result code argument' do
@@ -134,7 +139,7 @@ RSpec.describe AuditResults do
       code = AuditResults::VERSION_MATCHES
       audit_results.add_result(code, 'foo')
       expect(audit_results.result_array.size).to eq 1
-      expect(audit_results.result_array.first).to eq code => "#{audit_results.msg_prefix} actual version (6) matches foo db version"
+      expect(audit_results.result_array.first).to eq code => "actual version (6) matches foo db version"
     end
   end
 

@@ -9,8 +9,6 @@ RSpec.describe PreservedObjectHandler do
   let(:po) { PreservedObject.find_by(druid: druid) }
   let(:ep) { Endpoint.find_by(storage_location: 'spec/fixtures/storage_root01/moab_storage_trunk') }
   let(:pc) { PreservedCopy.find_by(preserved_object: po, endpoint: ep) }
-  let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, #{incoming_version}, #{ep.endpoint_name})" }
-  let(:db_update_failed_prefix_regex_escaped) { Regexp.escape("#{exp_msg_prefix} db update failed") }
   let(:po_handler) { described_class.new(druid, incoming_version, incoming_size, ep) }
 
   describe '#confirm_version' do
@@ -48,9 +46,8 @@ RSpec.describe PreservedObjectHandler do
 
       context "incoming and db versions match" do
         let(:po_handler) { described_class.new(druid, 2, 1, ep) }
-        let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, 2, #{ep.endpoint_name})" }
-        let(:version_matches_po_msg) { "#{exp_msg_prefix} actual version (2) matches PreservedObject db version" }
-        let(:version_matches_pc_msg) { "#{exp_msg_prefix} actual version (2) matches PreservedCopy db version" }
+        let(:version_matches_po_msg) { "actual version (2) matches PreservedObject db version" }
+        let(:version_matches_pc_msg) { "actual version (2) matches PreservedCopy db version" }
 
         context 'PreservedCopy' do
           context 'changed' do
@@ -139,13 +136,8 @@ RSpec.describe PreservedObjectHandler do
       context 'incoming version does NOT match db version' do
         let(:druid) { 'bj102hs9687' } # for shared_examples 'calls AuditResults.report_results'
         let(:po_handler) { described_class.new(druid, 1, 666, ep) }
-        let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, 1, #{ep.endpoint_name})" }
-        let(:unexpected_version_pc_msg) {
-          "#{exp_msg_prefix} actual version (1) has unexpected relationship to PreservedCopy db version; ERROR!"
-        }
-        let(:updated_pc_db_status_msg) {
-          "#{exp_msg_prefix} PreservedCopy status changed from ok to unexpected_version_on_storage"
-        }
+        let(:unexpected_version_pc_msg) { "actual version (1) has unexpected relationship to PreservedCopy db version; ERROR!" }
+        let(:updated_pc_db_status_msg) { "PreservedCopy status changed from ok to unexpected_version_on_storage" }
 
         it_behaves_like 'calls AuditResults.report_results', :confirm_version
 

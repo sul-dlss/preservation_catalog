@@ -9,8 +9,6 @@ RSpec.describe PreservedObjectHandler do
   let(:po) { PreservedObject.find_by(druid: druid) }
   let(:ep) { Endpoint.find_by(storage_location: 'spec/fixtures/storage_root01/moab_storage_trunk') }
   let(:pc) { PreservedCopy.find_by(preserved_object: po, endpoint: ep) }
-  let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, #{incoming_version}, #{ep})" }
-  let(:db_update_failed_prefix_regex_escaped) { Regexp.escape("#{exp_msg_prefix} db update failed") }
   let(:po_handler) { described_class.new(druid, incoming_version, incoming_size, ep) }
 
   describe '#initialize' do

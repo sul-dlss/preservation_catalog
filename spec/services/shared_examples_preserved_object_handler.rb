@@ -23,10 +23,9 @@ RSpec.shared_examples "attributes validated" do |method_sym|
     end
     context 'result message includes' do
       let(:msg) { result.first[AuditResults::INVALID_ARGUMENTS] }
-      let(:exp_msg_prefix) { "PreservedObjectHandler(#{bad_druid}, #{bad_version}, #{bad_endpoint.endpoint_name if bad_endpoint})" }
 
       it "prefix" do
-        expect(msg).to match(Regexp.escape("#{exp_msg_prefix} encountered validation error(s): "))
+        expect(msg).to match(Regexp.escape("encountered validation error(s): "))
       end
       it "druid error" do
         expect(msg).to match(bad_druid_msg)
@@ -56,7 +55,7 @@ end
 
 RSpec.shared_examples 'druid not in catalog' do |method_sym|
   let(:druid) { 'rr111rr1111' }
-  let(:escaped_exp_msg) { Regexp.escape(exp_msg_prefix) + ".* PreservedObject.* db object does not exist" }
+  let(:exp_msg) { "PreservedObject.* db object does not exist" }
   let(:results) do
     allow(Rails.logger).to receive(:log)
     po_handler.send(method_sym)
@@ -64,7 +63,7 @@ RSpec.shared_examples 'druid not in catalog' do |method_sym|
 
   it 'OBJECT_DOES_NOT_EXIST error' do
     code = AuditResults::OBJECT_DOES_NOT_EXIST
-    expect(results).to include(a_hash_including(code => a_string_matching(escaped_exp_msg)))
+    expect(results).to include(a_hash_including(code => a_string_matching(exp_msg)))
   end
 end
 
@@ -72,7 +71,7 @@ RSpec.shared_examples 'PreservedCopy does not exist' do |method_sym|
   before do
     PreservedObject.create!(druid: druid, current_version: 2, preservation_policy: default_prez_policy)
   end
-  let(:exp_msg) { "#{exp_msg_prefix} #<ActiveRecord::RecordNotFound: foo> db object does not exist" }
+  let(:exp_msg) { "#<ActiveRecord::RecordNotFound: foo> db object does not exist" }
   let(:results) do
     allow(Rails.logger).to receive(:log)
     po = instance_double(PreservedObject)
@@ -93,8 +92,7 @@ end
 
 RSpec.shared_examples 'unexpected version' do |method_sym, actual_version|
   let(:po_handler) { described_class.new(druid, actual_version, 1, ep) }
-  let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, #{actual_version}, #{ep.endpoint_name if ep})" }
-  let(:version_msg_prefix) { "#{exp_msg_prefix} actual version (#{actual_version})" }
+  let(:version_msg_prefix) { "actual version (#{actual_version})" }
   let(:unexpected_version_msg) { "#{version_msg_prefix} has unexpected relationship to PreservedCopy db version; ERROR!" }
 
   context 'PreservedCopy' do
@@ -185,10 +183,9 @@ end
 
 RSpec.shared_examples 'unexpected version with validation' do |method_sym, incoming_version, new_status|
   let(:po_handler) { described_class.new(druid, incoming_version, 1, ep) }
-  let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, #{incoming_version}, #{ep.endpoint_name if ep})" }
-  let(:version_msg_prefix) { "#{exp_msg_prefix} actual version (#{incoming_version})" }
+  let(:version_msg_prefix) { "actual version (#{incoming_version})" }
   let(:unexpected_version_msg) { "#{version_msg_prefix} has unexpected relationship to PreservedCopy db version; ERROR!" }
-  let(:updated_status_msg_regex) { Regexp.new(Regexp.escape("#{exp_msg_prefix} PreservedCopy status changed from")) }
+  let(:updated_status_msg_regex) { Regexp.new("PreservedCopy status changed from") }
 
   context 'PreservedCopy' do
     context 'changed' do
@@ -287,8 +284,8 @@ RSpec.shared_examples 'unexpected version with validation' do |method_sym, incom
 end
 
 RSpec.shared_examples 'update for invalid moab' do |method_sym|
-  let(:updated_status_msg_regex) { Regexp.new(Regexp.escape("#{exp_msg_prefix} PreservedCopy status changed from")) }
-  let(:invalid_moab_msg) { "#{exp_msg_prefix} Invalid moab, validation errors: [\"Missing directory: [\\\"data\\\", \\\"manifests\\\"] Version: v0001\"]" }
+  let(:updated_status_msg_regex) { Regexp.new("PreservedCopy status changed from") }
+  let(:invalid_moab_msg) { "Invalid moab, validation errors: [\"Missing directory: [\\\"data\\\", \\\"manifests\\\"] Version: v0001\"]" }
 
   context 'PreservedCopy' do
     context 'changed' do
@@ -347,8 +344,7 @@ end
 
 RSpec.shared_examples 'PreservedObject current_version does not match online PC version' do |method_sym, incoming_version, pc_v, po_v|
   let(:po_handler) { described_class.new(druid, incoming_version, 1, ep) }
-  let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, #{incoming_version}, #{ep.endpoint_name if ep})" }
-  let(:version_mismatch_msg) { "#{exp_msg_prefix} PreservedCopy online moab version #{pc_v} does not match PreservedObject current_version #{po_v}" }
+  let(:version_mismatch_msg) { "PreservedCopy online moab version #{pc_v} does not match PreservedObject current_version #{po_v}" }
 
   it 'does not update PreservedCopy' do
     orig = pc.updated_at
