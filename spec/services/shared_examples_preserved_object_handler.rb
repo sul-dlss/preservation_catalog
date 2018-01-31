@@ -59,8 +59,6 @@ RSpec.shared_examples 'druid not in catalog' do |method_sym|
   let(:escaped_exp_msg) { Regexp.escape(exp_msg_prefix) + ".* PreservedObject.* db object does not exist" }
   let(:results) do
     allow(Rails.logger).to receive(:log)
-    # FIXME: couldn't figure out how to put next line into its own test
-    expect(Rails.logger).to receive(:log).with(Logger::ERROR, /#{escaped_exp_msg}/)
     po_handler.send(method_sym)
   end
 
@@ -77,8 +75,6 @@ RSpec.shared_examples 'PreservedCopy does not exist' do |method_sym|
   let(:exp_msg) { "#{exp_msg_prefix} #<ActiveRecord::RecordNotFound: foo> db object does not exist" }
   let(:results) do
     allow(Rails.logger).to receive(:log)
-    # FIXME: couldn't figure out how to put next line into its own test
-    expect(Rails.logger).to receive(:log).with(Logger::ERROR, /#{Regexp.escape(exp_msg)}/)
     po = instance_double(PreservedObject)
     allow(po).to receive(:current_version).and_return(2)
     allow(po).to receive(:current_version=)
