@@ -271,7 +271,7 @@ class PreservedObjectHandler
   # other validations of what's on disk, and will update the status accordingly
   # TODO: near duplicate of method in CatalogToMoab - extract superclass or moab wrapper class??
   def set_status_as_seen_on_disk(pres_copy, found_expected_version)
-    unless moab_validation_errors.empty?
+    if moab_validation_errors.any?
       update_status(pres_copy, PreservedCopy::INVALID_MOAB_STATUS)
       return
     end
