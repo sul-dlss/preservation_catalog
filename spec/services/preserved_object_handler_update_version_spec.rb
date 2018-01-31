@@ -85,19 +85,11 @@ RSpec.describe PreservedObjectHandler do
             end
           end
         end
-        it "logs at info level" do
-          expect(Rails.logger).to receive(:log).with(Logger::INFO, version_gt_po_msg)
-          expect(Rails.logger).to receive(:log).with(Logger::INFO, version_gt_pc_msg)
-          expect(Rails.logger).not_to receive(:log).with(Logger::INFO, updated_status_msg_regex)
-          po_handler.update_version
-        end
+        it_behaves_like 'calls AuditResults.report_results', :update_version
 
         context 'returns' do
           let!(:results) { po_handler.update_version }
 
-          # results = [result1, result2]
-          # result1 = {response_code: msg}
-          # result2 = {response_code: msg}
           it '2 results' do
             expect(results).to be_an_instance_of Array
             expect(results.size).to eq 2
@@ -134,9 +126,6 @@ RSpec.describe PreservedObjectHandler do
           context 'ActiveRecordError' do
             let(:results) do
               allow(Rails.logger).to receive(:log)
-              # FIXME: couldn't figure out how to put next line into its own test
-              expect(Rails.logger).to receive(:log).with(Logger::ERROR, /#{db_update_failed_prefix_regex_escaped}/)
-
               po = instance_double('PreservedObject')
               allow(po).to receive(:current_version).and_return(1)
               allow(PreservedObject).to receive(:find_by!).with(druid: druid).and_return(po)
@@ -170,9 +159,6 @@ RSpec.describe PreservedObjectHandler do
           context 'ActiveRecordError' do
             let(:results) do
               allow(Rails.logger).to receive(:log)
-              # FIXME: couldn't figure out how to put next line into its own test
-              expect(Rails.logger).to receive(:log).with(Logger::ERROR, /#{db_update_failed_prefix_regex_escaped}/)
-
               po = instance_double('PreservedObject')
               allow(po).to receive(:current_version).and_return(5)
               allow(po).to receive(:current_version=).with(incoming_version)
@@ -493,9 +479,6 @@ RSpec.describe PreservedObjectHandler do
             context 'ActiveRecordError' do
               let(:results) do
                 allow(Rails.logger).to receive(:log)
-                # FIXME: couldn't figure out how to put next line into its own test
-                expect(Rails.logger).to receive(:log).with(Logger::ERROR, /#{db_update_failed_prefix_regex_escaped}/)
-
                 po = instance_double('PreservedObject')
                 allow(po).to receive(:current_version).and_return(1)
                 allow(PreservedObject).to receive(:find_by!).with(druid: druid).and_return(po)
