@@ -139,16 +139,18 @@ this will generate a log at, for example, ```log/profile_check_existence_for_all
 
 - To run rake tasks below, give a date and the name of the moab storage_root (e.g. from settings/development.yml) as arguments.
 
-- The (date/timestamp) argument is a threshold:  it will run the check on all catalog entries which last had a version check BEFORE the argument. It should be in the format 2018-01-22 22:54:48 UTC.
+- The (date/timestamp) argument is a threshold:  it will run the check on all catalog entries which last had a version check BEFORE the argument. It should be in the format '2018-01-22 22:54:48 UTC'.
+
+- Note: Must enter date/timestamp argument as a string.
 
 #### Single Root
 - Without profiling
 ```ruby
-RAILS_ENV=production bundle exec rake c2m_check_version_on_dir[2018-01-22 22:54:48 UTC,fixture_sr1]
+RAILS_ENV=production bundle exec rake c2m_check_version_on_dir['2018-01-22 22:54:48 UTC',fixture_sr1]
 ```
 - With profiling
 ```ruby
-RAILS_ENV=production bundle exec rake c2m_check_version_on_dir[2018-01-22 22:54:48 UTC,fixture_sr1,profile]
+RAILS_ENV=production bundle exec rake c2m_check_version_on_dir['2018-01-22 22:54:48 UTC',fixture_sr1,profile]
 ```
 this will generate a log at, for example,
 ```log/profile_c2m_check_version_on_dir2018-01-01T14:25:31-flat.txt```
