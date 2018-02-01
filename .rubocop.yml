@@ -83,6 +83,7 @@ Metrics/CyclomaticComplexity:
   Exclude:
     - 'app/services/preserved_object_handler.rb' # update_online_version (shameless green)
     - 'app/services/audit_results.rb' # logger_severity_level is simply a case statement
+    - 'lib/audit/catalog_to_moab.rb' # check_catalog_version (shameless green)
 
 # because this isn't 1994
 Metrics/LineLength:
@@ -115,6 +116,10 @@ Metrics/PerceivedComplexity:
 
 # --- Naming ---
 
+Naming/AccessorMethodName:
+  Exclude:
+    # rubocop doesn't like single param 'set_' methods, but this isn't an instace var setter, and nice to have method name be parallel to POH method
+    - 'lib/audit/catalog_to_moab.rb'
 Naming/FileName:
   Exclude:
     - 'Capfile'
