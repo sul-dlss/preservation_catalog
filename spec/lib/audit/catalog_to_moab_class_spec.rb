@@ -4,27 +4,33 @@ require_relative '../../load_fixtures_helper.rb'
 RSpec.describe CatalogToMoab do
   let(:last_checked_version_b4_date) { (Time.now.utc - 1.day).iso8601 }
   let(:storage_dir) { 'spec/fixtures/storage_root01/moab_storage_trunk' }
+  let(:limit) { Settings.c2m_sql_limit }
 
-  context '.check_version_on_dir' do
+  context '.check_version_on_dir_of_batch' do
     include_context 'fixture moabs in db'
-    let(:subject) { described_class.check_version_on_dir(last_checked_version_b4_date, storage_dir) }
+    let(:subject) { described_class.check_version_on_dir_of_batch(last_checked_version_b4_date, storage_dir, limit) }
 
     it 'creates an instance and calls #check_catalog_version' do
       c2m_mock = instance_double(described_class)
       allow(described_class).to receive(:new).and_return(c2m_mock)
       expect(c2m_mock).to receive(:check_catalog_version).exactly(3).times
-      described_class.check_version_on_dir(last_checked_version_b4_date, storage_dir)
+      described_class.check_version_on_dir_of_batch(last_checked_version_b4_date, storage_dir, limit)
     end
-    it 'will not check a PreservedCopy with a future last_version_audit date' do
-      c2m_mock = instance_double(described_class)
-      allow(described_class).to receive(:new).and_return(c2m_mock)
-      expect(c2m_mock).to receive(:check_catalog_version).exactly(3).times
-      described_class.check_version_on_dir(last_checked_version_b4_date, storage_dir)
-      pc = PreservedCopy.first
-      pc.last_version_audit = (Time.now.utc + 1.day).iso8601
-      pc.save
-      expect(c2m_mock).to receive(:check_catalog_version).exactly(2).times
-      described_class.check_version_on_dir(last_checked_version_b4_date, storage_dir)
+  end
+
+  context ".check_version_on_dir" do
+    include_context 'fixture moabs in db'
+    let(:subject) { described_class.check_version_on_dir(last_checked_version_b4_date, storage_dir) }
+
+    it "calls check_version_on_dir_of_batch when there are objects to audit" do
+      expect(described_class).to receive(:check_version_on_dir_of_batch).exactly(1).times
+      subject
+    end
+
+    it "skips calling check_version_on_dir when there are no objects to audit" do
+      expect(described_class).not_to receive(:check_version_on_dir_of_batch)
+      PreservedCopy.all.update(last_version_audit: (Time.now.utc + 2.days))
+      subject
     end
   end
 

@@ -5,16 +5,18 @@ require 'profiler.rb'
 class CatalogToMoab
 
   # allows for sharding/parallelization by storage_dir
-  def self.check_version_on_dir(last_checked_b4_date, storage_dir)
+  def self.check_version_on_dir_of_batch(last_checked_b4_date, storage_dir, limit)
     # TODO: ensure last_checked_version_b4_date is in the right format for query - see #485
-    pcs = PreservedCopy
-          .joins(:endpoint)
-          .where(endpoints: { storage_location: storage_dir })
-          .where('last_version_audit IS NULL or last_version_audit < ?', last_checked_b4_date)
-          .order('last_version_audit IS NOT NULL, last_version_audit ASC')
-    pcs.find_each do |pc|
+    pcs = PreservedCopy.least_recent_version_audit(last_checked_b4_date, storage_dir).limit(limit)
+    pcs.each do |pc|
       c2m = CatalogToMoab.new(pc, storage_dir)
       c2m.check_catalog_version
+    end
+  end
+
+  def self.check_version_on_dir(last_checked_b4_date, storage_dir)
+    unless PreservedCopy.least_recent_version_audit(last_checked_b4_date, storage_dir).count.zero?
+      check_version_on_dir_of_batch(last_checked_b4_date, storage_dir, Settings.c2m_sql_limit)
     end
   end
 
