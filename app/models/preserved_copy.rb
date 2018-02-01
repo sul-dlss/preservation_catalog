@@ -71,7 +71,7 @@ class PreservedCopy < ApplicationRecord
   # and if Time object, it will return the same Time object.
   private_class_method def self.normalize_date(timestamp)
     timestamp = '1970-01-01T00:00:00Z' if timestamp.nil?
-    timestamp = Time.parse(timestamp) unless timestamp.instance_of?(Time)
+    timestamp = Time.parse(timestamp).utc unless timestamp.instance_of?(Time)
     timestamp
   end
 end
