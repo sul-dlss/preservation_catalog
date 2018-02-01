@@ -148,13 +148,11 @@ class CatalogToMoab
     end
 
     unless found_expected_version
-      update_status(PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS)
+      update_status(PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS)
       return
     end
 
     # TODO: do the check that'd set INVALID_CHECKSUM_STATUS
-
-    # TODO: do the check that'd set FIXITY_CHECK_FAILED_STATUS
 
     update_status(PreservedCopy::OK_STATUS)
   end

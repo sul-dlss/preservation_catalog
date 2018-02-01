@@ -236,7 +236,7 @@ class PreservedObjectHandler
         pres_object.save!
       else
         if set_status_to_unexp_version
-          status = PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
+          status = PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
         end
         update_pc_unexpected_version(pres_copy, pres_object, status)
       end
@@ -277,13 +277,11 @@ class PreservedObjectHandler
     end
 
     unless found_expected_version
-      update_status(pres_copy, PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS)
+      update_status(pres_copy, PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS)
       return
     end
 
     # TODO: do the check that'd set INVALID_CHECKSUM_STATUS
-
-    # TODO: do the check that'd set FIXITY_CHECK_FAILED_STATUS
 
     update_status(pres_copy, PreservedCopy::OK_STATUS)
   end

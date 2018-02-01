@@ -119,19 +119,19 @@ RSpec.describe PreservedObjectHandler do
         context 'incoming_version > db version' do
           let(:incoming_version) { pc.version + 1 }
 
-          it 'had OK_STATUS, but is now EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS' do
+          it 'had OK_STATUS, but is now UNEXPECTED_VERSION_ON_STORAGE_STATUS' do
             pc.status = PreservedCopy::OK_STATUS
             pc.save!
             allow(po_handler).to receive(:moab_validation_errors).and_return([])
             po_handler.confirm_version
-            expect(pc.reload.status).to eq PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
+            expect(pc.reload.status).to eq PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
           end
-          it 'had INVALID_MOAB_STATUS, structure seems to be remediated, but is now EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS' do
+          it 'had INVALID_MOAB_STATUS, structure seems to be remediated, but is now UNEXPECTED_VERSION_ON_STORAGE_STATUS' do
             pc.status = PreservedCopy::INVALID_MOAB_STATUS
             pc.save!
             allow(po_handler).to receive(:moab_validation_errors).and_return([])
             po_handler.confirm_version
-            expect(pc.reload.status).to eq PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
+            expect(pc.reload.status).to eq PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
           end
         end
       end
@@ -144,7 +144,7 @@ RSpec.describe PreservedObjectHandler do
           "#{exp_msg_prefix} actual version (1) has unexpected relationship to PreservedCopy db version; ERROR!"
         }
         let(:updated_pc_db_status_msg) {
-          "#{exp_msg_prefix} PreservedCopy status changed from ok to expected_vers_not_found_on_storage"
+          "#{exp_msg_prefix} PreservedCopy status changed from ok to unexpected_version_on_storage"
         }
 
         it_behaves_like 'calls AuditResults.report_results', :confirm_version
@@ -157,10 +157,10 @@ RSpec.describe PreservedObjectHandler do
 
           context 'PreservedCopy' do
             context 'changed' do
-              it 'status to expected_vers_not_found_on_storage' do
+              it 'status to unexpected_version_on_storage' do
                 expect(pc.status).to eq PreservedCopy::OK_STATUS
                 po_handler.confirm_version
-                expect(pc.reload.status).to eq PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
+                expect(pc.reload.status).to eq PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
               end
               it 'last_version_audit' do
                 orig = Time.current
@@ -258,7 +258,7 @@ RSpec.describe PreservedObjectHandler do
       it 'calls PreservedCopy.save! (but not PreservedObject.save!) if the existing record is altered' do
         po = instance_double(PreservedObject)
         pc = instance_double(PreservedCopy)
-        status = PreservedCopy::EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS
+        status = PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
         allow(PreservedObject).to receive(:find_by).with(druid: druid).and_return(po)
         allow(po).to receive(:current_version).and_return(1)
         allow(po).to receive(:save!)
