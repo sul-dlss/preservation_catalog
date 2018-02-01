@@ -56,6 +56,7 @@ class CatalogToMoab
 
   # shameless green implementation
   def check_catalog_version
+    results.check_name = 'check_catalog_version'
     unless preserved_copy.matches_po_current_version?
       results.add_result(AuditResults::PC_PO_VERSION_MISMATCH,
                          pc_version: preserved_copy.version,

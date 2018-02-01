@@ -47,6 +47,7 @@ RSpec.shared_examples 'calls AuditResults.report_results' do |method_sym|
   it '' do
     mock_results = instance_double(AuditResults)
     allow(mock_results).to receive(:add_result)
+    allow(mock_results).to receive(:check_name=)
     expect(mock_results).to receive(:report_results)
     expect(AuditResults).to receive(:new).and_return(mock_results)
     po_handler.send(method_sym)

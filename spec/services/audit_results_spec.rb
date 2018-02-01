@@ -35,7 +35,8 @@ RSpec.describe AuditResults do
         audit_results.add_result(result_code, addl_hash)
       end
       it 'with msg_prefix' do
-        expected = audit_results.send(:msg_prefix)
+        audit_results.check_name = 'FooCheck'
+        expected = "FooCheck(#{druid}, fixture_sr1)"
         expect(Rails.logger).to receive(:log).with(Logger::ERROR, a_string_matching(Regexp.escape(expected)))
         audit_results.report_results
       end

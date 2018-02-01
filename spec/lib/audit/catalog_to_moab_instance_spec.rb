@@ -59,7 +59,7 @@ RSpec.describe CatalogToMoab do
     end
 
     it 'calls AuditResults.report_results' do
-      results = instance_double(AuditResults, add_result: nil, :actual_version= => nil)
+      results = instance_double(AuditResults, add_result: nil, :actual_version= => nil, :check_name= => nil)
       allow(AuditResults).to receive(:new).and_return(results)
       expect(results).to receive(:report_results)
       c2m.check_catalog_version
@@ -73,7 +73,7 @@ RSpec.describe CatalogToMoab do
     context 'moab is nil (exists in catalog but not online)' do
       it 'adds an ONLINE_MOAB_DOES_NOT_EXIST result' do
         allow(Moab::StorageObject).to receive(:new).with(druid, instance_of(String)).and_return(nil)
-        results = instance_double(AuditResults, report_results: nil)
+        results = instance_double(AuditResults, report_results: nil, :check_name= => nil)
         allow(AuditResults).to receive(:new).and_return(results)
         expect(results).to receive(:add_result).with(AuditResults::ONLINE_MOAB_DOES_NOT_EXIST)
         expect(results).to receive(:add_result).with(
@@ -112,7 +112,7 @@ RSpec.describe CatalogToMoab do
     context 'preserved_copy version != current_version of preserved_object' do
       it 'adds a PC_PO_VERSION_MISMATCH result and returns' do
         pres_copy.version = 666
-        results = instance_double(AuditResults, report_results: nil)
+        results = instance_double(AuditResults, report_results: nil, :check_name= => nil)
         allow(AuditResults).to receive(:new).and_return(results)
         expect(results).to receive(:add_result).with(
           AuditResults::PC_PO_VERSION_MISMATCH,
@@ -126,7 +126,7 @@ RSpec.describe CatalogToMoab do
 
     context 'catalog version == moab version (happy path)' do
       it 'adds a VERSION_MATCHES result' do
-        results = instance_double(AuditResults, report_results: nil, :actual_version= => nil)
+        results = instance_double(AuditResults, report_results: nil, :actual_version= => nil, :check_name= => nil)
         allow(AuditResults).to receive(:new).and_return(results)
         expect(results).to receive(:add_result).with(AuditResults::VERSION_MATCHES, 'PreservedCopy')
         c2m.check_catalog_version
@@ -178,7 +178,7 @@ RSpec.describe CatalogToMoab do
       end
 
       it 'adds an UNEXPECTED_VERSION result' do
-        results = instance_double(AuditResults, report_results: nil, :actual_version= => nil)
+        results = instance_double(AuditResults, report_results: nil, :actual_version= => nil, :check_name= => nil)
         expect(results).to receive(:add_result).with(AuditResults::UNEXPECTED_VERSION, 'PreservedCopy')
         allow(results).to receive(:add_result).with(any_args)
         allow(AuditResults).to receive(:new).and_return(results)
@@ -240,7 +240,7 @@ RSpec.describe CatalogToMoab do
       end
 
       it 'adds an UNEXPECTED_VERSION result' do
-        results = instance_double(AuditResults, report_results: nil, :actual_version= => nil)
+        results = instance_double(AuditResults, report_results: nil, :actual_version= => nil, :check_name= => nil)
         expect(results).to receive(:add_result).with(AuditResults::UNEXPECTED_VERSION, 'PreservedCopy')
         allow(results).to receive(:add_result).with(any_args)
         allow(AuditResults).to receive(:new).and_return(results)
@@ -274,7 +274,7 @@ RSpec.describe CatalogToMoab do
           expect(new_status).to eq PreservedCopy::INVALID_MOAB_STATUS
         end
         it 'adds an INVALID_MOAB result' do
-          results = instance_double(AuditResults, report_results: nil, :actual_version= => nil)
+          results = instance_double(AuditResults, report_results: nil, :actual_version= => nil, :check_name= => nil)
           expect(results).to receive(:add_result).with(AuditResults::INVALID_MOAB, anything)
           allow(results).to receive(:add_result).with(any_args)
           allow(AuditResults).to receive(:new).and_return(results)
@@ -282,7 +282,7 @@ RSpec.describe CatalogToMoab do
         end
       end
       it 'adds a PC_STATUS_CHANGED result' do
-        results = instance_double(AuditResults, report_results: nil, :actual_version= => nil)
+        results = instance_double(AuditResults, report_results: nil, :actual_version= => nil, :check_name= => nil)
         expect(results).to receive(:add_result).with(
           AuditResults::PC_STATUS_CHANGED, a_hash_including(:old_status, :new_status)
         )

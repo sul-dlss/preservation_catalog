@@ -76,12 +76,13 @@ class AuditResults
   end
 
   attr_reader :result_array, :druid, :endpoint
-  attr_accessor :actual_version
+  attr_accessor :actual_version, :check_name
 
-  def initialize(druid, actual_version, endpoint)
+  def initialize(druid, actual_version, endpoint, check_name=nil)
     @druid = druid
     @actual_version = actual_version
     @endpoint = endpoint
+    @check_name = check_name
     @result_array = []
   end
 
@@ -150,6 +151,6 @@ class AuditResults
   end
 
   def msg_prefix
-    @msg_prefix ||= "FIXME: some-audit-check(#{druid}, #{endpoint.endpoint_name if endpoint})"
+    @msg_prefix ||= "#{check_name}(#{druid}, #{endpoint.endpoint_name if endpoint})"
   end
 end

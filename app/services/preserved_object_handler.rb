@@ -32,6 +32,7 @@ class PreservedObjectHandler
   end
 
   def create_after_validation
+    handler_results.check_name = 'create_after_validation'
     if invalid?
       handler_results.add_result(AuditResults::INVALID_ARGUMENTS, errors.full_messages)
     elsif PreservedObject.exists?(druid: druid)
@@ -46,6 +47,7 @@ class PreservedObjectHandler
   end
 
   def create
+    handler_results.check_name = 'create'
     if invalid?
       handler_results.add_result(AuditResults::INVALID_ARGUMENTS, errors.full_messages)
     elsif PreservedObject.exists?(druid: druid)
@@ -59,6 +61,7 @@ class PreservedObjectHandler
 
   # this is a long, complex method (shameless green); if it is refactored, revisit the exceptions in rubocop.yml
   def check_existence
+    handler_results.check_name = 'check_existence'
     if invalid?
       handler_results.add_result(AuditResults::INVALID_ARGUMENTS, errors.full_messages)
     elsif PreservedObject.exists?(druid: druid)
@@ -110,6 +113,7 @@ class PreservedObjectHandler
   end
 
   def confirm_version
+    handler_results.check_name = 'confirm_version'
     if invalid?
       handler_results.add_result(AuditResults::INVALID_ARGUMENTS, errors.full_messages)
     else
@@ -126,6 +130,7 @@ class PreservedObjectHandler
   end
 
   def update_version_after_validation
+    handler_results.check_name = 'update_version_after_validation'
     if invalid?
       handler_results.add_result(AuditResults::INVALID_ARGUMENTS, errors.full_messages)
     else
@@ -147,6 +152,7 @@ class PreservedObjectHandler
   end
 
   def update_version
+    handler_results.check_name = 'update_version'
     if invalid?
       handler_results.add_result(AuditResults::INVALID_ARGUMENTS, errors.full_messages)
     else
