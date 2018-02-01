@@ -234,5 +234,17 @@ RSpec.describe PreservedCopy, type: :model do
     it 'returns no PreservedCopies with future timestamps' do
       expect(pcs_ordered_by_query).not_to include future_timestamp_pc
     end
+
+    context '.normalize_date(timestamp)' do
+      it 'given a String timestamp, returns a Time object' do
+        expect(described_class.send(:normalize_date, '2018-01-22T18:54:48')).to be_an_instance_of(Time)
+      end
+      it 'given a Time Object, returns the same Time object' do
+        expect(described_class.send(:normalize_date, Time.now.utc)).to be_an_instance_of(Time)
+      end
+      it 'given nil, returns the start of teh Epoch Time object' do
+        expect(described_class.send(:normalize_date, nil)).to be_an_instance_of(Time)
+      end
+    end
   end
 end
