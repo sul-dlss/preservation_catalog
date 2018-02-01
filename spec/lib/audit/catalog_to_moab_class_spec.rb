@@ -26,6 +26,51 @@ RSpec.describe CatalogToMoab do
       expect(c2m_mock).to receive(:check_catalog_version).exactly(2).times
       described_class.check_version_on_dir(last_checked_version_b4_date, storage_dir)
     end
+
+    context 'for nil or past last_version_audit dates' do
+      let(:last_checked_version_b4_date) { Time.now.utc }
+      let(:pcs_before_check) { PreservedCopy.least_recent_version_audit(last_checked_version_b4_date, storage_dir) }
+
+      it 'checks an unaudited PreservedCopy before one that has been audited' do
+        before_druids = pcs_before_check.map { |pc| pc.preserved_object.druid }
+        last_pc = pcs_before_check.last # last_version_audit is nil
+
+        described_class.check_version_on_dir(last_checked_version_b4_date, storage_dir)
+
+        last_pc.reload.last_version_audit = (last_pc.last_version_audit - 2.days)
+        last_pc.save # last_version_audit is no longer nil
+
+        # the test breaks unless we use Time.now.utc next
+        pcs_after_check = PreservedCopy.least_recent_version_audit(Time.now.utc, storage_dir)
+        after_druids = pcs_after_check.map { |pc| pc.preserved_object.druid }
+
+        expect(before_druids.first).to eq(after_druids.second)
+        expect(before_druids.second).to eq(after_druids.third)
+        expect(before_druids.third).to eq(after_druids.first)
+      end
+      it 'processes dates from oldest to newest order' do
+        before_druids = pcs_before_check.map { |pc| pc.preserved_object.druid }
+        first_pc = pcs_before_check.first
+        second_pc = pcs_before_check.second
+        last_pc = pcs_before_check.last
+
+        described_class.check_version_on_dir(last_checked_version_b4_date, storage_dir)
+
+        first_pc.reload.last_version_audit = (first_pc.last_version_audit - 1.day)
+        first_pc.save
+        second_pc.reload.last_version_audit = (second_pc.last_version_audit - 2.days)
+        second_pc.save
+        last_pc.reload.last_version_audit = (last_pc.last_version_audit - 3.days)
+        last_pc.save
+
+        # the test breaks unless we use Time.now.utc next
+        pcs_after_check = PreservedCopy.least_recent_version_audit(Time.now.utc, storage_dir)
+        after_druids = pcs_after_check.map { |pc| pc.preserved_object.druid }
+        expect(before_druids.first).to eq(after_druids.last)
+        expect(before_druids.second).to eq(after_druids.second)
+        expect(before_druids.last).to eq(after_druids.first)
+      end
+    end
   end
 
   context ".check_version_on_dir_profiled" do

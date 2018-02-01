@@ -7,11 +7,7 @@ class CatalogToMoab
   # allows for sharding/parallelization by storage_dir
   def self.check_version_on_dir(last_checked_b4_date, storage_dir)
     # TODO: ensure last_checked_version_b4_date is in the right format for query - see #485
-    pcs = PreservedCopy
-          .joins(:endpoint)
-          .where(endpoints: { storage_location: storage_dir })
-          .where('last_version_audit IS NULL or last_version_audit < ?', last_checked_b4_date)
-          .order('last_version_audit IS NOT NULL, last_version_audit ASC')
+    pcs = PreservedCopy.least_recent_version_audit(last_checked_b4_date, storage_dir)
     pcs.find_each do |pc|
       c2m = CatalogToMoab.new(pc, storage_dir)
       c2m.check_catalog_version
