@@ -202,8 +202,8 @@ RSpec.describe PreservedObjectHandler do
               expect(results).to be_an_instance_of Array
               expect(results.size).to eq 2
             end
-            it 'ARG_VERSION_GREATER_THAN_DB_OBJECT results' do
-              code = AuditResults::ARG_VERSION_GREATER_THAN_DB_OBJECT
+            it 'ACTUAL_VERS_GT_DB_OBJ results' do
+              code = AuditResults::ACTUAL_VERS_GT_DB_OBJ
               expect(results).to include(a_hash_including(code => version_gt_pc_msg))
               expect(results).to include(a_hash_including(code => version_gt_po_msg))
             end
@@ -302,8 +302,8 @@ RSpec.describe PreservedObjectHandler do
               expect(results).to be_an_instance_of Array
               expect(results.size).to eq 4
             end
-            it 'ARG_VERSION_GREATER_THAN_DB_OBJECT results' do
-              code = AuditResults::ARG_VERSION_GREATER_THAN_DB_OBJECT
+            it 'ACTUAL_VERS_GT_DB_OBJ results' do
+              code = AuditResults::ACTUAL_VERS_GT_DB_OBJ
               expect(results).to include(a_hash_including(code => version_gt_pc_msg))
               expect(results).to include(a_hash_including(code => version_gt_po_msg))
             end
@@ -494,8 +494,8 @@ RSpec.describe PreservedObjectHandler do
               expect(results).to be_an_instance_of Array
               expect(results.size).to eq 2
             end
-            it 'OBJECT_DOES_NOT_EXIST results' do
-              code = AuditResults::OBJECT_DOES_NOT_EXIST
+            it 'DB_OBJ_DOES_NOT_EXIST results' do
+              code = AuditResults::DB_OBJ_DOES_NOT_EXIST
               expect(results).to include(a_hash_including(code => exp_po_not_exist_msg))
             end
             it 'CREATED_NEW_OBJECT result' do
@@ -591,8 +591,8 @@ RSpec.describe PreservedObjectHandler do
               code = AuditResults::INVALID_MOAB
               expect(results).to include(a_hash_including(code => exp_moab_errs_msg))
             end
-            it 'OBJECT_DOES_NOT_EXIST results' do
-              code = AuditResults::OBJECT_DOES_NOT_EXIST
+            it 'DB_OBJ_DOES_NOT_EXIST results' do
+              code = AuditResults::DB_OBJ_DOES_NOT_EXIST
               expect(results).to include(a_hash_including(code => exp_po_not_exist_msg))
             end
             it 'CREATED_NEW_OBJECT result' do

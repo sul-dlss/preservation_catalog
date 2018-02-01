@@ -38,7 +38,7 @@ RSpec.describe PreservedObjectHandler do
         PreservedObject.create!(druid: druid, current_version: 2, preservation_policy: default_prez_policy)
         po_handler = described_class.new(druid, 3, incoming_size, diff_ep)
         results = po_handler.confirm_version
-        code = AuditResults::OBJECT_DOES_NOT_EXIST
+        code = AuditResults::DB_OBJ_DOES_NOT_EXIST
         exp_str = "ActiveRecord::RecordNotFound: Couldn't find PreservedCopy> db object does not exist"
         expect(results).to include(a_hash_including(code => a_string_matching(exp_str)))
         expect(PreservedObject.find_by(druid: druid).current_version).to eq 2

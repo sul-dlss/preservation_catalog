@@ -37,7 +37,7 @@ RSpec.describe PreservedObjectHandler do
       po_handler.create
       new_po_handler = described_class.new(druid, incoming_version, incoming_size, ep)
       results = new_po_handler.create
-      code = AuditResults::OBJECT_ALREADY_EXISTS
+      code = AuditResults::DB_OBJ_ALREADY_EXISTS
       expect(results).to include(a_hash_including(code => a_string_matching('PreservedObject db object already exists')))
     end
 
