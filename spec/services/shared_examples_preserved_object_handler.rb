@@ -23,7 +23,7 @@ RSpec.shared_examples "attributes validated" do |method_sym|
     end
     context 'result message includes' do
       let(:msg) { result.first[AuditResults::INVALID_ARGUMENTS] }
-      let(:exp_msg_prefix) { "PreservedObjectHandler(#{bad_druid}, #{bad_version}, #{bad_size}, #{bad_endpoint.endpoint_name if bad_endpoint})" }
+      let(:exp_msg_prefix) { "PreservedObjectHandler(#{bad_druid}, #{bad_version}, #{bad_endpoint.endpoint_name if bad_endpoint})" }
 
       it "prefix" do
         expect(msg).to match(Regexp.escape("#{exp_msg_prefix} encountered validation error(s): "))
@@ -59,8 +59,6 @@ RSpec.shared_examples 'druid not in catalog' do |method_sym|
   let(:escaped_exp_msg) { Regexp.escape(exp_msg_prefix) + ".* PreservedObject.* db object does not exist" }
   let(:results) do
     allow(Rails.logger).to receive(:log)
-    # FIXME: couldn't figure out how to put next line into its own test
-    expect(Rails.logger).to receive(:log).with(Logger::ERROR, /#{escaped_exp_msg}/)
     po_handler.send(method_sym)
   end
 
@@ -77,8 +75,6 @@ RSpec.shared_examples 'PreservedCopy does not exist' do |method_sym|
   let(:exp_msg) { "#{exp_msg_prefix} #<ActiveRecord::RecordNotFound: foo> db object does not exist" }
   let(:results) do
     allow(Rails.logger).to receive(:log)
-    # FIXME: couldn't figure out how to put next line into its own test
-    expect(Rails.logger).to receive(:log).with(Logger::ERROR, /#{Regexp.escape(exp_msg)}/)
     po = instance_double(PreservedObject)
     allow(po).to receive(:current_version).and_return(2)
     allow(po).to receive(:current_version=)
@@ -95,10 +91,10 @@ RSpec.shared_examples 'PreservedCopy does not exist' do |method_sym|
   end
 end
 
-RSpec.shared_examples 'unexpected version' do |method_sym, incoming_version|
-  let(:po_handler) { described_class.new(druid, incoming_version, 1, ep) }
-  let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, #{incoming_version}, 1, #{ep.endpoint_name if ep})" }
-  let(:version_msg_prefix) { "#{exp_msg_prefix} incoming version (#{incoming_version})" }
+RSpec.shared_examples 'unexpected version' do |method_sym, actual_version|
+  let(:po_handler) { described_class.new(druid, actual_version, 1, ep) }
+  let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, #{actual_version}, #{ep.endpoint_name if ep})" }
+  let(:version_msg_prefix) { "#{exp_msg_prefix} actual version (#{actual_version})" }
   let(:unexpected_version_msg) { "#{version_msg_prefix} has unexpected relationship to PreservedCopy db version; ERROR!" }
 
   context 'PreservedCopy' do
@@ -189,8 +185,8 @@ end
 
 RSpec.shared_examples 'unexpected version with validation' do |method_sym, incoming_version, new_status|
   let(:po_handler) { described_class.new(druid, incoming_version, 1, ep) }
-  let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, #{incoming_version}, 1, #{ep.endpoint_name if ep})" }
-  let(:version_msg_prefix) { "#{exp_msg_prefix} incoming version (#{incoming_version})" }
+  let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, #{incoming_version}, #{ep.endpoint_name if ep})" }
+  let(:version_msg_prefix) { "#{exp_msg_prefix} actual version (#{incoming_version})" }
   let(:unexpected_version_msg) { "#{version_msg_prefix} has unexpected relationship to PreservedCopy db version; ERROR!" }
   let(:updated_status_msg_regex) { Regexp.new(Regexp.escape("#{exp_msg_prefix} PreservedCopy status changed from")) }
 
@@ -351,7 +347,7 @@ end
 
 RSpec.shared_examples 'PreservedObject current_version does not match online PC version' do |method_sym, incoming_version, pc_v, po_v|
   let(:po_handler) { described_class.new(druid, incoming_version, 1, ep) }
-  let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, #{incoming_version}, 1, #{ep.endpoint_name if ep})" }
+  let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, #{incoming_version}, #{ep.endpoint_name if ep})" }
   let(:version_mismatch_msg) { "#{exp_msg_prefix} PreservedCopy online moab version #{pc_v} does not match PreservedObject current_version #{po_v}" }
 
   it 'does not update PreservedCopy' do

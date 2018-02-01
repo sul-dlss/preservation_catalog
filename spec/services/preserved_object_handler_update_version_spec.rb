@@ -9,11 +9,11 @@ RSpec.describe PreservedObjectHandler do
   let(:po) { PreservedObject.find_by(druid: druid) }
   let(:ep) { Endpoint.find_by(storage_location: 'spec/fixtures/storage_root01/moab_storage_trunk') }
   let(:pc) { PreservedCopy.find_by(preserved_object: po, endpoint: ep) }
-  let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, #{incoming_version}, #{incoming_size}, #{ep.endpoint_name})" }
+  let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, #{incoming_version}, #{ep.endpoint_name})" }
   let(:updated_status_msg_regex) { Regexp.new(Regexp.escape("#{exp_msg_prefix} PreservedCopy status changed from")) }
   let(:db_update_failed_prefix_regex_escaped) { Regexp.escape("#{exp_msg_prefix} db update failed") }
-  let(:version_gt_pc_msg) { "#{exp_msg_prefix} incoming version (#{incoming_version}) greater than PreservedCopy db version" }
-  let(:version_gt_po_msg) { "#{exp_msg_prefix} incoming version (#{incoming_version}) greater than PreservedObject db version" }
+  let(:version_gt_pc_msg) { "#{exp_msg_prefix} actual version (#{incoming_version}) greater than PreservedCopy db version" }
+  let(:version_gt_po_msg) { "#{exp_msg_prefix} actual version (#{incoming_version}) greater than PreservedObject db version" }
 
   let(:po_handler) { described_class.new(druid, incoming_version, incoming_size, ep) }
 

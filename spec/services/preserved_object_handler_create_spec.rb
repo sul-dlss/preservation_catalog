@@ -7,7 +7,7 @@ RSpec.describe PreservedObjectHandler do
   let(:incoming_size) { 9876 }
   let(:storage_dir) { 'spec/fixtures/storage_root01/moab_storage_trunk' }
   let(:ep) { Endpoint.find_by(storage_location: storage_dir) }
-  let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, #{incoming_version}, #{incoming_size}, #{ep.endpoint_name})" }
+  let(:exp_msg_prefix) { "PreservedObjectHandler(#{druid}, #{incoming_version}, #{ep.endpoint_name})" }
   let(:po_handler) { described_class.new(druid, incoming_version, incoming_size, ep) }
   let(:exp_msg) { "#{exp_msg_prefix} added object to db as it did not exist" }
 
@@ -144,7 +144,7 @@ RSpec.describe PreservedObjectHandler do
       let(:storage_dir) { 'spec/fixtures/bad_root01/bad_moab_storage_trunk' }
       let(:ep) { Endpoint.find_by(storage_location: storage_dir) }
       let(:invalid_druid) { 'xx000xx0000' }
-      let(:exp_msg_prefix) { "PreservedObjectHandler(#{invalid_druid}, #{incoming_version}, #{incoming_size}, #{ep.endpoint_name})" }
+      let(:exp_msg_prefix) { "PreservedObjectHandler(#{invalid_druid}, #{incoming_version}, #{ep.endpoint_name})" }
       let(:po_handler) { described_class.new(invalid_druid, incoming_version, incoming_size, ep) }
 
       # add storage root with invalid moab to the Endpoints table
@@ -212,7 +212,7 @@ RSpec.describe PreservedObjectHandler do
 
     context 'returns' do
       let!(:result) { po_handler.create_after_validation }
-      let(:exp_msg_prefix) { "PreservedObjectHandler(#{valid_druid}, #{incoming_version}, #{incoming_size}, #{ep.endpoint_name})" }
+      let(:exp_msg_prefix) { "PreservedObjectHandler(#{valid_druid}, #{incoming_version}, #{ep.endpoint_name})" }
 
       it '1 result' do
         expect(result).to be_an_instance_of Array

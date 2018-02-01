@@ -51,7 +51,7 @@ class CatalogToMoab
     @preserved_copy = preserved_copy
     @storage_dir = storage_dir
     @druid = preserved_copy.preserved_object.druid
-    @results = AuditResults.new(druid, nil, nil, preserved_copy.endpoint)
+    @results = AuditResults.new(druid, nil, preserved_copy.endpoint)
   end
 
   # shameless green implementation
@@ -72,6 +72,7 @@ class CatalogToMoab
     end
 
     moab_version = moab.current_version_id
+    results.actual_version = moab_version
     catalog_version = preserved_copy.version
     if catalog_version == moab_version
       results.add_result(AuditResults::VERSION_MATCHES, preserved_copy.class.name)
