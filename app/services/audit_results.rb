@@ -14,12 +14,12 @@ class AuditResults
 
   INVALID_ARGUMENTS = :invalid_arguments
   VERSION_MATCHES = :version_matches
-  ARG_VERSION_GREATER_THAN_DB_OBJECT = :arg_version_greater_than_db
-  ARG_VERSION_LESS_THAN_DB_OBJECT = :arg_version_less_than_db
+  ACTUAL_VERS_GT_DB_OBJ = :actual_vers_gt_db_obj
+  ACTUAL_VERS_LT_DB_OBJ = :actual_vers_lt_db_obj
   CREATED_NEW_OBJECT = :created_new_object
   DB_UPDATE_FAILED = :db_update_failed
-  OBJECT_ALREADY_EXISTS = :object_already_exists
-  OBJECT_DOES_NOT_EXIST = :object_does_not_exist
+  DB_OBJ_ALREADY_EXISTS = :db_obj_already_exists
+  DB_OBJ_DOES_NOT_EXIST = :db_obj_does_not_exist
   PC_STATUS_CHANGED = :pc_status_changed
   UNEXPECTED_VERSION = :unexpected_version
   INVALID_MOAB = :invalid_moab
@@ -29,12 +29,12 @@ class AuditResults
   RESPONSE_CODE_TO_MESSAGES = {
     INVALID_ARGUMENTS => "encountered validation error(s): %{addl}",
     VERSION_MATCHES => "actual version (%{actual_version}) matches %{addl} db version",
-    ARG_VERSION_GREATER_THAN_DB_OBJECT => "actual version (%{actual_version}) greater than %{addl} db version",
-    ARG_VERSION_LESS_THAN_DB_OBJECT => "actual version (%{actual_version}) less than %{addl} db version; ERROR!",
+    ACTUAL_VERS_GT_DB_OBJ => "actual version (%{actual_version}) greater than %{addl} db version",
+    ACTUAL_VERS_LT_DB_OBJ => "actual version (%{actual_version}) less than %{addl} db version; ERROR!",
     CREATED_NEW_OBJECT => "added object to db as it did not exist",
     DB_UPDATE_FAILED => "db update failed: %{addl}",
-    OBJECT_ALREADY_EXISTS => "%{addl} db object already exists",
-    OBJECT_DOES_NOT_EXIST => "%{addl} db object does not exist",
+    DB_OBJ_ALREADY_EXISTS => "%{addl} db object already exists",
+    DB_OBJ_DOES_NOT_EXIST => "%{addl} db object does not exist",
     PC_STATUS_CHANGED => "PreservedCopy status changed from %{old_status} to %{new_status}",
     UNEXPECTED_VERSION => "actual version (%{actual_version}) has unexpected relationship to %{addl} db version; ERROR!",
     INVALID_MOAB => "Invalid moab, validation errors: %{addl}",
@@ -43,10 +43,10 @@ class AuditResults
   }.freeze
 
   WORKFLOW_REPORT_CODES = [
-    ARG_VERSION_LESS_THAN_DB_OBJECT,
+    ACTUAL_VERS_LT_DB_OBJ,
     DB_UPDATE_FAILED,
-    OBJECT_ALREADY_EXISTS,
-    OBJECT_DOES_NOT_EXIST,
+    DB_OBJ_ALREADY_EXISTS,
+    DB_OBJ_DOES_NOT_EXIST,
     UNEXPECTED_VERSION,
     PC_PO_VERSION_MISMATCH,
     ONLINE_MOAB_DOES_NOT_EXIST
@@ -61,12 +61,12 @@ class AuditResults
     case result_code
     when INVALID_ARGUMENTS then Logger::ERROR
     when VERSION_MATCHES then Logger::INFO
-    when ARG_VERSION_GREATER_THAN_DB_OBJECT then Logger::INFO
-    when ARG_VERSION_LESS_THAN_DB_OBJECT then Logger::ERROR
+    when ACTUAL_VERS_GT_DB_OBJ then Logger::INFO
+    when ACTUAL_VERS_LT_DB_OBJ then Logger::ERROR
     when CREATED_NEW_OBJECT then Logger::INFO
     when DB_UPDATE_FAILED then Logger::ERROR
-    when OBJECT_ALREADY_EXISTS then Logger::ERROR
-    when OBJECT_DOES_NOT_EXIST then Logger::ERROR
+    when DB_OBJ_ALREADY_EXISTS then Logger::ERROR
+    when DB_OBJ_DOES_NOT_EXIST then Logger::ERROR
     when PC_STATUS_CHANGED then Logger::INFO
     when UNEXPECTED_VERSION then Logger::ERROR
     when INVALID_MOAB then Logger::ERROR

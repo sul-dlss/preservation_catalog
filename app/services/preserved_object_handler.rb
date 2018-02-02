@@ -36,7 +36,7 @@ class PreservedObjectHandler
     if invalid?
       handler_results.add_result(AuditResults::INVALID_ARGUMENTS, errors.full_messages)
     elsif PreservedObject.exists?(druid: druid)
-      handler_results.add_result(AuditResults::OBJECT_ALREADY_EXISTS, 'PreservedObject')
+      handler_results.add_result(AuditResults::DB_OBJ_ALREADY_EXISTS, 'PreservedObject')
     elsif moab_validation_errors.empty?
       create_db_objects(PreservedCopy::OK_STATUS)
     else
@@ -51,7 +51,7 @@ class PreservedObjectHandler
     if invalid?
       handler_results.add_result(AuditResults::INVALID_ARGUMENTS, errors.full_messages)
     elsif PreservedObject.exists?(druid: druid)
-      handler_results.add_result(AuditResults::OBJECT_ALREADY_EXISTS, 'PreservedObject')
+      handler_results.add_result(AuditResults::DB_OBJ_ALREADY_EXISTS, 'PreservedObject')
     else
       create_db_objects(PreservedCopy::VALIDITY_UNKNOWN_STATUS)
     end
@@ -80,8 +80,8 @@ class PreservedObjectHandler
             handler_results.add_result(AuditResults::VERSION_MATCHES, pres_object.class.name)
           elsif incoming_version > pres_copy.version
             set_status_as_seen_on_disk(pres_copy, true) unless pres_copy.status == PreservedCopy::OK_STATUS
-            handler_results.add_result(AuditResults::ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_copy.class.name)
-            handler_results.add_result(AuditResults::ARG_VERSION_GREATER_THAN_DB_OBJECT, pres_object.class.name)
+            handler_results.add_result(AuditResults::ACTUAL_VERS_GT_DB_OBJ, pres_copy.class.name)
+            handler_results.add_result(AuditResults::ACTUAL_VERS_GT_DB_OBJ, pres_object.class.name)
             if moab_validation_errors.empty?
               pres_copy.upd_audstamps_version_size(ran_moab_validation?, incoming_version, incoming_size)
               pres_object.current_version = incoming_version
@@ -91,8 +91,8 @@ class PreservedObjectHandler
             end
           else # incoming_version < pres_copy.version
             set_status_as_seen_on_disk(pres_copy, false)
-            handler_results.add_result(AuditResults::ARG_VERSION_LESS_THAN_DB_OBJECT, pres_copy.class.name)
-            handler_results.add_result(AuditResults::ARG_VERSION_LESS_THAN_DB_OBJECT, pres_object.class.name)
+            handler_results.add_result(AuditResults::ACTUAL_VERS_LT_DB_OBJ, pres_copy.class.name)
+            handler_results.add_result(AuditResults::ACTUAL_VERS_LT_DB_OBJ, pres_object.class.name)
           end
           pres_copy.update_audit_timestamps(ran_moab_validation?, true)
           pres_copy.save!
@@ -102,7 +102,7 @@ class PreservedObjectHandler
         # TODO: note that an endpoint PC version might not match PO.current_version
       end
     else
-      handler_results.add_result(AuditResults::OBJECT_DOES_NOT_EXIST, 'PreservedObject')
+      handler_results.add_result(AuditResults::DB_OBJ_DOES_NOT_EXIST, 'PreservedObject')
       if moab_validation_errors.empty?
         create_db_objects(PreservedCopy::OK_STATUS)
       else
@@ -231,7 +231,7 @@ class PreservedObjectHandler
       # FIXME: what if there is more than one associated pres_copy?
       if incoming_version > pres_copy.version && pres_copy.matches_po_current_version?
         # add results without db updates
-        code = AuditResults::ARG_VERSION_GREATER_THAN_DB_OBJECT
+        code = AuditResults::ACTUAL_VERS_GT_DB_OBJ
         handler_results.add_result(code, pres_copy.class.name)
         handler_results.add_result(code, pres_object.class.name)
 
@@ -332,7 +332,7 @@ class PreservedObjectHandler
       ApplicationRecord.transaction { yield }
       return true
     rescue ActiveRecord::RecordNotFound => e
-      handler_results.add_result(AuditResults::OBJECT_DOES_NOT_EXIST, e.inspect)
+      handler_results.add_result(AuditResults::DB_OBJ_DOES_NOT_EXIST, e.inspect)
     rescue ActiveRecord::ActiveRecordError => e
       handler_results.add_result(
         AuditResults::DB_UPDATE_FAILED, "#{e.inspect} #{e.message} #{e.backtrace.inspect}"
@@ -346,9 +346,9 @@ class PreservedObjectHandler
     if incoming_version == db_object.send(version_symbol)
       handler_results.add_result(AuditResults::VERSION_MATCHES, db_object.class.name)
     elsif incoming_version < db_object.send(version_symbol)
-      handler_results.add_result(AuditResults::ARG_VERSION_LESS_THAN_DB_OBJECT, db_object.class.name)
+      handler_results.add_result(AuditResults::ACTUAL_VERS_LT_DB_OBJ, db_object.class.name)
     elsif incoming_version > db_object.send(version_symbol)
-      handler_results.add_result(AuditResults::ARG_VERSION_GREATER_THAN_DB_OBJECT, db_object.class.name)
+      handler_results.add_result(AuditResults::ACTUAL_VERS_GT_DB_OBJ, db_object.class.name)
     end
   end
 

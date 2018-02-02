@@ -93,8 +93,8 @@ RSpec.describe PreservedObjectHandler do
             expect(results).to be_an_instance_of Array
             expect(results.size).to eq 2
           end
-          it 'ARG_VERSION_GREATER_THAN_DB_OBJECT results' do
-            code = AuditResults::ARG_VERSION_GREATER_THAN_DB_OBJECT
+          it 'ACTUAL_VERS_GT_DB_OBJ results' do
+            code = AuditResults::ACTUAL_VERS_GT_DB_OBJ
             expect(results).to include(a_hash_including(code => version_gt_pc_msg))
             expect(results).to include(a_hash_including(code => version_gt_po_msg))
           end

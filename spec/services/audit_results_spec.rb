@@ -99,7 +99,7 @@ RSpec.describe AuditResults do
         result_msg_args1 = { pc_version: 1, po_version: 2 }
         audit_results.add_result(code1, result_msg_args1)
         wf_err_msg1 = audit_results.send(:result_code_msg, code1, result_msg_args1)
-        code2 = AuditResults::OBJECT_ALREADY_EXISTS
+        code2 = AuditResults::DB_OBJ_ALREADY_EXISTS
         result_msg_args2 = 'foo'
         audit_results.add_result(code2, result_msg_args2)
         wf_err_msg2 = audit_results.send(:result_code_msg, code2, result_msg_args2)

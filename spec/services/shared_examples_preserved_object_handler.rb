@@ -62,8 +62,8 @@ RSpec.shared_examples 'druid not in catalog' do |method_sym|
     po_handler.send(method_sym)
   end
 
-  it 'OBJECT_DOES_NOT_EXIST error' do
-    code = AuditResults::OBJECT_DOES_NOT_EXIST
+  it 'DB_OBJ_DOES_NOT_EXIST error' do
+    code = AuditResults::DB_OBJ_DOES_NOT_EXIST
     expect(results).to include(a_hash_including(code => a_string_matching(exp_msg)))
   end
 end
@@ -85,8 +85,8 @@ RSpec.shared_examples 'PreservedCopy does not exist' do |method_sym|
     po_handler.send(method_sym)
   end
 
-  it 'OBJECT_DOES_NOT_EXIST error' do
-    code = AuditResults::OBJECT_DOES_NOT_EXIST
+  it 'DB_OBJ_DOES_NOT_EXIST error' do
+    code = AuditResults::DB_OBJ_DOES_NOT_EXIST
     expect(results).to include(a_hash_including(code => exp_msg))
   end
 end
@@ -162,8 +162,8 @@ RSpec.shared_examples 'unexpected version' do |method_sym, actual_version|
       # NOTE this is not checking that we have the CORRECT specific code
       codes = [
         AuditResults::VERSION_MATCHES,
-        AuditResults::ARG_VERSION_GREATER_THAN_DB_OBJECT,
-        AuditResults::ARG_VERSION_LESS_THAN_DB_OBJECT
+        AuditResults::ACTUAL_VERS_GT_DB_OBJ,
+        AuditResults::ACTUAL_VERS_LT_DB_OBJ
       ]
       obj_version_results = results.select { |r| codes.include?(r.keys.first) }
       msgs = obj_version_results.map { |r| r.values.first }
@@ -268,8 +268,8 @@ RSpec.shared_examples 'unexpected version with validation' do |method_sym, incom
     it 'specific version results' do
       codes = [
         AuditResults::VERSION_MATCHES,
-        AuditResults::ARG_VERSION_GREATER_THAN_DB_OBJECT,
-        AuditResults::ARG_VERSION_LESS_THAN_DB_OBJECT
+        AuditResults::ACTUAL_VERS_GT_DB_OBJ,
+        AuditResults::ACTUAL_VERS_LT_DB_OBJ
       ]
       obj_version_results = results.select { |r| codes.include?(r.keys.first) }
       msgs = obj_version_results.map { |r| r.values.first }
