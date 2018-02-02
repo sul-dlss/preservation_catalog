@@ -66,7 +66,9 @@ class CatalogToMoab
 
     unless online_moab_found?(druid, storage_dir)
       update_status(PreservedCopy::ONLINE_MOAB_NOT_FOUND_STATUS)
-      results.add_result(AuditResults::ONLINE_MOAB_DOES_NOT_EXIST)
+      results.add_result(AuditResults::ONLINE_MOAB_DOES_NOT_EXIST,
+                         db_created_at: preserved_copy.created_at.iso8601,
+                         db_updated_at: preserved_copy.updated_at.iso8601)
       results.report_results
       preserved_copy.save!
       return

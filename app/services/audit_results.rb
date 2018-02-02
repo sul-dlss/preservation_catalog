@@ -44,7 +44,7 @@ class AuditResults
     UNEXPECTED_VERSION => "actual version (%{actual_version}) has unexpected relationship to %{addl} db version; ERROR!",
     INVALID_MOAB => "Invalid moab, validation errors: %{addl}",
     PC_PO_VERSION_MISMATCH => "PreservedCopy online moab version %{pc_version} does not match PreservedObject current_version %{po_version}",
-    ONLINE_MOAB_DOES_NOT_EXIST => "db has moab that is not found online",
+    ONLINE_MOAB_DOES_NOT_EXIST => "db PreservedCopy (created %{db_created_at}; last updated %{db_updated_at}) exists but Moab not found",
     MOAB_FILE_CHECKSUM_MISMATCH => "The checksums for %{file_path} do not match. Computed %{algorithm} checksum: %{computed_checksum[0...7]}. Expected checksum: %{expected_checksum[0...7]}",
     FILE_NOT_IN_MOAB => "%{manifest_file_path} refers to file (%{file_path}) not found in Moab",
     FILE_NOT_IN_MANIFEST => "Moab file %{file_path} was not found in Moab manifest %{manifest_file_path}",
