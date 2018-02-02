@@ -83,8 +83,6 @@ class CatalogToMoab
       results.report_results
     elsif catalog_version < moab_version
       set_status_as_seen_on_disk(true)
-      results.add_result(AuditResults::UNEXPECTED_VERSION, preserved_copy.class.name)
-      # TODO: avoid repetitious results ... (leave out line above??) - see #484
       pohandler = PreservedObjectHandler.new(druid, moab_version, moab.size, preserved_copy.endpoint)
       pohandler.update_version_after_validation # results reported by this call
     else # catalog_version > moab_version
