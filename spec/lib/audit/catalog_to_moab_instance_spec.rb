@@ -177,13 +177,6 @@ RSpec.describe CatalogToMoab do
         allow(moab).to receive(:current_version_id).and_return(4)
       end
 
-      it 'adds an UNEXPECTED_VERSION result' do
-        results = instance_double(AuditResults, report_results: nil, :actual_version= => nil, :check_name= => nil)
-        expect(results).to receive(:add_result).with(AuditResults::UNEXPECTED_VERSION, 'PreservedCopy')
-        allow(results).to receive(:add_result).with(any_args)
-        allow(AuditResults).to receive(:new).and_return(results)
-        c2m.check_catalog_version
-      end
       it 'calls PreservedObjectHandler.update_version_after_validation' do
         pohandler = instance_double(PreservedObjectHandler)
         expect(PreservedObjectHandler).to receive(:new).and_return(pohandler)
