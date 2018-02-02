@@ -131,8 +131,7 @@ class AuditResults
         candidate_workflow_results << r
       end
     end
-    stack_trace = caller(0..1).join("\n")
-    report_errors_to_workflows(candidate_workflow_results, stack_trace)
+    report_errors_to_workflows(candidate_workflow_results)
     result_array
   end
 
@@ -142,7 +141,7 @@ class AuditResults
     { code => result_code_msg(code, msg_args) }
   end
 
-  def report_errors_to_workflows(candidate_workflow_results, stack_trace)
+  def report_errors_to_workflows(candidate_workflow_results)
     return if candidate_workflow_results.empty?
     value_array = []
     value_array << workflows_msg_prefix
@@ -151,7 +150,6 @@ class AuditResults
         value_array << val
       end
     end
-    value_array << stack_trace
     WorkflowErrorsReporter.update_workflow(druid, 'preservation-audit', value_array.join(" || "))
   end
 

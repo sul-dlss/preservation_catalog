@@ -141,18 +141,6 @@ RSpec.describe AuditResults do
         )
         audit_results.report_results
       end
-      it 'includes a truncated stack trace at the end' do
-        code = AuditResults::PC_PO_VERSION_MISMATCH
-        addl_hash = { pc_version: 1, po_version: 2 }
-        audit_results.add_result(code, addl_hash)
-        exp_regex = Regexp.new(" || \
-          .*preservation_catalog/app/services/audit_results.rb \
-          .*preservation_catalog/spec/services/audit_results_spec.rb .*in <top (required)>")
-        expect(WorkflowErrorsReporter).to receive(:update_workflow).with(
-          druid, 'preservation-audit', a_string_ending_with(exp_regex)
-        )
-        audit_results.report_results
-      end
       it 'message sent includes endpoint information' do
         code = AuditResults::ONLINE_MOAB_DOES_NOT_EXIST
         audit_results.add_result(code)
