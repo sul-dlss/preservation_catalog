@@ -98,8 +98,8 @@ RSpec.describe PreservedObjectHandler do
       end
 
       context "incoming version > db version" do
-        let(:version_gt_pc_msg) { "actual version (#{incoming_version}) greater than PreservedCopy db version" }
-        let(:version_gt_po_msg) { "actual version (#{incoming_version}) greater than PreservedObject db version" }
+        let(:version_gt_pc_msg) { "actual version (#{incoming_version}) greater than PreservedCopy db version (2)" }
+        let(:version_gt_po_msg) { "actual version (#{incoming_version}) greater than PreservedObject db version (2)" }
 
         it 'calls Stanford::StorageObjectValidator.validation_errors for moab' do
           mock_sov = instance_double(Stanford::StorageObjectValidator)

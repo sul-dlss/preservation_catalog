@@ -136,8 +136,6 @@ RSpec.describe PreservedObjectHandler do
       context 'incoming version does NOT match db version' do
         let(:druid) { 'bj102hs9687' } # for shared_examples 'calls AuditResults.report_results'
         let(:po_handler) { described_class.new(druid, 1, 666, ep) }
-        let(:unexpected_version_pc_msg) { "actual version (1) has unexpected relationship to PreservedCopy db version; ERROR!" }
-        let(:updated_pc_db_status_msg) { "PreservedCopy status changed from ok to unexpected_version_on_storage" }
 
         it_behaves_like 'calls AuditResults.report_results', :confirm_version
 
@@ -200,10 +198,12 @@ RSpec.describe PreservedObjectHandler do
             end
             it 'UNEXPECTED_VERSION PreservedCopy result' do
               code = AuditResults::UNEXPECTED_VERSION
+              unexpected_version_pc_msg = "actual version (1) has unexpected relationship to PreservedCopy db version (2); ERROR!"
               expect(results).to include(a_hash_including(code => unexpected_version_pc_msg))
             end
             it "PC_STATUS_CHANGED PreservedCopy result" do
               code = AuditResults::PC_STATUS_CHANGED
+              updated_pc_db_status_msg = "PreservedCopy status changed from ok to unexpected_version_on_storage"
               expect(results).to include(a_hash_including(code => updated_pc_db_status_msg))
             end
           end

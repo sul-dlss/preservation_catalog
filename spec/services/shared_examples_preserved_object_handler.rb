@@ -94,7 +94,7 @@ end
 RSpec.shared_examples 'unexpected version' do |method_sym, actual_version|
   let(:po_handler) { described_class.new(druid, actual_version, 1, ep) }
   let(:version_msg_prefix) { "actual version (#{actual_version})" }
-  let(:unexpected_version_msg) { "#{version_msg_prefix} has unexpected relationship to PreservedCopy db version; ERROR!" }
+  let(:unexpected_version_msg) { "#{version_msg_prefix} has unexpected relationship to PreservedCopy db version (2); ERROR!" }
 
   context 'PreservedCopy' do
     context 'changed' do
