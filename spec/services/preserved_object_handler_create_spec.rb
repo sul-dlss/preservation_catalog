@@ -179,7 +179,7 @@ RSpec.describe PreservedObjectHandler do
       it 'includes invalid moab result' do
         results = po_handler.create_after_validation
         code = AuditResults::INVALID_MOAB
-        expect(results).to include(a_hash_including(code => a_string_matching('Invalid moab, validation errors:')))
+        expect(results).to include(a_hash_including(code => a_string_matching('Invalid Moab, validation errors:')))
       end
 
       context 'db update error' do

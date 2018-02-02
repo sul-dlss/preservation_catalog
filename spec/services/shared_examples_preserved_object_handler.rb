@@ -286,7 +286,7 @@ end
 
 RSpec.shared_examples 'update for invalid moab' do |method_sym|
   let(:updated_status_msg_regex) { Regexp.new("PreservedCopy status changed from") }
-  let(:invalid_moab_msg) { "Invalid moab, validation errors: [\"Missing directory: [\\\"data\\\", \\\"manifests\\\"] Version: v0001\"]" }
+  let(:invalid_moab_msg) { "Invalid Moab, validation errors: [\"Missing directory: [\\\"data\\\", \\\"manifests\\\"] Version: v0001\"]" }
 
   context 'PreservedCopy' do
     context 'changed' do
@@ -345,7 +345,7 @@ end
 
 RSpec.shared_examples 'PreservedObject current_version does not match online PC version' do |method_sym, incoming_version, pc_v, po_v|
   let(:po_handler) { described_class.new(druid, incoming_version, 1, ep) }
-  let(:version_mismatch_msg) { "PreservedCopy online moab version #{pc_v} does not match PreservedObject current_version #{po_v}" }
+  let(:version_mismatch_msg) { "PreservedCopy online Moab version #{pc_v} does not match PreservedObject current_version #{po_v}" }
 
   it 'does not update PreservedCopy' do
     orig = pc.updated_at

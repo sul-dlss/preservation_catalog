@@ -543,7 +543,6 @@ RSpec.describe PreservedObjectHandler do
           let(:storage_dir) { 'spec/fixtures/bad_root01/bad_moab_storage_trunk' }
           let(:ep) { Endpoint.find_by(storage_location: storage_dir) }
           let(:invalid_druid) { 'xx000xx0000' }
-          let(:exp_moab_errs_msg) { "Invalid moab, validation errors: [\"Missing directory: [\\\"data\\\", \\\"manifests\\\"] Version: v0001\"]" }
           let(:po_handler) { described_class.new(invalid_druid, incoming_version, incoming_size, ep) }
 
           before do
@@ -589,6 +588,7 @@ RSpec.describe PreservedObjectHandler do
             end
             it 'INVALID_MOAB result' do
               code = AuditResults::INVALID_MOAB
+              exp_moab_errs_msg = "Invalid Moab, validation errors: [\"Missing directory: [\\\"data\\\", \\\"manifests\\\"] Version: v0001\"]"
               expect(results).to include(a_hash_including(code => exp_moab_errs_msg))
             end
             it 'DB_OBJ_DOES_NOT_EXIST results' do
