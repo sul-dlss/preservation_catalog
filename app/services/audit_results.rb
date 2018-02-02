@@ -105,7 +105,8 @@ class AuditResults
     result_array.each do |r|
       log_result(r)
       if r.key?(INVALID_MOAB)
-        WorkflowErrorsReporter.update_workflow(druid, 'moab-valid', r.values.first)
+        msg = "#{workflows_msg_prefix} || #{r.values.first}"
+        WorkflowErrorsReporter.update_workflow(druid, 'moab-valid', msg)
       elsif WORKFLOW_REPORT_CODES.include?(r.keys.first)
         candidate_workflow_results << r
       end
@@ -124,6 +125,7 @@ class AuditResults
   def report_errors_to_workflows(candidate_workflow_results, stack_trace)
     return if candidate_workflow_results.empty?
     value_array = []
+    value_array << workflows_msg_prefix
     candidate_workflow_results.each do |result_hash|
       result_hash.each_value do |val|
         value_array << val
@@ -136,7 +138,7 @@ class AuditResults
   def log_result(result)
     severity = self.class.logger_severity_level(result.keys.first)
     msg = result.values.first
-    Rails.logger.log(severity, "#{msg_prefix} #{msg}")
+    Rails.logger.log(severity, "#{log_msg_prefix} #{msg}")
   end
 
   def result_code_msg(code, addl=nil)
@@ -150,7 +152,15 @@ class AuditResults
     RESPONSE_CODE_TO_MESSAGES[code] % arg_hash
   end
 
-  def msg_prefix
-    @msg_prefix ||= "#{check_name}(#{druid}, #{endpoint.endpoint_name if endpoint})"
+  def log_msg_prefix
+    @log_msg_prefix ||= "#{check_name}(#{druid}, #{endpoint.endpoint_name if endpoint})"
+  end
+
+  def workflows_msg_prefix
+    @workflows_msg_prefix ||= begin
+      location_info = "(actual location: #{endpoint.endpoint_name})" if endpoint
+      actual_version_info = "actual version: #{actual_version}" if actual_version
+      "#{check_name} #{location_info} #{actual_version_info}"
+    end
   end
 end

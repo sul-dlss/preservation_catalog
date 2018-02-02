@@ -26,18 +26,32 @@ RSpec.describe AuditResults do
   end
 
   context '#report_results' do
+    let(:check_name) { 'FooCheck' }
+
     context 'writes to Rails log' do
       let(:version_not_matched_str) { 'does not match PreservedObject current_version' }
       let(:result_code) { AuditResults::PC_PO_VERSION_MISMATCH }
 
       before do
+        audit_results.check_name = check_name
         addl_hash = { pc_version: 1, po_version: 2 }
         audit_results.add_result(result_code, addl_hash)
       end
-      it 'with msg_prefix' do
-        audit_results.check_name = 'FooCheck'
+      it 'with log_msg_prefix' do
         expected = "FooCheck(#{druid}, fixture_sr1)"
         expect(Rails.logger).to receive(:log).with(Logger::ERROR, a_string_matching(Regexp.escape(expected)))
+        audit_results.report_results
+      end
+      it 'with check name' do
+        expect(Rails.logger).to receive(:log).with(Logger::ERROR, a_string_matching(check_name))
+        audit_results.report_results
+      end
+      it 'with druid' do
+        expect(Rails.logger).to receive(:log).with(Logger::ERROR, a_string_matching(druid))
+        audit_results.report_results
+      end
+      it 'with endpoint name' do
+        expect(Rails.logger).to receive(:log).with(Logger::ERROR, a_string_matching(endpoint.endpoint_name))
         audit_results.report_results
       end
       it 'with severity assigned by .logger_severity_level' do
@@ -67,16 +81,35 @@ RSpec.describe AuditResults do
     end
 
     context 'sends errors to workflows' do
-      it 'INVALID_MOAB reported with details about the failures' do
-        result_code = AuditResults::INVALID_MOAB
-        moab_valid_errs = [
-          "Version directory name not in 'v00xx' format: original-v1",
-          "Version v0005: No files present in manifest dir"
-        ]
-        audit_results.add_result(result_code, moab_valid_errs)
-        wf_err_msg = audit_results.send(:result_code_msg, result_code, moab_valid_errs)
-        expect(WorkflowErrorsReporter).to receive(:update_workflow).with(druid, 'moab-valid', wf_err_msg)
-        audit_results.report_results
+      context 'for INVALID_MOAB with' do
+        let(:result_code) { AuditResults::INVALID_MOAB }
+        let(:moab_valid_errs) {
+          [
+            "Version directory name not in 'v00xx' format: original-v1",
+            "Version v0005: No files present in manifest dir"
+          ]
+        }
+        let(:im_audit_results) {
+          ar = described_class.new(druid, actual_version, endpoint)
+          ar.check_name = check_name
+          ar.add_result(result_code, moab_valid_errs)
+          ar
+        }
+
+        it 'details about the failures' do
+          err_details = im_audit_results.send(:result_code_msg, result_code, moab_valid_errs)
+          expect(WorkflowErrorsReporter).to receive(:update_workflow).with(druid, 'moab-valid', a_string_matching(Regexp.escape(err_details)))
+          im_audit_results.report_results
+        end
+        it 'check name' do
+          expect(WorkflowErrorsReporter).to receive(:update_workflow).with(druid, 'moab-valid', a_string_matching(check_name))
+          im_audit_results.report_results
+        end
+        it 'endpoint name' do
+          expected = Regexp.escape("(actual location: #{endpoint.endpoint_name})")
+          expect(WorkflowErrorsReporter).to receive(:update_workflow).with(druid, 'moab-valid', a_string_matching(expected))
+          im_audit_results.report_results
+        end
       end
       it "does not send results that aren't in WORKFLOW_REPORT_CODES" do
         code = AuditResults::CREATED_NEW_OBJECT
@@ -90,7 +123,7 @@ RSpec.describe AuditResults do
         audit_results.add_result(code, addl_hash)
         wf_err_msg = audit_results.send(:result_code_msg, code, addl_hash)
         expect(WorkflowErrorsReporter).to receive(:update_workflow).with(
-          druid, 'preservation-audit', a_string_starting_with(wf_err_msg)
+          druid, 'preservation-audit', a_string_matching(wf_err_msg)
         )
         audit_results.report_results
       end
@@ -98,13 +131,13 @@ RSpec.describe AuditResults do
         code1 = AuditResults::PC_PO_VERSION_MISMATCH
         result_msg_args1 = { pc_version: 1, po_version: 2 }
         audit_results.add_result(code1, result_msg_args1)
-        wf_err_msg1 = audit_results.send(:result_code_msg, code1, result_msg_args1)
+        result_msg1 = audit_results.send(:result_code_msg, code1, result_msg_args1)
         code2 = AuditResults::DB_OBJ_ALREADY_EXISTS
         result_msg_args2 = 'foo'
         audit_results.add_result(code2, result_msg_args2)
-        wf_err_msg2 = audit_results.send(:result_code_msg, code2, result_msg_args2)
+        result_msg2 = audit_results.send(:result_code_msg, code2, result_msg_args2)
         expect(WorkflowErrorsReporter).to receive(:update_workflow).with(
-          druid, 'preservation-audit', a_string_starting_with("#{wf_err_msg1} || #{wf_err_msg2}")
+          druid, 'preservation-audit', a_string_matching("#{result_msg1} || #{result_msg2}")
         )
         audit_results.report_results
       end
@@ -118,6 +151,46 @@ RSpec.describe AuditResults do
         expect(WorkflowErrorsReporter).to receive(:update_workflow).with(
           druid, 'preservation-audit', a_string_ending_with(exp_regex)
         )
+        audit_results.report_results
+      end
+      it 'message sent includes endpoint information' do
+        code = AuditResults::ONLINE_MOAB_DOES_NOT_EXIST
+        audit_results.add_result(code)
+        expected = Regexp.escape("(actual location: #{endpoint.endpoint_name})")
+        expect(WorkflowErrorsReporter).to receive(:update_workflow).with(
+          druid, 'preservation-audit', a_string_matching(expected)
+        )
+        audit_results.report_results
+      end
+      it 'does NOT send endpoint information if there is none' do
+        audit_results = described_class.new(druid, actual_version, nil)
+        code = AuditResults::ONLINE_MOAB_DOES_NOT_EXIST
+        audit_results.add_result(code)
+        unexpected = Regexp.escape("(actual location: ")
+        expect(WorkflowErrorsReporter).not_to receive(:update_workflow).with(
+          druid, 'preservation-audit', a_string_matching(unexpected)
+        )
+        expect(WorkflowErrorsReporter).to receive(:update_workflow).with(druid, 'preservation-audit', anything)
+        audit_results.report_results
+      end
+      it 'message sent includes actual version of object' do
+        code = AuditResults::ONLINE_MOAB_DOES_NOT_EXIST
+        audit_results.add_result(code)
+        expected = "(actual version: #{actual_version})"
+        expect(WorkflowErrorsReporter).to receive(:update_workflow).with(
+          druid, 'preservation-audit', a_string_matching(expected)
+        )
+        audit_results.report_results
+      end
+      it 'does NOT send actual version if there is none' do
+        audit_results = described_class.new(druid, nil, endpoint)
+        code = AuditResults::ONLINE_MOAB_DOES_NOT_EXIST
+        audit_results.add_result(code)
+        unexpected = Regexp.escape("(actual version: ")
+        expect(WorkflowErrorsReporter).not_to receive(:update_workflow).with(
+          druid, 'preservation-audit', a_string_matching(unexpected)
+        )
+        expect(WorkflowErrorsReporter).to receive(:update_workflow).with(druid, 'preservation-audit', anything)
         audit_results.report_results
       end
     end
