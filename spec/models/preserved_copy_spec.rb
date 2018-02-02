@@ -242,8 +242,20 @@ RSpec.describe PreservedCopy, type: :model do
       it 'given a Time Object, returns the same Time object' do
         expect(described_class.send(:normalize_date, Time.now.utc)).to be_an_instance_of(Time)
       end
-      it 'given nil, returns the start of teh Epoch Time object' do
-        expect(described_class.send(:normalize_date, nil)).to be_an_instance_of(Time)
+      it 'given nil, returns a TypeError' do
+        expect { described_class.send(:normalize_date, nil) }.to raise_error(TypeError, /no implicit conversion/)
+      end
+      it 'given an unparseable date returns an ArgumentError' do
+        expect { described_class.send(:normalize_date, 'an 6') }.to raise_error(ArgumentError, /no time information/)
+      end
+      it 'given day only returns a Time object with 08:00:00 UTC time' do
+        expect(described_class.send(:normalize_date, '2018-02-02')).to be_an_instance_of(Time)
+      end
+      it 'given a month only returns Time object with 2018-04-01 07:00:00 UTC time' do
+        expect(described_class.send(:normalize_date, 'April')).to be_an_instance_of(Time)
+      end
+      it 'given a year only returns an ArgumentError' do
+        expect { described_class.send(:normalize_date, '2014') }.to raise_error(ArgumentError, /argument out of range/)
       end
     end
   end
