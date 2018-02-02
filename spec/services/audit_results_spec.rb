@@ -106,7 +106,7 @@ RSpec.describe AuditResults do
           im_audit_results.report_results
         end
         it 'endpoint name' do
-          expected = Regexp.escape("(actual location: #{endpoint.endpoint_name})")
+          expected = Regexp.escape("actual location: #{endpoint.endpoint_name}")
           expect(WorkflowErrorsReporter).to receive(:update_workflow).with(druid, 'moab-valid', a_string_matching(expected))
           im_audit_results.report_results
         end
@@ -144,7 +144,7 @@ RSpec.describe AuditResults do
       it 'message sent includes endpoint information' do
         code = AuditResults::ONLINE_MOAB_DOES_NOT_EXIST
         audit_results.add_result(code)
-        expected = Regexp.escape("(actual location: #{endpoint.endpoint_name})")
+        expected = Regexp.escape("actual location: #{endpoint.endpoint_name}")
         expect(WorkflowErrorsReporter).to receive(:update_workflow).with(
           druid, 'preservation-audit', a_string_matching(expected)
         )
@@ -154,7 +154,7 @@ RSpec.describe AuditResults do
         audit_results = described_class.new(druid, actual_version, nil)
         code = AuditResults::ONLINE_MOAB_DOES_NOT_EXIST
         audit_results.add_result(code)
-        unexpected = Regexp.escape("(actual location: ")
+        unexpected = Regexp.escape("actual location: ")
         expect(WorkflowErrorsReporter).not_to receive(:update_workflow).with(
           druid, 'preservation-audit', a_string_matching(unexpected)
         )
@@ -164,7 +164,7 @@ RSpec.describe AuditResults do
       it 'message sent includes actual version of object' do
         code = AuditResults::ONLINE_MOAB_DOES_NOT_EXIST
         audit_results.add_result(code)
-        expected = "(actual version: #{actual_version})"
+        expected = "actual version: #{actual_version}"
         expect(WorkflowErrorsReporter).to receive(:update_workflow).with(
           druid, 'preservation-audit', a_string_matching(expected)
         )
@@ -174,7 +174,7 @@ RSpec.describe AuditResults do
         audit_results = described_class.new(druid, nil, endpoint)
         code = AuditResults::ONLINE_MOAB_DOES_NOT_EXIST
         audit_results.add_result(code)
-        unexpected = Regexp.escape("(actual version: ")
+        unexpected = Regexp.escape("actual version: ")
         expect(WorkflowErrorsReporter).not_to receive(:update_workflow).with(
           druid, 'preservation-audit', a_string_matching(unexpected)
         )

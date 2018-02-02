@@ -166,7 +166,6 @@ class AuditResults
     else
       arg_hash[:addl] = addl
     end
-
     RESPONSE_CODE_TO_MESSAGES[code] % arg_hash
   end
 
@@ -176,9 +175,9 @@ class AuditResults
 
   def workflows_msg_prefix
     @workflows_msg_prefix ||= begin
-      location_info = "(actual location: #{endpoint.endpoint_name})" if endpoint
+      location_info = "actual location: #{endpoint.endpoint_name}" if endpoint
       actual_version_info = "actual version: #{actual_version}" if actual_version
-      "#{check_name} #{location_info} #{actual_version_info}"
+      "#{check_name} (#{location_info}; #{actual_version_info})"
     end
   end
 end
