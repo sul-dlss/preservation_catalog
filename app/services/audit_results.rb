@@ -25,6 +25,11 @@ class AuditResults
   INVALID_MOAB = :invalid_moab
   PC_PO_VERSION_MISMATCH = :pc_po_version_mismatch
   ONLINE_MOAB_DOES_NOT_EXIST = :online_moab_does_not_exist
+  MOAB_FILE_CHECKSUM_MISMATCH = :moab_file_checksum_mismatch
+  FILE_NOT_IN_MOAB = :file_not_in_moab
+  FILE_NOT_IN_MANIFEST = :file_not_in_manifest
+  MANIFEST_NOT_IN_MOAB = :manifest_not_in_moab
+  INVALID_MANIFEST = :invalid_manifest
 
   RESPONSE_CODE_TO_MESSAGES = {
     INVALID_ARGUMENTS => "encountered validation error(s): %{addl}",
@@ -39,7 +44,12 @@ class AuditResults
     UNEXPECTED_VERSION => "actual version (%{actual_version}) has unexpected relationship to %{addl} db version; ERROR!",
     INVALID_MOAB => "Invalid moab, validation errors: %{addl}",
     PC_PO_VERSION_MISMATCH => "PreservedCopy online moab version %{pc_version} does not match PreservedObject current_version %{po_version}",
-    ONLINE_MOAB_DOES_NOT_EXIST => "db has moab that is not found online"
+    ONLINE_MOAB_DOES_NOT_EXIST => "db has moab that is not found online",
+    MOAB_FILE_CHECKSUM_MISMATCH => "The checksums for %{file_path} do not match. Computed %{algorithm} checksum: %{computed_checksum[0...7]}. Expected checksum: %{expected_checksum[0...7]}",
+    FILE_NOT_IN_MOAB => "%{manifest_file_path} refers to file (%{file_path}) not found in Moab",
+    FILE_NOT_IN_MANIFEST => "Moab file %{file_path} was not found in Moab manifest %{manifest_file_path}",
+    MANIFEST_NOT_IN_MOAB => "%{manifest_file_path} not found in Moab",
+    INVALID_MANIFEST => "Unable to parse %{manifest_file_path} in Moab"
   }.freeze
 
   WORKFLOW_REPORT_CODES = [
@@ -49,7 +59,12 @@ class AuditResults
     DB_OBJ_DOES_NOT_EXIST,
     UNEXPECTED_VERSION,
     PC_PO_VERSION_MISMATCH,
-    ONLINE_MOAB_DOES_NOT_EXIST
+    ONLINE_MOAB_DOES_NOT_EXIST,
+    MOAB_FILE_CHECKSUM_MISMATCH,
+    FILE_NOT_IN_MOAB,
+    FILE_NOT_IN_MANIFEST,
+    MANIFEST_NOT_IN_MOAB,
+    INVALID_MANIFEST
   ].freeze
 
   DB_UPDATED_CODES = [
@@ -72,6 +87,11 @@ class AuditResults
     when INVALID_MOAB then Logger::ERROR
     when PC_PO_VERSION_MISMATCH then Logger::ERROR
     when ONLINE_MOAB_DOES_NOT_EXIST then Logger::ERROR
+    when MOAB_FILE_CHECKSUM_MISMATCH then Logger::ERROR
+    when FILE_NOT_IN_MOAB then Logger::ERROR
+    when FILE_NOT_IN_MANIFEST then Logger::ERROR
+    when MANIFEST_NOT_IN_MOAB then Logger::ERROR
+    when INVALID_MANIFEST then Logger::ERROR
     end
   end
 
