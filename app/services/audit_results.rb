@@ -24,7 +24,7 @@ class AuditResults
   UNEXPECTED_VERSION = :unexpected_version
   INVALID_MOAB = :invalid_moab
   PC_PO_VERSION_MISMATCH = :pc_po_version_mismatch
-  ONLINE_MOAB_DOES_NOT_EXIST = :online_moab_does_not_exist
+  MOAB_NOT_FOUND = :moab_not_found
   MOAB_FILE_CHECKSUM_MISMATCH = :moab_file_checksum_mismatch
   FILE_NOT_IN_MOAB = :file_not_in_moab
   FILE_NOT_IN_MANIFEST = :file_not_in_manifest
@@ -44,7 +44,7 @@ class AuditResults
     UNEXPECTED_VERSION => "actual version (%{actual_version}) has unexpected relationship to %{db_obj_name} db version (%{db_obj_version}); ERROR!",
     INVALID_MOAB => "Invalid Moab, validation errors: %{addl}",
     PC_PO_VERSION_MISMATCH => "PreservedCopy online Moab version %{pc_version} does not match PreservedObject current_version %{po_version}",
-    ONLINE_MOAB_DOES_NOT_EXIST => "db PreservedCopy (created %{db_created_at}; last updated %{db_updated_at}) exists but Moab not found",
+    MOAB_NOT_FOUND => "db PreservedCopy (created %{db_created_at}; last updated %{db_updated_at}) exists but Moab not found",
     MOAB_FILE_CHECKSUM_MISMATCH => "The checksums for %{file_path} do not match. Computed %{algorithm} checksum: %{computed_checksum[0...7]}. Expected checksum: %{expected_checksum[0...7]}",
     FILE_NOT_IN_MOAB => "%{manifest_file_path} refers to file (%{file_path}) not found in Moab",
     FILE_NOT_IN_MANIFEST => "Moab file %{file_path} was not found in Moab manifest %{manifest_file_path}",
@@ -59,7 +59,7 @@ class AuditResults
     DB_OBJ_DOES_NOT_EXIST,
     UNEXPECTED_VERSION,
     PC_PO_VERSION_MISMATCH,
-    ONLINE_MOAB_DOES_NOT_EXIST,
+    MOAB_NOT_FOUND,
     MOAB_FILE_CHECKSUM_MISMATCH,
     FILE_NOT_IN_MOAB,
     FILE_NOT_IN_MANIFEST,
@@ -86,7 +86,7 @@ class AuditResults
     when UNEXPECTED_VERSION then Logger::ERROR
     when INVALID_MOAB then Logger::ERROR
     when PC_PO_VERSION_MISMATCH then Logger::ERROR
-    when ONLINE_MOAB_DOES_NOT_EXIST then Logger::ERROR
+    when MOAB_NOT_FOUND then Logger::ERROR
     when MOAB_FILE_CHECKSUM_MISMATCH then Logger::ERROR
     when FILE_NOT_IN_MOAB then Logger::ERROR
     when FILE_NOT_IN_MANIFEST then Logger::ERROR

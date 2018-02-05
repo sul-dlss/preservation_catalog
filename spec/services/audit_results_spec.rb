@@ -181,8 +181,8 @@ RSpec.describe AuditResults do
         expect(WorkflowErrorsReporter).to receive(:update_workflow).with(druid, 'preservation-audit', anything)
         audit_results.report_results
       end
-      context 'ONLINE_MOAB_DOES_NOT_EXIST result' do
-        let(:result_code) { AuditResults::ONLINE_MOAB_DOES_NOT_EXIST }
+      context 'MOAB_NOT_FOUND result' do
+        let(:result_code) { AuditResults::MOAB_NOT_FOUND }
         let(:create_date) { (Time.current - 5.days).utc.iso8601 }
         let(:update_date) { Time.current.utc.iso8601 }
         let(:addl) { { db_created_at: create_date, db_updated_at: update_date } }

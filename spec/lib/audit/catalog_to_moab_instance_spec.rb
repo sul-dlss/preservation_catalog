@@ -71,12 +71,12 @@ RSpec.describe CatalogToMoab do
     end
 
     context 'moab is nil (exists in catalog but not online)' do
-      it 'adds an ONLINE_MOAB_DOES_NOT_EXIST result' do
+      it 'adds an MOAB_NOT_FOUND result' do
         allow(Moab::StorageObject).to receive(:new).with(druid, instance_of(String)).and_return(nil)
         results = instance_double(AuditResults, report_results: nil, :check_name= => nil)
         allow(AuditResults).to receive(:new).and_return(results)
         expect(results).to receive(:add_result).with(
-          AuditResults::ONLINE_MOAB_DOES_NOT_EXIST, db_created_at: anything, db_updated_at: anything
+          AuditResults::MOAB_NOT_FOUND, db_created_at: anything, db_updated_at: anything
         )
         expect(results).to receive(:add_result).with(
           AuditResults::PC_STATUS_CHANGED, old_status: "ok", new_status: "online_moab_not_found"
