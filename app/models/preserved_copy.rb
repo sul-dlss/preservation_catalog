@@ -33,6 +33,7 @@ class PreservedCopy < ApplicationRecord
   validates :version, presence: true
 
   scope :least_recent_version_audit, lambda { |last_checked_b4_date, storage_dir|
+    last_checked_b4_date = normalize_date(last_checked_b4_date)
     joins(:endpoint)
       .where(endpoints: { storage_location: storage_dir })
       .where('last_version_audit IS NULL or last_version_audit < ?', last_checked_b4_date)
@@ -62,5 +63,10 @@ class PreservedCopy < ApplicationRecord
 
   def matches_po_current_version?
     version == preserved_object.current_version
+  end
+
+  private_class_method def self.normalize_date(timestamp)
+    timestamp = Time.parse(timestamp).utc unless timestamp.instance_of?(Time)
+    timestamp
   end
 end
