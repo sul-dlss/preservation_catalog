@@ -168,6 +168,11 @@ this will generate a log at, for example,
 ```log/profile_c2m_check_version_all_roots2018-01-01T14:25:31-flat.txt```
 
 ### Run Checksum Validation for a single root or for all storage roots
+- Parse all manifestInventory.xml and most recent signatureCatalog.xml for stored checksums and verify against computed checksums.
+
+- To run rake tasks below, give a date, the name of the endpoint (e.g. from settings/development.yml) and an algorithm (md5, sha1, sha256) as arguments.
+
+- Note: Must enter date/timestamp (UTC) argument as a string.
 
 #### Single Root
 - Without profiling

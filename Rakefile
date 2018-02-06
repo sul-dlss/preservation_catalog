@@ -175,7 +175,7 @@ task :cv_single_endpoint, [:last_checked_b4, :endpoint, :algorithm, :profile] =>
   endpoint = args[:endpoint].to_sym
   algorithm = args[:algorithm].to_sym
   if args[:profile] == 'profile'
-    puts "When done, check log/profile_cv_single_endpoint2018-02-02T21:37:23Z.txt for profiling details"
+    puts "When done, check log/profile_cv_single_endpoint[TIMESTAMP] for profiling details"
     ChecksumValidator.checksum_validate_disk(last_checked, endpoint, algorithm)
   elsif args[:profile].nil?
     ChecksumValidator.checksum_validate_disk_profiled(last_checked, endpoint, algorithm)
@@ -193,7 +193,7 @@ task :cv_all_endpoints, [:last_checked_b4, :algorithm, :profile] => [:environmen
   last_checked = args[:last_checked_b4].to_sym
   algorithm = args[:algorithm].to_sym
   if args[:profile] == 'profile'
-    puts "When done, check log/profile_cv_all_endpoints2018-02-02T21:37:23Z.txt for profiling details"
+    puts "When done, check log/profile_cv_all_endpoints[TIMESTAMP].txt for profiling details"
     Checksum.checksum_validate_disk_all_endpoints(last_checked, algorithm)
   elsif args[:profile].nil?
     Checksum.checksum_validate_disk_all_endpoints_profiled(last_checked, algorithm)
