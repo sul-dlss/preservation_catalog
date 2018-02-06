@@ -158,11 +158,11 @@ this will generate a log at, for example,
 #### All Roots
 - Without profiling:
 ```ruby
-RAILS_ENV=production bundle exec rake c2m_check_version_all_dirs
+RAILS_ENV=production bundle exec rake c2m_check_version_all_dirs['2018-01-22 22:54:48 UTC']
 ```
 - With profiling:
 ```ruby
-RAILS_ENV=production bundle exec rake c2m_check_version_all_dirs[profile]
+RAILS_ENV=production bundle exec rake c2m_check_version_all_dirs['2018-01-22 22:54:48 UTC',profile]
 ```
 this will generate a log at, for example,
 ```log/profile_c2m_check_version_all_roots2018-01-01T14:25:31-flat.txt```
