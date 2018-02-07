@@ -66,7 +66,9 @@ class CatalogToMoab
 
     unless online_moab_found?(druid, storage_dir)
       update_status(PreservedCopy::ONLINE_MOAB_NOT_FOUND_STATUS)
-      results.add_result(AuditResults::ONLINE_MOAB_DOES_NOT_EXIST)
+      results.add_result(AuditResults::MOAB_NOT_FOUND,
+                         db_created_at: preserved_copy.created_at.iso8601,
+                         db_updated_at: preserved_copy.updated_at.iso8601)
       results.report_results
       preserved_copy.save!
       return
@@ -77,7 +79,7 @@ class CatalogToMoab
     catalog_version = preserved_copy.version
     if catalog_version == moab_version
       set_status_as_seen_on_disk(true) unless preserved_copy.status == PreservedCopy::OK_STATUS
-      results.add_result(AuditResults::VERSION_MATCHES, preserved_copy.class.name)
+      results.add_result(AuditResults::VERSION_MATCHES, 'PreservedCopy')
       results.report_results
     elsif catalog_version < moab_version
       set_status_as_seen_on_disk(true)
@@ -85,7 +87,9 @@ class CatalogToMoab
       pohandler.update_version_after_validation # results reported by this call
     else # catalog_version > moab_version
       set_status_as_seen_on_disk(false)
-      results.add_result(AuditResults::UNEXPECTED_VERSION, preserved_copy.class.name)
+      results.add_result(
+        AuditResults::UNEXPECTED_VERSION, db_obj_name: 'PreservedCopy', db_obj_version: preserved_copy.version
+      )
       results.report_results
     end
 

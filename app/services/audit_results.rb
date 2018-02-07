@@ -24,7 +24,7 @@ class AuditResults
   UNEXPECTED_VERSION = :unexpected_version
   INVALID_MOAB = :invalid_moab
   PC_PO_VERSION_MISMATCH = :pc_po_version_mismatch
-  ONLINE_MOAB_DOES_NOT_EXIST = :online_moab_does_not_exist
+  MOAB_NOT_FOUND = :moab_not_found
   MOAB_FILE_CHECKSUM_MISMATCH = :moab_file_checksum_mismatch
   FILE_NOT_IN_MOAB = :file_not_in_moab
   FILE_NOT_IN_MANIFEST = :file_not_in_manifest
@@ -34,17 +34,17 @@ class AuditResults
   RESPONSE_CODE_TO_MESSAGES = {
     INVALID_ARGUMENTS => "encountered validation error(s): %{addl}",
     VERSION_MATCHES => "actual version (%{actual_version}) matches %{addl} db version",
-    ACTUAL_VERS_GT_DB_OBJ => "actual version (%{actual_version}) greater than %{addl} db version",
-    ACTUAL_VERS_LT_DB_OBJ => "actual version (%{actual_version}) less than %{addl} db version; ERROR!",
+    ACTUAL_VERS_GT_DB_OBJ => "actual version (%{actual_version}) greater than %{db_obj_name} db version (%{db_obj_version})",
+    ACTUAL_VERS_LT_DB_OBJ => "actual version (%{actual_version}) less than %{db_obj_name} db version (%{db_obj_version}); ERROR!",
     CREATED_NEW_OBJECT => "added object to db as it did not exist",
     DB_UPDATE_FAILED => "db update failed: %{addl}",
     DB_OBJ_ALREADY_EXISTS => "%{addl} db object already exists",
     DB_OBJ_DOES_NOT_EXIST => "%{addl} db object does not exist",
     PC_STATUS_CHANGED => "PreservedCopy status changed from %{old_status} to %{new_status}",
-    UNEXPECTED_VERSION => "actual version (%{actual_version}) has unexpected relationship to %{addl} db version; ERROR!",
-    INVALID_MOAB => "Invalid moab, validation errors: %{addl}",
-    PC_PO_VERSION_MISMATCH => "PreservedCopy online moab version %{pc_version} does not match PreservedObject current_version %{po_version}",
-    ONLINE_MOAB_DOES_NOT_EXIST => "db has moab that is not found online",
+    UNEXPECTED_VERSION => "actual version (%{actual_version}) has unexpected relationship to %{db_obj_name} db version (%{db_obj_version}); ERROR!",
+    INVALID_MOAB => "Invalid Moab, validation errors: %{addl}",
+    PC_PO_VERSION_MISMATCH => "PreservedCopy online Moab version %{pc_version} does not match PreservedObject current_version %{po_version}",
+    MOAB_NOT_FOUND => "db PreservedCopy (created %{db_created_at}; last updated %{db_updated_at}) exists but Moab not found",
     MOAB_FILE_CHECKSUM_MISMATCH => "The checksums for %{file_path} do not match. Computed %{algorithm} checksum: %{computed_checksum[0...7]}. Expected checksum: %{expected_checksum[0...7]}",
     FILE_NOT_IN_MOAB => "%{manifest_file_path} refers to file (%{file_path}) not found in Moab",
     FILE_NOT_IN_MANIFEST => "Moab file %{file_path} was not found in Moab manifest %{manifest_file_path}",
@@ -59,7 +59,7 @@ class AuditResults
     DB_OBJ_DOES_NOT_EXIST,
     UNEXPECTED_VERSION,
     PC_PO_VERSION_MISMATCH,
-    ONLINE_MOAB_DOES_NOT_EXIST,
+    MOAB_NOT_FOUND,
     MOAB_FILE_CHECKSUM_MISMATCH,
     FILE_NOT_IN_MOAB,
     FILE_NOT_IN_MANIFEST,
@@ -86,7 +86,7 @@ class AuditResults
     when UNEXPECTED_VERSION then Logger::ERROR
     when INVALID_MOAB then Logger::ERROR
     when PC_PO_VERSION_MISMATCH then Logger::ERROR
-    when ONLINE_MOAB_DOES_NOT_EXIST then Logger::ERROR
+    when MOAB_NOT_FOUND then Logger::ERROR
     when MOAB_FILE_CHECKSUM_MISMATCH then Logger::ERROR
     when FILE_NOT_IN_MOAB then Logger::ERROR
     when FILE_NOT_IN_MANIFEST then Logger::ERROR
@@ -131,8 +131,7 @@ class AuditResults
         candidate_workflow_results << r
       end
     end
-    stack_trace = caller(0..1).join("\n")
-    report_errors_to_workflows(candidate_workflow_results, stack_trace)
+    report_errors_to_workflows(candidate_workflow_results)
     result_array
   end
 
@@ -142,7 +141,7 @@ class AuditResults
     { code => result_code_msg(code, msg_args) }
   end
 
-  def report_errors_to_workflows(candidate_workflow_results, stack_trace)
+  def report_errors_to_workflows(candidate_workflow_results)
     return if candidate_workflow_results.empty?
     value_array = []
     value_array << workflows_msg_prefix
@@ -151,7 +150,6 @@ class AuditResults
         value_array << val
       end
     end
-    value_array << stack_trace
     WorkflowErrorsReporter.update_workflow(druid, 'preservation-audit', value_array.join(" || "))
   end
 
@@ -168,7 +166,6 @@ class AuditResults
     else
       arg_hash[:addl] = addl
     end
-
     RESPONSE_CODE_TO_MESSAGES[code] % arg_hash
   end
 
@@ -178,9 +175,9 @@ class AuditResults
 
   def workflows_msg_prefix
     @workflows_msg_prefix ||= begin
-      location_info = "(actual location: #{endpoint.endpoint_name})" if endpoint
+      location_info = "actual location: #{endpoint.endpoint_name}" if endpoint
       actual_version_info = "actual version: #{actual_version}" if actual_version
-      "#{check_name} #{location_info} #{actual_version_info}"
+      "#{check_name} (#{location_info}; #{actual_version_info})"
     end
   end
 end

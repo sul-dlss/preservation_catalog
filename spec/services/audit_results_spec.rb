@@ -106,7 +106,7 @@ RSpec.describe AuditResults do
           im_audit_results.report_results
         end
         it 'endpoint name' do
-          expected = Regexp.escape("(actual location: #{endpoint.endpoint_name})")
+          expected = Regexp.escape("actual location: #{endpoint.endpoint_name}")
           expect(WorkflowErrorsReporter).to receive(:update_workflow).with(druid, 'moab-valid', a_string_matching(expected))
           im_audit_results.report_results
         end
@@ -141,22 +141,10 @@ RSpec.describe AuditResults do
         )
         audit_results.report_results
       end
-      it 'includes a truncated stack trace at the end' do
-        code = AuditResults::PC_PO_VERSION_MISMATCH
-        addl_hash = { pc_version: 1, po_version: 2 }
-        audit_results.add_result(code, addl_hash)
-        exp_regex = Regexp.new(" || \
-          .*preservation_catalog/app/services/audit_results.rb \
-          .*preservation_catalog/spec/services/audit_results_spec.rb .*in <top (required)>")
-        expect(WorkflowErrorsReporter).to receive(:update_workflow).with(
-          druid, 'preservation-audit', a_string_ending_with(exp_regex)
-        )
-        audit_results.report_results
-      end
       it 'message sent includes endpoint information' do
-        code = AuditResults::ONLINE_MOAB_DOES_NOT_EXIST
+        code = AuditResults::DB_UPDATE_FAILED
         audit_results.add_result(code)
-        expected = Regexp.escape("(actual location: #{endpoint.endpoint_name})")
+        expected = Regexp.escape("actual location: #{endpoint.endpoint_name}")
         expect(WorkflowErrorsReporter).to receive(:update_workflow).with(
           druid, 'preservation-audit', a_string_matching(expected)
         )
@@ -164,9 +152,9 @@ RSpec.describe AuditResults do
       end
       it 'does NOT send endpoint information if there is none' do
         audit_results = described_class.new(druid, actual_version, nil)
-        code = AuditResults::ONLINE_MOAB_DOES_NOT_EXIST
+        code = AuditResults::DB_UPDATE_FAILED
         audit_results.add_result(code)
-        unexpected = Regexp.escape("(actual location: ")
+        unexpected = Regexp.escape("actual location: ")
         expect(WorkflowErrorsReporter).not_to receive(:update_workflow).with(
           druid, 'preservation-audit', a_string_matching(unexpected)
         )
@@ -174,9 +162,9 @@ RSpec.describe AuditResults do
         audit_results.report_results
       end
       it 'message sent includes actual version of object' do
-        code = AuditResults::ONLINE_MOAB_DOES_NOT_EXIST
+        code = AuditResults::DB_UPDATE_FAILED
         audit_results.add_result(code)
-        expected = "(actual version: #{actual_version})"
+        expected = "actual version: #{actual_version}"
         expect(WorkflowErrorsReporter).to receive(:update_workflow).with(
           druid, 'preservation-audit', a_string_matching(expected)
         )
@@ -184,14 +172,40 @@ RSpec.describe AuditResults do
       end
       it 'does NOT send actual version if there is none' do
         audit_results = described_class.new(druid, nil, endpoint)
-        code = AuditResults::ONLINE_MOAB_DOES_NOT_EXIST
+        code = AuditResults::DB_UPDATE_FAILED
         audit_results.add_result(code)
-        unexpected = Regexp.escape("(actual version: ")
+        unexpected = Regexp.escape("actual version: ")
         expect(WorkflowErrorsReporter).not_to receive(:update_workflow).with(
           druid, 'preservation-audit', a_string_matching(unexpected)
         )
         expect(WorkflowErrorsReporter).to receive(:update_workflow).with(druid, 'preservation-audit', anything)
         audit_results.report_results
+      end
+      context 'MOAB_NOT_FOUND result' do
+        let(:result_code) { AuditResults::MOAB_NOT_FOUND }
+        let(:create_date) { (Time.current - 5.days).utc.iso8601 }
+        let(:update_date) { Time.current.utc.iso8601 }
+        let(:addl) { { db_created_at: create_date, db_updated_at: update_date } }
+        let(:my_audit_results) {
+          ar = described_class.new(druid, actual_version, endpoint)
+          ar.add_result(result_code, addl)
+          ar
+        }
+
+        it 'message sent includes PreservedCopy create date' do
+          expected = Regexp.escape("db PreservedCopy (created #{create_date}")
+          expect(WorkflowErrorsReporter).to receive(:update_workflow).with(
+            druid, 'preservation-audit', a_string_matching(expected)
+          )
+          my_audit_results.report_results
+        end
+        it 'message sent includes PreservedCopy updated date' do
+          expected = "db PreservedCopy .* last updated #{update_date}"
+          expect(WorkflowErrorsReporter).to receive(:update_workflow).with(
+            druid, 'preservation-audit', a_string_matching(expected)
+          )
+          my_audit_results.report_results
+        end
       end
     end
   end

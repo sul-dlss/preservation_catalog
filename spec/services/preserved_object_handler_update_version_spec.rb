@@ -9,10 +9,7 @@ RSpec.describe PreservedObjectHandler do
   let(:po) { PreservedObject.find_by(druid: druid) }
   let(:ep) { Endpoint.find_by(storage_location: 'spec/fixtures/storage_root01/moab_storage_trunk') }
   let(:pc) { PreservedCopy.find_by(preserved_object: po, endpoint: ep) }
-  let(:updated_status_msg_regex) { Regexp.new("PreservedCopy status changed from") }
   let(:db_update_failed_prefix) { "db update failed" }
-  let(:version_gt_pc_msg) { "actual version (#{incoming_version}) greater than PreservedCopy db version" }
-  let(:version_gt_po_msg) { "actual version (#{incoming_version}) greater than PreservedObject db version" }
 
   let(:po_handler) { described_class.new(druid, incoming_version, incoming_size, ep) }
 
@@ -95,7 +92,9 @@ RSpec.describe PreservedObjectHandler do
           end
           it 'ACTUAL_VERS_GT_DB_OBJ results' do
             code = AuditResults::ACTUAL_VERS_GT_DB_OBJ
+            version_gt_pc_msg = "actual version (#{incoming_version}) greater than PreservedCopy db version (2)"
             expect(results).to include(a_hash_including(code => version_gt_pc_msg))
+            version_gt_po_msg = "actual version (#{incoming_version}) greater than PreservedObject db version (2)"
             expect(results).to include(a_hash_including(code => version_gt_po_msg))
           end
         end
