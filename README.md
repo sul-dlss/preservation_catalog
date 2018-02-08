@@ -158,15 +158,45 @@ this will generate a log at, for example,
 #### All Roots
 - Without profiling:
 ```ruby
-RAILS_ENV=production bundle exec rake c2m_check_version_all_dirs
+RAILS_ENV=production bundle exec rake c2m_check_version_all_dirs['2018-01-22 22:54:48 UTC']
 ```
 - With profiling:
 ```ruby
-RAILS_ENV=production bundle exec rake c2m_check_version_all_dirs[profile]
+RAILS_ENV=production bundle exec rake c2m_check_version_all_dirs['2018-01-22 22:54:48 UTC',profile]
 ```
 this will generate a log at, for example,
 ```log/profile_c2m_check_version_all_roots2018-01-01T14:25:31-flat.txt```
 
+### Run Checksum Validation for a single root or for all storage roots
+- Parse all manifestInventory.xml and most recent signatureCatalog.xml for stored checksums and verify against computed checksums.
+
+- To run rake tasks below, give a date, the name of the endpoint (e.g. from settings/development.yml) and an algorithm (md5, sha1, sha256) as arguments.
+
+- Note: Must enter date/timestamp (UTC) argument as a string.
+
+#### Single Root
+- Without profiling
+```ruby
+RAILS_ENV=production bundle exec rake cv_single_endpoint['2018-01-22 22:54:48 UTC',fixture_sr1,'MD5']
+```
+- With profiling
+```ruby
+RAILS_ENV=production bundle exec rake cv_single_endpoint['2018-01-22 22:54:48 UTC',fixture_sr1,'MD5',profile]
+```
+this will generate a log at, for example,
+```log/profile_cv_single_endpoint2018-01-01T14:25:31-flat.txt```
+
+#### All Roots
+- Without profiling:
+```ruby
+RAILS_ENV=production bundle exec rake cv_all_endpoints['2018-01-22 22:54:48 UTC','MD5']
+```
+- With profiling:
+```ruby
+RAILS_ENV=production bundle exec rake cv_all_endpoints['2018-01-22 22:54:48 UTC','MD5',profile]
+```
+this will generate a log at, for example,
+```log/profile_cv_all_endpoints2018-01-01T14:25:31-flat.txt```
 ## Development
 
 ### Running Tests

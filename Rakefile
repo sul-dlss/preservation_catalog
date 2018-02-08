@@ -164,3 +164,40 @@ task :c2m_check_version_all_dirs, [:last_checked_b4_date, :profile] => [:environ
   end
   $stdout.flush
 end
+
+desc "Fire off checksum validation on a single endpoint"
+task :cv_single_endpoint, [:last_checked_b4, :endpoint, :algorithm, :profile] => [:environment] do |_t, args|
+  unless args[:profile] == 'profile' || args[:profile].nil?
+    p "usage: rake cv_single_endpoint[last_checked_b4, endpoint, algorithm] || rake cv_single_endpoint[last_checked_b4, endpoint, algorithm, profile]"
+    exit
+  end
+  last_checked = args[:last_checked_b4].to_sym
+  endpoint = args[:endpoint].to_sym
+  algorithm = args[:algorithm].to_sym
+  if args[:profile] == 'profile'
+    puts "When done, check log/profile_cv_single_endpoint[TIMESTAMP] for profiling details"
+    ChecksumValidator.checksum_validate_disk(last_checked, endpoint, algorithm)
+  elsif args[:profile].nil?
+    ChecksumValidator.checksum_validate_disk_profiled(last_checked, endpoint, algorithm)
+  end
+  puts "#{Time.now.utc.iso8601} Checksum Validation on #{endpoint} is done."
+  $stdout.flush
+end
+
+desc "Fire off checksum validation on all endpoints"
+task :cv_all_endpoints, [:last_checked_b4, :algorithm, :profile] => [:environment] do |_t, args|
+  unless args[:profile] == 'profile' || args[:profile].nil?
+    p "usage: rake cv_all_endpoints[last_checked_b4, algorithm] || rake cv_all_endpoints[last_checked_b4, algorithm, profile]"
+    exit
+  end
+  last_checked = args[:last_checked_b4].to_sym
+  algorithm = args[:algorithm].to_sym
+  if args[:profile] == 'profile'
+    puts "When done, check log/profile_cv_all_endpoints[TIMESTAMP].txt for profiling details"
+    Checksum.checksum_validate_disk_all_endpoints(last_checked, algorithm)
+  elsif args[:profile].nil?
+    Checksum.checksum_validate_disk_all_endpoints_profiled(last_checked, algorithm)
+  end
+  puts "#{Time.now.utc.iso8601} Checksum Validation on all endpoints are done."
+  $stdout.flush
+end
