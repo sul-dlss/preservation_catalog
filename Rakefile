@@ -127,7 +127,7 @@ task :c2m_check_version_on_dir, [:last_checked_b4_date, :storage_root, :profile]
   end
   root = args[:storage_root].to_sym
   storage_dir = "#{Settings.moab.storage_roots[root]}/#{Settings.moab.storage_trunk}"
-  last_checked = args[:last_checked_b4_date].to_sym
+  last_checked = args[:last_checked_b4_date].to_s
   begin
     if args[:profile] == 'profile'
       puts "When done, check log/profile_c2m_check_version_on_dir[TIMESTAMP].txt for profiling details"
@@ -149,10 +149,10 @@ task :c2m_check_version_all_dirs, [:last_checked_b4_date, :profile] => [:environ
     p "usage: rake c2m_check_version_all_dirs[last_checked_b4_date] || rake c2m_check_version_all_dirs[last_checked_b4_date,profile]"
     exit
   end
-  last_checked = args[:last_checked_b4_date].to_sym
+  last_checked = args[:last_checked_b4_date].to_s
   begin
     if args[:profile] == 'profile'
-      puts "When done, check log/profile_c2m_check_version_all_roots[TIMESTAMP].txt for profiling details"
+      puts "When done, check log/profile_C2M_check_version_all_roots[TIMESTAMP].txt for profiling details"
       CatalogToMoab.check_version_all_dirs_profiled(last_checked)
     elsif args[:profile].nil?
       CatalogToMoab.check_version_all_dirs(last_checked)
