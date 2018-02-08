@@ -5,17 +5,18 @@ require 'profiler.rb'
 class CatalogToMoab
 
   # allows for sharding/parallelization by storage_dir
-  def self.check_version_on_dir_of_batch(last_checked_b4_date, storage_dir, limit)
-    pcs = PreservedCopy.least_recent_version_audit(last_checked_b4_date, storage_dir).limit(limit)
-    pcs.each do |pc|
-      c2m = CatalogToMoab.new(pc, storage_dir)
-      c2m.check_catalog_version
-    end
-  end
-
-  def self.check_version_on_dir(last_checked_b4_date, storage_dir)
-    unless PreservedCopy.least_recent_version_audit(last_checked_b4_date, storage_dir).count.zero?
-      check_version_on_dir_of_batch(last_checked_b4_date, storage_dir, Settings.c2m_sql_limit)
+  # use model scope query (which contains ordering), limit for batching, and .each within a while loop to
+  # process records in order in batches.  Note that .find_each does batches, but disregards order from
+  # the scope, so we must use .each
+  def self.check_version_on_dir(last_checked_b4_date, storage_dir, limit=Settings.c2m_sql_limit)
+    num_to_process = PreservedCopy.least_recent_version_audit(last_checked_b4_date, storage_dir).count
+    while num_to_process > 0
+      pcs = PreservedCopy.least_recent_version_audit(last_checked_b4_date, storage_dir).limit(limit)
+      pcs.each do |pc|
+        c2m = CatalogToMoab.new(pc, storage_dir)
+        c2m.check_catalog_version
+      end
+      num_to_process -= limit
     end
   end
 
