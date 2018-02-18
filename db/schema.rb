@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20171220010020) do
+ActiveRecord::Schema.define(version: 20180218003253) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -62,12 +62,14 @@ ActiveRecord::Schema.define(version: 20171220010020) do
     t.bigint "size"
     t.integer "status", null: false
     t.datetime "last_version_audit"
+    t.index ["created_at"], name: "index_preserved_copies_on_created_at"
     t.index ["endpoint_id"], name: "index_preserved_copies_on_endpoint_id"
     t.index ["last_checksum_validation"], name: "index_preserved_copies_on_last_checksum_validation"
     t.index ["last_moab_validation"], name: "index_preserved_copies_on_last_moab_validation"
     t.index ["last_version_audit"], name: "index_preserved_copies_on_last_version_audit"
     t.index ["preserved_object_id"], name: "index_preserved_copies_on_preserved_object_id"
     t.index ["status"], name: "index_preserved_copies_on_status"
+    t.index ["updated_at"], name: "index_preserved_copies_on_updated_at"
   end
 
   create_table "preserved_objects", force: :cascade do |t|
@@ -76,8 +78,10 @@ ActiveRecord::Schema.define(version: 20171220010020) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "preservation_policy_id", null: false
+    t.index ["created_at"], name: "index_preserved_objects_on_created_at"
     t.index ["druid"], name: "index_preserved_objects_on_druid", unique: true
     t.index ["preservation_policy_id"], name: "index_preserved_objects_on_preservation_policy_id"
+    t.index ["updated_at"], name: "index_preserved_objects_on_updated_at"
   end
 
   add_foreign_key "endpoints", "endpoint_types"
