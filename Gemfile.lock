@@ -102,7 +102,7 @@ GEM
     docile (1.1.5)
     druid-tools (1.0.0)
     erubi (1.7.0)
-    faraday (0.13.1)
+    faraday (0.14.0)
       multipart-post (>= 1.2, < 3)
     ffi (1.9.18)
     globalid (0.4.1)
