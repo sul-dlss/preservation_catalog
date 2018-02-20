@@ -62,6 +62,7 @@ class CatalogToMoab
       results.add_result(AuditResults::PC_PO_VERSION_MISMATCH,
                          pc_version: preserved_copy.version,
                          po_version: preserved_copy.preserved_object.current_version)
+      results.report_results
       return
     end
 

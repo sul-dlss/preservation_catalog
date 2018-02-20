@@ -65,7 +65,7 @@ RSpec.describe CatalogToMoab do
       c2m.check_catalog_version
     end
 
-    it 'calls online_moab_found(druid, storage_dir)' do
+    it 'calls online_moab_found?(druid, storage_dir)' do
       expect(c2m).to receive(:online_moab_found?).with(druid, storage_dir)
       c2m.check_catalog_version
     end
@@ -112,7 +112,7 @@ RSpec.describe CatalogToMoab do
     end
 
     context 'preserved_copy version != current_version of preserved_object' do
-      it 'adds a PC_PO_VERSION_MISMATCH result and returns' do
+      it 'adds a PC_PO_VERSION_MISMATCH result and finishes processing' do
         pres_copy.version = 666
         results = instance_double(AuditResults, report_results: nil, :check_name= => nil)
         allow(AuditResults).to receive(:new).and_return(results)
@@ -122,6 +122,14 @@ RSpec.describe CatalogToMoab do
           po_version: pres_copy.preserved_object.current_version
         )
         expect(Moab::StorageObject).not_to receive(:new).with(druid, a_string_matching(object_dir)).and_call_original
+        c2m.check_catalog_version
+      end
+      it 'calls AuditResults.report_results' do
+        pres_copy.version = 666
+        results = instance_double(AuditResults, report_results: nil, :check_name= => nil)
+        allow(results).to receive(:add_result)
+        allow(AuditResults).to receive(:new).and_return(results)
+        expect(results).to receive(:report_results)
         c2m.check_catalog_version
       end
     end
