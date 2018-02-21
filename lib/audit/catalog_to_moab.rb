@@ -9,6 +9,9 @@ class CatalogToMoab
   # process records in order in batches.  Note that .find_each does batches, but disregards order from
   # the scope, so we must use .each
   def self.check_version_on_dir(last_checked_b4_date, storage_dir, limit=Settings.c2m_sql_limit)
+    start_msg = "#{Time.now.utc.iso8601} C2M check_version starting for #{storage_dir}"
+    puts start_msg
+    Rails.logger.info start_msg
     num_to_process = PreservedCopy.least_recent_version_audit(last_checked_b4_date, storage_dir).count
     while num_to_process > 0
       pcs = PreservedCopy.least_recent_version_audit(last_checked_b4_date, storage_dir).limit(limit)
@@ -18,6 +21,9 @@ class CatalogToMoab
       end
       num_to_process -= limit
     end
+    end_msg = "#{Time.now.utc.iso8601} C2M check_version ended for #{storage_dir}"
+    puts end_msg
+    Rails.logger.info end_msg
   end
 
   def self.check_version_on_dir_profiled(last_checked_b4_date, storage_dir)
@@ -27,15 +33,15 @@ class CatalogToMoab
   end
 
   def self.check_version_all_dirs(last_checked_b4_date)
-    Settings.moab.storage_roots.each do |strg_root_name, strg_root_location|
-      start_msg = "#{Time.now.utc.iso8601} C2M check_version starting for '#{strg_root_name}' at #{strg_root_location}"
-      puts start_msg
-      Rails.logger.info start_msg
+    start_msg = "#{Time.now.utc.iso8601} C2M check_version_all_dirs starting"
+    puts start_msg
+    Rails.logger.info start_msg
+    Settings.moab.storage_roots.each do |_strg_root_name, strg_root_location|
       check_version_on_dir(last_checked_b4_date, "#{strg_root_location}/#{Settings.moab.storage_trunk}")
-      end_msg = "#{Time.now.utc.iso8601} C2M check_version ended for '#{strg_root_name}' at #{strg_root_location}"
-      puts end_msg
-      Rails.logger.info end_msg
     end
+    end_msg = "#{Time.now.utc.iso8601} C2M check_version_all_dirs ended"
+    puts end_msg
+    Rails.logger.info end_msg
   end
 
   def self.check_version_all_dirs_profiled(last_checked_b4_date)

@@ -127,6 +127,11 @@ Naming/FileName:
 
 # --- Performance ---
 
+Performance/HashEachMethods:
+  Exclude:
+    - lib/audit/catalog_to_moab.rb # it's a tiny config object; code is clearer as is
+    - lib/audit/moab_to_catalog.rb # it's a tiny config object; code is clearer as is
+
 # --- Rails ---
 
 Rails/HasAndBelongsToMany:
