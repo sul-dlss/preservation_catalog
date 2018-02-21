@@ -144,13 +144,13 @@ class AuditResults
   def report_errors_to_workflows(candidate_workflow_results)
     return if candidate_workflow_results.empty?
     value_array = []
-    value_array << workflows_msg_prefix
     candidate_workflow_results.each do |result_hash|
       result_hash.each_value do |val|
         value_array << val
       end
     end
-    WorkflowErrorsReporter.update_workflow(druid, 'preservation-audit', value_array.join(" || "))
+    msg = "#{workflows_msg_prefix} #{value_array.join(' && ')}"
+    WorkflowErrorsReporter.update_workflow(druid, 'preservation-audit', msg)
   end
 
   def log_result(result)
