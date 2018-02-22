@@ -6,31 +6,27 @@ git_source(:github) do |repo_name|
 end
 
 # general Ruby/Rails gems
-# gives us Settings to manage configs on different instances
-gem 'config'
-# Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
-gem 'jbuilder', '~> 2.5'
-# use postgres as the database
-gem 'pg'
-# useful for debugging, even in prod
-gem 'pry-byebug' # Adds step-by-step debugging and stack navigation capabilities to pry using byebug
-gem 'pry-rails' # use pry as the rails console shell instead of IRB
-gem 'ruby-prof' # to profile methods
-# Use Puma as the app server
-gem 'puma', '~> 3.7'
+gem 'config' # Settings to manage configs on different instances
+gem 'faraday' # ReST calls
+gem 'jbuilder', '~> 2.5' # Build JSON APIs with ease.
+gem 'pg' # postgres database
+gem 'puma', '~> 3.7' # app server
 gem 'rails', '~> 5.1.3'
-# Use newrelic for performance monitoring
-gem 'newrelic_rpm'
-# Use honeybadger for error reporting
-gem 'honeybadger'
-# Use faraday for ReST calls
-gem 'faraday'
-# For more robust handling of network glitches
-gem 'retries'
+gem 'retries' # robust handling of network glitches
+gem 'ruby-prof' # to profile methods
 
 # Stanford gems
 gem 'moab-versioning' # work with Moab Objects
 gem 'druid-tools' # for druid validation and druid-tree parsing
+
+# gem group for travis NOT to load
+group :not_travis do
+  gem 'honeybadger' # for error reporting / tracking / notifications
+  gem 'newrelic_rpm' # for production performance modeling
+  # useful for debugging, even in prod
+  gem 'pry-byebug' # Adds step-by-step debugging and stack navigation capabilities to pry using byebug
+  gem 'pry-rails' # use pry as the rails console shell instead of IRB
+end
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console

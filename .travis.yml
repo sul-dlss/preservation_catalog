@@ -7,5 +7,7 @@ services:
 before_script:
   - bundle exec rake travis_setup_postgres
 
+bundler_args: --without 'not_travis development deploy'
+
 notifications:
   email: false
