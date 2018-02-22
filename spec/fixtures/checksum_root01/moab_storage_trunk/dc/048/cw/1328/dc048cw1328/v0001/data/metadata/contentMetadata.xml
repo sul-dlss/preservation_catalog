@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<contentMetadata type="etd" objectId="druid:dc048cw1328">
+  <resource type="main-original" data="content" id="main">
+    <attr name="label">Body of dissertation (as submitted)</attr>
+    <file deliver="no" preserve="yes" size="2511893" mimetype="application/pdf" id="Dissertation.pdf" shelve="yes">
+      <checksum type="MD5">a95d26f93e2849c0c7a566929e8b62d1</checksum>
+      <checksum type="SHA-1">a95216ec255202f1c5ff24f68d85e0a83406423f</checksum>
+      <checksum type="SHA-256">8ce5bdf098fa450893ad7a63eb0333f7fa2805e7acd2f3d9603d41357d517ff2</checksum>
+    </file>
+  </resource>
+  <resource type="main-augmented" objectId="druid:pb089vk0050" data="content" id="main">
+    <attr name="label">Body of dissertation</attr>
+    <file deliver="yes" preserve="yes" size="2508105" mimetype="application/pdf" id="Dissertation-augmented.pdf" shelve="yes">
+      <location type="url">https://stacks.stanford.edu/file/druid:dc048cw1328/Dissertation-augmented.pdf</location>
+      <checksum type="MD5">3296988d021cc00036e8a8cbec5b5d01</checksum>
+      <checksum type="SHA-1">4c6261488dc2034d0bd4621add1e89cef8b2babf</checksum>
+      <checksum type="SHA-256">3240e65e9009519b77875310d056574707e696fd7722e92b606660e077256da7</checksum>
+    </file>
+  </resource>
+  <resource type="permissions" objectId="druid:ky170fm1367" data="content" id="permissions">
+    <attr name="label"/>
+    <file deliver="no" preserve="yes" size="55669" mimetype="application/pdf" id="License1.pdf" shelve="yes">
+      <checksum type="MD5">0e1ee869e68e30b63b97c934d5709d2b</checksum>
+      <checksum type="SHA-1">bdba5ae22ed15c0aad6cb11bc48871eefb6075f5</checksum>
+      <checksum type="SHA-256">b2865f73abebb7689de463d31fd2aab883941781b23e7efe7ad0cdb4d6b400d3</checksum>
+    </file>
+  </resource>
+  <resource type="permissions" objectId="druid:kh021gz3200" data="content" id="permissions">
+    <attr name="label"/>
+    <file deliver="no" preserve="yes" size="37050" mimetype="application/pdf" id="License2.pdf" shelve="yes">
+      <checksum type="MD5">ca48afc243c60e6089deda1429d2c030</checksum>
+      <checksum type="SHA-1">20541783d66c094dded7baab6ef04c1a6da1071b</checksum>
+      <checksum type="SHA-256">32cc9e4f908b3f6739f6b9d259bac136970f2d6e723978b2fb9be3124ef8164d</checksum>
+    </file>
+  </resource>
+</contentMetadata>
