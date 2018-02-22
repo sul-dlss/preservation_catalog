@@ -45,7 +45,7 @@ class AuditResults
     INVALID_MOAB => "Invalid Moab, validation errors: %{addl}",
     PC_PO_VERSION_MISMATCH => "PreservedCopy online Moab version %{pc_version} does not match PreservedObject current_version %{po_version}",
     MOAB_NOT_FOUND => "db PreservedCopy (created %{db_created_at}; last updated %{db_updated_at}) exists but Moab not found",
-    MOAB_FILE_CHECKSUM_MISMATCH => "The checksums for %{file_path} do not match. Computed %{algorithm} checksum: %{computed_checksum[0...7]}. Expected checksum: %{expected_checksum[0...7]}",
+    MOAB_FILE_CHECKSUM_MISMATCH => "The checksums for %{file_path} version: %{version} do not match.",
     FILE_NOT_IN_MOAB => "%{manifest_file_path} refers to file (%{file_path}) not found in Moab",
     FILE_NOT_IN_MANIFEST => "Moab file %{file_path} was not found in Moab manifest %{manifest_file_path}",
     MANIFEST_NOT_IN_MOAB => "%{manifest_file_path} not found in Moab",
