@@ -136,10 +136,19 @@ RSpec.describe AuditResults do
         result_msg_args2 = 'foo'
         audit_results.add_result(code2, result_msg_args2)
         result_msg2 = audit_results.send(:result_code_msg, code2, result_msg_args2)
-        expect(WorkflowErrorsReporter).to receive(:update_workflow).with(
-          druid, 'preservation-audit', a_string_matching("#{result_msg1} || #{result_msg2}")
+        allow(WorkflowErrorsReporter).to receive(:update_workflow).with(
+          druid, 'preservation-audit', instance_of(String)
         )
         audit_results.report_results
+        expect(WorkflowErrorsReporter).to have_received(:update_workflow).with(
+          druid, 'preservation-audit', a_string_matching(result_msg1)
+        )
+        expect(WorkflowErrorsReporter).to have_received(:update_workflow).with(
+          druid, 'preservation-audit', a_string_matching(/ \&\& /)
+        )
+        expect(WorkflowErrorsReporter).to have_received(:update_workflow).with(
+          druid, 'preservation-audit', a_string_matching(result_msg2)
+        )
       end
       it 'message sent includes endpoint information' do
         code = AuditResults::DB_UPDATE_FAILED

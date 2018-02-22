@@ -56,7 +56,6 @@ class AuditResults
     ACTUAL_VERS_LT_DB_OBJ,
     DB_UPDATE_FAILED,
     DB_OBJ_ALREADY_EXISTS,
-    DB_OBJ_DOES_NOT_EXIST,
     UNEXPECTED_VERSION,
     PC_PO_VERSION_MISMATCH,
     MOAB_NOT_FOUND,
@@ -81,7 +80,7 @@ class AuditResults
     when CREATED_NEW_OBJECT then Logger::INFO
     when DB_UPDATE_FAILED then Logger::ERROR
     when DB_OBJ_ALREADY_EXISTS then Logger::ERROR
-    when DB_OBJ_DOES_NOT_EXIST then Logger::ERROR
+    when DB_OBJ_DOES_NOT_EXIST then Logger::WARN
     when PC_STATUS_CHANGED then Logger::INFO
     when UNEXPECTED_VERSION then Logger::ERROR
     when INVALID_MOAB then Logger::ERROR
@@ -144,13 +143,13 @@ class AuditResults
   def report_errors_to_workflows(candidate_workflow_results)
     return if candidate_workflow_results.empty?
     value_array = []
-    value_array << workflows_msg_prefix
     candidate_workflow_results.each do |result_hash|
       result_hash.each_value do |val|
         value_array << val
       end
     end
-    WorkflowErrorsReporter.update_workflow(druid, 'preservation-audit', value_array.join(" || "))
+    msg = "#{workflows_msg_prefix} #{value_array.join(' && ')}"
+    WorkflowErrorsReporter.update_workflow(druid, 'preservation-audit', msg)
   end
 
   def log_result(result)

@@ -31,7 +31,6 @@ RSpec.describe PreservedObjectHandler do
 
       context "incoming and db versions match" do
         let(:po_handler) { described_class.new(druid, 2, 1, ep) }
-        let(:version_matches_po_msg) { "actual version (2) matches PreservedObject db version" }
         let(:version_matches_pc_msg) { "actual version (2) matches PreservedCopy db version" }
 
         context 'PreservedCopy' do
@@ -85,21 +84,19 @@ RSpec.describe PreservedObjectHandler do
         context 'returns' do
           let!(:results) { po_handler.check_existence }
 
-          it '2 results' do
+          it '1 result' do
             expect(results).to be_an_instance_of Array
-            expect(results.size).to eq 2
+            expect(results.size).to eq 1
           end
           it 'VERSION_MATCHES results' do
             code = AuditResults::VERSION_MATCHES
             expect(results).to include(a_hash_including(code => version_matches_pc_msg))
-            expect(results).to include(a_hash_including(code => version_matches_po_msg))
           end
         end
       end
 
       context "incoming version > db version" do
         let(:version_gt_pc_msg) { "actual version (#{incoming_version}) greater than PreservedCopy db version (2)" }
-        let(:version_gt_po_msg) { "actual version (#{incoming_version}) greater than PreservedObject db version (2)" }
 
         it 'calls Stanford::StorageObjectValidator.validation_errors for moab' do
           mock_sov = instance_double(Stanford::StorageObjectValidator)
@@ -198,14 +195,13 @@ RSpec.describe PreservedObjectHandler do
             before do
               allow(po_handler).to receive(:moab_validation_errors).and_return([])
             end
-            it '2 results' do
+            it '1 result' do
               expect(results).to be_an_instance_of Array
-              expect(results.size).to eq 2
+              expect(results.size).to eq 1
             end
             it 'ACTUAL_VERS_GT_DB_OBJ results' do
               code = AuditResults::ACTUAL_VERS_GT_DB_OBJ
               expect(results).to include(a_hash_including(code => version_gt_pc_msg))
-              expect(results).to include(a_hash_including(code => version_gt_po_msg))
             end
           end
         end
@@ -298,14 +294,13 @@ RSpec.describe PreservedObjectHandler do
           context 'returns' do
             let!(:results) { invalid_po_handler.check_existence }
 
-            it '4 results' do
+            it '3 results' do
               expect(results).to be_an_instance_of Array
-              expect(results.size).to eq 4
+              expect(results.size).to eq 3
             end
             it 'ACTUAL_VERS_GT_DB_OBJ results' do
               code = AuditResults::ACTUAL_VERS_GT_DB_OBJ
               expect(results).to include(a_hash_including(code => version_gt_pc_msg))
-              expect(results).to include(a_hash_including(code => version_gt_po_msg))
             end
             it 'INVALID_MOAB result' do
               expect(results).to include(a_hash_including(AuditResults::INVALID_MOAB))

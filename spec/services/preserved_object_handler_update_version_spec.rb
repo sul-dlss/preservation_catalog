@@ -86,16 +86,14 @@ RSpec.describe PreservedObjectHandler do
         context 'returns' do
           let!(:results) { po_handler.update_version }
 
-          it '2 results' do
+          it '1 results' do
             expect(results).to be_an_instance_of Array
-            expect(results.size).to eq 2
+            expect(results.size).to eq 1
           end
           it 'ACTUAL_VERS_GT_DB_OBJ results' do
             code = AuditResults::ACTUAL_VERS_GT_DB_OBJ
             version_gt_pc_msg = "actual version (#{incoming_version}) greater than PreservedCopy db version (2)"
             expect(results).to include(a_hash_including(code => version_gt_pc_msg))
-            version_gt_po_msg = "actual version (#{incoming_version}) greater than PreservedObject db version (2)"
-            expect(results).to include(a_hash_including(code => version_gt_po_msg))
           end
         end
       end

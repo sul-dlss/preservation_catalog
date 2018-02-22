@@ -46,7 +46,6 @@ RSpec.describe PreservedObjectHandler do
 
       context "incoming and db versions match" do
         let(:po_handler) { described_class.new(druid, 2, 1, ep) }
-        let(:version_matches_po_msg) { "actual version (2) matches PreservedObject db version" }
         let(:version_matches_pc_msg) { "actual version (2) matches PreservedCopy db version" }
 
         context 'PreservedCopy' do
@@ -96,14 +95,13 @@ RSpec.describe PreservedObjectHandler do
         context 'returns' do
           let!(:results) { po_handler.confirm_version }
 
-          it '2 results' do
+          it '1 result' do
             expect(results).to be_an_instance_of Array
-            expect(results.size).to eq 2
+            expect(results.size).to eq 1
           end
           it 'VERSION_MATCHES results' do
             code = AuditResults::VERSION_MATCHES
             expect(results).to include(a_hash_including(code => version_matches_pc_msg))
-            expect(results).to include(a_hash_including(code => version_matches_po_msg))
           end
         end
       end
