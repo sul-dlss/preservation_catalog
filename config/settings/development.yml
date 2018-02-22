@@ -4,4 +4,5 @@ moab:
     # name: '/location/on/disk'  # e.g.
     fixture_sr1: 'spec/fixtures/storage_root01'
     fixture_sr2: 'spec/fixtures/storage_root02'
+    fixture_sr3: 'spec/fixtures/checksum_root01'
 workflow_services_url: 'https://sul-lyberservices-test.stanford.edu/workflow/'
