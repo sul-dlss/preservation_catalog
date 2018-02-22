@@ -152,7 +152,7 @@ RSpec.shared_examples 'unexpected version' do |method_sym, actual_version|
 
     it "number of results" do
       expect(results).to be_an_instance_of Array
-      expect(results.size).to eq 4
+      expect(results.size).to eq 3
     end
     it 'UNEXPECTED_VERSION result' do
       code = AuditResults::UNEXPECTED_VERSION
@@ -167,7 +167,6 @@ RSpec.shared_examples 'unexpected version' do |method_sym, actual_version|
       ]
       obj_version_results = results.select { |r| codes.include?(r.keys.first) }
       msgs = obj_version_results.map { |r| r.values.first }
-      expect(msgs).to include(a_string_matching("PreservedObject"))
       expect(msgs).to include(a_string_matching("PreservedCopy"))
     end
     if method_sym == :update_version
@@ -245,17 +244,10 @@ RSpec.shared_examples 'unexpected version with validation' do |method_sym, incom
 
   context 'returns' do
     let!(:results) { po_handler.send(method_sym) }
-    let(:num_results) do
-      if method_sym == :check_existence
-        3
-      elsif method_sym == :update_version_after_validation
-        2
-      end
-    end
 
     it "number of results" do
       expect(results).to be_an_instance_of Array
-      expect(results.size).to eq num_results
+      expect(results.size).to eq 2
     end
     if method_sym == :update_version_after_validation
       it 'UNEXPECTED_VERSION result unless INVALID_MOAB' do
@@ -274,7 +266,6 @@ RSpec.shared_examples 'unexpected version with validation' do |method_sym, incom
       obj_version_results = results.select { |r| codes.include?(r.keys.first) }
       msgs = obj_version_results.map { |r| r.values.first }
       unless results.find { |r| r.keys.first == AuditResults::INVALID_MOAB }
-        expect(msgs).to include(a_string_matching("PreservedObject"))
         expect(msgs).to include(a_string_matching("PreservedCopy"))
       end
     end

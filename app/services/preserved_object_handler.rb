@@ -77,11 +77,9 @@ class PreservedObjectHandler
           if incoming_version == pres_copy.version
             set_status_as_seen_on_disk(pres_copy, true) unless pres_copy.status == PreservedCopy::OK_STATUS
             handler_results.add_result(AuditResults::VERSION_MATCHES, 'PreservedCopy')
-            handler_results.add_result(AuditResults::VERSION_MATCHES, 'PreservedObject')
           elsif incoming_version > pres_copy.version
             set_status_as_seen_on_disk(pres_copy, true) unless pres_copy.status == PreservedCopy::OK_STATUS
             handler_results.add_result(AuditResults::ACTUAL_VERS_GT_DB_OBJ, db_obj_name: 'PreservedCopy', db_obj_version: pres_copy.version)
-            handler_results.add_result(AuditResults::ACTUAL_VERS_GT_DB_OBJ, db_obj_name: 'PreservedObject', db_obj_version: pres_object.current_version)
             if moab_validation_errors.empty?
               pres_copy.upd_audstamps_version_size(ran_moab_validation?, incoming_version, incoming_size)
               pres_object.current_version = incoming_version
@@ -92,7 +90,6 @@ class PreservedObjectHandler
           else # incoming_version < pres_copy.version
             set_status_as_seen_on_disk(pres_copy, false)
             handler_results.add_result(AuditResults::ACTUAL_VERS_LT_DB_OBJ, db_obj_name: 'PreservedCopy', db_obj_version: pres_copy.version)
-            handler_results.add_result(AuditResults::ACTUAL_VERS_LT_DB_OBJ, db_obj_name: 'PreservedObject', db_obj_version: pres_object.current_version)
           end
           pres_copy.update_audit_timestamps(ran_moab_validation?, true)
           pres_copy.save!
@@ -233,7 +230,6 @@ class PreservedObjectHandler
         # add results without db updates
         code = AuditResults::ACTUAL_VERS_GT_DB_OBJ
         handler_results.add_result(code, db_obj_name: 'PreservedCopy', db_obj_version: pres_copy.version)
-        handler_results.add_result(code, db_obj_name: 'PreservedObject', db_obj_version: pres_object.current_version)
 
         pres_copy.upd_audstamps_version_size(ran_moab_validation?, incoming_version, incoming_size)
         update_status(pres_copy, status) if status && ran_moab_validation?
@@ -244,7 +240,7 @@ class PreservedObjectHandler
         if set_status_to_unexp_version
           status = PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
         end
-        update_pc_unexpected_version(pres_copy, pres_object, status)
+        update_pc_unexpected_version(pres_copy, status)
       end
     end
 
@@ -292,10 +288,9 @@ class PreservedObjectHandler
     update_status(pres_copy, PreservedCopy::OK_STATUS)
   end
 
-  def update_pc_unexpected_version(pres_copy, pres_object, new_status)
+  def update_pc_unexpected_version(pres_copy, new_status)
     handler_results.add_result(AuditResults::UNEXPECTED_VERSION, db_obj_name: 'PreservedCopy', db_obj_version: pres_copy.version)
     version_comparison_results(pres_copy, pres_copy.version)
-    version_comparison_results(pres_object, pres_object.current_version)
 
     update_status(pres_copy, new_status) if new_status
     pres_copy.update_audit_timestamps(ran_moab_validation?, true)
@@ -314,7 +309,6 @@ class PreservedObjectHandler
       if incoming_version == pres_copy.version
         set_status_as_seen_on_disk(pres_copy, true) unless pres_copy.status == PreservedCopy::OK_STATUS
         handler_results.add_result(AuditResults::VERSION_MATCHES, 'PreservedCopy')
-        handler_results.add_result(AuditResults::VERSION_MATCHES, 'PreservedObject')
       else
         set_status_as_seen_on_disk(pres_copy, false)
         handler_results.add_result(AuditResults::UNEXPECTED_VERSION, db_obj_name: 'PreservedCopy', db_obj_version: pres_copy.version)
