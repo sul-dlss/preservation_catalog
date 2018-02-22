@@ -56,7 +56,6 @@ class AuditResults
     ACTUAL_VERS_LT_DB_OBJ,
     DB_UPDATE_FAILED,
     DB_OBJ_ALREADY_EXISTS,
-    DB_OBJ_DOES_NOT_EXIST,
     UNEXPECTED_VERSION,
     PC_PO_VERSION_MISMATCH,
     MOAB_NOT_FOUND,
@@ -81,7 +80,7 @@ class AuditResults
     when CREATED_NEW_OBJECT then Logger::INFO
     when DB_UPDATE_FAILED then Logger::ERROR
     when DB_OBJ_ALREADY_EXISTS then Logger::ERROR
-    when DB_OBJ_DOES_NOT_EXIST then Logger::ERROR
+    when DB_OBJ_DOES_NOT_EXIST then Logger::WARN
     when PC_STATUS_CHANGED then Logger::INFO
     when UNEXPECTED_VERSION then Logger::ERROR
     when INVALID_MOAB then Logger::ERROR
