@@ -1,7 +1,119 @@
-require 'rails_helper'
+require_relative '../../app/services/checksum_validator.rb'
+require_relative '../load_fixtures_helper.rb'
 
 RSpec.describe ChecksumValidator do
-  it 'has some behaviors' do
-    skip 'we should figure out what they are and test them'
+  let(:endpoint) { Endpoint.find_by(endpoint_name: 'fixture_sr3') }
+  let(:storage_dir) { endpoint.storage_location }
+  let(:object_dir) { "#{storage_dir}/#{DruidTools::Druid.new(druid).tree.join('/')}" }
+
+  context '#initialize' do
+    it 'sets attributes' do
+      druid = 'driud:bj102hs9687'
+      cv = described_class.new(druid, endpoint)
+      expect(cv.druid).to eq druid
+      expect(cv.endpoint).to eq endpoint
+      expect(cv.handler_results).to be_an_instance_of AuditResults
+    end
+  end
+
+  context '#validate_manifest_inventories' do
+    let(:druid) { 'druid:bj102hs9687' }
+    let(:cv) { described_class.new(druid, endpoint) }
+
+    it 'instantiates storage_object from druid and druid_path' do
+      expect(Moab::StorageObject).to receive(:new).with(druid, a_string_matching(object_dir)).and_call_original
+      cv.validate_manifest_inventories
+    end
+
+    it 'calls validate_manifest_inventory for each storage_object_version' do
+      sov1 = instance_double(Moab::StorageObjectVersion)
+      sov2 = instance_double(Moab::StorageObjectVersion)
+      sov3 = instance_double(Moab::StorageObjectVersion)
+      version_list = [sov1, sov2, sov3]
+      storage_object = instance_double(Moab::StorageObject, version_list: [sov1,sov2,sov3])
+      allow(cv).to receive(:storage_object).and_return(storage_object)
+      version_list.each do |storage_object_version|
+        expect(cv).to receive(:validate_manifest_inventory).with(storage_object_version)
+      end
+      
+      cv.validate_manifest_inventories
+    end
+
+    it 'calls AuditResults.report_results' do
+      results = instance_double(AuditResults, add_result: nil, :actual_version= => nil, :check_name= => nil)
+      allow(AuditResults).to receive(:new).and_return(results)
+      expect(results).to receive(:report_results)
+      cv.validate_manifest_inventories
+    end
+
+    context 'modify file signature in manifestInventory.xml' do
+      it 'adds a MOAB_FILE_CHECKSUM_MISMATCH result' do
+        druid = 'druid:jj925bx9565'
+        results = instance_double(AuditResults, report_results: nil, :check_name= => nil)
+        allow(AuditResults).to receive(:new).and_return(results)
+        cv = described_class.new(druid, endpoint)
+        expect(results).to receive(:add_result).with(
+          AuditResults::MOAB_FILE_CHECKSUM_MISMATCH, file_path: "versionAdditions.xml", version: "v1"
+        )
+        expect(results).to receive(:add_result).with(
+          AuditResults::MOAB_FILE_CHECKSUM_MISMATCH, file_path: "versionInventory.xml", version: "v2"
+        )
+        cv.validate_manifest_inventories
+      end
+    end
+
+    context 'no file element for versionInventory.xml in manifestInventory.xml' do
+      it 'adds a FILE_NOT_IN_MANIFEST result' do
+        druid = 'druid:bj102hs9687'
+        results = instance_double(AuditResults, report_results: nil, :check_name => nil)
+        allow(AuditResults).to receive(:new).and_return(results)
+        cv = described_class.new(druid, endpoint)
+        expect(results).to receive(:add_result).with(
+          AuditResults::FILE_NOT_IN_MANIFEST, file_path: "versionInventory.xml", manifest_file_path: "manifestInventory.xml"
+        )
+        cv.validate_manifest_inventories
+      end
+    end
+
+    context 'versionInventory.xml not on disk, but its file element exists in manifestInventory.xml' do
+      it 'adds a FILE_NOT_IN_MOAB result' do
+        druid = 'druid:bz514sm9647'
+        results = instance_double(AuditResults, report_results: nil, :check_name => nil)
+        allow(AuditResults).to receive(:new).and_return(results)
+        cv = described_class.new(druid, endpoint)
+        expect(results).to receive(:add_result).with(
+          AuditResults::FILE_NOT_IN_MOAB, manifest_file_path: "manifestInventory.xml", file_path: "versionInventory.xml"
+        )
+        cv.validate_manifest_inventories
+      end
+    end
+
+    context 'manifestInventory.xml not found in Moab' do
+      it 'adds a MANIFEST_NOT_IN_MOAB' do
+        druid = 'druid:bp628nk4868'
+        manifest_file_path = "spec/fixtures/checksum_root01/moab_storage_trunk/bp/628/nk/4868/bp628nk4868/v0001/manifests/manifestInventory.xml"
+        results = instance_double(AuditResults, report_results: nil, :check_name => nil)
+        allow(AuditResults).to receive(:new).and_return(results)
+        cv = described_class.new(druid, endpoint)
+        expect(results).to receive(:add_result).with(
+          AuditResults::MANIFEST_NOT_IN_MOAB, manifest_file_path: manifest_file_path
+        )
+        cv.validate_manifest_inventories
+      end
+    end
+
+    context 'cannot parse xml file' do
+      it 'adds an INVALID_MANIFEST' do
+        druid = 'druid:dc048cw1328'
+        manifest_file_path = "spec/fixtures/checksum_root01/moab_storage_trunk/dc/048/cw/1328/dc048cw1328/v0002/manifests/manifestInventory.xml"
+        results = instance_double(AuditResults, report_results: nil, :check_name => nil)
+        allow(AuditResults).to receive(:new).and_return(results)
+        cv = described_class.new(druid, endpoint)
+        expect(results).to receive(:add_result).with(
+          AuditResults::INVALID_MANIFEST, manifest_file_path: manifest_file_path
+        )
+        cv.validate_manifest_inventories
+      end
+    end
   end
 end
