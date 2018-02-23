@@ -2,14 +2,14 @@ require_relative '../../app/services/checksum_validator.rb'
 require_relative '../load_fixtures_helper.rb'
 
 RSpec.describe ChecksumValidator do
-  let(:endpoint) { Endpoint.find_by(endpoint_name: 'fixture_sr3') }
-  let(:storage_dir) { endpoint.storage_location }
+  let(:storage_dir) { "spec/fixtures/checksum_root01/moab_storage_trunk" }
+  let(:endpoint) { Endpoint.find_by(storage_location: storage_dir) }
   let(:object_dir) { "#{storage_dir}/#{DruidTools::Druid.new(druid).tree.join('/')}" }
 
   context '#initialize' do
     it 'sets attributes' do
       druid = 'bj102hs9687'
-      cv = described_class.new(druid, endpoint)
+      cv = described_class.new(druid, storage_dir)
       expect(cv.druid).to eq "druid:#{druid}"
       expect(cv.endpoint).to eq endpoint
       expect(cv.handler_results).to be_an_instance_of AuditResults
@@ -18,7 +18,7 @@ RSpec.describe ChecksumValidator do
 
   context '#validate_manifest_inventories' do
     let(:druid) { 'bj102hs9687' }
-    let(:cv) { described_class.new(druid, endpoint) }
+    let(:cv) { described_class.new(druid, storage_dir) }
 
     it 'instantiates storage_object from druid and druid_path' do
       expect(Moab::StorageObject).to receive(:new).with(cv.druid, a_string_matching(object_dir)).and_call_original
@@ -53,7 +53,7 @@ RSpec.describe ChecksumValidator do
         file_path2 = "#{object_dir}/v0002/manifests/versionInventory.xml"
         results = instance_double(AuditResults, report_results: nil, :check_name= => nil)
         allow(AuditResults).to receive(:new).and_return(results)
-        cv = described_class.new(druid, endpoint)
+        cv = described_class.new(druid, storage_dir)
         expect(results).to receive(:add_result).with(
           AuditResults::MOAB_FILE_CHECKSUM_MISMATCH, file_path: a_string_matching(file_path1), version: "v1"
         )
@@ -71,7 +71,7 @@ RSpec.describe ChecksumValidator do
         file_path = "#{object_dir}/v0003/manifests/versionInventory.xml"
         results = instance_double(AuditResults, report_results: nil, check_name: nil)
         allow(AuditResults).to receive(:new).and_return(results)
-        cv = described_class.new(druid, endpoint)
+        cv = described_class.new(druid, storage_dir)
         expect(results).to receive(:add_result).with(
           AuditResults::FILE_NOT_IN_MANIFEST, file_path: a_string_matching(file_path), manifest_file_path: a_string_matching(manifest_file_path)
         )
@@ -87,7 +87,7 @@ RSpec.describe ChecksumValidator do
         file_path = "#{object_dir}/v0003/manifests/versionInventory.xml"
         results = instance_double(AuditResults, report_results: nil, check_name: nil)
         allow(AuditResults).to receive(:new).and_return(results)
-        cv = described_class.new(druid, endpoint)
+        cv = described_class.new(druid, storage_dir)
         expect(results).to receive(:add_result).with(
           AuditResults::FILE_NOT_IN_MOAB, manifest_file_path: a_string_matching(manifest_file_path), file_path: a_string_matching(file_path)
         )
@@ -101,7 +101,7 @@ RSpec.describe ChecksumValidator do
         manifest_file_path = "spec/fixtures/checksum_root01/moab_storage_trunk/bp/628/nk/4868/bp628nk4868/v0001/manifests/manifestInventory.xml"
         results = instance_double(AuditResults, report_results: nil, check_name: nil)
         allow(AuditResults).to receive(:new).and_return(results)
-        cv = described_class.new(druid, endpoint)
+        cv = described_class.new(druid, storage_dir)
         expect(results).to receive(:add_result).with(
           AuditResults::MANIFEST_NOT_IN_MOAB, manifest_file_path: manifest_file_path
         )
@@ -115,7 +115,7 @@ RSpec.describe ChecksumValidator do
         manifest_file_path = "spec/fixtures/checksum_root01/moab_storage_trunk/dc/048/cw/1328/dc048cw1328/v0002/manifests/manifestInventory.xml"
         results = instance_double(AuditResults, report_results: nil, check_name: nil)
         allow(AuditResults).to receive(:new).and_return(results)
-        cv = described_class.new(druid, endpoint)
+        cv = described_class.new(druid, storage_dir)
         expect(results).to receive(:add_result).with(
           AuditResults::INVALID_MANIFEST, manifest_file_path: manifest_file_path
         )
