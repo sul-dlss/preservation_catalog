@@ -1,11 +1,10 @@
 # code for validating Moab checksums
 class ChecksumValidator
-  
-  attr_reader :handler_results
+
+  attr_reader :handler_results, :druid, :endpoint
 
   MANIFESTS = 'manifests'.freeze
   MANIFESTS_XML = 'manifestInventory.xml'.freeze
-
 
   def initialize(druid, endpoint)
     @druid = druid
