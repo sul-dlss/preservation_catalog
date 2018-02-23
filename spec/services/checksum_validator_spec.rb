@@ -8,20 +8,20 @@ RSpec.describe ChecksumValidator do
 
   context '#initialize' do
     it 'sets attributes' do
-      druid = 'driud:bj102hs9687'
+      druid = 'bj102hs9687'
       cv = described_class.new(druid, endpoint)
-      expect(cv.druid).to eq druid
+      expect(cv.druid).to eq "druid:#{druid}"
       expect(cv.endpoint).to eq endpoint
       expect(cv.handler_results).to be_an_instance_of AuditResults
     end
   end
 
   context '#validate_manifest_inventories' do
-    let(:druid) { 'druid:bj102hs9687' }
+    let(:druid) { 'bj102hs9687' }
     let(:cv) { described_class.new(druid, endpoint) }
 
     it 'instantiates storage_object from druid and druid_path' do
-      expect(Moab::StorageObject).to receive(:new).with(druid, a_string_matching(object_dir)).and_call_original
+      expect(Moab::StorageObject).to receive(:new).with(cv.druid, a_string_matching(object_dir)).and_call_original
       cv.validate_manifest_inventories
     end
 
@@ -47,7 +47,7 @@ RSpec.describe ChecksumValidator do
 
     context 'modify file signature in manifestInventory.xml' do
       it 'adds a MOAB_FILE_CHECKSUM_MISMATCH result' do
-        druid = 'druid:jj925bx9565'
+        druid = 'jj925bx9565'
         object_dir = "#{storage_dir}/#{DruidTools::Druid.new(druid).tree.join('/')}"
         file_path1 = "#{object_dir}/v0001/manifests/versionAdditions.xml"
         file_path2 = "#{object_dir}/v0002/manifests/versionInventory.xml"
@@ -66,7 +66,7 @@ RSpec.describe ChecksumValidator do
 
     context 'no file element for versionInventory.xml in manifestInventory.xml' do
       it 'adds a FILE_NOT_IN_MANIFEST result' do
-        druid = 'druid:bj102hs9687'
+        druid = 'bj102hs9687'
         manifest_file_path = "#{object_dir}/v0003/manifests/manifestInventory.xml"
         file_path = "#{object_dir}/v0003/manifests/versionInventory.xml"
         results = instance_double(AuditResults, report_results: nil, check_name: nil)
@@ -81,7 +81,7 @@ RSpec.describe ChecksumValidator do
 
     context 'versionInventory.xml not on disk, but its file element exists in manifestInventory.xml' do
       it 'adds a FILE_NOT_IN_MOAB result' do
-        druid = 'druid:bz514sm9647'
+        druid = 'bz514sm9647'
         object_dir = "#{storage_dir}/#{DruidTools::Druid.new(druid).tree.join('/')}"
         manifest_file_path = "#{object_dir}/v0003/manifests/manifestInventory.xml"
         file_path = "#{object_dir}/v0003/manifests/versionInventory.xml"
@@ -97,7 +97,7 @@ RSpec.describe ChecksumValidator do
 
     context 'manifestInventory.xml not found in Moab' do
       it 'adds a MANIFEST_NOT_IN_MOAB' do
-        druid = 'druid:bp628nk4868'
+        druid = 'bp628nk4868'
         manifest_file_path = "spec/fixtures/checksum_root01/moab_storage_trunk/bp/628/nk/4868/bp628nk4868/v0001/manifests/manifestInventory.xml"
         results = instance_double(AuditResults, report_results: nil, check_name: nil)
         allow(AuditResults).to receive(:new).and_return(results)
@@ -111,7 +111,7 @@ RSpec.describe ChecksumValidator do
 
     context 'cannot parse xml file' do
       it 'adds an INVALID_MANIFEST' do
-        druid = 'druid:dc048cw1328'
+        druid = 'dc048cw1328'
         manifest_file_path = "spec/fixtures/checksum_root01/moab_storage_trunk/dc/048/cw/1328/dc048cw1328/v0002/manifests/manifestInventory.xml"
         results = instance_double(AuditResults, report_results: nil, check_name: nil)
         allow(AuditResults).to receive(:new).and_return(results)

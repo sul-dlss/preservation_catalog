@@ -7,7 +7,7 @@ class ChecksumValidator
   MANIFESTS_XML = 'manifestInventory.xml'.freeze
 
   def initialize(druid, endpoint)
-    @druid = druid
+    @druid = "druid:#{druid}"
     @endpoint = endpoint
     @handler_results = AuditResults.new(druid, nil, endpoint)
   end
