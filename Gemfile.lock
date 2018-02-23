@@ -271,7 +271,6 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  byebug
   capistrano-passenger
   capistrano-rails
   config
