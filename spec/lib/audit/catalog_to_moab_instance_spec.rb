@@ -71,7 +71,7 @@ RSpec.describe CatalogToMoab do
     end
 
     context 'moab is nil (exists in catalog but not online)' do
-      it 'adds an MOAB_NOT_FOUND result' do
+      it 'adds a MOAB_NOT_FOUND result' do
         allow(Moab::StorageObject).to receive(:new).with(druid, instance_of(String)).and_return(nil)
         results = instance_double(AuditResults, report_results: nil, :check_name= => nil)
         allow(AuditResults).to receive(:new).and_return(results)
