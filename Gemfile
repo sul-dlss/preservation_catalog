@@ -19,8 +19,8 @@ gem 'ruby-prof' # to profile methods
 gem 'moab-versioning' # work with Moab Objects
 gem 'druid-tools' # for druid validation and druid-tree parsing
 
-# gem group for travis NOT to load
-group :not_travis do
+# group for gems travis doesn't need to install, but useful in non- test/CI environments (i.e. prod and dev)
+group :production, :development, :not_travis do
   gem 'honeybadger' # for error reporting / tracking / notifications
   gem 'newrelic_rpm' # for production performance modeling
   # useful for debugging, even in prod
