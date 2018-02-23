@@ -8,8 +8,12 @@ end
 # general Ruby/Rails gems
 gem 'config' # Settings to manage configs on different instances
 gem 'faraday' # ReST calls
+gem 'honeybadger' # for error reporting / tracking / notifications
 gem 'jbuilder', '~> 2.5' # Build JSON APIs with ease.
 gem 'pg' # postgres database
+# pry is useful for debugging, even in prod
+gem 'pry-byebug' # call 'binding.pry' anywhere in the code to stop execution and get a pry-byebug console
+gem 'pry-rails' # use pry as the rails console shell instead of IRB
 gem 'puma', '~> 3.7' # app server
 gem 'rails', '~> 5.1.3'
 gem 'retries' # robust handling of network glitches
@@ -19,19 +23,11 @@ gem 'ruby-prof' # to profile methods
 gem 'moab-versioning' # work with Moab Objects
 gem 'druid-tools' # for druid validation and druid-tree parsing
 
-# gem group for travis NOT to load
-group :not_travis do
-  gem 'honeybadger' # for error reporting / tracking / notifications
+group :production do
   gem 'newrelic_rpm' # for production performance modeling
-  # useful for debugging, even in prod
-  gem 'pry-byebug' # Adds step-by-step debugging and stack navigation capabilities to pry using byebug
-  gem 'pry-rails' # use pry as the rails console shell instead of IRB
 end
 
 group :development, :test do
-  # Call 'byebug' anywhere in the code to stop execution and get a debugger console
-  gem 'byebug', platforms: [:mri]
-  # Call 'binding.pry' anywhere in the code to stop execution and get a pry console
   gem 'rspec-rails', '~> 3.6'
   gem 'rails-controller-testing'
   gem 'coveralls'
