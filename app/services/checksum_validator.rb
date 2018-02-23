@@ -16,8 +16,8 @@ class ChecksumValidator
     # TODO: implement this;  we begin with a placeholder
   end
 
+  # TODO: remove this once refactor parse_verification_subentity
   def validate_manifest_inventories
-    results = []
     storage_object.version_list.each do |storage_object_version|
       validate_manifest_inventory(storage_object_version)
     end
@@ -31,10 +31,10 @@ class ChecksumValidator
     begin
       verification_result = storage_object_version.verify_manifest_inventory
       parse_verification_subentities(verification_result)
-    rescue Nokogiri::XML::SyntaxError => e
+    rescue Nokogiri::XML::SyntaxError
       handler_results.add_result(AuditResults::INVALID_MANIFEST, manifest_file_path: manifest_file_path)
-    rescue Errno::ENOENT => e
-      handler_results.add_result(AuditResults::MANIFEST_NOT_IN_MOAB, manifest_file_path: manifest_file_path )
+    rescue Errno::ENOENT
+      handler_results.add_result(AuditResults::MANIFEST_NOT_IN_MOAB, manifest_file_path: manifest_file_path)
     end
   end
 
