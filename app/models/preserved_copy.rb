@@ -32,6 +32,10 @@ class PreservedCopy < ApplicationRecord
   validates :status, inclusion: { in: statuses.keys }
   validates :version, presence: true
 
+  scope :by_endpoint_name, lambda { |endpoint_name|
+    joins(:endpoint).where(endpoints: { endpoint_name: endpoint_name })
+  }
+
   scope :by_storage_location, lambda { |storage_dir|
     joins(:endpoint).where(endpoints: { storage_location: storage_dir })
   }

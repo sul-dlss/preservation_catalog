@@ -317,6 +317,14 @@ RSpec.describe PreservedCopy, type: :model do
     end
   end
 
+  context '.by_endpoint_name' do
+    it 'returns the expected preserved copies' do
+      expect(PreservedCopy.by_endpoint_name('fixture_sr1').length).to eq 1
+      expect(PreservedCopy.by_endpoint_name('fixture_sr2').length).to eq 0
+      expect(PreservedCopy.by_endpoint_name('fixture_empty').length).to eq 0
+    end
+  end
+
   context '.by_storage_location' do
     it 'returns the expected preserved copies' do
       expect(PreservedCopy.by_storage_location('spec/fixtures/storage_root01/moab_storage_trunk').length).to eq 1
@@ -369,6 +377,20 @@ RSpec.describe PreservedCopy, type: :model do
           size: 1,
           last_checksum_validation: (Time.now.utc - 1.day)
         )
+      end
+
+      context '.by_endpoint_name' do
+        let(:pcs_ordered_by_query1) { PreservedCopy.fixity_check_expired.by_endpoint_name('fixture_sr1') }
+        let(:pcs_ordered_by_query2) { PreservedCopy.fixity_check_expired.by_endpoint_name('fixture_sr2') }
+
+        it 'returns PreservedCopies with nils first, then old to new timestamps, only for the chosen storage root' do
+          expect(pcs_ordered_by_query1).to eq [never_checked_pc, checked_before_threshold_pc1]
+          expect(pcs_ordered_by_query2).to eq [checked_before_threshold_pc2]
+        end
+        it 'returns no PreservedCopies with timestamps indicating fixity check in the last week' do
+          expect(pcs_ordered_by_query1).not_to include recently_checked_pc1
+          expect(pcs_ordered_by_query2).not_to include recently_checked_pc2
+        end
       end
 
       context '.by_storage_location' do
