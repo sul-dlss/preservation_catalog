@@ -324,4 +324,70 @@ RSpec.describe PreservedCopy, type: :model do
       expect(PreservedCopy.by_storage_location('spec/fixtures/empty/moab_storage_trunk').length).to eq 0
     end
   end
+
+  # this is not intended to exhaustively test all permutations, but to highlight/test likely useful combos
+  context 'chained scopes' do
+    context '.fixity_check_expired' do
+      let(:endpoint2) { Endpoint.find_by(endpoint_name: 'fixture_sr2') }
+      let!(:never_checked_pc) { preserved_copy }
+      let!(:checked_before_threshold_pc1) do
+        PreservedCopy.create!(
+          preserved_object_id: preserved_object.id,
+          endpoint_id: endpoint.id,
+          version: 1,
+          status: status,
+          size: 1,
+          last_checksum_validation: (Time.now.utc - 3.weeks)
+        )
+      end
+      let!(:checked_before_threshold_pc2) do
+        PreservedCopy.create!(
+          preserved_object_id: preserved_object.id,
+          endpoint_id: endpoint2.id,
+          version: 1,
+          status: status,
+          size: 1,
+          last_checksum_validation: (Time.now.utc - 7.01.days)
+        )
+      end
+      let!(:recently_checked_pc1) do
+        PreservedCopy.create!(
+          preserved_object_id: preserved_object.id,
+          endpoint_id: endpoint.id,
+          version: 1,
+          status: status,
+          size: 1,
+          last_checksum_validation: (Time.now.utc - 6.99.days)
+        )
+      end
+      let!(:recently_checked_pc2) do
+        PreservedCopy.create!(
+          preserved_object_id: preserved_object.id,
+          endpoint_id: endpoint2.id,
+          version: 1,
+          status: status,
+          size: 1,
+          last_checksum_validation: (Time.now.utc - 1.day)
+        )
+      end
+
+      context '.by_storage_location' do
+        let!(:pcs_ordered_by_query1) do
+          PreservedCopy.fixity_check_expired.by_storage_location('spec/fixtures/storage_root01/moab_storage_trunk')
+        end
+        let!(:pcs_ordered_by_query2) do
+          PreservedCopy.fixity_check_expired.by_storage_location('spec/fixtures/storage_root02/moab_storage_trunk')
+        end
+
+        it 'returns PreservedCopies with nils first, then old to new timestamps, only for the chosen storage root' do
+          expect(pcs_ordered_by_query1).to eq [never_checked_pc, checked_before_threshold_pc1]
+          expect(pcs_ordered_by_query2).to eq [checked_before_threshold_pc2]
+        end
+        it 'returns no PreservedCopies with timestamps indicating fixity check in the last week' do
+          expect(pcs_ordered_by_query1).not_to include recently_checked_pc1
+          expect(pcs_ordered_by_query2).not_to include recently_checked_pc2
+        end
+      end
+    end
+  end
 end
