@@ -24,7 +24,8 @@ RSpec.describe CatalogToMoab do
         # and we are ensuring that we call #check_catalog_version on all 3 objects.
 
         # we must set up all the described_class instance objects ahead of any process calling CatalogToMoab.new
-        pcs_from_scope = PreservedCopy.least_recent_version_audit(last_checked_version_b4_date, storage_dir)
+        pcs_from_scope =
+          PreservedCopy.least_recent_version_audit(last_checked_version_b4_date).by_storage_location(storage_dir)
         c2m_list = pcs_from_scope.map do |pc|
           described_class.new(pc, storage_dir)
         end

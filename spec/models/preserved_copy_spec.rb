@@ -194,7 +194,7 @@ RSpec.describe PreservedCopy, type: :model do
     end
   end
 
-  context '.least_recent_version_audit(last_checked_b4_date, storage_dir)' do
+  context '.least_recent_version_audit(last_checked_b4_date)' do
     let!(:newer_timestamp_pc) do
       PreservedCopy.create!(
         preserved_object_id: preserved_object.id,
@@ -226,7 +226,7 @@ RSpec.describe PreservedCopy, type: :model do
       )
     end
     let!(:nil_timestamp_pc) { preserved_copy }
-    let!(:pcs_ordered_by_query) { PreservedCopy.least_recent_version_audit(Time.now.utc, endpoint.storage_location) }
+    let!(:pcs_ordered_by_query) { PreservedCopy.least_recent_version_audit(Time.now.utc) }
 
     it 'returns PreservedCopies with nils first, then old to new timestamps' do
       expect(pcs_ordered_by_query).to eq [nil_timestamp_pc, older_timestamp_pc, newer_timestamp_pc]
