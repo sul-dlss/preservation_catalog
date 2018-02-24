@@ -259,4 +259,61 @@ RSpec.describe PreservedCopy, type: :model do
       end
     end
   end
+
+  context '.fixity_check_expired' do
+    let(:fixity_ttl) { preserved_object.preservation_policy.fixity_ttl }
+    let(:just_over_fixity_ttl) { fixity_ttl + 1.second }
+    let(:just_under_fixity_ttl) { fixity_ttl - 1.second }
+
+    let!(:never_checked_pc) { preserved_copy }
+    let!(:checked_before_threshold_pc1) do
+      PreservedCopy.create!(
+        preserved_object_id: preserved_object.id,
+        endpoint_id: endpoint.id,
+        version: 1,
+        status: status,
+        size: 1,
+        last_checksum_validation: (Time.now.utc - (fixity_ttl * 2))
+      )
+    end
+    let!(:checked_before_threshold_pc2) do
+      PreservedCopy.create!(
+        preserved_object_id: preserved_object.id,
+        endpoint_id: endpoint.id,
+        version: 1,
+        status: status,
+        size: 1,
+        last_checksum_validation: (Time.now.utc - just_over_fixity_ttl)
+      )
+    end
+    let!(:recently_checked_pc1) do
+      PreservedCopy.create!(
+        preserved_object_id: preserved_object.id,
+        endpoint_id: endpoint.id,
+        version: 1,
+        status: status,
+        size: 1,
+        last_checksum_validation: (Time.now.utc - just_under_fixity_ttl)
+      )
+    end
+    let!(:recently_checked_pc2) do
+      PreservedCopy.create!(
+        preserved_object_id: preserved_object.id,
+        endpoint_id: endpoint.id,
+        version: 1,
+        status: status,
+        size: 1,
+        last_checksum_validation: (Time.now.utc - (fixity_ttl * 0.1))
+      )
+    end
+    let!(:pcs_ordered_by_query) { PreservedCopy.fixity_check_expired }
+
+    it 'returns PreservedCopies that need fixity check, never checked first, then least-recently to most-recently' do
+      expect(pcs_ordered_by_query).to eq [never_checked_pc, checked_before_threshold_pc1, checked_before_threshold_pc2]
+    end
+    it 'returns no PreservedCopies with timestamps indicating still-valid fixity check' do
+      expect(pcs_ordered_by_query).not_to include recently_checked_pc1
+      expect(pcs_ordered_by_query).not_to include recently_checked_pc2
+    end
+  end
 end
