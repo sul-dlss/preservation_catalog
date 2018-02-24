@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe PreservedCopy, type: :model do
-  let!(:endpoint) { Endpoint.first }
+  let(:endpoint) { Endpoint.find_by(endpoint_name: 'fixture_sr1') }
   let!(:preserved_object) do
     policy_id = PreservationPolicy.default_policy.id
     PreservedObject.create!(druid: 'ab123cd4567', current_version: 1, preservation_policy_id: policy_id)
@@ -314,6 +314,14 @@ RSpec.describe PreservedCopy, type: :model do
     it 'returns no PreservedCopies with timestamps indicating still-valid fixity check' do
       expect(pcs_ordered_by_query).not_to include recently_checked_pc1
       expect(pcs_ordered_by_query).not_to include recently_checked_pc2
+    end
+  end
+
+  context '.by_storage_location' do
+    it 'returns the expected preserved copies' do
+      expect(PreservedCopy.by_storage_location('spec/fixtures/storage_root01/moab_storage_trunk').length).to eq 1
+      expect(PreservedCopy.by_storage_location('spec/fixtures/storage_root02/moab_storage_trunk').length).to eq 0
+      expect(PreservedCopy.by_storage_location('spec/fixtures/empty/moab_storage_trunk').length).to eq 0
     end
   end
 end
