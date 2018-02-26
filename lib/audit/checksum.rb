@@ -18,6 +18,15 @@ class Checksum
   end
 
   def self.validate_disk_all_dirs(last_checked_b4)
+    start_msg = "#{Time.now.utc.iso8601} CV validate_disk_all_dirs starting"
+    puts start_msg
+    Rails.logger.info start_msg
+    Settings.moab.storage_roots.each do |_strg_root_name, strg_root_location|
+      validate_disk(last_checked_b4, "#{strg_root_location}/#{Settings.moab.storage_trunk}")
+    end
+    end_msg = "#{Time.now.utc.iso8601} CV validate_disk_all_dirs ended"
+    puts end_msg
+    Rails.logger.info end_msg
   end
 
   def self.validate_disk_all_dirs_profiled(last_checked_b4)
