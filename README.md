@@ -177,26 +177,27 @@ this will generate a log at, for example,
 #### Single Root
 - Without profiling
 ```ruby
-RAILS_ENV=production bundle exec rake cv_single_endpoint['2018-01-22 22:54:48 UTC',fixture_sr1,'MD5']
+RAILS_ENV=production bundle exec rake cv_single_dir['2018-01-22 22:54:48 UTC','spec/fixtures/storage_root01/moab_storage_trunk']
 ```
 - With profiling
 ```ruby
-RAILS_ENV=production bundle exec rake cv_single_endpoint['2018-01-22 22:54:48 UTC',fixture_sr1,'MD5',profile]
+RAILS_ENV=production bundle exec rake cv_single_dir['2018-01-22 22:54:48 UTC','spec/fixtures/storage_root01/moab_storage_trunk',profile]
 ```
 this will generate a log at, for example,
-```log/profile_cv_single_endpoint2018-01-01T14:25:31-flat.txt```
+```log/profile_cv_single_dir2018-01-01T14:25:31-flat.txt```
 
 #### All Roots
 - Without profiling:
 ```ruby
-RAILS_ENV=production bundle exec rake cv_all_endpoints['2018-01-22 22:54:48 UTC','MD5']
+RAILS_ENV=production bundle exec rake cv_all_dirs['2018-01-22 22:54:48 UTC']
 ```
 - With profiling:
 ```ruby
-RAILS_ENV=production bundle exec rake cv_all_endpoints['2018-01-22 22:54:48 UTC','MD5',profile]
+RAILS_ENV=production bundle exec rake cv_all_dirs['2018-01-22 22:54:48 UTC',profile]
 ```
 this will generate a log at, for example,
-```log/profile_cv_all_endpoints2018-01-01T14:25:31-flat.txt```
+```log/profile_cv_all_dirs2018-01-01T14:25:31-flat.txt```
+
 ## Development
 
 ### Running Tests
