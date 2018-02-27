@@ -166,33 +166,33 @@ task :c2m_check_version_all_dirs, [:last_checked_b4_date, :profile] => [:environ
 end
 
 desc "Fire off checksum validation on a single storage root"
-task :cv_single_dir, [:storage_root, :profile] => [:environment] do |_t, args|
+task :cv_single_endpoint, [:storage_root, :profile] => [:environment] do |_t, args|
   unless args[:profile] == 'profile' || args[:profile].nil?
-    p "usage: rake cv_single_dir[storage_root] || rake cv_single_dir[storage_root,profile]"
+    p "usage: rake cv_single_endpoint[storage_root] || rake cv_single_endpoint[storage_root,profile]"
     exit
   end
   storage_root = args[:storage_root].to_sym
   if args[:profile] == 'profile'
-    puts "When done, check log/profile_cv_single_dir[TIMESTAMP] for profiling details"
-    ChecksumValidator.checksum_validate_disk(storage_root)
+    puts "When done, check log/profile_cv_single_endpoint[TIMESTAMP] for profiling details"
+    Checksum.validate_disk_profiled(storage_root)
   elsif args[:profile].nil?
-    ChecksumValidator.checksum_validate_disk_profiled(storage_root)
+    Checksum.validate_disk(storage_root)
   end
   puts "#{Time.now.utc.iso8601} Checksum Validation on #{storage_root} is done."
   $stdout.flush
 end
 
 desc "Fire off checksum validation on all storage roots"
-task :cv_all_dirs, [:profile] => [:environment] do |_t, args|
+task :cv_all_endpoints, [:profile] => [:environment] do |_t, args|
   unless args[:profile] == 'profile' || args[:profile].nil?
-    p "usage: rake cv_all_dirs || rake cv_all_dirs[profile]"
+    p "usage: rake cv_all_endpoints || rake cv_all_endpoints[profile]"
     exit
   end
   if args[:profile] == 'profile'
-    puts "When done, check log/profile_cv_all_dirs[TIMESTAMP].txt for profiling details"
-    Checksum.checksum_validate_disk_all_dirs
+    puts "When done, check log/profile_cv_all_endpoints[TIMESTAMP].txt for profiling details"
+    Checksum.validate_disk_all_endpoints_profiled
   elsif args[:profile].nil?
-    Checksum.checksum_validate_disk_all_dirs_profiled
+    Checksum.validate_disk_all_endpoints
   end
   puts "#{Time.now.utc.iso8601} Checksum Validation on all storage roots are done."
   $stdout.flush
