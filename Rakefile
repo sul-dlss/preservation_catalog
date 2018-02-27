@@ -4,6 +4,7 @@
 require_relative 'config/application'
 require 'audit/moab_to_catalog.rb'
 require 'audit/catalog_to_moab.rb'
+require 'audit/checksum.rb'
 
 Rails.application.load_tasks
 

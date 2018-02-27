@@ -12,9 +12,9 @@ class ChecksumValidator
   DELETED = 'deleted'.freeze
   FILES = 'files'.freeze
 
-  def initialize(druid, storage_dir)
+  def initialize(druid, endpoint_name)
     @druid = "druid:#{druid}"
-    @endpoint = Endpoint.find_by(storage_location: storage_dir)
+    @endpoint = Endpoint.find_by(endpoint_name: endpoint_name)
     @checksum_results = AuditResults.new(druid, nil, endpoint)
   end
 
