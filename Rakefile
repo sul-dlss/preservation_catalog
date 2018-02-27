@@ -166,35 +166,33 @@ task :c2m_check_version_all_dirs, [:last_checked_b4_date, :profile] => [:environ
 end
 
 desc "Fire off checksum validation on a single storage root"
-task :cv_single_dir, [:last_checked_b4, :storage_dir, :profile] => [:environment] do |_t, args|
+task :cv_single_dir, [:storage_root, :profile] => [:environment] do |_t, args|
   unless args[:profile] == 'profile' || args[:profile].nil?
-    p "usage: rake cv_single_dir[last_checked_b4,storage_dir] || rake cv_single_dir[last_checked_b4,storage_dir,profile]"
+    p "usage: rake cv_single_dir[storage_root] || rake cv_single_dir[storage_root,profile]"
     exit
   end
-  last_checked = args[:last_checked_b4].to_sym
-  storage_dir = args[:storage_dir].to_sym
+  storage_root = args[:storage_root].to_sym
   if args[:profile] == 'profile'
     puts "When done, check log/profile_cv_single_dir[TIMESTAMP] for profiling details"
-    ChecksumValidator.checksum_validate_disk(last_checked, storage_dir)
+    ChecksumValidator.checksum_validate_disk(storage_root)
   elsif args[:profile].nil?
-    ChecksumValidator.checksum_validate_disk_profiled(last_checked, storage_dir)
+    ChecksumValidator.checksum_validate_disk_profiled(storage_root)
   end
-  puts "#{Time.now.utc.iso8601} Checksum Validation on #{storage_dir} is done."
+  puts "#{Time.now.utc.iso8601} Checksum Validation on #{storage_root} is done."
   $stdout.flush
 end
 
 desc "Fire off checksum validation on all storage roots"
-task :cv_all_dirs, [:last_checked_b4, :profile] => [:environment] do |_t, args|
+task :cv_all_dirs, [:profile] => [:environment] do |_t, args|
   unless args[:profile] == 'profile' || args[:profile].nil?
-    p "usage: rake cv_all_dir[last_checked_b4] || rake cv_all_dirs[last_checked_b4,profile]"
+    p "usage: rake cv_all_dirs || rake cv_all_dirs[profile]"
     exit
   end
-  last_checked = args[:last_checked_b4].to_sym
   if args[:profile] == 'profile'
     puts "When done, check log/profile_cv_all_dirs[TIMESTAMP].txt for profiling details"
-    Checksum.checksum_validate_disk_all_dirs(last_checked)
+    Checksum.checksum_validate_disk_all_dirs
   elsif args[:profile].nil?
-    Checksum.checksum_validate_disk_all_dirs_profiled(last_checked)
+    Checksum.checksum_validate_disk_all_dirs_profiled
   end
   puts "#{Time.now.utc.iso8601} Checksum Validation on all storage roots are done."
   $stdout.flush
