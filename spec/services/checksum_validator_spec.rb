@@ -12,7 +12,7 @@ RSpec.describe ChecksumValidator do
       cv = described_class.new(druid, storage_dir)
       expect(cv.druid).to eq "druid:#{druid}"
       expect(cv.endpoint).to eq endpoint
-      expect(cv.handler_results).to be_an_instance_of AuditResults
+      expect(cv.checksum_results).to be_an_instance_of AuditResults
     end
   end
 
@@ -20,20 +20,20 @@ RSpec.describe ChecksumValidator do
     let(:druid) { 'bj102hs9687' }
     let(:cv) { described_class.new(druid, storage_dir) }
 
-    it 'instantiates storage_object from druid and druid_path' do
+    it 'instantiates moab_storage_object from druid and druid_path' do
       expect(Moab::StorageObject).to receive(:new).with(cv.druid, a_string_matching(object_dir)).and_call_original
       cv.validate_manifest_inventories
     end
 
-    it 'calls validate_manifest_inventory for each storage_object_version' do
+    it 'calls validate_manifest_inventory for each moab_version' do
       sov1 = instance_double(Moab::StorageObjectVersion)
       sov2 = instance_double(Moab::StorageObjectVersion)
       sov3 = instance_double(Moab::StorageObjectVersion)
       version_list = [sov1, sov2, sov3]
-      storage_object = instance_double(Moab::StorageObject, version_list: [sov1, sov2, sov3])
-      allow(cv).to receive(:storage_object).and_return(storage_object)
-      version_list.each do |storage_object_version|
-        expect(cv).to receive(:validate_manifest_inventory).with(storage_object_version)
+      moab_storage_object = instance_double(Moab::StorageObject, version_list: [sov1, sov2, sov3])
+      allow(cv).to receive(:moab_storage_object).and_return(moab_storage_object)
+      version_list.each do |moab_version|
+        expect(cv).to receive(:validate_manifest_inventory).with(moab_version)
       end
       cv.validate_manifest_inventories
     end
@@ -45,7 +45,7 @@ RSpec.describe ChecksumValidator do
       cv.validate_manifest_inventories
     end
 
-    context 'modify file signature in manifestInventory.xml' do
+    context 'file checksums in manifestInventory.xml do not match' do
       it 'adds a MOAB_FILE_CHECKSUM_MISMATCH result' do
         druid = 'jj925bx9565'
         object_dir = "#{storage_dir}/#{DruidTools::Druid.new(druid).tree.join('/')}"
@@ -64,7 +64,7 @@ RSpec.describe ChecksumValidator do
       end
     end
 
-    context 'no file element for versionInventory.xml in manifestInventory.xml' do
+    context 'file missing from manifestInventory.xml' do
       it 'adds a FILE_NOT_IN_MANIFEST result' do
         druid = 'bj102hs9687'
         manifest_file_path = "#{object_dir}/v0003/manifests/manifestInventory.xml"
@@ -79,7 +79,7 @@ RSpec.describe ChecksumValidator do
       end
     end
 
-    context 'versionInventory.xml not on disk, but its file element exists in manifestInventory.xml' do
+    context 'file not on disk, but is described in manifestInventory.xml' do
       it 'adds a FILE_NOT_IN_MOAB result' do
         druid = 'bz514sm9647'
         object_dir = "#{storage_dir}/#{DruidTools::Druid.new(druid).tree.join('/')}"
