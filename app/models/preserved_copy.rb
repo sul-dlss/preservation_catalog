@@ -32,12 +32,33 @@ class PreservedCopy < ApplicationRecord
   validates :status, inclusion: { in: statuses.keys }
   validates :version, presence: true
 
-  scope :least_recent_version_audit, lambda { |last_checked_b4_date, storage_dir|
+  scope :by_endpoint_name, lambda { |endpoint_name|
+    joins(:endpoint).where(endpoints: { endpoint_name: endpoint_name })
+  }
+
+  scope :by_storage_location, lambda { |storage_dir|
+    joins(:endpoint).where(endpoints: { storage_location: storage_dir })
+  }
+
+  scope :least_recent_version_audit, lambda { |last_checked_b4_date|
     last_checked_b4_date = normalize_date(last_checked_b4_date)
-    joins(:endpoint)
-      .where(endpoints: { storage_location: storage_dir })
-      .where('last_version_audit IS NULL or last_version_audit < ?', last_checked_b4_date)
+    where('last_version_audit IS NULL or last_version_audit < ?', last_checked_b4_date)
       .order('last_version_audit IS NOT NULL, last_version_audit ASC')
+    # possibly counter-intuitive: the .order sorts so that null values come first (because IS NOT NULL evaluates
+    # to 0 for nulls, which sorts before 1 for non-nulls, which are then sorted by last_version_audit)
+  }
+
+  scope :fixity_check_expired, lambda {
+    joins(:preserved_object)
+      .joins(
+        'INNER JOIN preservation_policies'\
+        ' ON preservation_policies.id = preserved_objects.preservation_policy_id'\
+        ' AND (last_checksum_validation + (fixity_ttl * INTERVAL \'1 SECOND\')) < CURRENT_TIMESTAMP'\
+        ' OR last_checksum_validation IS NULL'
+      )
+      .order('last_checksum_validation IS NOT NULL, last_checksum_validation ASC')
+    # possibly counter-intuitive: the .order sorts so that null values come first (because IS NOT NULL evaluates
+    # to 0 for nulls, which sorts before 1 for non-nulls, which are then sorted by last_version_audit)
   }
 
   def update_audit_timestamps(moab_validated, version_audited)
