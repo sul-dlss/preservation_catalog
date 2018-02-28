@@ -7,6 +7,7 @@
 # inspired by http://www.thegreatcodeadventure.com/smarter-rails-services-with-active-record-modules/
 class PreservedObjectHandler
 
+  require 'active_record_utils.rb'
   require 'audit_results.rb'
 
   include ActiveModel::Validations
@@ -319,20 +320,9 @@ class PreservedObjectHandler
     handler_results.remove_db_updated_results unless transaction_ok
   end
 
-  # performs passed code wrapped in ActiveRecord transaction via yield
-  # @return true if transaction completed without error; false if ActiveRecordError was raised
+  # this wrapper reads a little nicer in this class, since POH is always doing this the same way
   def with_active_record_transaction_and_rescue
-    begin
-      ApplicationRecord.transaction { yield }
-      return true
-    rescue ActiveRecord::RecordNotFound => e
-      handler_results.add_result(AuditResults::DB_OBJ_DOES_NOT_EXIST, e.inspect)
-    rescue ActiveRecord::ActiveRecordError => e
-      handler_results.add_result(
-        AuditResults::DB_UPDATE_FAILED, "#{e.inspect} #{e.message} #{e.backtrace.inspect}"
-      )
-    end
-    false
+    ActiveRecordUtils.with_transaction_and_rescue(handler_results) { yield }
   end
 
   # expects @incoming_version to be numeric
