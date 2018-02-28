@@ -49,7 +49,7 @@ RSpec.describe Checksum do
       mock_profiler = instance_double(Profiler)
       expect(Profiler).to receive(:new).and_return(mock_profiler)
       expect(mock_profiler).to receive(:prof)
-      expect(mock_profiler).to receive(:print_results_flat).with('CV_checksum_validation_on_endpoint')
+      expect(mock_profiler).to receive(:print_results_flat).with('cv_validate_disk')
       subject
     end
 
@@ -84,7 +84,7 @@ RSpec.describe Checksum do
       mock_profiler = instance_double(Profiler)
       expect(Profiler).to receive(:new).and_return(mock_profiler)
       expect(mock_profiler).to receive(:prof)
-      expect(mock_profiler).to receive(:print_results_flat).with('CV_checksum_validation_all_endpoints')
+      expect(mock_profiler).to receive(:print_results_flat).with('cv_validate_disk_all_endpoints')
       subject
     end
     it "calls .validate_disk_all_endpoints" do

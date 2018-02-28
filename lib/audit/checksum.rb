@@ -29,7 +29,7 @@ class Checksum
   def self.validate_disk_profiled(endpoint_name)
     profiler = Profiler.new
     profiler.prof { validate_disk(endpoint_name) }
-    profiler.print_results_flat('CV_checksum_validation_on_endpoint')
+    profiler.print_results_flat('cv_validate_disk')
   end
 
   def self.validate_disk_all_endpoints
@@ -47,7 +47,7 @@ class Checksum
   def self.validate_disk_all_endpoints_profiled
     profiler = Profiler.new
     profiler.prof { validate_disk_all_endpoints }
-    profiler.print_results_flat('CV_checksum_validation_all_endpoints')
+    profiler.print_results_flat('cv_validate_disk_all_endpoints')
   end
 
 end
