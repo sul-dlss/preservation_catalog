@@ -170,18 +170,17 @@ this will generate a log at, for example,
 ### Run Checksum Validation for a single root or for all storage roots
 - Parse all manifestInventory.xml and most recent signatureCatalog.xml for stored checksums and verify against computed checksums.
 
-- To run rake tasks below, give a date, the name of the endpoint (e.g. from settings/development.yml) and an algorithm (md5, sha1, sha256) as arguments.
+- To run rake tasks below, give the name of the endpoint (e.g. from settings/development.yml)
 
-- Note: Must enter date/timestamp (UTC) argument as a string.
 
 #### Single Root
 - Without profiling
 ```ruby
-RAILS_ENV=production bundle exec rake cv_single_endpoint['2018-01-22 22:54:48 UTC',fixture_sr1,'MD5']
+RAILS_ENV=production bundle exec rake cv_single_endpoint[fixture_sr3]
 ```
 - With profiling
 ```ruby
-RAILS_ENV=production bundle exec rake cv_single_endpoint['2018-01-22 22:54:48 UTC',fixture_sr1,'MD5',profile]
+RAILS_ENV=production bundle exec rake cv_single_endpoint[fixture_sr3,profile]
 ```
 this will generate a log at, for example,
 ```log/profile_cv_single_endpoint2018-01-01T14:25:31-flat.txt```
@@ -189,14 +188,15 @@ this will generate a log at, for example,
 #### All Roots
 - Without profiling:
 ```ruby
-RAILS_ENV=production bundle exec rake cv_all_endpoints['2018-01-22 22:54:48 UTC','MD5']
+RAILS_ENV=production bundle exec rake cv_all_endpoints
 ```
 - With profiling:
 ```ruby
-RAILS_ENV=production bundle exec rake cv_all_endpoints['2018-01-22 22:54:48 UTC','MD5',profile]
+RAILS_ENV=production bundle exec rake cv_all_endpoints[profile]
 ```
 this will generate a log at, for example,
-```log/profile_cv_all_endpoints2018-01-01T14:25:31-flat.txt```
+```log/profile_cv_all_dirs2018-01-01T14:25:31-flat.txt```
+
 ## Development
 
 ### Running Tests
