@@ -80,7 +80,7 @@ RSpec.describe Endpoint, type: :model do
       # run it a second time
       Endpoint.seed_storage_root_endpoints_from_config(strg_rt_endpoint_type, default_pres_policies)
       # sort so we can avoid comparing via include, and see that it has only/exactly the four expected elements
-      expect(Endpoint.pluck(:endpoint_name).sort).to eq %w[aws-us-east-2 fixture_empty fixture_sr1 fixture_sr2]
+      expect(Endpoint.pluck(:endpoint_name).sort).to eq %w[aws-us-east-2 fixture_empty fixture_sr1 fixture_sr2 fixture_sr3]
     end
 
     it 'adds new records if there are additions to Settings since the last run' do
@@ -93,7 +93,7 @@ RSpec.describe Endpoint, type: :model do
 
       # run it a second time
       Endpoint.seed_storage_root_endpoints_from_config(strg_rt_endpoint_type, default_pres_policies)
-      expected_ep_names = %w[aws-us-east-2 fixture_empty fixture_sr1 fixture_sr2 fixture_srTest]
+      expected_ep_names = %w[aws-us-east-2 fixture_empty fixture_sr1 fixture_sr2 fixture_sr3 fixture_srTest]
       expect(Endpoint.pluck(:endpoint_name).sort).to eq expected_ep_names
     end
   end

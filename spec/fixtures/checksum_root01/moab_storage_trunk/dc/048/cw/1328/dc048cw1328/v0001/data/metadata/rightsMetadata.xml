@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<rightsMetadata objectId="druid:dc048cw1328">
+  <copyright>
+    <human>(c) Copyright 2011 by Kendall Stanley Fruchey</human>
+  </copyright>
+  <access type="discover">
+    <machine>
+      <world/>
+    </machine>
+  </access>
+  <access type="read">
+    <machine>
+      <group>stanford</group>
+      <embargoReleaseDate>2013-05-31</embargoReleaseDate>
+    </machine>
+  </access>
+  <use>
+    <machine type="creativeCommons">none</machine>
+    <human type="creativeCommons">no Creative Commons (CC) license</human>
+  </use>
+</rightsMetadata>

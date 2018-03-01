@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workflows objectId="druid:bp628nk4868">
+    <workflow repository="dor" objectId="druid:bp628nk4868" id="accessionWF">
+        <process priority="0" lifecycle="accessioned" laneId="default" elapsed="0.0" attempts="0" datetime="2016-08-23T13:50:29-0700" status="waiting" name="end-accession"/>
+        <process priority="0" lifecycle="submitted" laneId="default" elapsed="0.0" attempts="1" datetime="2016-08-23T13:50:29-0700" status="completed" name="start-accession"/>
+        <process priority="0" lifecycle="deposited" laneId="default" elapsed="0.0" attempts="0" datetime="2016-08-23T13:50:29-0700" status="waiting" name="sdr-ingest-received"/>
+        <process priority="0" laneId="default" elapsed="0.0" attempts="0" datetime="2016-08-23T13:50:29-0700" status="waiting" name="reset-workspace"/>
+        <process priority="0" note="sul-robots5-prod.stanford.edu" lifecycle="described" laneId="default" elapsed="1.789" attempts="2" datetime="2016-08-23T13:51:01-0700" status="completed" name="descriptive-metadata"/>
+        <process priority="0" note="sul-robots5-prod.stanford.edu" laneId="default" elapsed="1.941" attempts="2" datetime="2016-08-23T13:51:38-0700" status="completed" name="rights-metadata"/>
+        <process priority="0" note="sul-robots5-prod.stanford.edu" laneId="default" elapsed="2.382" attempts="2" datetime="2016-08-23T13:52:15-0700" status="completed" name="content-metadata"/>
+        <process priority="0" note="sul-robots1-prod.stanford.edu" laneId="default" elapsed="4.955" attempts="2" datetime="2016-08-23T13:54:34-0700" status="completed" name="technical-metadata"/>
+        <process priority="0" note="sul-robots1-prod.stanford.edu" laneId="default" elapsed="13.771" attempts="2" datetime="2016-08-23T13:55:43-0700" status="completed" name="remediate-object"/>
+        <process priority="0" note="sul-robots5-prod.stanford.edu" laneId="default" elapsed="2.94" attempts="2" datetime="2016-08-23T13:56:02-0700" status="completed" name="shelve"/>
+        <process priority="0" note="sul-robots1-prod.stanford.edu" lifecycle="published" laneId="default" elapsed="4.171" attempts="2" datetime="2016-08-23T13:56:44-0700" status="completed" name="publish"/>
+        <process priority="0" note="sul-robots2-prod.stanford.edu" laneId="default" elapsed="3.2" attempts="2" datetime="2016-08-23T13:57:06-0700" status="completed" name="provenance-metadata"/>
+        <process priority="0" laneId="default" elapsed="0.0" attempts="8" datetime="2016-08-25T09:46:32-0700" status="queued" name="sdr-ingest-transfer"/>
+    </workflow>
+    <workflow repository="dor" objectId="druid:bp628nk4868" id="assemblyWF">
+        <process version="1" priority="0" laneId="default" elapsed="0.0" archived="true" attempts="1" datetime="2016-08-23T13:36:57-0700" status="completed" name="start-assembly"/>
+        <process version="1" priority="0" note="sul-robots1-prod.stanford.edu" laneId="default" elapsed="2.406" archived="true" attempts="2" datetime="2016-08-23T13:37:20-0700" status="completed" name="jp2-create"/>
+        <process version="1" priority="0" note="sul-robots1-prod.stanford.edu" laneId="default" elapsed="1.478" archived="true" attempts="2" datetime="2016-08-23T13:47:26-0700" status="completed" name="checksum-compute"/>
+        <process version="1" priority="0" note="sul-robots2-prod.stanford.edu" laneId="default" elapsed="1.983" archived="true" attempts="2" datetime="2016-08-23T13:47:49-0700" status="completed" name="exif-collect"/>
+        <process version="1" priority="0" note="sul-robots2-prod.stanford.edu" laneId="default" elapsed="8.57" archived="true" attempts="2" datetime="2016-08-23T13:50:29-0700" status="completed" name="accessioning-initiate"/>
+    </workflow>
+    <workflow repository="dor" objectId="druid:bp628nk4868" id="eemsAccessionWF">
+        <process version="1" priority="0" lifecycle="registered" laneId="default" elapsed="0.0" archived="true" attempts="1" datetime="2011-03-30T10:22:54-0700" status="completed" name="register-object"/>
+        <process version="1" priority="0" lifecycle="accessioned" laneId="default" elapsed="0.0" archived="true" attempts="0" datetime="2011-03-30T10:22:54-0700" status="skipped" name="cleanup"/>
+        <process version="1" priority="0" laneId="default" elapsed="0.0" archived="true" attempts="0" datetime="2011-03-30T10:22:54-0700" status="skipped" name="sdr-ingest-transfer"/>
+        <process version="1" priority="0" laneId="default" elapsed="0.0" archived="true" attempts="0" datetime="2011-03-30T10:22:54-0700" status="skipped" name="sdr-ingest-deposit"/>
+        <process version="1" priority="0" laneId="default" elapsed="0.0" archived="true" attempts="0" datetime="2011-03-30T10:22:54-0700" status="skipped" name="sdr-ingest-archive"/>
+        <process version="1" priority="0" laneId="default" elapsed="0.0" archived="true" attempts="1" datetime="2011-03-30T10:22:58-0700" status="completed" name="submit-tech-services"/>
+        <process version="1" priority="0" laneId="default" elapsed="1.316" archived="true" attempts="1" datetime="2011-03-31T17:30:23-0700" status="completed" name="eems-transfer"/>
+        <process version="1" priority="0" laneId="default" elapsed="1.0" archived="true" attempts="1" datetime="2011-03-31T17:30:46-0700" status="completed" name="submit-marc"/>
+        <process version="1" priority="0" laneId="default" elapsed="1.502" archived="true" attempts="26" datetime="2011-04-01T06:00:41-0700" status="completed" name="check-marc"/>
+        <process version="1" priority="0" laneId="default" elapsed="0.643" archived="true" attempts="983" datetime="2011-04-29T09:30:18-0700" status="completed" name="catalog-status"/>
+        <process version="1" priority="0" lifecycle="described" laneId="default" elapsed="1.757" archived="true" attempts="1" datetime="2011-04-29T09:31:11-0700" status="completed" name="descriptive-metadata"/>
+        <process version="1" priority="0" laneId="default" elapsed="1.003" archived="true" attempts="1" datetime="2011-04-29T09:31:14-0700" status="completed" name="other-metadata"/>
+        <process version="1" priority="0" lifecycle="published" laneId="default" elapsed="4.79" archived="true" attempts="1" datetime="2011-04-29T09:31:24-0700" status="completed" name="shelve"/>
+    </workflow>
+</workflows>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fileInventory type="additions" objectId="druid:bp628nk4868" versionId="1" inventoryDatetime="2016-08-25T16:48:10Z" fileCount="11" byteCount="436830" blockCount="433">
+  <fileGroup groupId="content" dataSource="" fileCount="1" byteCount="398963" blockCount="390">
+    <file>
+      <fileSignature size="398963" md5="5569a21de739fc9783b8ccbcdb80c9d6" sha1="a6f05879e34592af473cc84dff60b9acd72b1a0c" sha256="3d97edf024636f7ab18a7a9b58764ddeb10b07cad5de12b4c43b3306ca48e93e"/>
+      <fileInstance path="geocodinginlawenforcementfinalreport.pdf" datetime=""/>
+    </file>
+  </fileGroup>
+  <fileGroup groupId="metadata" dataSource="" fileCount="10" byteCount="37867" blockCount="43">
+    <file>
+      <fileSignature size="693" md5="411136ab8edf23af845d7065b2be1972" sha1="72f7b1c7ae52900b72630162feacc189d02317bb" sha256="c438f381a681c62e14febd7eab7c463a4222e23229c12d3d011759c12a7f1232"/>
+      <fileInstance path="contentMetadata.xml" datetime="2016-08-25T16:48:09Z"/>
+    </file>
+    <file>
+      <fileSignature size="5131" md5="1b18b080d0672bf64188315074d99fec" sha1="732b087da04f02c487a79cee94e4a04fde75bb33" sha256="a9077f7915c455da5c195f8c6db6ab1dcf5880bb787e82843798f0def57917b4"/>
+      <fileInstance path="descMetadata.xml" datetime="2016-08-25T16:48:08Z"/>
+    </file>
+    <file>
+      <fileSignature size="684" md5="242b0e55f0b37aa75962757710f27529" sha1="9519793f272a01be7c132122b759d0399f55f0bb" sha256="85bb14d0c4894341358796a774b0b08cdc7a8a19ee07d9113a7463ad476569d2"/>
+      <fileInstance path="events.xml" datetime="2016-08-25T16:48:09Z"/>
+    </file>
+    <file>
+      <fileSignature size="382" md5="8bb1c25cec8488500fefc50729106826" sha1="29903027291993ac5b97c9dd16755c53d9e9b010" sha256="5b18ce91120f293ce3605fc7c61625b43a109a34cced47ba32d8dc1433c66ac6"/>
+      <fileInstance path="identityMetadata.xml" datetime="2016-08-25T16:48:08Z"/>
+    </file>
+    <file>
+      <fileSignature size="263" md5="1e0f48b48d5aceb4b93a70fac67f96b5" sha1="fab5e1662beb4960ab84405ef5feb2a4ea3d6ef6" sha256="9de2493e3ad5236dad9fb8142da3545ba846892d630a77d7bfa50aa4b93b64d6"/>
+      <fileInstance path="provenanceMetadata.xml" datetime="2016-08-25T16:48:09Z"/>
+    </file>
+    <file>
+      <fileSignature size="602" md5="441b312c8ebdae32a414bdebbc7684eb" sha1="ebfe75d4cfa4a97a492d826f15dbbf55a4b309c3" sha256="71125bafe5df644820e18886e82cef053f29c708a68187b8300ebb1d40053162"/>
+      <fileInstance path="relationshipMetadata.xml" datetime="2016-08-25T16:48:09Z"/>
+    </file>
+    <file>
+      <fileSignature size="284" md5="e60c10a9d9191d8dd0b090a45d25a9de" sha1="4f2e8c96a843cfff8776e1e9a3951012ac0442e6" sha256="2d9b9d2fae9592652ba458a9dd8f4b27a97e73f458746293f7e796eb5a0fa799"/>
+      <fileInstance path="rightsMetadata.xml" datetime="2016-08-25T16:48:08Z"/>
+    </file>
+    <file>
+      <fileSignature size="23365" md5="dceb010ece8e83b2be65518166898646" sha1="39c509b9cb8a22ff5c57b07b913ca69b3025d611" sha256="59bca6fa376bcd9ab6f8923814cf6da319340ae0bd0798139f4a48b111d2c66d"/>
+      <fileInstance path="technicalMetadata.xml" datetime="2016-08-25T16:48:09Z"/>
+    </file>
+    <file>
+      <fileSignature size="134" md5="e3a45897a5281078d80475451c5b75d6" sha1="22d2ff4c1895cf24dd83a27ded81b7aa6b5302de" sha256="293ec82d15d0d59b740cf518b3592b74fb9dd0aa689b7ac93d9262fd1f8d35f4"/>
+      <fileInstance path="versionMetadata.xml" datetime="2016-08-25T16:48:10Z"/>
+    </file>
+    <file>
+      <fileSignature size="6329" md5="8abc6496e04412591de630213690c6ce" sha1="312be0184b1978edb2800580a78713a54c754670" sha256="ee57e19a74cae5f6e12cd6a1461eeda4e68484831d642933ea1f0405d1cd015c"/>
+      <fileInstance path="workflows.xml" datetime="2016-08-25T16:48:10Z"/>
+    </file>
+  </fileGroup>
+</fileInventory>

@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<contentMetadata type="file" objectId="druid:dc048cw1328">
+  <resource type="main-original" data="content" id="main">
+    <attr name="label">Body of dissertation (as submitted)</attr>
+    <file deliver="no" preserve="yes" size="2511893" mimetype="application/pdf" id="Dissertation.pdf" shelve="yes"><checksum type="md5">a95d26f93e2849c0c7a566929e8b62d1</checksum><checksum type="sha1">a95216ec255202f1c5ff24f68d85e0a83406423f</checksum></file>
+  </resource>
+  <resource type="main-augmented" objectId="druid:pb089vk0050" data="content" id="main">
+    <attr name="label">Body of dissertation</attr>
+    <file deliver="yes" preserve="yes" size="2508105" mimetype="application/pdf" id="Dissertation-augmented.pdf" shelve="yes">
+      <location type="url">https://stacks.stanford.edu/file/druid:dc048cw1328/Dissertation-augmented.pdf</location>
+    <checksum type="md5">3296988d021cc00036e8a8cbec5b5d01</checksum><checksum type="sha1">4c6261488dc2034d0bd4621add1e89cef8b2babf</checksum></file>
+  </resource>
+  <resource type="permissions" objectId="druid:ky170fm1367" data="content" id="permissions">
+    <attr name="label"/>
+    <file deliver="no" preserve="yes" size="55669" mimetype="application/pdf" id="License1.pdf" shelve="yes"><checksum type="md5">0e1ee869e68e30b63b97c934d5709d2b</checksum><checksum type="sha1">bdba5ae22ed15c0aad6cb11bc48871eefb6075f5</checksum></file>
+  </resource>
+  <resource type="permissions" objectId="druid:kh021gz3200" data="content" id="permissions">
+    <attr name="label"/>
+    <file deliver="no" preserve="yes" size="37050" mimetype="application/pdf" id="License2.pdf" shelve="yes"><checksum type="md5">ca48afc243c60e6089deda1429d2c030</checksum><checksum type="sha1">20541783d66c094dded7baab6ef04c1a6da1071b</checksum></file>
+  </resource>
+</contentMetadata>
