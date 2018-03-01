@@ -3,12 +3,23 @@ require 'profiler.rb'
 # Checksum validator code
 class Checksum
 
-  # FIXME: remove rubocop exception once we start filling these methods in
-  # rubocop:disable Lint/UnusedMethodArgument
-  # rubocop:disable Style/EmptyMethod:
-  # TODO: implement this;  we begin with a placeholder
-
-  def self.validate_disk(endpoint_name)
+  def self.validate_disk(endpoint_name, limit=Settings.c2m_sql_limit)
+    start_msg = "#{Time.now.utc.iso8601} CV validate_disk starting for #{endpoint_name}"
+    puts start_msg
+    Rails.logger.info start_msg
+    all_processable_copies = PreservedCopy.by_endpoint_name(endpoint_name).fixity_check_expired
+    num_to_process = all_processable_copies.count
+    while num_to_process > 0
+      pcs = all_processable_copies.limit(limit)
+      pcs.each do |pc|
+        cv = ChecksumValidator.new(pc, endpoint_name)
+        cv.validate_checksum
+      end
+      num_to_process -= limit
+    end
+    end_msg = "#{Time.now.utc.iso8601} CV validate_disk ended for #{endpoint_name}"
+    puts end_msg
+    Rails.logger.info end_msg
   end
 
   def self.validate_disk_profiled(endpoint_name)

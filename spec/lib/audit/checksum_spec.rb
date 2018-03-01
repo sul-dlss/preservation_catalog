@@ -1,14 +1,48 @@
 require 'rails_helper'
 require_relative "../../../lib/audit/checksum.rb"
+require_relative '../../load_fixtures_helper.rb'
+
 # FIXME: remove this rubocop once we start writing tests
 # TODO: implement this;  we begin with a placeholder
 
 RSpec.describe Checksum do
-  let(:endpoint_name) { 'fixture_sr3' }
+  let(:endpoint_name) { 'fixture_sr1' }
+  let(:limit) { Settings.c2m_sql_limit }
 
-  describe ".validate_disk" do
-    described_class.validate_disk('fixture_sr3')
-    skip 'we should figure out what they are and test them'
+  context '.validate_disk' do
+    include_context 'fixture moabs in db'
+    let(:subject) { described_class.validate_disk(endpoint_name, limit) }
+
+    context 'when there are PreservedCopies to check' do
+      let(:cv_mock) { instance_double(ChecksumValidator) }
+
+      it 'creates an instance and calls #validate_checksum for every result when results are in a single batch' do
+        allow(ChecksumValidator).to receive(:new).and_return(cv_mock)
+        expect(cv_mock).to receive(:validate_checksum).exactly(3).times
+        described_class.validate_disk(endpoint_name, limit)
+      end
+
+      it 'creates an instance and calls #validate_checksum on everything in batches' do
+        pcs_from_scope = PreservedCopy.by_endpoint_name(endpoint_name).fixity_check_expired
+        cv_list = pcs_from_scope.map do |pc|
+          ChecksumValidator.new(pc, endpoint_name)
+        end
+        cv_list.each do |cv|
+          allow(ChecksumValidator).to receive(:new).with(cv.preserved_copy, endpoint_name).and_return(cv)
+          expect(cv).to receive(:validate_checksum).exactly(1).times.and_call_original
+        end
+        described_class.validate_disk(endpoint_name, 2)
+      end
+    end
+
+    context 'when there are no PreservedCopies to check' do
+      it 'will not create an instance to call validate_manifest_inventories on' do
+        allow(ChecksumValidator).to receive(:new)
+        PreservedCopy.all.update(last_checksum_validation: (Time.now.utc + 2.days))
+        expect(ChecksumValidator).not_to receive(:new)
+        subject
+      end
+    end
   end
 
   describe ".validate_disk_profiled" do
