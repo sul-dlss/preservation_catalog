@@ -26,6 +26,7 @@ class AuditResults
   PC_PO_VERSION_MISMATCH = :pc_po_version_mismatch
   MOAB_NOT_FOUND = :moab_not_found
   MOAB_FILE_CHECKSUM_MISMATCH = :moab_file_checksum_mismatch
+  MOAB_CHECKSUM_VALID = :moab_checksum_valid
   FILE_NOT_IN_MOAB = :file_not_in_moab
   FILE_NOT_IN_MANIFEST = :file_not_in_manifest
   MANIFEST_NOT_IN_MOAB = :manifest_not_in_moab
@@ -46,6 +47,7 @@ class AuditResults
     PC_PO_VERSION_MISMATCH => "PreservedCopy online Moab version %{pc_version} does not match PreservedObject current_version %{po_version}",
     MOAB_NOT_FOUND => "db PreservedCopy (created %{db_created_at}; last updated %{db_updated_at}) exists but Moab not found",
     MOAB_FILE_CHECKSUM_MISMATCH => "The checksums for %{file_path} version: %{version} do not match.",
+    MOAB_CHECKSUM_VALID => "Checksum(s) match",
     FILE_NOT_IN_MOAB => "%{manifest_file_path} refers to file (%{file_path}) not found in Moab",
     FILE_NOT_IN_MANIFEST => "Moab file %{file_path} was not found in Moab manifest %{manifest_file_path}",
     MANIFEST_NOT_IN_MOAB => "%{manifest_file_path} not found in Moab",
@@ -87,6 +89,7 @@ class AuditResults
     when PC_PO_VERSION_MISMATCH then Logger::ERROR
     when MOAB_NOT_FOUND then Logger::ERROR
     when MOAB_FILE_CHECKSUM_MISMATCH then Logger::ERROR
+    when MOAB_CHECKSUM_VALID then Logger::INFO
     when FILE_NOT_IN_MOAB then Logger::ERROR
     when FILE_NOT_IN_MANIFEST then Logger::ERROR
     when MANIFEST_NOT_IN_MOAB then Logger::ERROR

@@ -207,4 +207,8 @@ RSpec.describe ChecksumValidator do
       end
     end
   end
+
+  it 'adds MOAB_CHECKSUM_VALID when checksums are valid' do
+    skip "because we haven't used MOAB_CHECKSUM_VALID anywhere yet"
+  end
 end
