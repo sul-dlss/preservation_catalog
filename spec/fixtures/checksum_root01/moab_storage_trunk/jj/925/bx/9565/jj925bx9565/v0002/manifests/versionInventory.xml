@@ -23,6 +23,7 @@
       <fileSignature size="645" md5="9f896c270d10afefaee9ecb39bc3c36f" sha1="c8c571c4fce8e2ad986b131da0335493f031f818" sha256="d97dba5e2776c18e4eacb04da152e46067cc2f5f8030948dfba3066126052af6"/>
       <fileInstance path="identityMetadata.xml" datetime="2017-06-13T17:21:52Z"/>
     </file>
+    <!-- added 666 to md5 below -->
     <file>
       <fileSignature size="263" md5="6f99cddf196eccaf9ed5f7a890fb7a61666" sha1="cb7c843656ff273a7cbc6b15a716c741015c6c03" sha256="1a14b7d29a2f2a910f0da1e20de12d24569fd00a3fe828ff0e7fe0f817364ff6"/>
       <fileInstance path="provenanceMetadata.xml" datetime="2017-06-13T17:21:52Z"/>

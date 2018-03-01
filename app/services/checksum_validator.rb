@@ -59,31 +59,31 @@ class ChecksumValidator
 
   def add_cv_result_for_modified_xml(subentity)
     subentity.details.dig(GROUP_DIFF, MANIFESTS, SUBSETS, MODIFIED, FILES).each_value do |details|
-      mismatch_error_results = {
+      mismatch_error_data = {
         file_path: "#{subentity.details['other']}/#{details['basis_path']}",
         version: subentity.details['basis']
       }
-      checksum_results.add_result(AuditResults::MOAB_FILE_CHECKSUM_MISMATCH, mismatch_error_results)
+      checksum_results.add_result(AuditResults::MOAB_FILE_CHECKSUM_MISMATCH, mismatch_error_data)
     end
   end
 
   def add_cv_result_for_additions_in_xml(subentity)
     subentity.details.dig(GROUP_DIFF, MANIFESTS, SUBSETS, ADDED, FILES).each_value do |details|
-      absent_from_manifest_results = {
+      absent_from_manifest_data = {
         file_path: "#{subentity.details['other']}/#{details['other_path']}",
         manifest_file_path: "#{subentity.details['other']}/#{MANIFESTS_XML}"
       }
-      checksum_results.add_result(AuditResults::FILE_NOT_IN_MANIFEST, absent_from_manifest_results)
+      checksum_results.add_result(AuditResults::FILE_NOT_IN_MANIFEST, absent_from_manifest_data)
     end
   end
 
   def add_cv_result_for_deletions_in_xml(subentity)
     subentity.details.dig(GROUP_DIFF, MANIFESTS, SUBSETS, DELETED, FILES).each_value do |details|
-      absent_from_moab_results = {
+      absent_from_moab_data = {
         manifest_file_path: "#{subentity.details['other']}/#{MANIFESTS_XML}",
         file_path: "#{subentity.details['other']}/#{details['basis_path']}"
       }
-      checksum_results.add_result(AuditResults::FILE_NOT_IN_MOAB, absent_from_moab_results)
+      checksum_results.add_result(AuditResults::FILE_NOT_IN_MOAB, absent_from_moab_data)
     end
   end
 

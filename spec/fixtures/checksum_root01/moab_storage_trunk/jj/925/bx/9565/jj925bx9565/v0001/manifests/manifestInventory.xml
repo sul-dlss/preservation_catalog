@@ -10,6 +10,7 @@
       <fileInstance path="signatureCatalog.xml" datetime="2017-05-15T20:40:02Z"/>
     </file>
     <file>
+      <!-- added 666 to the end of md5 below -->
       <fileSignature size="3455" md5="00f520cd27a7a92e99999942e1d6ecbc666" sha1="0de62c5a81a87b4483803a0300894221f1a22bcd" sha256="d6fb049445b6f4b4f95fdba4e30c9a33ae76aa35d004e355f9f7878f43f4a547"/>
       <fileInstance path="versionAdditions.xml" datetime="2017-05-15T20:37:51Z"/>
     </file>
