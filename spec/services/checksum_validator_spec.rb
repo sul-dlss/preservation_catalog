@@ -208,7 +208,19 @@ RSpec.describe ChecksumValidator do
     end
   end
 
-  it 'adds MOAB_CHECKSUM_VALID when checksums are valid' do
-    skip "because we haven't used MOAB_CHECKSUM_VALID anywhere yet"
+  context '#validate_checksum' do
+    let(:druid) { 'bj102hs9687' }
+    let(:cv) { described_class.new(druid, 'fixture_sr1') }
+
+    it 'returns a positive result for a druid that passes validation' do
+      cv.validate_checksum
+      expect(cv.checksum_results.result_array.first).to have_key(:moab_checksum_valid)
+    end
+
+    it 'returns error codes for a druid that fails validation' do
+      cv = described_class.new(druid, endpoint_name)
+      cv.validate_checksum
+      expect(cv.checksum_results.result_array.first).to have_key(:file_not_in_manifest)
+    end
   end
 end
