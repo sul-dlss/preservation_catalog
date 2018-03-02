@@ -59,6 +59,7 @@ Lint/RescueWithoutErrorClass:
 
 Metrics/AbcSize:
   Exclude:
+    - 'app/services/checksum_validator.rb' # methods still readable; shameless green
     - 'app/services/preserved_object_handler.rb' # methods still readable; shameless green
     - 'app/services/audit_results.rb' # method still readable
     - 'lib/audit/catalog_to_moab.rb' # .check_version_all_dirs is decidedly readable
@@ -76,6 +77,7 @@ Metrics/BlockNesting:
 
 Metrics/ClassLength:
   Exclude:
+    - 'app/services/checksum_validator.rb'
     - 'app/services/preserved_object_handler.rb'
     - 'app/services/audit_results.rb'
     - 'lib/audit/catalog_to_moab.rb'
