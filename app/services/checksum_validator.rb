@@ -28,17 +28,13 @@ class ChecksumValidator
   end
 
   def validate_manifest_inventories
-    moab_storage_object.version_list.each do |moab_version|
-      validate_manifest_inventory(moab_version)
-    end
+    moab_storage_object.version_list.each { |moab_version| validate_manifest_inventory(moab_version) }
     checksum_results.report_results
   end
 
   def validate_signature_catalog # against data_content_files
     begin
-      latest_signature_catalog_entries.each do |signature_catalog_entry|
-        validate_signature_catalog_entry(signature_catalog_entry)
-      end
+      latest_signature_catalog_entries.each { |entry| validate_signature_catalog_entry(entry) }
     rescue Errno::ENOENT
       checksum_results.add_result(AuditResults::MANIFEST_NOT_IN_MOAB, manifest_file_path: latest_signature_catalog_path)
     rescue Nokogiri::XML::SyntaxError
