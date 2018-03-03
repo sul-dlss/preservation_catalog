@@ -208,19 +208,20 @@ RSpec.describe ChecksumValidator do
     end
   end
 
-  context '#validate_checksum' do
-    let(:druid) { 'bj102hs9687' }
-    let(:cv) { described_class.new(druid, 'fixture_sr1') }
-
-    it 'returns a positive result for a druid that passes validation' do
-      cv.validate_checksum
-      expect(cv.checksum_results.result_array.first).to have_key(:moab_checksum_valid)
-    end
-
-    it 'returns error codes for a druid that fails validation' do
-      cv = described_class.new(druid, endpoint_name)
-      cv.validate_checksum
-      expect(cv.checksum_results.result_array.first).to have_key(:file_not_in_manifest)
+  context '#validate_data_content_files_against_signature_catalog' do
+    context 'file is on disk, but not present in signatureCatalog.xml' do
+      it 'adds a FILE_NOT_IN_MANIFEST error' do
+        druid = 'zz555zz5555'
+        file_path = 'spec/fixtures/checksum_root01/moab_storage_trunk/zz/555/zz/5555/zz555zz5555/v0001/data/content/not_in_sigcat.txt'
+        manifest_file_path = 'spec/fixtures/checksum_root01/moab_storage_trunk/zz/555/zz/5555/zz555zz5555/v0002/manifests/signatureCatalog.xml'
+        results = instance_double(AuditResults, report_results: nil, check_name: nil)
+        allow(AuditResults).to receive(:new).and_return(results)
+        cv = described_class.new(druid, endpoint_name)
+        expect(results).to receive(:add_result).with(
+          AuditResults::FILE_NOT_IN_MANIFEST, file_path: file_path, manifest_file_path: manifest_file_path
+        )
+        cv.validate_data_content_files_against_signature_catalog
+      end
     end
   end
 end
