@@ -30,26 +30,32 @@ class ChecksumValidator
   end
 
   def validate_manifest_inventories
-    moab_storage_object.version_list.each do |moab_version|
-      validate_manifest_inventory(moab_version)
-    end
+    moab_storage_object.version_list.each { |moab_version| validate_manifest_inventory(moab_version) }
     checksum_results.report_results
   end
 
   def validate_signature_catalog
+    flag_unexpected_data_files
+    validate_signature_catalog_listing
+  end
+
+  private
+
+  def validate_signature_catalog_listing
     begin
-      latest_signature_catalog_entries.each do |signature_catalog_entry|
-        validate_signature_catalog_entry(signature_catalog_entry)
-      end
+      latest_signature_catalog_entries.each { |entry| validate_signature_catalog_entry(entry) }
     rescue Errno::ENOENT
-      checksum_results.add_result(AuditResults::MANIFEST_NOT_IN_MOAB, manifest_file_path: latest_signature_catalog_path)
+      checksum_results.add_result(AuditResults::SIGNATURE_CATALOG_NOT_IN_MOAB, signature_catalog_path: latest_signature_catalog_path)
     rescue Nokogiri::XML::SyntaxError
       checksum_results.add_result(AuditResults::INVALID_MANIFEST, manifest_file_path: latest_signature_catalog_path)
     end
     checksum_results.report_results
   end
 
-  private
+  def flag_unexpected_data_files
+    data_files.each { |file| validate_against_signature_catalog(file) }
+    checksum_results.report_results
+  end
 
   # This method adds to the AuditResults object for any errors in checksum validation it encounters.
   def validate_manifest_inventory(moab_version)
@@ -108,14 +114,13 @@ class ChecksumValidator
   end
 
   def validate_signature_catalog_entry(entry)
-    calculated_signature = Moab::FileSignature.new.signature_from_file(signature_catalog_entry_path(entry))
-    unless entry.signature.eql?(calculated_signature)
-      mismatch_error_data = { file_path: signature_catalog_entry_path(entry).to_s, version: entry.version_id }
+    unless entry.signature.eql?(calculated_signature(signature_catalog_entry_path(entry)))
+      mismatch_error_data = { file_path: signature_catalog_entry_path(entry), version: entry.version_id }
       checksum_results.add_result(AuditResults::MOAB_FILE_CHECKSUM_MISMATCH, mismatch_error_data)
     end
   rescue Errno::ENOENT
     absent_from_moab_data = { manifest_file_path: latest_signature_catalog_path,
-                              file_path: signature_catalog_entry_path(entry).to_s }
+                              file_path: signature_catalog_entry_path(entry) }
     checksum_results.add_result(AuditResults::FILE_NOT_IN_MOAB, absent_from_moab_data)
   end
 
@@ -128,7 +133,7 @@ class ChecksumValidator
   end
 
   def signature_catalog_entry_path(entry)
-    Pathname("#{druid_path}/#{entry.storage_path}")
+    "#{druid_path}/#{entry.storage_path}"
   end
 
   def latest_signature_catalog_path
@@ -139,7 +144,41 @@ class ChecksumValidator
     latest_moab_version.signature_catalog.entries
   end
 
+  def paths_from_signature_catalog
+    @paths_from_signature_catalog ||= latest_signature_catalog_entries.map { |entry| signature_catalog_entry_path(entry) }
+  end
+
   def latest_moab_version
     moab_storage_object.version_list.last
+  end
+
+  def validate_against_signature_catalog(data_file)
+    absent_from_signature_catalog_data = { file_path: data_file, signature_catalog_path: latest_signature_catalog_path }
+    checksum_results.add_result(AuditResults::FILE_NOT_IN_SIGNATURE_CATALOG, absent_from_signature_catalog_data) unless signature_catalog_has_file?(data_file)
+  end
+
+  def signature_catalog_has_file?(file)
+    paths_from_signature_catalog.any? { |entry| entry == file }
+  end
+
+  def data_files
+    files = []
+    existing_data_dirs.each do |data_content_dir|
+      Find.find(data_content_dir) do |path|
+        files << path unless FileTest.directory?(path)
+      end
+    end
+    files
+  end
+
+  def existing_data_dirs
+    possible_data_content_dirs = moab_storage_object.versions.map { |sov| sov.file_category_pathname('content') }
+    possible_data_metadata_dirs = moab_storage_object.versions.map { |sov| sov.file_category_pathname('metadata') }
+    possible_data_dirs = possible_data_content_dirs + possible_data_metadata_dirs
+    possible_data_dirs.select(&:exist?).map(&:to_s)
+  end
+
+  def calculated_signature(file)
+    Moab::FileSignature.new.signature_from_file(Pathname(file))
   end
 end
