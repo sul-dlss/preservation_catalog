@@ -112,13 +112,13 @@ class ChecksumValidator
   end
 
   def validate_signature_catalog_entry(entry)
-    unless entry.signature.eql?(calculated_signature(signature_catalog_entry_path(entry).to_s))
-      mismatch_error_data = { file_path: signature_catalog_entry_path(entry).to_s, version: entry.version_id }
+    unless entry.signature.eql?(calculated_signature(signature_catalog_entry_path(entry)))
+      mismatch_error_data = { file_path: signature_catalog_entry_path(entry), version: entry.version_id }
       checksum_results.add_result(AuditResults::MOAB_FILE_CHECKSUM_MISMATCH, mismatch_error_data)
     end
   rescue Errno::ENOENT
     absent_from_moab_data = { manifest_file_path: latest_signature_catalog_path,
-                              file_path: signature_catalog_entry_path(entry).to_s }
+                              file_path: signature_catalog_entry_path(entry) }
     checksum_results.add_result(AuditResults::FILE_NOT_IN_MOAB, absent_from_moab_data)
   end
 
@@ -131,7 +131,7 @@ class ChecksumValidator
   end
 
   def signature_catalog_entry_path(entry)
-    Pathname("#{druid_path}/#{entry.storage_path}")
+    "#{druid_path}/#{entry.storage_path}"
   end
 
   def latest_signature_catalog_path
