@@ -112,8 +112,7 @@ class ChecksumValidator
   end
 
   def validate_signature_catalog_entry(entry)
-    calculated_signature = Moab::FileSignature.new.signature_from_file(signature_catalog_entry_path(entry))
-    unless entry.signature.eql?(calculated_signature)
+    unless entry.signature.eql?(calculated_signature(signature_catalog_entry_path(entry).to_s))
       mismatch_error_data = { file_path: signature_catalog_entry_path(entry).to_s, version: entry.version_id }
       checksum_results.add_result(AuditResults::MOAB_FILE_CHECKSUM_MISMATCH, mismatch_error_data)
     end
@@ -149,9 +148,7 @@ class ChecksumValidator
 
   def validate_against_signature_catalog(data_content_file)
     absent_from_manifest_data = { file_path: data_content_file, manifest_file_path: latest_signature_catalog_path }
-    # TODO: extract method to calculate a signature from a pathname, see validate_signature_catalog_entry
-    calculated_signature = Moab::FileSignature.new.signature_from_file(Pathname(data_content_file))
-    file_in_manifest = latest_signature_catalog_entries.any? { |entry| entry.signature.eql?(calculated_signature) }
+    file_in_manifest = latest_signature_catalog_entries.any? { |entry| entry.signature.eql?(calculated_signature(data_content_file)) }
     checksum_results.add_result(AuditResults::FILE_NOT_IN_MANIFEST, absent_from_manifest_data) unless file_in_manifest
   end
 
@@ -180,5 +177,9 @@ class ChecksumValidator
   def existing_data_content_dirs
     possible_dirs = moab_storage_object.versions.map { |sov| sov.file_category_pathname('content') }
     possible_dirs.select(&:exist?).map(&:to_s)
+  end
+
+  def calculated_signature(file)
+    Moab::FileSignature.new.signature_from_file(Pathname(file))
   end
 end
