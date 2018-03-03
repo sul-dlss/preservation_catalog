@@ -48,9 +48,8 @@ class ChecksumValidator
   end
 
   def validate_data_content_files_against_signature_catalog
-    data_content_files.each do |data_content_file|
-      validate_against_signature_catalog(data_content_file)
-    end
+    data_content_files.each { |file| validate_against_signature_catalog(file) }
+    checksum_results.report_results
   end
 
   private

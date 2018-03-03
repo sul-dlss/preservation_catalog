@@ -209,6 +209,26 @@ RSpec.describe ChecksumValidator do
   end
 
   context '#validate_data_content_files_against_signature_catalog' do
+    let(:druid) { 'bj102hs9687' }
+    let(:cv) { described_class.new(druid, endpoint_name) }
+
+    it 'calls validate_against_signature_catalog on each of the data_content_files' do
+      files = ['spec/fixtures/storage_root01/moab_storage_trunk/bj/102/hs/9687/bj102hs9687/v0001/data/content/eric-smith-dissertation-augmented.pdf',
+               'spec/fixtures/storage_root01/moab_storage_trunk/bj/102/hs/9687/bj102hs9687/v0001/data/content/eric-smith-dissertation.pdf']
+      expect(cv).to receive(:data_content_files).and_return(files)
+      files.each do |file|
+        expect(cv).to receive(:validate_against_signature_catalog).with(file)
+      end
+      cv.validate_data_content_files_against_signature_catalog
+    end
+
+    it 'calls AuditResults.report_results' do
+      results = instance_double(AuditResults, add_result: nil, :actual_version= => nil, :check_name= => nil)
+      allow(AuditResults).to receive(:new).and_return(results)
+      expect(results).to receive(:report_results)
+      cv.validate_data_content_files_against_signature_catalog
+    end
+
     context 'file is on disk, but not present in signatureCatalog.xml' do
       it 'adds a FILE_NOT_IN_MANIFEST error' do
         druid = 'zz555zz5555'
