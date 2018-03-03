@@ -34,7 +34,7 @@ class ChecksumValidator
     checksum_results.report_results
   end
 
-  def validate_signature_catalog
+  def validate_signature_catalog # against data_content_files
     begin
       latest_signature_catalog_entries.each do |signature_catalog_entry|
         validate_signature_catalog_entry(signature_catalog_entry)
@@ -45,6 +45,12 @@ class ChecksumValidator
       checksum_results.add_result(AuditResults::INVALID_MANIFEST, manifest_file_path: latest_signature_catalog_path)
     end
     checksum_results.report_results
+  end
+
+  def validate_data_content_files_against_signature_catalog
+    data_content_files.each do |data_content_file|
+      validate_against_signature_catalog(data_content_file)
+    end
   end
 
   private
@@ -139,5 +145,37 @@ class ChecksumValidator
 
   def latest_moab_version
     moab_storage_object.version_list.last
+  end
+
+  def validate_against_signature_catalog(data_content_file)
+    # TODO: extract method to calculate a signature from a pathname, see validate_signature_catalog_entry
+    calculated_signature = Moab::FileSignature.new.signature_from_file(Pathname(data_content_file))
+    unless latest_signature_catalog_entries.any? { |entry| entry.signature.eql?(calculated_signature) }
+      absent_from_manifest_data = { file_path: data_content_file, manifest_file_path: latest_signature_catalog_path }
+      checksum_results.add_result(AuditResults::FILE_NOT_IN_MANIFEST, absent_from_manifest_data)
+    end
+  end
+
+  def data_content_files
+    files = []
+    existing_data_content_dirs.each do |data_content_dir|
+      Find.find(data_content_dir) do |path|
+        if FileTest.directory?(path)
+          if File.basename(path)[0] == ?.
+            Find.prune # Don't look any further into this directory.
+          else
+            next
+          end
+        else
+          files << path
+        end
+      end
+    end
+    files
+  end
+
+  def existing_data_content_dirs
+    possible_dirs = moab_storage_object.versions.map { |sov| sov.file_category_pathname('content') }
+    possible_dirs.select { |dir| dir.exist? }.map { |dir| dir.to_s }
   end
 end
