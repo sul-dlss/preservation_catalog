@@ -124,13 +124,13 @@ RSpec.describe ChecksumValidator do
     end
   end
 
-  context '#validate_signature_catalog' do
+  context '#validate_signature_catalog_against_data_content_files' do
     let(:druid) { 'bj102hs9687' }
     let(:cv) { described_class.new(druid, endpoint_name) }
 
     it 'instantiates storage_object from druid and druid_path' do
       expect(Moab::StorageObject).to receive(:new).with(cv.druid, a_string_matching(object_dir)).and_call_original
-      cv.validate_signature_catalog
+      cv.validate_signature_catalog_against_data_content_files
     end
 
     it 'calls validate_signature_catalog_entry for each signatureCatalog entry' do
@@ -142,14 +142,14 @@ RSpec.describe ChecksumValidator do
       entry_list.each do |entry|
         expect(cv).to receive(:validate_signature_catalog_entry).with(entry)
       end
-      cv.validate_signature_catalog
+      cv.validate_signature_catalog_against_data_content_files
     end
 
     it 'calls AuditResults.report_results' do
       results = instance_double(AuditResults, add_result: nil, :actual_version= => nil, :check_name= => nil)
       allow(AuditResults).to receive(:new).and_return(results)
       expect(results).to receive(:report_results)
-      cv.validate_signature_catalog
+      cv.validate_signature_catalog_against_data_content_files
     end
 
     context 'file checksums in singatureCatalog.xml do not match' do
@@ -162,7 +162,7 @@ RSpec.describe ChecksumValidator do
         expect(results).to receive(:add_result).with(
           AuditResults::MOAB_FILE_CHECKSUM_MISMATCH, file_path: file_path, version: 1
         )
-        cv.validate_signature_catalog
+        cv.validate_signature_catalog_against_data_content_files
       end
     end
 
@@ -177,7 +177,7 @@ RSpec.describe ChecksumValidator do
         expect(results).to receive(:add_result).with(
           AuditResults::FILE_NOT_IN_MOAB, manifest_file_path: manifest_file_path, file_path: file_path
         )
-        cv.validate_signature_catalog
+        cv.validate_signature_catalog_against_data_content_files
       end
     end
 
@@ -190,7 +190,7 @@ RSpec.describe ChecksumValidator do
         expect(results).to receive(:add_result).with(
           AuditResults::MANIFEST_NOT_IN_MOAB, manifest_file_path: 'spec/fixtures/checksum_root01/moab_storage_trunk/vv/333/vv/3333/vv333vv3333/v0002/manifests/signatureCatalog.xml'
         )
-        cv.validate_signature_catalog
+        cv.validate_signature_catalog_against_data_content_files
       end
     end
 
@@ -203,7 +203,7 @@ RSpec.describe ChecksumValidator do
         expect(results).to receive(:add_result).with(
           AuditResults::INVALID_MANIFEST, manifest_file_path: 'spec/fixtures/checksum_root01/moab_storage_trunk/xx/444/xx/4444/xx444xx4444/v0001/manifests/signatureCatalog.xml'
         )
-        cv.validate_signature_catalog
+        cv.validate_signature_catalog_against_data_content_files
       end
     end
   end
@@ -242,6 +242,21 @@ RSpec.describe ChecksumValidator do
         )
         cv.validate_data_content_files_against_signature_catalog
       end
+    end
+  end
+
+  context '#validate_signature_catalog' do
+    let(:druid) { 'bj102hs9687' }
+    let(:cv) { described_class.new(druid, endpoint_name) }
+
+    it 'calls validate_signature_catalog_against_data_content_files' do
+      expect(cv).to receive(:validate_signature_catalog_against_data_content_files)
+      cv.validate_signature_catalog
+    end
+
+    it 'calls validate_data_content_files_against_signature_catalog' do
+      expect(cv).to receive(:validate_data_content_files_against_signature_catalog)
+      cv.validate_signature_catalog
     end
   end
 end

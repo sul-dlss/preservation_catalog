@@ -32,7 +32,12 @@ class ChecksumValidator
     checksum_results.report_results
   end
 
-  def validate_signature_catalog # against data_content_files
+  def validate_signature_catalog
+    validate_data_content_files_against_signature_catalog
+    validate_signature_catalog_against_data_content_files
+  end
+
+  def validate_signature_catalog_against_data_content_files
     begin
       latest_signature_catalog_entries.each { |entry| validate_signature_catalog_entry(entry) }
     rescue Errno::ENOENT
