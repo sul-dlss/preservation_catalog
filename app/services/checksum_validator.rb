@@ -33,11 +33,11 @@ class ChecksumValidator
   end
 
   def validate_signature_catalog
-    validate_data_content_files_against_signature_catalog
-    validate_signature_catalog_against_data_content_files
+    flag_unexpected_data_content_files
+    validate_signature_catalog_listing
   end
 
-  def validate_signature_catalog_against_data_content_files
+  def validate_signature_catalog_listing
     begin
       latest_signature_catalog_entries.each { |entry| validate_signature_catalog_entry(entry) }
     rescue Errno::ENOENT
@@ -48,7 +48,7 @@ class ChecksumValidator
     checksum_results.report_results
   end
 
-  def validate_data_content_files_against_signature_catalog
+  def flag_unexpected_data_content_files
     data_content_files.each { |file| validate_against_signature_catalog(file) }
     checksum_results.report_results
   end
