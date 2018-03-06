@@ -152,27 +152,15 @@ class ChecksumValidator
     checksum_results.add_result(AuditResults::FILE_NOT_IN_MANIFEST, absent_from_manifest_data) unless file_in_manifest
   end
 
-  # This is more or less ripped from the Find module docs.
-  # If the cops don't care about that, I don't care about the cops.
-  # rubocop:disable Style/GuardClause, Style/CharacterLiteral
   def data_content_files
     files = []
     existing_data_content_dirs.each do |data_content_dir|
       Find.find(data_content_dir) do |path|
-        if FileTest.directory?(path)
-          if File.basename(path)[0] == ?.
-            Find.prune # Don't look any further into this directory.
-          else
-            next
-          end
-        else
-          files << path
-        end
+        files << path unless FileTest.directory?(path)
       end
     end
     files
   end
-  # rubocop:enable Style/GuardClause, Style/CharacterLiteral
 
   def existing_data_content_dirs
     possible_dirs = moab_storage_object.versions.map { |sov| sov.file_category_pathname('content') }
