@@ -1,7 +1,7 @@
 # code for validating Moab checksums
 class ChecksumValidator
 
-  attr_reader :checksum_results, :druid, :endpoint
+  attr_reader :checksum_results, :druid, :endpoint, :druid_pre, :preserved_copy
 
   DATA = 'data'.freeze
   MANIFESTS = 'manifests'.freeze
@@ -14,17 +14,19 @@ class ChecksumValidator
   DELETED = 'deleted'.freeze
   FILES = 'files'.freeze
 
-  def initialize(druid, endpoint_name)
-    @druid = "druid:#{druid}"
+  def initialize(preserved_copy, endpoint_name)
+    @preserved_copy = preserved_copy
+    @druid = preserved_copy.preserved_object.druid
     @endpoint = Endpoint.find_by(endpoint_name: endpoint_name)
     @checksum_results = AuditResults.new(druid, nil, endpoint)
+    @druid_pre = "druid:#{druid}"
   end
 
   def validate_checksum
     validate_manifest_inventories
     validate_signature_catalog
+    preserved_copy.update!(last_checksum_validation: Time.current)
     checksum_results.add_result(AuditResults::MOAB_CHECKSUM_VALID) if checksum_results.result_array.empty?
-    checksum_results.result_array
   end
 
   def validate_manifest_inventories
@@ -118,11 +120,11 @@ class ChecksumValidator
   end
 
   def moab_storage_object
-    Moab::StorageObject.new(druid, druid_path)
+    Moab::StorageObject.new(druid_pre, druid_path)
   end
 
   def druid_path
-    @druid_path ||= "#{endpoint.storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}"
+    @druid_path ||= "#{endpoint.storage_location}/#{DruidTools::Druid.new(druid_pre).tree.join('/')}"
   end
 
   def signature_catalog_entry_path(entry)
