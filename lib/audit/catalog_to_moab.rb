@@ -72,36 +72,43 @@ class CatalogToMoab
     end
 
     unless online_moab_found?(druid, storage_dir)
-      update_status(PreservedCopy::ONLINE_MOAB_NOT_FOUND_STATUS)
+      transaction_ok = ActiveRecordUtils.with_transaction_and_rescue(results) do
+        update_status(PreservedCopy::ONLINE_MOAB_NOT_FOUND_STATUS)
+        preserved_copy.save!
+      end
+      results.remove_db_updated_results unless transaction_ok
+
       results.add_result(AuditResults::MOAB_NOT_FOUND,
                          db_created_at: preserved_copy.created_at.iso8601,
                          db_updated_at: preserved_copy.updated_at.iso8601)
       results.report_results
-      preserved_copy.save!
       return
     end
 
     moab_version = moab.current_version_id
     results.actual_version = moab_version
     catalog_version = preserved_copy.version
-    if catalog_version == moab_version
-      set_status_as_seen_on_disk(true) unless preserved_copy.status == PreservedCopy::OK_STATUS
-      results.add_result(AuditResults::VERSION_MATCHES, 'PreservedCopy')
-      results.report_results
-    elsif catalog_version < moab_version
-      set_status_as_seen_on_disk(true)
-      pohandler = PreservedObjectHandler.new(druid, moab_version, moab.size, preserved_copy.endpoint)
-      pohandler.update_version_after_validation # results reported by this call
-    else # catalog_version > moab_version
-      set_status_as_seen_on_disk(false)
-      results.add_result(
-        AuditResults::UNEXPECTED_VERSION, db_obj_name: 'PreservedCopy', db_obj_version: preserved_copy.version
-      )
-      results.report_results
-    end
+    transaction_ok = ActiveRecordUtils.with_transaction_and_rescue(results) do
+      if catalog_version == moab_version
+        set_status_as_seen_on_disk(true) unless preserved_copy.status == PreservedCopy::OK_STATUS
+        results.add_result(AuditResults::VERSION_MATCHES, 'PreservedCopy')
+        results.report_results
+      elsif catalog_version < moab_version
+        set_status_as_seen_on_disk(true)
+        pohandler = PreservedObjectHandler.new(druid, moab_version, moab.size, preserved_copy.endpoint)
+        pohandler.update_version_after_validation # results reported by this call
+      else # catalog_version > moab_version
+        set_status_as_seen_on_disk(false)
+        results.add_result(
+          AuditResults::UNEXPECTED_VERSION, db_obj_name: 'PreservedCopy', db_obj_version: preserved_copy.version
+        )
+        results.report_results
+      end
 
-    preserved_copy.update_audit_timestamps(ran_moab_validation?, true)
-    preserved_copy.save!
+      preserved_copy.update_audit_timestamps(ran_moab_validation?, true)
+      preserved_copy.save!
+    end
+    results.remove_db_updated_results unless transaction_ok
   end
 
   private
