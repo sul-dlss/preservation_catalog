@@ -227,6 +227,7 @@ RSpec.describe ChecksumValidator do
 
   context '#validate_checksum' do
     let(:cv) { described_class.new(pres_copy, endpoint_name) }
+
     context 'passes validation' do
       let(:druid) { 'bj102hs9687' }
       let(:endpoint_name) { 'fixture_sr1' }
