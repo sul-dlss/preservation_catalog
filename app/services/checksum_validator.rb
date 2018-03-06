@@ -148,7 +148,8 @@ class ChecksumValidator
 
   def validate_against_signature_catalog(data_content_file)
     absent_from_manifest_data = { file_path: data_content_file, manifest_file_path: latest_signature_catalog_path }
-    file_in_manifest = latest_signature_catalog_entries.any? { |entry| entry.signature.eql?(calculated_signature(data_content_file)) }
+    paths_from_manifest = latest_signature_catalog_entries.map { |entry| signature_catalog_entry_path(entry) }
+    file_in_manifest = paths_from_manifest.any? { |entry| entry == data_content_file }
     checksum_results.add_result(AuditResults::FILE_NOT_IN_MANIFEST, absent_from_manifest_data) unless file_in_manifest
   end
 
