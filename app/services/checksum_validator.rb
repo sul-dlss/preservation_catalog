@@ -21,7 +21,10 @@ class ChecksumValidator
   end
 
   def validate_checksum
-    # TODO: implement this;  we begin with a placeholder
+    validate_manifest_inventories
+    validate_signature_catalog
+    checksum_results.add_result(AuditResults::MOAB_CHECKSUM_VALID) if checksum_results.result_array.empty?
+    checksum_results.result_array
   end
 
   def validate_manifest_inventories
