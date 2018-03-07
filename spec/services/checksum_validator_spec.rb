@@ -188,7 +188,7 @@ RSpec.describe ChecksumValidator do
         allow(AuditResults).to receive(:new).and_return(results)
         cv = described_class.new(druid, endpoint_name)
         expect(results).to receive(:add_result).with(
-          AuditResults::MANIFEST_NOT_IN_MOAB, manifest_file_path: 'spec/fixtures/checksum_root01/moab_storage_trunk/vv/333/vv/3333/vv333vv3333/v0002/manifests/signatureCatalog.xml'
+          AuditResults::SIGNATURE_CATALOG_NOT_IN_MOAB, signature_catalog_path: 'spec/fixtures/checksum_root01/moab_storage_trunk/vv/333/vv/3333/vv333vv3333/v0002/manifests/signatureCatalog.xml'
         )
         cv.send(:validate_signature_catalog_listing)
       end

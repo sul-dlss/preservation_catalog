@@ -43,7 +43,7 @@ class ChecksumValidator
     begin
       latest_signature_catalog_entries.each { |entry| validate_signature_catalog_entry(entry) }
     rescue Errno::ENOENT
-      checksum_results.add_result(AuditResults::MANIFEST_NOT_IN_MOAB, manifest_file_path: latest_signature_catalog_path)
+      checksum_results.add_result(AuditResults::SIGNATURE_CATALOG_NOT_IN_MOAB, signature_catalog_path: latest_signature_catalog_path)
     rescue Nokogiri::XML::SyntaxError
       checksum_results.add_result(AuditResults::INVALID_MANIFEST, manifest_file_path: latest_signature_catalog_path)
     end
