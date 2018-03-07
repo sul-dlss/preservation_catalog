@@ -29,6 +29,7 @@ class AuditResults
   MOAB_CHECKSUM_VALID = :moab_checksum_valid
   FILE_NOT_IN_MOAB = :file_not_in_moab
   FILE_NOT_IN_MANIFEST = :file_not_in_manifest
+  FILE_NOT_IN_SIGNATURE_CATALOG = :file_not_in_signature_catalog
   MANIFEST_NOT_IN_MOAB = :manifest_not_in_moab
   SIGNATURE_CATALOG_NOT_IN_MOAB = :signature_catalog_not_in_moab
   INVALID_MANIFEST = :invalid_manifest
@@ -51,6 +52,7 @@ class AuditResults
     MOAB_CHECKSUM_VALID => "Checksum(s) match",
     FILE_NOT_IN_MOAB => "%{manifest_file_path} refers to file (%{file_path}) not found in Moab",
     FILE_NOT_IN_MANIFEST => "Moab file %{file_path} was not found in Moab manifest %{manifest_file_path}",
+    FILE_NOT_IN_SIGNATURE_CATALOG => "Moab file %{file_path} was not found in Moab signature catalog %{signature_catalog_path}",
     MANIFEST_NOT_IN_MOAB => "%{manifest_file_path} not found in Moab",
     SIGNATURE_CATALOG_NOT_IN_MOAB => "%{signature_catalog_path} not found in Moab",
     INVALID_MANIFEST => "Unable to parse %{manifest_file_path} in Moab"
@@ -66,6 +68,7 @@ class AuditResults
     MOAB_FILE_CHECKSUM_MISMATCH,
     FILE_NOT_IN_MOAB,
     FILE_NOT_IN_MANIFEST,
+    FILE_NOT_IN_SIGNATURE_CATALOG,
     MANIFEST_NOT_IN_MOAB,
     SIGNATURE_CATALOG_NOT_IN_MOAB,
     INVALID_MANIFEST
@@ -95,6 +98,7 @@ class AuditResults
     when MOAB_CHECKSUM_VALID then Logger::INFO
     when FILE_NOT_IN_MOAB then Logger::ERROR
     when FILE_NOT_IN_MANIFEST then Logger::ERROR
+    when FILE_NOT_IN_SIGNATURE_CATALOG then Logger::ERROR
     when MANIFEST_NOT_IN_MOAB then Logger::ERROR
     when SIGNATURE_CATALOG_NOT_IN_MOAB then Logger::ERROR
     when INVALID_MANIFEST then Logger::ERROR

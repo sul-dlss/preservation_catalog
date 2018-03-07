@@ -142,15 +142,21 @@ class ChecksumValidator
     latest_moab_version.signature_catalog.entries
   end
 
+  def paths_from_signature_catalog
+    @paths_from_signature_catalog ||= latest_signature_catalog_entries.map { |entry| signature_catalog_entry_path(entry) }
+  end
+
   def latest_moab_version
     moab_storage_object.version_list.last
   end
 
-  def validate_against_signature_catalog(data_content_file)
-    absent_from_manifest_data = { file_path: data_content_file, manifest_file_path: latest_signature_catalog_path }
-    paths_from_manifest = latest_signature_catalog_entries.map { |entry| signature_catalog_entry_path(entry) }
-    file_in_manifest = paths_from_manifest.any? { |entry| entry == data_content_file }
-    checksum_results.add_result(AuditResults::FILE_NOT_IN_MANIFEST, absent_from_manifest_data) unless file_in_manifest
+  def validate_against_signature_catalog(data_file)
+    absent_from_signature_catalog_data = { file_path: data_file, signature_catalog_path: latest_signature_catalog_path }
+    checksum_results.add_result(AuditResults::FILE_NOT_IN_SIGNATURE_CATALOG, absent_from_signature_catalog_data) unless signature_catalog_has_file?(data_file)
+  end
+
+  def signature_catalog_has_file?(file)
+    paths_from_signature_catalog.any? { |entry| entry == file }
   end
 
   def data_content_files

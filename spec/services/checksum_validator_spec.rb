@@ -230,15 +230,15 @@ RSpec.describe ChecksumValidator do
     end
 
     context 'file is on disk, but not present in signatureCatalog.xml' do
-      it 'adds a FILE_NOT_IN_MANIFEST error' do
+      it 'adds a FILE_NOT_IN_SIGNATURE_CATALOG error' do
         druid = 'zz555zz5555'
         file_path = 'spec/fixtures/checksum_root01/moab_storage_trunk/zz/555/zz/5555/zz555zz5555/v0001/data/content/not_in_sigcat.txt'
-        manifest_file_path = 'spec/fixtures/checksum_root01/moab_storage_trunk/zz/555/zz/5555/zz555zz5555/v0002/manifests/signatureCatalog.xml'
+        signature_catalog_path = 'spec/fixtures/checksum_root01/moab_storage_trunk/zz/555/zz/5555/zz555zz5555/v0002/manifests/signatureCatalog.xml'
         results = instance_double(AuditResults, report_results: nil, check_name: nil)
         allow(AuditResults).to receive(:new).and_return(results)
         cv = described_class.new(druid, endpoint_name)
         expect(results).to receive(:add_result).with(
-          AuditResults::FILE_NOT_IN_MANIFEST, file_path: file_path, manifest_file_path: manifest_file_path
+          AuditResults::FILE_NOT_IN_SIGNATURE_CATALOG, file_path: file_path, signature_catalog_path: signature_catalog_path
         )
         cv.send(:flag_unexpected_data_files)
       end
