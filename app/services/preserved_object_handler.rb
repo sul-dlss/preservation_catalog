@@ -285,6 +285,10 @@ class PreservedObjectHandler
     end
 
     # TODO: do the check that'd set INVALID_CHECKSUM_STATUS
+    #  and actually, maybe we should either 1) trigger it async, or 2) break out the status
+    #  update, otherwise checksumming could get enclosed in a DB transaction, and that seems
+    #  like a real bad idea, cuz that transaction might be open a looooooong time.
+    # see https://github.com/sul-dlss/preservation_catalog/issues/612
 
     update_status(pres_copy, PreservedCopy::OK_STATUS)
   end
