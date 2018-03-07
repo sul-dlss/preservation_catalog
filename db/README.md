@@ -129,3 +129,21 @@ ORDER BY preserved_copies.status asc, endpoints.storage_location asc
  ["invalid_moab", "/storage_root04/storage_trunk", 127],
  ["invalid_moab", "/storage_root05/storage_trunk", 72]]
 ```
+
+#### view the druids on a given endpoint
+- will return tons of results on prod 
+```ruby
+input> PreservedCopy.joins(:preserved_object, :endpoint).where(endpoints: {endpoint_name: :fixture_sr2}).pluck('preserved_objects.druid')
+```
+```sql
+-- example sql produced by above AR query
+ SELECT preserved_objects.druid
+ FROM "preserved_copies"
+ INNER JOIN "preserved_objects" ON "preserved_objects"."id" = "preserved_copies"."preserved_object_id" 
+ INNER JOIN "endpoints" ON "endpoints"."id" = "preserved_copies"."endpoint_id"
+ WHERE "endpoints"."endpoint_name" = $1  [["endpoint_name", "fixture_sr2"]]
+```
+```ruby
+# example result
+["bp628nk4868", "dc048cw1328", "yy000yy0000"]
+```
