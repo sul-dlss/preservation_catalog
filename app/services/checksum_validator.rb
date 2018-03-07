@@ -51,7 +51,7 @@ class ChecksumValidator
   end
 
   def flag_unexpected_data_files
-    data_content_files.each { |file| validate_against_signature_catalog(file) }
+    data_files.each { |file| validate_against_signature_catalog(file) }
     checksum_results.report_results
   end
 
@@ -159,9 +159,9 @@ class ChecksumValidator
     paths_from_signature_catalog.any? { |entry| entry == file }
   end
 
-  def data_content_files
+  def data_files
     files = []
-    existing_data_content_dirs.each do |data_content_dir|
+    existing_data_dirs.each do |data_content_dir|
       Find.find(data_content_dir) do |path|
         files << path unless FileTest.directory?(path)
       end
@@ -169,9 +169,11 @@ class ChecksumValidator
     files
   end
 
-  def existing_data_content_dirs
-    possible_dirs = moab_storage_object.versions.map { |sov| sov.file_category_pathname('content') }
-    possible_dirs.select(&:exist?).map(&:to_s)
+  def existing_data_dirs
+    possible_data_content_dirs = moab_storage_object.versions.map { |sov| sov.file_category_pathname('content') }
+    possible_data_metadata_dirs = moab_storage_object.versions.map { |sov| sov.file_category_pathname('metadata') }
+    possible_data_dirs = possible_data_content_dirs + possible_data_metadata_dirs
+    possible_data_dirs.select(&:exist?).map(&:to_s)
   end
 
   def calculated_signature(file)

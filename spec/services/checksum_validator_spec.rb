@@ -215,7 +215,7 @@ RSpec.describe ChecksumValidator do
     it 'calls validate_against_signature_catalog on each of the data_content_files' do
       files = ['spec/fixtures/storage_root01/moab_storage_trunk/bj/102/hs/9687/bj102hs9687/v0001/data/content/eric-smith-dissertation-augmented.pdf',
                'spec/fixtures/storage_root01/moab_storage_trunk/bj/102/hs/9687/bj102hs9687/v0001/data/content/eric-smith-dissertation.pdf']
-      expect(cv).to receive(:data_content_files).and_return(files)
+      expect(cv).to receive(:data_files).and_return(files)
       files.each do |file|
         expect(cv).to receive(:validate_against_signature_catalog).with(file)
       end
