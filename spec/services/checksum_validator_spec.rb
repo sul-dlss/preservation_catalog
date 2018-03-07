@@ -208,7 +208,7 @@ RSpec.describe ChecksumValidator do
     end
   end
 
-  context '#flag_unexpected_data_content_files' do
+  context '#flag_unexpected_data_files' do
     let(:druid) { 'bj102hs9687' }
     let(:cv) { described_class.new(druid, endpoint_name) }
 
@@ -219,14 +219,14 @@ RSpec.describe ChecksumValidator do
       files.each do |file|
         expect(cv).to receive(:validate_against_signature_catalog).with(file)
       end
-      cv.send(:flag_unexpected_data_content_files)
+      cv.send(:flag_unexpected_data_files)
     end
 
     it 'calls AuditResults.report_results' do
       results = instance_double(AuditResults, add_result: nil, :actual_version= => nil, :check_name= => nil)
       allow(AuditResults).to receive(:new).and_return(results)
       expect(results).to receive(:report_results)
-      cv.send(:flag_unexpected_data_content_files)
+      cv.send(:flag_unexpected_data_files)
     end
 
     context 'file is on disk, but not present in signatureCatalog.xml' do
@@ -240,7 +240,7 @@ RSpec.describe ChecksumValidator do
         expect(results).to receive(:add_result).with(
           AuditResults::FILE_NOT_IN_MANIFEST, file_path: file_path, manifest_file_path: manifest_file_path
         )
-        cv.send(:flag_unexpected_data_content_files)
+        cv.send(:flag_unexpected_data_files)
       end
     end
   end
@@ -255,7 +255,7 @@ RSpec.describe ChecksumValidator do
     end
 
     it 'calls flag_unexpected_data_content_files' do
-      expect(cv).to receive(:flag_unexpected_data_content_files)
+      expect(cv).to receive(:flag_unexpected_data_files)
       cv.validate_signature_catalog
     end
   end

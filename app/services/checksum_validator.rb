@@ -33,7 +33,7 @@ class ChecksumValidator
   end
 
   def validate_signature_catalog
-    flag_unexpected_data_content_files
+    flag_unexpected_data_files
     validate_signature_catalog_listing
   end
 
@@ -50,7 +50,7 @@ class ChecksumValidator
     checksum_results.report_results
   end
 
-  def flag_unexpected_data_content_files
+  def flag_unexpected_data_files
     data_content_files.each { |file| validate_against_signature_catalog(file) }
     checksum_results.report_results
   end
