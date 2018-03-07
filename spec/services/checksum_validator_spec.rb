@@ -229,11 +229,12 @@ RSpec.describe ChecksumValidator do
       cv.send(:flag_unexpected_data_files)
     end
 
-    context 'files are on disk, in data/content and data/metadata, but not present in signatureCatalog.xml' do
+    context 'files are on disk but not present in signatureCatalog.xml' do
       it 'adds a FILE_NOT_IN_SIGNATURE_CATALOG error' do
         druid = 'zz555zz5555'
         content_file_path = 'spec/fixtures/checksum_root01/moab_storage_trunk/zz/555/zz/5555/zz555zz5555/v0001/data/content/not_in_sigcat.txt'
         metadata_file_path = 'spec/fixtures/checksum_root01/moab_storage_trunk/zz/555/zz/5555/zz555zz5555/v0001/data/metadata/also_not_in_sigcat.txt'
+        nested_file_path = 'spec/fixtures/checksum_root01/moab_storage_trunk/zz/555/zz/5555/zz555zz5555/v0001/data/content/unexpected/another_not_in_sigcat.txt'
         signature_catalog_path = 'spec/fixtures/checksum_root01/moab_storage_trunk/zz/555/zz/5555/zz555zz5555/v0002/manifests/signatureCatalog.xml'
         results = instance_double(AuditResults, report_results: nil, check_name: nil)
         allow(AuditResults).to receive(:new).and_return(results)
@@ -243,6 +244,9 @@ RSpec.describe ChecksumValidator do
         )
         expect(results).to receive(:add_result).with(
           AuditResults::FILE_NOT_IN_SIGNATURE_CATALOG, file_path: metadata_file_path, signature_catalog_path: signature_catalog_path
+        )
+        expect(results).to receive(:add_result).with(
+          AuditResults::FILE_NOT_IN_SIGNATURE_CATALOG, file_path: nested_file_path, signature_catalog_path: signature_catalog_path
         )
         cv.send(:flag_unexpected_data_files)
       end
