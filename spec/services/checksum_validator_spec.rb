@@ -17,9 +17,9 @@ RSpec.describe ChecksumValidator do
     it 'sets attributes' do
       cv = described_class.new(pres_copy, endpoint_name)
       expect(cv.preserved_copy).to eq pres_copy
-      expect(cv.druid).to eq druid
+      expect(cv.bare_druid).to eq druid
       expect(cv.endpoint).to eq endpoint
-      expect(cv.druid_pre).to eq "druid:#{druid}"
+      expect(cv.full_druid).to eq "druid:#{druid}"
       expect(cv.checksum_results).to be_an_instance_of AuditResults
     end
   end
@@ -29,7 +29,7 @@ RSpec.describe ChecksumValidator do
     let(:cv) { described_class.new(pres_copy, endpoint_name) }
 
     it 'instantiates moab_storage_object from druid and druid_path' do
-      expect(Moab::StorageObject).to receive(:new).with(cv.druid_pre, a_string_matching(object_dir)).and_call_original
+      expect(Moab::StorageObject).to receive(:new).with(cv.full_druid, a_string_matching(object_dir)).and_call_original
       cv.validate_manifest_inventories
     end
 
@@ -142,7 +142,7 @@ RSpec.describe ChecksumValidator do
     let(:cv) { described_class.new(pres_copy, endpoint_name) }
 
     it 'instantiates storage_object from druid and druid_path' do
-      expect(Moab::StorageObject).to receive(:new).with(cv.druid_pre, a_string_matching(object_dir)).and_call_original
+      expect(Moab::StorageObject).to receive(:new).with(cv.full_druid, a_string_matching(object_dir)).and_call_original
       cv.validate_signature_catalog
     end
 

@@ -1,7 +1,7 @@
 # code for validating Moab checksums
 class ChecksumValidator
 
-  attr_reader :checksum_results, :druid, :endpoint, :druid_pre, :preserved_copy
+  attr_reader :checksum_results, :endpoint, :full_druid, :preserved_copy, :bare_druid
 
   DATA = 'data'.freeze
   MANIFESTS = 'manifests'.freeze
@@ -16,10 +16,10 @@ class ChecksumValidator
 
   def initialize(preserved_copy, endpoint_name)
     @preserved_copy = preserved_copy
-    @druid = preserved_copy.preserved_object.druid
+    @bare_druid = preserved_copy.preserved_object.druid
     @endpoint = Endpoint.find_by(endpoint_name: endpoint_name)
-    @checksum_results = AuditResults.new(druid, nil, endpoint)
-    @druid_pre = "druid:#{druid}"
+    @checksum_results = AuditResults.new(bare_druid, nil, endpoint)
+    @full_druid = "druid:#{bare_druid}"
   end
 
   def validate_checksum
@@ -120,11 +120,11 @@ class ChecksumValidator
   end
 
   def moab_storage_object
-    Moab::StorageObject.new(druid_pre, druid_path)
+    Moab::StorageObject.new(full_druid, druid_path)
   end
 
   def druid_path
-    @druid_path ||= "#{endpoint.storage_location}/#{DruidTools::Druid.new(druid_pre).tree.join('/')}"
+    @druid_path ||= "#{endpoint.storage_location}/#{DruidTools::Druid.new(full_druid).tree.join('/')}"
   end
 
   def signature_catalog_entry_path(entry)

@@ -2,9 +2,6 @@ require 'rails_helper'
 require_relative "../../../lib/audit/checksum.rb"
 require_relative '../../load_fixtures_helper.rb'
 
-# FIXME: remove this rubocop once we start writing tests
-# TODO: implement this;  we begin with a placeholder
-
 RSpec.describe Checksum do
   let(:endpoint_name) { 'fixture_sr1' }
   let(:limit) { Settings.c2m_sql_limit }

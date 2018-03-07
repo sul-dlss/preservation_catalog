@@ -247,7 +247,6 @@ RSpec.describe MoabToCatalog do
 
     it 'drops PreservedCopies that correspond to the given endpoint' do
       expect(PreservedCopy.count).to eq 15
-      p PreservedObject.all.pluck(:druid).count
       subject
       expect(PreservedCopy.count).to eq 12
     end

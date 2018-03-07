@@ -7,11 +7,15 @@ class Checksum
     start_msg = "#{Time.now.utc.iso8601} CV validate_disk starting for #{endpoint_name}"
     puts start_msg
     Rails.logger.info start_msg
-    all_processable_copies = PreservedCopy.by_endpoint_name(endpoint_name).fixity_check_expired
-    num_to_process = all_processable_copies.count
+
+    # pcs_w_expired_fixity_check is an AR relation; fine to run it with a .count or a .limit tacked on, but
+    # don't call .each directly on it and get the whole result set at once. Also, don't call .for_each or
+    # the ordering of the results will be lost.
+    pcs_w_expired_fixity_check = PreservedCopy.by_endpoint_name(endpoint_name).fixity_check_expired
+    num_to_process = pcs_w_expired_fixity_check.count
     while num_to_process > 0
-      pcs = all_processable_copies.limit(limit)
-      pcs.each do |pc|
+      pcs_for_batch = pcs_w_expired_fixity_check.limit(limit)
+      pcs_for_batch.each do |pc|
         cv = ChecksumValidator.new(pc, endpoint_name)
         cv.validate_checksum
       end
