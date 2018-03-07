@@ -37,6 +37,8 @@ class ChecksumValidator
     validate_signature_catalog_listing
   end
 
+  private
+
   def validate_signature_catalog_listing
     begin
       latest_signature_catalog_entries.each { |entry| validate_signature_catalog_entry(entry) }
@@ -52,8 +54,6 @@ class ChecksumValidator
     data_content_files.each { |file| validate_against_signature_catalog(file) }
     checksum_results.report_results
   end
-
-  private
 
   # This method adds to the AuditResults object for any errors in checksum validation it encounters.
   def validate_manifest_inventory(moab_version)
