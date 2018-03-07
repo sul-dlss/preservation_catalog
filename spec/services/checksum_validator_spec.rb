@@ -249,12 +249,12 @@ RSpec.describe ChecksumValidator do
     let(:druid) { 'bj102hs9687' }
     let(:cv) { described_class.new(druid, endpoint_name) }
 
-    it 'calls validate_signature_catalog_against_data_content_files' do
+    it 'calls validate_signature_catalog_listing' do
       expect(cv).to receive(:validate_signature_catalog_listing)
       cv.validate_signature_catalog
     end
 
-    it 'calls validate_data_content_files_against_signature_catalog' do
+    it 'calls flag_unexpected_data_content_files' do
       expect(cv).to receive(:flag_unexpected_data_content_files)
       cv.validate_signature_catalog
     end
