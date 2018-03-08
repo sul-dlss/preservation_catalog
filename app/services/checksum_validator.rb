@@ -22,7 +22,7 @@ class ChecksumValidator
     @full_druid = "druid:#{bare_druid}"
   end
 
-  def validate_checksum
+  def validate_checksums
     validate_manifest_inventories
     validate_signature_catalog
     preserved_copy.update!(last_checksum_validation: Time.current)

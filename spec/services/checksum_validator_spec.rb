@@ -234,7 +234,7 @@ RSpec.describe ChecksumValidator do
     end
   end
 
-  context '#validate_checksum' do
+  context '#validate_checksums' do
     let(:cv) { described_class.new(pres_copy, endpoint_name) }
 
     context 'passes validation' do
@@ -243,7 +243,7 @@ RSpec.describe ChecksumValidator do
 
       it 'returns a positive result for a pres_copy' do
         cv = described_class.new(pres_copy, endpoint_name)
-        cv.validate_checksum
+        cv.validate_checksums
         expect(cv.checksum_results.result_array.first).to have_key(:moab_checksum_valid)
       end
     end
@@ -254,7 +254,7 @@ RSpec.describe ChecksumValidator do
 
       it 'returns error codes for a pres_copy' do
         cv = described_class.new(pres_copy, endpoint_name)
-        cv.validate_checksum
+        cv.validate_checksums
         expect(cv.checksum_results.result_array.first).to have_key(:file_not_in_manifest)
       end
     end
@@ -266,7 +266,7 @@ RSpec.describe ChecksumValidator do
       it 'calls AuditResults.report_results' do
         cv = described_class.new(pres_copy, endpoint_name)
         expect(cv.checksum_results).to receive(:report_results)
-        cv.validate_checksum
+        cv.validate_checksums
       end
     end
   end
