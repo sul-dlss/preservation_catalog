@@ -129,15 +129,16 @@ class ChecksumValidator
   end
 
   def signature_catalog_entry_path(entry)
-    "#{druid_path}/#{entry.storage_path}"
+    @signature_catalog_entry_paths ||= {}
+    @signature_catalog_entry_paths[entry] ||= "#{druid_path}/#{entry.storage_path}"
   end
 
   def latest_signature_catalog_path
-    latest_moab_version.version_pathname.join(MANIFESTS, SIGNATURE_XML).to_s
+    @latest_signature_catalog_path ||= latest_moab_version.version_pathname.join(MANIFESTS, SIGNATURE_XML).to_s
   end
 
   def latest_signature_catalog_entries
-    latest_moab_version.signature_catalog.entries
+    @latest_signature_catalog_entries ||= latest_moab_version.signature_catalog.entries
   end
 
   def paths_from_signature_catalog
@@ -145,7 +146,7 @@ class ChecksumValidator
   end
 
   def latest_moab_version
-    moab_storage_object.version_list.last
+    @latest_moab_version ||= moab_storage_object.version_list.last
   end
 
   def validate_against_signature_catalog(data_file)
