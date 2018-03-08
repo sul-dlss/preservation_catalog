@@ -36,8 +36,8 @@ class Checksum
     start_msg = "#{Time.now.utc.iso8601} CV validate_disk_all_endpoints starting"
     puts start_msg
     Rails.logger.info start_msg
-    Settings.moab.storage_roots.each do |_strg_root_name, strg_root_location|
-      validate_disk("#{strg_root_location}/#{Settings.moab.storage_trunk}")
+    Settings.moab.storage_roots.each do |strg_root_name, _strg_root_location|
+      validate_disk(strg_root_name)
     end
     end_msg = "#{Time.now.utc.iso8601} CV validate_disk_all_endpoints ended"
     puts end_msg
