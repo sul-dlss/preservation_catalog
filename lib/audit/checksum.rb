@@ -17,7 +17,7 @@ class Checksum
       pcs_for_batch = pcs_w_expired_fixity_check.limit(limit)
       pcs_for_batch.each do |pc|
         cv = ChecksumValidator.new(pc, endpoint_name)
-        cv.validate_checksum
+        cv.validate_checksums
       end
       num_to_process -= limit
     end

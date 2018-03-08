@@ -13,20 +13,20 @@ RSpec.describe Checksum do
     context 'when there are PreservedCopies to check' do
       let(:cv_mock) { instance_double(ChecksumValidator) }
 
-      it 'creates an instance and calls #validate_checksum for every result when results are in a single batch' do
+      it 'creates an instance and calls #validate_checksums for every result when results are in a single batch' do
         allow(ChecksumValidator).to receive(:new).and_return(cv_mock)
-        expect(cv_mock).to receive(:validate_checksum).exactly(3).times
+        expect(cv_mock).to receive(:validate_checksums).exactly(3).times
         described_class.validate_disk(endpoint_name, limit)
       end
 
-      it 'creates an instance and calls #validate_checksum on everything in batches' do
+      it 'creates an instance and calls #validate_checksums on everything in batches' do
         pcs_from_scope = PreservedCopy.by_endpoint_name(endpoint_name).fixity_check_expired
         cv_list = pcs_from_scope.map do |pc|
           ChecksumValidator.new(pc, endpoint_name)
         end
         cv_list.each do |cv|
           allow(ChecksumValidator).to receive(:new).with(cv.preserved_copy, endpoint_name).and_return(cv)
-          expect(cv).to receive(:validate_checksum).exactly(1).times.and_call_original
+          expect(cv).to receive(:validate_checksums).exactly(1).times.and_call_original
         end
         described_class.validate_disk(endpoint_name, 2)
       end
