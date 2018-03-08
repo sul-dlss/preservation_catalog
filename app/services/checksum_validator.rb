@@ -160,10 +160,8 @@ class ChecksumValidator
 
   def data_files
     files = []
-    existing_data_dirs.each do |data_content_dir|
-      Find.find(data_content_dir) do |path|
-        files << path unless FileTest.directory?(path)
-      end
+    existing_data_dirs.each do |data_dir|
+      Find.find(data_dir) { |path| files << path unless FileTest.directory?(path) }
     end
     files
   end
