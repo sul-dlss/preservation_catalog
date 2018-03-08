@@ -155,10 +155,11 @@ RSpec.describe ChecksumValidator do
     context 'file checksums in singatureCatalog.xml do not match' do
       it 'adds a MOAB_FILE_CHECKSUM_MISMATCH result' do
         druid = 'rr111rr1111'
+        object_dir = "#{endpoint.storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}"
         results = instance_double(AuditResults, report_results: nil, :check_name= => nil)
         allow(AuditResults).to receive(:new).and_return(results)
         cv = described_class.new(druid, endpoint_name)
-        file_path = 'spec/fixtures/checksum_root01/moab_storage_trunk/rr/111/rr/1111/rr111rr1111/v0001/data/content/eric-smith-dissertation-augmented.pdf'
+        file_path = "#{object_dir}/v0001/data/content/eric-smith-dissertation-augmented.pdf"
         expect(results).to receive(:add_result).with(
           AuditResults::MOAB_FILE_CHECKSUM_MISMATCH, file_path: file_path, version: 1
         )
@@ -169,11 +170,12 @@ RSpec.describe ChecksumValidator do
     context "SC1258_FUR_032a.jpg not on disk, but it's entry element exists in signatureCatalog.xml" do
       it 'adds a FILE_NOT_IN_MOAB error' do
         druid = 'tt222tt2222'
+        object_dir = "#{endpoint.storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}"
         results = instance_double(AuditResults, report_results: nil, :check_name= => nil)
         allow(AuditResults).to receive(:new).and_return(results)
         cv = described_class.new(druid, endpoint_name)
-        manifest_file_path = "spec/fixtures/checksum_root01/moab_storage_trunk/tt/222/tt/2222/tt222tt2222/v0003/manifests/signatureCatalog.xml"
-        file_path = 'spec/fixtures/checksum_root01/moab_storage_trunk/tt/222/tt/2222/tt222tt2222/v0001/data/content/SC1258_FUR_032a.jpg'
+        manifest_file_path = "#{object_dir}/v0003/manifests/signatureCatalog.xml"
+        file_path = "#{object_dir}/v0001/data/content/SC1258_FUR_032a.jpg"
         expect(results).to receive(:add_result).with(
           AuditResults::FILE_NOT_IN_MOAB, manifest_file_path: manifest_file_path, file_path: file_path
         )
@@ -184,11 +186,12 @@ RSpec.describe ChecksumValidator do
     context 'signatureCatalog.xml not found in moab' do
       it 'adds a MANIFEST_NOT_IN_MOAB error' do
         druid = 'vv333vv3333'
+        object_dir = "#{endpoint.storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}"
         results = instance_double(AuditResults, report_results: nil, :check_name= => nil)
         allow(AuditResults).to receive(:new).and_return(results)
         cv = described_class.new(druid, endpoint_name)
         expect(results).to receive(:add_result).with(
-          AuditResults::SIGNATURE_CATALOG_NOT_IN_MOAB, signature_catalog_path: 'spec/fixtures/checksum_root01/moab_storage_trunk/vv/333/vv/3333/vv333vv3333/v0002/manifests/signatureCatalog.xml'
+          AuditResults::SIGNATURE_CATALOG_NOT_IN_MOAB, signature_catalog_path: "#{object_dir}/v0002/manifests/signatureCatalog.xml"
         )
         cv.send(:validate_signature_catalog_listing)
       end
@@ -197,11 +200,12 @@ RSpec.describe ChecksumValidator do
     context 'cannot parse signatureCatalog.xml' do
       it 'adds an INVALID_MANIFEST error' do
         druid = 'xx444xx4444'
+        object_dir = "#{endpoint.storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}"
         results = instance_double(AuditResults, report_results: nil, :check_name= => nil)
         allow(AuditResults).to receive(:new).and_return(results)
         cv = described_class.new(druid, endpoint_name)
         expect(results).to receive(:add_result).with(
-          AuditResults::INVALID_MANIFEST, manifest_file_path: 'spec/fixtures/checksum_root01/moab_storage_trunk/xx/444/xx/4444/xx444xx4444/v0001/manifests/signatureCatalog.xml'
+          AuditResults::INVALID_MANIFEST, manifest_file_path: "#{object_dir}/v0001/manifests/signatureCatalog.xml"
         )
         cv.send(:validate_signature_catalog_listing)
       end
@@ -210,11 +214,12 @@ RSpec.describe ChecksumValidator do
 
   context '#flag_unexpected_data_files' do
     let(:druid) { 'bj102hs9687' }
+    let(:object_dir) { "#{endpoint.storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}" }
     let(:cv) { described_class.new(druid, endpoint_name) }
 
     it 'calls validate_against_signature_catalog on each of the data_files' do
       # for easier reading, we assume data_files has a smaller return value
-      files = ['spec/fixtures/checksum_root01/moab_storage_trunk/bj/102/hs/9687/bj102hs9687/v0001/data/metadata/contentMetadata.xml']
+      files = ["#{object_dir}/v0001/data/metadata/contentMetadata.xml"]
       expect(cv).to receive(:data_files).and_return(files)
       allow(cv).to receive(:validate_against_signature_catalog)
       cv.send(:flag_unexpected_data_files)
@@ -234,10 +239,11 @@ RSpec.describe ChecksumValidator do
     context 'files are on disk but not present in signatureCatalog.xml' do
       it 'adds a FILE_NOT_IN_SIGNATURE_CATALOG error' do
         druid = 'zz555zz5555'
-        content_file_path = 'spec/fixtures/checksum_root01/moab_storage_trunk/zz/555/zz/5555/zz555zz5555/v0001/data/content/not_in_sigcat.txt'
-        metadata_file_path = 'spec/fixtures/checksum_root01/moab_storage_trunk/zz/555/zz/5555/zz555zz5555/v0001/data/metadata/also_not_in_sigcat.txt'
-        nested_file_path = 'spec/fixtures/checksum_root01/moab_storage_trunk/zz/555/zz/5555/zz555zz5555/v0001/data/content/unexpected/another_not_in_sigcat.txt'
-        signature_catalog_path = 'spec/fixtures/checksum_root01/moab_storage_trunk/zz/555/zz/5555/zz555zz5555/v0002/manifests/signatureCatalog.xml'
+        object_dir = "#{endpoint.storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}"
+        content_file_path = "#{object_dir}/v0001/data/content/not_in_sigcat.txt"
+        metadata_file_path = "#{object_dir}/v0001/data/metadata/also_not_in_sigcat.txt"
+        nested_file_path = "#{object_dir}/v0001/data/content/unexpected/another_not_in_sigcat.txt"
+        signature_catalog_path = "#{object_dir}/v0002/manifests/signatureCatalog.xml"
         results = instance_double(AuditResults, report_results: nil, check_name: nil)
         allow(AuditResults).to receive(:new).and_return(results)
         cv = described_class.new(druid, endpoint_name)
