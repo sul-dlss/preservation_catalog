@@ -246,15 +246,15 @@ RSpec.describe MoabToCatalog do
     end
 
     it 'drops PreservedCopies that correspond to the given endpoint' do
-      expect(PreservedCopy.count).to eq 9
+      expect(PreservedCopy.count).to eq 15
       subject
-      expect(PreservedCopy.count).to eq 6
+      expect(PreservedCopy.count).to eq 12
     end
 
     it 'drops PreservedObjects that correspond to the given endpoint' do
-      expect(PreservedObject.count).to eq 9
+      expect(PreservedObject.count).to eq 15
       subject
-      expect(PreservedObject.count).to eq 6
+      expect(PreservedObject.count).to eq 12
     end
 
     it 'rolls back pres obj delete if pres copy cannot be deleted' do
@@ -269,8 +269,8 @@ RSpec.describe MoabToCatalog do
         # Expect this to fail and don't need error handling in the .drop_endpoint class method
         # let subject still run instead of catching ActiveRecordError and stop the execution
       end
-      expect(PreservedCopy.count).to eq 9
-      expect(PreservedObject.count).to eq 9
+      expect(PreservedCopy.count).to eq 15
+      expect(PreservedObject.count).to eq 15
     end
   end
 
@@ -284,17 +284,17 @@ RSpec.describe MoabToCatalog do
 
     it "won't change objects in a fully seeded db" do
       subject
-      expect(PreservedCopy.count).to eq 9
-      expect(PreservedObject.count).to eq 9
+      expect(PreservedCopy.count).to eq 15
+      expect(PreservedObject.count).to eq 15
     end
 
     it 're-adds objects for a dropped endpoint' do
       described_class.drop_endpoint(endpoint_name)
-      expect(PreservedCopy.count).to eq 6
-      expect(PreservedObject.count).to eq 6
+      expect(PreservedCopy.count).to eq 12
+      expect(PreservedObject.count).to eq 12
       subject
-      expect(PreservedCopy.count).to eq 9
-      expect(PreservedObject.count).to eq 9
+      expect(PreservedCopy.count).to eq 15
+      expect(PreservedObject.count).to eq 15
     end
 
   end
