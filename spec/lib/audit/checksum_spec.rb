@@ -68,9 +68,9 @@ RSpec.describe Checksum do
     end
 
     it 'calls validate_disk with the right arguments' do
-      Settings.moab.storage_roots.each do |storage_root|
+      Settings.moab.storage_roots.each_key do |storage_name|
         expect(described_class).to receive(:validate_disk).with(
-          "#{storage_root[1]}/#{Settings.moab.storage_trunk}"
+          storage_name
         )
       end
       subject
