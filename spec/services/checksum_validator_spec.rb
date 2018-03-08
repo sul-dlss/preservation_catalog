@@ -212,14 +212,16 @@ RSpec.describe ChecksumValidator do
     let(:druid) { 'bj102hs9687' }
     let(:cv) { described_class.new(druid, endpoint_name) }
 
-    it 'calls validate_against_signature_catalog on each of the data_content_files' do
-      files = ['spec/fixtures/storage_root01/moab_storage_trunk/bj/102/hs/9687/bj102hs9687/v0001/data/content/eric-smith-dissertation-augmented.pdf',
-               'spec/fixtures/storage_root01/moab_storage_trunk/bj/102/hs/9687/bj102hs9687/v0001/data/content/eric-smith-dissertation.pdf']
+    it 'calls validate_against_signature_catalog on each of the data_files' do
+      # for easier reading, we assume data_files has a smaller return value
+      files = ['spec/fixtures/checksum_root01/moab_storage_trunk/bj/102/hs/9687/bj102hs9687/v0001/data/metadata/contentMetadata.xml']
       expect(cv).to receive(:data_files).and_return(files)
-      files.each do |file|
-        expect(cv).to receive(:validate_against_signature_catalog).with(file)
-      end
+      allow(cv).to receive(:validate_against_signature_catalog)
       cv.send(:flag_unexpected_data_files)
+      files.each do |file|
+        expect(cv).to have_received(:validate_against_signature_catalog).with(file)
+      end
+      expect(cv).to have_received(:validate_against_signature_catalog).exactly(files.size).times
     end
 
     it 'calls AuditResults.report_results' do
