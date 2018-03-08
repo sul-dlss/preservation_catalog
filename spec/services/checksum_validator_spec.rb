@@ -46,12 +46,12 @@ RSpec.describe ChecksumValidator do
       cv.validate_manifest_inventories
     end
 
-    it 'calls AuditResults.report_results' do
-      results = instance_double(AuditResults, add_result: nil, :actual_version= => nil, :check_name= => nil)
-      allow(AuditResults).to receive(:new).and_return(results)
-      expect(results).to receive(:report_results)
-      cv.validate_manifest_inventories
-    end
+    # it 'calls AuditResults.report_results' do
+    #   results = instance_double(AuditResults, add_result: nil, :actual_version= => nil, :check_name= => nil)
+    #   allow(AuditResults).to receive(:new).and_return(results)
+    #   expect(results).to receive(:report_results)
+    #   cv.validate_manifest_inventories
+    # end
 
     context 'file checksums in manifestInventory.xml do not match' do
       let(:druid) { 'zz925bx9565' }
@@ -159,12 +159,12 @@ RSpec.describe ChecksumValidator do
       cv.send(:validate_signature_catalog_listing)
     end
 
-    it 'calls AuditResults.report_results' do
-      results = instance_double(AuditResults, add_result: nil, :actual_version= => nil, :check_name= => nil)
-      allow(AuditResults).to receive(:new).and_return(results)
-      expect(results).to receive(:report_results)
-      cv.send(:validate_signature_catalog_listing)
-    end
+    # it 'calls AuditResults.report_results' do
+    #   results = instance_double(AuditResults, add_result: nil, :actual_version= => nil, :check_name= => nil)
+    #   allow(AuditResults).to receive(:new).and_return(results)
+    #   expect(results).to receive(:report_results)
+    #   cv.send(:validate_signature_catalog_listing)
+    # end
 
     context 'file checksums in singatureCatalog.xml do not match' do
       let(:druid) { 'zz111rr1111' }
@@ -258,6 +258,17 @@ RSpec.describe ChecksumValidator do
         expect(cv.checksum_results.result_array.first).to have_key(:file_not_in_manifest)
       end
     end
+
+    context 'reports resulsts ' do
+      let(:druid) { 'zz102hs9687' }
+      let(:endpoint_name) { 'fixture_sr3' }
+
+      it 'calls AuditResults.report_results' do
+        cv = described_class.new(pres_copy, endpoint_name)
+        expect(cv.checksum_results).to receive(:report_results)
+        cv.validate_checksum
+      end
+    end
   end
 
   context '#flag_unexpected_data_files' do
@@ -277,12 +288,12 @@ RSpec.describe ChecksumValidator do
       expect(cv).to have_received(:validate_against_signature_catalog).exactly(files.size).times
     end
 
-    it 'calls AuditResults.report_results' do
-      results = instance_double(AuditResults, add_result: nil, :actual_version= => nil, :check_name= => nil)
-      allow(AuditResults).to receive(:new).and_return(results)
-      expect(results).to receive(:report_results)
-      cv.send(:flag_unexpected_data_files)
-    end
+    # it 'calls AuditResults.report_results' do
+    #   results = instance_double(AuditResults, add_result: nil, :actual_version= => nil, :check_name= => nil)
+    #   allow(AuditResults).to receive(:new).and_return(results)
+    #   expect(results).to receive(:report_results)
+    #   cv.send(:flag_unexpected_data_files)
+    # end
 
     context 'files are on disk but not present in signatureCatalog.xml' do
       let(:druid) { 'zz555zz5555' }

@@ -27,11 +27,11 @@ class ChecksumValidator
     validate_signature_catalog
     preserved_copy.update!(last_checksum_validation: Time.current)
     checksum_results.add_result(AuditResults::MOAB_CHECKSUM_VALID) if checksum_results.result_array.empty?
+    checksum_results.report_results
   end
 
   def validate_manifest_inventories
     moab_storage_object.version_list.each { |moab_version| validate_manifest_inventory(moab_version) }
-    checksum_results.report_results
   end
 
   def validate_signature_catalog
@@ -42,19 +42,15 @@ class ChecksumValidator
   private
 
   def validate_signature_catalog_listing
-    begin
-      latest_signature_catalog_entries.each { |entry| validate_signature_catalog_entry(entry) }
-    rescue Errno::ENOENT
-      checksum_results.add_result(AuditResults::SIGNATURE_CATALOG_NOT_IN_MOAB, signature_catalog_path: latest_signature_catalog_path)
-    rescue Nokogiri::XML::SyntaxError
-      checksum_results.add_result(AuditResults::INVALID_MANIFEST, manifest_file_path: latest_signature_catalog_path)
-    end
-    checksum_results.report_results
+    latest_signature_catalog_entries.each { |entry| validate_signature_catalog_entry(entry) }
+  rescue Errno::ENOENT
+    checksum_results.add_result(AuditResults::SIGNATURE_CATALOG_NOT_IN_MOAB, signature_catalog_path: latest_signature_catalog_path)
+  rescue Nokogiri::XML::SyntaxError
+    checksum_results.add_result(AuditResults::INVALID_MANIFEST, manifest_file_path: latest_signature_catalog_path)
   end
 
   def flag_unexpected_data_files
     data_files.each { |file| validate_against_signature_catalog(file) }
-    checksum_results.report_results
   end
 
   # This method adds to the AuditResults object for any errors in checksum validation it encounters.
