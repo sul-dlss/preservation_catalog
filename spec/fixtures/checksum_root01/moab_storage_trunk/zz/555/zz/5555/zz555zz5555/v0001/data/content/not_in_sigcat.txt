@@ -1,1 +1,1 @@
-This file is not in the latest version's signatureCatalog.xml, but it's checksum will be calculated and compared to the signatureCatalog to see if it is present.
+This file is not in the latest version's signatureCatalog.xml, but it will be compared to the signatureCatalog to see if it is present.
