@@ -139,10 +139,11 @@ RSpec.describe ChecksumValidator do
 
   context '#validate_signature_catalog_listing' do
     let(:druid) { 'bj102hs9687' }
-    let(:cv) { described_class.new(druid, endpoint_name) }
+    let(:endpoint_name) { 'fixture_sr1' }
+    let(:cv) { described_class.new(pres_copy, endpoint_name) }
 
     it 'instantiates storage_object from druid and druid_path' do
-      expect(Moab::StorageObject).to receive(:new).with(cv.druid, a_string_matching(object_dir)).and_call_original
+      expect(Moab::StorageObject).to receive(:new).with(cv.full_druid, a_string_matching(object_dir)).and_call_original
       cv.send(:validate_signature_catalog_listing)
     end
 
@@ -167,13 +168,13 @@ RSpec.describe ChecksumValidator do
 
     context 'file checksums in singatureCatalog.xml do not match' do
       let(:druid) { 'zz111rr1111' }
+      let(:endpoint_name) { 'fixture_sr3' }
+      let(:cv) { described_class.new(pres_copy, endpoint_name) }
 
       it 'adds a MOAB_FILE_CHECKSUM_MISMATCH result' do
-        druid = 'rr111rr1111'
         object_dir = "#{endpoint.storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}"
         results = instance_double(AuditResults, report_results: nil, :check_name= => nil)
         allow(AuditResults).to receive(:new).and_return(results)
-        cv = described_class.new(druid, endpoint_name)
         file_path = "#{object_dir}/v0001/data/content/eric-smith-dissertation-augmented.pdf"
         expect(results).to receive(:add_result).with(
           AuditResults::MOAB_FILE_CHECKSUM_MISMATCH, file_path: file_path, version: 1
@@ -184,13 +185,13 @@ RSpec.describe ChecksumValidator do
 
     context "SC1258_FUR_032a.jpg not on disk, but it's entry element exists in signatureCatalog.xml" do
       let(:druid) { 'tt222tt2222' }
+      let(:endpoint_name) { 'fixture_sr3' }
+      let(:cv) { described_class.new(pres_copy, endpoint_name) }
 
       it 'adds a FILE_NOT_IN_MOAB error' do
-        druid = 'tt222tt2222'
         object_dir = "#{endpoint.storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}"
         results = instance_double(AuditResults, report_results: nil, :check_name= => nil)
         allow(AuditResults).to receive(:new).and_return(results)
-        cv = described_class.new(druid, endpoint_name)
         manifest_file_path = "#{object_dir}/v0003/manifests/signatureCatalog.xml"
         file_path = "#{object_dir}/v0001/data/content/SC1258_FUR_032a.jpg"
         expect(results).to receive(:add_result).with(
@@ -202,13 +203,13 @@ RSpec.describe ChecksumValidator do
 
     context 'signatureCatalog.xml not found in moab' do
       let(:druid) { 'zz333vv3333' }
+      let(:endpoint_name) { 'fixture_sr3' }
+      let(:cv) { described_class.new(pres_copy, endpoint_name) }
 
       it 'adds a MANIFEST_NOT_IN_MOAB error' do
-        druid = 'vv333vv3333'
         object_dir = "#{endpoint.storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}"
         results = instance_double(AuditResults, report_results: nil, :check_name= => nil)
         allow(AuditResults).to receive(:new).and_return(results)
-        cv = described_class.new(pres_copy, endpoint_name)
         expect(results).to receive(:add_result).with(
           AuditResults::SIGNATURE_CATALOG_NOT_IN_MOAB, signature_catalog_path: "#{object_dir}/v0002/manifests/signatureCatalog.xml"
         )
@@ -218,9 +219,9 @@ RSpec.describe ChecksumValidator do
 
     context 'cannot parse signatureCatalog.xml' do
       let(:druid) { 'xx444xx4444' }
+      let(:endpoint_name) { 'fixture_sr3' }
 
       it 'adds an INVALID_MANIFEST error' do
-        druid = 'xx444xx4444'
         object_dir = "#{endpoint.storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}"
         results = instance_double(AuditResults, report_results: nil, :check_name= => nil)
         allow(AuditResults).to receive(:new).and_return(results)
@@ -237,7 +238,7 @@ RSpec.describe ChecksumValidator do
     let(:cv) { described_class.new(pres_copy, endpoint_name) }
 
     context 'passes validation' do
-      let(:druid) { 'bj102hs9687' }
+      let(:druid) { 'bz514sm9647' }
       let(:endpoint_name) { 'fixture_sr1' }
 
       it 'returns a positive result for a pres_copy' do
@@ -261,8 +262,8 @@ RSpec.describe ChecksumValidator do
 
   context '#flag_unexpected_data_files' do
     let(:druid) { 'bj102hs9687' }
-    let(:object_dir) { "#{endpoint.storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}" }
-    let(:cv) { described_class.new(druid, endpoint_name) }
+    let(:endpoint_name) { 'fixture_sr1' }
+    let(:cv) { described_class.new(pres_copy, 'fixture_sr1') }
 
     it 'calls validate_against_signature_catalog on each of the data_files' do
       # for easier reading, we assume data_files has a smaller return value
@@ -284,8 +285,11 @@ RSpec.describe ChecksumValidator do
     end
 
     context 'files are on disk but not present in signatureCatalog.xml' do
+      let(:druid) { 'zz555zz5555' }
+      let(:endpoint_name) { 'fixture_sr3' }
+      let(:cv) { described_class.new(pres_copy, endpoint_name) }
+
       it 'adds a FILE_NOT_IN_SIGNATURE_CATALOG error' do
-        druid = 'zz555zz5555'
         object_dir = "#{endpoint.storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}"
         content_file_path = "#{object_dir}/v0001/data/content/not_in_sigcat.txt"
         metadata_file_path = "#{object_dir}/v0001/data/metadata/also_not_in_sigcat.txt"
@@ -293,7 +297,6 @@ RSpec.describe ChecksumValidator do
         signature_catalog_path = "#{object_dir}/v0002/manifests/signatureCatalog.xml"
         results = instance_double(AuditResults, report_results: nil, check_name: nil)
         allow(AuditResults).to receive(:new).and_return(results)
-        cv = described_class.new(druid, endpoint_name)
         expect(results).to receive(:add_result).with(
           AuditResults::FILE_NOT_IN_SIGNATURE_CATALOG, file_path: content_file_path, signature_catalog_path: signature_catalog_path
         )
@@ -310,7 +313,8 @@ RSpec.describe ChecksumValidator do
 
   context '#validate_signature_catalog' do
     let(:druid) { 'bj102hs9687' }
-    let(:cv) { described_class.new(druid, endpoint_name) }
+    let(:endpoint_name) { 'fixture_sr1' }
+    let(:cv) { described_class.new(pres_copy, endpoint_name) }
 
     it 'calls validate_signature_catalog_listing' do
       expect(cv).to receive(:validate_signature_catalog_listing)
