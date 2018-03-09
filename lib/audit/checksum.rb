@@ -50,4 +50,18 @@ class Checksum
     profiler.print_results_flat('CV_checksum_validation_all_endpoints')
   end
 
+  def self.validate_druid(druid)
+    start_msg = "#{Time.now.utc.iso8601} CV validate_druid starting for #{druid}"
+    puts start_msg
+    Rails.logger.info start_msg
+    po = PreservedObject.find_by(druid: druid)
+    pres_copy = PreservedCopy.find_by(preserved_object: po)
+    endpoint_name = pres_copy.endpoint.endpoint_name
+    cv = ChecksumValidator.new(pres_copy, endpoint_name)
+    cv.validate_checksums
+    end_msg = "#{Time.now.utc.iso8601} CV validate_druid ended for #{druid}"
+    puts end_msg
+    Rails.logger.info end_msg
+  end
+
 end

@@ -198,3 +198,11 @@ task :cv_all_endpoints, [:profile] => [:environment] do |_t, args|
   puts "#{Time.now.utc.iso8601} Checksum Validation on all storage roots are done."
   $stdout.flush
 end
+
+desc "Fire off checksum validation via druid"
+task :cv_druid, [:druid] => [:environment] do |_t, args|
+  druid = args[:druid].to_sym
+  Checksum.validate_druid(druid)
+  puts "#{Time.now.utc.iso8601} Checksum Validation on #{druid} is done."
+  $stdout.flush
+end

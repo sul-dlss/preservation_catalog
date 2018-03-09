@@ -93,4 +93,14 @@ RSpec.describe Checksum do
     end
   end
 
+  describe ".validate_druid" do
+    include_context 'fixture moabs in db'
+    it 'creates an instance ancd calls #validate_checksums for one result' do
+      druid = 'bz514sm9647'
+      cv_mock = instance_double(ChecksumValidator)
+      allow(ChecksumValidator).to receive(:new).and_return(cv_mock)
+      expect(cv_mock).to receive(:validate_checksums).exactly(1).times
+      described_class.validate_druid(druid)
+    end
+  end
 end
