@@ -62,6 +62,8 @@ class Checksum
     end_msg = "#{Time.now.utc.iso8601} CV validate_druid ended for #{druid}"
     puts end_msg
     Rails.logger.info end_msg
+  rescue NoMethodError => e
+    Rails.logger.error("Undefined method #{e.inspect}")
   end
 
 end

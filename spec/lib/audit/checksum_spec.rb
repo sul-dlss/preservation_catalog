@@ -102,5 +102,12 @@ RSpec.describe Checksum do
       expect(cv_mock).to receive(:validate_checksums).exactly(1).times
       described_class.validate_druid(druid)
     end
+
+    it "rescues if druid does not exist" do
+      druid = 'xx000xx0000'
+      error_msg = "Undefined method #<NoMethodError: undefined method `endpoint' for nil:NilClass>"
+      expect(Rails.logger).to receive(:error).with(error_msg)
+      described_class.validate_druid(druid)
+    end
   end
 end
