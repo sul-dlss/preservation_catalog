@@ -137,8 +137,23 @@ class ChecksumValidator
     @latest_signature_catalog_path ||= latest_moab_version.version_pathname.join(MANIFESTS, SIGNATURE_XML).to_s
   end
 
+  # shameless green implementation
   def latest_signature_catalog_entries
-    @latest_signature_catalog_entries ||= latest_moab_version.signature_catalog.entries
+    @latest_signature_catalog_entries ||= begin
+      if latest_moab_version.signature_catalog
+        latest_moab_version.signature_catalog.entries
+      else
+        absent_from_moab_data = { signature_catalog_path: latest_moab_version.signature_catalog }
+        checksum_results.add_result(AuditResults::SIGNATURE_CATALOG_NOT_IN_MOAB, absent_from_moab_data)
+        []
+      end
+    end
+  # we get here when latest_moab_version.signature_catalog is nil (signatureCatalog.xml does not exist)
+  rescue Errno::ENOENT, NoMethodError
+    sigcat_path = "#{latest_moab_version.version_pathname}/#{MANIFESTS}/#{SIGNATURE_XML}"
+    absent_from_moab_data = { signature_catalog_path: sigcat_path }
+    checksum_results.add_result(AuditResults::SIGNATURE_CATALOG_NOT_IN_MOAB, absent_from_moab_data)
+    []
   end
 
   def paths_from_signature_catalog
