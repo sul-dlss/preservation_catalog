@@ -315,5 +315,21 @@ RSpec.describe ChecksumValidator do
       expect(cv).to receive(:flag_unexpected_data_files)
       cv.validate_signature_catalog
     end
+
+    it 'adds error code and continues executing if a file or directory does not exist' do
+      druid = 'yy000yy0000'
+      endpoint_name = 'fixture_sr2'
+      endpoint = Endpoint.find_by(endpoint_name: endpoint_name)
+      po = PreservedObject.find_by(druid: druid)
+      pres_copy = PreservedCopy.find_by(preserved_object: po, endpoint: endpoint)
+      cv = described_class.new(pres_copy, endpoint_name)
+      results = instance_double(AuditResults, report_results: nil, :check_name= => nil)
+      allow(results).to receive(:add_result)
+      allow(cv).to receive(:checksum_results).and_return(results)
+      cv.validate_signature_catalog
+      expect(results).to have_received(:add_result).with(
+        AuditResults::SIGNATURE_CATALOG_NOT_IN_MOAB, anything
+      ).at_least(:once)
+    end
   end
 end
