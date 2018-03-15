@@ -49,6 +49,28 @@ class CatalogToMoab
     profiler.print_results_flat('C2M_check_version_all_dirs')
   end
 
+  def self.check_version_druid(last_checked_b4_date, druid, limit=Settings.c2m_sql_limit)
+    start_msg = "#{Time.now.utc.iso8601} C2M check_version starting for #{druid}"
+    puts start_msg
+    Rails.logger.info start_msg
+
+    # all_processable_copies is an AR relation; fine to run it with a .count or a .limit tacked on, but
+    # don't call .each directly on it and get the whole result set at once.
+    all_processable_copies =
+      PreservedCopy.least_recent_version_audit(last_checked_b4_date).by_druid(druid)
+    num_to_process = all_processable_copies.count
+    while num_to_process > 0
+      pcs = all_processable_copies.limit(limit)
+      pcs.each do |pc|
+        c2m = CatalogToMoab.new(pc, pc.endpoint.storage_location)
+        c2m.check_catalog_version
+      end
+      num_to_process -= limit
+    end
+    end_msg = "#{Time.now.utc.iso8601} C2M check_version ended for #{druid}"
+    puts end_msg
+    Rails.logger.info end_msg
+  end
   # ----  INSTANCE code below this line ---------------------------
 
   attr_reader :preserved_copy, :storage_dir, :druid, :results, :moab
