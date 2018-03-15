@@ -197,6 +197,12 @@ RAILS_ENV=production bundle exec rake cv_all_endpoints[profile]
 this will generate a log at, for example,
 ```log/profile_cv_validate_disk_all_endpoints2018-01-01T14:25:31-flat.txt```
 
+### One druid at a time
+- Without profiling:
+```ruby
+RAILS_ENV=production bundle exec rake cv_druid[bz514sm9647]
+```
+
 ## Development
 
 ### Running Tests

@@ -47,4 +47,20 @@ class Checksum
     profiler.print_results_flat('cv_validate_disk_all_endpoints')
   end
 
+  def self.validate_druid(druid)
+    start_msg = "#{Time.now.utc.iso8601} CV validate_druid starting for #{druid}"
+    puts start_msg
+    Rails.logger.info start_msg
+    pres_copies = PreservedCopy.joins(:preserved_object).where(preserved_objects: { druid: druid })
+    Rails.logger.error("Found #{pres_copies.size} preserved copies.") if pres_copies.empty?
+    pres_copies.each do |pc|
+      endpoint_name = pc.endpoint.endpoint_name
+      cv = ChecksumValidator.new(pc, endpoint_name)
+      cv.validate_checksums
+    end
+    end_msg = "#{Time.now.utc.iso8601} CV validate_druid ended for #{druid}"
+    puts end_msg
+    Rails.logger.info end_msg
+  end
+
 end
