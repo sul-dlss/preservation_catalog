@@ -1,47 +1,59 @@
 require 'rails_helper'
-
 RSpec.describe CatalogController, type: :controller do
-  describe 'POST #add_preserved_object' do
+  describe 'POST #create' do
+    let(:size) { 2342 }
+    let(:version) { 3 }
+    let(:endpoint) { Endpoint.first }
+    let(:druid) { 'bj102hs9687' }
+
     context 'with valid params' do
-      it 'saves the object with the expected field values' do
-        allow(Stanford::StorageServices).to receive(:current_version).and_return(6)
-        allow(subject).to receive(:moab_size).and_return(555)
-        id = 'ab123cd45678'
+      let(:pres_copy) { PreservedCopy.first }
+      let(:pres_obj) { PreservedObject.first }
 
-        allow(PreservedObject).to receive(:create!)
-        post :add_preserved_object, params: { id: id }
-        expect(PreservedObject).to have_received(:create!).with(druid: id, size: 555, current_version: 6)
+      before do
+        post :create, params: { druid: druid, incoming_version: version, incoming_size: size, endpoint: endpoint }
       end
+
+      it 'saves PreservedObject and PreservedCopy in db' do
+        expect(PreservedObject).to exist
+        expect(PreservedCopy).to exist
+      end
+      it 'PreservedCopy and PreservedObject have correct attributes' do
+        expect(pres_copy.endpoint).to eq endpoint
+        expect(pres_copy.version).to eq version
+        expect(pres_copy.size).to eq size
+        expect(pres_obj.druid).to eq druid
+      end
+
+      it 'response contains create_new_object code ' do
+        code = AuditResults::CREATED_NEW_OBJECT
+        exp_msg = "added object to db as it did not exist"
+        post_response = response.request.env['action_controller.instance'].poh.handler_results.result_array
+        expect(post_response).to include(a_hash_including(code => a_string_matching(exp_msg)))
+      end
+
+      # return a 204
+      # 201 is created
     end
 
+    # specific error case, create an item that already exists
     context 'with invalid params' do
-      it 'returns the unprocessable entity http status code' do
-        post :add_preserved_object
-        expect(response).to have_http_status(422)
+      before do
+        post :create, params: { druid: nil, incoming_version: version, incoming_size: size, endpoint: endpoint }
       end
-    end
-  end
 
-  describe 'PATCH #update' do
-    context 'with valid params' do
-      it 'updates the object with the expected field values' do
-        allow(Stanford::StorageServices).to receive(:current_version).and_return(6)
-        allow(subject).to receive(:moab_size).and_return(555)
-        id = 'ab123cd45678'
-
-        preserved_obj = instance_double(PreservedObject)
-        allow(PreservedObject).to receive(:find_by).with(druid: id).and_return(preserved_obj)
-
-        allow(preserved_obj).to receive(:update_attributes)
-        patch :update_preserved_object, params: { id: id }
-        expect(preserved_obj).to have_received(:update_attributes).with(druid: id, size: 555, current_version: 6)
+      it 'does not save PreservedObject or PreservedCopy in db' do
+        expect(PreservedObject).not_to exist
+        expect(PreservedCopy).not_to exist
       end
-    end
-    context 'with invalid params' do
-      it 'returns the unprocessable entity http status code' do
-        patch :update_preserved_object
-        expect(response).to have_http_status(422)
+
+      it 'response contains error message' do
+        code = AuditResults::INVALID_ARGUMENTS
+        exp_msg = "Druid can't be blank"
+        response_error = response.request.env['action_controller.instance'].poh.handler_results.result_array
+        expect(response_error).to include(a_hash_including(code => a_string_matching(exp_msg)))
       end
+      # should return a 400 error or some error thats not 204. (add some code to controller) 
     end
   end
 end
