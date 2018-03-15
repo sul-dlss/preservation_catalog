@@ -54,16 +54,16 @@ class Checksum
     start_msg = "#{Time.now.utc.iso8601} CV validate_druid starting for #{druid}"
     puts start_msg
     Rails.logger.info start_msg
-    po = PreservedObject.find_by(druid: druid)
-    pres_copy = PreservedCopy.find_by(preserved_object: po)
-    endpoint_name = pres_copy.endpoint.endpoint_name
-    cv = ChecksumValidator.new(pres_copy, endpoint_name)
-    cv.validate_checksums
+    pres_copies = PreservedCopy.joins(:preserved_object).where(preserved_objects: { druid: druid })
+    Rails.logger.error("Found #{pres_copies.size} preserved copies.") if pres_copies.empty?
+    pres_copies.each do |pc|
+      endpoint_name = pc.endpoint.endpoint_name
+      cv = ChecksumValidator.new(pc, endpoint_name)
+      cv.validate_checksums
+    end
     end_msg = "#{Time.now.utc.iso8601} CV validate_druid ended for #{druid}"
     puts end_msg
     Rails.logger.info end_msg
-  rescue NoMethodError => e
-    Rails.logger.error("Undefined method #{e.inspect}")
   end
 
 end

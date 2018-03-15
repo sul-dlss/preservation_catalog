@@ -95,17 +95,22 @@ RSpec.describe Checksum do
 
   describe ".validate_druid" do
     include_context 'fixture moabs in db'
-    it 'creates an instance ancd calls #validate_checksums for one result' do
+    it 'creates an instance ancd calls #validate_checksums for every result' do
       druid = 'bz514sm9647'
-      cv_mock = instance_double(ChecksumValidator)
-      allow(ChecksumValidator).to receive(:new).and_return(cv_mock)
-      expect(cv_mock).to receive(:validate_checksums).exactly(1).times
+      pres_copies = PreservedCopy.joins(:preserved_object).where(preserved_objects: { druid: druid })
+      cv_list = pres_copies.map do |pc|
+        ChecksumValidator.new(pc, endpoint_name)
+      end
+      cv_list.each do |cv|
+        allow(ChecksumValidator).to receive(:new).with(cv.preserved_copy, endpoint_name).and_return(cv)
+        expect(cv).to receive(:validate_checksums).exactly(1).times.and_call_original
+      end
       described_class.validate_druid(druid)
     end
 
     it "rescues if druid does not exist" do
-      druid = 'xx000xx0000'
-      error_msg = "Undefined method #<NoMethodError: undefined method `endpoint' for nil:NilClass>"
+      druid = 'xx000xx0500'
+      error_msg = "Found 0 preserved copies."
       expect(Rails.logger).to receive(:error).with(error_msg)
       described_class.validate_druid(druid)
     end
