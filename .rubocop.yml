@@ -226,3 +226,7 @@ Style/StringLiterals:
 Style/SymbolArray:
   Exclude:
     - 'Rakefile' # because [:spec, :rubocop] isn't a big deal
+
+Style/TernaryParentheses:
+  Exclude:
+    - spec/lib/active_record_utils_spec.rb # reads better with parens

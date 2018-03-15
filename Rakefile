@@ -174,7 +174,7 @@ task :cv_single_endpoint, [:storage_root, :profile] => [:environment] do |_t, ar
   end
   storage_root = args[:storage_root].to_sym
   if args[:profile] == 'profile'
-    puts "When done, check log/profile_cv_single_endpoint[TIMESTAMP] for profiling details"
+    puts "When done, check log/profile_cv_validate_disk[TIMESTAMP] for profiling details"
     Checksum.validate_disk_profiled(storage_root)
   elsif args[:profile].nil?
     Checksum.validate_disk(storage_root)
@@ -190,7 +190,7 @@ task :cv_all_endpoints, [:profile] => [:environment] do |_t, args|
     exit
   end
   if args[:profile] == 'profile'
-    puts "When done, check log/profile_cv_all_endpoints[TIMESTAMP].txt for profiling details"
+    puts "When done, check log/profile_cv_validate_disk_all_endpoints[TIMESTAMP].txt for profiling details"
     Checksum.validate_disk_all_endpoints_profiled
   elsif args[:profile].nil?
     Checksum.validate_disk_all_endpoints

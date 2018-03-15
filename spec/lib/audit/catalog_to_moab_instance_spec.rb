@@ -109,6 +109,16 @@ RSpec.describe CatalogToMoab do
         expect(moab).not_to receive(:current_version_id)
         c2m.check_catalog_version
       end
+      context 'DB transaction handling' do
+        it 'on transaction failure, completes without raising error, removes PC_STATUS_CHANGED result code' do
+          allow(Moab::StorageObject).to receive(:new).with(druid, instance_of(String)).and_return(nil)
+          allow(pres_copy).to receive(:save!).and_raise(ActiveRecord::ConnectionTimeoutError)
+          c2m.check_catalog_version
+          expect(c2m.results.result_array).to include(a_hash_including(AuditResults::MOAB_NOT_FOUND))
+          expect(c2m.results.result_array).not_to include(a_hash_including(AuditResults::PC_STATUS_CHANGED))
+          expect(pres_copy.reload.status).not_to eq PreservedCopy::ONLINE_MOAB_NOT_FOUND_STATUS
+        end
+      end
     end
 
     context 'preserved_copy version != current_version of preserved_object' do
@@ -329,6 +339,26 @@ RSpec.describe CatalogToMoab do
             c2m.check_catalog_version
             expect(pres_copy.reload.status).to eq PreservedCopy::INVALID_MOAB_STATUS
           end
+        end
+      end
+    end
+
+    context 'moab found on disk' do
+      # use the same setup as 'catalog version > moab version', since we know that should
+      # lead to an update_status(PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS) call
+      before do
+        moab = instance_double(Moab::StorageObject, size: 666, object_pathname: object_dir)
+        allow(Moab::StorageObject).to receive(:new).with(druid, instance_of(String)).and_return(moab)
+        allow(moab).to receive(:current_version_id).and_return(2)
+      end
+
+      context 'DB transaction handling' do
+        it 'on transaction failure, completes without raising error, removes PC_STATUS_CHANGED result code' do
+          allow(pres_copy).to receive(:save!).and_raise(ActiveRecord::ConnectionTimeoutError)
+          c2m.check_catalog_version
+          expect(c2m.results.result_array).to include(a_hash_including(AuditResults::UNEXPECTED_VERSION))
+          expect(c2m.results.result_array).not_to include(a_hash_including(AuditResults::PC_STATUS_CHANGED))
+          expect(pres_copy.reload.status).not_to eq PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
         end
       end
     end

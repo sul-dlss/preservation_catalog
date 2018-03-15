@@ -183,7 +183,7 @@ RAILS_ENV=production bundle exec rake cv_single_endpoint[fixture_sr3]
 RAILS_ENV=production bundle exec rake cv_single_endpoint[fixture_sr3,profile]
 ```
 this will generate a log at, for example,
-```log/profile_cv_single_endpoint2018-01-01T14:25:31-flat.txt```
+```log/profile_cv_validate_disk2018-01-01T14:25:31-flat.txt```
 
 #### All Roots
 - Without profiling:
@@ -195,7 +195,7 @@ RAILS_ENV=production bundle exec rake cv_all_endpoints
 RAILS_ENV=production bundle exec rake cv_all_endpoints[profile]
 ```
 this will generate a log at, for example,
-```log/profile_cv_all_dirs2018-01-01T14:25:31-flat.txt```
+```log/profile_cv_validate_disk_all_endpoints2018-01-01T14:25:31-flat.txt```
 
 ## Development
 

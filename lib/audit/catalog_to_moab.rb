@@ -1,31 +1,25 @@
+require 'active_record_utils.rb'
 require 'druid-tools'
 require 'profiler.rb'
 
 # Catalog to Moab existence check code
 class CatalogToMoab
 
-  # allows for sharding/parallelization by storage_dir
-  # use model scope query (which contains ordering), limit for batching, and .each within a while loop to
-  # process records in order in batches.  Note that .find_each does batches, but disregards order from
-  # the scope, so we must use .each on a limit to process a batch after ordering over the whole set.
   def self.check_version_on_dir(last_checked_b4_date, storage_dir, limit=Settings.c2m_sql_limit)
     start_msg = "#{Time.now.utc.iso8601} C2M check_version starting for #{storage_dir}"
     puts start_msg
     Rails.logger.info start_msg
 
-    # all_processable_copies is an AR relation; fine to run it with a .count or a .limit tacked on, but
-    # don't call .each directly on it and get the whole result set at once.
-    all_processable_copies =
+    # pcs_to_audit_relation is an AR Relation; it could return a lot of results, so we want to process it in
+    # batches.  we can't use ActiveRecord's .find_each, because that'll disregard the order .least_recent_version_audit
+    # specified.  so we use our own batch processing method, which does respect Relation order.
+    pcs_to_audit_relation =
       PreservedCopy.least_recent_version_audit(last_checked_b4_date).by_storage_location(storage_dir)
-    num_to_process = all_processable_copies.count
-    while num_to_process > 0
-      pcs = all_processable_copies.limit(limit)
-      pcs.each do |pc|
-        c2m = CatalogToMoab.new(pc, storage_dir)
-        c2m.check_catalog_version
-      end
-      num_to_process -= limit
+    ActiveRecordUtils.process_in_batches(pcs_to_audit_relation, limit) do |pc|
+      c2m = CatalogToMoab.new(pc, storage_dir)
+      c2m.check_catalog_version
     end
+
     end_msg = "#{Time.now.utc.iso8601} C2M check_version ended for #{storage_dir}"
     puts end_msg
     Rails.logger.info end_msg
@@ -78,36 +72,43 @@ class CatalogToMoab
     end
 
     unless online_moab_found?(druid, storage_dir)
-      update_status(PreservedCopy::ONLINE_MOAB_NOT_FOUND_STATUS)
+      transaction_ok = ActiveRecordUtils.with_transaction_and_rescue(results) do
+        update_status(PreservedCopy::ONLINE_MOAB_NOT_FOUND_STATUS)
+        preserved_copy.save!
+      end
+      results.remove_db_updated_results unless transaction_ok
+
       results.add_result(AuditResults::MOAB_NOT_FOUND,
                          db_created_at: preserved_copy.created_at.iso8601,
                          db_updated_at: preserved_copy.updated_at.iso8601)
       results.report_results
-      preserved_copy.save!
       return
     end
 
     moab_version = moab.current_version_id
     results.actual_version = moab_version
     catalog_version = preserved_copy.version
-    if catalog_version == moab_version
-      set_status_as_seen_on_disk(true) unless preserved_copy.status == PreservedCopy::OK_STATUS
-      results.add_result(AuditResults::VERSION_MATCHES, 'PreservedCopy')
-      results.report_results
-    elsif catalog_version < moab_version
-      set_status_as_seen_on_disk(true)
-      pohandler = PreservedObjectHandler.new(druid, moab_version, moab.size, preserved_copy.endpoint)
-      pohandler.update_version_after_validation # results reported by this call
-    else # catalog_version > moab_version
-      set_status_as_seen_on_disk(false)
-      results.add_result(
-        AuditResults::UNEXPECTED_VERSION, db_obj_name: 'PreservedCopy', db_obj_version: preserved_copy.version
-      )
-      results.report_results
-    end
+    transaction_ok = ActiveRecordUtils.with_transaction_and_rescue(results) do
+      if catalog_version == moab_version
+        set_status_as_seen_on_disk(true) unless preserved_copy.status == PreservedCopy::OK_STATUS
+        results.add_result(AuditResults::VERSION_MATCHES, 'PreservedCopy')
+        results.report_results
+      elsif catalog_version < moab_version
+        set_status_as_seen_on_disk(true)
+        pohandler = PreservedObjectHandler.new(druid, moab_version, moab.size, preserved_copy.endpoint)
+        pohandler.update_version_after_validation # results reported by this call
+      else # catalog_version > moab_version
+        set_status_as_seen_on_disk(false)
+        results.add_result(
+          AuditResults::UNEXPECTED_VERSION, db_obj_name: 'PreservedCopy', db_obj_version: preserved_copy.version
+        )
+        results.report_results
+      end
 
-    preserved_copy.update_audit_timestamps(ran_moab_validation?, true)
-    preserved_copy.save!
+      preserved_copy.update_audit_timestamps(ran_moab_validation?, true)
+      preserved_copy.save!
+    end
+    results.remove_db_updated_results unless transaction_ok
   end
 
   private
@@ -169,6 +170,10 @@ class CatalogToMoab
     end
 
     # TODO: do the check that'd set INVALID_CHECKSUM_STATUS
+    #  and actually, maybe we should either 1) trigger it async, or 2) break out the status
+    #  update, otherwise checksumming could get enclosed in a DB transaction, and that seems
+    #  like a real bad idea, cuz that transaction might be open a looooooong time.
+    # see https://github.com/sul-dlss/preservation_catalog/issues/612
 
     update_status(PreservedCopy::OK_STATUS)
   end
