@@ -167,6 +167,12 @@ RAILS_ENV=production bundle exec rake c2m_check_version_all_dirs['2018-01-22 22:
 this will generate a log at, for example,
 ```log/profile_c2m_check_version_all_roots2018-01-01T14:25:31-flat.txt```
 
+#### Single druid
+- Without profiling
+```ruby
+RAILS_ENV=production bundle exec rake c2m_check_druid'2018-01-22 22:54:48 UTC',bz514sm9647]
+```
+
 ### Run Checksum Validation for a single root or for all storage roots
 - Parse all manifestInventory.xml and most recent signatureCatalog.xml for stored checksums and verify against computed checksums.
 
@@ -197,7 +203,7 @@ RAILS_ENV=production bundle exec rake cv_all_endpoints[profile]
 this will generate a log at, for example,
 ```log/profile_cv_validate_disk_all_endpoints2018-01-01T14:25:31-flat.txt```
 
-### One druid at a time
+### Single druid
 - Without profiling:
 ```ruby
 RAILS_ENV=production bundle exec rake cv_druid[bz514sm9647]
