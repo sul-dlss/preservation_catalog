@@ -321,6 +321,7 @@ RSpec.describe PreservedCopy, type: :model do
     it 'returns the expected preserved copies' do
       expect(PreservedCopy.by_endpoint_name('fixture_sr1').length).to eq 1
       expect(PreservedCopy.by_endpoint_name('fixture_sr2').length).to eq 0
+      expect(PreservedCopy.by_endpoint_name('fixture_sr3').length).to eq 0
       expect(PreservedCopy.by_endpoint_name('fixture_empty').length).to eq 0
     end
   end
@@ -329,7 +330,40 @@ RSpec.describe PreservedCopy, type: :model do
     it 'returns the expected preserved copies' do
       expect(PreservedCopy.by_storage_location('spec/fixtures/storage_root01/moab_storage_trunk').length).to eq 1
       expect(PreservedCopy.by_storage_location('spec/fixtures/storage_root02/moab_storage_trunk').length).to eq 0
+      expect(PreservedCopy.by_storage_location('spec/fixtures/checksum_root01/moab_storage_trunk').length).to eq 0
       expect(PreservedCopy.by_storage_location('spec/fixtures/empty/moab_storage_trunk').length).to eq 0
+    end
+  end
+
+  context '.by_druid' do
+    let(:endpoint) { Endpoint.find_by(endpoint_name: 'fixture_sr2') }
+    let!(:po) do
+      policy_id = PreservationPolicy.default_policy.id
+      PreservedObject.create!(druid: 'xx000xx0000', current_version: 1, preservation_policy_id: policy_id)
+    end
+
+    before do
+      PreservedCopy.create!([{
+                              preserved_object_id: preserved_object.id,
+                              endpoint_id: endpoint.id,
+                              version: 0,
+                              status: status,
+                              size: 1
+                            }, {
+                              preserved_object_id: po.id,
+                              endpoint_id: endpoint.id,
+                              version: 0,
+                              status: status,
+                              size: 1
+                            }])
+    end
+
+    it 'returns the expected preserved copy given a druid' do
+      expect(PreservedCopy.by_druid('bj102hs9687').length).to eq 0
+      expect(PreservedCopy.by_druid('xx000xx0000').length).to eq 1
+    end
+    it 'returns the expected preserved copy given multiple druids' do
+      expect(PreservedCopy.by_druid('ab123cd4567').length).to eq 2
     end
   end
 
