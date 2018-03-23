@@ -64,7 +64,7 @@ RSpec.describe Endpoint, type: :model do
     let(:default_pres_policies) { [PreservationPolicy.default_policy] }
 
     it 'creates a local online endpoint for each storage root' do
-      Settings.moab.storage_roots.each do |storage_root_name, storage_root_location|
+      HostSettings.storage_roots.each do |storage_root_name, storage_root_location|
         storage_root_attrs = {
           endpoint_type: strg_rt_endpoint_type,
           endpoint_node: Settings.endpoints.storage_root_defaults.endpoint_node,
@@ -89,7 +89,7 @@ RSpec.describe Endpoint, type: :model do
         fixture_sr2: 'spec/fixtures/storage_root02',
         fixture_srTest: 'spec/fixtures/storage_root_unit_test'
       )
-      allow(Settings.moab).to receive(:storage_roots).and_return(storage_roots_setting)
+      allow(HostSettings).to receive(:storage_roots).and_return(storage_roots_setting)
 
       # run it a second time
       Endpoint.seed_storage_root_endpoints_from_config(strg_rt_endpoint_type, default_pres_policies)

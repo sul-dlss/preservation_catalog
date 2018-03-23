@@ -52,7 +52,7 @@ class MoabToCatalog
     start_msg = "#{Time.now.utc.iso8601} Seeding for all storage roots starting"
     puts start_msg
     Rails.logger.info start_msg
-    Settings.moab.storage_roots.each do |_strg_root_name, strg_root_location|
+    HostSettings.storage_roots.each do |_strg_root_name, strg_root_location|
       seed_catalog_for_dir("#{strg_root_location}/#{Settings.moab.storage_trunk}")
     end
     end_msg = "#{Time.now.utc.iso8601} Seeding for all storage roots ended'"
@@ -71,7 +71,7 @@ class MoabToCatalog
     start_msg = "#{Time.now.utc.iso8601} M2C check_existence for all storage roots starting'"
     puts start_msg
     Rails.logger.info start_msg
-    Settings.moab.storage_roots.each do |_strg_root_name, strg_root_location|
+    HostSettings.storage_roots.each do |_strg_root_name, strg_root_location|
       check_existence_for_dir("#{strg_root_location}/#{Settings.moab.storage_trunk}")
     end
     end_msg = "#{Time.now.utc.iso8601} M2C check_existence for all storage roots ended'"

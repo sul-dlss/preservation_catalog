@@ -1,8 +1,15 @@
-moab:
-  # this is a list of named storage roots.  the names are used to seed the endpoints table.
-  storage_roots:
-    # name: '/location/on/disk'  # e.g.
+# the keys of storage_root_map represent deployed hosts and point to their storage_roots
+# these host values are just examples or fixtures, for real values, see sul-dlss/shared_configs
+storage_root_map:
+  default:
     fixture_sr1: 'spec/fixtures/storage_root01'
     fixture_sr2: 'spec/fixtures/storage_root02'
     fixture_sr3: 'spec/fixtures/checksum_root01'
     fixture_empty: 'spec/fixtures/empty'
+  preservation_catalog_prod:
+    fixture_sr1: 'spec/fixtures/storage_root01'
+    fixture_sr2: 'spec/fixtures/storage_root02'
+    fixture_sr3: 'spec/fixtures/checksum_root01'
+  preservation_catalog_prod_a:
+    fixture_sr1: 'spec/fixtures/storage_root01'
+    fixture_sr2: 'spec/fixtures/storage_root02'

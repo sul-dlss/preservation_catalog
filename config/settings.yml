@@ -1,3 +1,6 @@
+# named storage roots are in the storage_root_map (see config/settings for examples).
+# the storage_root_map contains lookups of storage roots per host.
+# see sul-dlss/shared_configs for the storage_root_map of all hosts we deploy to.
 endpoint_types:
   online_nfs:
     endpoint_class: online
@@ -11,14 +14,6 @@ endpoints:
     recovery_cost: 1
 
 moab:
-  # this is a list of named storage roots.  the names are used to seed the endpoints table.
-  # any named storage roots added in the root settings.yml will always be inherited by env specific configs, even
-  # if they aren't listed directly in the settings/*.yml file for an environment. so list storage roots directly in
-  # the relevant settings file for the env, including for vanilla unit test env.
-  # storage_roots:
-    # name: '/location/on/disk'  # e.g.
-    # fixture_sr1: 'spec/fixtures/storage_root01'
-    # fixture_sr2: 'spec/fixtures/storage_root02'
   # storage_trunk is the name of the directory under a storage_root which contains
   # the druid trees:  e.g. 'spec/fixtures/moab_storage_root' will contain all the druid
   # trees for this configuration.  if there are multiple storage roots, each will have

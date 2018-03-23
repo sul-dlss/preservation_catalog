@@ -14,12 +14,12 @@ RSpec.describe MoabToCatalog do
     let(:subject) { described_class.check_existence_for_all_storage_roots }
 
     it 'calls check_existence_for_dir once per storage root' do
-      expect(described_class).to receive(:check_existence_for_dir).exactly(Settings.moab.storage_roots.entries.count).times
+      expect(described_class).to receive(:check_existence_for_dir).exactly(HostSettings.storage_roots.entries.count).times
       subject
     end
 
     it 'calls check_existence_for_dir with the right arguments' do
-      Settings.moab.storage_roots.each do |storage_root|
+      HostSettings.storage_roots.each do |storage_root|
         expect(described_class).to receive(:check_existence_for_dir).with("#{storage_root[1]}/#{Settings.moab.storage_trunk}")
       end
       subject
@@ -43,12 +43,12 @@ RSpec.describe MoabToCatalog do
     let(:subject) { described_class.seed_catalog_for_all_storage_roots }
 
     it 'calls seed_catalog_for_dir once per storage root' do
-      expect(described_class).to receive(:seed_catalog_for_dir).exactly(Settings.moab.storage_roots.entries.count).times
+      expect(described_class).to receive(:seed_catalog_for_dir).exactly(HostSettings.storage_roots.entries.count).times
       subject
     end
 
     it 'calls seed_catalog_for_dir with the right arguments' do
-      Settings.moab.storage_roots.each do |storage_root|
+      HostSettings.storage_roots.each do |storage_root|
         expect(described_class).to receive(:seed_catalog_for_dir).with("#{storage_root[1]}/#{Settings.moab.storage_trunk}")
       end
       subject
