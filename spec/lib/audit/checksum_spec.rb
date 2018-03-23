@@ -108,10 +108,12 @@ RSpec.describe Checksum do
       described_class.validate_druid(druid)
     end
 
-    it "rescues if druid does not exist" do
+    it "logs a debug message" do
       druid = 'xx000xx0500'
       error_msg = "Found 0 preserved copies."
-      expect(Rails.logger).to receive(:error).with(error_msg)
+      allow(Rails.logger).to receive(:info)
+      allow(Rails.logger).to receive(:debug)
+      expect(Rails.logger).to receive(:debug).with(error_msg)
       described_class.validate_druid(druid)
     end
   end

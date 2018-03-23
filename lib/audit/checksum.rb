@@ -52,7 +52,7 @@ class Checksum
     puts start_msg
     Rails.logger.info start_msg
     pres_copies = PreservedCopy.joins(:preserved_object).where(preserved_objects: { druid: druid })
-    Rails.logger.error("Found #{pres_copies.size} preserved copies.") if pres_copies.empty?
+    Rails.logger.debug("Found #{pres_copies.size} preserved copies.")
     pres_copies.each do |pc|
       endpoint_name = pc.endpoint.endpoint_name
       cv = ChecksumValidator.new(pc, endpoint_name)
