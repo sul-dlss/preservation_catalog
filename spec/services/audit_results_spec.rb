@@ -269,4 +269,15 @@ RSpec.describe AuditResults do
       expect(audit_results.result_array).to include(a_hash_including(AuditResults::INVALID_MOAB))
     end
   end
+
+  context '#contains_result_code?' do
+    it 'returns true if the result code is there, false if not' do
+      expect(audit_results.result_array.size).to eq 0
+      added_code = AuditResults::PC_PO_VERSION_MISMATCH
+      other_code = AuditResults::VERSION_MATCHES
+      audit_results.add_result(added_code, pc_version: 1, po_version: 2)
+      expect(audit_results.contains_result_code?(added_code)).to eq true
+      expect(audit_results.contains_result_code?(other_code)).to eq false
+    end
+  end
 end

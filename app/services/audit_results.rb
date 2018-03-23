@@ -145,6 +145,10 @@ class AuditResults
     result_array
   end
 
+  def contains_result_code?(code)
+    result_array.detect { |result_hash| result_hash.keys.include?(code) } != nil
+  end
+
   private
 
   def result_hash(code, msg_args=nil)
