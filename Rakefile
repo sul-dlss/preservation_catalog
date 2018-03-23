@@ -166,6 +166,19 @@ task :c2m_check_version_all_dirs, [:last_checked_b4_date, :profile] => [:environ
   $stdout.flush
 end
 
+desc "Fire off C2M for a single druid"
+task :c2m_check_druid, [:last_checked_b4_date, :druid] => [:environment] do |_t, args|
+  begin
+    last_checked = args[:last_checked_b4_date].to_s
+    druid = args[:druid].to_sym
+    CatalogToMoab.check_version_druid(last_checked, druid)
+    puts "#{Time.now.utc.iso8601} Catalog to Moab version check on all roots is done."
+  rescue TypeError, ArgumentError
+    p "You've entered an incorrect timestamp format #{last_checked}."
+    p "Please enter correct timestamp format (UTC) (2018-02-01T18:54:48Z)"
+  end
+end
+
 desc "Fire off checksum validation on a single storage root"
 task :cv_single_endpoint, [:storage_root, :profile] => [:environment] do |_t, args|
   unless args[:profile] == 'profile' || args[:profile].nil?

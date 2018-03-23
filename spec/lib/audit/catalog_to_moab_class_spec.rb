@@ -89,4 +89,38 @@ RSpec.describe CatalogToMoab do
       subject
     end
   end
+
+  context '.check_version_druid' do
+    include_context 'fixture moabs in db'
+    let(:druid) { 'bj102hs9687' }
+    let(:subject) { described_class.check_version_druid(last_checked_version_b4_date, druid) }
+
+    context 'when there are PreservedCopies to check' do
+      let(:c2m_mock) { instance_double(described_class) }
+
+      it 'creates an instance and calls #check_catalog_version for every result' do
+        allow(described_class).to receive(:new).and_return(c2m_mock)
+        expect(c2m_mock).to receive(:check_catalog_version).exactly(1).times
+        described_class.check_version_druid(last_checked_version_b4_date, druid)
+      end
+
+      it 'creates an instance and calls #check_catalog_version if there are multiple druids' do
+        preserved_copies = PreservedCopy.least_recent_version_audit(last_checked_version_b4_date).by_druid(druid)
+        preserved_copies.each do |pc|
+          allow(described_class).to receive(:new).with(pc, storage_dir).and_return(c2m_mock)
+          expect(c2m_mock).to receive(:check_catalog_version)
+        end
+        described_class.check_version_druid(last_checked_version_b4_date, druid)
+      end
+    end
+
+    context 'when there are no PreservedCopies to check' do
+      it 'will not create an instance to call check_catalog_version on' do
+        allow(described_class).to receive(:new)
+        PreservedCopy.all.update(last_version_audit: (Time.now.utc + 2.days))
+        expect(described_class).not_to receive(:new)
+        subject
+      end
+    end
+  end
 end

@@ -49,6 +49,13 @@ class CatalogToMoab
     profiler.print_results_flat('C2M_check_version_all_dirs')
   end
 
+  def self.check_version_druid(last_checked_b4_date, druid)
+    preserved_copies = PreservedCopy.least_recent_version_audit(last_checked_b4_date).by_druid(druid)
+    preserved_copies.each do |pc|
+      c2m = CatalogToMoab.new(pc, pc.endpoint.storage_location)
+      c2m.check_catalog_version
+    end
+  end
   # ----  INSTANCE code below this line ---------------------------
 
   attr_reader :preserved_copy, :storage_dir, :druid, :results, :moab

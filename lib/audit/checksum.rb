@@ -51,7 +51,7 @@ class Checksum
     start_msg = "#{Time.now.utc.iso8601} CV validate_druid starting for #{druid}"
     puts start_msg
     Rails.logger.info start_msg
-    pres_copies = PreservedCopy.joins(:preserved_object).where(preserved_objects: { druid: druid })
+    pres_copies = PreservedCopy.by_druid(druid)
     Rails.logger.error("Found #{pres_copies.size} preserved copies.") if pres_copies.empty?
     pres_copies.each do |pc|
       endpoint_name = pc.endpoint.endpoint_name
