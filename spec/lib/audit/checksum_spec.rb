@@ -63,7 +63,7 @@ RSpec.describe Checksum do
     let(:subject) { described_class.validate_disk_all_endpoints }
 
     it 'calls validate_disk once per storage root' do
-      expect(described_class).to receive(:validate_disk).exactly(Settings.moab.storage_roots.count).times
+      expect(described_class).to receive(:validate_disk).exactly(Settings.moab.storage_roots.entries.count).times
       subject
     end
 
