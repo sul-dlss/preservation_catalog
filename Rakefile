@@ -202,7 +202,15 @@ end
 desc "Fire off checksum validation via druid"
 task :cv_druid, [:druid] => [:environment] do |_t, args|
   druid = args[:druid].to_sym
-  Checksum.validate_druid(druid)
+
+  cv_results_lists = Checksum.validate_druid(druid)
+  cv_results_lists.each do |aud_res|
+    puts aud_res.to_json unless aud_res.contains_result_code?(AuditResults::MOAB_CHECKSUM_VALID)
+  end
+
   puts "#{Time.now.utc.iso8601} Checksum Validation on #{druid} is done."
   $stdout.flush
+
+  # exit with non-zero status if any of the pres copies failed checksum validation
+  exit 1 if cv_results_lists.detect { |aud_res| !aud_res.contains_result_code?(AuditResults::MOAB_CHECKSUM_VALID) }
 end
