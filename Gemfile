@@ -55,5 +55,4 @@ group :deploy do
   gem 'capistrano-rails'
   gem 'capistrano-passenger'
   gem 'dlss-capistrano'
-  gem 'capistrano-shared_configs' # tasks to pull the latest configs from the shared configs branch and update symlinks
 end
