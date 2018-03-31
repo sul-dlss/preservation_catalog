@@ -300,7 +300,6 @@ PLATFORMS
 DEPENDENCIES
   capistrano-passenger
   capistrano-rails
-  capistrano-shared_configs
   config
   coveralls
   dlss-capistrano

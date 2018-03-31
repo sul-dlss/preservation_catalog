@@ -12,7 +12,6 @@ require "capistrano/bundler"
 require "capistrano/rails/migrations"
 require "capistrano/passenger"
 require "capistrano/honeybadger"
-require "capistrano/shared_configs"
 require "dlss/capistrano"
 
 # Load custom tasks from `lib/capistrano/tasks` if you have any defined
