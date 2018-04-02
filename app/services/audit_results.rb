@@ -108,6 +108,8 @@ class AuditResults
   attr_reader :result_array, :druid, :endpoint
   attr_accessor :actual_version, :check_name
 
+  delegate :to_json, to: :result_array
+
   def initialize(druid, actual_version, endpoint, check_name=nil)
     @druid = druid
     @actual_version = actual_version
