@@ -44,7 +44,7 @@ RSpec.shared_examples "attributes validated" do |method_sym|
 end
 
 RSpec.shared_examples 'calls AuditResults.report_results' do |method_sym|
-  it '' do
+  it 'outputs results to Rails.logger and sends errors to WorkflowErrorReporter' do
     mock_results = instance_double(AuditResults)
     allow(mock_results).to receive(:add_result)
     allow(mock_results).to receive(:check_name=)
