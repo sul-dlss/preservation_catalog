@@ -3,36 +3,34 @@
 # to add an existing moab object to the catalog, or to update an entry for a moab object
 # that's already in the catalog.
 class CatalogController < ApplicationController
-  before_action :set_id
 
-  def add_preserved_object
-    PreservedObject.create!(
-      druid: @id, size: moab_size(@id), current_version: Stanford::StorageServices.current_version(@id)
-    )
-  end
+  attr_accessor :poh
 
-  def update_preserved_object
-    preserved_obj = PreservedObject.find_by(druid: @id)
-    preserved_obj.update_attributes(
-      druid: @id, size: moab_size(@id), current_version: Stanford::StorageServices.current_version(@id)
-    )
+  # POST /catalog
+  def create
+    druid = poh_params[:druid]
+    incoming_version = poh_params[:incoming_version].to_i
+    incoming_size = poh_params[:incoming_size].to_i
+    endpoint = Endpoint.find_by(endpoint_name: poh_params[:endpoint_name])
+    @poh = PreservedObjectHandler.new(druid, incoming_version, incoming_size, endpoint)
+    poh.create
+    status_code =
+      if poh.handler_results.contains_result_code?(:created_new_object)
+        :created # 201
+      elsif poh.handler_results.contains_result_code?(:db_obj_already_exists)
+        :conflict # 409
+      elsif poh.handler_results.contains_result_code?(:invalid_arguments)
+        :not_acceptable # 406
+      else
+        :internal_server_error # 500
+      end
+    render status: status_code, json: poh.handler_results.to_json
   end
 
   private
 
-  def set_id
-    @id = catalog_params[:id]
-    head(:unprocessable_entity) if @id.blank?
-  end
-
-  def catalog_params
-    params.permit(:id)
-  end
-
-  def moab_size(id)
-    # TODO: make this actually get the size once there's a method for that.
-    # for now, just using the id to quiet rubocop complaint.
-    # https://github.com/sul-dlss/moab-versioning/issues/21
-    42 || id
+  # strong params / whitelist params
+  def poh_params
+    params.permit(:druid, :incoming_version, :incoming_size, :endpoint_name)
   end
 end
