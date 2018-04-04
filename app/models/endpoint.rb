@@ -19,7 +19,7 @@ class Endpoint < ApplicationRecord
   # NOTE: this adds new entries from the config, and leaves existing entries alone, but won't delete anything.
   # TODO: figure out deletion based on config?
   def self.seed_storage_root_endpoints_from_config(endpoint_type, preservation_policies)
-    Settings.moab.storage_roots.map do |storage_root_name, storage_root_location|
+    HostSettings.storage_roots.map do |storage_root_name, storage_root_location|
       find_or_create_by!(endpoint_name: storage_root_name.to_s) do |endpoint|
         endpoint.endpoint_type = endpoint_type
         endpoint.endpoint_node = Settings.endpoints.storage_root_defaults.endpoint_node

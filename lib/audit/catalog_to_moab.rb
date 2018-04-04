@@ -35,7 +35,7 @@ class CatalogToMoab
     start_msg = "#{Time.now.utc.iso8601} C2M check_version_all_dirs starting"
     puts start_msg
     Rails.logger.info start_msg
-    Settings.moab.storage_roots.each do |_strg_root_name, strg_root_location|
+    HostSettings.storage_roots.each do |_strg_root_name, strg_root_location|
       check_version_on_dir(last_checked_b4_date, "#{strg_root_location}/#{Settings.moab.storage_trunk}")
     end
     end_msg = "#{Time.now.utc.iso8601} C2M check_version_all_dirs ended"

@@ -63,12 +63,12 @@ RSpec.describe CatalogToMoab do
     let(:subject) { described_class.check_version_all_dirs(last_checked_version_b4_date) }
 
     it 'calls .check_version_for_dir once per storage root' do
-      expect(described_class).to receive(:check_version_on_dir).exactly(Settings.moab.storage_roots.entries.count).times
+      expect(described_class).to receive(:check_version_on_dir).exactly(HostSettings.storage_roots.entries.count).times
       subject
     end
 
     it 'calls check_version_for_dir with the right arguments' do
-      Settings.moab.storage_roots.each do |storage_root|
+      HostSettings.storage_roots.each do |storage_root|
         expect(described_class).to receive(:check_version_on_dir).with(
           last_checked_version_b4_date,
           "#{storage_root[1]}/#{Settings.moab.storage_trunk}"

@@ -89,7 +89,7 @@ task :m2c_exist_single_root, [:storage_root, :profile] => [:environment] do |_t,
     exit
   end
   root = args[:storage_root].to_sym
-  storage_dir = "#{Settings.moab.storage_roots[root]}/#{Settings.moab.storage_trunk}"
+  storage_dir = "#{HostSettings.storage_roots[root]}/#{Settings.moab.storage_trunk}"
   puts "#{Time.now.utc.iso8601} Running Moab to Catalog Existence Check for #{storage_dir}"
   $stdout.flush # sometimes above is not visible (flushed) until last puts (when run finishes)
   if args[:profile] == 'profile'
@@ -127,7 +127,7 @@ task :c2m_check_version_on_dir, [:last_checked_b4_date, :storage_root, :profile]
     exit
   end
   root = args[:storage_root].to_sym
-  storage_dir = "#{Settings.moab.storage_roots[root]}/#{Settings.moab.storage_trunk}"
+  storage_dir = "#{HostSettings.storage_roots[root]}/#{Settings.moab.storage_trunk}"
   last_checked = args[:last_checked_b4_date].to_s
   begin
     if args[:profile] == 'profile'
