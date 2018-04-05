@@ -21,7 +21,7 @@ desc 'populate the catalog with the contents of the online storage roots'
 task :seed_catalog, [:profile] => [:environment] do |_t, args|
   unless args[:profile] == 'profile' || args[:profile].nil?
     p "Usage: rake seed_catalog || rake seed_catalog[profile]"
-    exit
+    exit 1
   end
 
   puts "#{Time.now.utc.iso8601} Seeding the database from all storage roots..."
@@ -59,7 +59,7 @@ desc "Populate single endpoint db data"
 task :populate, [:storage_root, :profile] => [:environment] do |_t, args|
   unless args[:profile] == 'profile' || args[:profile].nil?
     p "Usage: rake populate[fixture_sr1] || rake populate[fixture_sr1,profile]"
-    exit
+    exit 1
   end
   root = args[:storage_root]
   if args[:storage_root] != 'profile'
@@ -86,7 +86,7 @@ desc "Fire off M2C existence check on a single storage root"
 task :m2c_exist_single_root, [:storage_root, :profile] => [:environment] do |_t, args|
   unless args[:profile] == 'profile' || args[:profile].nil?
     p "Usage: rake m2c_exist_single_root[fixture_sr1] || rake m2c_exist_single_root[fixture_sr1,profile]"
-    exit
+    exit 1
   end
   root = args[:storage_root].to_sym
   storage_dir = "#{HostSettings.storage_roots[root]}/#{Settings.moab.storage_trunk}"
@@ -107,7 +107,7 @@ desc "Fire off M2C existence check on all storage roots"
 task :m2c_exist_all_storage_roots, [:profile] => [:environment] do |_t, args|
   unless args[:profile] == 'profile' || args[:profile].nil?
     p "Usage: rake m2c_exist_all_storage_roots || rake m2c_exist_all_storage_roots[profile]"
-    exit
+    exit 1
   end
 
   if args[:profile] == 'profile'
@@ -124,7 +124,7 @@ desc "Fire off c2m version check on a single storage root"
 task :c2m_check_version_on_dir, [:last_checked_b4_date, :storage_root, :profile] => [:environment] do |_t, args|
   unless args[:profile] == 'profile' || args[:profile].nil?
     p "usage: rake c2m_check_version_on_dir[last_checked_b4_date, fixture_sr1] || rake c2m_check_version_on_dir[last_checked_b4_date,fixture_sr1,profile]"
-    exit
+    exit 1
   end
   root = args[:storage_root].to_sym
   storage_dir = "#{HostSettings.storage_roots[root]}/#{Settings.moab.storage_trunk}"
@@ -148,7 +148,7 @@ desc "Fire off c2m version check on all storage roots"
 task :c2m_check_version_all_dirs, [:last_checked_b4_date, :profile] => [:environment] do |_t, args|
   unless args[:profile] == 'profile' || args[:profile].nil?
     p "usage: rake c2m_check_version_all_dirs[last_checked_b4_date] || rake c2m_check_version_all_dirs[last_checked_b4_date,profile]"
-    exit
+    exit 1
   end
   last_checked = args[:last_checked_b4_date].to_s
   begin
@@ -170,7 +170,7 @@ desc "Fire off checksum validation on a single storage root"
 task :cv_single_endpoint, [:storage_root, :profile] => [:environment] do |_t, args|
   unless args[:profile] == 'profile' || args[:profile].nil?
     p "usage: rake cv_single_endpoint[storage_root] || rake cv_single_endpoint[storage_root,profile]"
-    exit
+    exit 1
   end
   storage_root = args[:storage_root].to_sym
   if args[:profile] == 'profile'
@@ -187,7 +187,7 @@ desc "Fire off checksum validation on all storage roots"
 task :cv_all_endpoints, [:profile] => [:environment] do |_t, args|
   unless args[:profile] == 'profile' || args[:profile].nil?
     p "usage: rake cv_all_endpoints || rake cv_all_endpoints[profile]"
-    exit
+    exit 1
   end
   if args[:profile] == 'profile'
     puts "When done, check log/profile_cv_validate_disk_all_endpoints[TIMESTAMP].txt for profiling details"
@@ -202,7 +202,15 @@ end
 desc "Fire off checksum validation via druid"
 task :cv_druid, [:druid] => [:environment] do |_t, args|
   druid = args[:druid].to_sym
-  Checksum.validate_druid(druid)
+
+  cv_results_lists = Checksum.validate_druid(druid)
+  cv_results_lists.each do |aud_res|
+    puts aud_res.to_json unless aud_res.contains_result_code?(AuditResults::MOAB_CHECKSUM_VALID)
+  end
+
   puts "#{Time.now.utc.iso8601} Checksum Validation on #{druid} is done."
   $stdout.flush
+
+  # exit with non-zero status if any of the pres copies failed checksum validation
+  exit 1 if cv_results_lists.detect { |aud_res| !aud_res.contains_result_code?(AuditResults::MOAB_CHECKSUM_VALID) }
 end

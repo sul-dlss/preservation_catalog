@@ -116,5 +116,12 @@ RSpec.describe Checksum do
       expect(Rails.logger).to receive(:debug).with(error_msg)
       described_class.validate_druid(druid)
     end
+
+    it 'returns the checksum results lists for each PreservedCopy that was checked' do
+      checksum_results_lists = described_class.validate_druid('bz514sm9647')
+      expect(checksum_results_lists.size).to eq 1 # should just be one PC for the druid
+      checksum_results = checksum_results_lists.first
+      expect(checksum_results.contains_result_code?(AuditResults::MOAB_CHECKSUM_VALID)).to eq true
+    end
   end
 end

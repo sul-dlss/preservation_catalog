@@ -53,14 +53,17 @@ class Checksum
     Rails.logger.info start_msg
     pres_copies = PreservedCopy.joins(:preserved_object).where(preserved_objects: { druid: druid })
     Rails.logger.debug("Found #{pres_copies.size} preserved copies.")
+    checksum_results_lists = []
     pres_copies.each do |pc|
       endpoint_name = pc.endpoint.endpoint_name
       cv = ChecksumValidator.new(pc, endpoint_name)
       cv.validate_checksums
+      checksum_results_lists << cv.checksum_results
     end
     end_msg = "#{Time.now.utc.iso8601} CV validate_druid ended for #{druid}"
     puts end_msg
     Rails.logger.info end_msg
+    checksum_results_lists
   end
 
 end

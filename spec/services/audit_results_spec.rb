@@ -269,4 +269,28 @@ RSpec.describe AuditResults do
       expect(audit_results.result_array).to include(a_hash_including(AuditResults::INVALID_MOAB))
     end
   end
+
+  context '#contains_result_code?' do
+    it 'returns true if the result code is there, false if not' do
+      expect(audit_results.result_array.size).to eq 0
+      added_code = AuditResults::PC_PO_VERSION_MISMATCH
+      other_code = AuditResults::VERSION_MATCHES
+      audit_results.add_result(added_code, pc_version: 1, po_version: 2)
+      expect(audit_results.contains_result_code?(added_code)).to eq true
+      expect(audit_results.contains_result_code?(other_code)).to eq false
+    end
+  end
+
+  context '#to_json' do
+    it 'returns valid JSON for the current result_array' do
+      audit_results.add_result(AuditResults::PC_PO_VERSION_MISMATCH, pc_version: 1, po_version: 2)
+      json_text = audit_results.to_json
+      json_parsed = JSON.parse(json_text)
+
+      exp_msg = "PreservedCopy online Moab version 1 does not match PreservedObject current_version 2"
+      expect(json_parsed.length).to eq 1
+      expect(json_parsed.first.keys).to eq [AuditResults::PC_PO_VERSION_MISMATCH.to_s]
+      expect(json_parsed.first[AuditResults::PC_PO_VERSION_MISMATCH.to_s]).to eq exp_msg
+    end
+  end
 end
