@@ -1,4 +1,5 @@
 server 'preservation-catalog-prod.stanford.edu', user: 'pres', roles: %w[app db web]
+server 'preservation-catalog-prod-a.stanford.edu', user: 'pres', roles: %w[app db web]
 
 Capistrano::OneTimeKey.generate_one_time_key!
 set :rails_env, 'production'
