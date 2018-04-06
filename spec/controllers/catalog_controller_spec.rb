@@ -29,7 +29,7 @@ RSpec.describe CatalogController, type: :controller do
 
       it 'response contains create_new_object code ' do
         exp_msg = [{ AuditResults::CREATED_NEW_OBJECT => "added object to db as it did not exist" }]
-        expect(response.body).to eq exp_msg.to_json
+        expect(response.body).to include(exp_msg.to_json)
       end
 
       it 'returns a created response code' do
@@ -68,7 +68,7 @@ RSpec.describe CatalogController, type: :controller do
 
       it 'response contains error message' do
         exp_msg = [{ AuditResults::DB_OBJ_ALREADY_EXISTS => "PreservedObject db object already exists" }]
-        expect(response.body).to eq exp_msg.to_json
+        expect(response.body).to include(exp_msg.to_json)
       end
 
       it 'returns a conflict response code' do
@@ -91,6 +91,11 @@ RSpec.describe CatalogController, type: :controller do
       it 'returns an internal server error response code' do
         expect(response).to have_http_status(:internal_server_error)
       end
+    end
+
+    it 'response body contains druid' do
+      post :create, params: { druid: druid, incoming_version: ver, incoming_size: size, endpoint_name: endpoint_name }
+      expect(response.body).to include(druid)
     end
   end
 end
