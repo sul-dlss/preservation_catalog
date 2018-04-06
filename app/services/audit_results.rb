@@ -108,8 +108,6 @@ class AuditResults
   attr_reader :result_array, :druid, :endpoint
   attr_accessor :actual_version, :check_name
 
-  delegate :to_json, to: :result_array
-
   def initialize(druid, actual_version, endpoint, check_name=nil)
     @druid = druid
     @actual_version = actual_version
@@ -149,6 +147,10 @@ class AuditResults
 
   def contains_result_code?(code)
     result_array.detect { |result_hash| result_hash.keys.include?(code) } != nil
+  end
+
+  def to_json
+    { druid: druid, result_array: result_array }.to_json
   end
 
   private

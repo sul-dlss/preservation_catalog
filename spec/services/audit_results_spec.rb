@@ -288,9 +288,11 @@ RSpec.describe AuditResults do
       json_parsed = JSON.parse(json_text)
 
       exp_msg = "PreservedCopy online Moab version 1 does not match PreservedObject current_version 2"
-      expect(json_parsed.length).to eq 1
-      expect(json_parsed.first.keys).to eq [AuditResults::PC_PO_VERSION_MISMATCH.to_s]
-      expect(json_parsed.first[AuditResults::PC_PO_VERSION_MISMATCH.to_s]).to eq exp_msg
+      expect(json_parsed.length).to eq 2
+      expect(json_parsed["result_array"].first.length).to eq 1
+      expect(json_parsed["result_array"].first.keys).to eq [AuditResults::PC_PO_VERSION_MISMATCH.to_s]
+      expect(json_parsed["result_array"].first[AuditResults::PC_PO_VERSION_MISMATCH.to_s]).to eq exp_msg
+      expect(json_parsed["druid"]).to eq druid
     end
   end
 end
