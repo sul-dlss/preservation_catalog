@@ -98,6 +98,7 @@ Metrics/LineLength:
     - 'app/services/checksum_validator.rb' # line 151 is 121
     - 'app/services/preserved_object_handler.rb' # line 269 is 121
     - 'app/services/workflow_errors_reporter.rb' # line 7 is 143
+    - 'spec/controllers/catalog_controller_spec.rb'
     - 'spec/lib/audit/moab_to_catalog_spec.rb' # 1 line 126
     - 'spec/models/endpoint_spec.rb' # line 83 is 123
     - 'spec/services/audit_results_spec.rb'

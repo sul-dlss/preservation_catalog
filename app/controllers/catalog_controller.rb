@@ -27,6 +27,28 @@ class CatalogController < ApplicationController
     render status: status_code, json: poh.handler_results.to_json
   end
 
+  # PATCH /catalog/:id
+  # User can only update a partial record (application controls what can be updated)
+  def update
+    druid = poh_params[:druid]
+    incoming_version = poh_params[:incoming_version].to_i
+    incoming_size = poh_params[:incoming_size].to_i
+    endpoint_name = Endpoint.find_by(endpoint_name: poh_params[:endpoint_name])
+    @poh = PreservedObjectHandler.new(druid, incoming_version, incoming_size, endpoint_name)
+    poh.update_version
+    status_code =
+      if poh.handler_results.contains_result_code?(:actual_vers_gt_db_obj)
+        :ok # 200
+      elsif poh.handler_results.contains_result_code?(:db_obj_does_not_exist)
+        :not_found # 404
+      elsif poh.handler_results.contains_result_code?(:invalid_arguments)
+        :not_acceptable # 406
+      else
+        :internal_server_error # 500 including  :unexpected_version, :pc_po_version_mismatch, :db_update_failed
+      end
+    render status: status_code, json: poh.handler_results.to_json
+  end
+
   private
 
   # strong params / whitelist params
