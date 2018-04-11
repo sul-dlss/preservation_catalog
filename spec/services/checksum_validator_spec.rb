@@ -304,4 +304,29 @@ RSpec.describe ChecksumValidator do
       end
     end
   end
+
+  context 'checksums are configurable' do
+    it 'all three checksums at once' do
+      allow(Moab::Config).to receive(:checksum_algos).and_return(%i[md5 sha1 sha256])
+      expect(Digest::MD5).to receive(:new).and_call_original.at_least(:once)
+      expect(Digest::SHA1).to receive(:new).and_call_original.at_least(:once)
+      expect(Digest::SHA2).to receive(:new).and_call_original.at_least(:once)
+      cv.validate_checksums
+    end
+
+    it 'defaults to md5 only' do
+      expect(Digest::MD5).to receive(:new).and_call_original.at_least(:once)
+      expect(Digest::SHA1).not_to receive(:new).and_call_original
+      expect(Digest::SHA2).not_to receive(:new).and_call_original
+      cv.validate_checksums
+    end
+
+    it 'sha256 only' do
+      allow(Moab::Config).to receive(:checksum_algos).and_return([:sha256])
+      expect(Digest::MD5).not_to receive(:new).and_call_original
+      expect(Digest::SHA1).not_to receive(:new).and_call_original
+      expect(Digest::SHA2).to receive(:new).and_call_original.at_least(:once)
+      cv.validate_checksums
+    end
+  end
 end
