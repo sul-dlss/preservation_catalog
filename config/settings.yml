@@ -35,3 +35,5 @@ provlog:
 
 workflow_services_url: ''
 c2m_sql_limit: 1000
+
+checksum_algos: ['md5'] # 'sha1' 'sha256'
