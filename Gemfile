@@ -10,6 +10,7 @@ gem 'config' # Settings to manage configs on different instances
 gem 'faraday' # ReST calls
 gem 'honeybadger' # for error reporting / tracking / notifications
 gem 'jbuilder', '~> 2.5' # Build JSON APIs with ease.
+gem 'okcomputer'
 gem 'pg' # postgres database
 # pry is useful for debugging, even in prod
 gem 'pry-byebug' # call 'binding.pry' anywhere in the code to stop execution and get a pry-byebug console
