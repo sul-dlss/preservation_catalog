@@ -41,8 +41,7 @@ class PreservedCopy < ApplicationRecord
   }
 
   scope :least_recent_version_audit, lambda { |last_checked_b4_date|
-    last_checked_b4_date = normalize_date(last_checked_b4_date)
-    where('last_version_audit IS NULL or last_version_audit < ?', last_checked_b4_date)
+    where('last_version_audit IS NULL or last_version_audit < ?', normalize_date(last_checked_b4_date))
       .order('last_version_audit IS NOT NULL, last_version_audit ASC')
     # possibly counter-intuitive: the .order sorts so that null values come first (because IS NOT NULL evaluates
     # to 0 for nulls, which sorts before 1 for non-nulls, which are then sorted by last_version_audit)
@@ -87,7 +86,7 @@ class PreservedCopy < ApplicationRecord
   end
 
   private_class_method def self.normalize_date(timestamp)
-    timestamp = Time.parse(timestamp).utc unless timestamp.instance_of?(Time)
-    timestamp
+    return timestamp if timestamp.is_a?(Time) || timestamp.is_a?(ActiveSupport::TimeWithZone)
+    Time.parse(timestamp).utc
   end
 end
