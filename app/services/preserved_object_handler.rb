@@ -71,23 +71,23 @@ class PreservedObjectHandler
       Rails.logger.debug "check_existence #{druid} called"
       if endpoint.endpoint_type.endpoint_class == 'online'
         transaction_ok = with_active_record_transaction_and_rescue do
-          raise_rollback_if_pc_po_version_mismatch(pres_copy)
+          raise_rollback_if_pc_po_version_mismatch
 
           if incoming_version == pres_copy.version
-            set_status_as_seen_on_disk(pres_copy, true) unless pres_copy.status == PreservedCopy::OK_STATUS
+            set_status_as_seen_on_disk(true) unless pres_copy.status == PreservedCopy::OK_STATUS
             results.add_result(AuditResults::VERSION_MATCHES, 'PreservedCopy')
           elsif incoming_version > pres_copy.version
-            set_status_as_seen_on_disk(pres_copy, true) unless pres_copy.status == PreservedCopy::OK_STATUS
+            set_status_as_seen_on_disk(true) unless pres_copy.status == PreservedCopy::OK_STATUS
             results.add_result(AuditResults::ACTUAL_VERS_GT_DB_OBJ, db_obj_name: 'PreservedCopy', db_obj_version: pres_copy.version)
             if moab_validation_errors.empty?
               pres_copy.upd_audstamps_version_size(ran_moab_validation?, incoming_version, incoming_size)
               pres_object.current_version = incoming_version
               pres_object.save!
             else
-              update_status(pres_copy, PreservedCopy::INVALID_MOAB_STATUS)
+              update_status(PreservedCopy::INVALID_MOAB_STATUS)
             end
           else # incoming_version < pres_copy.version
-            set_status_as_seen_on_disk(pres_copy, false)
+            set_status_as_seen_on_disk(false)
             results.add_result(AuditResults::ACTUAL_VERS_LT_DB_OBJ, db_obj_name: 'PreservedCopy', db_obj_version: pres_copy.version)
           end
           pres_copy.update_audit_timestamps(ran_moab_validation?, true)
@@ -205,7 +205,7 @@ class PreservedObjectHandler
   # NOTE: if we can reduce complexity, remove Metrics/PerceivedComplexity exception in .rubocop.yml
   def update_online_version(status=nil, set_status_to_unexp_version=false)
     transaction_ok = with_active_record_transaction_and_rescue do
-      raise_rollback_if_pc_po_version_mismatch(pres_copy)
+      raise_rollback_if_pc_po_version_mismatch
 
       # FIXME: what if there is more than one associated pres_copy?
       if incoming_version > pres_copy.version && pres_copy.matches_po_current_version?
@@ -214,7 +214,7 @@ class PreservedObjectHandler
         results.add_result(code, db_obj_name: 'PreservedCopy', db_obj_version: pres_copy.version)
 
         pres_copy.upd_audstamps_version_size(ran_moab_validation?, incoming_version, incoming_size)
-        update_status(pres_copy, status) if status && ran_moab_validation?
+        update_status(status) if status && ran_moab_validation?
         pres_copy.save!
         pres_object.current_version = incoming_version
         pres_object.save!
@@ -222,14 +222,14 @@ class PreservedObjectHandler
         if set_status_to_unexp_version
           status = PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
         end
-        update_pc_unexpected_version(pres_copy, status)
+        update_pc_unexpected_version(status)
       end
     end
 
     results.remove_db_updated_results unless transaction_ok
   end
 
-  def raise_rollback_if_pc_po_version_mismatch(pres_copy)
+  def raise_rollback_if_pc_po_version_mismatch
     unless pres_copy.matches_po_current_version?
       pc_version = pres_copy.version
       po_version = pres_copy.preserved_object.current_version
@@ -241,7 +241,7 @@ class PreservedObjectHandler
 
   def update_pc_invalid_moab
     transaction_ok = with_active_record_transaction_and_rescue do
-      update_status(pres_copy, PreservedCopy::INVALID_MOAB_STATUS)
+      update_status(PreservedCopy::INVALID_MOAB_STATUS)
       pres_copy.update_audit_timestamps(ran_moab_validation?, false)
       pres_copy.save!
     end
@@ -251,14 +251,14 @@ class PreservedObjectHandler
   # given a PreservedCopy instance and whether the caller found the expected version of it on disk, this will perform
   # other validations of what's on disk, and will update the status accordingly
   # TODO: near duplicate of method in CatalogToMoab - extract superclass or moab wrapper class??
-  def set_status_as_seen_on_disk(pres_copy, found_expected_version)
+  def set_status_as_seen_on_disk(found_expected_version)
     if moab_validation_errors.any?
-      update_status(pres_copy, PreservedCopy::INVALID_MOAB_STATUS)
+      update_status(PreservedCopy::INVALID_MOAB_STATUS)
       return
     end
 
     unless found_expected_version
-      update_status(pres_copy, PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS)
+      update_status(PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS)
       return
     end
 
@@ -268,14 +268,14 @@ class PreservedObjectHandler
     #  like a real bad idea, cuz that transaction might be open a looooooong time.
     # see https://github.com/sul-dlss/preservation_catalog/issues/612
 
-    update_status(pres_copy, PreservedCopy::OK_STATUS)
+    update_status(PreservedCopy::OK_STATUS)
   end
 
-  def update_pc_unexpected_version(pres_copy, new_status)
+  def update_pc_unexpected_version(new_status)
     results.add_result(AuditResults::UNEXPECTED_VERSION, db_obj_name: 'PreservedCopy', db_obj_version: pres_copy.version)
     version_comparison_results(pres_copy, pres_copy.version)
 
-    update_status(pres_copy, new_status) if new_status
+    update_status(new_status) if new_status
     pres_copy.update_audit_timestamps(ran_moab_validation?, true)
     pres_copy.save!
   end
@@ -283,13 +283,13 @@ class PreservedObjectHandler
   # shameless green implementation
   def confirm_online_version
     transaction_ok = with_active_record_transaction_and_rescue do
-      raise_rollback_if_pc_po_version_mismatch(pres_copy)
+      raise_rollback_if_pc_po_version_mismatch
 
       if incoming_version == pres_copy.version
-        set_status_as_seen_on_disk(pres_copy, true) unless pres_copy.status == PreservedCopy::OK_STATUS
+        set_status_as_seen_on_disk(true) unless pres_copy.status == PreservedCopy::OK_STATUS
         results.add_result(AuditResults::VERSION_MATCHES, 'PreservedCopy')
       else
-        set_status_as_seen_on_disk(pres_copy, false)
+        set_status_as_seen_on_disk(false)
         results.add_result(AuditResults::UNEXPECTED_VERSION, db_obj_name: 'PreservedCopy', db_obj_version: pres_copy.version)
       end
       pres_copy.update_audit_timestamps(ran_moab_validation?, true)
@@ -321,11 +321,11 @@ class PreservedObjectHandler
   end
 
   # TODO: near duplicate of method in catalog_to_moab - extract superclass or moab wrapper class??
-  def update_status(preserved_copy, new_status)
-    preserved_copy.update_status(new_status) do
+  def update_status(new_status)
+    pres_copy.update_status(new_status) do
       results.add_result(
         AuditResults::PC_STATUS_CHANGED,
-        { old_status: preserved_copy.status, new_status: new_status }
+        { old_status: pres_copy.status, new_status: new_status }
       )
     end
   end
