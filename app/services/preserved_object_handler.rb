@@ -9,7 +9,9 @@ class PreservedObjectHandler
 
   require 'active_record_utils.rb'
   require 'audit_results.rb'
+  require 'moab_validation_handler.rb'
 
+  include ::MoabValidationHandler
   include ActiveModel::Validations
 
   # Note: supplying validations here to allow validation before use, e.g. incoming_version in numeric logic
@@ -167,31 +169,6 @@ class PreservedObjectHandler
   end
 
   private
-
-  # TODO: near duplicate of method in catalog_to_moab - extract superclass or moab wrapper class??
-  def moab_validation_errors
-    @moab_errors ||=
-      begin
-        object_dir = "#{storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}"
-        moab = Moab::StorageObject.new(druid, object_dir)
-        object_validator = Stanford::StorageObjectValidator.new(moab)
-        moab_errors = object_validator.validation_errors(Settings.moab.allow_content_subdirs)
-        @ran_moab_validation = true
-        if moab_errors.any?
-          moab_error_msgs = []
-          moab_errors.each do |error_hash|
-            error_hash.each_value { |msg| moab_error_msgs << msg }
-          end
-          results.add_result(AuditResults::INVALID_MOAB, moab_error_msgs)
-        end
-        moab_errors
-      end
-  end
-
-  # TODO: duplicate of method in catalog_to_moab - extract superclass or moab wrapper class??
-  def ran_moab_validation?
-    @ran_moab_validation ||= false
-  end
 
   def create_db_objects(status)
     pp_default_id = PreservationPolicy.default_policy_id
