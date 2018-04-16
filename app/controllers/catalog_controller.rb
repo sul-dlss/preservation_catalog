@@ -15,16 +15,16 @@ class CatalogController < ApplicationController
     @poh = PreservedObjectHandler.new(druid, incoming_version, incoming_size, endpoint)
     poh.create
     status_code =
-      if poh.handler_results.contains_result_code?(:created_new_object)
+      if poh.results.contains_result_code?(:created_new_object)
         :created # 201
-      elsif poh.handler_results.contains_result_code?(:db_obj_already_exists)
+      elsif poh.results.contains_result_code?(:db_obj_already_exists)
         :conflict # 409
-      elsif poh.handler_results.contains_result_code?(:invalid_arguments)
+      elsif poh.results.contains_result_code?(:invalid_arguments)
         :not_acceptable # 406
       else
         :internal_server_error # 500
       end
-    render status: status_code, json: poh.handler_results.to_json
+    render status: status_code, json: poh.results.to_json
   end
 
   # PATCH /catalog/:id
@@ -37,18 +37,18 @@ class CatalogController < ApplicationController
     @poh = PreservedObjectHandler.new(druid, incoming_version, incoming_size, endpoint)
     poh.update_version
     status_code =
-      if poh.handler_results.contains_result_code?(:actual_vers_gt_db_obj)
+      if poh.results.contains_result_code?(:actual_vers_gt_db_obj)
         :ok # 200
-      elsif poh.handler_results.contains_result_code?(:db_obj_does_not_exist)
+      elsif poh.results.contains_result_code?(:db_obj_does_not_exist)
         :not_found # 404
-      elsif poh.handler_results.contains_result_code?(:invalid_arguments)
+      elsif poh.results.contains_result_code?(:invalid_arguments)
         :not_acceptable # 406
-      elsif poh.handler_results.contains_result_code?(:actual_vers_lt_db_obj)
+      elsif poh.results.contains_result_code?(:actual_vers_lt_db_obj)
         :bad_request # 400
       else
         :internal_server_error # 500 including  :unexpected_version, :pc_po_version_mismatch, :db_update_failed
       end
-    render status: status_code, json: poh.handler_results.to_json
+    render status: status_code, json: poh.results.to_json
   end
 
   private
