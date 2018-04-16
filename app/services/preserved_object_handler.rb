@@ -273,7 +273,7 @@ class PreservedObjectHandler
 
   def update_pc_unexpected_version(new_status)
     results.add_result(AuditResults::UNEXPECTED_VERSION, db_obj_name: 'PreservedCopy', db_obj_version: pres_copy.version)
-    version_comparison_results(pres_copy, pres_copy.version)
+    version_comparison_results
 
     update_status(new_status) if new_status
     pres_copy.update_audit_timestamps(ran_moab_validation?, true)
@@ -304,18 +304,18 @@ class PreservedObjectHandler
   end
 
   # expects @incoming_version to be numeric
-  def version_comparison_results(db_object, db_version)
-    if incoming_version == db_version
-      results.add_result(AuditResults::VERSION_MATCHES, db_object.class.name)
-    elsif incoming_version < db_version
+  def version_comparison_results
+    if incoming_version == pres_copy.version
+      results.add_result(AuditResults::VERSION_MATCHES, pres_copy.class.name)
+    elsif incoming_version < pres_copy.version
       results.add_result(
         AuditResults::ACTUAL_VERS_LT_DB_OBJ,
-        { db_obj_name: db_object.class.name, db_obj_version: db_version }
+        { db_obj_name: pres_copy.class.name, db_obj_version: pres_copy.version }
       )
-    elsif incoming_version > db_version
+    elsif incoming_version > pres_copy.version
       results.add_result(
         AuditResults::ACTUAL_VERS_GT_DB_OBJ,
-        { db_obj_name: db_object.class.name, db_obj_version: db_version }
+        { db_obj_name: pres_copy.class.name, db_obj_version: pres_copy.version }
       )
     end
   end
