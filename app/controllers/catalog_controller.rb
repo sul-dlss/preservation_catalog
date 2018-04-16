@@ -11,7 +11,7 @@ class CatalogController < ApplicationController
     druid = poh_params[:druid]
     incoming_version = poh_params[:incoming_version].to_i
     incoming_size = poh_params[:incoming_size].to_i
-    endpoint = Endpoint.find_by(endpoint_name: poh_params[:endpoint_name])
+    endpoint = Endpoint.find_by(storage_location: poh_params[:storage_location])
     @poh = PreservedObjectHandler.new(druid, incoming_version, incoming_size, endpoint)
     poh.create
     status_code =
@@ -33,8 +33,8 @@ class CatalogController < ApplicationController
     druid = poh_params[:druid]
     incoming_version = poh_params[:incoming_version].to_i
     incoming_size = poh_params[:incoming_size].to_i
-    endpoint_name = Endpoint.find_by(endpoint_name: poh_params[:endpoint_name])
-    @poh = PreservedObjectHandler.new(druid, incoming_version, incoming_size, endpoint_name)
+    endpoint = Endpoint.find_by(storage_location: poh_params[:storage_location])
+    @poh = PreservedObjectHandler.new(druid, incoming_version, incoming_size, endpoint)
     poh.update_version
     status_code =
       if poh.handler_results.contains_result_code?(:actual_vers_gt_db_obj)
@@ -53,6 +53,6 @@ class CatalogController < ApplicationController
 
   # strong params / whitelist params
   def poh_params
-    params.permit(:druid, :incoming_version, :incoming_size, :endpoint_name)
+    params.permit(:druid, :incoming_version, :incoming_size, :storage_location)
   end
 end
