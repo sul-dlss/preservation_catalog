@@ -71,10 +71,6 @@ class PreservedObjectHandler
       Rails.logger.debug "check_existence #{druid} called"
       if endpoint.endpoint_type.endpoint_class == 'online'
         transaction_ok = with_active_record_transaction_and_rescue do
-          pres_object = PreservedObject.find_by!(druid: druid)
-          # FIXME: what if there is more than one associated pres_copy?
-          pres_copy = PreservedCopy.find_by!(preserved_object: pres_object, endpoint: endpoint) if pres_object
-
           raise_rollback_if_pc_po_version_mismatch(pres_copy)
 
           if incoming_version == pres_copy.version
@@ -168,6 +164,17 @@ class PreservedObjectHandler
     results.report_results
   end
 
+  protected
+
+  def pres_object
+    @pres_object ||= PreservedObject.find_by!(druid: druid)
+  end
+
+  def pres_copy
+    # FIXME: what if there is more than one associated pres_copy?
+    @pres_copy ||= PreservedCopy.find_by!(preserved_object: pres_object, endpoint: endpoint)
+  end
+
   private
 
   def create_db_objects(status)
@@ -198,9 +205,6 @@ class PreservedObjectHandler
   # NOTE: if we can reduce complexity, remove Metrics/PerceivedComplexity exception in .rubocop.yml
   def update_online_version(status=nil, set_status_to_unexp_version=false)
     transaction_ok = with_active_record_transaction_and_rescue do
-      pres_object = PreservedObject.find_by!(druid: druid)
-      pres_copy = PreservedCopy.find_by!(preserved_object: pres_object, endpoint: endpoint) if pres_object
-
       raise_rollback_if_pc_po_version_mismatch(pres_copy)
 
       # FIXME: what if there is more than one associated pres_copy?
@@ -237,9 +241,6 @@ class PreservedObjectHandler
 
   def update_pc_invalid_moab
     transaction_ok = with_active_record_transaction_and_rescue do
-      pres_object = PreservedObject.find_by!(druid: druid)
-      pres_copy = PreservedCopy.find_by!(preserved_object: pres_object, endpoint: endpoint) if pres_object
-      # FIXME: what if there is more than one associated pres_copy?
       update_status(pres_copy, PreservedCopy::INVALID_MOAB_STATUS)
       pres_copy.update_audit_timestamps(ran_moab_validation?, false)
       pres_copy.save!
@@ -282,10 +283,6 @@ class PreservedObjectHandler
   # shameless green implementation
   def confirm_online_version
     transaction_ok = with_active_record_transaction_and_rescue do
-      pres_object = PreservedObject.find_by!(druid: druid)
-      # FIXME: what if there is more than one associated pres_copy?
-      pres_copy = PreservedCopy.find_by!(preserved_object: pres_object, endpoint: endpoint) if pres_object
-
       raise_rollback_if_pc_po_version_mismatch(pres_copy)
 
       if incoming_version == pres_copy.version
