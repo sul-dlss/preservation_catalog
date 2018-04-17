@@ -1,9 +1,11 @@
 ##
 # mixin with methods for running StorageObjectValidator
 module MoabValidationHandler
-  # expects the class that mixes this in to have the following methods:
-  # #druid
-  # #storage_location
+  # expects the class that includes this module to have the following methods:
+  # #druid - String (the "bare" druid, e.g. 'ab123cd4567', sans 'druid:' prefix)
+  # #storage_location - String - the root directory holding the druid tree (the storage root path)
+  # #results - AuditResults - the instance the including class is using to track findings of interest
+  # #preserved_copy - PreservedCopy - instance of the pres copy being validated
 
   def object_dir
     @object_dir ||= "#{storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}"
