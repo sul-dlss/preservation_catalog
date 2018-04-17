@@ -250,29 +250,6 @@ class PreservedObjectHandler
     results.remove_db_updated_results unless transaction_ok
   end
 
-  # given a PreservedCopy instance and whether the caller found the expected version of it on disk, this will perform
-  # other validations of what's on disk, and will update the status accordingly
-  # TODO: near duplicate of method in CatalogToMoab - extract superclass or moab wrapper class??
-  def set_status_as_seen_on_disk(found_expected_version)
-    if moab_validation_errors.any?
-      update_status(PreservedCopy::INVALID_MOAB_STATUS)
-      return
-    end
-
-    unless found_expected_version
-      update_status(PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS)
-      return
-    end
-
-    # TODO: do the check that'd set INVALID_CHECKSUM_STATUS
-    #  and actually, maybe we should either 1) trigger it async, or 2) break out the status
-    #  update, otherwise checksumming could get enclosed in a DB transaction, and that seems
-    #  like a real bad idea, cuz that transaction might be open a looooooong time.
-    # see https://github.com/sul-dlss/preservation_catalog/issues/612
-
-    update_status(PreservedCopy::OK_STATUS)
-  end
-
   def update_pc_unexpected_version(new_status)
     results.add_result(AuditResults::UNEXPECTED_VERSION, db_obj_name: 'PreservedCopy', db_obj_version: pres_copy.version)
     version_comparison_results

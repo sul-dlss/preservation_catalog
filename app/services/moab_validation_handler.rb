@@ -45,4 +45,23 @@ module MoabValidationHandler
       )
     end
   end
+
+  # found_expected_version is a boolean indicating whether the latest version of the moab
+  # on disk is the expected version according to the catalog.  NOTE: in the case of an update
+  # this might mean the on disk version is one higher than the catalog version, if the
+  # catalog hasn't been updated yet.
+  def set_status_as_seen_on_disk(found_expected_version)
+    if moab_validation_errors.any?
+      update_status(PreservedCopy::INVALID_MOAB_STATUS)
+      return
+    end
+
+    unless found_expected_version
+      update_status(PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS)
+      return
+    end
+
+    # TODO: this still isn't quite honest in the cases where checksum validation hasn't been performed
+    update_status(PreservedCopy::OK_STATUS)
+  end
 end

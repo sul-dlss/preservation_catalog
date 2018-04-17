@@ -126,8 +126,8 @@ Metrics/PerceivedComplexity:
 
 Naming/AccessorMethodName:
   Exclude:
-    # rubocop doesn't like single param 'set_' methods, but this isn't an instace var setter, and nice to have method name be parallel to POH method
-    - 'lib/audit/catalog_to_moab.rb'
+    # rubocop doesn't like single param 'set_' methods, but this isn't an instace var setter
+    - 'app/services/moab_validation_handler.rb'
 Naming/FileName:
   Exclude:
     - 'Capfile'

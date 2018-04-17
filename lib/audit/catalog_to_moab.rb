@@ -122,27 +122,4 @@ class CatalogToMoab
     return true if moab
     false
   end
-
-  # given whether the caller found the expected version of preserved_copy on disk, this will perform
-  # other validations of what's on disk, and will update the status accordingly.
-  # TODO: near duplicate of method in POHandler - extract superclass or moab wrapper class??
-  def set_status_as_seen_on_disk(found_expected_version)
-    if moab_validation_errors.any?
-      update_status(PreservedCopy::INVALID_MOAB_STATUS)
-      return
-    end
-
-    unless found_expected_version
-      update_status(PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS)
-      return
-    end
-
-    # TODO: do the check that'd set INVALID_CHECKSUM_STATUS
-    #  and actually, maybe we should either 1) trigger it async, or 2) break out the status
-    #  update, otherwise checksumming could get enclosed in a DB transaction, and that seems
-    #  like a real bad idea, cuz that transaction might be open a looooooong time.
-    # see https://github.com/sul-dlss/preservation_catalog/issues/612
-
-    update_status(PreservedCopy::OK_STATUS)
-  end
 end
