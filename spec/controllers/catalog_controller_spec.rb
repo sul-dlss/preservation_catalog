@@ -193,7 +193,7 @@ RSpec.describe CatalogController, type: :controller do
       end
 
       it 'returns an internal server error' do
-        expect(response).to have_http_status(:internal_server_error)
+        expect(response).to have_http_status(:bad_request)
       end
     end
 

@@ -43,6 +43,8 @@ class CatalogController < ApplicationController
         :not_found # 404
       elsif poh.handler_results.contains_result_code?(:invalid_arguments)
         :not_acceptable # 406
+      elsif poh.handler_results.contains_result_code?(:actual_vers_lt_db_obj)
+        :bad_request # 400
       else
         :internal_server_error # 500 including  :unexpected_version, :pc_po_version_mismatch, :db_update_failed
       end
