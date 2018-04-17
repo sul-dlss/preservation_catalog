@@ -37,4 +37,12 @@ module MoabValidationHandler
   def ran_moab_validation?
     @ran_moab_validation ||= false
   end
+
+  def update_status(new_status)
+    preserved_copy.update_status(new_status) do
+      results.add_result(
+        AuditResults::PC_STATUS_CHANGED, old_status: preserved_copy.status, new_status: new_status
+      )
+    end
+  end
 end

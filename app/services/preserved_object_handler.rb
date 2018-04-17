@@ -175,6 +175,8 @@ class PreservedObjectHandler
     @pres_copy ||= PreservedCopy.find_by!(preserved_object: pres_object, endpoint: endpoint)
   end
 
+  alias preserved_copy pres_copy
+
   private
 
   def create_db_objects(status)
@@ -316,16 +318,6 @@ class PreservedObjectHandler
       results.add_result(
         AuditResults::ACTUAL_VERS_GT_DB_OBJ,
         { db_obj_name: pres_copy.class.name, db_obj_version: pres_copy.version }
-      )
-    end
-  end
-
-  # TODO: near duplicate of method in catalog_to_moab - extract superclass or moab wrapper class??
-  def update_status(new_status)
-    pres_copy.update_status(new_status) do
-      results.add_result(
-        AuditResults::PC_STATUS_CHANGED,
-        { old_status: pres_copy.status, new_status: new_status }
       )
     end
   end

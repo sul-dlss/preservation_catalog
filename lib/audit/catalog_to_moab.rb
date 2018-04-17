@@ -118,16 +118,6 @@ class CatalogToMoab
 
   private
 
-  # TODO: near duplicate of method in POHandler - extract superclass or moab wrapper class??
-  def update_status(new_status)
-    preserved_copy.update_status(new_status) do
-      results.add_result(
-        AuditResults::PC_STATUS_CHANGED,
-        { old_status: preserved_copy.status, new_status: new_status }
-      )
-    end
-  end
-
   def online_moab_found?
     return true if moab
     false
