@@ -74,7 +74,6 @@ class PreservedObjectHandler
         transaction_ok = with_active_record_transaction_and_rescue do
           raise_rollback_if_pc_po_version_mismatch
 
-          # TODO: add result about not being able to check status.  test for that.
           return results.report_results unless can_validate_current_pres_copy_status?
 
           if incoming_version == pres_copy.version
@@ -268,7 +267,6 @@ class PreservedObjectHandler
     transaction_ok = with_active_record_transaction_and_rescue do
       raise_rollback_if_pc_po_version_mismatch
 
-      # TODO: add result about not being able to check status.  test for that.
       return results.report_results unless can_validate_current_pres_copy_status?
 
       if incoming_version == pres_copy.version

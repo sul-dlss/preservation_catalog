@@ -202,6 +202,11 @@ RSpec.describe CatalogToMoab do
             c2m.check_catalog_version
             expect(pres_copy.reload.status).to eq PreservedCopy::INVALID_CHECKSUM_STATUS
           end
+
+          it 'has an AuditResults entry indicating inability to check the given status' do
+            c2m.check_catalog_version
+            expect(c2m.results.contains_result_code?(AuditResults::UNABLE_TO_CHECK_STATUS)).to eq true
+          end
         end
       end
     end
@@ -280,6 +285,11 @@ RSpec.describe CatalogToMoab do
             allow(mock_sov).to receive(:validation_errors).and_return([])
             c2m.check_catalog_version
             expect(pres_copy.reload.status).to eq PreservedCopy::INVALID_CHECKSUM_STATUS
+          end
+
+          it 'has an AuditResults entry indicating inability to check the given status' do
+            c2m.check_catalog_version
+            expect(c2m.results.contains_result_code?(AuditResults::UNABLE_TO_CHECK_STATUS)).to eq true
           end
         end
       end
@@ -402,6 +412,11 @@ RSpec.describe CatalogToMoab do
             allow(mock_sov).to receive(:validation_errors).and_return([])
             c2m.check_catalog_version
             expect(pres_copy.reload.status).to eq PreservedCopy::INVALID_CHECKSUM_STATUS
+          end
+
+          it 'has an AuditResults entry indicating inability to check the given status' do
+            c2m.check_catalog_version
+            expect(c2m.results.contains_result_code?(AuditResults::UNABLE_TO_CHECK_STATUS)).to eq true
           end
         end
       end

@@ -370,6 +370,13 @@ RSpec.shared_examples 'cannot validate something with INVALID_CHECKSUM_STATUS' d
     po_handler.send(method_sym)
     expect(pc.reload.status).to eq PreservedCopy::INVALID_CHECKSUM_STATUS
   end
+
+  it 'has an AuditResults entry indicating inability to check the given status' do
+    pc.status = PreservedCopy::INVALID_CHECKSUM_STATUS
+    pc.save!
+    po_handler.send(method_sym)
+    expect(po_handler.results.contains_result_code?(AuditResults::UNABLE_TO_CHECK_STATUS)).to eq true
+  end
 end
 
 RSpec.shared_examples 'PreservedCopy already has a status other than OK_STATUS, and incoming_version == pc.version' do |method_sym|

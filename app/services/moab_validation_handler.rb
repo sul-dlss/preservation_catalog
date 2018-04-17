@@ -20,7 +20,9 @@ module MoabValidationHandler
   end
 
   def can_validate_current_pres_copy_status?
-    can_validate_checksums? || preserved_copy.status != PreservedCopy::INVALID_CHECKSUM_STATUS
+    can_do = can_validate_checksums? || preserved_copy.status != PreservedCopy::INVALID_CHECKSUM_STATUS
+    results.add_result(AuditResults::UNABLE_TO_CHECK_STATUS, current_status: preserved_copy.status) unless can_do
+    can_do
   end
 
   def moab_validation_errors
