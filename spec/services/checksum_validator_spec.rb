@@ -20,7 +20,7 @@ RSpec.describe ChecksumValidator do
       expect(cv.bare_druid).to eq druid
       expect(cv.endpoint).to eq endpoint
       expect(cv.full_druid).to eq "druid:#{druid}"
-      expect(cv.checksum_results).to be_an_instance_of AuditResults
+      expect(cv.results).to be_an_instance_of AuditResults
     end
   end
 
@@ -214,20 +214,20 @@ RSpec.describe ChecksumValidator do
 
       it 'returns a positive result for a pres_copy' do
         cv.validate_checksums
-        expect(cv.checksum_results.result_array.first).to have_key(:moab_checksum_valid)
+        expect(cv.results.result_array.first).to have_key(:moab_checksum_valid)
       end
     end
 
     context 'fails validation' do
       it 'returns error codes for a pres_copy' do
         cv.validate_checksums
-        expect(cv.checksum_results.result_array.first).to have_key(:file_not_in_manifest)
+        expect(cv.results.result_array.first).to have_key(:file_not_in_manifest)
       end
     end
 
     context 'reports resulsts ' do
       it 'calls AuditResults.report_results' do
-        expect(cv.checksum_results).to receive(:report_results)
+        expect(cv.results).to receive(:report_results)
         cv.validate_checksums
       end
     end
@@ -296,7 +296,7 @@ RSpec.describe ChecksumValidator do
 
       it 'adds error code and continues executing' do
         allow(results).to receive(:add_result)
-        allow(cv).to receive(:checksum_results).and_return(results)
+        allow(cv).to receive(:results).and_return(results)
         cv.validate_signature_catalog
         expect(results).to have_received(:add_result).with(
           AuditResults::SIGNATURE_CATALOG_NOT_IN_MOAB, anything

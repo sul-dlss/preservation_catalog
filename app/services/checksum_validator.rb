@@ -1,7 +1,7 @@
 # code for validating Moab checksums
 class ChecksumValidator
 
-  attr_reader :checksum_results, :endpoint, :full_druid, :preserved_copy, :bare_druid
+  attr_reader :results, :endpoint, :full_druid, :preserved_copy, :bare_druid
 
   DATA = 'data'.freeze
   MANIFESTS = 'manifests'.freeze
@@ -18,7 +18,7 @@ class ChecksumValidator
     @preserved_copy = preserved_copy
     @bare_druid = preserved_copy.preserved_object.druid
     @endpoint = Endpoint.find_by(endpoint_name: endpoint_name)
-    @checksum_results = AuditResults.new(bare_druid, nil, endpoint)
+    @results = AuditResults.new(bare_druid, nil, endpoint)
     @full_druid = "druid:#{bare_druid}"
   end
 
@@ -26,8 +26,8 @@ class ChecksumValidator
     validate_manifest_inventories
     validate_signature_catalog
     preserved_copy.update!(last_checksum_validation: Time.current)
-    checksum_results.add_result(AuditResults::MOAB_CHECKSUM_VALID) if checksum_results.result_array.empty?
-    checksum_results.report_results
+    results.add_result(AuditResults::MOAB_CHECKSUM_VALID) if results.result_array.empty?
+    results.report_results
   end
 
   def validate_manifest_inventories
@@ -44,9 +44,9 @@ class ChecksumValidator
   def validate_signature_catalog_listing
     latest_signature_catalog_entries.each { |entry| validate_signature_catalog_entry(entry) }
   rescue Errno::ENOENT
-    checksum_results.add_result(AuditResults::SIGNATURE_CATALOG_NOT_IN_MOAB, signature_catalog_path: latest_signature_catalog_path)
+    results.add_result(AuditResults::SIGNATURE_CATALOG_NOT_IN_MOAB, signature_catalog_path: latest_signature_catalog_path)
   rescue Nokogiri::XML::SyntaxError
-    checksum_results.add_result(AuditResults::INVALID_MANIFEST, manifest_file_path: latest_signature_catalog_path)
+    results.add_result(AuditResults::INVALID_MANIFEST, manifest_file_path: latest_signature_catalog_path)
   end
 
   def flag_unexpected_data_files
@@ -60,9 +60,9 @@ class ChecksumValidator
       verification_result = moab_version.verify_manifest_inventory
       parse_verification_subentities(verification_result)
     rescue Nokogiri::XML::SyntaxError
-      checksum_results.add_result(AuditResults::INVALID_MANIFEST, manifest_file_path: manifest_file_path)
+      results.add_result(AuditResults::INVALID_MANIFEST, manifest_file_path: manifest_file_path)
     rescue Errno::ENOENT
-      checksum_results.add_result(AuditResults::MANIFEST_NOT_IN_MOAB, manifest_file_path: manifest_file_path)
+      results.add_result(AuditResults::MANIFEST_NOT_IN_MOAB, manifest_file_path: manifest_file_path)
     end
   end
 
@@ -85,7 +85,7 @@ class ChecksumValidator
         file_path: "#{subentity.details['other']}/#{details['basis_path']}",
         version: subentity.details['basis']
       }
-      checksum_results.add_result(AuditResults::MOAB_FILE_CHECKSUM_MISMATCH, mismatch_error_data)
+      results.add_result(AuditResults::MOAB_FILE_CHECKSUM_MISMATCH, mismatch_error_data)
     end
   end
 
@@ -95,7 +95,7 @@ class ChecksumValidator
         file_path: "#{subentity.details['other']}/#{details['other_path']}",
         manifest_file_path: "#{subentity.details['other']}/#{MANIFESTS_XML}"
       }
-      checksum_results.add_result(AuditResults::FILE_NOT_IN_MANIFEST, absent_from_manifest_data)
+      results.add_result(AuditResults::FILE_NOT_IN_MANIFEST, absent_from_manifest_data)
     end
   end
 
@@ -105,19 +105,19 @@ class ChecksumValidator
         manifest_file_path: "#{subentity.details['other']}/#{MANIFESTS_XML}",
         file_path: "#{subentity.details['other']}/#{details['basis_path']}"
       }
-      checksum_results.add_result(AuditResults::FILE_NOT_IN_MOAB, absent_from_moab_data)
+      results.add_result(AuditResults::FILE_NOT_IN_MOAB, absent_from_moab_data)
     end
   end
 
   def validate_signature_catalog_entry(entry)
     unless entry.signature.eql?(calculated_signature(signature_catalog_entry_path(entry)))
       mismatch_error_data = { file_path: signature_catalog_entry_path(entry), version: entry.version_id }
-      checksum_results.add_result(AuditResults::MOAB_FILE_CHECKSUM_MISMATCH, mismatch_error_data)
+      results.add_result(AuditResults::MOAB_FILE_CHECKSUM_MISMATCH, mismatch_error_data)
     end
   rescue Errno::ENOENT
     absent_from_moab_data = { manifest_file_path: latest_signature_catalog_path,
                               file_path: signature_catalog_entry_path(entry) }
-    checksum_results.add_result(AuditResults::FILE_NOT_IN_MOAB, absent_from_moab_data)
+    results.add_result(AuditResults::FILE_NOT_IN_MOAB, absent_from_moab_data)
   end
 
   def moab_storage_object
@@ -144,7 +144,7 @@ class ChecksumValidator
         latest_moab_version.signature_catalog.entries
       else
         absent_from_moab_data = { signature_catalog_path: latest_moab_version.signature_catalog }
-        checksum_results.add_result(AuditResults::SIGNATURE_CATALOG_NOT_IN_MOAB, absent_from_moab_data)
+        results.add_result(AuditResults::SIGNATURE_CATALOG_NOT_IN_MOAB, absent_from_moab_data)
         []
       end
     end
@@ -152,7 +152,7 @@ class ChecksumValidator
   rescue Errno::ENOENT, NoMethodError
     sigcat_path = "#{latest_moab_version.version_pathname}/#{MANIFESTS}/#{SIGNATURE_XML}"
     absent_from_moab_data = { signature_catalog_path: sigcat_path }
-    checksum_results.add_result(AuditResults::SIGNATURE_CATALOG_NOT_IN_MOAB, absent_from_moab_data)
+    results.add_result(AuditResults::SIGNATURE_CATALOG_NOT_IN_MOAB, absent_from_moab_data)
     []
   end
 
@@ -166,7 +166,7 @@ class ChecksumValidator
 
   def validate_against_signature_catalog(data_file)
     absent_from_signature_catalog_data = { file_path: data_file, signature_catalog_path: latest_signature_catalog_path }
-    checksum_results.add_result(AuditResults::FILE_NOT_IN_SIGNATURE_CATALOG, absent_from_signature_catalog_data) unless signature_catalog_has_file?(data_file)
+    results.add_result(AuditResults::FILE_NOT_IN_SIGNATURE_CATALOG, absent_from_signature_catalog_data) unless signature_catalog_has_file?(data_file)
   end
 
   def signature_catalog_has_file?(file)

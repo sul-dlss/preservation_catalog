@@ -58,7 +58,7 @@ class Checksum
       endpoint_name = pc.endpoint.endpoint_name
       cv = ChecksumValidator.new(pc, endpoint_name)
       cv.validate_checksums
-      checksum_results_lists << cv.checksum_results
+      checksum_results_lists << cv.results
     end
     end_msg = "#{Time.now.utc.iso8601} CV validate_druid ended for #{druid}"
     puts end_msg
