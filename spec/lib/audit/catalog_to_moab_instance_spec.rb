@@ -153,20 +153,27 @@ RSpec.describe CatalogToMoab do
         c2m.check_catalog_version
       end
 
-      context 'check whether PreservedCopy already has a status other than OK_STATUS, re-check status if so' do
+      context 'check whether PreservedCopy already has a status other than OK_STATUS, re-check status if so;' do
+        it "had OK_STATUS, should keep OK_STATUS" do
+          pres_copy.status = 'ok'
+          pres_copy.save!
+          allow(c2m).to receive(:moab_validation_errors).and_return([])
+          c2m.check_catalog_version
+          expect(pres_copy.reload).to be_ok
+        end
+
         [
           PreservedCopy::VALIDITY_UNKNOWN_STATUS,
-          PreservedCopy::OK_STATUS,
           PreservedCopy::ONLINE_MOAB_NOT_FOUND_STATUS,
           PreservedCopy::INVALID_MOAB_STATUS,
           PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
         ].each do |orig_status|
-          it "had #{orig_status}, should now have OK_STATUS" do
+          it "had #{orig_status}, should now have validity_unknown" do
             pres_copy.status = orig_status
             pres_copy.save!
             allow(c2m).to receive(:moab_validation_errors).and_return([])
             c2m.check_catalog_version
-            expect(pres_copy.reload.status).to eq PreservedCopy::OK_STATUS
+            expect(pres_copy.reload).to be_validity_unknown
           end
         end
 
@@ -225,7 +232,7 @@ RSpec.describe CatalogToMoab do
         c2m.check_catalog_version
       end
 
-      context 'check whether PreservedCopy already has a status other than OK_STATUS, re-check status if possible' do
+      context 'runs validations other than checksum' do
         [
           PreservedCopy::VALIDITY_UNKNOWN_STATUS,
           PreservedCopy::OK_STATUS,
@@ -233,14 +240,14 @@ RSpec.describe CatalogToMoab do
           PreservedCopy::INVALID_MOAB_STATUS,
           PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
         ].each do |orig_status|
-          it "had #{orig_status}, should now have OK_STATUS" do
+          it "had #{orig_status}, should now have validity_unknown" do
             pres_copy.status = orig_status
             pres_copy.save!
             mock_sov = instance_double(Stanford::StorageObjectValidator)
             allow(mock_sov).to receive(:validation_errors).and_return([])
             allow(Stanford::StorageObjectValidator).to receive(:new).and_return(mock_sov)
             c2m.check_catalog_version
-            expect(pres_copy.reload.status).to eq PreservedCopy::OK_STATUS
+            expect(pres_copy.reload).to be_validity_unknown
           end
         end
 
@@ -264,7 +271,7 @@ RSpec.describe CatalogToMoab do
           end
         end
 
-        context 'had INVALID_CHECKSUM_STATUS, which C2M cannot validate' do
+        context 'had INVALID_CHECKSUM_STATUS (which C2M cannot validate)' do
           let(:mock_sov) { instance_double(Stanford::StorageObjectValidator) }
 
           before do

@@ -147,7 +147,7 @@ RSpec.describe PreservedObjectHandler do
                 pc.status = PreservedCopy::INVALID_MOAB_STATUS
                 pc.save!
                 po_handler.check_existence
-                expect(pc.reload.status).to eq PreservedCopy::OK_STATUS
+                expect(pc.reload.status).to eq PreservedCopy::VALIDITY_UNKNOWN_STATUS
               end
             end
             context 'unchanged' do
@@ -330,19 +330,19 @@ RSpec.describe PreservedObjectHandler do
             po_handler.check_existence
             expect(pc.reload.status).to eq PreservedCopy::OK_STATUS
           end
-          it 'had INVALID_MOAB_STATUS, was remediated, should now have OK_STATUS' do
+          it 'had INVALID_MOAB_STATUS, was remediated, should now have VALIDITY_UNKNOWN_STATUS' do
             pc.status = PreservedCopy::INVALID_MOAB_STATUS
             pc.save!
             allow(po_handler).to receive(:moab_validation_errors).and_return([])
             po_handler.check_existence
-            expect(pc.reload.status).to eq PreservedCopy::OK_STATUS
+            expect(pc.reload.status).to eq PreservedCopy::VALIDITY_UNKNOWN_STATUS
           end
           it 'had UNEXPECTED_VERSION_ON_STORAGE_STATUS, seems to have an acceptable version now' do
             pc.status = PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
             pc.save!
             allow(po_handler).to receive(:moab_validation_errors).and_return([])
             po_handler.check_existence
-            expect(pc.reload.status).to eq PreservedCopy::OK_STATUS
+            expect(pc.reload.status).to eq PreservedCopy::VALIDITY_UNKNOWN_STATUS
           end
         end
       end
@@ -471,7 +471,7 @@ RSpec.describe PreservedObjectHandler do
               version: incoming_version,
               size: incoming_size,
               endpoint: ep,
-              status: PreservedCopy::OK_STATUS, # NOTE: ensuring this particular status
+              status: PreservedCopy::VALIDITY_UNKNOWN_STATUS, # NOTE: ensuring this particular status
               last_moab_validation: an_instance_of(ActiveSupport::TimeWithZone),
               last_version_audit: an_instance_of(ActiveSupport::TimeWithZone)
             }

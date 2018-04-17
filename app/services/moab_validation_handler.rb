@@ -73,7 +73,15 @@ module MoabValidationHandler
       return
     end
 
-    # TODO: this still isn't quite honest in the cases where checksum validation hasn't been performed
-    update_status(PreservedCopy::OK_STATUS)
+    # NOTE: subclasses which override this method should NOT perform checksum validation inside of this method!
+    # CV is expensive, and can run a while, and this method should likely be called from within a DB transaction,
+    # but CV definitely shouldn't happen inside a DB transaction.
+    if results.contains_result_code?(AuditResults::MOAB_CHECKSUM_VALID)
+      update_status(PreservedCopy::OK_STATUS)
+    elsif can_validate_checksums?
+      update_status(PreservedCopy::INVALID_CHECKSUM_STATUS)
+    else
+      update_status(PreservedCopy::VALIDITY_UNKNOWN_STATUS)
+    end
   end
 end

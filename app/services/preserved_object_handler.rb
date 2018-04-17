@@ -36,7 +36,7 @@ class PreservedObjectHandler
     elsif PreservedObject.exists?(druid: druid)
       results.add_result(AuditResults::DB_OBJ_ALREADY_EXISTS, 'PreservedObject')
     elsif moab_validation_errors.empty?
-      create_db_objects(PreservedCopy::OK_STATUS)
+      create_db_objects(PreservedCopy::VALIDITY_UNKNOWN_STATUS)
     else
       create_db_objects(PreservedCopy::INVALID_MOAB_STATUS)
     end
@@ -98,7 +98,7 @@ class PreservedObjectHandler
     else
       results.add_result(AuditResults::DB_OBJ_DOES_NOT_EXIST, 'PreservedObject')
       if moab_validation_errors.empty?
-        create_db_objects(PreservedCopy::OK_STATUS)
+        create_db_objects(PreservedCopy::VALIDITY_UNKNOWN_STATUS)
       else
         create_db_objects(PreservedCopy::INVALID_MOAB_STATUS)
       end
@@ -132,7 +132,7 @@ class PreservedObjectHandler
       if endpoint.endpoint_type.endpoint_class == 'online'
         if moab_validation_errors.empty?
           # NOTE: we deal with active record transactions in update_online_version, not here
-          update_online_version(PreservedCopy::OK_STATUS)
+          update_online_version(PreservedCopy::VALIDITY_UNKNOWN_STATUS)
         else
           update_pc_invalid_moab
         end
