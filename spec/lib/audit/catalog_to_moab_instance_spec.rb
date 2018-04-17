@@ -93,7 +93,8 @@ RSpec.describe CatalogToMoab do
           PreservedCopy::OK_STATUS,
           PreservedCopy::ONLINE_MOAB_NOT_FOUND_STATUS,
           PreservedCopy::INVALID_MOAB_STATUS,
-          PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
+          PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS,
+          PreservedCopy::INVALID_CHECKSUM_STATUS
         ].each do |orig_status|
           it "had #{orig_status}, should now have ONLINE_MOAB_NOT_FOUND_STATUS" do
             pres_copy.status = orig_status
@@ -187,6 +188,21 @@ RSpec.describe CatalogToMoab do
             expect(pres_copy.reload.status).to eq PreservedCopy::INVALID_MOAB_STATUS
           end
         end
+
+        context 'started with INVALID_CHECKSUM_STATUS' do
+          before do
+            pres_copy.status = PreservedCopy::INVALID_CHECKSUM_STATUS
+            pres_copy.save!
+          end
+
+          it 'remains in INVALID_CHECKSUM_STATUS' do
+            allow(c2m).to receive(:moab_validation_errors).and_return(
+              [{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }]
+            )
+            c2m.check_catalog_version
+            expect(pres_copy.reload.status).to eq PreservedCopy::INVALID_CHECKSUM_STATUS
+          end
+        end
       end
     end
 
@@ -204,7 +220,7 @@ RSpec.describe CatalogToMoab do
         c2m.check_catalog_version
       end
 
-      context 'check whether PreservedCopy already has a status other than OK_STATUS, re-check status if so' do
+      context 'check whether PreservedCopy already has a status other than OK_STATUS, re-check status if possible' do
         [
           PreservedCopy::VALIDITY_UNKNOWN_STATUS,
           PreservedCopy::OK_STATUS,
@@ -240,6 +256,30 @@ RSpec.describe CatalogToMoab do
             allow(Stanford::StorageObjectValidator).to receive(:new).and_return(mock_sov)
             c2m.check_catalog_version
             expect(pres_copy.reload.status).to eq PreservedCopy::INVALID_MOAB_STATUS
+          end
+        end
+
+        context 'had INVALID_CHECKSUM_STATUS, which C2M cannot validate' do
+          let(:mock_sov) { instance_double(Stanford::StorageObjectValidator) }
+
+          before do
+            allow(Stanford::StorageObjectValidator).to receive(:new).and_return(mock_sov)
+            pres_copy.status = PreservedCopy::INVALID_CHECKSUM_STATUS
+            pres_copy.save!
+          end
+
+          it 'may have moab validation errors, but should still have INVALID_CHECKSUM_STATUS' do
+            allow(mock_sov).to receive(:validation_errors).and_return(
+              [{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }]
+            )
+            c2m.check_catalog_version
+            expect(pres_copy.reload.status).to eq PreservedCopy::INVALID_CHECKSUM_STATUS
+          end
+
+          it 'would have no moab validation errors, but should still have INVALID_CHECKSUM_STATUS' do
+            allow(mock_sov).to receive(:validation_errors).and_return([])
+            c2m.check_catalog_version
+            expect(pres_copy.reload.status).to eq PreservedCopy::INVALID_CHECKSUM_STATUS
           end
         end
       end
@@ -306,7 +346,7 @@ RSpec.describe CatalogToMoab do
         c2m.check_catalog_version
       end
 
-      context 'check whether PreservedCopy already has a status other than OK_STATUS, re-check status if so' do
+      context 'check whether PreservedCopy already has a status other than OK_STATUS, re-check status if possible' do
         [
           PreservedCopy::VALIDITY_UNKNOWN_STATUS,
           PreservedCopy::OK_STATUS,
@@ -338,6 +378,30 @@ RSpec.describe CatalogToMoab do
             )
             c2m.check_catalog_version
             expect(pres_copy.reload.status).to eq PreservedCopy::INVALID_MOAB_STATUS
+          end
+        end
+
+        context 'had INVALID_CHECKSUM_STATUS, which C2M cannot validate' do
+          let(:mock_sov) { instance_double(Stanford::StorageObjectValidator) }
+
+          before do
+            allow(Stanford::StorageObjectValidator).to receive(:new).and_return(mock_sov)
+            pres_copy.status = PreservedCopy::INVALID_CHECKSUM_STATUS
+            pres_copy.save!
+          end
+
+          it 'may have moab validation errors, but should still have INVALID_CHECKSUM_STATUS' do
+            allow(mock_sov).to receive(:validation_errors).and_return(
+              [{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }]
+            )
+            c2m.check_catalog_version
+            expect(pres_copy.reload.status).to eq PreservedCopy::INVALID_CHECKSUM_STATUS
+          end
+
+          it 'would have no moab validation errors, but should still have INVALID_CHECKSUM_STATUS' do
+            allow(mock_sov).to receive(:validation_errors).and_return([])
+            c2m.check_catalog_version
+            expect(pres_copy.reload.status).to eq PreservedCopy::INVALID_CHECKSUM_STATUS
           end
         end
       end

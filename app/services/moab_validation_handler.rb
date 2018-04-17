@@ -15,6 +15,14 @@ module MoabValidationHandler
     @moab ||= Moab::StorageObject.new(druid, object_dir)
   end
 
+  def can_validate_checksums?
+    false
+  end
+
+  def can_validate_current_pres_copy_status?
+    can_validate_checksums? || preserved_copy.status != PreservedCopy::INVALID_CHECKSUM_STATUS
+  end
+
   def moab_validation_errors
     @moab_errors ||=
       begin

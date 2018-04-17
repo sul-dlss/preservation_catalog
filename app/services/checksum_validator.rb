@@ -57,6 +57,11 @@ class ChecksumValidator
     validate_signature_catalog_listing
   end
 
+  # override from MoabValidationHandler inclusion
+  def can_validate_checksums?
+    true
+  end
+
   private
 
   def validate_signature_catalog_listing

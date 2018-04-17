@@ -65,6 +65,7 @@ class PreservedObjectHandler
   # this is a long, complex method (shameless green); if it is refactored, revisit the exceptions in rubocop.yml
   def check_existence
     results.check_name = 'check_existence'
+
     if invalid?
       results.add_result(AuditResults::INVALID_ARGUMENTS, errors.full_messages)
     elsif PreservedObject.exists?(druid: druid)
@@ -72,6 +73,9 @@ class PreservedObjectHandler
       if endpoint.endpoint_type.endpoint_class == 'online'
         transaction_ok = with_active_record_transaction_and_rescue do
           raise_rollback_if_pc_po_version_mismatch
+
+          # TODO: add result about not being able to check status.  test for that.
+          return results.report_results unless can_validate_current_pres_copy_status?
 
           if incoming_version == pres_copy.version
             set_status_as_seen_on_disk(true) unless pres_copy.status == PreservedCopy::OK_STATUS
@@ -263,6 +267,9 @@ class PreservedObjectHandler
   def confirm_online_version
     transaction_ok = with_active_record_transaction_and_rescue do
       raise_rollback_if_pc_po_version_mismatch
+
+      # TODO: add result about not being able to check status.  test for that.
+      return results.report_results unless can_validate_current_pres_copy_status?
 
       if incoming_version == pres_copy.version
         set_status_as_seen_on_disk(true) unless pres_copy.status == PreservedCopy::OK_STATUS

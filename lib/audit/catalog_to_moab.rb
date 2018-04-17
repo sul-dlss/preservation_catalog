@@ -88,6 +88,9 @@ class CatalogToMoab
       return
     end
 
+    # TODO: add result about not being able to check status.  test for that.
+    return results.report_results unless can_validate_current_pres_copy_status?
+
     moab_version = moab.current_version_id
     results.actual_version = moab_version
     catalog_version = preserved_copy.version
