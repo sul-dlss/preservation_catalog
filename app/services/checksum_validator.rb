@@ -1,7 +1,13 @@
+require 'moab_validation_handler.rb'
+
 # code for validating Moab checksums
 class ChecksumValidator
+  include ::MoabValidationHandler
 
   attr_reader :results, :endpoint, :full_druid, :preserved_copy, :bare_druid
+
+  alias druid bare_druid
+  delegate :storage_location, to: :endpoint
 
   DATA = 'data'.freeze
   MANIFESTS = 'manifests'.freeze
@@ -25,8 +31,20 @@ class ChecksumValidator
   def validate_checksums
     validate_manifest_inventories
     validate_signature_catalog
-    preserved_copy.update!(last_checksum_validation: Time.current)
-    results.add_result(AuditResults::MOAB_CHECKSUM_VALID) if results.result_array.empty?
+
+    transaction_ok = ActiveRecordUtils.with_transaction_and_rescue(results) do
+      preserved_copy.last_checksum_validation = Time.current
+      if results.result_array.empty?
+        results.add_result(AuditResults::MOAB_CHECKSUM_VALID)
+        found_expected_version = moab.current_version_id == preserved_copy.version
+        set_status_as_seen_on_disk(found_expected_version)
+      else
+        update_status(PreservedCopy::INVALID_CHECKSUM_STATUS)
+      end
+      preserved_copy.save!
+    end
+    results.remove_db_updated_results unless transaction_ok
+
     results.report_results
   end
 

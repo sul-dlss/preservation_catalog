@@ -208,7 +208,7 @@ RSpec.describe ChecksumValidator do
   end
 
   context '#validate_checksums' do
-    context 'passes validation' do
+    context 'passes checksum validation' do
       let(:druid) { 'bz514sm9647' }
       let(:endpoint_name) { 'fixture_sr1' }
 
@@ -216,12 +216,170 @@ RSpec.describe ChecksumValidator do
         cv.validate_checksums
         expect(cv.results.result_array.first).to have_key(:moab_checksum_valid)
       end
+
+      [
+        PreservedCopy::ONLINE_MOAB_NOT_FOUND_STATUS,
+        PreservedCopy::INVALID_MOAB_STATUS,
+        PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS,
+        PreservedCopy::INVALID_CHECKSUM_STATUS,
+        PreservedCopy::VALIDITY_UNKNOWN_STATUS
+      ].each do |initial_status|
+        it "sets status to OK_STATUS if it was previously #{initial_status}" do
+          pres_copy.status = initial_status
+          pres_copy.save!
+          expect { cv.validate_checksums }.to change { pres_copy.status }.to PreservedCopy::OK_STATUS
+          expect(pres_copy.reload.status).to eq PreservedCopy::OK_STATUS
+        end
+      end
+
+      it "leaves status of OK_STATUS as-is" do
+        pres_copy.status = PreservedCopy::OK_STATUS
+        pres_copy.save!
+        expect { cv.validate_checksums }.not_to(change { pres_copy.status })
+        expect(pres_copy.reload.status).to eq PreservedCopy::OK_STATUS
+      end
+
+      context 'fails other moab validation' do
+        context 'version on disk does not match expected version from catalog' do
+          before do
+            pres_copy.version = 4 # this is one greater than the version on disk for bz514sm9647
+            pres_copy.save!
+          end
+
+          [
+            PreservedCopy::OK_STATUS,
+            PreservedCopy::ONLINE_MOAB_NOT_FOUND_STATUS,
+            PreservedCopy::INVALID_MOAB_STATUS,
+            PreservedCopy::INVALID_CHECKSUM_STATUS,
+            PreservedCopy::VALIDITY_UNKNOWN_STATUS
+          ].each do |initial_status|
+            it "sets status to UNEXPECTED_VERSION_ON_STORAGE_STATUS if it was previously #{initial_status}" do
+              pres_copy.status = initial_status
+              pres_copy.save!
+              expect { cv.validate_checksums }.to change { pres_copy.status }.to PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
+              expect(pres_copy.reload.status).to eq PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
+            end
+          end
+
+          it 'leaves status as UNEXPECTED_VERSION_ON_STORAGE_STATUS if pres copy started in that state' do
+            pres_copy.status = PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
+            pres_copy.save!
+            expect { cv.validate_checksums }.not_to(change { pres_copy.status })
+            expect(pres_copy.reload.status).to eq PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
+          end
+        end
+
+        context '#moab_validation_errors indicates there are structural errors' do
+          before do
+            allow(cv).to receive(:moab_validation_errors).and_return([{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }])
+          end
+
+          [
+            PreservedCopy::OK_STATUS,
+            PreservedCopy::ONLINE_MOAB_NOT_FOUND_STATUS,
+            PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS,
+            PreservedCopy::INVALID_CHECKSUM_STATUS,
+            PreservedCopy::VALIDITY_UNKNOWN_STATUS
+          ].each do |initial_status|
+            it "sets status as INVALID_MOAB_STATUS if it was #{initial_status}" do
+              pres_copy.status = initial_status
+              pres_copy.save!
+              expect { cv.validate_checksums }.to change { pres_copy.status }.to PreservedCopy::INVALID_MOAB_STATUS
+              expect(pres_copy.reload.status).to eq PreservedCopy::INVALID_MOAB_STATUS
+            end
+          end
+
+          it 'leaves status as INVALID_MOAB_STATUS if pres copy started in that state' do
+            pres_copy.status = PreservedCopy::INVALID_MOAB_STATUS
+            pres_copy.save!
+            expect { cv.validate_checksums }.not_to(change { pres_copy.status })
+            expect(pres_copy.reload.status).to eq PreservedCopy::INVALID_MOAB_STATUS
+          end
+        end
+      end
     end
 
-    context 'fails validation' do
+    context 'fails checksum validation' do
       it 'returns error codes for a pres_copy' do
         cv.validate_checksums
         expect(cv.results.result_array.first).to have_key(:file_not_in_manifest)
+      end
+
+      [
+        PreservedCopy::OK_STATUS,
+        PreservedCopy::ONLINE_MOAB_NOT_FOUND_STATUS,
+        PreservedCopy::INVALID_MOAB_STATUS,
+        PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS,
+        PreservedCopy::VALIDITY_UNKNOWN_STATUS
+      ].each do |initial_status|
+        it "sets PreservedCopy status to INVALID_CHECKSUM_STATUS if it was initially #{initial_status}" do
+          pres_copy.status = initial_status
+          expect { cv.validate_checksums }.to change { pres_copy.status }.to PreservedCopy::INVALID_CHECKSUM_STATUS
+        end
+      end
+
+      it 'leaves PreservedCopy status as INVALID_CHECKSUM_STATUS if it already was' do
+        pres_copy.status = PreservedCopy::INVALID_CHECKSUM_STATUS
+        expect { cv.validate_checksums }.not_to(change { pres_copy.status })
+      end
+
+      context 'fails other moab validation' do
+        context 'version on disk does not match expected version from catalog' do
+          before do
+            pres_copy.version = 4 # this is one greater than the version on disk for bz514sm9647
+            pres_copy.save!
+          end
+
+          [
+            PreservedCopy::OK_STATUS,
+            PreservedCopy::ONLINE_MOAB_NOT_FOUND_STATUS,
+            PreservedCopy::INVALID_MOAB_STATUS,
+            PreservedCopy::VALIDITY_UNKNOWN_STATUS,
+            PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
+          ].each do |initial_status|
+            it "sets status to INVALID_CHECKSUM_STATUS if it was previously #{initial_status}" do
+              pres_copy.status = initial_status
+              pres_copy.save!
+              expect { cv.validate_checksums }.to change { pres_copy.status }.to PreservedCopy::INVALID_CHECKSUM_STATUS
+              expect(pres_copy.reload.status).to eq PreservedCopy::INVALID_CHECKSUM_STATUS
+            end
+          end
+
+          it 'leaves status as INVALID_CHECKSUM_STATUS if pres copy started in that state' do
+            pres_copy.status = PreservedCopy::INVALID_CHECKSUM_STATUS
+            pres_copy.save!
+            expect { cv.validate_checksums }.not_to(change { pres_copy.status })
+            expect(pres_copy.reload.status).to eq PreservedCopy::INVALID_CHECKSUM_STATUS
+          end
+        end
+
+        context '#moab_validation_errors indicates there are structural errors' do
+          before do
+            allow(cv).to receive(:moab_validation_errors).and_return([{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }])
+          end
+
+          [
+            PreservedCopy::OK_STATUS,
+            PreservedCopy::ONLINE_MOAB_NOT_FOUND_STATUS,
+            PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS,
+            PreservedCopy::VALIDITY_UNKNOWN_STATUS,
+            PreservedCopy::INVALID_MOAB_STATUS
+          ].each do |initial_status|
+            it "sets status as INVALID_CHECKSUM_STATUS if it was #{initial_status}" do
+              pres_copy.status = initial_status
+              pres_copy.save!
+              expect { cv.validate_checksums }.to change { pres_copy.status }.to PreservedCopy::INVALID_CHECKSUM_STATUS
+              expect(pres_copy.reload.status).to eq PreservedCopy::INVALID_CHECKSUM_STATUS
+            end
+          end
+
+          it 'leaves status as INVALID_CHECKSUM_STATUS if pres copy started in that state' do
+            pres_copy.status = PreservedCopy::INVALID_CHECKSUM_STATUS
+            pres_copy.save!
+            expect { cv.validate_checksums }.not_to(change { pres_copy.status })
+            expect(pres_copy.reload.status).to eq PreservedCopy::INVALID_CHECKSUM_STATUS
+          end
+        end
       end
     end
 
@@ -229,6 +387,34 @@ RSpec.describe ChecksumValidator do
       it 'calls AuditResults.report_results' do
         expect(cv.results).to receive(:report_results)
         cv.validate_checksums
+      end
+    end
+
+    context 'deals with transactions properly' do
+      let(:druid) { 'bz514sm9647' } # should pass validation
+      let(:endpoint_name) { 'fixture_sr1' }
+
+      before do
+        # would result in a status update if the save succeeded
+        pres_copy.status = PreservedCopy::ONLINE_MOAB_NOT_FOUND_STATUS
+        pres_copy.save!
+
+        # do this second since we save! as part of setup
+        allow(pres_copy).to receive(:save!).and_raise(ActiveRecord::ConnectionTimeoutError)
+      end
+
+      it 'does not re-throw an ActiveRecord error we know how to deal with' do
+        expect { cv.validate_checksums }.not_to raise_error
+      end
+
+      it 'has a result code indicating the update failed' do
+        cv.validate_checksums
+        expect(cv.results.contains_result_code?(AuditResults::DB_UPDATE_FAILED)).to eq true
+      end
+
+      it 'does not have a result code indicating the update happened' do
+        cv.validate_checksums
+        expect(cv.results.contains_result_code?(AuditResults::PC_STATUS_CHANGED)).to eq false
       end
     end
   end
