@@ -97,7 +97,7 @@ RSpec.describe Checksum do
     include_context 'fixture moabs in db'
     it 'creates an instance ancd calls #validate_checksums for every result' do
       druid = 'bz514sm9647'
-      pres_copies = PreservedCopy.joins(:preserved_object).where(preserved_objects: { druid: druid })
+      pres_copies = PreservedCopy.by_druid(druid)
       cv_list = pres_copies.map do |pc|
         ChecksumValidator.new(pc, endpoint_name)
       end

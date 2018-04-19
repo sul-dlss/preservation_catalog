@@ -333,6 +333,13 @@ RSpec.describe PreservedCopy, type: :model do
     end
   end
 
+  context '.by_druid' do
+    it 'returns the expected preserved copies' do
+      expect(PreservedCopy.by_druid('ab123cd4567').length).to eq 1
+      expect(PreservedCopy.by_druid('bj102hs9687').length).to eq 0
+    end
+  end
+
   # this is not intended to exhaustively test all permutations, but to highlight/test likely useful combos
   context 'chained scopes' do
     context '.fixity_check_expired' do
