@@ -40,6 +40,10 @@ class PreservedCopy < ApplicationRecord
     joins(:endpoint).where(endpoints: { storage_location: storage_dir })
   }
 
+  scope :by_druid, lambda { |druid|
+    joins(:preserved_object).where(preserved_objects: { druid: druid })
+  }
+
   scope :least_recent_version_audit, lambda { |last_checked_b4_date|
     where('last_version_audit IS NULL or last_version_audit < ?', normalize_date(last_checked_b4_date))
       .order('last_version_audit IS NOT NULL, last_version_audit ASC')
