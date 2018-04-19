@@ -259,6 +259,7 @@ RSpec.describe PreservedObjectHandler do
         allow(pc).to receive(:changed?).and_return(true)
         allow(pc).to receive(:save!)
         allow(pc).to receive(:matches_po_current_version?).and_return(true)
+        allow(pc).to receive(:status).and_return(PreservedCopy::OK_STATUS)
         allow(po_handler).to receive(:moab_validation_errors).and_return([])
         po_handler.confirm_version
         expect(po).not_to have_received(:save!)

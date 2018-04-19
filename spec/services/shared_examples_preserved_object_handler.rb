@@ -363,6 +363,22 @@ RSpec.shared_examples 'PreservedObject current_version does not match online PC 
   end
 end
 
+RSpec.shared_examples 'cannot validate something with INVALID_CHECKSUM_STATUS' do |method_sym|
+  it 'PreservedCopy keeps INVALID_CHECKSUM_STATUS' do
+    pc.status = PreservedCopy::INVALID_CHECKSUM_STATUS
+    pc.save!
+    po_handler.send(method_sym)
+    expect(pc.reload.status).to eq PreservedCopy::INVALID_CHECKSUM_STATUS
+  end
+
+  it 'has an AuditResults entry indicating inability to check the given status' do
+    pc.status = PreservedCopy::INVALID_CHECKSUM_STATUS
+    pc.save!
+    po_handler.send(method_sym)
+    expect(po_handler.results.contains_result_code?(AuditResults::UNABLE_TO_CHECK_STATUS)).to eq true
+  end
+end
+
 RSpec.shared_examples 'PreservedCopy already has a status other than OK_STATUS, and incoming_version == pc.version' do |method_sym|
   let(:incoming_version) { pc.version }
 
@@ -415,6 +431,19 @@ RSpec.shared_examples 'PreservedCopy already has a status other than OK_STATUS, 
     po_handler.send(method_sym)
     expect(pc.reload.status).to eq PreservedCopy::OK_STATUS
   end
+
+  context 'had INVALID_CHECKSUM_STATUS' do
+    context 'without moab validation errors' do
+      before { allow(po_handler).to receive(:moab_validation_errors).and_return([]) }
+      it_behaves_like 'cannot validate something with INVALID_CHECKSUM_STATUS', method_sym
+    end
+    context 'with moab validation errors' do
+      before do
+        allow(po_handler).to receive(:moab_validation_errors).and_return([{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }])
+      end
+      it_behaves_like 'cannot validate something with INVALID_CHECKSUM_STATUS', method_sym
+    end
+  end
 end
 
 RSpec.shared_examples 'PreservedCopy already has a status other than OK_STATUS, and incoming_version < pc.version' do |method_sym|
@@ -461,5 +490,18 @@ RSpec.shared_examples 'PreservedCopy already has a status other than OK_STATUS, 
     allow(po_handler).to receive(:moab_validation_errors).and_return([])
     po_handler.send(method_sym)
     expect(pc.reload.status).to eq PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
+  end
+
+  context 'had INVALID_CHECKSUM_STATUS' do
+    context 'without moab validation errors' do
+      before { allow(po_handler).to receive(:moab_validation_errors).and_return([]) }
+      it_behaves_like 'cannot validate something with INVALID_CHECKSUM_STATUS', method_sym
+    end
+    context 'with moab validation errors' do
+      before do
+        allow(po_handler).to receive(:moab_validation_errors).and_return([{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }])
+      end
+      it_behaves_like 'cannot validate something with INVALID_CHECKSUM_STATUS', method_sym
+    end
   end
 end

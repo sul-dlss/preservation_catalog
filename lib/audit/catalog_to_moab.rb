@@ -1,5 +1,6 @@
 require 'active_record_utils.rb'
 require 'druid-tools'
+require_relative '../../app/services/moab_validation_handler.rb'
 require 'profiler.rb'
 
 # Catalog to Moab existence check code
@@ -51,7 +52,9 @@ class CatalogToMoab
 
   # ----  INSTANCE code below this line ---------------------------
 
-  attr_reader :preserved_copy, :storage_dir, :druid, :results, :moab
+  include ::MoabValidationHandler
+
+  attr_reader :preserved_copy, :storage_dir, :druid, :results
 
   def initialize(preserved_copy, storage_dir)
     @preserved_copy = preserved_copy
@@ -71,7 +74,7 @@ class CatalogToMoab
       return
     end
 
-    unless online_moab_found?(druid, storage_dir)
+    unless online_moab_found?
       transaction_ok = ActiveRecordUtils.with_transaction_and_rescue(results) do
         update_status(PreservedCopy::ONLINE_MOAB_NOT_FOUND_STATUS)
         preserved_copy.save!
@@ -84,6 +87,8 @@ class CatalogToMoab
       results.report_results
       return
     end
+
+    return results.report_results unless can_validate_current_pres_copy_status?
 
     moab_version = moab.current_version_id
     results.actual_version = moab_version
@@ -111,70 +116,12 @@ class CatalogToMoab
     results.remove_db_updated_results unless transaction_ok
   end
 
+  alias storage_location storage_dir
+
   private
 
-  # TODO: near duplicate of method in POHandler - extract superclass or moab wrapper class?
-  def moab_validation_errors
-    @moab_errors ||=
-      begin
-        object_validator = Stanford::StorageObjectValidator.new(moab)
-        moab_errors = object_validator.validation_errors(Settings.moab.allow_content_subdirs)
-        @ran_moab_validation = true
-        if moab_errors.any?
-          moab_error_msgs = []
-          moab_errors.each do |error_hash|
-            error_hash.each_value { |msg| moab_error_msgs << msg }
-          end
-          results.add_result(AuditResults::INVALID_MOAB, moab_error_msgs)
-        end
-        moab_errors
-      end
-  end
-
-  # TODO: duplicate of method in POHandler - extract superclass or moab wrapper class??
-  def ran_moab_validation?
-    @ran_moab_validation ||= false
-  end
-
-  # TODO: near duplicate of method in POHandler - extract superclass or moab wrapper class??
-  def update_status(new_status)
-    preserved_copy.update_status(new_status) do
-      results.add_result(
-        AuditResults::PC_STATUS_CHANGED,
-        { old_status: preserved_copy.status, new_status: new_status }
-      )
-    end
-  end
-
-  def online_moab_found?(druid, storage_dir)
-    @moab ||= begin
-      object_dir = "#{storage_dir}/#{DruidTools::Druid.new(druid).tree.join('/')}"
-      Moab::StorageObject.new(druid, object_dir)
-    end
-    return true if @moab
+  def online_moab_found?
+    return true if moab
     false
-  end
-
-  # given whether the caller found the expected version of preserved_copy on disk, this will perform
-  # other validations of what's on disk, and will update the status accordingly.
-  # TODO: near duplicate of method in POHandler - extract superclass or moab wrapper class??
-  def set_status_as_seen_on_disk(found_expected_version)
-    if moab_validation_errors.any?
-      update_status(PreservedCopy::INVALID_MOAB_STATUS)
-      return
-    end
-
-    unless found_expected_version
-      update_status(PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS)
-      return
-    end
-
-    # TODO: do the check that'd set INVALID_CHECKSUM_STATUS
-    #  and actually, maybe we should either 1) trigger it async, or 2) break out the status
-    #  update, otherwise checksumming could get enclosed in a DB transaction, and that seems
-    #  like a real bad idea, cuz that transaction might be open a looooooong time.
-    # see https://github.com/sul-dlss/preservation_catalog/issues/612
-
-    update_status(PreservedCopy::OK_STATUS)
   end
 end

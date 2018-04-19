@@ -33,6 +33,7 @@ class AuditResults
   MANIFEST_NOT_IN_MOAB = :manifest_not_in_moab
   SIGNATURE_CATALOG_NOT_IN_MOAB = :signature_catalog_not_in_moab
   INVALID_MANIFEST = :invalid_manifest
+  UNABLE_TO_CHECK_STATUS = :unable_to_check_status
 
   RESPONSE_CODE_TO_MESSAGES = {
     INVALID_ARGUMENTS => "encountered validation error(s): %{addl}",
@@ -55,7 +56,8 @@ class AuditResults
     FILE_NOT_IN_SIGNATURE_CATALOG => "Moab file %{file_path} was not found in Moab signature catalog %{signature_catalog_path}",
     MANIFEST_NOT_IN_MOAB => "%{manifest_file_path} not found in Moab",
     SIGNATURE_CATALOG_NOT_IN_MOAB => "%{signature_catalog_path} not found in Moab",
-    INVALID_MANIFEST => "Unable to parse %{manifest_file_path} in Moab"
+    INVALID_MANIFEST => "Unable to parse %{manifest_file_path} in Moab",
+    UNABLE_TO_CHECK_STATUS => "This check is unable to validate an incoming status of %{current_status}"
   }.freeze
 
   WORKFLOW_REPORT_CODES = [
@@ -71,7 +73,8 @@ class AuditResults
     FILE_NOT_IN_SIGNATURE_CATALOG,
     MANIFEST_NOT_IN_MOAB,
     SIGNATURE_CATALOG_NOT_IN_MOAB,
-    INVALID_MANIFEST
+    INVALID_MANIFEST,
+    UNABLE_TO_CHECK_STATUS
   ].freeze
 
   DB_UPDATED_CODES = [
