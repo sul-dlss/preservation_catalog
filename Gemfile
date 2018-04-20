@@ -17,6 +17,7 @@ gem 'pry-byebug' # call 'binding.pry' anywhere in the code to stop execution and
 gem 'pry-rails' # use pry as the rails console shell instead of IRB
 gem 'puma', '~> 3.7' # app server
 gem 'rails', '~> 5.1.3'
+gem 'resque', '~> 1.27'
 gem 'retries' # robust handling of network glitches
 gem 'ruby-prof' # to profile methods
 
@@ -33,14 +34,12 @@ group :development, :test do
   gem 'rails-controller-testing'
   gem 'coveralls'
   # Ruby static code analyzer http://rubocop.readthedocs.io/en/latest/
-  gem 'rubocop', '~> 0.50.0', require: false # avoid code churn due to rubocop changes
+  gem 'rubocop', '~> 0.50.0' # avoid code churn due to rubocop changes
   gem 'rubocop-rspec'
   gem 'webmock'
 end
 
 group :development do
-  # Access an IRB console on exception pages or by using <%= console %> anywhere in the code.
-  # gem 'web-console', '>= 3.3.0'
   gem 'listen', '>= 3.0.5', '< 3.2'
   # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
   gem 'spring'
