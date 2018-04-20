@@ -19,6 +19,7 @@ gem 'puma', '~> 3.7' # app server
 gem 'rails', '~> 5.1.3'
 gem 'retries' # robust handling of network glitches
 gem 'ruby-prof' # to profile methods
+gem 'resque' # for the worker machine(s)
 
 # Stanford gems
 gem 'moab-versioning' # work with Moab Objects
