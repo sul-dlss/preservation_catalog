@@ -1,15 +1,15 @@
 require 'profiler.rb'
 
-##
 # finds Moab objects on a single Moab storage_dir and interacts with Catalog (db)
 #   according to method called
 class MoabToCatalog
+  class << self
+    delegate :logger, to: PreservationCatalog::Application
+  end
 
   # NOTE: shameless green! code duplication with seed_catalog_for_dir
   def self.check_existence_for_dir(storage_dir)
-    start_msg = "#{Time.now.utc.iso8601} M2C check_existence starting for '#{storage_dir}'"
-    puts start_msg
-    Rails.logger.info start_msg
+    logger.info "#{Time.now.utc.iso8601} M2C check_existence starting for '#{storage_dir}'"
     results = []
     endpoint = Endpoint.find_by!(storage_location: storage_dir)
     Stanford::MoabStorageDirectory.find_moab_paths(storage_dir) do |druid, path, _path_match_data|
@@ -17,10 +17,9 @@ class MoabToCatalog
       po_handler = PreservedObjectHandler.new(druid, moab.current_version_id, moab.size, endpoint)
       results.concat po_handler.check_existence
     end
-    end_msg = "#{Time.now.utc.iso8601} M2C check_existence ended for '#{storage_dir}'"
-    puts end_msg
-    Rails.logger.info end_msg
     results
+  ensure
+    logger.info "#{Time.now.utc.iso8601} M2C check_existence ended for '#{storage_dir}'"
   end
 
   def self.check_existence_for_dir_profiled(storage_dir)
@@ -31,9 +30,7 @@ class MoabToCatalog
 
   # NOTE: shameless green! code duplication with check_existence_for_dir
   def self.seed_catalog_for_dir(storage_dir)
-    start_msg = "#{Time.now.utc.iso8601} Seeding starting for '#{storage_dir}'"
-    puts start_msg
-    Rails.logger.info start_msg
+    logger.info "#{Time.now.utc.iso8601} Seeding starting for '#{storage_dir}'"
     results = []
     endpoint = Endpoint.find_by!(storage_location: storage_dir)
     Stanford::MoabStorageDirectory.find_moab_paths(storage_dir) do |druid, path, _path_match_data|
@@ -41,23 +38,19 @@ class MoabToCatalog
       po_handler = PreservedObjectHandler.new(druid, moab.current_version_id, moab.size, endpoint)
       results << po_handler.create_after_validation
     end
-    end_msg = "#{Time.now.utc.iso8601} Seeding ended for '#{storage_dir}'"
-    puts end_msg
-    Rails.logger.info end_msg
     results
+  ensure
+    logger.info "#{Time.now.utc.iso8601} Seeding ended for '#{storage_dir}'"
   end
 
   # Shameless green. In order to run several seed "jobs" in parallel, we would have to refactor.
   def self.seed_catalog_for_all_storage_roots
-    start_msg = "#{Time.now.utc.iso8601} Seeding for all storage roots starting"
-    puts start_msg
-    Rails.logger.info start_msg
+    logger.info "#{Time.now.utc.iso8601} Seeding for all storage roots starting"
     HostSettings.storage_roots.each do |_strg_root_name, strg_root_location|
       seed_catalog_for_dir("#{strg_root_location}/#{Settings.moab.storage_trunk}")
     end
-    end_msg = "#{Time.now.utc.iso8601} Seeding for all storage roots ended'"
-    puts end_msg
-    Rails.logger.info end_msg
+  ensure
+    logger.info "#{Time.now.utc.iso8601} Seeding for all storage roots ended'"
   end
 
   def self.seed_catalog_for_all_storage_roots_profiled
@@ -68,15 +61,12 @@ class MoabToCatalog
 
   # Shameless green. Code duplication with seed_catalog_for_all_storage_roots
   def self.check_existence_for_all_storage_roots
-    start_msg = "#{Time.now.utc.iso8601} M2C check_existence for all storage roots starting'"
-    puts start_msg
-    Rails.logger.info start_msg
+    logger.info "#{Time.now.utc.iso8601} M2C check_existence for all storage roots starting'"
     HostSettings.storage_roots.each do |_strg_root_name, strg_root_location|
       check_existence_for_dir("#{strg_root_location}/#{Settings.moab.storage_trunk}")
     end
-    end_msg = "#{Time.now.utc.iso8601} M2C check_existence for all storage roots ended'"
-    puts end_msg
-    Rails.logger.info end_msg
+  ensure
+    logger.info "#{Time.now.utc.iso8601} M2C check_existence for all storage roots ended'"
   end
 
   def self.check_existence_for_all_storage_roots_profiled
