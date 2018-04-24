@@ -3,12 +3,12 @@ require 'profiler.rb'
 
 # Checksum validator code
 class Checksum
+  class << self
+    delegate :logger, to: PreservationCatalog::Application
+  end
 
   def self.validate_disk(endpoint_name, limit=Settings.c2m_sql_limit)
-    start_msg = "#{Time.now.utc.iso8601} CV validate_disk starting for #{endpoint_name}"
-    puts start_msg
-    Rails.logger.info start_msg
-
+    logger.info "#{Time.now.utc.iso8601} CV validate_disk starting for #{endpoint_name}"
     # pcs_w_expired_fixity_check is an AR Relation; it could return a lot of results, so we want to process it in
     # batches.  we can't use ActiveRecord's .find_each, because that'll disregard the order .fixity_check_expired
     # specified.  so we use our own batch processing method, which does respect Relation order.
@@ -17,10 +17,8 @@ class Checksum
       cv = ChecksumValidator.new(pc, endpoint_name)
       cv.validate_checksums
     end
-
-    end_msg = "#{Time.now.utc.iso8601} CV validate_disk ended for #{endpoint_name}"
-    puts end_msg
-    Rails.logger.info end_msg
+  ensure
+    logger.info "#{Time.now.utc.iso8601} CV validate_disk ended for #{endpoint_name}"
   end
 
   def self.validate_disk_profiled(endpoint_name)
@@ -30,15 +28,12 @@ class Checksum
   end
 
   def self.validate_disk_all_endpoints
-    start_msg = "#{Time.now.utc.iso8601} CV validate_disk_all_endpoints starting"
-    puts start_msg
-    Rails.logger.info start_msg
+    logger.info "#{Time.now.utc.iso8601} CV validate_disk_all_endpoints starting"
     HostSettings.storage_roots.each do |strg_root_name, _strg_root_location|
       validate_disk(strg_root_name)
     end
-    end_msg = "#{Time.now.utc.iso8601} CV validate_disk_all_endpoints ended"
-    puts end_msg
-    Rails.logger.info end_msg
+  ensure
+    logger.info "#{Time.now.utc.iso8601} CV validate_disk_all_endpoints ended"
   end
 
   def self.validate_disk_all_endpoints_profiled
@@ -48,9 +43,7 @@ class Checksum
   end
 
   def self.validate_druid(druid)
-    start_msg = "#{Time.now.utc.iso8601} CV validate_druid starting for #{druid}"
-    puts start_msg
-    Rails.logger.info start_msg
+    logger.info "#{Time.now.utc.iso8601} CV validate_druid starting for #{druid}"
     pres_copies = PreservedCopy.by_druid(druid)
     Rails.logger.debug("Found #{pres_copies.size} preserved copies.")
     checksum_results_lists = []
@@ -60,10 +53,8 @@ class Checksum
       cv.validate_checksums
       checksum_results_lists << cv.results
     end
-    end_msg = "#{Time.now.utc.iso8601} CV validate_druid ended for #{druid}"
-    puts end_msg
-    Rails.logger.info end_msg
     checksum_results_lists
+  ensure
+    logger.info "#{Time.now.utc.iso8601} CV validate_druid ended for #{druid}"
   end
-
 end

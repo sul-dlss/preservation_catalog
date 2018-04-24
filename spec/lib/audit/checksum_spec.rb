@@ -6,6 +6,8 @@ RSpec.describe Checksum do
   let(:endpoint_name) { 'fixture_sr1' }
   let(:limit) { Settings.c2m_sql_limit }
 
+  before { allow(described_class.logger).to receive(:info) } # silence STDOUT chatter
+
   context '.validate_disk' do
     include_context 'fixture moabs in db'
     let(:subject) { described_class.validate_disk(endpoint_name, limit) }
