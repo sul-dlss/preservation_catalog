@@ -8,6 +8,7 @@ RSpec.describe MoabToCatalog do
 
   before do
     PreservationPolicy.seed_from_config
+    allow(described_class.logger).to receive(:info) # silence STDOUT chatter
   end
 
   describe ".check_existence_for_all_storage_roots" do
