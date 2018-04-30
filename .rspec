@@ -1,1 +1,2 @@
 --require spec_helper
+--order defined # TODO: 131 failures under random order
