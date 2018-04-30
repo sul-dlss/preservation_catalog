@@ -18,5 +18,12 @@ module PreservationCatalog
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration should go into files in config/initializers
     # -- all .rb files in that directory are automatically loaded.
+
+    # Double-output logging, both to Rails.logger and STDOUT.  Helps avoid puts statements.
+    # If you don't want that, just use Rails.logger (or another Logger instance)
+    # @return [Logger]
+    def self.logger
+      @logger ||= Logger.new(STDOUT).extend(ActiveSupport::Logger.broadcast(Rails.logger))
+    end
   end
 end

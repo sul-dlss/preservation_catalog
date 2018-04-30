@@ -5,11 +5,12 @@ require 'profiler.rb'
 
 # Catalog to Moab existence check code
 class CatalogToMoab
+  class << self
+    delegate :logger, to: PreservationCatalog::Application
+  end
 
   def self.check_version_on_dir(last_checked_b4_date, storage_dir, limit=Settings.c2m_sql_limit)
-    start_msg = "#{Time.now.utc.iso8601} C2M check_version starting for #{storage_dir}"
-    puts start_msg
-    Rails.logger.info start_msg
+    logger.info "#{Time.now.utc.iso8601} C2M check_version starting for #{storage_dir}"
 
     # pcs_to_audit_relation is an AR Relation; it could return a lot of results, so we want to process it in
     # batches.  we can't use ActiveRecord's .find_each, because that'll disregard the order .least_recent_version_audit
@@ -20,10 +21,8 @@ class CatalogToMoab
       c2m = CatalogToMoab.new(pc, storage_dir)
       c2m.check_catalog_version
     end
-
-    end_msg = "#{Time.now.utc.iso8601} C2M check_version ended for #{storage_dir}"
-    puts end_msg
-    Rails.logger.info end_msg
+  ensure
+    logger.info "#{Time.now.utc.iso8601} C2M check_version ended for #{storage_dir}"
   end
 
   def self.check_version_on_dir_profiled(last_checked_b4_date, storage_dir)
@@ -33,15 +32,12 @@ class CatalogToMoab
   end
 
   def self.check_version_all_dirs(last_checked_b4_date)
-    start_msg = "#{Time.now.utc.iso8601} C2M check_version_all_dirs starting"
-    puts start_msg
-    Rails.logger.info start_msg
+    logger.info "#{Time.now.utc.iso8601} C2M check_version_all_dirs starting"
     HostSettings.storage_roots.each do |_strg_root_name, strg_root_location|
       check_version_on_dir(last_checked_b4_date, "#{strg_root_location}/#{Settings.moab.storage_trunk}")
     end
-    end_msg = "#{Time.now.utc.iso8601} C2M check_version_all_dirs ended"
-    puts end_msg
-    Rails.logger.info end_msg
+  ensure
+    logger.info "#{Time.now.utc.iso8601} C2M check_version_all_dirs ended"
   end
 
   def self.check_version_all_dirs_profiled(last_checked_b4_date)
