@@ -11,7 +11,7 @@ class CatalogController < ApplicationController
     druid = poh_params[:druid]
     incoming_version = poh_params[:incoming_version].to_i
     incoming_size = poh_params[:incoming_size].to_i
-    endpoint = Endpoint.find_by(storage_location: poh_params[:storage_location])
+    endpoint = Endpoint.find_by(storage_location: "#{poh_params[:storage_location]}/#{Moab::Config.storage_trunk}")
     @poh = PreservedObjectHandler.new(druid, incoming_version, incoming_size, endpoint)
     poh.create
     status_code =
@@ -33,7 +33,7 @@ class CatalogController < ApplicationController
     druid = poh_params[:druid]
     incoming_version = poh_params[:incoming_version].to_i
     incoming_size = poh_params[:incoming_size].to_i
-    endpoint = Endpoint.find_by(storage_location: poh_params[:storage_location])
+    endpoint = Endpoint.find_by(storage_location: "#{poh_params[:storage_location]}/#{Moab::Config.storage_trunk}")
     @poh = PreservedObjectHandler.new(druid, incoming_version, incoming_size, endpoint)
     poh.update_version
     status_code =
