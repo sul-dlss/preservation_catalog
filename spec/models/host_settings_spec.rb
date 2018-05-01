@@ -1,6 +1,10 @@
 require 'rails_helper'
 
 RSpec.describe HostSettings do
+  it 'depends on Settings.storage_root_map' do
+    expect(Settings.storage_root_map).to be
+  end
+
   describe '.storage_roots' do
     it 'gets the correct values' do
       expect(described_class).to receive(:storage_root_lookup_name).and_call_original
@@ -8,6 +12,14 @@ RSpec.describe HostSettings do
                                                        fixture_sr2: 'spec/fixtures/storage_root02',
                                                        fixture_sr3: 'spec/fixtures/checksum_root01',
                                                        fixture_empty: 'spec/fixtures/empty')
+    end
+
+    context 'on unrecognized systems' do
+      it 'does not bork, just returns empty hash' do
+        allow(described_class).to receive(:storage_root_lookup_name).and_return('foobar123')
+        expect { described_class.storage_roots }.not_to raise_error
+        expect(described_class.storage_roots).to eq({})
+      end
     end
   end
 
