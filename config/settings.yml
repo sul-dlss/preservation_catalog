@@ -33,6 +33,9 @@ preservation_policies:
 provlog:
   enable: false
 
+storage_root_map: # empty here, override in #{RAILS_ENV}.yml
+  default: {}
+
 workflow_services_url: ''
 c2m_sql_limit: 1000
 
