@@ -1,7 +1,7 @@
-require_relative '../../../lib/audit/catalog_to_moab.rb'
+require 'rails_helper'
 require_relative '../../load_fixtures_helper.rb'
 
-RSpec.describe CatalogToMoab do
+RSpec.describe Audit::CatalogToMoab do
   before do
     allow(Dor::WorkflowService).to receive(:update_workflow_error_status)
   end

@@ -1,6 +1,5 @@
-##
-# some usefule re-usable ActiveRecord patterns
-class ActiveRecordUtils
+# some useful re-usable ActiveRecord patterns
+module ActiveRecordUtils
   # Executes the given block in an ActiveRecord transaction.  Traps common ActiveRecord exceptions.
   # @param [AuditResults] for appending a result when the block raises a common AR exception.
   # @return true if transaction completed without error; false if ActiveRecordError was raised

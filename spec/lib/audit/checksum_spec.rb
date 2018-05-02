@@ -1,8 +1,7 @@
 require 'rails_helper'
-require_relative "../../../lib/audit/checksum.rb"
 require_relative '../../load_fixtures_helper.rb'
 
-RSpec.describe Checksum do
+RSpec.describe Audit::Checksum do
   before do
     allow(Dor::WorkflowService).to receive(:update_workflow_error_status)
     allow(described_class.logger).to receive(:info) # silence STDOUT chatter

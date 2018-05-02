@@ -1,8 +1,7 @@
 require 'rails_helper'
-require_relative "../../../lib/audit/moab_to_catalog.rb"
 require 'stringio'
 
-RSpec.describe MoabToCatalog do
+RSpec.describe Audit::MoabToCatalog do
   let(:storage_dir) { 'spec/fixtures/storage_root01/moab_storage_trunk' }
   let(:endpoint) { Endpoint.find_by!(storage_location: storage_dir) }
 

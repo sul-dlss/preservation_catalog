@@ -2,10 +2,6 @@
 # for example lib/tasks/capistrano.rake, and they will automatically be available to Rake.
 
 require_relative 'config/application'
-require 'audit/moab_to_catalog.rb'
-require 'audit/catalog_to_moab.rb'
-require 'audit/checksum.rb'
-
 Rails.application.load_tasks
 
 require 'rubocop/rake_task'
@@ -29,9 +25,9 @@ task :seed_catalog, [:profile] => [:environment] do |_t, args|
   if args[:profile] == 'profile'
     puts 'When done, check log/profile_seed_catalog_for_all_storage_roots[TIMESTAMP].txt for profiling details'
     $stdout.flush
-    MoabToCatalog.seed_catalog_for_all_storage_roots_profiled
+    Audit::MoabToCatalog.seed_catalog_for_all_storage_roots_profiled
   elsif args[:profile].nil?
-    MoabToCatalog.seed_catalog_for_all_storage_roots
+    Audit::MoabToCatalog.seed_catalog_for_all_storage_roots
   end
   puts "#{Time.now.utc.iso8601} Seeding the catalog for all storage roots is done"
   $stdout.flush
@@ -45,7 +41,7 @@ task :drop, [:storage_root] => [:environment] do |_t, args|
     input = STDIN.gets.chomp
     if input.casecmp("y").zero? # rubocop prefers casecmp because it is faster than '.downcase =='
       puts "Starting to drop the db for #{root}"
-      MoabToCatalog.drop_endpoint(root)
+      Audit::MoabToCatalog.drop_endpoint(root)
       puts "You have successfully deleted all the data from #{root}"
     else
       puts "You canceled erasing data from #{root}"
@@ -69,9 +65,9 @@ task :populate, [:storage_root, :profile] => [:environment] do |_t, args|
       puts " #{Time.now.utc.iso8601} Starting to populate db for #{root}"
       if args[:profile]
         puts "When done, check log/profile_populate_endpoint.txt for profiling details"
-        MoabToCatalog.populate_endpoint_profiled(root)
+        Audit::MoabToCatalog.populate_endpoint_profiled(root)
       else
-        MoabToCatalog.populate_endpoint(root)
+        Audit::MoabToCatalog.populate_endpoint(root)
       end
       puts "#{Time.now.utc.iso8601} You have successfully populated all the data for #{root}"
     else
@@ -113,9 +109,9 @@ task :m2c_exist_single_root, [:storage_root, :profile] => [:environment] do |_t,
   if args[:profile] == 'profile'
     puts "When done, check log/profile_check_existence_for_dir[TIMESTAMP].txt for profiling details"
     $stdout.flush
-    MoabToCatalog.check_existence_for_dir_profiled(storage_dir)
+    Audit::MoabToCatalog.check_existence_for_dir_profiled(storage_dir)
   elsif args[:profile].nil?
-    MoabToCatalog.check_existence_for_dir(storage_dir)
+    Audit::MoabToCatalog.check_existence_for_dir(storage_dir)
   end
   puts "#{Time.now.utc.iso8601} Moab to Catalog Existence Check for #{storage_dir} is done"
   $stdout.flush
@@ -130,9 +126,9 @@ task :m2c_exist_all_storage_roots, [:profile] => [:environment] do |_t, args|
 
   if args[:profile] == 'profile'
     puts "When done, check log/profile_check_existence_for_all_storage_roots[TIMESTAMP].txt for profiling details"
-    MoabToCatalog.check_existence_for_all_storage_roots_profiled
+    Audit::MoabToCatalog.check_existence_for_all_storage_roots_profiled
   elsif args[:profile].nil?
-    MoabToCatalog.check_existence_for_all_storage_roots
+    Audit::MoabToCatalog.check_existence_for_all_storage_roots
   end
   puts "#{Time.now.utc.iso8601} Moab to Catalog Existence Check for all storage roots are done"
   $stdout.flush
@@ -150,9 +146,9 @@ task :c2m_check_version_on_dir, [:last_checked_b4_date, :storage_root, :profile]
   begin
     if args[:profile] == 'profile'
       puts "When done, check log/profile_c2m_check_version_on_dir[TIMESTAMP].txt for profiling details"
-      CatalogToMoab.check_version_on_dir_profiled(last_checked, storage_dir)
+      Audit::CatalogToMoab.check_version_on_dir_profiled(last_checked, storage_dir)
     elsif args[:profile].nil?
-      CatalogToMoab.check_version_on_dir(last_checked, storage_dir)
+      Audit::CatalogToMoab.check_version_on_dir(last_checked, storage_dir)
     end
     puts "#{Time.now.utc.iso8601} Catalog to Moab version check on #{storage_dir} is done."
   rescue TypeError, ArgumentError
@@ -193,9 +189,9 @@ task :cv_single_endpoint, [:storage_root, :profile] => [:environment] do |_t, ar
   storage_root = args[:storage_root].to_sym
   if args[:profile] == 'profile'
     puts "When done, check log/profile_cv_validate_disk[TIMESTAMP] for profiling details"
-    Checksum.validate_disk_profiled(storage_root)
+    Audit::Checksum.validate_disk_profiled(storage_root)
   elsif args[:profile].nil?
-    Checksum.validate_disk(storage_root)
+    Audit::Checksum.validate_disk(storage_root)
   end
   puts "#{Time.now.utc.iso8601} Checksum Validation on #{storage_root} is done."
   $stdout.flush
@@ -209,9 +205,9 @@ task :cv_all_endpoints, [:profile] => [:environment] do |_t, args|
   end
   if args[:profile] == 'profile'
     puts "When done, check log/profile_cv_validate_disk_all_endpoints[TIMESTAMP].txt for profiling details"
-    Checksum.validate_disk_all_endpoints_profiled
+    Audit::Checksum.validate_disk_all_endpoints_profiled
   elsif args[:profile].nil?
-    Checksum.validate_disk_all_endpoints
+    Audit::Checksum.validate_disk_all_endpoints
   end
   puts "#{Time.now.utc.iso8601} Checksum Validation on all storage roots are done."
   $stdout.flush
@@ -221,7 +217,7 @@ desc "Fire off checksum validation via druid"
 task :cv_druid, [:druid] => [:environment] do |_t, args|
   druid = args[:druid].to_sym
 
-  cv_results_lists = Checksum.validate_druid(druid)
+  cv_results_lists = Audit::Checksum.validate_druid(druid)
   cv_results_lists.each do |aud_res|
     puts aud_res.to_json unless aud_res.contains_result_code?(AuditResults::MOAB_CHECKSUM_VALID)
   end
