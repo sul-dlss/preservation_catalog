@@ -8,7 +8,7 @@ class CatalogController < ApplicationController
 
   # POST /catalog
   def create
-    druid = poh_params[:druid]
+    druid = poh_params[:druid].split(':', 2).last
     incoming_version = poh_params[:incoming_version].to_i
     incoming_size = poh_params[:incoming_size].to_i
     endpoint = Endpoint.find_by(storage_location: "#{poh_params[:storage_location]}/#{Moab::Config.storage_trunk}")
