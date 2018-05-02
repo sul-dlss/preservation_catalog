@@ -1,8 +1,8 @@
 # Lets us consolidate shared_configs for almost identical machines
 class HostSettings
-  # @return [Config::Options] key/value pairs of name: file_path
+  # @return [Config::Options, Hash] key/value pairs of name: file_path
   def self.storage_roots
-    Settings.storage_root_map[storage_root_lookup_name]
+    Settings.storage_root_map[storage_root_lookup_name] || {}
   end
 
   # @return [String] hostname depending on environment
