@@ -18,6 +18,7 @@ gem 'pry-rails' # use pry as the rails console shell instead of IRB
 gem 'puma', '~> 3.7' # app server
 gem 'rails', '~> 5.1.3'
 gem 'resque', '~> 1.27'
+gem 'resque-lock' # deduplication of worker queue jobs
 gem 'retries' # robust handling of network glitches
 gem 'ruby-prof' # to profile methods
 
