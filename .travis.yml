@@ -4,6 +4,7 @@ rvm:
 cache: bundler
 services:
   - postgresql
+  - redis-server
 before_script:
   - bundle exec rake travis_setup_postgres
 
