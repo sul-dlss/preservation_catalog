@@ -104,7 +104,7 @@ RSpec.describe CatalogController, type: :controller do
   describe 'PATCH #update' do
     before do
       po = PreservedObject.create!(
-        druid: "druid:bj102hs9687", current_version: ver, preservation_policy: PreservationPolicy.default_policy
+        druid: "bj102hs9687", current_version: ver, preservation_policy: PreservationPolicy.default_policy
       )
       PreservedCopy.create!(
         preserved_object: po,
@@ -113,7 +113,7 @@ RSpec.describe CatalogController, type: :controller do
         status: PreservedCopy::VALIDITY_UNKNOWN_STATUS
       )
     end
-    let(:pres_obj) { PreservedObject.find_by(druid: druid) }
+    let(:pres_obj) { PreservedObject.find_by(druid: druid_no_pre) }
     let(:pres_copy) { PreservedCopy.find_by(preserved_object: pres_obj) }
 
     context 'with valid params' do
@@ -201,7 +201,7 @@ RSpec.describe CatalogController, type: :controller do
 
     context 'db update failed' do
       before do
-        allow(PreservedObject).to receive(:find_by!).with(druid: druid)
+        allow(PreservedObject).to receive(:find_by!).with(druid: druid_no_pre)
                                                     .and_raise(ActiveRecord::ActiveRecordError, 'foo')
       end
 
@@ -219,7 +219,7 @@ RSpec.describe CatalogController, type: :controller do
 
     it 'response body contains druid' do
       post :update, params: { druid: druid, incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
-      expect(response.body).to include(druid)
+      expect(response.body).to include(druid_no_pre)
     end
   end
 end
