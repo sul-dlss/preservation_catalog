@@ -2,13 +2,14 @@ require 'rails_helper'
 RSpec.describe CatalogController, type: :controller do
   let(:size) { 2342 }
   let(:ver) { 3 }
-  let(:druid) { 'bj102hs9687' }
+  let(:druid) { 'druid:bj102hs9687' }
+  let(:druid_no_pre) { 'bj102hs9687' }
   let(:storage_location) { "#{storage_location_param}/moab_storage_trunk" }
   let(:storage_location_param) { "spec/fixtures/storage_root01" }
 
   describe 'POST #create' do
     context 'with valid params' do
-      let(:pres_obj) { PreservedObject.find_by(druid: druid) }
+      let(:pres_obj) { PreservedObject.find_by(druid: druid_no_pre) }
       let(:pres_copy) { PreservedCopy.find_by(preserved_object: pres_obj) }
 
       before do
@@ -16,7 +17,7 @@ RSpec.describe CatalogController, type: :controller do
       end
 
       it 'saves PreservedObject and PreservedCopy in db' do
-        po = PreservedObject.find_by(druid: druid)
+        po = PreservedObject.find_by(druid: druid_no_pre)
         pc = PreservedCopy.find_by(preserved_object: po)
         expect(po).to be_an_instance_of PreservedObject
         expect(pc).to be_an_instance_of PreservedCopy
@@ -25,7 +26,7 @@ RSpec.describe CatalogController, type: :controller do
         expect(pres_copy.endpoint.storage_location).to eq storage_location
         expect(pres_copy.version).to eq ver
         expect(pres_copy.size).to eq size
-        expect(pres_obj.druid).to eq druid
+        expect(pres_obj.druid).to eq druid_no_pre
       end
 
       it 'response contains create_new_object code ' do
@@ -79,7 +80,7 @@ RSpec.describe CatalogController, type: :controller do
 
     context 'db update failed' do
       before do
-        allow(PreservedObject).to receive(:create!).with(hash_including(druid: druid))
+        allow(PreservedObject).to receive(:create!).with(hash_including(druid: druid_no_pre))
                                                    .and_raise(ActiveRecord::ActiveRecordError, 'foo')
         post :create, params: { druid: druid, incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
       end
@@ -96,14 +97,14 @@ RSpec.describe CatalogController, type: :controller do
 
     it 'response body contains druid' do
       post :create, params: { druid: druid, incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
-      expect(response.body).to include(druid)
+      expect(response.body).to include(druid_no_pre)
     end
   end
 
   describe 'PATCH #update' do
     before do
       po = PreservedObject.create!(
-        druid: "bj102hs9687", current_version: ver, preservation_policy: PreservationPolicy.default_policy
+        druid: "druid:bj102hs9687", current_version: ver, preservation_policy: PreservationPolicy.default_policy
       )
       PreservedCopy.create!(
         preserved_object: po,
@@ -147,7 +148,7 @@ RSpec.describe CatalogController, type: :controller do
 
     context 'object does not exist' do
       before do
-        patch :update, params: { druid: 'rr111rr1111', incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
+        patch :update, params: { druid: 'druid:rr111rr1111', incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
       end
       it 'response contains error message' do
         error = "#<ActiveRecord::RecordNotFound: Couldn't find PreservedObject>"
