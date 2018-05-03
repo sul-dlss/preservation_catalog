@@ -218,10 +218,6 @@ Style/GuardClause:
     - app/services/preserved_object_handler.rb # update_status method easy to read as is
     - lib/audit/catalog_to_moab.rb # wrapping method on line 17 is more readable
 
-Style/PercentLiteralDelimiters:
-  Exclude:
-    - 'config/spring.rb' # that's how Rails generates it
-
 # because ' vs " isn't a big deal for readability or maintainability or execution time
 Style/StringLiterals:
   Enabled: false
