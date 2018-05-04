@@ -84,27 +84,12 @@ class AuditResults
 
   def self.logger_severity_level(result_code)
     case result_code
-    when INVALID_ARGUMENTS then Logger::ERROR
-    when VERSION_MATCHES then Logger::INFO
-    when ACTUAL_VERS_GT_DB_OBJ then Logger::INFO
-    when ACTUAL_VERS_LT_DB_OBJ then Logger::ERROR
-    when CREATED_NEW_OBJECT then Logger::INFO
-    when DB_UPDATE_FAILED then Logger::ERROR
-    when DB_OBJ_ALREADY_EXISTS then Logger::ERROR
-    when DB_OBJ_DOES_NOT_EXIST then Logger::WARN
-    when PC_STATUS_CHANGED then Logger::INFO
-    when UNEXPECTED_VERSION then Logger::ERROR
-    when INVALID_MOAB then Logger::ERROR
-    when PC_PO_VERSION_MISMATCH then Logger::ERROR
-    when MOAB_NOT_FOUND then Logger::ERROR
-    when MOAB_FILE_CHECKSUM_MISMATCH then Logger::ERROR
-    when MOAB_CHECKSUM_VALID then Logger::INFO
-    when FILE_NOT_IN_MOAB then Logger::ERROR
-    when FILE_NOT_IN_MANIFEST then Logger::ERROR
-    when FILE_NOT_IN_SIGNATURE_CATALOG then Logger::ERROR
-    when MANIFEST_NOT_IN_MOAB then Logger::ERROR
-    when SIGNATURE_CATALOG_NOT_IN_MOAB then Logger::ERROR
-    when INVALID_MANIFEST then Logger::ERROR
+    when DB_OBJ_DOES_NOT_EXIST
+      Logger::WARN
+    when VERSION_MATCHES, ACTUAL_VERS_GT_DB_OBJ, CREATED_NEW_OBJECT, PC_STATUS_CHANGED, MOAB_CHECKSUM_VALID
+      Logger::INFO
+    else
+      Logger::ERROR
     end
   end
 
@@ -164,20 +149,13 @@ class AuditResults
 
   def report_errors_to_workflows(candidate_workflow_results)
     return if candidate_workflow_results.empty?
-    value_array = []
-    candidate_workflow_results.each do |result_hash|
-      result_hash.each_value do |val|
-        value_array << val
-      end
-    end
-    msg = "#{workflows_msg_prefix} #{value_array.join(' && ')}"
+    msg = "#{workflows_msg_prefix} #{candidate_workflow_results.map(&:values).flatten.join(' && ')}"
     WorkflowErrorsReporter.update_workflow(druid, 'preservation-audit', msg)
   end
 
   def log_result(result)
     severity = self.class.logger_severity_level(result.keys.first)
-    msg = result.values.first
-    Rails.logger.log(severity, "#{log_msg_prefix} #{msg}")
+    Rails.logger.log(severity, "#{log_msg_prefix} #{result.values.first}")
   end
 
   def result_code_msg(code, addl=nil)

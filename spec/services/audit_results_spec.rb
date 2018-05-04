@@ -8,8 +8,16 @@ RSpec.describe AuditResults do
 
   context '.logger_severity_level' do
     it 'PC_PO_VERSION_MISMATCH is an ERROR' do
-      code = AuditResults::PC_PO_VERSION_MISMATCH
-      expect(described_class.logger_severity_level(code)).to eq Logger::ERROR
+      expect(described_class.logger_severity_level(AuditResults::PC_PO_VERSION_MISMATCH)).to eq Logger::ERROR
+    end
+    it 'DB_OBJ_DOES_NOT_EXIST is WARN' do
+      expect(described_class.logger_severity_level(AuditResults::DB_OBJ_DOES_NOT_EXIST)).to eq Logger::WARN
+    end
+    it 'CREATED_NEW_OBJECT is INFO' do
+      expect(described_class.logger_severity_level(AuditResults::CREATED_NEW_OBJECT)).to eq Logger::INFO
+    end
+    it 'default for unrecognized value is ERROR' do
+      expect(described_class.logger_severity_level(:whatever)).to eq Logger::ERROR
     end
   end
 
