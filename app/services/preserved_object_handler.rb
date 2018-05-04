@@ -6,11 +6,6 @@
 #
 # inspired by http://www.thegreatcodeadventure.com/smarter-rails-services-with-active-record-modules/
 class PreservedObjectHandler
-
-  require 'active_record_utils.rb'
-  require 'audit_results.rb'
-  require 'moab_validation_handler.rb'
-
   include ::MoabValidationHandler
   include ActiveModel::Validations
 

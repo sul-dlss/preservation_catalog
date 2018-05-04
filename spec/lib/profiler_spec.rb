@@ -1,4 +1,4 @@
-require_relative '../../lib/profiler.rb'
+require 'profiler'
 require 'ruby-prof'
 
 RSpec.describe Profiler do

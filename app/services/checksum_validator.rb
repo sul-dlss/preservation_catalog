@@ -1,5 +1,3 @@
-require 'moab_validation_handler.rb'
-
 # code for validating Moab checksums
 class ChecksumValidator
   include ::MoabValidationHandler
