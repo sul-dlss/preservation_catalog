@@ -3,5 +3,6 @@ RSpec.configure do |config|
     next unless RSpec.current_example.metadata[:type] == :job
     ActiveJob::Base.queue_adapter = :test
     allow(ActiveJob::Base.logger).to receive(:info) # keep the default logging quiet
+    Resque.redis.redis.flushall # clear queues and locks
   end
 end
