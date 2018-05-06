@@ -18,6 +18,31 @@ class Endpoint < ApplicationRecord
   validates :storage_location, presence: true
   validates :recovery_cost, presence: true
 
+  scope :archive, lambda {
+    # TODO: maybe endpoint_class should be an enum or a constant?
+    joins(:endpoint_type).where(endpoint_types: { endpoint_class: 'archive' })
+  }
+
+  # for the given druid, which archive endpoints should have preserved copies?
+  scope :archive_targets, lambda { |druid|
+    archive.joins(preservation_policies: [:preserved_objects]).where(preserved_objects: { druid: druid })
+  }
+
+  scope :which_need_archive_copy, lambda { |druid, version|
+    # cast version to int for nicer errors in the case of bad input.  though ActiveRecord/ARel would still protect
+    # against injection attacks even without using a bind var (e.g. a string passed in for an int col query would
+    # silently be inserted as 0, an INTEGER).
+    pc_table = PreservedCopy.arel_table
+    ep_table = Endpoint.arel_table
+    endpoint_has_pres_copy_subquery =
+      PreservedCopy.where(
+        pc_table[:endpoint_id].eq(ep_table[:id])
+          .and(pc_table[:version].eq(version.to_i))
+      ).exists
+
+    archive_targets(druid).where.not(endpoint_has_pres_copy_subquery)
+  }
+
   # iterates over the storage roots enumerated in settings, creating an endpoint for each if one doesn't
   # already exist.
   # returns an array with the result of the ActiveRecord find_or_create_by! call for each settings entry (i.e.,

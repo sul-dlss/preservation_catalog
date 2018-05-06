@@ -160,6 +160,45 @@ RSpec.describe Endpoint, type: :model do
     end
   end
 
+  describe '.archive' do
+    it 'returns only the archive endpoints' do
+      expect(Endpoint.archive.pluck(:endpoint_name).sort).to eq(%w[aws-us-east-2 mock_archive1])
+    end
+  end
+
+  describe '.archive_targets' do
+    let!(:alternate_pres_policy) do
+      PreservationPolicy.create!(preservation_policy_name: 'alternate_pres_policy',
+                                 archive_ttl: 666,
+                                 fixity_ttl: 666)
+    end
+
+    before { create(:preserved_object) }
+
+    it "returns the archive endpoints which implement the PO's pres policy" do
+      endpoint.preservation_policies = [PreservationPolicy.default_policy, alternate_pres_policy]
+      expect(Endpoint.archive_targets('bj102hs9687').pluck(:endpoint_name)).to eq %w[aws-us-east-2 mock_archive1]
+      endpoint.preservation_policies = [alternate_pres_policy]
+      expect(Endpoint.archive_targets('bj102hs9687').pluck(:endpoint_name)).to eq %w[mock_archive1]
+    end
+  end
+
+  describe '.which_need_archive_copy' do
+    let(:druid) { 'ab123cd4567' }
+    let(:version) { 3 }
+
+    before { create(:preserved_object, current_version: version, druid: druid) }
+
+    it "returns the archive endpoints which should have a pres copy for the druid/version, but which don't yet" do
+      expect(Endpoint.which_need_archive_copy(druid, version).pluck(:endpoint_name)).to eq %w[mock_archive1]
+      expect(Endpoint.which_need_archive_copy(druid, version - 1).pluck(:endpoint_name)).to eq %w[mock_archive1]
+
+      create(:preserved_copy, version: version, endpoint: Endpoint.find_by!(endpoint_name: 'mock_archive1'))
+      expect(Endpoint.which_need_archive_copy(druid, version)).to eq []
+      expect(Endpoint.which_need_archive_copy(druid, version - 1).pluck(:endpoint_name)).to eq %w[mock_archive1]
+    end
+  end
+
   describe '#to_h' do
     it 'has the expected values' do
       expect(endpoint.to_h).to eq(

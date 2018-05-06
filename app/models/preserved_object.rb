@@ -26,4 +26,19 @@ class PreservedObject < ApplicationRecord
       po.save!
     end
   end
+
+  def create_archive_preserved_copies(archive_vers)
+    unless archive_vers > 0 && archive_vers <= current_version
+      raise ArgumentError, "archive_vers (#{archive_vers}) must be between 0 and current_version (#{current_version})"
+    end
+
+    ApplicationRecord.transaction do
+      Endpoint.which_need_archive_copy(druid, archive_vers).map do |ep|
+        # TODO: remember to update size at some later point, after zip is created
+        PreservedCopy.create!(
+          preserved_object: self, version: archive_vers, endpoint: ep, status: PreservedCopy::UNREPLICATED_STATUS
+        )
+      end
+    end
+  end
 end
