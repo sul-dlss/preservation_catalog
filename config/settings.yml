@@ -1,3 +1,6 @@
+aws:
+  bucket_name: 'sul-sdr-aws-us-west-2-test' # override in prod
+
 # named storage roots are in the storage_root_map (see config/settings for examples).
 # the storage_root_map contains lookups of storage roots per host.
 # see sul-dlss/shared_configs for the storage_root_map of all hosts we deploy to.

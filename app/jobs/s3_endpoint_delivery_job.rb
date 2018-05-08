@@ -1,5 +1,3 @@
-# require aws/s3 lib
-#
 # Responsibilities:
 # "Speak S3"
 # Check if corresponding zip exists in S3.
@@ -8,6 +6,10 @@
 class S3EndpointDeliveryJob < EndpointDeliveryBase
   queue_as :s3_enpoint_delivery
   # note: EndpointDeliveryBase gives us `zip`
+
+  class << self
+    delegate :client, to: PreservationCatalog::S3
+  end
 
   # @param [String] druid
   # @param [Integer] version
