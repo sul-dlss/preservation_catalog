@@ -36,6 +36,3 @@ set :honeybadger_env, fetch(:stage)
 
 # Default value for keep_releases is 5
 # set :keep_releases, 5
-
-# update shared_configs before restarting app
-before 'deploy:restart', 'shared_configs:update'
