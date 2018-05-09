@@ -36,3 +36,16 @@ set :honeybadger_env, fetch(:stage)
 
 # Default value for keep_releases is 5
 # set :keep_releases, 5
+
+after 'deploy:migrate', 'db_seed'
+
+desc 'Run rake db:seed'
+task :db_seed do
+  on roles(:all) do
+    within current_path do
+      with rails_env: fetch(:rails_env) do
+        execute :rake, 'db:seed'
+      end
+    end
+  end
+end
