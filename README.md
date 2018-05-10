@@ -216,3 +216,15 @@ rake spec
 ## Deploying
 
 Capistrano is used to deploy.
+
+To run `rake db:seed` in a deploy environment:
+
+```sh
+bundle exec cap stage db_seed # for the stage servers
+```
+
+or
+
+```sh
+bundle exec cap prod db_seed # for the prod servers
+```
