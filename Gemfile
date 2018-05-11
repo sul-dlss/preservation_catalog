@@ -12,6 +12,7 @@ gem 'honeybadger' # for error reporting / tracking / notifications
 gem 'jbuilder', '~> 2.5' # Build JSON APIs with ease.
 gem 'okcomputer'
 gem 'pg' # postgres database
+gem "factory_bot_rails", "~> 4.0"
 # pry is useful for debugging, even in prod
 gem 'pry-byebug' # call 'binding.pry' anywhere in the code to stop execution and get a pry-byebug console
 gem 'pry-rails' # use pry as the rails console shell instead of IRB
