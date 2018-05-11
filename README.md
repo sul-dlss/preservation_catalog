@@ -3,31 +3,29 @@
 [![Dependency Status](https://gemnasium.com/badges/github.com/sul-dlss/preservation_catalog.svg)](https://gemnasium.com/github.com/sul-dlss/preservation_catalog)
 [![GitHub version](https://badge.fury.io/gh/sul-dlss%2Fpreservation_catalog.svg)](https://badge.fury.io/gh/sul-dlss%2Fpreservation_catalog)
 
-
 # README
-
 
 Rails application with fixity data and object provenance supporting preservation object storage audit services
 
+## Getting Started
 
-## Configuration
+### PostgreSQL
 
-### Setting up PostgreSQL
+#### Installing Postgres
 
-#### 1. Installing Postgres
-
-If you use homebrew you can install PostgreSQL by typing  `brew install postgresql` into the command line.
+If you use homebrew you can install PostgreSQL with:
+```sh
+brew install postgresql
+```
 
 Make sure Postgres starts every time your computer starts up.
-`brew services start postgresql`
+```sh
+brew services start postgresql
+```
 
-Check to see if Postgres is installed:
-`postgres -V`
+Check to see if Postgres is installed with `postgres -V` and that it's accepting connections with `pg_isready`.
 
-and that it's accepting connections:
-`pg_isready`
-
-#### 2. Configuring Postgres
+#### Configuring Postgres
 
 Using the `psql` utility, run these two setup scripts from the command line, like so:
 ```sh
@@ -42,6 +40,13 @@ These scripts do the following for you:
 
 For more info on postgres commands, see https://www.postgresql.org/docs/
 
+### Redis
+
+Install and run `redis`.  For example, using `homebrew`:
+```sh
+brew install redis
+brew services start redis
+```
 
 ## Usage Instructions
 
@@ -55,7 +60,7 @@ For more info on postgres commands, see https://www.postgresql.org/docs/
 
 As an alternative to `screen`, you can also run tasks in the background using `nohup` so the invoked command is not killed when you exist your session. Output that would've gone to stdout is instead redirected to a file called `nohup.out`, or you can redirect the output explicitly.  For example:
 
-```ruby
+```sh
 RAILS_ENV=production nohup bundle exec rake seed_catalog >seed_whole_catalog_nohup-2017-12-12.txt &
 ```
 
@@ -64,12 +69,12 @@ RAILS_ENV=production nohup bundle exec rake seed_catalog >seed_whole_catalog_noh
 Seeding the catalog presumes an empty or nearly empty database -- otherwise running the seed task will throw `druid NOT expected to exist in catalog but was found` errors for each found object.
 
 Without profiling:
-```ruby
+```sh
 RAILS_ENV=production bundle exec rake seed_catalog
 ```
 
 With profiling:
-```ruby
+```sh
 RAILS_ENV=production bundle exec rake seed_catalog[profile]
 ```
 this will generate a log at, for example, `log/profile_seed_catalog_for_all_storage_roots2017-11-13T13:57:01-flat.txt`
@@ -92,46 +97,46 @@ WARNING! this will erase the catalog, and thus require re-seeding from scratch. 
 
 ### Drop or Populate the catalog for a single endpoint
 
-- To run either of the rake tasks below, give the name of the moab storage_root (e.g. from settings/development.yml) as an argument.
+To run either of the rake tasks below, give the name of the moab storage_root (e.g. from settings/development.yml) as an argument.
 
 #### Drop all database entries:
 
-```ruby
+```sh
 RAILS_ENV=production bundle exec rake drop[fixture_sr1]
 ```
 
 #### Populate the catalog:
 
-```ruby
+```sh
 RAILS_ENV=production bundle exec rake populate[fixture_sr1]
 ```
 
 ### Run Moab to Catalog existence check for a single root and for all storage roots
 
-- To run rake tasks below, give the name of the moab storage_root (e.g. from settings/development.yml) as an argument.
+To run rake tasks below, give the name of the moab storage_root (e.g. from settings/development.yml) as an argument.
 
 #### Single Root
 - Without profiling
-```ruby
+```sh
 RAILS_ENV=production bundle exec rake m2c_exist_single_root[fixture_sr1]
 ```
 - With profiling:
-```ruby
+```sh
 
 RAILS_ENV=production bundle exec rake m2c_exist_single_root[fixture_sr1,profile]
 ```
-this will generate a log at, for example, ```log/profiler_check_existence_for_dir2017-12-11T14:34:06-flat.txt```
+this will generate a log at, for example, `log/profiler_check_existence_for_dir2017-12-11T14:34:06-flat.txt`
 
 #### All Roots
 - Without profiling:
-```ruby
+```sh
 RAILS_ENV=production bundle exec rake m2c_exist_all_storage_roots
 ```
 - With profiling:
-```ruby
+```sh
 RAILS_ENV=production bundle exec rake m2c_exist_all_storage_roots[profile]
 ```
-this will generate a log at, for example, ```log/profile_check_existence_for_all_storage_roots2017-12-11T14:25:31-flat.txt```
+this will generate a log at, for example, `log/profile_check_existence_for_all_storage_roots2017-12-11T14:25:31-flat.txt`
 
 ### Run Catalog to Moab existence check for a single root or for all storage roots
 
@@ -145,61 +150,55 @@ this will generate a log at, for example, ```log/profile_check_existence_for_all
 
 #### Single Root
 - Without profiling
-```ruby
+```sh
 RAILS_ENV=production bundle exec rake c2m_check_version_on_dir['2018-01-22 22:54:48 UTC',fixture_sr1]
 ```
 - With profiling
-```ruby
+```sh
 RAILS_ENV=production bundle exec rake c2m_check_version_on_dir['2018-01-22 22:54:48 UTC',fixture_sr1,profile]
 ```
-this will generate a log at, for example,
-```log/profile_c2m_check_version_on_dir2018-01-01T14:25:31-flat.txt```
+this will generate a log at, for example, `log/profile_c2m_check_version_on_dir2018-01-01T14:25:31-flat.txt`
 
 #### All Roots
 - Without profiling:
-```ruby
+```sh
 RAILS_ENV=production bundle exec rake c2m_check_version_all_dirs['2018-01-22 22:54:48 UTC']
 ```
 - With profiling:
-```ruby
+```sh
 RAILS_ENV=production bundle exec rake c2m_check_version_all_dirs['2018-01-22 22:54:48 UTC',profile]
 ```
-this will generate a log at, for example,
-```log/profile_c2m_check_version_all_roots2018-01-01T14:25:31-flat.txt```
+this will generate a log at, for example, `log/profile_c2m_check_version_all_roots2018-01-01T14:25:31-flat.txt`
 
 ### Run Checksum Validation for a single root or for all storage roots
 - Parse all manifestInventory.xml and most recent signatureCatalog.xml for stored checksums and verify against computed checksums.
-
 - To run rake tasks below, give the name of the endpoint (e.g. from settings/development.yml)
-
 
 #### Single Root
 - Without profiling
-```ruby
+```sh
 RAILS_ENV=production bundle exec rake cv_single_endpoint[fixture_sr3]
 ```
 - With profiling
-```ruby
+```sh
 RAILS_ENV=production bundle exec rake cv_single_endpoint[fixture_sr3,profile]
 ```
-this will generate a log at, for example,
-```log/profile_cv_validate_disk2018-01-01T14:25:31-flat.txt```
+this will generate a log at, for example, `log/profile_cv_validate_disk2018-01-01T14:25:31-flat.txt`
 
 #### All Roots
 - Without profiling:
-```ruby
+```sh
 RAILS_ENV=production bundle exec rake cv_all_endpoints
 ```
 - With profiling:
-```ruby
+```sh
 RAILS_ENV=production bundle exec rake cv_all_endpoints[profile]
 ```
-this will generate a log at, for example,
-```log/profile_cv_validate_disk_all_endpoints2018-01-01T14:25:31-flat.txt```
+this will generate a log at, for example, `log/profile_cv_validate_disk_all_endpoints2018-01-01T14:25:31-flat.txt`
 
 ### One druid at a time
 - Without profiling:
-```ruby
+```sh
 RAILS_ENV=production bundle exec rake cv_druid[bz514sm9647]
 ```
 
