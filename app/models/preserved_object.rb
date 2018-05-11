@@ -26,4 +26,16 @@ class PreservedObject < ApplicationRecord
       po.save!
     end
   end
+
+  def create_archive_copies(version)
+    # TODO: is it worth checking that the given version is btwn 0 and #current_version ?
+    ApplicationRecord.transaction do
+      Endpoint.in_need_of_archive_copy(druid, version).map do |ep|
+        # TODO: remember to update size at some later point, after zip is created
+        PreservedCopy.create!(
+          preserved_object: self, version: version, endpoint: ep, status: PreservedCopy::UNREPLICATED_STATUS
+        )
+      end
+    end
+  end
 end

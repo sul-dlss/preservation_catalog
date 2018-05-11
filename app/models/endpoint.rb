@@ -19,6 +19,21 @@ class Endpoint < ApplicationRecord
     joins(preservation_policies: [:preserved_objects]).where(preserved_objects: { druid: druid })
   }
 
+  scope :in_need_of_archive_copy, lambda { |druid, version|
+    # cast version to int for nicer errors in the case of bad input.  though ActiveRecord/ARel would still protect
+    # against injection attacks even without using a bind var (e.g. a string passed in for an int col query would
+    # silently be inserted as 0, an INTEGER).
+    pc_table = PreservedCopy.arel_table
+    ep_table = Endpoint.arel_table
+    endpoint_has_pres_copy_subquery =
+      PreservedCopy.where(
+        pc_table[:endpoint_id].eq(ep_table[:id])
+          .and(pc_table[:version].eq(version.to_i))
+      ).exists
+
+    target_endpoints(druid).archive.where.not(endpoint_has_pres_copy_subquery)
+  }
+
   scope :archive, lambda {
     # TODO: maybe endpoint_class should be an enum or a constant?
     joins(:endpoint_type).where(endpoint_types: { endpoint_class: 'archive' })
