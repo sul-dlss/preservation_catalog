@@ -99,6 +99,21 @@ RSpec.describe CatalogController, type: :controller do
       post :create, params: { druid: druid, incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
       expect(response.body).to include(druid_no_pre)
     end
+    context 'can take two forms of druid input' do
+      let(:druid) { 'druid:jj925bx9565' }
+      let(:druid_no_pre) { 'jj925bx9565' }
+
+      it 'druid:jj925bx9565' do
+        post :create, params: { druid: druid, incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
+        expect(response.body).to include(druid_no_pre)
+        expect(response).to have_http_status(:created)
+      end
+      it 'jj925bx9565' do
+        post :create, params: { druid: druid_no_pre, incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
+        expect(response.body).to include(druid_no_pre)
+        expect(response).to have_http_status(:created)
+      end
+    end
   end
 
   describe 'PATCH #update' do
@@ -220,6 +235,24 @@ RSpec.describe CatalogController, type: :controller do
     it 'response body contains druid' do
       post :update, params: { druid: druid, incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
       expect(response.body).to include(druid_no_pre)
+    end
+    context 'can take two forms of druid input' do
+      before do
+        post :create, params: { druid: druid, incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
+      end
+      let(:druid) { 'druid:jj925bx9565' }
+      let(:druid_no_pre) { 'jj925bx9565' }
+
+      it 'druid:jj925bx9565' do
+        patch :update, params: { druid: druid, incoming_version: 5, incoming_size: size, storage_location: storage_location_param }
+        expect(response.body).to include(druid_no_pre)
+        expect(response).to have_http_status(:ok)
+      end
+      it 'jj925bx9565' do
+        patch :update, params: { druid: druid_no_pre, incoming_version: 5, incoming_size: size, storage_location: storage_location_param }
+        expect(response.body).to include(druid_no_pre)
+        expect(response).to have_http_status(:ok)
+      end
     end
   end
 end
