@@ -1,8 +1,34 @@
 require 'rails_helper'
 
 RSpec.describe HostSettings do
+  it 'depends on Settings.archive_endpoint_map' do
+    expect(Settings.archive_endpoint_map).to be
+  end
+
   it 'depends on Settings.storage_root_map' do
     expect(Settings.storage_root_map).to be
+  end
+
+  describe '.archive_endpoints' do
+    it 'gets the correct values' do
+      expect(described_class).to receive(:archive_endpoint_lookup_name).and_call_original
+      expect(described_class.archive_endpoints.to_h).to eq(
+        mock_archive1:
+          Config::Options.new(
+            endpoint_node: 'localhost',
+            storage_location: 'bucket_name',
+            access_key: 'totallysecret'
+          )
+      )
+    end
+
+    context 'on unrecognized systems' do
+      it 'does not bork, just returns empty hash' do
+        allow(described_class).to receive(:archive_endpoint_lookup_name).and_return('foobar123')
+        expect { described_class.archive_endpoints }.not_to raise_error
+        expect(described_class.archive_endpoints).to eq({})
+      end
+    end
   end
 
   describe '.storage_roots' do
@@ -20,6 +46,17 @@ RSpec.describe HostSettings do
         expect { described_class.storage_roots }.not_to raise_error
         expect(described_class.storage_roots).to eq({})
       end
+    end
+  end
+
+  describe '.archive_endpoint_lookup_name' do
+    it "returns 'default' when not in production" do
+      expect(described_class.archive_endpoint_lookup_name).to eq('default')
+    end
+    it 'returns parsed hostname when in production' do
+      expect(Rails.env).to receive(:production?).and_return(true)
+      expect(described_class).to receive(:parsed_hostname).and_return('preservation_catalog_prod_a')
+      expect(described_class.archive_endpoint_lookup_name).to eq('preservation_catalog_prod_a')
     end
   end
 

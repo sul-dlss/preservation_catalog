@@ -77,7 +77,7 @@ RSpec.describe Endpoint, type: :model do
       # run it a second time
       Endpoint.seed_storage_root_endpoints_from_config(endpoint_type, default_pres_policies)
       # sort so we can avoid comparing via include, and see that it has only/exactly the four expected elements
-      expect(Endpoint.pluck(:endpoint_name).sort).to eq %w[aws-us-east-2 fixture_empty fixture_sr1 fixture_sr2 fixture_sr3]
+      expect(Endpoint.pluck(:endpoint_name).sort).to eq %w[aws-us-east-2 fixture_empty fixture_sr1 fixture_sr2 fixture_sr3 mock_archive1]
     end
 
     it 'adds new records if there are additions to Settings since the last run' do
@@ -90,7 +90,7 @@ RSpec.describe Endpoint, type: :model do
 
       # run it a second time
       Endpoint.seed_storage_root_endpoints_from_config(endpoint_type, default_pres_policies)
-      expected_ep_names = %w[aws-us-east-2 fixture_empty fixture_sr1 fixture_sr2 fixture_sr3 fixture_srTest]
+      expected_ep_names = %w[aws-us-east-2 fixture_empty fixture_sr1 fixture_sr2 fixture_sr3 fixture_srTest mock_archive1]
       expect(Endpoint.pluck(:endpoint_name).sort).to eq expected_ep_names
     end
   end
@@ -106,6 +106,67 @@ RSpec.describe Endpoint, type: :model do
       # lookup to fail fast.  since db is already seeded, we just make it look up something that we know isn't there.
       allow(Settings.endpoints.storage_root_defaults).to receive(:endpoint_type_name).and_return('nonexistent')
       expect { Endpoint.default_storage_root_endpoint_type }.to raise_error(ActiveRecord::RecordNotFound)
+    end
+  end
+
+  describe '.seed_archive_endpoints_from_config' do
+    let(:endpoint_type) { Endpoint.default_archive_endpoint_type }
+    let(:default_pres_policies) { [PreservationPolicy.default_policy] }
+
+    it 'creates an endpoints entry for each archive endpoint' do
+      HostSettings.archive_endpoints.each do |endpoint_name, endpoint_config|
+        archive_endpoint_attrs = {
+          endpoint_type: endpoint_type,
+          endpoint_node: endpoint_config.endpoint_node,
+          storage_location: endpoint_config.storage_location,
+          access_key: endpoint_config.access_key,
+          recovery_cost: Settings.endpoints.archive_defaults.recovery_cost,
+          preservation_policies: default_pres_policies
+        }
+        expect(Endpoint.find_by(endpoint_name: endpoint_name)).to have_attributes(archive_endpoint_attrs)
+      end
+    end
+
+    it 'does not re-create records that already exist' do
+      # run it a second time
+      Endpoint.seed_archive_endpoints_from_config(endpoint_type, default_pres_policies)
+      # sort so we can avoid comparing via include, and see that it has only/exactly the four expected elements
+      expect(Endpoint.pluck(:endpoint_name).sort).to eq %w[aws-us-east-2 fixture_empty fixture_sr1 fixture_sr2 fixture_sr3 mock_archive1]
+    end
+
+    it 'adds new records if there are additions to Settings since the last run' do
+      # skip "doesn't work yet, ripped off from storage roots version, fixing"
+      archive_endpoints_setting = Config::Options.new(
+        fixture_archiveTest:
+          Config::Options.new(
+            endpoint_type: endpoint_type,
+            endpoint_node: 'endpoint_node',
+            storage_location: 'storage_location',
+            access_key: 'access_key',
+            recovery_cost: 20,
+            preservation_policies: default_pres_policies
+          )
+      )
+      allow(HostSettings).to receive(:archive_endpoints).and_return(archive_endpoints_setting)
+
+      # run it a second time
+      Endpoint.seed_archive_endpoints_from_config(endpoint_type, default_pres_policies)
+      expected_ep_names = %w[aws-us-east-2 fixture_archiveTest fixture_empty fixture_sr1 fixture_sr2 fixture_sr3 mock_archive1]
+      expect(Endpoint.pluck(:endpoint_name).sort).to eq expected_ep_names
+    end
+  end
+
+  describe '.default_archive_endpoint_type' do
+    it 'returns the default endpoint type object for the archive endpoints' do
+      # db already seeded
+      expect(Endpoint.default_archive_endpoint_type).to be_a_kind_of EndpointType
+    end
+
+    it "raises RecordNotFound if the default endpoint type doesn't exist in the db" do
+      # a bit contrived, but just want to test that lack of default EndpointType for local archive endpoints causes
+      # lookup to fail fast.  since db is already seeded, we just make it look up something that we know isn't there.
+      allow(Settings.endpoints.archive_defaults).to receive(:endpoint_type_name).and_return('nonexistent')
+      expect { Endpoint.default_archive_endpoint_type }.to raise_error(ActiveRecord::RecordNotFound)
     end
   end
 
