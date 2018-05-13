@@ -7,6 +7,8 @@ aws:
 endpoint_types:
   online_nfs:
     endpoint_class: online
+  aws_s3:
+    endpoint_class: archive
 
 endpoints:
   # the defaults used when seeding the endpoints that correspond to local storage roots
