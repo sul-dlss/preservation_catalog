@@ -1,4 +1,3 @@
-require 'active_record_utils.rb'
 require 'druid-tools'
 require_relative '../../app/services/moab_validation_handler.rb'
 require 'profiler.rb'

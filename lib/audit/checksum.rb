@@ -1,4 +1,3 @@
-require 'active_record_utils.rb'
 require 'profiler.rb'
 
 # Checksum validator code
