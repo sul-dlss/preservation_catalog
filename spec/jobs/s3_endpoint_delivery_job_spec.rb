@@ -31,9 +31,11 @@ describe S3EndpointDeliveryJob, type: :job do
   end
 
   context 'zip is new to S3' do
+    let(:md5) { '1B2M2Y8AsgTpgAmY7PhCfg==' }
+
     it 'puts to S3' do
       expect(object).to receive(:put).with(
-        a_hash_including(body: File, metadata: a_hash_including(checksum_md5: 'd41d8cd98f00b204e9800998ecf8427e'))
+        a_hash_including(body: File, content_md5: md5, metadata: a_hash_including(checksum_md5: md5))
       )
       described_class.perform_now(druid, version)
     end

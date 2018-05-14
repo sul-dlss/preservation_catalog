@@ -27,9 +27,9 @@ class DruidVersionZip
   end
 
   # Currently computed live, soon will fetch from checksum storage
-  # @return [String] md5 checksum
+  # @return [String] md5 base64-encoded checksum
   # @todo Fetch (and cache) md5 from checksum storage
   def md5
-    Digest::MD5.file(file_path).hexdigest
+    @md5 ||= Digest::MD5.file(file_path).base64digest
   end
 end

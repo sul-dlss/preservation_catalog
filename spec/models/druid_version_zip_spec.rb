@@ -29,8 +29,8 @@ describe DruidVersionZip do
     before do
       allow(Settings).to receive(:zip_storage).and_return(Rails.root.join('spec', 'fixtures', 'zip_storage'))
     end
-    it 'returns checksum' do
-      expect(dvz.md5).to eq 'd41d8cd98f00b204e9800998ecf8427e'
+    it 'returns base64-encoded checksum' do
+      expect(dvz.md5).to eq '1B2M2Y8AsgTpgAmY7PhCfg=='
     end
   end
 end
