@@ -3,7 +3,7 @@
 # Upload zip if needed.
 # Notify ResultsRecorderJob.
 class S3EndpointDeliveryJob < EndpointDeliveryBase
-  queue_as :s3_enpoint_delivery
+  queue_as :s3_endpoint_delivery
   delegate :bucket, to: PreservationCatalog::S3
   # note: EndpointDeliveryBase gives us `zip`
 
