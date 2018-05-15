@@ -5,7 +5,7 @@
 
 # README
 
-Rails application with fixity data and object provenance supporting preservation object storage audit services
+Rails application to track, audit and replicate archival artifacts associated with SDR objects.
 
 ## Getting Started
 
