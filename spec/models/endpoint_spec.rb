@@ -57,16 +57,13 @@ RSpec.describe Endpoint, type: :model do
   it { is_expected.to belong_to(:endpoint_type) }
 
   describe '.seed_storage_root_endpoints_from_config' do
-    # because of the above `let!`, using just `endpoint_type` as a name here blows up, because the shared name
-    # would cause this `let` to be evaluated eagerly instead of lazily, and the EndpointType we want in this section
-    # doesn't exist till the before block runs.
-    let(:strg_rt_endpoint_type) { Endpoint.default_storage_root_endpoint_type }
+    let(:endpoint_type) { Endpoint.default_storage_root_endpoint_type }
     let(:default_pres_policies) { [PreservationPolicy.default_policy] }
 
     it 'creates a local online endpoint for each storage root' do
       HostSettings.storage_roots.each do |storage_root_name, storage_root_location|
         storage_root_attrs = {
-          endpoint_type: strg_rt_endpoint_type,
+          endpoint_type: endpoint_type,
           endpoint_node: Settings.endpoints.storage_root_defaults.endpoint_node,
           storage_location: File.join(storage_root_location, Settings.moab.storage_trunk),
           recovery_cost: Settings.endpoints.storage_root_defaults.recovery_cost,
@@ -78,7 +75,7 @@ RSpec.describe Endpoint, type: :model do
 
     it 'does not re-create records that already exist' do
       # run it a second time
-      Endpoint.seed_storage_root_endpoints_from_config(strg_rt_endpoint_type, default_pres_policies)
+      Endpoint.seed_storage_root_endpoints_from_config(endpoint_type, default_pres_policies)
       # sort so we can avoid comparing via include, and see that it has only/exactly the four expected elements
       expect(Endpoint.pluck(:endpoint_name).sort).to eq %w[aws-us-east-2 fixture_empty fixture_sr1 fixture_sr2 fixture_sr3]
     end
@@ -92,7 +89,7 @@ RSpec.describe Endpoint, type: :model do
       allow(HostSettings).to receive(:storage_roots).and_return(storage_roots_setting)
 
       # run it a second time
-      Endpoint.seed_storage_root_endpoints_from_config(strg_rt_endpoint_type, default_pres_policies)
+      Endpoint.seed_storage_root_endpoints_from_config(endpoint_type, default_pres_policies)
       expected_ep_names = %w[aws-us-east-2 fixture_empty fixture_sr1 fixture_sr2 fixture_sr3 fixture_srTest]
       expect(Endpoint.pluck(:endpoint_name).sort).to eq expected_ep_names
     end
