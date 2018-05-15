@@ -12,6 +12,7 @@ class Checksum
     # batches.  we can't use ActiveRecord's .find_each, because that'll disregard the order .fixity_check_expired
     # specified.  so we use our own batch processing method, which does respect Relation order.
     pcs_w_expired_fixity_check = PreservedCopy.by_endpoint_name(endpoint_name).fixity_check_expired
+    logger.info "Number of Preserved Copies to be checksum validated: #{pcs_w_expired_fixity_check.count}"
     ActiveRecordUtils.process_in_batches(pcs_w_expired_fixity_check, limit) do |pc|
       cv = ChecksumValidator.new(pc, endpoint_name)
       cv.validate_checksums
