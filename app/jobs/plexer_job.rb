@@ -1,6 +1,6 @@
 # Responsibilities:
 # Interpret replication logic.
-# Split message out to all necessary enpoints.
+# Split message out to all necessary endpoints.
 # For example:
 #   Endpoint1Delivery.perform_later(druid, version)
 #   Endpoint2Delivery.perform_later(druid, version)
