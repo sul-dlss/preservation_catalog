@@ -29,6 +29,24 @@ class TablesHaveDataCheck < OkComputer::Check
 end
 OkComputer::Registry.register "feature-tables-have-data", TablesHaveDataCheck.new
 
+HostSettings.storage_roots.each do |storage_root_name_val|
+  OkComputer::Registry.register "feature-#{storage_root_name_val.first}",
+                                OkComputer::DirectoryCheck.new(storage_root_name_val.last)
+end
+
+# want anything about s3 credentials here?
+
+# workflow_services_url - for reporting auditing errors
+# zip_storage
+
+OkComputer::Registry.register 'ruby_version', OkComputer::RubyVersionCheck.new
+
+# ------------------------------------------------------------------------------
+
+# NON-CRUCIAL (Optional) checks, avail at /status/<name-of-check>
+#   - at individual endpoint, HTTP response code reflects the actual result
+#   - in /status/all, these checks will display their result text, but will not affect HTTP response code
+
 # check PreservedCopy#last_version_audit to ensure it isn't too old
 class VersionAuditWindowCheck < OkComputer::Check
   def check
@@ -44,4 +62,6 @@ class VersionAuditWindowCheck < OkComputer::Check
     14.days.ago
   end
 end
-OkComputer::Registry.register "version-audit-window-check", VersionAuditWindowCheck.new
+OkComputer::Registry.register "feature-version-audit-window-check", VersionAuditWindowCheck.new
+
+OkComputer.make_optional %w[feature-version-audit-window-check]
