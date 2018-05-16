@@ -31,7 +31,7 @@ OkComputer::Registry.register "feature-tables-have-data", TablesHaveDataCheck.ne
 
 HostSettings.storage_roots.each do |storage_root_name_val|
   OkComputer::Registry.register "feature-#{storage_root_name_val.first}",
-                                OkComputer::DirectoryCheck.new(storage_root_name_val.last)
+                                OkComputer::DirectoryCheck.new(storage_root_name_val.last, false)
 end
 
 # want anything about s3 credentials here?
