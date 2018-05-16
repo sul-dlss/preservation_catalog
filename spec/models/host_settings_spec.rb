@@ -2,7 +2,8 @@ require 'rails_helper'
 
 RSpec.describe HostSettings do
   it 'depends on Settings.storage_root_map' do
-    expect(Settings.storage_root_map).to be
+    expect(Settings.storage_root_map).to be_an_instance_of Config::Options
+    expect(Settings.storage_root_map.keys.size).to be > 1
   end
 
   describe '.storage_roots' do
