@@ -36,6 +36,9 @@ class ChecksumValidator
         results.add_result(AuditResults::MOAB_CHECKSUM_VALID)
         found_expected_version = moab.current_version_id == preserved_copy.version
         set_status_as_seen_on_disk(found_expected_version)
+        unless found_expected_version
+          results.add_result(AuditResults::UNEXPECTED_VERSION, actual_version: moab.current_version_id, db_obj_name: 'PreservedCopy', db_obj_version: preserved_copy.version)
+        end
       else
         update_status(PreservedCopy::INVALID_CHECKSUM_STATUS)
       end

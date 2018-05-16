@@ -257,6 +257,7 @@ RSpec.describe ChecksumValidator do
               pres_copy.status = initial_status
               pres_copy.save!
               expect { cv.validate_checksums }.to change { pres_copy.status }.to PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
+              expect(cv.results.contains_result_code?(AuditResults::UNEXPECTED_VERSION)).to be true
               expect(pres_copy.reload.status).to eq PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
             end
           end
@@ -265,6 +266,7 @@ RSpec.describe ChecksumValidator do
             pres_copy.status = PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
             pres_copy.save!
             expect { cv.validate_checksums }.not_to(change { pres_copy.status })
+            expect(cv.results.contains_result_code?(AuditResults::UNEXPECTED_VERSION)).to be true
             expect(pres_copy.reload.status).to eq PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
           end
         end
