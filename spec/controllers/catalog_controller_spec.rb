@@ -2,22 +2,22 @@ require 'rails_helper'
 RSpec.describe CatalogController, type: :controller do
   let(:size) { 2342 }
   let(:ver) { 3 }
-  let(:druid) { 'druid:bj102hs9687' }
-  let(:druid_no_pre) { 'bj102hs9687' }
+  let(:prefixed_druid) { 'druid:bj102hs9687' }
+  let(:bare_druid) { 'bj102hs9687' }
   let(:storage_location) { "#{storage_location_param}/moab_storage_trunk" }
   let(:storage_location_param) { "spec/fixtures/storage_root01" }
 
   describe 'POST #create' do
     context 'with valid params' do
-      let(:pres_obj) { PreservedObject.find_by(druid: druid_no_pre) }
+      let(:pres_obj) { PreservedObject.find_by(druid: bare_druid) }
       let(:pres_copy) { PreservedCopy.find_by(preserved_object: pres_obj) }
 
       before do
-        post :create, params: { druid: druid, incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
+        post :create, params: { druid: prefixed_druid, incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
       end
 
       it 'saves PreservedObject and PreservedCopy in db' do
-        po = PreservedObject.find_by(druid: druid_no_pre)
+        po = PreservedObject.find_by(druid: bare_druid)
         pc = PreservedCopy.find_by(preserved_object: po)
         expect(po).to be_an_instance_of PreservedObject
         expect(pc).to be_an_instance_of PreservedCopy
@@ -26,7 +26,7 @@ RSpec.describe CatalogController, type: :controller do
         expect(pres_copy.endpoint.storage_location).to eq storage_location
         expect(pres_copy.version).to eq ver
         expect(pres_copy.size).to eq size
-        expect(pres_obj.druid).to eq druid_no_pre
+        expect(pres_obj.druid).to eq bare_druid
       end
 
       it 'response contains create_new_object code ' do
@@ -45,7 +45,7 @@ RSpec.describe CatalogController, type: :controller do
       end
 
       it 'does not save PreservedObject or PreservedCopy in db' do
-        po = PreservedObject.find_by(druid: druid)
+        po = PreservedObject.find_by(druid: prefixed_druid)
         pc = PreservedCopy.find_by(preserved_object: po)
         expect(po).to be_nil
         expect(pc).to be_nil
@@ -64,8 +64,8 @@ RSpec.describe CatalogController, type: :controller do
 
     context 'object already exists' do
       before do
-        post :create, params: { druid: druid, incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
-        post :create, params: { druid: druid, incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
+        post :create, params: { druid: prefixed_druid, incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
+        post :create, params: { druid: prefixed_druid, incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
       end
 
       it 'response contains error message' do
@@ -80,9 +80,9 @@ RSpec.describe CatalogController, type: :controller do
 
     context 'db update failed' do
       before do
-        allow(PreservedObject).to receive(:create!).with(hash_including(druid: druid_no_pre))
+        allow(PreservedObject).to receive(:create!).with(hash_including(druid: bare_druid))
                                                    .and_raise(ActiveRecord::ActiveRecordError, 'foo')
-        post :create, params: { druid: druid, incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
+        post :create, params: { druid: prefixed_druid, incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
       end
 
       it 'response contains error message' do
@@ -96,8 +96,25 @@ RSpec.describe CatalogController, type: :controller do
     end
 
     it 'response body contains druid' do
-      post :create, params: { druid: druid, incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
-      expect(response.body).to include(druid_no_pre)
+      post :create, params: { druid: prefixed_druid, incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
+      expect(response.body).to include(bare_druid)
+    end
+    context "can take druid with or without 'druid:' prefix " do
+      let(:bare_druid) { 'jj925bx9565' }
+      let(:prefixed_druid) { "druid:#{bare_druid}" }
+
+      it 'prefixed_druid' do
+        post :create, params: { druid: prefixed_druid, incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
+        expect(response.body).to include(bare_druid)
+        expect(response.body).not_to include(prefixed_druid)
+        expect(response).to have_http_status(:created)
+      end
+      it 'bare druid' do
+        post :create, params: { druid: bare_druid, incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
+        expect(response.body).to include(bare_druid)
+        expect(response.body).not_to include(prefixed_druid)
+        expect(response).to have_http_status(:created)
+      end
     end
   end
 
@@ -113,12 +130,12 @@ RSpec.describe CatalogController, type: :controller do
         status: PreservedCopy::VALIDITY_UNKNOWN_STATUS
       )
     end
-    let(:pres_obj) { PreservedObject.find_by(druid: druid_no_pre) }
+    let(:pres_obj) { PreservedObject.find_by(druid: bare_druid) }
     let(:pres_copy) { PreservedCopy.find_by(preserved_object: pres_obj) }
 
     context 'with valid params' do
       before do
-        patch :update, params: { druid: druid, incoming_version: upd_version, incoming_size: size, storage_location: storage_location_param }
+        patch :update, params: { druid: prefixed_druid, incoming_version: upd_version, incoming_size: size, storage_location: storage_location_param }
       end
       let(:upd_version) { 4 }
 
@@ -133,7 +150,7 @@ RSpec.describe CatalogController, type: :controller do
 
     context 'with invalid params' do
       before do
-        patch :update, params: { druid: druid, incoming_version: ver, incoming_size: size, storage_location: nil }
+        patch :update, params: { druid: prefixed_druid, incoming_version: ver, incoming_size: size, storage_location: nil }
       end
       it 'response contains error message' do
         errors = ["Endpoint must be an actual Endpoint"]
@@ -165,7 +182,7 @@ RSpec.describe CatalogController, type: :controller do
       before do
         pres_copy.version = pres_copy.version + 1
         pres_copy.save!
-        patch :update, params: { druid: druid, incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
+        patch :update, params: { druid: prefixed_druid, incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
       end
       it 'response contains error message' do
         exp_msg = [{ AuditResults::PC_PO_VERSION_MISMATCH => "PreservedCopy online Moab version 4 does not match PreservedObject current_version 3" }]
@@ -179,7 +196,7 @@ RSpec.describe CatalogController, type: :controller do
 
     context 'unexpected version' do
       before do
-        patch :update, params: { druid: druid, incoming_version: 1, incoming_size: size, storage_location: storage_location_param }
+        patch :update, params: { druid: prefixed_druid, incoming_version: 1, incoming_size: size, storage_location: storage_location_param }
       end
 
       it 'response contains error message' do
@@ -201,25 +218,45 @@ RSpec.describe CatalogController, type: :controller do
 
     context 'db update failed' do
       before do
-        allow(PreservedObject).to receive(:find_by!).with(druid: druid_no_pre)
+        allow(PreservedObject).to receive(:find_by!).with(druid: bare_druid)
                                                     .and_raise(ActiveRecord::ActiveRecordError, 'foo')
       end
 
       it 'response contains error message' do
-        patch :update, params: { druid: druid, incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
+        patch :update, params: { druid: prefixed_druid, incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
         code = AuditResults::DB_UPDATE_FAILED.to_json
         expect(response.body).to include(code)
       end
 
       it 'returns an internal server error response code' do
-        patch :update, params: { druid: druid, incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
+        patch :update, params: { druid: prefixed_druid, incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
         expect(response).to have_http_status(:internal_server_error)
       end
     end
 
     it 'response body contains druid' do
-      post :update, params: { druid: druid, incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
-      expect(response.body).to include(druid_no_pre)
+      post :update, params: { druid: prefixed_druid, incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
+      expect(response.body).to include(bare_druid)
+    end
+    context "can take druid with or without 'druid:' prefix " do
+      before do
+        post :create, params: { druid: prefixed_druid, incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
+      end
+      let(:prefixed_druid) { "druid:#{bare_druid}" }
+      let(:bare_druid) { 'jj925bx9565' }
+
+      it 'prefixed_druid' do
+        patch :update, params: { druid: prefixed_druid, incoming_version: 5, incoming_size: size, storage_location: storage_location_param }
+        expect(response.body).to include(bare_druid)
+        expect(response.body).not_to include(prefixed_druid)
+        expect(response).to have_http_status(:ok)
+      end
+      it 'bare druid' do
+        patch :update, params: { druid: bare_druid, incoming_version: 5, incoming_size: size, storage_location: storage_location_param }
+        expect(response.body).to include(bare_druid)
+        expect(response.body).not_to include(prefixed_druid)
+        expect(response).to have_http_status(:ok)
+      end
     end
   end
 end
