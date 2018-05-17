@@ -34,10 +34,6 @@ HostSettings.storage_roots.each do |storage_root_name_val|
                                 OkComputer::DirectoryCheck.new(storage_root_name_val.last, false)
 end
 
-# TODO: do we want anything about s3 credentials here?
-
-# zip_storage
-
 OkComputer::Registry.register 'ruby_version', OkComputer::RubyVersionCheck.new
 
 # ------------------------------------------------------------------------------
@@ -46,8 +42,12 @@ OkComputer::Registry.register 'ruby_version', OkComputer::RubyVersionCheck.new
 #   - at individual endpoint, HTTP response code reflects the actual result
 #   - in /status/all, these checks will display their result text, but will not affect HTTP response code
 
+# Audit Checks (only) report errors to workflow service so they appear in Argo
 workflows_url = "#{Settings.workflow_services_url}sdr/objects/druid:oo000oo0000/workflows"
-OkComputer::Registry.register "external-workflow-service", OkComputer::HttpCheck.new(workflows_url)
+OkComputer::Registry.register "external-workflow-service-url", OkComputer::HttpCheck.new(workflows_url)
+
+# Replication (only) uses zip_storage directory to build the zips to send to endpoints
+OkComputer::Registry.register "feature-zip_storage_dir", OkComputer::DirectoryCheck.new(Settings.zip_storage)
 
 # check PreservedCopy#last_version_audit to ensure it isn't too old
 class VersionAuditWindowCheck < OkComputer::Check
@@ -66,4 +66,6 @@ class VersionAuditWindowCheck < OkComputer::Check
 end
 OkComputer::Registry.register "feature-version-audit-window-check", VersionAuditWindowCheck.new
 
-OkComputer.make_optional %w[feature-version-audit-window-check external-workflow-service]
+# TODO: do we want anything about s3 credentials here?
+
+OkComputer.make_optional %w[feature-version-audit-window-check external-workflow-service-url feature-zip_storage_dir]
