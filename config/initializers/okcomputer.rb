@@ -29,9 +29,32 @@ class TablesHaveDataCheck < OkComputer::Check
 end
 OkComputer::Registry.register "feature-tables-have-data", TablesHaveDataCheck.new
 
+# check that directory is accessible without consideration for writability
+class DirectoryExistsCheck < OkComputer::Check
+  attr_accessor :directory
+
+  def initialize(directory)
+    self.directory = directory
+  end
+
+  def check
+    stat = File.stat(directory) if File.exist?(directory)
+    if stat
+      if stat.directory?
+        mark_message "'#{directory}' is a reachable directory"
+      else
+        mark_message "'#{directory}' is not a directory."
+        mark_failure
+      end
+    else
+      mark_message "Directory '#{directory}' does not exist."
+      mark_failure
+    end
+  end
+end
 HostSettings.storage_roots.each do |storage_root_name_val|
   OkComputer::Registry.register "feature-#{storage_root_name_val.first}",
-                                OkComputer::DirectoryCheck.new(storage_root_name_val.last, false)
+                                DirectoryExistsCheck.new(storage_root_name_val.last)
 end
 
 OkComputer::Registry.register 'ruby_version', OkComputer::RubyVersionCheck.new
