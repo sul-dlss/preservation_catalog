@@ -61,7 +61,7 @@ class PreservedCopy < ApplicationRecord
       )
       .order('last_checksum_validation IS NOT NULL, last_checksum_validation ASC')
     # possibly counter-intuitive: the .order sorts so that null values come first (because IS NOT NULL evaluates
-    # to 0 for nulls, which sorts before 1 for non-nulls, which are then sorted by last_version_audit)
+    # to 0 for nulls, which sorts before 1 for non-nulls, which are then sorted by last_checksum_validation)
   }
 
   def update_audit_timestamps(moab_validated, version_audited)
