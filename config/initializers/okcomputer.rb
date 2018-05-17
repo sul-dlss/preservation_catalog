@@ -44,7 +44,7 @@ OkComputer::Registry.register 'ruby_version', OkComputer::RubyVersionCheck.new
 
 # Audit Checks (only) report errors to workflow service so they appear in Argo
 workflows_url = "#{Settings.workflow_services_url}sdr/objects/druid:oo000oo0000/workflows"
-OkComputer::Registry.register "external-workflow-service-url", OkComputer::HttpCheck.new(workflows_url)
+OkComputer::Registry.register "external-workflow-services-url", OkComputer::HttpCheck.new(workflows_url)
 
 # Replication (only) uses zip_storage directory to build the zips to send to endpoints
 OkComputer::Registry.register "feature-zip_storage_dir", OkComputer::DirectoryCheck.new(Settings.zip_storage)
@@ -68,4 +68,4 @@ OkComputer::Registry.register "feature-version-audit-window-check", VersionAudit
 
 # TODO: do we want anything about s3 credentials here?
 
-OkComputer.make_optional %w[feature-version-audit-window-check external-workflow-service-url feature-zip_storage_dir]
+OkComputer.make_optional %w[feature-version-audit-window-check external-workflow-services-url feature-zip_storage_dir]
