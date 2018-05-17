@@ -6,6 +6,10 @@ class Endpoint < ApplicationRecord
   belongs_to :endpoint_type
   has_and_belongs_to_many :preservation_policies
 
+  enum delivery_class: {
+    S3EndpointDeliveryJob => 1
+  }
+
   validates :endpoint_name, presence: true, uniqueness: true
   validates :endpoint_type, presence: true
   validates :endpoint_node, presence: true
