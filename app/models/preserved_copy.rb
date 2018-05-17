@@ -21,6 +21,7 @@ class PreservedCopy < ApplicationRecord
 
   belongs_to :preserved_object
   belongs_to :endpoint
+  has_many :zip_checksums, dependent: :restrict_with_exception
 
   validates :endpoint, presence: true
   validates :preserved_object, presence: true
