@@ -45,3 +45,7 @@ c2m_sql_limit: 1000
 checksum_algos: ['md5'] # 'sha1' 'sha256'
 
 zip_storage: '/tmp' # override in #{RAILS_ENV}.yml
+
+resque_dashboard_hostnames: # tells the router where to mount the resque dashboard
+  - 'worker-hostname-01.example.com'
+  - 'worker-hostname-02.example.com'
