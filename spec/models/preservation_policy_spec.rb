@@ -28,6 +28,9 @@ RSpec.describe PreservationPolicy, type: :model do
 
   it { is_expected.to have_many(:preserved_objects) }
   it { is_expected.to have_and_belong_to_many(:endpoints) }
+  it { is_expected.to validate_presence_of(:preservation_policy_name) }
+  it { is_expected.to validate_presence_of(:archive_ttl) }
+  it { is_expected.to validate_presence_of(:fixity_ttl) }
 
   describe '.seed_from_config' do
     it 'creates the preservation policies listed in Settings' do
