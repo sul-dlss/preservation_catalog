@@ -3,7 +3,7 @@ FactoryBot.define do
     version 1
     status 'ok'
     size 231
-    endpoint { "fake endpoint" }
+    endpoint
     preserved_object
   end
 end
