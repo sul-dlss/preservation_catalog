@@ -7,6 +7,7 @@ class PreservedCopy < ApplicationRecord
   ONLINE_MOAB_NOT_FOUND_STATUS = 'online_moab_not_found'.freeze
   UNEXPECTED_VERSION_ON_STORAGE_STATUS = 'unexpected_version_on_storage'.freeze
   VALIDITY_UNKNOWN_STATUS = 'validity_unknown'.freeze
+  UNREPLICATED_STATUS = 'unreplicated'.freeze
 
   # NOTE:  DO NOT change the underlying constants for enum values that have been merged to
   # master/used in prod db (or at least, consider the necessary migration)
@@ -19,7 +20,8 @@ class PreservedCopy < ApplicationRecord
     INVALID_CHECKSUM_STATUS => 2,
     ONLINE_MOAB_NOT_FOUND_STATUS => 3,
     UNEXPECTED_VERSION_ON_STORAGE_STATUS => 4,
-    VALIDITY_UNKNOWN_STATUS => 6
+    VALIDITY_UNKNOWN_STATUS => 6,
+    UNREPLICATED_STATUS => 7
   }
 
   belongs_to :preserved_object
@@ -61,7 +63,7 @@ class PreservedCopy < ApplicationRecord
       )
       .order('last_checksum_validation IS NOT NULL, last_checksum_validation ASC')
     # possibly counter-intuitive: the .order sorts so that null values come first (because IS NOT NULL evaluates
-    # to 0 for nulls, which sorts before 1 for non-nulls, which are then sorted by last_version_audit)
+    # to 0 for nulls, which sorts before 1 for non-nulls, which are then sorted by last_checksum_validation)
   }
 
   def update_audit_timestamps(moab_validated, version_audited)

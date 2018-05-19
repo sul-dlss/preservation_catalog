@@ -10,6 +10,7 @@ describe 'the whole replication pipeline', type: :job do # rubocop:disable RSpec
   end
   let(:object) { instance_double(Aws::S3::Object, exists?: false, put: true) }
   let(:bucket) { instance_double(Aws::S3::Bucket, object: object) }
+  let(:po) { create(:preserved_object, druid: druid) }
 
   around do |example|
     old_adapter = ApplicationJob.queue_adapter
@@ -21,6 +22,7 @@ describe 'the whole replication pipeline', type: :job do # rubocop:disable RSpec
   before do
     allow(Settings).to receive(:zip_storage).and_return(Rails.root.join('spec', 'fixtures', 'zip_storage'))
     allow(PreservationCatalog::S3).to receive(:bucket).and_return(bucket)
+    create(:preserved_copy, preserved_object: po, version: version, endpoint: create(:archive_endpoint))
   end
 
   it 'gets from zipmaker queue to replication result message' do

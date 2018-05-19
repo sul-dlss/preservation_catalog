@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180511210539) do
+ActiveRecord::Schema.define(version: 20180517212635) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -31,6 +31,7 @@ ActiveRecord::Schema.define(version: 20180511210539) do
     t.integer "recovery_cost", null: false
     t.string "access_key"
     t.bigint "endpoint_type_id", null: false
+    t.integer "delivery_class"
     t.index ["endpoint_name"], name: "index_endpoints_on_endpoint_name", unique: true
     t.index ["endpoint_node"], name: "index_endpoints_on_endpoint_node"
     t.index ["endpoint_type_id"], name: "index_endpoints_on_endpoint_type_id"

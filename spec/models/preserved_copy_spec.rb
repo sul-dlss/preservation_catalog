@@ -36,7 +36,8 @@ RSpec.describe PreservedCopy, type: :model do
       PreservedCopy::INVALID_CHECKSUM_STATUS => 2,
       PreservedCopy::ONLINE_MOAB_NOT_FOUND_STATUS => 3,
       PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS => 4,
-      PreservedCopy::VALIDITY_UNKNOWN_STATUS => 6
+      PreservedCopy::VALIDITY_UNKNOWN_STATUS => 6,
+      PreservedCopy::UNREPLICATED_STATUS => 7
     )
   end
 
