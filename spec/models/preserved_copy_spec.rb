@@ -85,6 +85,9 @@ RSpec.describe PreservedCopy, type: :model do
   it { is_expected.to have_db_index(:last_checksum_validation) }
   it { is_expected.to have_db_index(:endpoint_id) }
   it { is_expected.to have_db_index(:preserved_object_id) }
+  it { is_expected.to validate_presence_of(:endpoint) }
+  it { is_expected.to validate_presence_of(:preserved_object) }
+  it { is_expected.to validate_presence_of(:version) }
 
   describe '#update_audit_timestamps' do
     let(:pc) do

@@ -19,6 +19,8 @@ RSpec.describe EndpointType, type: :model do
     end.to raise_error(ActiveRecord::RecordInvalid)
   end
 
+  it { is_expected.to validate_presence_of(:type_name) }
+  it { is_expected.to validate_presence_of(:endpoint_class) }
   it { is_expected.to have_many(:endpoints) }
 
   describe '.seed_from_config' do

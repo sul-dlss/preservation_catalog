@@ -55,6 +55,11 @@ RSpec.describe Endpoint, type: :model do
   it { is_expected.to have_db_index(:storage_location) }
   it { is_expected.to have_and_belong_to_many(:preservation_policies) }
   it { is_expected.to belong_to(:endpoint_type) }
+  it { is_expected.to validate_presence_of(:endpoint_name) }
+  it { is_expected.to validate_presence_of(:endpoint_type) }
+  it { is_expected.to validate_presence_of(:endpoint_node) }
+  it { is_expected.to validate_presence_of(:storage_location) }
+  it { is_expected.to validate_presence_of(:recovery_cost) }
 
   describe '.seed_storage_root_endpoints_from_config' do
     # because of the above `let!`, using just `endpoint_type` as a name here blows up, because the shared name
