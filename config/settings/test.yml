@@ -18,5 +18,3 @@ archive_endpoints:
     endpoint_type_name: 'aws_s3'
     endpoint_node: 'localhost'
     storage_location: 'bucket_name'
-    access_key: 'totallysecret'
-    recovery_cost: 10

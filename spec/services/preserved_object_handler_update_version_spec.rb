@@ -351,7 +351,6 @@ RSpec.describe PreservedObjectHandler do
             endpoint.endpoint_type = Endpoint.default_storage_root_endpoint_type
             endpoint.endpoint_node = Settings.endpoints.storage_root_defaults.endpoint_node
             endpoint.storage_location = storage_dir
-            endpoint.recovery_cost = Settings.endpoints.storage_root_defaults.recovery_cost
           end
           po = PreservedObject.create!(druid: druid, current_version: 2, preservation_policy: default_prez_policy)
           t = Time.current

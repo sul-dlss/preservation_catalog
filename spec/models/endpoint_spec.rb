@@ -8,8 +8,7 @@ RSpec.describe Endpoint, type: :model do
       endpoint_name: 'aws-us-east-2',
       endpoint_type_id: endpoint_type.id,
       endpoint_node: 's3.us-east-2.amazonaws.com',
-      storage_location: 'sdr-bucket-01',
-      recovery_cost: '5'
+      storage_location: 'sdr-bucket-01'
     )
   end
 
@@ -31,8 +30,7 @@ RSpec.describe Endpoint, type: :model do
         endpoint_name: 'aws-us-east-2',
         endpoint_type_id: endpoint_type.id,
         endpoint_node: 's3.us-east-2.amazonaws.com',
-        storage_location: 'sdr-bucket-01',
-        recovery_cost: '5'
+        storage_location: 'sdr-bucket-01'
       )
     end.to raise_error(ActiveRecord::RecordInvalid)
   end
@@ -43,7 +41,6 @@ RSpec.describe Endpoint, type: :model do
     dup_endpoint.endpoint_name = 'aws-us-east-2'
     dup_endpoint.endpoint_node = 's3.us-east-2.amazonaws.com'
     dup_endpoint.storage_location = 'sdr-bucket-01'
-    dup_endpoint.recovery_cost = '5'
     dup_endpoint.endpoint_type_id = endpoint_type.id
     expect { dup_endpoint.save(validate: false) }.to raise_error(ActiveRecord::RecordNotUnique)
   end
@@ -59,7 +56,6 @@ RSpec.describe Endpoint, type: :model do
   it { is_expected.to validate_presence_of(:endpoint_type) }
   it { is_expected.to validate_presence_of(:endpoint_node) }
   it { is_expected.to validate_presence_of(:storage_location) }
-  it { is_expected.to validate_presence_of(:recovery_cost) }
 
   describe '.seed_storage_root_endpoints_from_config' do
     let(:endpoint_type) { Endpoint.default_storage_root_endpoint_type }
@@ -71,7 +67,6 @@ RSpec.describe Endpoint, type: :model do
           endpoint_type: endpoint_type,
           endpoint_node: Settings.endpoints.storage_root_defaults.endpoint_node,
           storage_location: File.join(storage_root_location, Settings.moab.storage_trunk),
-          recovery_cost: Settings.endpoints.storage_root_defaults.recovery_cost,
           preservation_policies: default_pres_policies
         }
         expect(Endpoint.find_by(endpoint_name: storage_root_name)).to have_attributes(storage_root_attrs)
@@ -124,8 +119,6 @@ RSpec.describe Endpoint, type: :model do
           endpoint_type: endpoint_type,
           endpoint_node: endpoint_config.endpoint_node,
           storage_location: endpoint_config.storage_location,
-          access_key: endpoint_config.access_key,
-          recovery_cost: endpoint_config.recovery_cost,
           preservation_policies: default_pres_policies
         }
         expect(Endpoint.find_by(endpoint_name: endpoint_name)).to have_attributes(archive_endpoint_attrs)
@@ -146,9 +139,7 @@ RSpec.describe Endpoint, type: :model do
           Config::Options.new(
             endpoint_type_name: 'aws_s3',
             endpoint_node: 'endpoint_node',
-            storage_location: 'storage_location',
-            access_key: 'access_key',
-            recovery_cost: 20
+            storage_location: 'storage_location'
           )
       )
       allow(Settings).to receive(:archive_endpoints).and_return(archive_endpoints_setting)
@@ -206,8 +197,7 @@ RSpec.describe Endpoint, type: :model do
         endpoint_type_name: 'aws',
         endpoint_type_class: 'archive',
         endpoint_node: 's3.us-east-2.amazonaws.com',
-        storage_location: 'sdr-bucket-01',
-        recovery_cost: 5
+        storage_location: 'sdr-bucket-01'
       )
     end
   end

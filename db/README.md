@@ -25,7 +25,6 @@
   * `endpoint_type_id`: the `EndpointType` implemented by this `Endpoint`.
   * `endpoint_node`: the network location of the endpoint relative to the preservation catalog instance (e.g. localhost for a locally mounted NFS volume, s3.us-east-2.amazonaws.com for an S3 bucket, etc).
   * `storage_location`: the path or bucket name or similar from which to read (e.g. "/services-disk03/sdr2objects", "sdr-bucket-01", etc).
-  * `access_key`: authorization info, if any, for connecting to the endpoint.
   * `preservation_policies`: the preservation policies for which governed objects are preserved (declared to ActiveRecord via `has_and_belongs_to_many :preservation_policies`).
 * An `EndpointType`, as the name implies, describes general shared characteristics common to many `Endpoint` instances.  At present these include a general type name describing what sort of storage the endpoint is to be implemented on (e.g. our own NFS mounts, an AWS bucket, a Ceph instance, etc), as well as the type of objects the endpoint stores (at present, only "online" exploded moabs, or "archive" moabs packed into a single file).
 * A `PreservationPolicy` defines

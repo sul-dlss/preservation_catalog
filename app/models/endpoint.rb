@@ -16,7 +16,6 @@ class Endpoint < ApplicationRecord
   validates :endpoint_type, presence: true
   validates :endpoint_node, presence: true
   validates :storage_location, presence: true
-  validates :recovery_cost, presence: true
 
   scope :archive, lambda {
     # TODO: maybe endpoint_class should be an enum or a constant?
@@ -55,7 +54,6 @@ class Endpoint < ApplicationRecord
         endpoint.endpoint_type = endpoint_type
         endpoint.endpoint_node = Settings.endpoints.storage_root_defaults.endpoint_node
         endpoint.storage_location = File.join(storage_root_location, Settings.moab.storage_trunk)
-        endpoint.recovery_cost = Settings.endpoints.storage_root_defaults.recovery_cost
         endpoint.preservation_policies = preservation_policies
       end
     end
@@ -67,8 +65,6 @@ class Endpoint < ApplicationRecord
         endpoint.endpoint_type = EndpointType.find_by!(type_name: endpoint_config.endpoint_type_name)
         endpoint.endpoint_node = endpoint_config.endpoint_node
         endpoint.storage_location = endpoint_config.storage_location
-        endpoint.access_key = endpoint_config.access_key
-        endpoint.recovery_cost = endpoint_config.recovery_cost
         endpoint.preservation_policies = preservation_policies
       end
     end
@@ -85,8 +81,7 @@ class Endpoint < ApplicationRecord
       endpoint_type_name: endpoint_type.type_name,
       endpoint_type_class: endpoint_type.endpoint_class,
       endpoint_node: endpoint_node,
-      storage_location: storage_location,
-      recovery_cost: recovery_cost
+      storage_location: storage_location
     }
   end
 
