@@ -8,11 +8,8 @@ class PreservedCopy < ApplicationRecord
   UNEXPECTED_VERSION_ON_STORAGE_STATUS = 'unexpected_version_on_storage'.freeze
   VALIDITY_UNKNOWN_STATUS = 'validity_unknown'.freeze
 
-  # NOTE:  DO NOT change the underlying constants for enum values that have been merged to
-  # master/used in prod db (or at least, consider the necessary migration)
-  # If an enum value is removed, it's probably easiest to just not re-use the underlying int code it used before.
-  # Just add new statuses using the next highest unused int value, and treat the numbering as an increasing
-  # sequence that will likely have holes.
+  # @note Hash values cannot be modified without migrating any associated persisted data.
+  # @see [enum docs] http://api.rubyonrails.org/classes/ActiveRecord/Enum.html
   enum status: {
     OK_STATUS => 0,
     INVALID_MOAB_STATUS => 1,

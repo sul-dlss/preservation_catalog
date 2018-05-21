@@ -6,6 +6,8 @@ class Endpoint < ApplicationRecord
   belongs_to :endpoint_type
   has_and_belongs_to_many :preservation_policies
 
+  # @note Hash values cannot be modified without migrating any associated persisted data.
+  # @see [enum docs] http://api.rubyonrails.org/classes/ActiveRecord/Enum.html
   enum delivery_class: {
     S3EndpointDeliveryJob => 1
   }
