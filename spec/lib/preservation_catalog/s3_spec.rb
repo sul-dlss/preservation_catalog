@@ -50,8 +50,9 @@ describe PreservationCatalog::S3 do
     it { is_expected.to exist }
 
     describe 'Aws::S3::Object#put' do
-      subject(:s3_object) { bucket.object('test_key') }
+      subject(:s3_object) { bucket.object("test_key_#{test_key_id}") }
 
+      let(:test_key_id) { ENV.fetch('TRAVIS_JOB_ID', '000') }
       let(:dvz) { DruidVersionZip.new('bj102hs9687', 2) }
       let(:file) { File.open(dvz.file) }
       let(:now) { Time.zone.now.iso8601 }
