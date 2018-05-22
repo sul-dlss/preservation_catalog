@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180517212635) do
+ActiveRecord::Schema.define(version: 20180517220356) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -85,10 +85,20 @@ ActiveRecord::Schema.define(version: 20180517212635) do
     t.index ["updated_at"], name: "index_preserved_objects_on_updated_at"
   end
 
+  create_table "zip_checksums", force: :cascade do |t|
+    t.string "md5", null: false
+    t.string "create_info", null: false
+    t.bigint "preserved_copy_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["preserved_copy_id"], name: "index_zip_checksums_on_preserved_copy_id"
+  end
+
   add_foreign_key "endpoints", "endpoint_types"
   add_foreign_key "endpoints_preservation_policies", "endpoints"
   add_foreign_key "endpoints_preservation_policies", "preservation_policies"
   add_foreign_key "preserved_copies", "endpoints"
   add_foreign_key "preserved_copies", "preserved_objects"
   add_foreign_key "preserved_objects", "preservation_policies"
+  add_foreign_key "zip_checksums", "preserved_copies"
 end
