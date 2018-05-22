@@ -22,7 +22,7 @@ class ChecksumValidator
     @preserved_copy = preserved_copy
     @bare_druid = preserved_copy.preserved_object.druid
     @endpoint = Endpoint.find_by(endpoint_name: endpoint_name)
-    @results = AuditResults.new(bare_druid, nil, endpoint)
+    @results = AuditResults.new(bare_druid, nil, endpoint, 'validate_checksums')
     @full_druid = "druid:#{bare_druid}"
   end
 
