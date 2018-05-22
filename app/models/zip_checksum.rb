@@ -5,6 +5,6 @@ class ZipChecksum < ApplicationRecord
   belongs_to :preserved_copy
 
   validates :preserved_copy, presence: true
-  validates :md5, presence: true
+  validates :md5, presence: true, format: { with: /\A[0-9a-f]{32}\z/ }
   validates :create_info, presence: true
 end
