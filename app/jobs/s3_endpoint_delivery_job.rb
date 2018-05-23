@@ -13,7 +13,7 @@ class S3EndpointDeliveryJob < EndpointDeliveryBase
   def perform(druid, version)
     return if s3_object.exists?
     s3_object.put(body: zip.file, content_md5: zip.md5, metadata: { zip_cmd: 'zip -X ...', checksum_md5: zip.md5 })
-    ResultsRecorderJob.perform_later(druid, version, 's3', '12345ABC') # value will be from zip.checksum
+    ResultsRecorderJob.perform_later(druid, version, self.class.to_s, '12345ABC') # value will be from zip.checksum
   end
 
   # @return [Aws::S3::Object]

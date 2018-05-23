@@ -10,6 +10,7 @@ describe S3EndpointDeliveryJob, type: :job do
   before do
     allow(Settings).to receive(:zip_storage).and_return(Rails.root.join('spec', 'fixtures', 'zip_storage'))
     allow(PreservationCatalog::S3).to receive(:bucket).and_return(bucket)
+    allow(ResultsRecorderJob).to receive(:perform_later).with(any_args)
   end
 
   it 'descends from EndpointDeliveryBase' do
@@ -42,7 +43,7 @@ describe S3EndpointDeliveryJob, type: :job do
   end
 
   it 'invokes ResultsRecorderJob' do
-    expect(ResultsRecorderJob).to receive(:perform_later).with(druid, version, 's3', '12345ABC')
+    expect(ResultsRecorderJob).to receive(:perform_later).with(druid, version, described_class.to_s, '12345ABC')
     described_class.perform_now(druid, version)
   end
 end
