@@ -70,11 +70,6 @@ class Endpoint < ApplicationRecord
     end
   end
 
-  # TODO: move to EndpointType class?  e.g. .default_for_storage_root
-  def self.default_storage_root_endpoint_type
-    EndpointType.find_by!(type_name: Settings.endpoints.storage_root_defaults.endpoint_type_name)
-  end
-
   def to_h
     {
       endpoint_name: endpoint_name,

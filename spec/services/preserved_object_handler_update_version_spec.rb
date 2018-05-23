@@ -348,7 +348,7 @@ RSpec.describe PreservedObjectHandler do
 
         before do
           Endpoint.find_or_create_by!(endpoint_name: 'bad_fixture_dir') do |endpoint|
-            endpoint.endpoint_type = Endpoint.default_storage_root_endpoint_type
+            endpoint.endpoint_type = EndpointType.default_for_storage_roots
             endpoint.endpoint_node = Settings.endpoints.storage_root_defaults.endpoint_node
             endpoint.storage_location = storage_dir
           end

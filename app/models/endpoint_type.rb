@@ -20,4 +20,8 @@ class EndpointType < ApplicationRecord
       end
     end
   end
+
+  def self.default_for_storage_roots
+    EndpointType.find_by!(type_name: Settings.endpoints.storage_root_defaults.endpoint_type_name)
+  end
 end

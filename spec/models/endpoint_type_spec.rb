@@ -48,4 +48,18 @@ RSpec.describe EndpointType, type: :model do
       expect(EndpointType.find_by(type_name: 'some_archive_endpoint_type')).to be_a_kind_of EndpointType
     end
   end
+
+  describe '.default_for_storage_roots' do
+    it 'returns the default endpoint type object for the storage root' do
+      # db already seeded
+      expect(EndpointType.default_for_storage_roots).to be_a_kind_of EndpointType
+    end
+
+    it "raises RecordNotFound if the default endpoint type doesn't exist in the db" do
+      # a bit contrived, but just want to test that lack of default EndpointType for local storage roots causes
+      # lookup to fail fast.  since db is already seeded, we just make it look up something that we know isn't there.
+      allow(Settings.endpoints.storage_root_defaults).to receive(:endpoint_type_name).and_return('nonexistent')
+      expect { EndpointType.default_for_storage_roots }.to raise_error(ActiveRecord::RecordNotFound)
+    end
+  end
 end
