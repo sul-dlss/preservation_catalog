@@ -1,11 +1,19 @@
 ##
 # metadata about a specific replication endpoint
 class EndpointType < ApplicationRecord
+  # TODO: this should eventually become a regular int Enum.  String Enums work and are tested in Rails 5,
+  # but are neither documented nor officially supported, and may be de-supported in the future.
+  # see https://bibwild.wordpress.com/2016/09/06/rails5-and-earlier-activerecordenum-supports-strings-in-db/
+  enum endpoint_class: {
+    'online' => 'online',
+    'archive' => 'archive'
+  }
+
   has_many :endpoints, dependent: :restrict_with_exception
 
   validates :type_name, presence: true, uniqueness: true
   # TODO: maybe endpoint_class should be an enum or a constant?
-  validates :endpoint_class, presence: true
+  validates :endpoint_class, inclusion: { in: endpoint_classes.keys }
 
   # iterates over the endpoint types enumerated in the settings, creating any that don't already exist.
   # returns an array with the result of the ActiveRecord find_or_create_by! call for each settings entry (i.e.,

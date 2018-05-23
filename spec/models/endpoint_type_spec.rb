@@ -20,8 +20,27 @@ RSpec.describe EndpointType, type: :model do
   end
 
   it { is_expected.to validate_presence_of(:type_name) }
-  it { is_expected.to validate_presence_of(:endpoint_class) }
   it { is_expected.to have_many(:endpoints) }
+
+  it 'defines a endpoint_class enum with the expected values' do
+    %w[online archive].each do |endpoint_class|
+      expect(EndpointType.new(type_name: "unit_test_#{endpoint_class}", endpoint_class: endpoint_class)).to be_valid
+    end
+  end
+
+  context 'set endpoint_class' do
+    it "validation rejects a value that's not actually used by the enum" do
+      expect {
+        EndpointType.new(type_name: 'offline_nfs', endpoint_class: 'offline')
+      }.to raise_error(ArgumentError, "'offline' is not a valid endpoint_class")
+    end
+
+    it "will accept a symbol, but will always return a string" do
+      ep_type = EndpointType.new(type_name: 'archive_unit_test', endpoint_class: :archive)
+      expect(ep_type.endpoint_class).to be_a(String)
+      expect(ep_type.endpoint_class).to eq 'archive'
+    end
+  end
 
   describe '.seed_from_config' do
     it 'creates the endpoint types listed in Settings' do
