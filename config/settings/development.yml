@@ -13,3 +13,5 @@ storage_root_map:
     fixture_sr1: 'spec/fixtures/storage_root01'
     fixture_sr2: 'spec/fixtures/storage_root02'
 workflow_services_url: 'https://sul-lyberservices-test.stanford.edu/workflow/'
+resque_dashboard_hostnames:
+  - 'localhost'
