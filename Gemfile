@@ -11,7 +11,7 @@ gem 'config' # Settings to manage configs on different instances
 gem 'faraday' # ReST calls
 gem 'honeybadger' # for error reporting / tracking / notifications
 gem 'jbuilder', '~> 2.5' # Build JSON APIs with ease.
-gem 'okcomputer'
+gem 'okcomputer' # ReST endpoint with upness status
 gem 'pg' # postgres database
 gem "factory_bot_rails", "~> 4.0"
 # pry is useful for debugging, even in prod
@@ -23,6 +23,7 @@ gem 'resque', '~> 1.27'
 gem 'resque-lock' # deduplication of worker queue jobs
 gem 'retries' # robust handling of network glitches
 gem 'ruby-prof' # to profile methods
+gem 'whenever' # manage cron for audit checks
 
 # Stanford gems
 gem 'moab-versioning' # work with Moab Objects

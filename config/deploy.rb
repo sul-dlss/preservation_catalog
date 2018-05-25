@@ -5,7 +5,7 @@ set :repo_url, "https://github.com/sul-dlss/preservation_catalog.git"
 ask :branch, `git rev-parse --abbrev-ref HEAD`.chomp
 
 # Default deploy_to directory is /var/www/my_app_name
-set :deploy_to, "/opt/app/pres/preservation_catalog"
+set :deploy_to, "/opt/app/pres/#{fetch(:application)}"
 
 # update shared_configs before restarting app
 before 'deploy:restart', 'shared_configs:update'
@@ -27,6 +27,7 @@ append :linked_files, "config/database.yml" # , "config/secrets.yml"
 append :linked_dirs, "log", "config/settings" # , "tmp/pids", "tmp/cache", "tmp/sockets", "public/system"
 
 set :honeybadger_env, fetch(:stage)
+set :whenever_identifier, -> { "#{fetch(:application)}_#{fetch(:stage)}" }
 
 # Default value for default_env is {}
 # set :default_env, { path: "/opt/ruby/bin:$PATH" }
@@ -41,7 +42,7 @@ after 'deploy:migrate', 'db_seed'
 
 desc 'Run rake db:seed'
 task :db_seed do
-  on roles(:all) do
+  on roles(:db) do
     within current_path do
       with rails_env: fetch(:rails_env) do
         execute :rake, 'db:seed'
