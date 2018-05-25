@@ -32,8 +32,7 @@ RSpec.describe PreservedObjectHandler do
           endpoint_name: 'diff_endpoint',
           endpoint_type: Endpoint.default_storage_root_endpoint_type,
           endpoint_node: 'localhost',
-          storage_location: 'blah',
-          recovery_cost: 1
+          storage_location: 'blah'
         )
         PreservedObject.create!(druid: druid, current_version: 2, preservation_policy: default_prez_policy)
         po_handler = described_class.new(druid, 3, incoming_size, diff_ep)

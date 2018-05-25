@@ -220,7 +220,6 @@ RSpec.describe PreservedObjectHandler do
               endpoint.endpoint_type = Endpoint.default_storage_root_endpoint_type
               endpoint.endpoint_node = Settings.endpoints.storage_root_defaults.endpoint_node
               endpoint.storage_location = invalid_storage_dir
-              endpoint.recovery_cost = Settings.endpoints.storage_root_defaults.recovery_cost
             end
             # these need to be in before loop so it happens before each context below
             invalid_po = PreservedObject.create!(
@@ -546,7 +545,6 @@ RSpec.describe PreservedObjectHandler do
               endpoint.endpoint_type = Endpoint.default_storage_root_endpoint_type
               endpoint.endpoint_node = Settings.endpoints.storage_root_defaults.endpoint_node
               endpoint.storage_location = storage_dir
-              endpoint.recovery_cost = Settings.endpoints.storage_root_defaults.recovery_cost
             end
           end
 

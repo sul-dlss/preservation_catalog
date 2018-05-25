@@ -7,6 +7,8 @@ aws:
 endpoint_types:
   online_nfs:
     endpoint_class: online
+  aws_s3:
+    endpoint_class: archive
 
 endpoints:
   # the defaults used when seeding the endpoints that correspond to local storage roots
@@ -14,7 +16,6 @@ endpoints:
     # value for endpoint_type_name must correspond to an endpoint_types entry (defined above)
     endpoint_type_name: 'online_nfs'
     endpoint_node: 'localhost'
-    recovery_cost: 1
 
 moab:
   # storage_trunk is the name of the directory under a storage_root which contains

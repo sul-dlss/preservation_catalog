@@ -13,6 +13,7 @@ ApplicationRecord.transaction(isolation: :serializable) do
   Endpoint.seed_storage_root_endpoints_from_config(
     Endpoint.default_storage_root_endpoint_type, [PreservationPolicy.default_policy]
   )
+  Endpoint.seed_archive_endpoints_from_config([PreservationPolicy.default_policy])
 end
 
 puts "seeded database.  state of seeded object types after seeding:"

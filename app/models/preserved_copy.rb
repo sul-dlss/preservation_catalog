@@ -7,6 +7,7 @@ class PreservedCopy < ApplicationRecord
   ONLINE_MOAB_NOT_FOUND_STATUS = 'online_moab_not_found'.freeze
   UNEXPECTED_VERSION_ON_STORAGE_STATUS = 'unexpected_version_on_storage'.freeze
   VALIDITY_UNKNOWN_STATUS = 'validity_unknown'.freeze
+  UNREPLICATED_STATUS = 'unreplicated'.freeze
 
   # @note Hash values cannot be modified without migrating any associated persisted data.
   # @see [enum docs] http://api.rubyonrails.org/classes/ActiveRecord/Enum.html
@@ -16,7 +17,8 @@ class PreservedCopy < ApplicationRecord
     INVALID_CHECKSUM_STATUS => 2,
     ONLINE_MOAB_NOT_FOUND_STATUS => 3,
     UNEXPECTED_VERSION_ON_STORAGE_STATUS => 4,
-    VALIDITY_UNKNOWN_STATUS => 6
+    VALIDITY_UNKNOWN_STATUS => 6,
+    UNREPLICATED_STATUS => 7
   }
 
   belongs_to :preserved_object

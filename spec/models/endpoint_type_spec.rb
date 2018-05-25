@@ -34,7 +34,7 @@ RSpec.describe EndpointType, type: :model do
       # run it a second time
       EndpointType.seed_from_config
       # sort so we can avoid comparing via include, and see that it has only/exactly the expected elements
-      expect(EndpointType.pluck(:type_name).sort).to eq %w[online_nfs]
+      expect(EndpointType.pluck(:type_name).sort).to eq %w[aws_s3 online_nfs]
     end
 
     it 'adds new records if there are additions to Settings since the last run' do

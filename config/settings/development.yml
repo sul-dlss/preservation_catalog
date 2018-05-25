@@ -12,6 +12,11 @@ storage_root_map:
   preservation_catalog_prod_a:
     fixture_sr1: 'spec/fixtures/storage_root01'
     fixture_sr2: 'spec/fixtures/storage_root02'
+archive_endpoints:
+  mock_archive1:
+    endpoint_type_name: 'aws_s3'
+    endpoint_node: 'localhost'
+    storage_location: 'bucket_name'
 workflow_services_url: 'https://sul-lyberservices-test.stanford.edu/workflow/'
 resque_dashboard_hostnames:
   - 'localhost'
