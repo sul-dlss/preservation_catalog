@@ -28,9 +28,10 @@ class Endpoint < ApplicationRecord
   }
 
   scope :which_need_archive_copy, lambda { |druid, version|
-    # cast version to int for nicer errors in the case of bad input.  though ActiveRecord/ARel would still protect
-    # against injection attacks even without using a bind var (e.g. a string passed in for an int col query would
-    # silently be inserted as 0, an INTEGER).
+    # testing indicates that the Arel::Table#eq will cast the input to the appropriate type for us.  i didn't
+    # didn't see that documented, so i'm casting version.to_i to be safe (since we're not using the usual bind
+    # variable machinery).  just trying to be extra cautious about injection attacks.  we shouldn't have to
+    # worry about druid, since it gets passed via the usual ActiveRecord bind var machinery.
     pc_table = PreservedCopy.arel_table
     ep_table = Endpoint.arel_table
     endpoint_has_pres_copy_subquery =
