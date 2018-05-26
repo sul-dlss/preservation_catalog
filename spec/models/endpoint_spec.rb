@@ -58,7 +58,7 @@ RSpec.describe Endpoint, type: :model do
   it { is_expected.to validate_presence_of(:storage_location) }
 
   describe '.seed_storage_root_endpoints_from_config' do
-    let(:endpoint_type) { Endpoint.default_storage_root_endpoint_type }
+    let(:endpoint_type) { EndpointType.default_for_storage_roots }
     let(:default_pres_policies) { [PreservationPolicy.default_policy] }
 
     it 'creates a local online endpoint for each storage root' do
@@ -92,20 +92,6 @@ RSpec.describe Endpoint, type: :model do
       Endpoint.seed_storage_root_endpoints_from_config(endpoint_type, default_pres_policies)
       expected_ep_names = %w[aws-us-east-2 fixture_empty fixture_sr1 fixture_sr2 fixture_sr3 fixture_srTest mock_archive1]
       expect(Endpoint.pluck(:endpoint_name).sort).to eq expected_ep_names
-    end
-  end
-
-  describe '.default_storage_root_endpoint_type' do
-    it 'returns the default endpoint type object for the storage root' do
-      # db already seeded
-      expect(Endpoint.default_storage_root_endpoint_type).to be_a_kind_of EndpointType
-    end
-
-    it "raises RecordNotFound if the default endpoint type doesn't exist in the db" do
-      # a bit contrived, but just want to test that lack of default EndpointType for local storage roots causes
-      # lookup to fail fast.  since db is already seeded, we just make it look up something that we know isn't there.
-      allow(Settings.endpoints.storage_root_defaults).to receive(:endpoint_type_name).and_return('nonexistent')
-      expect { Endpoint.default_storage_root_endpoint_type }.to raise_error(ActiveRecord::RecordNotFound)
     end
   end
 

@@ -20,8 +20,27 @@ RSpec.describe EndpointType, type: :model do
   end
 
   it { is_expected.to validate_presence_of(:type_name) }
-  it { is_expected.to validate_presence_of(:endpoint_class) }
   it { is_expected.to have_many(:endpoints) }
+
+  it 'defines a endpoint_class enum with the expected values' do
+    %w[online archive].each do |endpoint_class|
+      expect(EndpointType.new(type_name: "unit_test_#{endpoint_class}", endpoint_class: endpoint_class)).to be_valid
+    end
+  end
+
+  context 'set endpoint_class' do
+    it "validation rejects a value that's not actually used by the enum" do
+      expect {
+        EndpointType.new(type_name: 'offline_nfs', endpoint_class: 'offline')
+      }.to raise_error(ArgumentError, "'offline' is not a valid endpoint_class")
+    end
+
+    it "will accept a symbol, but will always return a string" do
+      ep_type = EndpointType.new(type_name: 'archive_unit_test', endpoint_class: :archive)
+      expect(ep_type.endpoint_class).to be_a(String)
+      expect(ep_type.endpoint_class).to eq 'archive'
+    end
+  end
 
   describe '.seed_from_config' do
     it 'creates the endpoint types listed in Settings' do
@@ -46,6 +65,20 @@ RSpec.describe EndpointType, type: :model do
       # run it a second time
       EndpointType.seed_from_config
       expect(EndpointType.find_by(type_name: 'some_archive_endpoint_type')).to be_a_kind_of EndpointType
+    end
+  end
+
+  describe '.default_for_storage_roots' do
+    it 'returns the default endpoint type object for the storage root' do
+      # db already seeded
+      expect(EndpointType.default_for_storage_roots).to be_a_kind_of EndpointType
+    end
+
+    it "raises RecordNotFound if the default endpoint type doesn't exist in the db" do
+      # a bit contrived, but just want to test that lack of default EndpointType for local storage roots causes
+      # lookup to fail fast.  since db is already seeded, we just make it look up something that we know isn't there.
+      allow(Settings.endpoints.storage_root_defaults).to receive(:endpoint_type_name).and_return('nonexistent')
+      expect { EndpointType.default_for_storage_roots }.to raise_error(ActiveRecord::RecordNotFound)
     end
   end
 end

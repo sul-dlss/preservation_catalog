@@ -11,7 +11,7 @@ ApplicationRecord.transaction(isolation: :serializable) do
   PreservationPolicy.seed_from_config
   EndpointType.seed_from_config
   Endpoint.seed_storage_root_endpoints_from_config(
-    Endpoint.default_storage_root_endpoint_type, [PreservationPolicy.default_policy]
+    EndpointType.default_for_storage_roots, [PreservationPolicy.default_policy]
   )
   Endpoint.seed_archive_endpoints_from_config([PreservationPolicy.default_policy])
 end
