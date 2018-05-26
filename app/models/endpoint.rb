@@ -60,6 +60,7 @@ class Endpoint < ApplicationRecord
   end
 
   def self.seed_archive_endpoints_from_config(preservation_policies)
+    return unless Settings.archive_endpoints
     Settings.archive_endpoints.map do |endpoint_name, endpoint_config|
       find_or_create_by!(endpoint_name: endpoint_name.to_s) do |endpoint|
         endpoint.endpoint_type = EndpointType.find_by!(type_name: endpoint_config.endpoint_type_name)
