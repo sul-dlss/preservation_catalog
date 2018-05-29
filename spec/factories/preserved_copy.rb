@@ -6,4 +6,12 @@ FactoryBot.define do
     endpoint
     preserved_object
   end
+
+  factory :archive_copy, parent: :preserved_copy do
+    association :endpoint, factory: :archive_endpoint
+  end
+
+  factory :unreplicated_copy, parent: :archive_copy do
+    status 'unreplicated'
+  end
 end
