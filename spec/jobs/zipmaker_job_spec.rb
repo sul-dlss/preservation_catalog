@@ -15,9 +15,14 @@ describe ZipmakerJob, type: :job do
     expect(described_class.new).to be_an(ApplicationJob)
   end
 
+  it 'invokes PlexerJob' do
+    expect(PlexerJob).to receive(:perform_later).with(druid, version)
+    described_class.perform_now(druid, version)
+  end
+
   context 'zip already exists in zip storage' do
 
-    it 'does nothing' do
+    it 'does not create a zip' do
       expect(File).to exist(zip_path)
       expect(described_class).not_to receive(:create_zip!)
       described_class.perform_now(druid, version)
@@ -32,11 +37,6 @@ describe ZipmakerJob, type: :job do
     it 'zips up the druid version into zip storage' do
       described_class.perform_now(druid, version)
       expect(File).to exist(zip_path)
-    end
-
-    it 'invokes PlexerJob' do
-      expect(PlexerJob).to receive(:perform_later).with(druid, version)
-      described_class.perform_now(druid, version)
     end
   end
 
