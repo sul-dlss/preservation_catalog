@@ -72,7 +72,7 @@ RSpec.describe Audit::Checksum do
     end
 
     it 'calls validate_disk with the right arguments' do
-      HostSettings.storage_roots.each_key do |storage_name|
+      HostSettings.storage_roots.to_h.each_key do |storage_name|
         expect(described_class).to receive(:validate_disk).with(
           storage_name
         )

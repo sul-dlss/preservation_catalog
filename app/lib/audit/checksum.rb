@@ -10,9 +10,9 @@ module Audit
       # pres_copies is an AR Relation; it could return a lot of results, so we want to process it in
       # batches.  we can't use ActiveRecord's .find_each, because that'll disregard the order .fixity_check_expired
       # specified.  so we use our own batch processing method, which does respect Relation order.
-      pcs_w_expired_fixity_check = PreservedCopy.by_endpoint_name(endpoint_name).for_online_endpoints.fixity_check_expired
-      logger.info "Number of Preserved Copies to be checksum validated: #{pcs_w_expired_fixity_check.count}"
-      ActiveRecordUtils.process_in_batches(pcs_w_expired_fixity_check, limit) do |pc|
+      pres_copies = PreservedCopy.by_endpoint_name(endpoint_name).for_online_endpoints.fixity_check_expired
+      logger.info "Number of Preserved Copies to be checksum validated: #{pres_copies.count}"
+      ActiveRecordUtils.process_in_batches(pres_copies, limit) do |pc|
         ChecksumValidator.new(pc).validate_checksums
       end
     ensure
@@ -27,7 +27,7 @@ module Audit
 
     def self.validate_disk_all_endpoints
       logger.info "#{Time.now.utc.iso8601} CV validate_disk_all_endpoints starting"
-      HostSettings.storage_roots.each do |strg_root_name, _strg_root_location|
+      HostSettings.storage_roots.to_h.each_key do |strg_root_name|
         validate_disk(strg_root_name)
       end
     ensure

@@ -66,7 +66,7 @@ module Audit
     # Shameless green. In order to run several seed "jobs" in parallel, we would have to refactor.
     def self.seed_catalog_for_all_storage_roots
       logger.info "#{Time.now.utc.iso8601} Seeding for all storage roots starting"
-      HostSettings.storage_roots.each do |_strg_root_name, strg_root_location|
+      HostSettings.storage_roots.to_h.each_value do |strg_root_location|
         seed_catalog_for_dir("#{strg_root_location}/#{Settings.moab.storage_trunk}")
       end
     ensure
@@ -82,7 +82,7 @@ module Audit
     # Shameless green. Code duplication with seed_catalog_for_all_storage_roots
     def self.check_existence_for_all_storage_roots
       logger.info "#{Time.now.utc.iso8601} M2C check_existence for all storage roots starting'"
-      HostSettings.storage_roots.each do |_strg_root_name, strg_root_location|
+      HostSettings.storage_roots.to_h.each_value do |strg_root_location|
         check_existence_for_dir("#{strg_root_location}/#{Settings.moab.storage_trunk}")
       end
     ensure

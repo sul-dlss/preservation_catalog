@@ -29,7 +29,7 @@ module Audit
 
     def self.check_version_all_dirs(last_checked_b4_date)
       logger.info "#{Time.now.utc.iso8601} C2M check_version_all_dirs starting"
-      HostSettings.storage_roots.each do |_strg_root_name, strg_root_location|
+      HostSettings.storage_roots.to_h.each_value do |strg_root_location|
         check_version_on_dir(last_checked_b4_date, "#{strg_root_location}/#{Settings.moab.storage_trunk}")
       end
     ensure

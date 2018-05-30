@@ -20,8 +20,8 @@ RSpec.describe Audit::MoabToCatalog do
     end
 
     it 'calls check_existence_for_dir with the right arguments' do
-      HostSettings.storage_roots.each do |storage_root|
-        expect(described_class).to receive(:check_existence_for_dir).with("#{storage_root[1]}/#{Settings.moab.storage_trunk}")
+      HostSettings.storage_roots.to_h.each_value do |path|
+        expect(described_class).to receive(:check_existence_for_dir).with("#{path}/#{Settings.moab.storage_trunk}")
       end
       subject
     end
@@ -49,8 +49,8 @@ RSpec.describe Audit::MoabToCatalog do
     end
 
     it 'calls seed_catalog_for_dir with the right arguments' do
-      HostSettings.storage_roots.each do |storage_root|
-        expect(described_class).to receive(:seed_catalog_for_dir).with("#{storage_root[1]}/#{Settings.moab.storage_trunk}")
+      HostSettings.storage_roots.to_h.each_value do |path|
+        expect(described_class).to receive(:seed_catalog_for_dir).with("#{path}/#{Settings.moab.storage_trunk}")
       end
       subject
     end
