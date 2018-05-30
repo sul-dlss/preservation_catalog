@@ -10,26 +10,26 @@ class ZipmakerJob < ApplicationJob
   # @param [String] druid
   # @param [Integer] version
   def perform(druid, version)
-    binary_path = Moab::StorageServices.object_version_path(druid, version)
+    moab_version_path = Moab::StorageServices.object_version_path(druid, version)
     zip_path = DruidVersionZip.new(druid, version).file_path
     unless File.exist?(zip_path)
-      ZipmakerJob.zip_binary(zip_path, binary_path) if binary_path
+      ZipmakerJob.create_zip!(zip_path, moab_version_path) if moab_version_path
     end
     PlexerJob.perform_later(druid, version)
   end
 
-  # @param [String] path to druid version zip
-  # @param [String] path to druid version
+  # @param [String] path to zip file to be made
+  # @param [String] path to druid moab version directory
   # @todo calculate md5 of zip for plexer
-  def self.zip_binary(zip_path, binary_path)
-    _output, error, status = Open3.capture3(zip_command(zip_path, binary_path))
+  def self.create_zip!(zip_path, moab_version_path)
+    _output, error, status = Open3.capture3(zip_command(zip_path, moab_version_path))
     raise "zipmaker failure #{error}" unless status.success?
   end
 
-  # @param [String] path to druid version zip
-  # @param [String] path to druid version
+  # @param [String] path to zip file to be made
+  # @param [String] path to druid moab version directory
   # @return [String]
-  def self.zip_command(zip_path, binary_path)
-    "zip -vr0X -s 10g #{zip_path} #{binary_path}"
+  def self.zip_command(zip_path, moab_version_path)
+    "zip -vr0X -s 10g #{zip_path} #{moab_version_path}"
   end
 end
