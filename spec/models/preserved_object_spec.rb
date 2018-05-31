@@ -134,6 +134,10 @@ RSpec.describe PreservedObject, type: :model do
       expect(archive_pcs_for_druid.where(version: 1).count).to eq 0
     end
 
+    it 'creates the pres copies so that they start with UNREPLICATED_STATUS' do
+      expect(po.create_archive_preserved_copies(current_version).all?(&:unreplicated?)).to be true
+    end
+
     it "creates pres copies that don't yet exist for the given endpoint, but should" do
       expect { po.create_archive_preserved_copies(current_version) }.to change {
         Endpoint.which_need_archive_copy(druid, current_version).to_a
