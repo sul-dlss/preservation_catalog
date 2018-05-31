@@ -16,7 +16,7 @@ describe ZipmakerJob, type: :job do
   end
 
   it 'invokes PlexerJob' do
-    expect(PlexerJob).to receive(:perform_later).with(druid, version)
+    expect(PlexerJob).to receive(:perform_later).with(druid, version, Hash)
     described_class.perform_now(druid, version)
   end
 

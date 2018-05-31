@@ -1,5 +1,5 @@
 # Responsibilities:
-# Interpret replication logic.
+# Record zip metadata info in DB.
 # Split message out to all necessary endpoints.
 # For example:
 #   Endpoint1Delivery.perform_later(druid, version)
@@ -8,15 +8,21 @@
 class PlexerJob < ApplicationJob
   queue_as :zips_made
 
+  before_enqueue { |job| job.zip_info_check!(job.arguments.third) }
+
   # @param [String] druid
   # @param [Integer] version
-  def perform(druid, version)
+  # @param [Hash<Symbol => String>] metadata Zip info
+  # @option metadata [Integer] :size
+  # @option metadata [String] :zip_cmd
+  # @option metadata [String] :checksum_md5
+  def perform(druid, version, metadata)
     targets(druid, version).each do |worker|
-      worker.perform_later(druid, version)
+      worker.perform_later(druid, version, metadata)
     end
   end
 
-  # @return [Array<Class>] EndpointDeliveryBase-descending classes to be targeted
+  # @return [Array<Class>] Endpoint delivery classes to be targeted
   def targets(druid, version)
     Endpoint
       .joins(:endpoint_type, preserved_copies: [:preserved_object])

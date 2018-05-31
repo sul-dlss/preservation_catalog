@@ -21,8 +21,7 @@ class ResultsRecorderJob < ApplicationJob
   # @param [String] druid
   # @param [Integer] version
   # @param [String] delivery_class Name of the worker class that performed delivery
-  # @param [String] checksum
-  def perform(druid, version, _delivery_class, _checksum)
+  def perform(druid, version, _delivery_class)
     raise "Status shifted underneath replication: #{pc.inspect}" unless pc.unreplicated?
     pc.ok!
     return unless pcs.reload.all?(&:ok?)

@@ -4,6 +4,15 @@ describe PlexerJob, type: :job do
   let(:job) { described_class.new }
   let(:druid) { 'bj102hs9687' }
   let(:version) { 1 }
+  let(:md5) { '1B2M2Y8AsgTpgAmY7PhCfg==' }
+  let(:metadata) do
+    {
+      checksum_md5: md5,
+      size: 123,
+      zip_cmd: 'zip -xyz ...',
+      zip_version: 'Zip 3.0 (July 5th 2008)'
+    }
+  end
 
   it 'descends from ApplicationJob' do
     expect(job).to be_an(ApplicationJob)
@@ -13,8 +22,13 @@ describe PlexerJob, type: :job do
     before { allow(job).to receive(:targets).and_return([S3EndpointDeliveryJob]) }
 
     it 'splits the message out to endpoint(s)' do
-      expect(S3EndpointDeliveryJob).to receive(:perform_later).with(druid, version)
-      job.perform(druid, version)
+      expect(S3EndpointDeliveryJob).to receive(:perform_later)
+        .with(
+          druid,
+          version,
+          a_hash_including(:checksum_md5, :size, :zip_cmd, :zip_version)
+        )
+      job.perform(druid, version, metadata)
     end
   end
 
