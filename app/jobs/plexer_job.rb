@@ -21,9 +21,9 @@ class PlexerJob < ApplicationJob
     Endpoint
       .joins(:endpoint_type, preserved_copies: [:preserved_object])
       .where(
-        'endpoint_types.endpoint_class' => 'archive',
-        'preserved_objects.druid' => druid,
-        'preserved_copies.version' => version
+        endpoint_types: { endpoint_class: 'archive' },
+        preserved_objects: { druid: druid },
+        preserved_copies: { version: version }
       )
       .map do |ep|
         Rails.logger.error("Archive Endpoint (id: #{ep.id}) has no delivery_class") unless ep.delivery_class

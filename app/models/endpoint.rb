@@ -28,9 +28,10 @@ class Endpoint < ApplicationRecord
   }
 
   scope :which_need_archive_copy, lambda { |druid, version|
-    # cast version to int for nicer errors in the case of bad input.  though ActiveRecord/ARel would still protect
-    # against injection attacks even without using a bind var (e.g. a string passed in for an int col query would
-    # silently be inserted as 0, an INTEGER).
+    # testing indicates that the Arel::Table#eq will cast the input to the appropriate type for us.  i didn't
+    # didn't see that documented, so i'm casting version.to_i to be safe (since we're not using the usual bind
+    # variable machinery).  just trying to be extra cautious about injection attacks.  we shouldn't have to
+    # worry about druid, since it gets passed via the usual ActiveRecord bind var machinery.
     pc_table = PreservedCopy.arel_table
     ep_table = Endpoint.arel_table
     endpoint_has_pres_copy_subquery =
@@ -42,12 +43,15 @@ class Endpoint < ApplicationRecord
     archive_targets(druid).where.not(endpoint_has_pres_copy_subquery)
   }
 
-  # iterates over the storage roots enumerated in settings, creating an endpoint for each if one doesn't
+  # iterates over the storage roots enumerated in settings, creating an Endpoint for each if one doesn't
   # already exist.
-  # returns an array with the result of the ActiveRecord find_or_create_by! call for each settings entry (i.e.,
-  # storage root Endpoint rows defined in the config, whether newly created by this call, or previously created).
-  # NOTE: this adds new entries from the config, and leaves existing entries alone, but won't delete anything.
-  # TODO: figure out deletion based on config?
+  # @param endpoint_type [EndpointType] the EndpointType to use for any newly created Endpoint records
+  # @param preservation_policies [Enumerable<PreservationPolicy>] the list of preservation policies
+  #   which any newly created endpoints implement.
+  # @return [Array<Endpoint>] the Endpoint list for the local storage roots defined in the config (all entries,
+  #   including any entries that may have been seeded already)
+  # @note this adds new entries from the config, and leaves existing entries alone, but won't delete anything.
+  # TODO: figure out deletion/update based on config?
   def self.seed_storage_root_endpoints_from_config(endpoint_type, preservation_policies)
     HostSettings.storage_roots.map do |storage_root_name, storage_root_location|
       find_or_create_by!(endpoint_name: storage_root_name.to_s) do |endpoint|
@@ -59,6 +63,14 @@ class Endpoint < ApplicationRecord
     end
   end
 
+  # iterates over the archive endpoints enumerated in settings, creating an Endpoint for each if one doesn't
+  # already exist.
+  # @param preservation_policies [Enumerable<PreservationPolicy>] the list of preservation policies
+  #   which the newly created endpoints implement.
+  # @return [Array<Endpoint>] the Endpoint list for the archive endpoints defined in the config (all entries,
+  #   including any entries that may have been seeded already)
+  # @note this adds new entries from the config, and leaves existing entries alone, but won't delete anything.
+  # TODO: figure out deletion/update based on config?
   def self.seed_archive_endpoints_from_config(preservation_policies)
     return unless Settings.archive_endpoints
     Settings.archive_endpoints.map do |endpoint_name, endpoint_config|

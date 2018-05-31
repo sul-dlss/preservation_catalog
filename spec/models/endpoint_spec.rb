@@ -174,6 +174,17 @@ RSpec.describe Endpoint, type: :model do
       expect(Endpoint.which_need_archive_copy(druid, version)).to eq []
       expect(Endpoint.which_need_archive_copy(druid, version - 1).pluck(:endpoint_name)).to eq %w[mock_archive1]
     end
+
+    it 'does not allow SQL injection' do
+      # a bit too whitebox, but oh well...  specifically testing version field
+      # because we know we're not using the usual AR params for bind vars approach
+      # in the subquery.  we cast version.to_i, which will silently convert anything
+      # it can't figure out how to properly translate into zero.
+      bogus_version = "0)))); GRANT ALL PRIVILEGES ON DATABASE pres TO icanhaznjctionattk; DROP TABLE students; --"
+      generated_sql = Endpoint.which_need_archive_copy(druid, bogus_version).to_sql
+      expect(generated_sql).not_to match(/#{Regexp.escape(bogus_version)}/)
+      expect(generated_sql).to match(/"preserved_copies"."version" = 0/)
+    end
   end
 
   describe '#to_h' do

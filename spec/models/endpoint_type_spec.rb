@@ -12,15 +12,23 @@ RSpec.describe EndpointType, type: :model do
     expect(EndpointType.new).not_to be_valid
   end
 
-  it 'enforces unique constraint on type_name' do
+  it 'enforces unique constraint on type_name (model level)' do
     expect do
       EndpointType.create!(type_name: test_type_name, endpoint_class: 'online')
       EndpointType.create!(type_name: test_type_name, endpoint_class: 'online')
-    end.to raise_error(ActiveRecord::RecordInvalid)
+    end.to raise_error(ActiveRecord::RecordInvalid, 'Validation failed: Type name has already been taken')
+  end
+
+  it 'enforces unique constraint on druid (db level)' do
+    EndpointType.create(type_name: test_type_name, endpoint_class: 'online')
+    dup_ep_type = EndpointType.new(type_name: test_type_name, endpoint_class: 'online')
+    expect { dup_ep_type.save(validate: false) }.to raise_error(ActiveRecord::RecordNotUnique)
   end
 
   it { is_expected.to validate_presence_of(:type_name) }
   it { is_expected.to have_many(:endpoints) }
+  it { is_expected.to have_db_index(:type_name) }
+  it { is_expected.to have_db_index(:endpoint_class) }
 
   it 'defines a endpoint_class enum with the expected values' do
     %w[online archive].each do |endpoint_class|

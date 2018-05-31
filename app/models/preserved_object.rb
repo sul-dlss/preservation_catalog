@@ -27,6 +27,11 @@ class PreservedObject < ApplicationRecord
     end
   end
 
+  # given a version, create any PreservedCopy records for that version which don't yet exist for archive
+  #  endpoints which implement this PreservedObject's PreservationPolicy.
+  # @param archive_vers [Integer] the version for which preserved copies should be created.  must be between
+  #   1 and this PreservedObject's current version (inclusive).
+  # @return [Array<PreservedCopy>] the PreservedCopy records that were created
   def create_archive_preserved_copies(archive_vers)
     unless archive_vers > 0 && archive_vers <= current_version
       raise ArgumentError, "archive_vers (#{archive_vers}) must be between 0 and current_version (#{current_version})"
