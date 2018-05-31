@@ -16,10 +16,10 @@ class EndpointType < ApplicationRecord
   validates :endpoint_class, inclusion: { in: endpoint_classes.keys }
 
   # iterates over the endpoint types enumerated in the settings, creating any that don't already exist.
-  # returns an array with the result of the ActiveRecord find_or_create_by! call for each settings entry (i.e.,
-  # the EndpointType rows defined in the config, whether newly created by this call, or previously created).
-  # NOTE: this adds new entries from the config, and leaves existing entries alone, but won't delete anything.
-  # TODO: figure out deletion based on config?
+  # @return [Array<EndpointType>] the EndpointType list for the endpoint types defined in the config (all entries,
+  #   including any entries that may have been seeded already)
+  # @note this adds new entries from the config, and leaves existing entries alone, but won't delete anything.
+  # TODO: figure out deletion/update based on config?
   def self.seed_from_config
     Settings.endpoint_types.map do |endpoint_type_name, endpoint_type_config|
       # we want to find only by the name, but we want to define the endpoint_class too if we actually add a row

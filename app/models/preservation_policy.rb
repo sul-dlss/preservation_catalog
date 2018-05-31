@@ -15,10 +15,10 @@ class PreservationPolicy < ApplicationRecord
   after_save { |_record| self.class.send(:clear_id_cache) }
 
   # iterates over the preservation policies enumerated in the settings, creating any that don't already exist.
-  # returns an array with the result of the ActiveRecord find_or_create_by! call for each settings entry (i.e.,
-  # the PreservationPolicy rows defined in the config, whether newly created by this call, or previously created).
-  # NOTE: this adds new entries from the config, and leaves existing entries alone, but won't delete anything.
-  # TODO: figure out deletion based on config?
+  # @return [Array<PreservationPolicy>] the PreservationPolicy list for the preservation policies defined in the
+  #   config (all entries, including any entries that may have been seeded already).
+  # @note this adds new entries from the config, and leaves existing entries alone, but won't delete anything.
+  # TODO: figure out deletion/update based on config?
   def self.seed_from_config
     Settings.preservation_policies.policy_definitions.map do |policy_name, policy_config|
       find_or_create_by!(preservation_policy_name: policy_name.to_s) do |preservation_policy|
