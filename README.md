@@ -137,6 +137,11 @@ RAILS_ENV=production bundle exec rake m2c_exist_all_storage_roots[profile]
 ```
 this will generate a log at, for example, `log/profile_check_existence_for_all_storage_roots2017-12-11T14:25:31-flat.txt`
 
+#### Single Druid
+```sh
+RAILS_ENV=production bundle exec rake m2c_exist_druid['oo000oo0000']
+```
+
 ### Run Catalog to Moab existence check for a single root or for all storage roots
 
 - Given a catalog entry for an online moab, ensure that the online moab exists and that the catalog version matches the online moab version.
