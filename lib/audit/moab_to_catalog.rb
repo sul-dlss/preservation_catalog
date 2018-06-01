@@ -7,6 +7,19 @@ class MoabToCatalog
     delegate :logger, to: PreservationCatalog::Application
   end
 
+  # this method intended to be called from rake task or via ReST call
+  def self.check_existence_for_druid(druid)
+    logger.info "#{Time.now.utc.iso8601} M2C check_existence_for_druid starting for #{druid}"
+    moab = Stanford::StorageServices.find_storage_object(druid)
+    storage_trunk = Settings.moab.storage_trunk
+    storage_dir = "#{moab.object_pathname.to_s.split(storage_trunk).first}#{storage_trunk}"
+    endpoint = Endpoint.find_by!(storage_location: storage_dir)
+    po_handler = PreservedObjectHandler.new(druid, moab.current_version_id, moab.size, endpoint)
+    po_handler.check_existence
+  ensure
+    logger.info "#{Time.now.utc.iso8601} M2C check_existence_for_druid ended for #{druid}"
+  end
+
   # NOTE: shameless green! code duplication with seed_catalog_for_dir
   def self.check_existence_for_dir(storage_dir)
     logger.info "#{Time.now.utc.iso8601} M2C check_existence starting for '#{storage_dir}'"
