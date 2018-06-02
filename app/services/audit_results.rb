@@ -49,15 +49,15 @@ class AuditResults
     INVALID_MOAB => "Invalid Moab, validation errors: %{addl}",
     PC_PO_VERSION_MISMATCH => "PreservedCopy online Moab version %{pc_version} does not match PreservedObject current_version %{po_version}",
     MOAB_NOT_FOUND => "db PreservedCopy (created %{db_created_at}; last updated %{db_updated_at}) exists but Moab not found",
-    MOAB_FILE_CHECKSUM_MISMATCH => "The checksums for %{file_path} version: %{version} do not match.",
-    MOAB_CHECKSUM_VALID => "Checksum(s) match",
+    MOAB_FILE_CHECKSUM_MISMATCH => "checksums for %{file_path} version %{version} do not match.",
+    MOAB_CHECKSUM_VALID => "checksum(s) match",
     FILE_NOT_IN_MOAB => "%{manifest_file_path} refers to file (%{file_path}) not found in Moab",
     FILE_NOT_IN_MANIFEST => "Moab file %{file_path} was not found in Moab manifest %{manifest_file_path}",
     FILE_NOT_IN_SIGNATURE_CATALOG => "Moab file %{file_path} was not found in Moab signature catalog %{signature_catalog_path}",
     MANIFEST_NOT_IN_MOAB => "%{manifest_file_path} not found in Moab",
     SIGNATURE_CATALOG_NOT_IN_MOAB => "%{signature_catalog_path} not found in Moab",
-    INVALID_MANIFEST => "Unable to parse %{manifest_file_path} in Moab",
-    UNABLE_TO_CHECK_STATUS => "This check is unable to validate an incoming status of %{current_status}"
+    INVALID_MANIFEST => "unable to parse %{manifest_file_path} in Moab",
+    UNABLE_TO_CHECK_STATUS => "unable to validate when PreservedCopy status is %{current_status}"
   }.freeze
 
   WORKFLOW_REPORT_CODES = [
