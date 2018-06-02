@@ -163,6 +163,38 @@ RSpec.describe MoabToCatalog do
     end
   end
 
+  describe '.check_existence_for_druid' do
+    let(:druid) { 'bz514sm9647' }
+    let(:subject) { described_class.check_existence_for_druid(druid) }
+    let(:results) do
+      [{ db_obj_does_not_exist: "PreservedObject db object does not exist" },
+       { created_new_object: "added object to db as it did not exist" }]
+    end
+
+    it 'finds the relevant moab' do
+      expect(Stanford::StorageServices).to receive(:find_storage_object).with(druid).and_call_original
+      subject
+    end
+    it 'finds the correct Endpoint' do
+      expect(Endpoint).to receive(:find_by!).with(storage_location: storage_dir)
+      subject
+    end
+    it 'calls pohandler.check_existence' do
+      po_handler = instance_double('PreservedObjectHandler')
+      expect(PreservedObjectHandler).to receive(:new).with(
+        druid,
+        3, # current_version
+        instance_of(Integer), # size
+        endpoint
+      ).and_return(po_handler)
+      expect(po_handler).to receive(:check_existence)
+      subject
+    end
+    it 'returns results' do
+      expect(subject).to eq results
+    end
+  end
+
   describe ".seed_catalog_for_dir" do
     let(:subject) { described_class.seed_catalog_for_dir(storage_dir) }
 
