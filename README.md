@@ -6,9 +6,22 @@
 
 Rails application to track, audit and replicate archival artifacts associated with SDR objects.
 
-## Getting Started
+## Table of Contents
 
-### PostgreSQL
+* [Getting Started](#getting-started)
+    * [PostgreSQL](#postgreSQL)
+    * [Redis](#redis)
+* [Usage Instructions](#usage)
+    * [Moab to Catalog](#m2c) (M2C) existence/version check
+    * [Catalog to Moab](#c2m) (C2M) existence/version check
+    * [Checksum Validation](#cv) (CV)
+    * [Seed the catalog](#seeding)
+* [Development](#development)
+* [Deploying](#deploying)
+
+## <a name="getting-started"/>Getting Started
+
+### <a name="postgresSQL"/>PostgreSQL
 
 #### Installing Postgres
 
@@ -39,7 +52,7 @@ These scripts do the following for you:
 
 For more info on postgres commands, see https://www.postgresql.org/docs/
 
-### Redis
+### <a name="redis"/>Redis
 
 Install and run `redis`.  For example, using `homebrew`:
 ```sh
@@ -47,9 +60,9 @@ brew install redis
 brew services start redis
 ```
 
-# Usage Instructions
+# <a name="usage"/>Usage Instructions
 
-### General Info About Running These Rake Tasks
+## <a name="general"/>General Info About Running These Rake Tasks
 
 - Note: If the rake task takes multiple arguments, DO NOT put a space in between the commas.
 
@@ -63,54 +76,7 @@ As an alternative to `screen`, you can also run tasks in the background using `n
 RAILS_ENV=production nohup bundle exec rake seed_catalog >seed_whole_catalog_nohup-2017-12-12.txt &
 ```
 
-## Seed the catalog
-
-Seeding the catalog presumes an empty or nearly empty database -- otherwise running the seed task will throw `druid NOT expected to exist in catalog but was found` errors for each found object.
-
-Without profiling:
-```sh
-RAILS_ENV=production bundle exec rake seed_catalog
-```
-
-With profiling:
-```sh
-RAILS_ENV=production bundle exec rake seed_catalog[profile]
-```
-this will generate a log at, for example, `log/profile_seed_catalog_for_all_storage_roots2017-11-13T13:57:01-flat.txt`
-
-
-#### Reset the catalog for re-seeding
-
-WARNING! this will erase the catalog, and thus require re-seeding from scratch.  It is mostly intended for development purposes, and it is unlikely that you'll need to run this against production once the catalog is in regular use.
-
-* Deploy the branch of the code with which you wish to seed, to the instance which you wish to seed (e.g. master to stage).
-* Reset the database for that instance.  E.g., on production or stage:  `RAILS_ENV=production bundle exec rake db:reset`
-  * note that if you do this in an env that sees itself as production (i.e. production or stage), you'll get a scary warning along the lines of:
-  ```
-  ActiveRecord::ProtectedEnvironmentError: You are attempting to run a destructive action against your 'production' database.
-  If you are sure you want to continue, run the same command with the environment variable:
-  DISABLE_DATABASE_ENVIRONMENT_CHECK=1
-  ```
-  Basically an especially inconvenient confirmation dialogue.  For safety's sake, the full command that skips that warning can be constructed by the user as needed, so as to prevent unintentional copy/paste dismissal when the user might be administering multiple deployment environments simultaneously.  Inadvertent database wipes are no fun.
-  * `db:reset` will make sure db is migrated and seeded.  If you want to be extra sure: `RAILS_ENV=[environment] bundle exec rake db:migrate db:seed`
-
-### Drop or Populate the catalog for a single endpoint
-
-To run either of the rake tasks below, give the name of the moab storage_root (e.g. from settings/development.yml) as an argument.
-
-#### Drop all database entries:
-
-```sh
-RAILS_ENV=production bundle exec rake drop[fixture_sr1]
-```
-
-#### Populate the catalog:
-
-```sh
-RAILS_ENV=production bundle exec rake populate[fixture_sr1]
-```
-
-## Moab to Catalog (M2C) existence/version check
+## <a name="m2c"/>Moab to Catalog (M2C) existence/version check
 
 To run rake tasks below, give the name of the moab storage_root (e.g. from settings/development.yml) as an argument.
 
@@ -142,7 +108,7 @@ this will generate a log at, for example, `log/profile_check_existence_for_all_s
 RAILS_ENV=production bundle exec rake m2c_exist_druid['oo000oo0000']
 ```
 
-## Catalog to Moab (C2M) existence/version check
+## <a name="c2m"/>Catalog to Moab (C2M) existence/version check
 
 - Given a catalog entry for an online moab, ensure that the online moab exists and that the catalog version matches the online moab version.
 
@@ -174,7 +140,7 @@ RAILS_ENV=production bundle exec rake c2m_check_version_all_dirs['2018-01-22 22:
 ```
 this will generate a log at, for example, `log/profile_c2m_check_version_all_roots2018-01-01T14:25:31-flat.txt`
 
-## Checksum Validation (CV)
+## <a name="cv"/>Checksum Validation (CV)
 - Parse all manifestInventory.xml and most recent signatureCatalog.xml for stored checksums and verify against computed checksums.
 - To run rake tasks below, give the name of the endpoint (e.g. from settings/development.yml)
 
@@ -206,7 +172,66 @@ this will generate a log at, for example, `log/profile_cv_validate_disk_all_endp
 RAILS_ENV=production bundle exec rake cv_druid[bz514sm9647]
 ```
 
-## Development
+## <a name="seeding"/>Seed the catalog
+
+Seeding the catalog presumes an empty or nearly empty database -- otherwise running the seed task will throw `druid NOT expected to exist in catalog but was found` errors for each found object.
+
+Without profiling:
+```sh
+RAILS_ENV=production bundle exec rake seed_catalog
+```
+
+With profiling:
+```sh
+RAILS_ENV=production bundle exec rake seed_catalog[profile]
+```
+this will generate a log at, for example, `log/profile_seed_catalog_for_all_storage_roots2017-11-13T13:57:01-flat.txt`
+
+
+#### Reset the catalog for re-seeding
+
+WARNING! this will erase the catalog, and thus require re-seeding from scratch.  It is mostly intended for development purposes, and it is unlikely that you'll need to run this against production once the catalog is in regular use.
+
+* Deploy the branch of the code with which you wish to seed, to the instance which you wish to seed (e.g. master to stage).
+* Reset the database for that instance.  E.g., on production or stage:  `RAILS_ENV=production bundle exec rake db:reset`
+  * note that if you do this in an env that sees itself as production (i.e. production or stage), you'll get a scary warning along the lines of:
+  ```
+  ActiveRecord::ProtectedEnvironmentError: You are attempting to run a destructive action against your 'production' database.
+  If you are sure you want to continue, run the same command with the environment variable:
+  DISABLE_DATABASE_ENVIRONMENT_CHECK=1
+  ```
+  Basically an especially inconvenient confirmation dialogue.  For safety's sake, the full command that skips that warning can be constructed by the user as needed, so as to prevent unintentional copy/paste dismissal when the user might be administering multiple deployment environments simultaneously.  Inadvertent database wipes are no fun.
+  * `db:reset` will make sure db is migrated and seeded.  If you want to be extra sure: `RAILS_ENV=[environment] bundle exec rake db:migrate db:seed`
+
+### run `rake db:seed` in a deploy environment:
+
+```sh
+bundle exec cap stage db_seed # for the stage servers
+```
+
+or
+
+```sh
+bundle exec cap prod db_seed # for the prod servers
+```
+
+### Drop or Populate the catalog for a single endpoint
+
+To run either of the rake tasks below, give the name of the moab storage_root (e.g. from settings/development.yml) as an argument.
+
+#### Drop all database entries:
+
+```sh
+RAILS_ENV=production bundle exec rake drop[fixture_sr1]
+```
+
+#### Populate the catalog:
+
+```sh
+RAILS_ENV=production bundle exec rake populate[fixture_sr1]
+```
+
+## <a name="development"/>Development
 
 ### Running Tests
 
@@ -216,13 +241,11 @@ To run the tests:
 rake spec
 ```
 
-## Deploying
+## <a name="deploying"/>Deploying
 
 Capistrano is used to deploy.
 
-### rake db:seed for deploy
-
-To run `rake db:seed` in a deploy environment:
+### run `rake db:seed` in a deploy environment:
 
 ```sh
 bundle exec cap stage db_seed # for the stage servers
