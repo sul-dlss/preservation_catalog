@@ -4,10 +4,11 @@ require_relative '../../load_fixtures_helper.rb'
 RSpec.describe CatalogToMoab do
   let(:last_checked_version_b4_date) { (Time.now.utc - 1.day).iso8601 }
   let(:storage_dir) { 'spec/fixtures/storage_root01/moab_storage_trunk' }
+  let(:druid) { 'bj102hs9687' }
+  let(:c2m) { described_class.new(pres_copy, storage_dir) }
 
   context '#initialize' do
     include_context 'fixture moabs in db'
-    let(:druid) { 'bj102hs9687' }
     let(:pres_copy) do
       po = PreservedObject.find_by(druid: druid)
       ep = Endpoint.find_by(storage_location: storage_dir).id
@@ -15,7 +16,6 @@ RSpec.describe CatalogToMoab do
     end
 
     it 'sets attributes' do
-      c2m = described_class.new(pres_copy, storage_dir)
       expect(c2m.preserved_copy).to eq pres_copy
       expect(c2m.storage_dir).to eq storage_dir
       expect(c2m.druid).to eq druid
@@ -25,7 +25,6 @@ RSpec.describe CatalogToMoab do
 
   context '#check_catalog_version' do
     include_context 'fixture moabs in db'
-    let(:druid) { 'bj102hs9687' }
     let(:pres_copy) do
       po = PreservedObject.find_by(druid: druid)
       ep = Endpoint.find_by(storage_location: storage_dir).id
@@ -34,7 +33,6 @@ RSpec.describe CatalogToMoab do
       pc
     end
     let(:object_dir) { "#{storage_dir}/#{DruidTools::Druid.new(druid).tree.join('/')}" }
-    let(:c2m) { described_class.new(pres_copy, storage_dir) }
 
     it 'instantiates Moab::StorageObject from druid and storage_dir' do
       expect(Moab::StorageObject).to receive(:new).with(druid, a_string_matching(object_dir)).and_call_original
