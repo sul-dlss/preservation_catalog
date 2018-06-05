@@ -4,14 +4,14 @@ describe ZipmakerJob, type: :job do
   let(:druid) { 'bj102hs9687' }
   let(:version) { 1 }
   let(:moab_version_path) { Moab::StorageServices.object_version_path(druid, version) }
-  let(:zip_path) { "spec/fixtures/transfers/bj/102/hs/9687/#{druid}#{format('.v%04d.zip', version)}" }
+  let(:zip_path) { "spec/fixtures/zip_storage/bj/102/hs/9687/#{druid}#{format('.v%04d.zip', version)}" }
   let(:job) do
     described_class.new(druid, version).tap { |j| j.zip = DruidVersionZip.new(druid, version) }
   end
 
   before do
     allow(PlexerJob).to receive(:perform_later).with(any_args)
-    allow(Settings).to receive(:zip_storage).and_return('spec/fixtures/transfers')
+    allow(Settings).to receive(:zip_storage).and_return('spec/fixtures/zip_storage')
   end
 
   it 'descends from DruidVersionJobBase' do
@@ -32,7 +32,7 @@ describe ZipmakerJob, type: :job do
   end
 
   context 'zip is not yet in zip storage' do
-    let(:version) { 2 }
+    let(:version) { 3 }
 
     after { File.delete(zip_path) }
 
@@ -43,7 +43,7 @@ describe ZipmakerJob, type: :job do
   end
 
   describe '.create_zip!' do
-    let(:version) { 2 }
+    let(:version) { 3 }
 
     context 'succeeds in zipping the binary' do
       after { File.delete(zip_path) }

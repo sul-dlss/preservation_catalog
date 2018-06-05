@@ -5,6 +5,10 @@
 #   Endpoint1Delivery.perform_later(druid, version)
 #   Endpoint2Delivery.perform_later(druid, version)
 #   ...
+#
+# Do not assume we can just get metadata from (the DruidVersionZip) zip.
+# Jobs are not run at the same time or on the same system, so the info will not match.
+# Therefore, we receive the info passed by the process that was there when the file was created.
 class PlexerJob < DruidVersionJobBase
   queue_as :zips_made
 
@@ -51,7 +55,8 @@ class PlexerJob < DruidVersionJobBase
   # Validate the incoming value and save once for all
   # @param [Integer] size
   def update_size(size)
-    raise "Inavlid size #{size}" unless size.is_a?(Integer) && size > 0
+    raise ArgumentError, "Size should be an Integer, not #{size.class}" unless size.is_a?(Integer)
+    raise ArgumentError, "Inavlid size value '#{size}'" unless size > 0
     pcs.update_all(size: size) # rubocop:disable Rails/SkipsModelValidations
   end
 end

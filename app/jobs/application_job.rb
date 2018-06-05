@@ -35,7 +35,7 @@ class ApplicationJob < ActiveJob::Base
   # Raises if the metadata is incomplete
   # @param [Hash<Symbol => String>] metadata
   # @option metadata [String] :checksum_md5
-  # @option metadata [String] :size
+  # @option metadata [Integer] :size
   # @option metadata [String] :zip_cmd
   # @option metadata [String] :zip_version
   def zip_info_check!(metadata)

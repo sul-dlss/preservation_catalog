@@ -25,12 +25,29 @@ describe DruidVersionZip do
     end
   end
 
-  describe '#md5' do
+  context 'MD5 checksums' do
     before do
       allow(Settings).to receive(:zip_storage).and_return(Rails.root.join('spec', 'fixtures', 'zip_storage'))
     end
-    it 'returns base64-encoded checksum' do
-      expect(dvz.md5).to eq '1B2M2Y8AsgTpgAmY7PhCfg=='
+
+    describe '#base64digest' do
+      it 'returns base64-encoded value' do
+        expect(dvz.base64digest).to eq 'T5j1nod+y4T/de8Pq0W6xQ=='
+      end
+    end
+
+    describe '#hexdigest' do
+      it 'returns base64-encoded value' do
+        expect(dvz.hexdigest).to eq '4f98f59e877ecb84ff75ef0fab45bac5'
+      end
+    end
+
+    describe '#hex_to_base64' do
+      it 'returns base64-encoded value' do
+        expect(dvz).not_to receive(:md5)
+        expect(dvz.hex_to_base64('4f98f59e877ecb84ff75ef0fab45bac5')).to eq 'T5j1nod+y4T/de8Pq0W6xQ=='
+        expect(dvz.hex_to_base64('d41d8cd98f00b204e9800998ecf8427e')).to eq '1B2M2Y8AsgTpgAmY7PhCfg=='
+      end
     end
   end
 

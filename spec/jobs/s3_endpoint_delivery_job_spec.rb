@@ -6,15 +6,8 @@ describe S3EndpointDeliveryJob, type: :job do
   let(:dvz) { DruidVersionZip.new(druid, version) }
   let(:object) { instance_double(Aws::S3::Object, exists?: false, put: true) }
   let(:bucket) { instance_double(Aws::S3::Bucket, object: object) }
-  let(:md5) { '1B2M2Y8AsgTpgAmY7PhCfg==' }
-  let(:metadata) do
-    {
-      checksum_md5: md5,
-      size: 123,
-      zip_cmd: 'zip -xyz ...',
-      zip_version: 'Zip 3.0 (July 5th 2008)'
-    }
-  end
+  let(:md5) { '4f98f59e877ecb84ff75ef0fab45bac5' }
+  let(:metadata) { dvz.metadata.merge(zip_version: 'Zip 3.0 (July 5th 2008)') }
 
   before do
     allow(Settings).to receive(:zip_storage).and_return(Rails.root.join('spec', 'fixtures', 'zip_storage'))
@@ -43,7 +36,7 @@ describe S3EndpointDeliveryJob, type: :job do
   context 'zip is new to S3' do
     it 'puts to S3' do
       expect(object).to receive(:put).with(
-        a_hash_including(body: File, content_md5: md5, metadata: a_hash_including(checksum_md5: md5))
+        a_hash_including(body: File, content_md5: dvz.hex_to_base64(md5), metadata: a_hash_including(checksum_md5: md5))
       )
       described_class.perform_now(druid, version, metadata)
     end
