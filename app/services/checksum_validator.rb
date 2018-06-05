@@ -1,6 +1,15 @@
 # code for validating Moab checksums
 class ChecksumValidator
   include ::MoabValidationHandler
+  include ActiveModel::Validations
+
+  validates_each :endpoint do |record, attr, value|
+    if value.is_a?(Endpoint)
+      record.errors.add(attr, "must be an online Endpoint for #{name}") unless value.endpoint_type.online?
+    else
+      record.errors.add(attr, 'must be an actual Endpoint')
+    end
+  end
 
   attr_reader :results, :endpoint, :full_druid, :preserved_copy, :bare_druid
 
@@ -22,6 +31,7 @@ class ChecksumValidator
     @preserved_copy = preserved_copy
     @bare_druid = preserved_copy.preserved_object.druid
     @endpoint = Endpoint.find_by(endpoint_name: endpoint_name)
+    valid?
     @results = AuditResults.new(bare_druid, nil, endpoint, 'validate_checksums')
     @full_druid = "druid:#{bare_druid}"
   end
