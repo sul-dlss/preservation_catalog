@@ -379,10 +379,10 @@ RSpec.shared_examples 'cannot validate something with INVALID_CHECKSUM_STATUS' d
   end
 end
 
-RSpec.shared_examples 'PreservedCopy already has a status other than OK_STATUS, and incoming_version == pc.version' do |method_sym|
+RSpec.shared_examples 'PreservedCopy may have its status checked when incoming_version == pc.version' do |method_sym|
   let(:incoming_version) { pc.version }
 
-  it 'had OK_STATUS, and is still OK' do
+  it 'had OK_STATUS, keeps OK_STATUS' do
     pc.status = PreservedCopy::OK_STATUS
     pc.save!
     allow(po_handler).to receive(:moab_validation_errors).and_return([])
@@ -410,7 +410,7 @@ RSpec.shared_examples 'PreservedCopy already has a status other than OK_STATUS, 
     po_handler.send(method_sym)
     expect(pc.reload.status).to eq PreservedCopy::VALIDITY_UNKNOWN_STATUS
   end
-  it 'had VALIDITY_UNKNOWN_STATUS, but is now VALIDITY_UNKNOWN_STATUS' do
+  it 'had VALIDITY_UNKNOWN_STATUS, keeps VALIDITY_UNKNOWN_STATUS' do
     pc.status = PreservedCopy::VALIDITY_UNKNOWN_STATUS
     pc.save!
     allow(po_handler).to receive(:moab_validation_errors).and_return([])
@@ -446,7 +446,7 @@ RSpec.shared_examples 'PreservedCopy already has a status other than OK_STATUS, 
   end
 end
 
-RSpec.shared_examples 'PreservedCopy already has a status other than OK_STATUS, and incoming_version < pc.version' do |method_sym|
+RSpec.shared_examples 'PreservedCopy may have its status checked when incoming_version < pc.version' do |method_sym|
   let(:incoming_version) { pc.version - 1 }
 
   it 'had OK_STATUS, but is now UNEXPECTED_VERSION_ON_STORAGE_STATUS' do
