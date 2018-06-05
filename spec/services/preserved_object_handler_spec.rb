@@ -106,4 +106,26 @@ RSpec.describe PreservedObjectHandler do
       po_handler.create_after_validation
     end
   end
+
+  describe 'endpoint validation' do
+    it 'errors when endpoint is not an Endpoint object' do
+      poh = described_class.new(druid, incoming_version, incoming_size, 1)
+      poh.valid?
+      expect(poh.errors.messages).to include(endpoint: ["must be an actual Endpoint"])
+    end
+    it 'errors when endpoint_type is not online' do
+      endpoint_type = EndpointType.create(type_name: 'foo', endpoint_class: 'archive')
+      archival_endpoint = Endpoint.create(endpoint_name: 'archive1',
+                                          endpoint_type_id: endpoint_type.id,
+                                          endpoint_node: 'node',
+                                          storage_location: 'somewhere')
+      poh = described_class.new(druid, incoming_version, incoming_size, archival_endpoint)
+      poh.valid?
+      expect(poh.errors.messages).to include(endpoint: ["must be an online Endpoint for PreservedObjectHandler"])
+    end
+    it 'passes when endpoint_type is online' do
+      po_handler.valid?
+      expect(po_handler.errors.size).to eq 0
+    end
+  end
 end
