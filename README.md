@@ -166,10 +166,18 @@ RAILS_ENV=production bundle exec rake cv_all_endpoints[profile]
 ```
 this will generate a log at, for example, `log/profile_cv_validate_disk_all_endpoints2018-01-01T14:25:31-flat.txt`
 
-### One druid at a time
+#### Single Druid
 - Without profiling:
 ```sh
 RAILS_ENV=production bundle exec rake cv_druid[bz514sm9647]
+```
+
+#### Druid List
+- Give the file path of the csv as the parameter. The first column of the csv should contain druids, without the prefix, and contain no headers.
+- Without profiling:
+```sh
+RAILS_ENV=production bundle exec rake cv_druid_list[/file/path/to/your/csv/druid_list.csv]
+
 ```
 
 ## <a name="seeding"/>Seed the catalog

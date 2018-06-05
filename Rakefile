@@ -224,3 +224,12 @@ task :cv_druid, [:druid] => [:environment] do |_t, args|
   # exit with non-zero status if any of the pres copies failed checksum validation
   exit 1 if cv_results_lists.detect { |aud_res| !aud_res.contains_result_code?(AuditResults::MOAB_CHECKSUM_VALID) }
 end
+
+desc "Fire off checksum validation on a list of druids"
+task :cv_druid_list, [:file_path] => [:environment] do |_t, args|
+  druid_list_file_path = args[:file_path]
+  puts "#{Time.now.utc.iso8601} Checksum Validation on the list of druids from #{druid_list_file_path} has started"
+  Checksum.validate_list_of_druids(druid_list_file_path)
+  puts "#{Time.now.utc.iso8601} Checksum Validation on the list of druids from #{druid_list_file_path} has finished."
+  $stdout.flush
+end
