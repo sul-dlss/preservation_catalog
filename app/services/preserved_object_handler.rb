@@ -9,12 +9,15 @@ class PreservedObjectHandler
   include ::MoabValidationHandler
   include ActiveModel::Validations
 
-  # Note: supplying validations here to allow validation before use, e.g. incoming_version in numeric logic
   validates :druid, presence: true, format: { with: DruidTools::Druid.pattern }
   validates :incoming_version, presence: true, numericality: { only_integer: true, greater_than: 0 }
   validates :incoming_size, numericality: { only_integer: true, greater_than: 0 }
   validates_each :endpoint do |record, attr, value|
-    record.errors.add(attr, 'must be an actual Endpoint') unless value.is_a?(Endpoint)
+    if value.is_a?(Endpoint)
+      record.errors.add(attr, "must be an online Endpoint for #{name}") unless value.endpoint_type.online?
+    else
+      record.errors.add(attr, 'must be an actual Endpoint')
+    end
   end
 
   attr_reader :druid, :incoming_version, :incoming_size, :endpoint, :results
@@ -65,36 +68,32 @@ class PreservedObjectHandler
       results.add_result(AuditResults::INVALID_ARGUMENTS, errors.full_messages)
     elsif PreservedObject.exists?(druid: druid)
       Rails.logger.debug "check_existence #{druid} called"
-      if endpoint.endpoint_type.endpoint_class == 'online'
-        transaction_ok = with_active_record_transaction_and_rescue do
-          raise_rollback_if_pc_po_version_mismatch
+      transaction_ok = with_active_record_transaction_and_rescue do
+        raise_rollback_if_pc_po_version_mismatch
 
-          return results.report_results unless can_validate_current_pres_copy_status?
+        return results.report_results unless can_validate_current_pres_copy_status?
 
-          if incoming_version == pres_copy.version
-            set_status_as_seen_on_disk(true) unless pres_copy.status == PreservedCopy::OK_STATUS
-            results.add_result(AuditResults::VERSION_MATCHES, 'PreservedCopy')
-          elsif incoming_version > pres_copy.version
-            set_status_as_seen_on_disk(true) unless pres_copy.status == PreservedCopy::OK_STATUS
-            results.add_result(AuditResults::ACTUAL_VERS_GT_DB_OBJ, db_obj_name: 'PreservedCopy', db_obj_version: pres_copy.version)
-            if moab_validation_errors.empty?
-              pres_copy.upd_audstamps_version_size(ran_moab_validation?, incoming_version, incoming_size)
-              pres_object.current_version = incoming_version
-              pres_object.save!
-            else
-              update_status(PreservedCopy::INVALID_MOAB_STATUS)
-            end
-          else # incoming_version < pres_copy.version
-            set_status_as_seen_on_disk(false)
-            results.add_result(AuditResults::ACTUAL_VERS_LT_DB_OBJ, db_obj_name: 'PreservedCopy', db_obj_version: pres_copy.version)
+        if incoming_version == pres_copy.version
+          set_status_as_seen_on_disk(true) unless pres_copy.status == PreservedCopy::OK_STATUS
+          results.add_result(AuditResults::VERSION_MATCHES, 'PreservedCopy')
+        elsif incoming_version > pres_copy.version
+          set_status_as_seen_on_disk(true) unless pres_copy.status == PreservedCopy::OK_STATUS
+          results.add_result(AuditResults::ACTUAL_VERS_GT_DB_OBJ, db_obj_name: 'PreservedCopy', db_obj_version: pres_copy.version)
+          if moab_validation_errors.empty?
+            pres_copy.upd_audstamps_version_size(ran_moab_validation?, incoming_version, incoming_size)
+            pres_object.current_version = incoming_version
+            pres_object.save!
+          else
+            update_status(PreservedCopy::INVALID_MOAB_STATUS)
           end
-          pres_copy.update_audit_timestamps(ran_moab_validation?, true)
-          pres_copy.save!
+        else # incoming_version < pres_copy.version
+          set_status_as_seen_on_disk(false)
+          results.add_result(AuditResults::ACTUAL_VERS_LT_DB_OBJ, db_obj_name: 'PreservedCopy', db_obj_version: pres_copy.version)
         end
-        results.remove_db_updated_results unless transaction_ok
-      elsif endpoint.endpoint_type.endpoint_class == 'archive'
-        # TODO: note that an endpoint PC version might not match PO.current_version
+        pres_copy.update_audit_timestamps(ran_moab_validation?, true)
+        pres_copy.save!
       end
+      results.remove_db_updated_results unless transaction_ok
     else
       results.add_result(AuditResults::DB_OBJ_DOES_NOT_EXIST, 'PreservedObject')
       if moab_validation_errors.empty?
@@ -112,12 +111,8 @@ class PreservedObjectHandler
       results.add_result(AuditResults::INVALID_ARGUMENTS, errors.full_messages)
     else
       Rails.logger.debug "confirm_version #{druid} called"
-      if endpoint.endpoint_type.endpoint_class == 'online'
-        # NOTE: we deal with active record transactions in confirm_online_version, not here
-        confirm_online_version
-      elsif endpoint.endpoint_type.endpoint_class == 'archive'
-        # TODO: note that an endpoint PC version might not match PO.current_version
-      end
+      # NOTE: we deal with active record transactions in confirm_online_version, not here
+      confirm_online_version
     end
 
     results.report_results
@@ -151,12 +146,8 @@ class PreservedObjectHandler
       results.add_result(AuditResults::INVALID_ARGUMENTS, errors.full_messages)
     else
       Rails.logger.debug "update_version #{druid} called"
-      if endpoint.endpoint_type.endpoint_class == 'online'
-        # NOTE: we deal with active record transactions in update_online_version, not here
-        update_online_version(nil, true)
-      elsif endpoint.endpoint_type.endpoint_class == 'archive'
-        # TODO: create a new PC record for the new archived version on the endpoint
-      end
+      # NOTE: we deal with active record transactions in update_online_version, not here
+      update_online_version(nil, true)
     end
 
     results.report_results
