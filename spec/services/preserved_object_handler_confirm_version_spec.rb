@@ -106,9 +106,9 @@ RSpec.describe PreservedObjectHandler do
       end
 
       context 'PreservedCopy already has a status other than OK_STATUS' do
-        it_behaves_like 'PreservedCopy already has a status other than OK_STATUS, and incoming_version == pc.version', :confirm_version
+        it_behaves_like 'PreservedCopy may have its status checked when incoming_version == pc.version', :confirm_version
 
-        it_behaves_like 'PreservedCopy already has a status other than OK_STATUS, and incoming_version < pc.version', :confirm_version
+        it_behaves_like 'PreservedCopy may have its status checked when incoming_version < pc.version', :confirm_version
 
         context 'incoming_version > db version' do
           let(:incoming_version) { pc.version + 1 }

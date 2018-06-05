@@ -120,7 +120,7 @@ RSpec.describe PreservedObjectHandler do
         version: incoming_version,
         size: incoming_size,
         endpoint: ep,
-        status: PreservedCopy::OK_STATUS, # NOTE ensuring this particular status
+        status: PreservedCopy::VALIDITY_UNKNOWN_STATUS, # NOTE ensuring this particular status
         last_moab_validation: an_instance_of(ActiveSupport::TimeWithZone),
         last_version_audit: an_instance_of(ActiveSupport::TimeWithZone)
       }

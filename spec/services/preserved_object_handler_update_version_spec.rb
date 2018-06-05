@@ -309,9 +309,8 @@ RSpec.describe PreservedObjectHandler do
               expect(pc.reload.size).to eq orig
             end
             it 'status' do
-              orig = pc.status
               po_handler.update_version_after_validation
-              expect(pc.reload.status).to eq orig
+              expect(pc.reload).to be_validity_unknown
               skip 'is there a scenario when status should change here?  See #431'
             end
           end
@@ -327,17 +326,17 @@ RSpec.describe PreservedObjectHandler do
           end
         end
 
-        it 'calls #update_online_version with validated = true and status = "ok"' do
-          expect(po_handler).to receive(:update_online_version).with(PreservedCopy::OK_STATUS).and_call_original
+        it 'calls #update_online_version with validated = true and status = "validity_unknown"' do
+          expect(po_handler).to receive(:update_online_version).with(PreservedCopy::VALIDITY_UNKNOWN_STATUS).and_call_original
           po_handler.update_version_after_validation
           skip 'test is weak b/c we only indirectly show the effects of #update_online_version in #update_version specs'
         end
 
-        it 'updates PreservedCopy status to "ok" if it was "moab_invalid"' do
+        it 'updates PreservedCopy status to "validity_unknown" if it was "moab_invalid"' do
           pc.status = PreservedCopy::INVALID_MOAB_STATUS
           pc.save!
           po_handler.update_version_after_validation
-          expect(pc.reload.status).to eq PreservedCopy::OK_STATUS
+          expect(pc.reload.status).to eq PreservedCopy::VALIDITY_UNKNOWN_STATUS
         end
       end
 
