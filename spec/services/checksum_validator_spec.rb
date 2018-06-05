@@ -239,6 +239,15 @@ RSpec.describe ChecksumValidator do
         expect(pres_copy.reload.status).to eq PreservedCopy::OK_STATUS
       end
 
+      it 'updates audit timestamps' do
+        expect(pres_copy.last_moab_validation).to be nil
+        expect(pres_copy.last_version_audit).to be nil
+        approximate_validation_time = Time.current
+        cv.validate_checksums
+        expect(pres_copy.last_moab_validation).to be > approximate_validation_time
+        expect(pres_copy.last_version_audit).to be > approximate_validation_time
+      end
+
       context 'fails other moab validation' do
         context 'version on disk does not match expected version from catalog' do
           before do
