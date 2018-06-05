@@ -24,10 +24,10 @@ describe 'the whole replication pipeline', type: :job do # rubocop:disable RSpec
   end
 
   it 'gets from zipmaker queue to replication result message' do
-    expect(PlexerJob).to receive(:perform_later).with(druid, version).and_call_original
-    expect(S3EndpointDeliveryJob).to receive(:perform_later).with(druid, version).and_call_original
+    expect(PlexerJob).to receive(:perform_later).with(druid, version, Hash).and_call_original
+    expect(S3EndpointDeliveryJob).to receive(:perform_later).with(druid, version, Hash).and_call_original
     # other endpoints as added...
-    expect(ResultsRecorderJob).to receive(:perform_later).with(druid, version, deliverer, '12345ABC').and_call_original
+    expect(ResultsRecorderJob).to receive(:perform_later).with(druid, version, deliverer).and_call_original
     expect(Resque.redis.redis).to receive(:lpush).with('replication.results', hash.to_json)
     ZipmakerJob.perform_now(druid, version)
   end

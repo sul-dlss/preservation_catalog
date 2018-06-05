@@ -31,4 +31,17 @@ class ApplicationJob < ActiveJob::Base
   # retry_on ActiveRecord::Deadlocked
   # Most jobs are safe to ignore if the underlying records are no longer available
   # discard_on ActiveJob::DeserializationError
+
+  # Raises if the metadata is incomplete
+  # @param [Hash<Symbol => String>] metadata
+  # @option metadata [String] :checksum_md5
+  # @option metadata [Integer] :size
+  # @option metadata [String] :zip_cmd
+  # @option metadata [String] :zip_version
+  def zip_info_check!(metadata)
+    raise ArgumentError, 'metadata Hash not found' if metadata.blank?
+    %i[checksum_md5 size zip_cmd zip_version].each do |key|
+      raise ArgumentError, "Required metadata[:#{key}] not found" if metadata[key].blank?
+    end
+  end
 end

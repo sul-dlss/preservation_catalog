@@ -54,6 +54,7 @@ describe PreservationCatalog::S3 do
 
       let(:test_key_id) { ENV.fetch('TRAVIS_JOB_ID', '000') }
       let(:dvz) { DruidVersionZip.new('bj102hs9687', 2) }
+      let(:digest) { dvz.base64digest }
       let(:file) { File.open(dvz.file) }
       let(:now) { Time.zone.now.iso8601 }
       let(:get_response) { s3_object.get }
@@ -73,19 +74,19 @@ describe PreservationCatalog::S3 do
 
       context 'when content_md5 matches body' do
         it 'accepts upload' do
-          expect { s3_object.put(body: file, content_md5: dvz.md5) }.not_to raise_error
+          expect { s3_object.put(body: file, content_md5: digest) }.not_to raise_error
         end
       end
 
       context 'when content_md5 does not match body' do
         it 'rejects upload' do
-          expect { s3_object.put(body: 'ZUBAZ', content_md5: dvz.md5) }.to raise_error Aws::S3::Errors::BadDigest
+          expect { s3_object.put(body: 'ZUBAZ', content_md5: digest) }.to raise_error Aws::S3::Errors::BadDigest
         end
       end
 
       context 'when content_md5 is invalid' do
         it 'rejects upload' do
-          expect { s3_object.put(body: file, content_md5: "X#{dvz.md5}") }.to raise_error Aws::S3::Errors::InvalidDigest
+          expect { s3_object.put(body: file, content_md5: "X#{digest}") }.to raise_error Aws::S3::Errors::InvalidDigest
         end
       end
     end
