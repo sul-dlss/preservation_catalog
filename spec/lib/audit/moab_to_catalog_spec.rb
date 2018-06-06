@@ -195,6 +195,16 @@ RSpec.describe MoabToCatalog do
     end
   end
 
+  describe '.check_existence_for_druid_list' do
+    it 'calls MoabToCatalog.check_existence_for_druid once per druid' do
+      csv_file_path = 'spec/fixtures/druid_list.csv'
+      CSV.foreach(csv_file_path) do |row|
+        expect(described_class).to receive(:check_existence_for_druid).with(row.first)
+      end
+      described_class.check_existence_for_druid_list(csv_file_path)
+    end
+  end
+
   describe ".seed_catalog_for_dir" do
     let(:subject) { described_class.seed_catalog_for_dir(storage_dir) }
 
@@ -329,7 +339,6 @@ RSpec.describe MoabToCatalog do
       expect(PreservedCopy.count).to eq 16
       expect(PreservedObject.count).to eq 16
     end
-
   end
 
   describe ".populate_endpoint.profiled" do

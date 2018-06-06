@@ -108,6 +108,12 @@ this will generate a log at, for example, `log/profile_check_existence_for_all_s
 RAILS_ENV=production bundle exec rake m2c_exist_druid['oo000oo0000']
 ```
 
+### Druid List
+- Give the file path of the csv as the parameter. The first column of the csv should contain druids, without the prefix, and contain no headers.
+
+```sh
+RAILS_ENV=production bundle exec rake m2c_exist_druid_list[/file/path/to/your/csv/druid_list.csv]
+```
 ## <a name="c2m"/>Catalog to Moab (C2M) existence/version check
 
 - Given a catalog entry for an online moab, ensure that the online moab exists and that the catalog version matches the online moab version.
@@ -166,18 +172,17 @@ RAILS_ENV=production bundle exec rake cv_all_endpoints[profile]
 ```
 this will generate a log at, for example, `log/profile_cv_validate_disk_all_endpoints2018-01-01T14:25:31-flat.txt`
 
-#### Single Druid
+### Single Druid
 - Without profiling:
 ```sh
 RAILS_ENV=production bundle exec rake cv_druid[bz514sm9647]
 ```
 
-#### Druid List
+### Druid List
 - Give the file path of the csv as the parameter. The first column of the csv should contain druids, without the prefix, and contain no headers.
 - Without profiling:
 ```sh
 RAILS_ENV=production bundle exec rake cv_druid_list[/file/path/to/your/csv/druid_list.csv]
-
 ```
 
 ## <a name="seeding"/>Seed the catalog

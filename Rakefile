@@ -92,6 +92,15 @@ task :m2c_exist_druid, [:druid] => [:environment] do |_t, args|
   $stdout.flush
 end
 
+desc "M2C existence/version check on a list of druids"
+task :m2c_exist_druid_list, [:file_path] => [:environment] do |_t, args|
+  druid_list_file_path = args[:file_path]
+  puts "#{Time.now.utc.iso8601} Moab to Catalog Existence Check on the list of druids from #{druid_list_file_path} has started"
+  MoabToCatalog.check_existence_for_druid_list(druid_list_file_path)
+  puts "#{Time.now.utc.iso8601} Moab to Catalog Existence Check on the list of druids from #{druid_list_file_path} has finished"
+  $stdout.flush
+end
+
 desc "Fire off M2C existence check on a single storage root"
 task :m2c_exist_single_root, [:storage_root, :profile] => [:environment] do |_t, args|
   unless args[:profile] == 'profile' || args[:profile].nil?
