@@ -9,7 +9,7 @@ class Endpoint < ApplicationRecord
   # @note Hash values cannot be modified without migrating any associated persisted data.
   # @see [enum docs] http://api.rubyonrails.org/classes/ActiveRecord/Enum.html
   enum delivery_class: {
-    S3EndpointDeliveryJob => 1,
+    S3WestDeliveryJob => 1,
     S3EastDeliveryJob => 2
   }
 

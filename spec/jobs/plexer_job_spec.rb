@@ -16,7 +16,7 @@ describe PlexerJob, type: :job do
   end
   let(:po) { create(:preserved_object, druid: druid, current_version: version) }
 
-  before { allow(S3EndpointDeliveryJob).to receive(:perform_later).with(any_args) }
+  before { allow(S3WestDeliveryJob).to receive(:perform_later).with(any_args) }
 
   it 'descends from DruidVersionJobBase' do
     expect(job).to be_an(DruidVersionJobBase)
@@ -34,8 +34,8 @@ describe PlexerJob, type: :job do
     let(:zc) { pc.zip_checksums.first }
 
     it 'splits the message out to endpoint(s)' do
-      allow(job).to receive(:targets).and_return([S3EndpointDeliveryJob])
-      expect(S3EndpointDeliveryJob).to receive(:perform_later)
+      allow(job).to receive(:targets).and_return([S3WestDeliveryJob])
+      expect(S3WestDeliveryJob).to receive(:perform_later)
         .with(
           druid,
           version,
@@ -65,7 +65,7 @@ describe PlexerJob, type: :job do
 
     it 'returns classes' do
       expect(Rails.logger).not_to receive(:error)
-      expect(job.targets(endpoint_ids)).to eq [S3EndpointDeliveryJob]
+      expect(job.targets(endpoint_ids)).to eq [S3WestDeliveryJob]
     end
 
     context 'with undeliverable PC Endpoint(s)' do

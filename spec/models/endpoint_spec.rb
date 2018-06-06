@@ -30,7 +30,7 @@ RSpec.describe Endpoint, type: :model do
   end
 
   it 'has multiple delivery_classes' do
-    expect(described_class.delivery_classes).to include(S3EndpointDeliveryJob, S3EastDeliveryJob)
+    expect(described_class.delivery_classes).to include(S3WestDeliveryJob, S3EastDeliveryJob)
   end
 
   it { is_expected.to have_many(:preserved_copies) }
@@ -161,6 +161,7 @@ RSpec.describe Endpoint, type: :model do
       expect(Endpoint.which_need_archive_copy(druid, version - 1).pluck(:endpoint_name)).to eq %w[mock_archive1]
     end
 
+    # since we build AREL subquery, the cast is a guarantee against SQL injection
     it 'Casts version to integer' do
       bogus_version = instance_double(Integer)
       expect(bogus_version).to receive(:to_i).and_return(1)

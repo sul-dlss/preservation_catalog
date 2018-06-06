@@ -1,6 +1,8 @@
+require 'rails_helper'
+
 describe S3EastDeliveryJob, type: :job do
-  it 'descends from S3EndpointDeliveryJob' do
-    expect(described_class.new).to be_an(S3EndpointDeliveryJob)
+  it 'descends from S3WestDeliveryJob' do
+    expect(described_class.new).to be_an(S3WestDeliveryJob)
   end
 
   it 'uses a different queue' do
