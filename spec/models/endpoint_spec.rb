@@ -1,48 +1,32 @@
 require 'rails_helper'
 
 RSpec.describe Endpoint, type: :model do
-
-  let!(:endpoint_type) { EndpointType.create(type_name: 'aws', endpoint_class: 'archive') }
+  let(:default_pres_policies) { [PreservationPolicy.default_policy] }
+  let(:endpoint_type) { build(:endpoint_type, type_name: 'aws', endpoint_class: 'archive') }
   let!(:endpoint) do
-    Endpoint.create(
+    create(
+      :endpoint,
       endpoint_name: 'aws-us-east-2',
-      endpoint_type_id: endpoint_type.id,
+      endpoint_type: endpoint_type,
       endpoint_node: 's3.us-east-2.amazonaws.com',
       storage_location: 'sdr-bucket-01'
     )
   end
 
-  it 'is not valid without valid attributes' do
-    expect(Endpoint.new).not_to be_valid
-  end
-
   it 'is not valid unless it has all required attributes' do
+    expect(Endpoint.new).not_to be_valid
     expect(Endpoint.new(endpoint_name: 'aws')).not_to be_valid
-  end
-
-  it 'is valid with valid attributes' do
     expect(endpoint).to be_valid
   end
 
   it 'enforces unique constraint on endpoint_name (model level)' do
     expect do
-      Endpoint.create!(
-        endpoint_name: 'aws-us-east-2',
-        endpoint_type_id: endpoint_type.id,
-        endpoint_node: 's3.us-east-2.amazonaws.com',
-        storage_location: 'sdr-bucket-01'
-      )
+      Endpoint.create!(endpoint.attributes.slice('endpoint_name', 'endpoint_type', 'endpoint_node', 'storage_location'))
     end.to raise_error(ActiveRecord::RecordInvalid)
   end
 
   it 'enforces unique constraint on endpoint_name (db level)' do
-    endpoint
-    dup_endpoint = Endpoint.new
-    dup_endpoint.endpoint_name = 'aws-us-east-2'
-    dup_endpoint.endpoint_node = 's3.us-east-2.amazonaws.com'
-    dup_endpoint.storage_location = 'sdr-bucket-01'
-    dup_endpoint.endpoint_type_id = endpoint_type.id
-    expect { dup_endpoint.save(validate: false) }.to raise_error(ActiveRecord::RecordNotUnique)
+    expect { endpoint.dup.save(validate: false) }.to raise_error(ActiveRecord::RecordNotUnique)
   end
 
   it { is_expected.to have_many(:preserved_copies) }
@@ -59,7 +43,6 @@ RSpec.describe Endpoint, type: :model do
 
   describe '.seed_storage_root_endpoints_from_config' do
     let(:endpoint_type) { EndpointType.default_for_storage_roots }
-    let(:default_pres_policies) { [PreservationPolicy.default_policy] }
 
     it 'creates a local online endpoint for each storage root' do
       HostSettings.storage_roots.each do |storage_root_name, storage_root_location|
@@ -73,11 +56,11 @@ RSpec.describe Endpoint, type: :model do
       end
     end
 
+    # run it a second time
     it 'does not re-create records that already exist' do
-      # run it a second time
-      Endpoint.seed_storage_root_endpoints_from_config(endpoint_type, default_pres_policies)
-      # sort so we can avoid comparing via include, and see that it has only/exactly the four expected elements
-      expect(Endpoint.pluck(:endpoint_name).sort).to eq %w[aws-us-east-2 fixture_empty fixture_sr1 fixture_sr2 fixture_sr3 mock_archive1]
+      expect { Endpoint.seed_storage_root_endpoints_from_config(endpoint_type, default_pres_policies) }
+        .not_to change { Endpoint.pluck(:endpoint_name).sort }
+        .from(%w[aws-us-east-2 fixture_empty fixture_sr1 fixture_sr2 fixture_sr3 mock_archive1])
     end
 
     it 'adds new records if there are additions to Settings since the last run' do
@@ -89,15 +72,15 @@ RSpec.describe Endpoint, type: :model do
       allow(HostSettings).to receive(:storage_roots).and_return(storage_roots_setting)
 
       # run it a second time
-      Endpoint.seed_storage_root_endpoints_from_config(endpoint_type, default_pres_policies)
-      expected_ep_names = %w[aws-us-east-2 fixture_empty fixture_sr1 fixture_sr2 fixture_sr3 fixture_srTest mock_archive1]
-      expect(Endpoint.pluck(:endpoint_name).sort).to eq expected_ep_names
+      expect { Endpoint.seed_storage_root_endpoints_from_config(endpoint_type, default_pres_policies) }
+        .to change { Endpoint.pluck(:endpoint_name).sort }
+        .from(%w[aws-us-east-2 fixture_empty fixture_sr1 fixture_sr2 fixture_sr3 mock_archive1])
+        .to(%w[aws-us-east-2 fixture_empty fixture_sr1 fixture_sr2 fixture_sr3 fixture_srTest mock_archive1])
     end
   end
 
   describe '.seed_archive_endpoints_from_config' do
-    let(:endpoint_type) { EndpointType.find_by!(type_name: 'aws_s3') }
-    let(:default_pres_policies) { [PreservationPolicy.default_policy] }
+    let(:endpoint_type) { EndpointType.find_by!(type_name: 'aws_s3') } # seeded from config
 
     it 'creates an endpoints entry for each archive endpoint' do
       Settings.archive_endpoints.each do |endpoint_name, endpoint_config|
@@ -113,17 +96,16 @@ RSpec.describe Endpoint, type: :model do
 
     it 'does not re-create records that already exist' do
       # run it a second time
-      Endpoint.seed_archive_endpoints_from_config(default_pres_policies)
-      # sort so we can avoid comparing via include, and see that it has only/exactly the four expected elements
-      expect(Endpoint.pluck(:endpoint_name).sort).to eq %w[aws-us-east-2 fixture_empty fixture_sr1 fixture_sr2 fixture_sr3 mock_archive1]
+      expect { Endpoint.seed_archive_endpoints_from_config(default_pres_policies) }
+        .not_to change { Endpoint.pluck(:endpoint_name).sort }
+        .from(%w[aws-us-east-2 fixture_empty fixture_sr1 fixture_sr2 fixture_sr3 mock_archive1])
     end
 
     it 'adds new records if there are additions to Settings since the last run' do
-      # skip "doesn't work yet, ripped off from storage roots version, fixing"
       archive_endpoints_setting = Config::Options.new(
         fixture_archiveTest:
           Config::Options.new(
-            endpoint_type_name: 'aws_s3',
+            endpoint_type_name: endpoint_type.type_name,
             endpoint_node: 'endpoint_node',
             storage_location: 'storage_location'
           )
@@ -175,15 +157,10 @@ RSpec.describe Endpoint, type: :model do
       expect(Endpoint.which_need_archive_copy(druid, version - 1).pluck(:endpoint_name)).to eq %w[mock_archive1]
     end
 
-    it 'does not allow SQL injection' do
-      # a bit too whitebox, but oh well...  specifically testing version field
-      # because we know we're not using the usual AR params for bind vars approach
-      # in the subquery.  we cast version.to_i, which will silently convert anything
-      # it can't figure out how to properly translate into zero.
-      bogus_version = "0)))); GRANT ALL PRIVILEGES ON DATABASE pres TO icanhaznjctionattk; DROP TABLE students; --"
-      generated_sql = Endpoint.which_need_archive_copy(druid, bogus_version).to_sql
-      expect(generated_sql).not_to match(/#{Regexp.escape(bogus_version)}/)
-      expect(generated_sql).to match(/"preserved_copies"."version" = 0/)
+    it 'Casts version to integer' do
+      bogus_version = instance_double(Integer)
+      expect(bogus_version).to receive(:to_i).and_return(1)
+      Endpoint.which_need_archive_copy(druid, bogus_version).first
     end
   end
 
