@@ -29,6 +29,10 @@ RSpec.describe Endpoint, type: :model do
     expect { endpoint.dup.save(validate: false) }.to raise_error(ActiveRecord::RecordNotUnique)
   end
 
+  it 'has multiple delivery_classes' do
+    expect(described_class.delivery_classes).to include(S3EndpointDeliveryJob, S3EastDeliveryJob)
+  end
+
   it { is_expected.to have_many(:preserved_copies) }
   it { is_expected.to have_db_index(:endpoint_name) }
   it { is_expected.to have_db_index(:endpoint_type_id) }
