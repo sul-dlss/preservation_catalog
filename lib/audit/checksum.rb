@@ -53,6 +53,7 @@ class Checksum
       cv = ChecksumValidator.new(pc, endpoint_name)
       cv.validate_checksums
       checksum_results_lists << cv.results
+      logger.info cv.results.result_array
     end
     checksum_results_lists
   ensure
