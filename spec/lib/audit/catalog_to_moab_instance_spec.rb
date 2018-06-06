@@ -2,6 +2,10 @@ require_relative '../../../lib/audit/catalog_to_moab.rb'
 require_relative '../../load_fixtures_helper.rb'
 
 RSpec.describe CatalogToMoab do
+  before do
+    allow(Dor::WorkflowService).to receive(:update_workflow_error_status)
+  end
+
   let(:last_checked_version_b4_date) { (Time.now.utc - 1.day).iso8601 }
   let(:storage_dir) { 'spec/fixtures/storage_root01/moab_storage_trunk' }
   let(:druid) { 'bj102hs9687' }

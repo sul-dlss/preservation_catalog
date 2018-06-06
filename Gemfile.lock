@@ -98,6 +98,7 @@ GEM
       dry-validation (>= 0.10.4)
     confstruct (1.0.2)
       hashie (~> 3.3)
+    connection_pool (2.2.2)
     coveralls (0.8.21)
       json (>= 1.8, < 3)
       simplecov (~> 0.14.1)
@@ -115,6 +116,13 @@ GEM
       capistrano-one_time_key
       capistrano-shared_configs
     docile (1.1.5)
+    dor-workflow-service (2.3.0)
+      activesupport (>= 3.2.1, < 6)
+      confstruct (>= 0.2.7, < 2)
+      faraday (~> 0.9, >= 0.9.2)
+      net-http-persistent (>= 2.9.4, < 4.a)
+      nokogiri (~> 1.6)
+      retries
     druid-tools (1.0.0)
     dry-configurable (0.7.0)
       concurrent-ruby (~> 1.0)
@@ -149,7 +157,7 @@ GEM
     factory_bot_rails (4.8.2)
       factory_bot (~> 4.8.2)
       railties (>= 3.0.0)
-    faraday (0.14.0)
+    faraday (0.15.2)
       multipart-post (>= 1.2, < 3)
     ffi (1.9.23)
     globalid (0.4.1)
@@ -189,6 +197,8 @@ GEM
     multi_json (1.13.1)
     multipart-post (2.0.0)
     mustermann (1.0.2)
+    net-http-persistent (3.0.0)
+      connection_pool (~> 2.2)
     net-scp (1.2.1)
       net-ssh (>= 2.6.5)
     net-ssh (4.2.0)
@@ -344,9 +354,9 @@ DEPENDENCIES
   config
   coveralls
   dlss-capistrano
+  dor-workflow-service
   druid-tools
   factory_bot_rails (~> 4.0)
-  faraday
   hirb
   honeybadger
   jbuilder (~> 2.5)
@@ -362,7 +372,6 @@ DEPENDENCIES
   rails-controller-testing
   resque (~> 1.27)
   resque-lock
-  retries
   rspec-rails (~> 3.6)
   rubocop (~> 0.50.0)
   rubocop-rspec
