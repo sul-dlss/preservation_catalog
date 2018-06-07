@@ -1,4 +1,4 @@
-require_relative '../../app/services/checksum_validator.rb'
+require 'rails_helper'
 require_relative '../load_fixtures_helper.rb'
 
 RSpec.describe ChecksumValidator do
@@ -7,10 +7,8 @@ RSpec.describe ChecksumValidator do
   let(:endpoint_name) { "fixture_sr3" }
   let(:endpoint) { Endpoint.find_by(endpoint_name: endpoint_name) }
   let(:object_dir) { "#{endpoint.storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}" }
-  let(:pres_copy) do
-    po = PreservedObject.find_by(druid: druid)
-    PreservedCopy.find_by(preserved_object: po, endpoint: endpoint)
-  end
+  let(:po) { PreservedObject.find_by(druid: druid) }
+  let(:pres_copy) { PreservedCopy.find_by(preserved_object: po, endpoint: endpoint) }
   let(:cv) { described_class.new(pres_copy, endpoint_name) }
   let(:results) { instance_double(AuditResults, report_results: nil, check_name: nil) }
 
@@ -524,6 +522,29 @@ RSpec.describe ChecksumValidator do
       expect(Digest::SHA1).not_to receive(:new).and_call_original
       expect(Digest::SHA2).to receive(:new).and_call_original.at_least(:once)
       cv.validate_checksums
+    end
+  end
+
+  describe 'endpoint validation' do
+    it 'errors when endpoint is not an Endpoint object' do
+      cv = described_class.new(pres_copy, 'foo')
+      cv.valid?
+      expect(cv.errors.messages).to include(endpoint: ["must be an actual Endpoint"])
+    end
+    it 'errors when endpoint_type is not online' do
+      endpoint_type = EndpointType.create(type_name: 'foo', endpoint_class: 'archive')
+      Endpoint.create(endpoint_name: 'archive1',
+                      endpoint_type_id: endpoint_type.id,
+                      endpoint_node: 'node',
+                      storage_location: 'somewhere')
+      pc = instance_double(PreservedCopy, preserved_object: po)
+      cv = described_class.new(pc, 'archive1')
+      cv.valid?
+      expect(cv.errors.messages).to include(endpoint: ["must be an online Endpoint for ChecksumValidator"])
+    end
+    it 'passes when endpoint_type is online' do
+      cv.valid?
+      expect(cv.errors.size).to eq 0
     end
   end
 end
