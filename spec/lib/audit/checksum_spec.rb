@@ -113,12 +113,10 @@ RSpec.describe Audit::Checksum do
     end
 
     it "logs a debug message" do
-      druid = 'xx000xx0500'
-      error_msg = "Found 0 preserved copies."
-      allow(Rails.logger).to receive(:info)
-      allow(Rails.logger).to receive(:debug)
-      expect(Rails.logger).to receive(:debug).with(error_msg)
-      described_class.validate_druid(druid)
+      allow(described_class.logger).to receive(:info)
+      allow(described_class.logger).to receive(:debug)
+      expect(described_class.logger).to receive(:debug).with('Found 0 preserved copies.')
+      described_class.validate_druid('xx000xx0500')
     end
 
     it 'returns the checksum results lists for each PreservedCopy that was checked' do
