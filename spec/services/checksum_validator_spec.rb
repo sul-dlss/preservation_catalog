@@ -11,7 +11,7 @@ RSpec.describe ChecksumValidator do
     po = PreservedObject.find_by(druid: druid)
     PreservedCopy.find_by(preserved_object: po, endpoint: endpoint)
   end
-  let(:cv) { described_class.new(pres_copy, endpoint_name) }
+  let(:cv) { described_class.new(pres_copy) }
   let(:results) { instance_double(AuditResults, report_results: nil, check_name: nil) }
 
   context '#initialize' do
@@ -21,6 +21,13 @@ RSpec.describe ChecksumValidator do
       expect(cv.endpoint).to eq endpoint
       expect(cv.full_druid).to eq "druid:#{druid}"
       expect(cv.results).to be_an_instance_of AuditResults
+    end
+    it 'raises ArgumentError if endpoint is not online' do
+      ept = instance_double(EndpointType, online?: false)
+      non_online_ep = instance_double(Endpoint, endpoint_type: ept)
+      allow(pres_copy).to receive(:endpoint).and_return(non_online_ep)
+      exp_err_msg = "ChecksumValidator requires PreservedCopy's Endpoint to be online"
+      expect { described_class.new(pres_copy) }.to raise_error(ArgumentError, exp_err_msg)
     end
   end
 

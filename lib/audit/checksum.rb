@@ -11,10 +11,10 @@ class Checksum
     # pcs_w_expired_fixity_check is an AR Relation; it could return a lot of results, so we want to process it in
     # batches.  we can't use ActiveRecord's .find_each, because that'll disregard the order .fixity_check_expired
     # specified.  so we use our own batch processing method, which does respect Relation order.
-    pcs_w_expired_fixity_check = PreservedCopy.by_endpoint_name(endpoint_name).fixity_check_expired
+    pcs_w_expired_fixity_check = PreservedCopy.by_endpoint_name(endpoint_name).for_online_endpoints.fixity_check_expired
     logger.info "Number of Preserved Copies to be checksum validated: #{pcs_w_expired_fixity_check.count}"
     ActiveRecordUtils.process_in_batches(pcs_w_expired_fixity_check, limit) do |pc|
-      cv = ChecksumValidator.new(pc, endpoint_name)
+      cv = ChecksumValidator.new(pc)
       cv.validate_checksums
     end
   ensure
@@ -44,12 +44,11 @@ class Checksum
 
   def self.validate_druid(druid)
     logger.info "#{Time.now.utc.iso8601} CV validate_druid starting for #{druid}"
-    pres_copies = PreservedCopy.by_druid(druid)
+    pres_copies = PreservedCopy.by_druid(druid).for_online_endpoints
     Rails.logger.debug("Found #{pres_copies.size} preserved copies.")
     checksum_results_lists = []
     pres_copies.each do |pc|
-      endpoint_name = pc.endpoint.endpoint_name
-      cv = ChecksumValidator.new(pc, endpoint_name)
+      cv = ChecksumValidator.new(pc)
       cv.validate_checksums
       checksum_results_lists << cv.results
     end

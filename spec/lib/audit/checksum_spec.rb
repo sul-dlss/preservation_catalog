@@ -24,10 +24,10 @@ RSpec.describe Checksum do
       it 'creates an instance and calls #validate_checksums on everything in batches' do
         pcs_from_scope = PreservedCopy.by_endpoint_name(endpoint_name).fixity_check_expired
         cv_list = pcs_from_scope.map do |pc|
-          ChecksumValidator.new(pc, endpoint_name)
+          ChecksumValidator.new(pc)
         end
         cv_list.each do |cv|
-          allow(ChecksumValidator).to receive(:new).with(cv.preserved_copy, endpoint_name).and_return(cv)
+          allow(ChecksumValidator).to receive(:new).with(cv.preserved_copy).and_return(cv)
           expect(cv).to receive(:validate_checksums).exactly(1).times.and_call_original
         end
         described_class.validate_disk(endpoint_name, 2)
@@ -101,10 +101,10 @@ RSpec.describe Checksum do
       druid = 'bz514sm9647'
       pres_copies = PreservedCopy.by_druid(druid)
       cv_list = pres_copies.map do |pc|
-        ChecksumValidator.new(pc, endpoint_name)
+        ChecksumValidator.new(pc)
       end
       cv_list.each do |cv|
-        allow(ChecksumValidator).to receive(:new).with(cv.preserved_copy, endpoint_name).and_return(cv)
+        allow(ChecksumValidator).to receive(:new).with(cv.preserved_copy).and_return(cv)
         expect(cv).to receive(:validate_checksums).exactly(1).times.and_call_original
       end
       described_class.validate_druid(druid)
