@@ -18,10 +18,11 @@ class ChecksumValidator
   DELETED = 'deleted'.freeze
   FILES = 'files'.freeze
 
-  def initialize(preserved_copy, endpoint_name)
+  def initialize(preserved_copy)
     @preserved_copy = preserved_copy
     @bare_druid = preserved_copy.preserved_object.druid
-    @endpoint = Endpoint.find_by(endpoint_name: endpoint_name)
+    @endpoint = preserved_copy.endpoint
+    raise ArgumentError, "#{self.class.name} requires PreservedCopy's Endpoint to be online" unless endpoint.endpoint_type.online?
     @results = AuditResults.new(bare_druid, nil, endpoint, 'validate_checksums')
     @full_druid = "druid:#{bare_druid}"
   end
