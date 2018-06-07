@@ -1,4 +1,4 @@
-require_relative '../../app/services/checksum_validator.rb'
+require 'rails_helper'
 require_relative '../load_fixtures_helper.rb'
 
 RSpec.describe ChecksumValidator do
