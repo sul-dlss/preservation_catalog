@@ -49,6 +49,7 @@ class PreservedCopy < ApplicationRecord
   }
 
   scope :for_archive_endpoints, -> { by_endpoint_class('archive') }
+  scope :for_online_endpoints, -> { by_endpoint_class('online') }
 
   scope :least_recent_version_audit, lambda { |last_checked_b4_date|
     where('last_version_audit IS NULL or last_version_audit < ?', normalize_date(last_checked_b4_date))
