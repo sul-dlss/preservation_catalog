@@ -5,7 +5,7 @@ describe 'the whole replication pipeline', type: :job do # rubocop:disable RSpec
   let(:bucket) { instance_double(Aws::S3::Bucket, object: s3_object) }
   let(:druid) { pc.preserved_object.druid }
   let(:version) { pc.version }
-  let(:deliverer) { S3EndpointDeliveryJob.to_s }
+  let(:deliverer) { S3WestDeliveryJob.to_s }
   let(:hash) do
     { druid: druid, version: version, endpoints: [pc.endpoint.endpoint_name] }
   end
@@ -25,7 +25,7 @@ describe 'the whole replication pipeline', type: :job do # rubocop:disable RSpec
 
   it 'gets from zipmaker queue to replication result message' do
     expect(PlexerJob).to receive(:perform_later).with(druid, version, Hash).and_call_original
-    expect(S3EndpointDeliveryJob).to receive(:perform_later).with(druid, version, Hash).and_call_original
+    expect(S3WestDeliveryJob).to receive(:perform_later).with(druid, version, Hash).and_call_original
     # other endpoints as added...
     expect(ResultsRecorderJob).to receive(:perform_later).with(druid, version, deliverer).and_call_original
     expect(Resque.redis.redis).to receive(:lpush).with('replication.results', hash.to_json)

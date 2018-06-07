@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe S3EndpointDeliveryJob, type: :job do
+describe S3WestDeliveryJob, type: :job do
   let(:druid) { 'bj102hs9687' }
   let(:version) { 1 }
   let(:dvz) { DruidVersionZip.new(druid, version) }

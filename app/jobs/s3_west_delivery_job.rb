@@ -1,8 +1,8 @@
 # Posts zips to S3, if needed.
 # Notify ResultsRecorderJob, if posted.
 # @see PreservationCatalog::S3 for how S3 credentials and bucket are configured
-class S3EndpointDeliveryJob < DruidVersionJobBase
-  queue_as :s3_endpoint_delivery
+class S3WestDeliveryJob < DruidVersionJobBase
+  queue_as :s3_us_west_1_delivery
   delegate :bucket, to: PreservationCatalog::S3
   # note: DruidVersionJobBase gives us `zip`
 
@@ -11,7 +11,6 @@ class S3EndpointDeliveryJob < DruidVersionJobBase
   # @param [String] druid
   # @param [Integer] version
   # @param [Hash<Symbol => String, Integer>] metadata Zip info
-  # @todo once zip construction is formalized, insert reproducible call in zip_cmd
   # @see PlexerJob#perform warning about why metadata must be passed
   def perform(druid, version, metadata)
     return if s3_object.exists?
