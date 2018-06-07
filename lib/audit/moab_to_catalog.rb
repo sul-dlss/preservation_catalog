@@ -1,4 +1,5 @@
 require 'profiler.rb'
+require 'csv'
 
 # finds Moab objects on a single Moab storage_dir and interacts with Catalog (db)
 #   according to method called
@@ -15,9 +16,17 @@ class MoabToCatalog
     storage_dir = "#{moab.object_pathname.to_s.split(storage_trunk).first}#{storage_trunk}"
     endpoint = Endpoint.find_by!(storage_location: storage_dir)
     po_handler = PreservedObjectHandler.new(druid, moab.current_version_id, moab.size, endpoint)
-    po_handler.check_existence
+    results = po_handler.check_existence
+    logger.info results
+    results
   ensure
     logger.info "#{Time.now.utc.iso8601} M2C check_existence_for_druid ended for #{druid}"
+  end
+
+  def self.check_existence_for_druid_list(druid_list_file_path)
+    CSV.foreach(druid_list_file_path) do |row|
+      MoabToCatalog.check_existence_for_druid(row.first)
+    end
   end
 
   # NOTE: shameless green! code duplication with seed_catalog_for_dir

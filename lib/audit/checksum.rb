@@ -1,4 +1,5 @@
 require 'profiler.rb'
+require 'csv'
 
 # Checksum validator code
 class Checksum
@@ -51,9 +52,17 @@ class Checksum
       cv = ChecksumValidator.new(pc)
       cv.validate_checksums
       checksum_results_lists << cv.results
+      logger.info cv.results.result_array
     end
     checksum_results_lists
   ensure
     logger.info "#{Time.now.utc.iso8601} CV validate_druid ended for #{druid}"
+  end
+
+  # assumes that the list of druids is in column 1, and has no header.
+  def self.validate_list_of_druids(druid_list_file_path)
+    CSV.foreach(druid_list_file_path) do |row|
+      Checksum.validate_druid(row.first)
+    end
   end
 end

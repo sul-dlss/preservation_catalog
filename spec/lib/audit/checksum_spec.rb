@@ -126,4 +126,14 @@ RSpec.describe Checksum do
       expect(checksum_results.contains_result_code?(AuditResults::MOAB_CHECKSUM_VALID)).to eq true
     end
   end
+
+  describe ".validate_list_of_druids" do
+    it 'calls Checksum.validate_druid once per druid' do
+      csv_file_path = 'spec/fixtures/druid_list.csv'
+      CSV.foreach(csv_file_path) do |row|
+        expect(described_class).to receive(:validate_druid).with(row.first)
+      end
+      described_class.validate_list_of_druids(csv_file_path)
+    end
+  end
 end
