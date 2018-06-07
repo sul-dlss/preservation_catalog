@@ -3,6 +3,15 @@ require 'ruby-prof'
 
 RSpec.describe Profiler do
   let(:profiler) { described_class.new }
+  let(:faketime) { Time.at(628_232_400).utc } # 1989-11-27 21:00:00 -0800 == 1989-11-28 05:00:00 UTC
+
+  describe '#output_path' do
+    before { allow(Time).to receive(:now).and_return(faketime) }
+
+    it 'returns the path of results file' do
+      expect(profiler.output_path('test')).to eq "log/profile_test#{faketime.localtime.strftime('%FT%T')}-flat.txt"
+    end
+  end
 
   describe '#prof' do
     it 'starts, yields, stops, and returns results' do
@@ -17,17 +26,15 @@ RSpec.describe Profiler do
   end
 
   describe '#print_results_flat' do
+    let(:path) { 'log/profile_test-flat.txt' }
+
+    before { allow(profiler).to receive(:output_path).and_return(path) }
+    after { FileUtils.rm_f(path) } # cleanup
+
     it 'returns the printer and prints to the path we pass in' do
-      printer = instance_double(RubyProf::FlatPrinterWithLineNumbers)
+      printer = instance_double(RubyProf::FlatPrinterWithLineNumbers, print: nil)
       profiler.prof { 'we just want #prof to run' }
-      expected_filepath = "log/profile_test#{Time.current.localtime.strftime('%FT%T')}-flat.txt"
       expect(RubyProf::FlatPrinterWithLineNumbers).to receive(:new).with(profiler.results).and_return(printer)
-      expect(printer).to receive(:print) do |file|
-        # this expectation might need to relax
-        # if enough time lags between the timestamps
-        # in expected_filepath and the file name itself
-        expect(file.path).to eq expected_filepath
-      end
       profiler.print_results_flat('test')
     end
   end
