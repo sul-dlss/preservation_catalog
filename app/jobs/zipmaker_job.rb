@@ -14,7 +14,7 @@ class ZipmakerJob < DruidVersionJobBase
   end
 
   def create_zip!
-    _output, error, status = Open3.capture3(zip_command)
-    raise "zipmaker failure #{error}" unless status.success?
+    combined, status = Open3.capture2e(zip_command)
+    raise "zipmaker failure #{combined}" unless status.success?
   end
 end
