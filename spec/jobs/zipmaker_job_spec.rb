@@ -61,15 +61,15 @@ describe ZipmakerJob, type: :job do
         let(:zip_command) { "zip -vr0X -s 10g #{zip_path} /wrong/path" }
 
         it 'raises error' do
-          expect { job.create_zip! }.to raise_error(RuntimeError, /zipmaker failure/)
+          expect { job.create_zip! }.to raise_error(RuntimeError, %r{zipmaker failure.*/wrong/path})
         end
       end
 
       context 'when options are unsupported' do
-        let(:zip_command) { "zip -a #{zip_path} #{moab_version_path}" }
+        let(:zip_command) { "zip --fantasy #{zip_path} #{moab_version_path}" }
 
         it 'raises error' do
-          expect { job.create_zip! }.to raise_error(RuntimeError, /zipmaker failure/)
+          expect { job.create_zip! }.to raise_error(RuntimeError, /Invalid command arguments.*fantasy/)
         end
       end
 
