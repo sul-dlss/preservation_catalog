@@ -72,7 +72,6 @@ ActiveRecord::Schema.define(version: 20180530232909) do
     t.index ["preserved_object_id"], name: "index_preserved_copies_on_preserved_object_id"
     t.index ["status"], name: "index_preserved_copies_on_status"
     t.index ["updated_at"], name: "index_preserved_copies_on_updated_at"
-    t.index ["version"], name: "index_preserved_copies_on_version"
   end
 
   create_table "preserved_objects", force: :cascade do |t|
@@ -82,7 +81,6 @@ ActiveRecord::Schema.define(version: 20180530232909) do
     t.datetime "updated_at", null: false
     t.bigint "preservation_policy_id", null: false
     t.index ["created_at"], name: "index_preserved_objects_on_created_at"
-    t.index ["current_version"], name: "index_preserved_objects_on_current_version"
     t.index ["druid"], name: "index_preserved_objects_on_druid", unique: true
     t.index ["preservation_policy_id"], name: "index_preserved_objects_on_preservation_policy_id"
     t.index ["updated_at"], name: "index_preserved_objects_on_updated_at"
