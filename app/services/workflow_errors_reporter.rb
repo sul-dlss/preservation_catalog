@@ -3,44 +3,11 @@ require 'retries'
 # send errors to preservationAuditWF workflow for an object via ReST calls.
 class WorkflowErrorsReporter
 
+  # this method will always return true because of the dor-workflow-service gem
+  # see issue sul-dlss/dor-workflow-service#50 for more context
   def self.update_workflow(druid, process_name, error_message)
-    response = http_workflow_request(druid, process_name, error_message)
-    if response
-      if response.status == 204
-        Rails.logger.debug("#{druid} - sent error to workflow service for preservationAuditWF #{process_name}")
-      else
-        # Note: status == 400 will be handled by the rescue clause
-        Rails.logger.error("#{druid} - unable to update workflow for preservationAuditWF #{process_name}: #{response.body}. Error message: #{error_message}")
-      end
-    end
-  rescue StandardError => e
-    Rails.logger.error("#{druid} - unable to update workflow for preservationAuditWF #{process_name} #{e.inspect}. Error message: #{error_message}")
-  end
-
-  private_class_method def self.http_workflow_request(druid, process_name, error_message)
-    return unless conn
-    handler = proc do |exception, attempt_number, total_delay|
-      Rails.logger.debug("Handler saw a #{exception.class}; retry attempt #{attempt_number}; #{total_delay} seconds have passed.")
-    end
-    with_retries(max_tries: 3, handler: handler, rescue: Faraday::Error) do
-      conn.put do |request|
-        request_params(request, druid, process_name, error_message)
-      end
-    end
-  end
-
-  private_class_method def self.request_params(request, druid, process_name, error_message)
-    request.headers['content-type'] = "application/xml"
-    request.url  "/workflow/dor/objects/druid:#{druid}/workflows/preservationAuditWF/#{process_name}"
-    request.body = "<process name='#{process_name}' status='error' errorMessage='#{CGI.escapeHTML(error_message)}'/>"
-  end
-
-  private_class_method def self.conn
     if Settings.workflow_services_url.present?
-      @connection ||= Faraday.new(url: Settings.workflow_services_url) do |c|
-        c.use Faraday::Response::RaiseError
-        c.use Faraday::Adapter::NetHttp
-      end
+      Dor::WorkflowService.update_workflow_error_status('dor', "druid:#{druid}", 'preservationAuditWF', process_name, error_message)
     else
       Rails.logger.warn('no workflow hookup - assume you are in test or dev environment')
     end

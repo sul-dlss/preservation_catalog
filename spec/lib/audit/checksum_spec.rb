@@ -3,10 +3,13 @@ require_relative "../../../lib/audit/checksum.rb"
 require_relative '../../load_fixtures_helper.rb'
 
 RSpec.describe Checksum do
+  before do
+    allow(Dor::WorkflowService).to receive(:update_workflow_error_status)
+    allow(described_class.logger).to receive(:info) # silence STDOUT chatter
+  end
+
   let(:endpoint_name) { 'fixture_sr1' }
   let(:limit) { Settings.c2m_sql_limit }
-
-  before { allow(described_class.logger).to receive(:info) } # silence STDOUT chatter
 
   context '.validate_disk' do
     include_context 'fixture moabs in db'

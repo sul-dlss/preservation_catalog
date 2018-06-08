@@ -2,6 +2,10 @@ require 'rails_helper'
 require_relative '../load_fixtures_helper.rb'
 
 RSpec.describe ChecksumValidator do
+  before do
+    allow(Dor::WorkflowService).to receive(:update_workflow_error_status)
+  end
+
   include_context 'fixture moabs in db'
   let(:druid) { 'zz102hs9687' }
   let(:endpoint_name) { "fixture_sr3" }

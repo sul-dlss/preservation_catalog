@@ -1,6 +1,10 @@
 require 'rails_helper'
 
 RSpec.describe AuditResults do
+  before do
+    allow(Dor::WorkflowService).to receive(:update_workflow_error_status)
+  end
+
   let(:druid) { 'ab123cd4567' }
   let(:actual_version) { 6 }
   let(:endpoint) { Endpoint.find_by(storage_location: 'spec/fixtures/storage_root01/moab_storage_trunk') }

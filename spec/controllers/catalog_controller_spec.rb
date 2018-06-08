@@ -1,5 +1,9 @@
 require 'rails_helper'
 RSpec.describe CatalogController, type: :controller do
+  before do
+    allow(Dor::WorkflowService).to receive(:update_workflow_error_status)
+  end
+
   let(:size) { 2342 }
   let(:ver) { 3 }
   let(:prefixed_druid) { 'druid:bj102hs9687' }

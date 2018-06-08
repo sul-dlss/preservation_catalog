@@ -8,7 +8,7 @@ end
 # general Ruby/Rails gems
 gem 'aws-sdk-s3', '~> 1.9.1'
 gem 'config' # Settings to manage configs on different instances
-gem 'faraday' # ReST calls
+gem 'dor-workflow-service' # audit errors are reported to the workflow service
 gem 'honeybadger' # for error reporting / tracking / notifications
 gem 'jbuilder', '~> 2.5' # Build JSON APIs with ease.
 gem 'okcomputer' # ReST endpoint with upness status
@@ -21,7 +21,6 @@ gem 'puma', '~> 3.7' # app server
 gem 'rails', '~> 5.1.3'
 gem 'resque', '~> 1.27'
 gem 'resque-lock' # deduplication of worker queue jobs
-gem 'retries' # robust handling of network glitches
 gem 'ruby-prof' # to profile methods
 gem 'whenever' # manage cron for audit checks
 
