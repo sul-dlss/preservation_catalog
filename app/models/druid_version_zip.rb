@@ -1,3 +1,5 @@
+require 'open3'
+
 # Just a regular model, not an ActiveRecord-backed model
 class DruidVersionZip
   attr_reader :druid, :version
@@ -10,11 +12,27 @@ class DruidVersionZip
     @version = version
   end
 
+  # Changes directory so that the storage root (and druid tree) are not part of
+  # the archival directory structure, just the object.
+  def create_zip!
+    ensure_zip_directory!
+    Dir.chdir(work_dir.to_s) do
+      combined, status = Open3.capture2e(zip_command)
+      raise "zipmaker failure #{combined}" unless status.success?
+    end
+  end
+
+  # Ensure the directory the zip will live in exists
+  # @return [Pathname] the existing or created directory
+  def ensure_zip_directory!
+    Pathname.new(file_path).tap { |pn| pn.dirname.mkpath }
+  end
+
   # @return [String]
   # @see [S3 key name performance implications] https://docs.aws.amazon.com/AmazonS3/latest/dev/request-rate-perf-considerations.html
   # @example return 'ab/123/cd/4567/ab123cd4567/ab123cd4567.v0001.zip'
   def s3_key
-    druid.tree.join('/') + format(".v%04d.zip", version)
+    druid.tree.join('/') + ".#{v_version}.zip"
   end
 
   # @return [File] opened zip file
@@ -54,14 +72,29 @@ class DruidVersionZip
     @size ||= FileTest.size(file_path)
   end
 
+  # @return [String] "v" with zero-padded 4-digit version, e.g., v0001
+  def v_version
+    format("v%04d", version)
+  end
+
+  # @return [Pathname] The proper directory in which to execute zip_command
+  def work_dir
+    Pathname.new(moab_version_path).parent.parent
+  end
+
   # @return [String] shell command to unzip
   # def unzip_command
   #   "unzip #{file_path} -d #{place_to_unzip}"
   # end
 
+  # Presumes execution just "above" the druid dir in the druid tree, i.e. if the Moab is:
+  #   /storage_trunk_01/bj/102/hs/9687/bj102hs9687/v0003/...
+  # This command should execute from:
+  #   /storage_trunk_01/bj/102/hs/9687/
+  # @see #work_dir
   # @return [String] shell command to create this zip
   def zip_command
-    "zip -vr0X -s 10g #{file_path} #{moab_version_path}"
+    "zip -vr0X -s 10g #{file_path} #{druid.id}/#{v_version}"
   end
 
   # We presume the system guts do not change underneath a given class instance.
