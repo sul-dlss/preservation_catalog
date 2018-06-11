@@ -52,7 +52,7 @@ class Checksum
       cv = ChecksumValidator.new(pc)
       cv.validate_checksums
       checksum_results_lists << cv.results
-      logger.info cv.results.result_array
+      logger.info "#{cv.results.result_array} for #{druid}"
     end
     checksum_results_lists
   ensure

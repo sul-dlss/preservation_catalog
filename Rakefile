@@ -86,8 +86,7 @@ desc "M2C existence/version check on a single druid"
 task :m2c_exist_druid, [:druid] => [:environment] do |_t, args|
   puts "#{Time.now.utc.iso8601} Running Moab to Catalog Existence Check for #{args[:druid]}"
   $stdout.flush # sometimes above is not visible (flushed) until last puts (when run finishes)
-  results = MoabToCatalog.check_existence_for_druid(args[:druid])
-  puts results
+  MoabToCatalog.check_existence_for_druid(args[:druid])
   puts "#{Time.now.utc.iso8601} Moab to Catalog Existence Check for #{args[:druid]} is done"
   $stdout.flush
 end

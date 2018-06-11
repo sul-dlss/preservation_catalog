@@ -17,7 +17,7 @@ class MoabToCatalog
     endpoint = Endpoint.find_by!(storage_location: storage_dir)
     po_handler = PreservedObjectHandler.new(druid, moab.current_version_id, moab.size, endpoint)
     results = po_handler.check_existence
-    logger.info results
+    logger.info "#{results} for #{druid}"
     results
   ensure
     logger.info "#{Time.now.utc.iso8601} M2C check_existence_for_druid ended for #{druid}"
