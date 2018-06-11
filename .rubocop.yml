@@ -59,23 +59,11 @@ Lint/RescueWithoutErrorClass:
 
 Metrics/AbcSize:
   Exclude:
-    - 'app/models/preserved_object.rb' # methods still readable
-    - 'app/services/checksum_validator.rb' # methods still readable; shameless green
-    - 'app/services/preserved_object_handler.rb' # methods still readable; shameless green
     - 'app/services/audit_results.rb' # method still readable
     - 'lib/audit/catalog_to_moab.rb' # .check_version_all_dirs is decidedly readable
     - 'lib/audit/checksum.rb' # .validate_disk_all_dirs is decidedly readable
     - 'lib/audit/moab_to_catalog.rb' # .xxx_for_all_storage_roots is decidedly readable
     - 'app/controllers/catalog_controller.rb' # #create method is readable
-
-Metrics/BlockLength:
-  Exclude:
-    - 'app/services/preserved_object_handler.rb' # check_existence shameless green
-    - 'spec/**/*'
-
-Metrics/BlockNesting:
-  Exclude:
-    - 'app/services/preserved_object_handler.rb' # check_existence shameless green
 
 Metrics/ClassLength:
   Exclude:
@@ -83,12 +71,6 @@ Metrics/ClassLength:
     - 'app/services/preserved_object_handler.rb'
     - 'app/services/audit_results.rb'
     - 'lib/audit/catalog_to_moab.rb'
-
-Metrics/CyclomaticComplexity:
-  Exclude:
-    - 'app/services/preserved_object_handler.rb' # update_online_version (shameless green)
-    - 'app/services/audit_results.rb' # logger_severity_level is simply a case statement
-    - 'lib/audit/catalog_to_moab.rb' # check_catalog_version (shameless green)
 
 # because this isn't 1994
 Metrics/LineLength:
@@ -113,23 +95,13 @@ Metrics/LineLength:
     - 'spec/services/shared_examples_preserved_object_handler.rb'
     - 'spec/services/workflow_errors_reporter_spec.rb'
 
-Metrics/MethodLength:
-  Max: 25
-  Exclude:
-    - 'app/services/preserved_object_handler.rb' # check_existence shameless green
-    - 'lib/audit/catalog_to_moab.rb' # check_catalog_version shameless green
-
-Metrics/PerceivedComplexity:
-  Exclude:
-    - 'app/services/preserved_object_handler.rb' # update_online_version shameless green
-    - 'lib/audit/catalog_to_moab.rb' # check_catalog_version shameless green
-
 # --- Naming ---
 
 Naming/AccessorMethodName:
   Exclude:
     # rubocop doesn't like single param 'set_' methods, but this isn't an instace var setter
     - 'app/services/moab_validation_handler.rb'
+
 Naming/FileName:
   Exclude:
     - 'Capfile'
@@ -147,12 +119,6 @@ Performance/HashEachMethods:
 
 Rails/HasAndBelongsToMany:
   Enabled: false
-
-Rails/Output:
-  Exclude:
-    - 'lib/audit/catalog_to_moab.rb' # use puts statements for following progress of long job
-    - 'lib/audit/checksum.rb' # use puts statements for following progress of long job
-    - 'lib/audit/moab_to_catalog.rb' # use puts statements for following progress of long job
 
 # --- RSpec ---
 
@@ -224,9 +190,7 @@ Style/StringLiterals:
   Enabled: false
 
 Style/SymbolArray:
-  Exclude:
-    - 'Rakefile' # because [:spec, :rubocop] isn't a big deal
-    - 'config/deploy/*'
+  MinSize: 4
 
 Style/TernaryParentheses:
   Exclude:
