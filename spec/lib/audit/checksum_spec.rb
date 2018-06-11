@@ -1,8 +1,7 @@
 require 'rails_helper'
-require_relative "../../../lib/audit/checksum.rb"
 require_relative '../../load_fixtures_helper.rb'
 
-RSpec.describe Checksum do
+RSpec.describe Audit::Checksum do
   before do
     allow(Dor::WorkflowService).to receive(:update_workflow_error_status)
     allow(described_class.logger).to receive(:info) # silence STDOUT chatter
@@ -73,7 +72,7 @@ RSpec.describe Checksum do
     end
 
     it 'calls validate_disk with the right arguments' do
-      HostSettings.storage_roots.each_key do |storage_name|
+      HostSettings.storage_roots.to_h.each_key do |storage_name|
         expect(described_class).to receive(:validate_disk).with(
           storage_name
         )
@@ -114,12 +113,10 @@ RSpec.describe Checksum do
     end
 
     it "logs a debug message" do
-      druid = 'xx000xx0500'
-      error_msg = "Found 0 preserved copies."
-      allow(Rails.logger).to receive(:info)
-      allow(Rails.logger).to receive(:debug)
-      expect(Rails.logger).to receive(:debug).with(error_msg)
-      described_class.validate_druid(druid)
+      allow(described_class.logger).to receive(:info)
+      allow(described_class.logger).to receive(:debug)
+      expect(described_class.logger).to receive(:debug).with('Found 0 preserved copies.')
+      described_class.validate_druid('xx000xx0500')
     end
 
     it 'returns the checksum results lists for each PreservedCopy that was checked' do
