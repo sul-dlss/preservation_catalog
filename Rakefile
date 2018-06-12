@@ -82,7 +82,7 @@ desc "M2C existence/version check on a single druid"
 task :m2c_exist_druid, [:druid] => [:environment] do |_t, args|
   puts "#{Time.now.utc.iso8601} Running Moab to Catalog Existence Check for #{args[:druid]}"
   $stdout.flush # sometimes above is not visible (flushed) until last puts (when run finishes)
-  MoabToCatalog.check_existence_for_druid(args[:druid])
+  Audit::MoabToCatalog.check_existence_for_druid(args[:druid])
   puts "#{Time.now.utc.iso8601} Moab to Catalog Existence Check for #{args[:druid]} is done"
   $stdout.flush
 end
@@ -91,7 +91,7 @@ desc "M2C existence/version check on a list of druids"
 task :m2c_exist_druid_list, [:file_path] => [:environment] do |_t, args|
   druid_list_file_path = args[:file_path]
   puts "#{Time.now.utc.iso8601} Moab to Catalog Existence Check on the list of druids from #{druid_list_file_path} has started"
-  MoabToCatalog.check_existence_for_druid_list(druid_list_file_path)
+  Audit::MoabToCatalog.check_existence_for_druid_list(druid_list_file_path)
   puts "#{Time.now.utc.iso8601} Moab to Catalog Existence Check on the list of druids from #{druid_list_file_path} has finished"
   $stdout.flush
 end
@@ -168,9 +168,9 @@ task :c2m_check_version_all_dirs, [:last_checked_b4_date, :profile] => [:environ
   begin
     if args[:profile] == 'profile'
       puts "When done, check log/profile_C2M_check_version_all_roots[TIMESTAMP].txt for profiling details"
-      CatalogToMoab.check_version_all_dirs_profiled(last_checked)
+      Audit::CatalogToMoab.check_version_all_dirs_profiled(last_checked)
     elsif args[:profile].nil?
-      CatalogToMoab.check_version_all_dirs(last_checked)
+      Audit::CatalogToMoab.check_version_all_dirs(last_checked)
     end
     puts "#{Time.now.utc.iso8601} Catalog to Moab version check on all roots is done."
   rescue TypeError, ArgumentError
