@@ -20,9 +20,7 @@ module Audit
     end
 
     def self.validate_disk_profiled(endpoint_name)
-      profiler = Profiler.new
-      profiler.prof { validate_disk(endpoint_name) }
-      profiler.print_results_flat('cv_validate_disk')
+      Profiler.print_profile('cv_validate_disk') { validate_disk(endpoint_name) }
     end
 
     def self.validate_disk_all_endpoints
@@ -35,9 +33,7 @@ module Audit
     end
 
     def self.validate_disk_all_endpoints_profiled
-      profiler = Profiler.new
-      profiler.prof { validate_disk_all_endpoints }
-      profiler.print_results_flat('cv_validate_disk_all_endpoints')
+      Profiler.print_profile('cv_validate_disk_all_endpoints') { validate_disk_all_endpoints }
     end
 
     def self.validate_druid(druid)
