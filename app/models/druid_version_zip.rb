@@ -12,8 +12,10 @@ class DruidVersionZip
     @version = version
   end
 
+  # Creates a zip of Druid-Version content.
   # Changes directory so that the storage root (and druid tree) are not part of
-  # the archival directory structure, just the object.
+  # the archival directory structure, just the object, e.g. starting at 'ab123cd4567/...' directory,
+  # not 'ab/123/cd/4567/ab123cd4567/...'
   def create_zip!
     ensure_zip_directory!
     Dir.chdir(work_dir.to_s) do

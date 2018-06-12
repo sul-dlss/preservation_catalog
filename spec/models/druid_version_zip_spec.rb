@@ -34,8 +34,19 @@ describe DruidVersionZip do
       after { File.delete(zip_path) }
 
       it 'produces the expected zip file' do
+        expect(File).not_to exist(zip_path)
         expect { dvz.create_zip! }.not_to raise_error
         expect(File).to exist(zip_path)
+      end
+
+      # we `list` a given filepath out of the zip, `unzip` exits w/ 0 only when found
+      it 'produced zip has expected structure' do
+        techmd = "bj102hs9687/v0003/data/metadata/technicalMetadata.xml"
+        dvz.create_zip!
+        _, status = Open3.capture2e("unzip -lq #{zip_path} #{techmd}")
+        expect(status).to be_success
+        _, status = Open3.capture2e("unzip -lq #{zip_path} bj/102/hs/9687/#{techmd}")
+        expect(status).not_to be_success
       end
     end
 
