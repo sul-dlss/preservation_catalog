@@ -1,8 +1,7 @@
 require 'rails_helper'
 
 describe DruidVersionZip do
-  subject(:dvz) { described_class.new(druid, version) }
-
+  let(:dvz) { described_class.new(druid, version) }
   let(:druid) { 'bj102hs9687' }
   let(:version) { 1 }
 
@@ -22,6 +21,61 @@ describe DruidVersionZip do
     it 'opens file_path' do
       expect(File).to receive(:open).with(dvz.file_path)
       dvz.file
+    end
+  end
+
+  describe '.create_zip!' do
+    let(:zip_path) { dvz.file_path }
+    let(:version) { 3 } # v1 and v2 pre-existing
+
+    after { FileUtils.rm_rf('/tmp/bj') } # cleanup
+
+    context 'succeeds in zipping the binary' do
+      after { File.delete(zip_path) }
+
+      it 'produces the expected zip file' do
+        expect(File).not_to exist(zip_path)
+        expect { dvz.create_zip! }.not_to raise_error
+        expect(File).to exist(zip_path)
+      end
+
+      # we `list` a given filepath out of the zip, `unzip` exits w/ 0 only when found
+      it 'produced zip has expected structure' do
+        techmd = "bj102hs9687/v0003/data/metadata/technicalMetadata.xml"
+        dvz.create_zip!
+        _, status = Open3.capture2e("unzip -lq #{zip_path} #{techmd}")
+        expect(status).to be_success
+        _, status = Open3.capture2e("unzip -lq #{zip_path} bj/102/hs/9687/#{techmd}")
+        expect(status).not_to be_success
+      end
+    end
+
+    context 'fails to zip the binary' do
+      before { allow(dvz).to receive(:zip_command).and_return(zip_command) }
+
+      context 'when inpath is incorrect' do
+        let(:zip_command) { "zip -vr0X -s 10g #{zip_path} /wrong/path" }
+
+        it 'raises error' do
+          expect { dvz.create_zip! }.to raise_error(RuntimeError, %r{zipmaker failure.*/wrong/path})
+        end
+      end
+
+      context 'when options are unsupported' do
+        let(:zip_command) { "zip --fantasy #{zip_path} #{druid}/v0003" }
+
+        it 'raises error' do
+          expect { dvz.create_zip! }.to raise_error(RuntimeError, /Invalid command arguments.*fantasy/)
+        end
+      end
+
+      context 'if the utility "moved"' do
+        let(:zip_command) { "zap -vr0X -s 10g #{zip_path} #{druid}/v0003" }
+
+        it 'raises error' do
+          expect { dvz.create_zip! }.to raise_error(Errno::ENOENT, /No such file/)
+        end
+      end
     end
   end
 
@@ -59,11 +113,10 @@ describe DruidVersionZip do
   end
 
   describe '#zip_command' do
-    let(:moab_version_path) { Moab::StorageServices.object_version_path(druid, version) }
     let(:zip_path) { '/tmp/bj/102/hs/9687/bj102hs9687.v0001.zip' }
 
     it 'returns zip string to execute for this druid/version' do
-      expect(dvz.zip_command).to eq "zip -vr0X -s 10g #{zip_path} #{moab_version_path}"
+      expect(dvz.zip_command).to eq "zip -vr0X -s 10g #{zip_path} bj102hs9687/v0001"
     end
   end
 

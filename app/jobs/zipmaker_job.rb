@@ -1,20 +1,18 @@
-require 'open3'
 # Responsibilities:
 # if needed, zip files to zip storage and calculate checksum
 # invoke PlexerJob
 class ZipmakerJob < DruidVersionJobBase
   queue_as :zipmaker
-  delegate :metadata, :zip_command, to: :zip
+  delegate :metadata, :create_zip!, :file_path, to: :zip
 
   # @param [String] druid
   # @param [Integer] version
   def perform(druid, version)
-    create_zip! unless File.exist?(zip.file_path)
+    if File.exist?(file_path)
+      FileUtils.touch(file_path)
+    else
+      create_zip!
+    end
     PlexerJob.perform_later(druid, version, metadata)
-  end
-
-  def create_zip!
-    combined, status = Open3.capture2e(zip_command)
-    raise "zipmaker failure #{combined}" unless status.success?
   end
 end
