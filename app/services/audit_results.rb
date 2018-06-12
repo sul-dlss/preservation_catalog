@@ -125,6 +125,8 @@ class AuditResults
       if r.key?(INVALID_MOAB)
         msg = "#{workflows_msg_prefix} || #{r.values.first}"
         WorkflowErrorsReporter.update_workflow(druid, 'moab-valid', msg)
+      elsif status_changed_to_ok?(r)
+        WorkflowErrorsReporter.complete_workflow(druid, 'preservation-audit')
       elsif WORKFLOW_REPORT_CODES.include?(r.keys.first)
         candidate_workflow_results << r
       end
@@ -135,6 +137,10 @@ class AuditResults
 
   def contains_result_code?(code)
     result_array.detect { |result_hash| result_hash.keys.include?(code) } != nil
+  end
+
+  def status_changed_to_ok?(result)
+    /to ok$/.match(result[AuditResults::PC_STATUS_CHANGED]) != nil
   end
 
   def to_json

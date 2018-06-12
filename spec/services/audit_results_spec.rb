@@ -3,6 +3,7 @@ require 'rails_helper'
 RSpec.describe AuditResults do
   before do
     allow(Dor::WorkflowService).to receive(:update_workflow_error_status)
+    allow(Dor::WorkflowService).to receive(:update_workflow_status)
   end
 
   let(:druid) { 'ab123cd4567' }
@@ -229,6 +230,16 @@ RSpec.describe AuditResults do
         end
       end
     end
+
+    context 'resets workflow error' do
+      it 'has AuditResult:PC_STATUS_CHANGED and PreseredCopy::OK_STATUS' do
+        result_code = AuditResults::PC_STATUS_CHANGED
+        addl_hash = { old_status: 'invalid_checksum', new_status: 'ok' }
+        audit_results.add_result(result_code, addl_hash)
+        expect(WorkflowErrorsReporter).to receive(:complete_workflow).with(druid, 'preservation-audit')
+        audit_results.report_results
+      end
+    end
   end
 
   context '#add_result' do
@@ -290,6 +301,19 @@ RSpec.describe AuditResults do
       audit_results.add_result(added_code, pc_version: 1, po_version: 2)
       expect(audit_results.contains_result_code?(added_code)).to eq true
       expect(audit_results.contains_result_code?(other_code)).to eq false
+    end
+  end
+
+  context '#status_changed_to_ok?' do
+    it 'returns true if the new status is ok' do
+      added_code = AuditResults::PC_STATUS_CHANGED
+      audit_results.add_result(added_code, old_status: 'invalid_checksum', new_status: 'ok')
+      expect(audit_results.status_changed_to_ok?(audit_results.result_array.first)).to eq true
+    end
+    it 'returns false if the new status is not ok' do
+      added_code = AuditResults::PC_STATUS_CHANGED
+      audit_results.add_result(added_code, old_status: 'invalid_checksum', new_status: 'invalid_moab')
+      expect(audit_results.status_changed_to_ok?(audit_results.result_array.first)).to eq false
     end
   end
 
