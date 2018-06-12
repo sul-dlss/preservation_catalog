@@ -21,4 +21,21 @@ RSpec.describe WorkflowErrorsReporter do
       expect(described_class.update_workflow(druid, process_name, result)).to be true
     end
   end
+  describe '.complete_workflow' do
+    it 'returns true' do
+      full_url = 'https://workflows.example.org/workflow/dor/objects/druid:jj925bx9565/workflows/preservationAuditWF/preservation-audit'
+      body = "<?xml version=\"1.0\"?>\n<process name=\"preservation-audit\" status=\"completed\" elapsed=\"0\"/>\n"
+      headers = { 'User-Agent' => 'Faraday v0.15.2' }
+      druid = 'jj925bx9565'
+      process_name = 'preservation-audit'
+
+      stub_request(:put, full_url)
+        .with(
+          body: body,
+          headers: headers
+        ).to_return(status: 200, body: "", headers: {})
+
+      expect(described_class.complete_workflow(druid, process_name)).to be true
+    end
+  end
 end
