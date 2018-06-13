@@ -36,8 +36,8 @@ RSpec.describe ChecksumValidator do
   end
 
   context '#validate_manifest_inventories' do
-    it 'instantiates moab_storage_object from druid and druid_path' do
-      expect(Moab::StorageObject).to receive(:new).with(cv.full_druid, a_string_matching(object_dir)).and_call_original
+    it 'instantiates a Moab::StorageObject from druid and druid_path' do
+      expect(Moab::StorageObject).to receive(:new).with(cv.bare_druid, a_string_matching(object_dir)).and_call_original
       cv.validate_manifest_inventories
     end
 
@@ -46,8 +46,8 @@ RSpec.describe ChecksumValidator do
       sov2 = instance_double(Moab::StorageObjectVersion)
       sov3 = instance_double(Moab::StorageObjectVersion)
       version_list = [sov1, sov2, sov3]
-      moab_storage_object = instance_double(Moab::StorageObject, version_list: [sov1, sov2, sov3])
-      allow(cv).to receive(:moab_storage_object).and_return(moab_storage_object)
+      moab = instance_double(Moab::StorageObject, version_list: [sov1, sov2, sov3])
+      allow(cv).to receive(:moab).and_return(moab)
       version_list.each do |moab_version|
         expect(cv).to receive(:validate_manifest_inventory).with(moab_version)
       end
@@ -138,15 +138,15 @@ RSpec.describe ChecksumValidator do
     let(:results) { instance_double(AuditResults, report_results: nil, :check_name= => nil) }
 
     it 'instantiates storage_object from druid and druid_path' do
-      expect(Moab::StorageObject).to receive(:new).with(cv.full_druid, a_string_matching(object_dir)).and_call_original
+      expect(Moab::StorageObject).to receive(:new).with(cv.bare_druid, a_string_matching(object_dir)).and_call_original
       cv.send(:validate_signature_catalog_listing)
     end
 
     it 'calls validate_signature_catalog_entry for each signatureCatalog entry' do
       sce01 = instance_double(Moab::SignatureCatalogEntry)
       entry_list = [sce01] + Array.new(10, sce01.dup)
-      moab_storage_object = instance_double(Moab::StorageObject)
-      allow(cv).to receive(:moab_storage_object).and_return(moab_storage_object)
+      moab = instance_double(Moab::StorageObject)
+      allow(cv).to receive(:moab).and_return(moab)
       allow(cv).to receive(:latest_signature_catalog_entries).and_return(entry_list)
       entry_list.each do |entry|
         expect(cv).to receive(:validate_signature_catalog_entry).with(entry)

@@ -52,7 +52,7 @@ class ChecksumValidator
   end
 
   def validate_manifest_inventories
-    moab_storage_object.version_list.each { |moab_version| validate_manifest_inventory(moab_version) }
+    moab.version_list.each { |moab_version| validate_manifest_inventory(moab_version) }
   end
 
   def validate_signature_catalog
@@ -146,10 +146,6 @@ class ChecksumValidator
     results.add_result(AuditResults::FILE_NOT_IN_MOAB, absent_from_moab_data)
   end
 
-  def moab_storage_object
-    Moab::StorageObject.new(full_druid, druid_path)
-  end
-
   def druid_path
     @druid_path ||= "#{endpoint.storage_location}/#{DruidTools::Druid.new(full_druid).tree.join('/')}"
   end
@@ -187,7 +183,7 @@ class ChecksumValidator
   end
 
   def latest_moab_version
-    @latest_moab_version ||= moab_storage_object.version_list.last
+    @latest_moab_version ||= moab.version_list.last
   end
 
   def validate_against_signature_catalog(data_file)
@@ -208,8 +204,8 @@ class ChecksumValidator
   end
 
   def existing_data_dirs
-    possible_data_content_dirs = moab_storage_object.versions.map { |sov| sov.file_category_pathname('content') }
-    possible_data_metadata_dirs = moab_storage_object.versions.map { |sov| sov.file_category_pathname('metadata') }
+    possible_data_content_dirs = moab.versions.map { |sov| sov.file_category_pathname('content') }
+    possible_data_metadata_dirs = moab.versions.map { |sov| sov.file_category_pathname('metadata') }
     possible_data_dirs = possible_data_content_dirs + possible_data_metadata_dirs
     possible_data_dirs.select(&:exist?).map(&:to_s)
   end
