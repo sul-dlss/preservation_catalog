@@ -4,6 +4,7 @@ require_relative '../../load_fixtures_helper.rb'
 RSpec.describe Audit::Checksum do
   before do
     allow(Dor::WorkflowService).to receive(:update_workflow_error_status)
+    allow(Dor::WorkflowService).to receive(:update_workflow_status)
     allow(described_class.logger).to receive(:info) # silence STDOUT chatter
   end
 
