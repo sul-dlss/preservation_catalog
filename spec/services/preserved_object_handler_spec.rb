@@ -118,11 +118,7 @@ RSpec.describe PreservedObjectHandler do
       expect(poh.errors.messages).to include(endpoint: ["must be an actual Endpoint"])
     end
     it 'errors when endpoint_type is not online' do
-      endpoint_type = EndpointType.create(type_name: 'foo', endpoint_class: 'archive')
-      archival_endpoint = Endpoint.create(endpoint_name: 'archive1',
-                                          endpoint_type_id: endpoint_type.id,
-                                          endpoint_node: 'node',
-                                          storage_location: 'somewhere')
+      archival_endpoint = create(:archive_endpoint)
       poh = described_class.new(druid, incoming_version, incoming_size, archival_endpoint)
       expect(poh).to be_invalid
       expect(poh.errors.messages).to include(endpoint: ["must be an online Endpoint for PreservedObjectHandler"])
