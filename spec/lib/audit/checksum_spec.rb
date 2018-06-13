@@ -11,7 +11,7 @@ RSpec.describe Audit::Checksum do
   let(:endpoint_name) { 'fixture_sr1' }
   let(:limit) { Settings.c2m_sql_limit }
 
-  context '.validate_disk' do
+  describe '.validate_disk' do
     include_context 'fixture moabs in db'
     let(:subject) { described_class.validate_disk(endpoint_name, limit) }
 

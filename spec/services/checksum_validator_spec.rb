@@ -19,7 +19,7 @@ RSpec.describe ChecksumValidator do
   let(:cv) { described_class.new(pres_copy) }
   let(:results) { instance_double(AuditResults, report_results: nil, check_name: nil) }
 
-  context '#initialize' do
+  describe '#initialize' do
     it 'sets attributes' do
       expect(cv.preserved_copy).to eq pres_copy
       expect(cv.bare_druid).to eq druid
@@ -36,7 +36,7 @@ RSpec.describe ChecksumValidator do
     end
   end
 
-  context '#validate_manifest_inventories' do
+  describe '#validate_manifest_inventories' do
     it 'instantiates a Moab::StorageObject from druid and druid_path' do
       expect(Moab::StorageObject).to receive(:new).with(cv.bare_druid, a_string_matching(object_dir)).and_call_original
       cv.validate_manifest_inventories
@@ -133,7 +133,7 @@ RSpec.describe ChecksumValidator do
     end
   end
 
-  context '#validate_signature_catalog_listing' do
+  describe '#validate_signature_catalog_listing' do
     let(:druid) { 'bj102hs9687' }
     let(:endpoint_name) { 'fixture_sr1' }
     let(:results) { instance_double(AuditResults, report_results: nil, :check_name= => nil) }
@@ -219,7 +219,7 @@ RSpec.describe ChecksumValidator do
     end
   end
 
-  context '#validate_checksums' do
+  describe '#validate_checksums' do
     context 'passes checksum validation' do
       let(:druid) { 'bz514sm9647' }
       let(:endpoint_name) { 'fixture_sr1' }
@@ -406,7 +406,7 @@ RSpec.describe ChecksumValidator do
       end
     end
 
-    context 'reports resulsts ' do
+    context 'reports results ' do
       it 'calls AuditResults.report_results' do
         expect(cv.results).to receive(:report_results)
         cv.validate_checksums
@@ -442,7 +442,7 @@ RSpec.describe ChecksumValidator do
     end
   end
 
-  context '#flag_unexpected_data_files' do
+  describe '#flag_unexpected_data_files' do
     let(:druid) { 'bj102hs9687' }
     let(:endpoint_name) { 'fixture_sr1' }
 
@@ -484,7 +484,7 @@ RSpec.describe ChecksumValidator do
     end
   end
 
-  context '#validate_signature_catalog' do
+  describe '#validate_signature_catalog' do
     let(:druid) { 'bj102hs9687' }
     let(:endpoint_name) { 'fixture_sr1' }
 

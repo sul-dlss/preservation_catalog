@@ -11,7 +11,7 @@ RSpec.describe AuditResults do
   let(:endpoint) { Endpoint.find_by(storage_location: 'spec/fixtures/storage_root01/moab_storage_trunk') }
   let(:audit_results) { described_class.new(druid, actual_version, endpoint) }
 
-  context '.logger_severity_level' do
+  describe '.logger_severity_level' do
     it 'PC_PO_VERSION_MISMATCH is an ERROR' do
       expect(described_class.logger_severity_level(AuditResults::PC_PO_VERSION_MISMATCH)).to eq Logger::ERROR
     end
@@ -26,7 +26,7 @@ RSpec.describe AuditResults do
     end
   end
 
-  context '#new' do
+  describe '#new' do
     it 'sets result_array attr to []' do
       expect(audit_results.result_array).to eq []
     end
@@ -38,7 +38,7 @@ RSpec.describe AuditResults do
     end
   end
 
-  context '#report_results' do
+  describe '#report_results' do
     let(:check_name) { 'FooCheck' }
 
     context 'writes to Rails log' do
@@ -242,7 +242,7 @@ RSpec.describe AuditResults do
     end
   end
 
-  context '#add_result' do
+  describe '#add_result' do
     it 'adds a hash entry to the result_array' do
       expect(audit_results.result_array.size).to eq 0
       code = AuditResults::PC_PO_VERSION_MISMATCH
@@ -263,7 +263,7 @@ RSpec.describe AuditResults do
     end
   end
 
-  context '#remove_db_updated_results' do
+  describe '#remove_db_updated_results' do
     before do
       code = AuditResults::PC_PO_VERSION_MISMATCH
       result_msg_args = { pc_version: 1, po_version: 2 }
@@ -293,7 +293,7 @@ RSpec.describe AuditResults do
     end
   end
 
-  context '#contains_result_code?' do
+  describe '#contains_result_code?' do
     it 'returns true if the result code is there, false if not' do
       expect(audit_results.result_array.size).to eq 0
       added_code = AuditResults::PC_PO_VERSION_MISMATCH
@@ -304,7 +304,7 @@ RSpec.describe AuditResults do
     end
   end
 
-  context '#status_changed_to_ok?' do
+  describe '#status_changed_to_ok?' do
     it 'returns true if the new status is ok' do
       added_code = AuditResults::PC_STATUS_CHANGED
       audit_results.add_result(added_code, old_status: 'invalid_checksum', new_status: 'ok')
@@ -317,7 +317,7 @@ RSpec.describe AuditResults do
     end
   end
 
-  context '#to_json' do
+  describe '#to_json' do
     it 'returns valid JSON for the current result_array' do
       audit_results.add_result(AuditResults::PC_PO_VERSION_MISMATCH, pc_version: 1, po_version: 2)
       json_text = audit_results.to_json

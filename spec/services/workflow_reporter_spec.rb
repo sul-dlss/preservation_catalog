@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe WorkflowReporter do
-  context '.report_error' do
+  describe '.report_error' do
     it 'returns true' do
       # because we always get true the from the dor-workflow-service gem
       # see issue sul-dlss/dor-workflow-service#50 for more context
