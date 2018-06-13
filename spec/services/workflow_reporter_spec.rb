@@ -1,7 +1,7 @@
 require 'rails_helper'
 
-RSpec.describe WorkflowErrorsReporter do
-  context '.update_workflow' do
+RSpec.describe WorkflowReporter do
+  context '.report_error' do
     it 'returns true' do
       # because we always get true the from the dor-workflow-service gem
       # see issue sul-dlss/dor-workflow-service#50 for more context
@@ -18,10 +18,10 @@ RSpec.describe WorkflowErrorsReporter do
           headers: headers
         ).to_return(status: 200, body: "", headers: {})
 
-      expect(described_class.update_workflow(druid, process_name, result)).to be true
+      expect(described_class.report_error(druid, process_name, result)).to be true
     end
   end
-  describe '.complete_workflow' do
+  describe '.report_completed' do
     it 'returns true' do
       full_url = 'https://workflows.example.org/workflow/dor/objects/druid:jj925bx9565/workflows/preservationAuditWF/preservation-audit'
       body = "<?xml version=\"1.0\"?>\n<process name=\"preservation-audit\" status=\"completed\" elapsed=\"0\"/>\n"
@@ -35,7 +35,7 @@ RSpec.describe WorkflowErrorsReporter do
           headers: headers
         ).to_return(status: 200, body: "", headers: {})
 
-      expect(described_class.complete_workflow(druid, process_name)).to be true
+      expect(described_class.report_completed(druid, process_name)).to be true
     end
   end
 end

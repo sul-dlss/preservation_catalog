@@ -98,7 +98,7 @@ Metrics/LineLength:
     - 'app/services/audit_results.rb' # line 35 is 121
     - 'app/services/checksum_validator.rb' # line 151 is 121
     - 'app/services/preserved_object_handler.rb' # line 269 is 121
-    - 'app/services/workflow_errors_reporter.rb' # line 7 is 143
+    - 'app/services/workflow_reporter.rb' # line 7 is 143
     - 'config/schedule.rb'
     - 'spec/controllers/catalog_controller_spec.rb'
     - 'spec/lib/audit/moab_to_catalog_spec.rb' # 1 line 126
@@ -111,7 +111,7 @@ Metrics/LineLength:
     - 'spec/services/preserved_object_handler_spec.rb' # line 94 is 121
     - 'spec/services/preserved_object_handler_update_version_spec.rb'
     - 'spec/services/shared_examples_preserved_object_handler.rb'
-    - 'spec/services/workflow_errors_reporter_spec.rb'
+    - 'spec/services/workflow_reporter_spec.rb'
 
 Metrics/MethodLength:
   Max: 25

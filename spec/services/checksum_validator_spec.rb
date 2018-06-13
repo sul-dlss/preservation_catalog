@@ -546,14 +546,14 @@ RSpec.describe ChecksumValidator do
     it 'has status changed to OK_STATUS and completes workflow' do
       pres_copy.status = PreservedCopy::INVALID_MOAB_STATUS
       pres_copy.save!
-      expect(WorkflowErrorsReporter).to receive(:complete_workflow).with(druid, 'preservation-audit')
+      expect(WorkflowReporter).to receive(:report_completed).with(druid, 'preservation-audit')
       cv.validate_checksums
     end
 
     it 'has status that does not change and does not complete workflow' do
       pres_copy.status = PreservedCopy::OK_STATUS
       pres_copy.save!
-      expect(WorkflowErrorsReporter).not_to receive(:complete_workflow).with(druid, 'preservation-audit')
+      expect(WorkflowReporter).not_to receive(:report_completed).with(druid, 'preservation-audit')
       cv.validate_checksums
     end
 
@@ -566,7 +566,7 @@ RSpec.describe ChecksumValidator do
       it "does not complete workflow" do
         pres_copy.status = PreservedCopy::OK_STATUS
         pres_copy.save!
-        expect(WorkflowErrorsReporter).not_to receive(:complete_workflow).with(druid, 'preservation-audit')
+        expect(WorkflowReporter).not_to receive(:report_completed).with(druid, 'preservation-audit')
         cv.validate_checksums
       end
     end
@@ -582,7 +582,7 @@ RSpec.describe ChecksumValidator do
       end
 
       it 'does not complete workflow' do
-        expect(WorkflowErrorsReporter).not_to receive(:complete_workflow).with(druid, 'preservation-audit')
+        expect(WorkflowReporter).not_to receive(:report_completed).with(druid, 'preservation-audit')
         cv.validate_checksums
       end
     end
