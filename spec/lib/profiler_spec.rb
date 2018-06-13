@@ -5,6 +5,31 @@ RSpec.describe Profiler do
   let(:profiler) { described_class.new }
   let(:faketime) { Time.at(628_232_400).utc } # 1989-11-27 21:00:00 -0800 == 1989-11-28 05:00:00 UTC
 
+  describe '.print_profile' do
+    before { allow(described_class).to receive(:new).and_return(profiler) }
+
+    it 'starts, yields, stops, and returns instance' do
+      expect(RubyProf).to receive(:start)
+      expect(RubyProf).to receive(:stop).and_return(instance_double(RubyProf::Profile))
+      test_value = false
+      return_val = described_class.print_profile { test_value = true }
+      expect(test_value).to be true
+      expect(return_val).to eq profiler
+    end
+
+    it 'prints if given an out_file_id' do
+      allow(profiler).to receive(:prof)
+      expect(profiler).to receive(:print_results_flat).with('foobar')
+      described_class.print_profile('foobar') { 'noop' }
+    end
+
+    it 'does not print without an out_file_id' do
+      allow(profiler).to receive(:prof)
+      expect(profiler).not_to receive(:print_results_flat)
+      described_class.print_profile { 'noop' }
+    end
+  end
+
   describe '#output_path' do
     before { allow(Time).to receive(:now).and_return(faketime) }
 

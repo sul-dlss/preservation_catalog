@@ -43,9 +43,7 @@ module Audit
     end
 
     def self.check_existence_for_dir_profiled(storage_dir)
-      profiler = Profiler.new
-      profiler.prof { check_existence_for_dir(storage_dir) }
-      profiler.print_results_flat('M2C_check_existence_for_dir')
+      Profiler.print_profile('M2C_check_existence_for_dir') { check_existence_for_dir(storage_dir) }
     end
 
     # NOTE: shameless green! code duplication with check_existence_for_dir
@@ -74,9 +72,7 @@ module Audit
     end
 
     def self.seed_catalog_for_all_storage_roots_profiled
-      profiler = Profiler.new
-      profiler.prof { seed_catalog_for_all_storage_roots }
-      profiler.print_results_flat('seed_catalog_for_all_storage_roots')
+      Profiler.print_profile('seed_catalog_for_all_storage_roots') { seed_catalog_for_all_storage_roots }
     end
 
     # Shameless green. Code duplication with seed_catalog_for_all_storage_roots
@@ -90,9 +86,7 @@ module Audit
     end
 
     def self.check_existence_for_all_storage_roots_profiled
-      profiler = Profiler.new
-      profiler.prof { check_existence_for_all_storage_roots }
-      profiler.print_results_flat('M2C_check_existence_for_all_storage_roots')
+      Profiler.print_profile('M2C_check_existence_for_all_storage_roots') { check_existence_for_all_storage_roots }
     end
 
     def self.drop_endpoint(endpoint_name)
@@ -111,9 +105,7 @@ module Audit
     end
 
     def self.populate_endpoint_profiled(endpoint_name)
-      profiler = Profiler.new
-      profiler.prof { populate_endpoint(endpoint_name) }
-      profiler.print_results_flat('populate_endpoint')
+      Profiler.print_profile('populate_endpoint') { populate_endpoint(endpoint_name) }
     end
   end
 end

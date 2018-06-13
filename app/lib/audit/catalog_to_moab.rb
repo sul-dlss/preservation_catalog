@@ -22,9 +22,7 @@ module Audit
     end
 
     def self.check_version_on_dir_profiled(last_checked_b4_date, storage_dir)
-      profiler = Profiler.new
-      profiler.prof { check_version_on_dir(last_checked_b4_date, storage_dir) }
-      profiler.print_results_flat('C2M_check_version_on_dir')
+      Profiler.print_profile('C2M_check_version_on_dir') { check_version_on_dir(last_checked_b4_date, storage_dir) }
     end
 
     def self.check_version_all_dirs(last_checked_b4_date)
@@ -37,9 +35,7 @@ module Audit
     end
 
     def self.check_version_all_dirs_profiled(last_checked_b4_date)
-      profiler = Profiler.new
-      profiler.prof { check_version_all_dirs(last_checked_b4_date) }
-      profiler.print_results_flat('C2M_check_version_all_dirs')
+      Profiler.print_profile('C2M_check_version_all_dirs') { check_version_all_dirs(last_checked_b4_date) }
     end
 
     # ----  INSTANCE code below this line ---------------------------
