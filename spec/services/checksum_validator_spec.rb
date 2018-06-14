@@ -24,7 +24,6 @@ RSpec.describe ChecksumValidator do
       expect(cv.preserved_copy).to eq pres_copy
       expect(cv.bare_druid).to eq druid
       expect(cv.endpoint).to eq endpoint
-      expect(cv.full_druid).to eq "druid:#{druid}"
       expect(cv.results).to be_an_instance_of AuditResults
     end
     it 'raises ArgumentError if endpoint is not online' do

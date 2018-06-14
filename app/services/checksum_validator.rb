@@ -2,9 +2,10 @@
 class ChecksumValidator
   include ::MoabValidationHandler
 
-  attr_reader :results, :endpoint, :full_druid, :preserved_copy, :bare_druid
+  attr_reader :bare_druid, :results, :preserved_copy
 
   alias druid bare_druid
+  delegate :endpoint, to: :preserved_copy
   delegate :storage_location, to: :endpoint
 
   DATA = 'data'.freeze
@@ -21,10 +22,8 @@ class ChecksumValidator
   def initialize(preserved_copy)
     @preserved_copy = preserved_copy
     @bare_druid = preserved_copy.preserved_object.druid
-    @endpoint = preserved_copy.endpoint
     raise ArgumentError, "#{self.class.name} requires PreservedCopy's Endpoint to be online" unless endpoint.endpoint_type.online?
     @results = AuditResults.new(bare_druid, nil, endpoint, 'validate_checksums')
-    @full_druid = "druid:#{bare_druid}"
   end
 
   def validate_checksums
@@ -83,8 +82,7 @@ class ChecksumValidator
   def validate_manifest_inventory(moab_version)
     manifest_file_path = "#{moab_version.version_pathname}/#{MANIFESTS}/#{MANIFESTS_XML}"
     begin
-      verification_result = moab_version.verify_manifest_inventory
-      parse_verification_subentities(verification_result)
+      parse_verification_subentities(moab_version.verify_manifest_inventory)
     rescue Nokogiri::XML::SyntaxError
       results.add_result(AuditResults::INVALID_MANIFEST, manifest_file_path: manifest_file_path)
     rescue Errno::ENOENT
@@ -146,13 +144,9 @@ class ChecksumValidator
     results.add_result(AuditResults::FILE_NOT_IN_MOAB, absent_from_moab_data)
   end
 
-  def druid_path
-    @druid_path ||= "#{endpoint.storage_location}/#{DruidTools::Druid.new(full_druid).tree.join('/')}"
-  end
-
   def signature_catalog_entry_path(entry)
     @signature_catalog_entry_paths ||= {}
-    @signature_catalog_entry_paths[entry] ||= "#{druid_path}/#{entry.storage_path}"
+    @signature_catalog_entry_paths[entry] ||= "#{object_dir}/#{entry.storage_path}"
   end
 
   def latest_signature_catalog_path
