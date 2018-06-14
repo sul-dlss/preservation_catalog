@@ -186,4 +186,18 @@ RSpec.describe Endpoint, type: :model do
       expect(endpoint.to_s).to match(/Endpoint.*#{Regexp.escape(endpoint.to_h.to_s)}/)
     end
   end
+
+  describe '#validate_expired_checksums!' do
+    it 'raises if endpoint is wrong type' do
+      expect { endpoint.validate_expired_checksums! }.to raise_error(RuntimeError)
+    end
+    it 'calls ChecksumValidationJob for each eligible PreservedCopy' do
+      allow(Rails.logger).to receive(:info)
+      ep = create(:endpoint)
+      ep.preserved_copies = build_list(:preserved_copy, 2)
+      expect(ChecksumValidationJob).to receive(:perform_later).with(ep.preserved_copies.first)
+      expect(ChecksumValidationJob).to receive(:perform_later).with(ep.preserved_copies.second)
+      ep.validate_expired_checksums!
+    end
+  end
 end
