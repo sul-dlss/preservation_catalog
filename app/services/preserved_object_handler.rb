@@ -124,16 +124,11 @@ class PreservedObjectHandler
       results.add_result(AuditResults::INVALID_ARGUMENTS, errors.full_messages)
     else
       Rails.logger.debug "update_version_after_validation #{druid} called"
-      if endpoint.endpoint_type.endpoint_class == 'online'
-        if moab_validation_errors.empty?
-          # NOTE: we deal with active record transactions in update_online_version, not here
-          update_online_version(PreservedCopy::VALIDITY_UNKNOWN_STATUS)
-        else
-          update_pc_invalid_moab
-        end
-      elsif endpoint.endpoint_type.endpoint_class == 'archive'
-        # TODO: perform archive object validation; then create a new PC record for the new
-        #  archived version on the endpoint
+      if moab_validation_errors.empty?
+        # NOTE: we deal with active record transactions in update_online_version, not here
+        update_online_version(PreservedCopy::VALIDITY_UNKNOWN_STATUS)
+      else
+        update_pc_invalid_moab
       end
     end
 
