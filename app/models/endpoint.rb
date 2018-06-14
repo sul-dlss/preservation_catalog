@@ -80,6 +80,7 @@ class Endpoint < ApplicationRecord
         endpoint.endpoint_node = endpoint_config.endpoint_node
         endpoint.storage_location = endpoint_config.storage_location
         endpoint.preservation_policies = preservation_policies
+        endpoint.delivery_class = Endpoint.delivery_classes[endpoint_config.delivery_class.constantize]
       end
     end
   end

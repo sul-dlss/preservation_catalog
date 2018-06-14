@@ -92,7 +92,8 @@ RSpec.describe Endpoint, type: :model do
           endpoint_type: endpoint_type,
           endpoint_node: endpoint_config.endpoint_node,
           storage_location: endpoint_config.storage_location,
-          preservation_policies: default_pres_policies
+          preservation_policies: default_pres_policies,
+          delivery_class: S3WestDeliveryJob
         }
         expect(Endpoint.find_by(endpoint_name: endpoint_name)).to have_attributes(archive_endpoint_attrs)
       end
@@ -111,7 +112,8 @@ RSpec.describe Endpoint, type: :model do
           Config::Options.new(
             endpoint_type_name: endpoint_type.type_name,
             endpoint_node: 'endpoint_node',
-            storage_location: 'storage_location'
+            storage_location: 'storage_location',
+            delivery_class: 'S3WestDeliveryJob'
           )
       )
       allow(Settings).to receive(:archive_endpoints).and_return(archive_endpoints_setting)
