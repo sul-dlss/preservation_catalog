@@ -2,6 +2,7 @@ require 'rails_helper'
 
 RSpec.describe Endpoint, type: :model do
   let(:default_pres_policies) { [PreservationPolicy.default_policy] }
+  let(:druid) { 'ab123cd4567' }
   let(:endpoint_type) { build(:endpoint_type, type_name: 'aws', endpoint_class: 'archive') }
   let!(:endpoint) do
     create(
@@ -136,18 +137,17 @@ RSpec.describe Endpoint, type: :model do
                                  fixity_ttl: 666)
     end
 
-    before { create(:preserved_object) }
+    before { create(:preserved_object, druid: druid) }
 
     it "returns the archive endpoints which implement the PO's pres policy" do
       endpoint.preservation_policies = [PreservationPolicy.default_policy, alternate_pres_policy]
-      expect(Endpoint.archive_targets('bj102hs9687').pluck(:endpoint_name)).to eq %w[aws-us-east-2 mock_archive1]
+      expect(Endpoint.archive_targets(druid).pluck(:endpoint_name)).to eq %w[aws-us-east-2 mock_archive1]
       endpoint.preservation_policies = [alternate_pres_policy]
-      expect(Endpoint.archive_targets('bj102hs9687').pluck(:endpoint_name)).to eq %w[mock_archive1]
+      expect(Endpoint.archive_targets(druid).pluck(:endpoint_name)).to eq %w[mock_archive1]
     end
   end
 
   describe '.which_need_archive_copy' do
-    let(:druid) { 'ab123cd4567' }
     let(:version) { 3 }
 
     before { create(:preserved_object, current_version: version, druid: druid) }

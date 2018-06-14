@@ -19,6 +19,7 @@ describe 'the whole replication pipeline', type: :job do # rubocop:disable RSpec
   end
 
   before do
+    FactoryBot.reload # we need the "first" PO, bj102hs9687, for PC to line up w/ fixture
     allow(Settings).to receive(:zip_storage).and_return(Rails.root.join('spec', 'fixtures', 'zip_storage'))
     allow(PreservationCatalog::S3).to receive(:bucket).and_return(bucket)
   end
