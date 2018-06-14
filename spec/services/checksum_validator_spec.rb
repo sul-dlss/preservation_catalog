@@ -4,6 +4,7 @@ require_relative '../load_fixtures_helper.rb'
 RSpec.describe ChecksumValidator do
   before do
     allow(Dor::WorkflowService).to receive(:update_workflow_error_status)
+    allow(Dor::WorkflowService).to receive(:update_workflow_status)
   end
 
   include_context 'fixture moabs in db'
@@ -18,7 +19,7 @@ RSpec.describe ChecksumValidator do
   let(:cv) { described_class.new(pres_copy) }
   let(:results) { instance_double(AuditResults, report_results: nil, check_name: nil) }
 
-  context '#initialize' do
+  describe '#initialize' do
     it 'sets attributes' do
       expect(cv.preserved_copy).to eq pres_copy
       expect(cv.bare_druid).to eq druid
@@ -35,7 +36,7 @@ RSpec.describe ChecksumValidator do
     end
   end
 
-  context '#validate_manifest_inventories' do
+  describe '#validate_manifest_inventories' do
     it 'instantiates a Moab::StorageObject from druid and druid_path' do
       expect(Moab::StorageObject).to receive(:new).with(cv.bare_druid, a_string_matching(object_dir)).and_call_original
       cv.validate_manifest_inventories
@@ -132,7 +133,7 @@ RSpec.describe ChecksumValidator do
     end
   end
 
-  context '#validate_signature_catalog_listing' do
+  describe '#validate_signature_catalog_listing' do
     let(:druid) { 'bj102hs9687' }
     let(:endpoint_name) { 'fixture_sr1' }
     let(:results) { instance_double(AuditResults, report_results: nil, :check_name= => nil) }
@@ -218,7 +219,7 @@ RSpec.describe ChecksumValidator do
     end
   end
 
-  context '#validate_checksums' do
+  describe '#validate_checksums' do
     context 'passes checksum validation' do
       let(:druid) { 'bz514sm9647' }
       let(:endpoint_name) { 'fixture_sr1' }
@@ -405,7 +406,7 @@ RSpec.describe ChecksumValidator do
       end
     end
 
-    context 'reports resulsts ' do
+    context 'reports results ' do
       it 'calls AuditResults.report_results' do
         expect(cv.results).to receive(:report_results)
         cv.validate_checksums
@@ -441,7 +442,7 @@ RSpec.describe ChecksumValidator do
     end
   end
 
-  context '#flag_unexpected_data_files' do
+  describe '#flag_unexpected_data_files' do
     let(:druid) { 'bj102hs9687' }
     let(:endpoint_name) { 'fixture_sr1' }
 
@@ -483,7 +484,7 @@ RSpec.describe ChecksumValidator do
     end
   end
 
-  context '#validate_signature_catalog' do
+  describe '#validate_signature_catalog' do
     let(:druid) { 'bj102hs9687' }
     let(:endpoint_name) { 'fixture_sr1' }
 
@@ -535,6 +536,55 @@ RSpec.describe ChecksumValidator do
       expect(Digest::SHA1).not_to receive(:new).and_call_original
       expect(Digest::SHA2).to receive(:new).and_call_original.at_least(:once)
       cv.validate_checksums
+    end
+  end
+
+  context 'preservationAuditWF reporting' do
+    let(:druid) { 'bz514sm9647' }
+    let(:endpoint_name) { 'fixture_sr1' }
+
+    it 'has status changed to OK_STATUS and completes workflow' do
+      pres_copy.status = PreservedCopy::INVALID_MOAB_STATUS
+      pres_copy.save!
+      expect(WorkflowReporter).to receive(:report_completed).with(druid, 'preservation-audit')
+      cv.validate_checksums
+    end
+
+    it 'has status that does not change and does not complete workflow' do
+      pres_copy.status = PreservedCopy::OK_STATUS
+      pres_copy.save!
+      expect(WorkflowReporter).not_to receive(:report_completed).with(druid, 'preservation-audit')
+      cv.validate_checksums
+    end
+
+    context 'has status changed to status other than OK_STATUS' do
+      before do
+        pres_copy.version = 4 # this is one greater than the version on disk for bz514sm9647
+        pres_copy.save!
+      end
+
+      it "does not complete workflow" do
+        pres_copy.status = PreservedCopy::OK_STATUS
+        pres_copy.save!
+        expect(WorkflowReporter).not_to receive(:report_completed).with(druid, 'preservation-audit')
+        cv.validate_checksums
+      end
+    end
+
+    context 'transaction is rolled back' do
+      before do
+        # would result in a status update if the save succeeded
+        pres_copy.status = PreservedCopy::ONLINE_MOAB_NOT_FOUND_STATUS
+        pres_copy.save!
+
+        # do this second since we save! as part of setup
+        allow(pres_copy).to receive(:save!).and_raise(ActiveRecord::ConnectionTimeoutError)
+      end
+
+      it 'does not complete workflow' do
+        expect(WorkflowReporter).not_to receive(:report_completed).with(druid, 'preservation-audit')
+        cv.validate_checksums
+      end
     end
   end
 end

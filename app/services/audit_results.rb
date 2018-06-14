@@ -113,7 +113,7 @@ class AuditResults
     result_array.delete_if { |res_hash| DB_UPDATED_CODES.include?(res_hash.keys.first) }
   end
 
-  # output results to Rails.logger and send errors to WorkflowErrorsReporter
+  # output results to Rails.logger and send errors to WorkflowReporter
   # @return Array<Hash>
   #   results = [result1, result2]
   #   result1 = {response_code => msg}
@@ -124,7 +124,9 @@ class AuditResults
       log_result(r)
       if r.key?(INVALID_MOAB)
         msg = "#{workflows_msg_prefix} || #{r.values.first}"
-        WorkflowErrorsReporter.update_workflow(druid, 'moab-valid', msg)
+        WorkflowReporter.report_error(druid, 'moab-valid', msg)
+      elsif status_changed_to_ok?(r)
+        WorkflowReporter.report_completed(druid, 'preservation-audit')
       elsif WORKFLOW_REPORT_CODES.include?(r.keys.first)
         candidate_workflow_results << r
       end
@@ -135,6 +137,10 @@ class AuditResults
 
   def contains_result_code?(code)
     result_array.detect { |result_hash| result_hash.keys.include?(code) } != nil
+  end
+
+  def status_changed_to_ok?(result)
+    /to ok$/.match(result[AuditResults::PC_STATUS_CHANGED]) != nil
   end
 
   def to_json
@@ -150,7 +156,7 @@ class AuditResults
   def report_errors_to_workflows(candidate_workflow_results)
     return if candidate_workflow_results.empty?
     msg = "#{workflows_msg_prefix} #{candidate_workflow_results.map(&:values).flatten.join(' && ')}"
-    WorkflowErrorsReporter.update_workflow(druid, 'preservation-audit', msg)
+    WorkflowReporter.report_error(druid, 'preservation-audit', msg)
   end
 
   def log_result(result)
