@@ -2,7 +2,7 @@
 # Notify ResultsRecorderJob, if posted.
 # @see PreservationCatalog::S3 for how S3 credentials and bucket are configured
 class S3WestDeliveryJob < DruidVersionJobBase
-  queue_as :s3_us_west_1_delivery
+  queue_as :s3_us_west_2_delivery
   delegate :bucket, to: PreservationCatalog::S3
   # note: DruidVersionJobBase gives us `zip`
 
