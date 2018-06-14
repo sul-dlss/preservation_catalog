@@ -18,3 +18,4 @@ archive_endpoints:
     endpoint_type_name: 'aws_s3'
     endpoint_node: 'localhost'
     storage_location: 'bucket_name'
+    delivery_class: 'S3WestDeliveryJob'

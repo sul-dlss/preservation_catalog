@@ -17,6 +17,7 @@ archive_endpoints:
     endpoint_type_name: 'aws_s3'
     endpoint_node: 'localhost'
     storage_location: 'bucket_name'
+    delivery_class: 'S3WestDeliveryJob'
 workflow_services_url: 'https://sul-lyberservices-test.stanford.edu/workflow/'
 resque_dashboard_hostnames:
   - 'localhost'
