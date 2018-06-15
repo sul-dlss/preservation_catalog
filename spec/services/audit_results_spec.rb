@@ -8,7 +8,7 @@ RSpec.describe AuditResults do
 
   let(:druid) { 'ab123cd4567' }
   let(:actual_version) { 6 }
-  let(:endpoint) { Endpoint.find_by(storage_location: 'spec/fixtures/storage_root01/moab_storage_trunk') }
+  let(:endpoint) { Endpoint.find_by(storage_location: 'spec/fixtures/storage_root01/sdr2objects') }
   let(:audit_results) { described_class.new(druid, actual_version, endpoint) }
 
   describe '.logger_severity_level' do

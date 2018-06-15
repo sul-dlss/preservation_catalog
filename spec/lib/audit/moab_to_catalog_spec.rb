@@ -2,7 +2,7 @@ require 'rails_helper'
 require 'stringio'
 
 RSpec.describe Audit::MoabToCatalog do
-  let(:storage_dir) { 'spec/fixtures/storage_root01/moab_storage_trunk' }
+  let(:storage_dir) { 'spec/fixtures/storage_root01/sdr2objects' }
   let(:endpoint) { Endpoint.find_by!(storage_location: storage_dir) }
 
   before do
@@ -144,13 +144,13 @@ RSpec.describe Audit::MoabToCatalog do
       )
     end
     it "storage directory exists but it is empty" do
-      storage_dir = 'spec/fixtures/empty/moab_storage_trunk'
+      storage_dir = 'spec/fixtures/empty/sdr2objects'
       expect(described_class.check_existence_for_dir(storage_dir)).to eq []
     end
   end
 
   describe ".check_existence_for_dir_profiled" do
-    let(:storage_dir) { "spec/fixtures/storage_root01/moab_storage_trunk" }
+    let(:storage_dir) { "spec/fixtures/storage_root01/sdr2objects" }
     let(:subject) { described_class.check_existence_for_dir_profiled(storage_dir) }
 
     it "spins up a profiler, calling profiling and printing methods on it" do
@@ -276,7 +276,7 @@ RSpec.describe Audit::MoabToCatalog do
       )
     end
     it "storage directory exists but it is empty" do
-      storage_dir = 'spec/fixtures/empty/moab_storage_trunk'
+      storage_dir = 'spec/fixtures/empty/sdr2objects'
       expect(described_class.check_existence_for_dir(storage_dir)).to eq []
     end
   end

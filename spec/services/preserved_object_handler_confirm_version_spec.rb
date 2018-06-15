@@ -11,7 +11,7 @@ RSpec.describe PreservedObjectHandler do
   let(:incoming_size) { 9876 }
   let!(:default_prez_policy) { PreservationPolicy.default_policy }
   let(:po) { PreservedObject.find_by(druid: druid) }
-  let(:ep) { Endpoint.find_by(storage_location: 'spec/fixtures/storage_root01/moab_storage_trunk') }
+  let(:ep) { Endpoint.find_by(storage_location: 'spec/fixtures/storage_root01/sdr2objects') }
   let(:pc) { PreservedCopy.find_by(preserved_object: po, endpoint: ep) }
   let(:po_handler) { described_class.new(druid, incoming_version, incoming_size, ep) }
 

@@ -8,7 +8,7 @@ RSpec.describe CatalogController, type: :controller do
   let(:ver) { 3 }
   let(:prefixed_druid) { 'druid:bj102hs9687' }
   let(:bare_druid) { 'bj102hs9687' }
-  let(:storage_location) { "#{storage_location_param}/moab_storage_trunk" }
+  let(:storage_location) { "#{storage_location_param}/sdr2objects" }
   let(:storage_location_param) { "spec/fixtures/storage_root01" }
 
   describe 'POST #create' do
