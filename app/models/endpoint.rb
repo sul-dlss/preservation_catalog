@@ -19,7 +19,6 @@ class Endpoint < ApplicationRecord
   validates :storage_location, presence: true
 
   scope :archive, lambda {
-    # TODO: maybe endpoint_class should be an enum or a constant?
     joins(:endpoint_type).where(endpoint_types: { endpoint_class: 'archive' })
   }
 

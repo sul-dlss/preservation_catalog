@@ -39,7 +39,6 @@ class PreservedObject < ApplicationRecord
 
     ApplicationRecord.transaction do
       Endpoint.which_need_archive_copy(druid, archive_vers).map do |ep|
-        # TODO: remember to update size at some later point, after zip is created
         PreservedCopy.create!(
           preserved_object: self, version: archive_vers, endpoint: ep, status: PreservedCopy::UNREPLICATED_STATUS
         )
