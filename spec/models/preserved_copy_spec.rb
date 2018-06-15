@@ -218,9 +218,9 @@ RSpec.describe PreservedCopy, type: :model do
 
     describe '.by_storage_location' do
       it 'returns the expected preserved copies' do
-        expect(described_class.by_storage_location('spec/fixtures/storage_root01/moab_storage_trunk').length).to eq 1
-        expect(described_class.by_storage_location('spec/fixtures/storage_root02/moab_storage_trunk')).to be_empty
-        expect(described_class.by_storage_location('spec/fixtures/empty/moab_storage_trunk')).to be_empty
+        expect(described_class.by_storage_location('spec/fixtures/storage_root01/sdr2objects').length).to eq 1
+        expect(described_class.by_storage_location('spec/fixtures/storage_root02/sdr2objects')).to be_empty
+        expect(described_class.by_storage_location('spec/fixtures/empty/sdr2objects')).to be_empty
       end
     end
 
@@ -265,10 +265,10 @@ RSpec.describe PreservedCopy, type: :model do
 
       describe '.by_storage_location' do
         let!(:pcs_ordered_by_query1) do
-          described_class.fixity_check_expired.by_storage_location('spec/fixtures/storage_root01/moab_storage_trunk')
+          described_class.fixity_check_expired.by_storage_location('spec/fixtures/storage_root01/sdr2objects')
         end
         let!(:pcs_ordered_by_query2) do
-          described_class.fixity_check_expired.by_storage_location('spec/fixtures/storage_root02/moab_storage_trunk')
+          described_class.fixity_check_expired.by_storage_location('spec/fixtures/storage_root02/sdr2objects')
         end
 
         it 'returns PreservedCopies with nils first, then old to new timestamps, only for the chosen storage root' do

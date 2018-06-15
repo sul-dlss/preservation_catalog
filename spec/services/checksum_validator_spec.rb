@@ -109,7 +109,7 @@ RSpec.describe ChecksumValidator do
       before { allow(AuditResults).to receive(:new).and_return(results) }
 
       it 'adds a MANIFEST_NOT_IN_MOAB' do
-        manifest_file_path = "spec/fixtures/checksum_root01/moab_storage_trunk/zz/628/nk/4868/zz628nk4868/v0001/manifests/manifestInventory.xml"
+        manifest_file_path = "spec/fixtures/checksum_root01/sdr2objects/zz/628/nk/4868/zz628nk4868/v0001/manifests/manifestInventory.xml"
         expect(results).to receive(:add_result).with(
           AuditResults::MANIFEST_NOT_IN_MOAB, manifest_file_path: manifest_file_path
         )
@@ -123,7 +123,7 @@ RSpec.describe ChecksumValidator do
       before { allow(AuditResults).to receive(:new).and_return(results) }
 
       it 'adds an INVALID_MANIFEST' do
-        manifest_file_path = "spec/fixtures/checksum_root01/moab_storage_trunk/zz/048/cw/1328/zz048cw1328/v0002/manifests/manifestInventory.xml"
+        manifest_file_path = "spec/fixtures/checksum_root01/sdr2objects/zz/048/cw/1328/zz048cw1328/v0002/manifests/manifestInventory.xml"
         expect(results).to receive(:add_result).with(
           AuditResults::INVALID_MANIFEST, manifest_file_path: manifest_file_path
         )

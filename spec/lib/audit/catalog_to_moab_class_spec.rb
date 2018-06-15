@@ -3,7 +3,7 @@ require_relative '../../load_fixtures_helper.rb'
 
 RSpec.describe Audit::CatalogToMoab do
   let(:last_checked_version_b4_date) { (Time.now.utc - 1.day).iso8601 }
-  let(:storage_dir) { 'spec/fixtures/storage_root01/moab_storage_trunk' }
+  let(:storage_dir) { 'spec/fixtures/storage_root01/sdr2objects' }
   let(:limit) { Settings.c2m_sql_limit }
 
   before { allow(described_class.logger).to receive(:info) } # silence STDOUT chatter

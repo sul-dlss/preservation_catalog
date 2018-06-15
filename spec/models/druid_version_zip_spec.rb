@@ -108,7 +108,7 @@ describe DruidVersionZip do
   describe '#moab_version_path' do
     it 'returns authoritative file location' do
       expect(dvz.moab_version_path)
-        .to eq 'spec/fixtures/storage_root01/moab_storage_trunk/bj/102/hs/9687/bj102hs9687/v0001'
+        .to eq 'spec/fixtures/storage_root01/sdr2objects/bj/102/hs/9687/bj102hs9687/v0001'
     end
   end
 

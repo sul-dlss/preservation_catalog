@@ -7,7 +7,7 @@ RSpec.describe Audit::CatalogToMoab do
   end
 
   let(:last_checked_version_b4_date) { (Time.now.utc - 1.day).iso8601 }
-  let(:storage_dir) { 'spec/fixtures/storage_root01/moab_storage_trunk' }
+  let(:storage_dir) { 'spec/fixtures/storage_root01/sdr2objects' }
   let(:druid) { 'bj102hs9687' }
   let(:c2m) { described_class.new(pres_copy, storage_dir) }
 

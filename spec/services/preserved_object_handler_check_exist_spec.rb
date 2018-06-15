@@ -11,7 +11,7 @@ RSpec.describe PreservedObjectHandler do
   let(:incoming_size) { 9876 }
   let!(:default_prez_policy) { PreservationPolicy.default_policy }
   let(:po) { PreservedObject.find_by(druid: druid) }
-  let(:ep) { Endpoint.find_by(storage_location: 'spec/fixtures/storage_root01/moab_storage_trunk') }
+  let(:ep) { Endpoint.find_by(storage_location: 'spec/fixtures/storage_root01/sdr2objects') }
   let(:pc) { PreservedCopy.find_by(preserved_object: po, endpoint: ep) }
   let(:db_update_failed_prefix) { "db update failed" }
   let(:po_handler) { described_class.new(druid, incoming_version, incoming_size, ep) }
@@ -314,7 +314,7 @@ RSpec.describe PreservedObjectHandler do
 
       context 'incoming version < db version' do
         let(:druid) { 'bp628nk4868' }
-        let(:ep) { Endpoint.find_by(storage_location: 'spec/fixtures/storage_root02/moab_storage_trunk') }
+        let(:ep) { Endpoint.find_by(storage_location: 'spec/fixtures/storage_root02/sdr2objects') }
 
         it_behaves_like 'unexpected version with validation', :check_existence, 1, PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
       end
@@ -447,7 +447,7 @@ RSpec.describe PreservedObjectHandler do
 
       context 'adds to catalog after validation' do
         let(:valid_druid) { 'bp628nk4868' }
-        let(:storage_dir) { 'spec/fixtures/storage_root02/moab_storage_trunk' }
+        let(:storage_dir) { 'spec/fixtures/storage_root02/sdr2objects' }
         let(:ep) { Endpoint.find_by(storage_location: storage_dir) }
         let(:incoming_version) { 2 }
         let(:po_handler) { described_class.new(valid_druid, incoming_version, incoming_size, ep) }

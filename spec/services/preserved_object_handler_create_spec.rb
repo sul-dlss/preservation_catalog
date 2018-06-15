@@ -9,7 +9,7 @@ RSpec.describe PreservedObjectHandler do
   let(:druid) { 'ab123cd4567' }
   let(:incoming_version) { 6 }
   let(:incoming_size) { 9876 }
-  let(:storage_dir) { 'spec/fixtures/storage_root01/moab_storage_trunk' }
+  let(:storage_dir) { 'spec/fixtures/storage_root01/sdr2objects' }
   let(:ep) { Endpoint.find_by(storage_location: storage_dir) }
   let(:po_handler) { described_class.new(druid, incoming_version, incoming_size, ep) }
   let(:exp_msg) { "added object to db as it did not exist" }
@@ -86,7 +86,7 @@ RSpec.describe PreservedObjectHandler do
 
   describe '#create_after_validation' do
     let(:valid_druid) { 'bp628nk4868' }
-    let(:storage_dir) { 'spec/fixtures/storage_root02/moab_storage_trunk' }
+    let(:storage_dir) { 'spec/fixtures/storage_root02/sdr2objects' }
     let(:po_handler) { described_class.new(valid_druid, incoming_version, incoming_size, ep) }
 
     it_behaves_like 'attributes validated', :create_after_validation
