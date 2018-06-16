@@ -32,14 +32,15 @@ class PreservedObjectHandler
     @results = AuditResults.new(druid, incoming_version, endpoint)
   end
 
-  def create_after_validation
+  def create_after_validation(caller_verified_checksums = false)
     results.check_name = 'create_after_validation'
     if invalid?
       results.add_result(AuditResults::INVALID_ARGUMENTS, errors.full_messages)
     elsif PreservedObject.exists?(druid: druid)
       results.add_result(AuditResults::DB_OBJ_ALREADY_EXISTS, 'PreservedObject')
     elsif moab_validation_errors.empty?
-      create_db_objects(PreservedCopy::VALIDITY_UNKNOWN_STATUS)
+      creation_status = (caller_verified_checksums ? PreservedCopy::OK_STATUS : PreservedCopy::VALIDITY_UNKNOWN_STATUS)
+      create_db_objects(creation_status)
     else
       create_db_objects(PreservedCopy::INVALID_MOAB_STATUS)
     end
@@ -47,14 +48,15 @@ class PreservedObjectHandler
     results.report_results
   end
 
-  def create
+  def create(caller_verified_checksums = false)
     results.check_name = 'create'
     if invalid?
       results.add_result(AuditResults::INVALID_ARGUMENTS, errors.full_messages)
     elsif PreservedObject.exists?(druid: druid)
       results.add_result(AuditResults::DB_OBJ_ALREADY_EXISTS, 'PreservedObject')
     else
-      create_db_objects(PreservedCopy::VALIDITY_UNKNOWN_STATUS)
+      creation_status = (caller_verified_checksums ? PreservedCopy::OK_STATUS : PreservedCopy::VALIDITY_UNKNOWN_STATUS)
+      create_db_objects(creation_status)
     end
 
     results.report_results
@@ -118,7 +120,7 @@ class PreservedObjectHandler
     results.report_results
   end
 
-  def update_version_after_validation
+  def update_version_after_validation(caller_verified_checksums = false)
     results.check_name = 'update_version_after_validation'
     if invalid?
       results.add_result(AuditResults::INVALID_ARGUMENTS, errors.full_messages)
@@ -126,7 +128,8 @@ class PreservedObjectHandler
       Rails.logger.debug "update_version_after_validation #{druid} called"
       if moab_validation_errors.empty?
         # NOTE: we deal with active record transactions in update_online_version, not here
-        update_online_version(PreservedCopy::VALIDITY_UNKNOWN_STATUS)
+        new_status = (caller_verified_checksums ? PreservedCopy::OK_STATUS : PreservedCopy::VALIDITY_UNKNOWN_STATUS)
+        update_online_version(new_status)
       else
         update_pc_invalid_moab
       end
@@ -135,14 +138,15 @@ class PreservedObjectHandler
     results.report_results
   end
 
-  def update_version
+  def update_version(caller_verified_checksums = false)
     results.check_name = 'update_version'
     if invalid?
       results.add_result(AuditResults::INVALID_ARGUMENTS, errors.full_messages)
     else
       Rails.logger.debug "update_version #{druid} called"
       # NOTE: we deal with active record transactions in update_online_version, not here
-      update_online_version(nil, true)
+      new_status = (caller_verified_checksums ? PreservedCopy::OK_STATUS : nil)
+      update_online_version(new_status, true)
     end
 
     results.report_results
