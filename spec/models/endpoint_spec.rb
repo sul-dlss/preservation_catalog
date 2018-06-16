@@ -2,6 +2,7 @@ require 'rails_helper'
 
 RSpec.describe Endpoint, type: :model do
   let(:default_pres_policies) { [PreservationPolicy.default_policy] }
+  let(:druid) { 'ab123cd4567' }
   let(:endpoint_type) { build(:endpoint_type, type_name: 'aws', endpoint_class: 'archive') }
   let!(:endpoint) do
     create(
@@ -138,18 +139,17 @@ RSpec.describe Endpoint, type: :model do
                                  fixity_ttl: 666)
     end
 
-    before { create(:preserved_object) }
+    before { create(:preserved_object, druid: druid) }
 
     it "returns the archive endpoints which implement the PO's pres policy" do
       endpoint.preservation_policies = [PreservationPolicy.default_policy, alternate_pres_policy]
-      expect(Endpoint.archive_targets('bj102hs9687').pluck(:endpoint_name)).to eq %w[aws-us-east-2 mock_archive1]
+      expect(Endpoint.archive_targets(druid).pluck(:endpoint_name)).to eq %w[aws-us-east-2 mock_archive1]
       endpoint.preservation_policies = [alternate_pres_policy]
-      expect(Endpoint.archive_targets('bj102hs9687').pluck(:endpoint_name)).to eq %w[mock_archive1]
+      expect(Endpoint.archive_targets(druid).pluck(:endpoint_name)).to eq %w[mock_archive1]
     end
   end
 
   describe '.which_need_archive_copy' do
-    let(:druid) { 'ab123cd4567' }
     let(:version) { 3 }
 
     before { create(:preserved_object, current_version: version, druid: druid) }
@@ -186,6 +186,20 @@ RSpec.describe Endpoint, type: :model do
   describe '#to_s' do
     it 'just dumps the result of #to_h as a string, prefixed with the class name' do
       expect(endpoint.to_s).to match(/Endpoint.*#{Regexp.escape(endpoint.to_h.to_s)}/)
+    end
+  end
+
+  describe '#validate_expired_checksums!' do
+    it 'raises if endpoint is wrong type' do
+      expect { endpoint.validate_expired_checksums! }.to raise_error(RuntimeError)
+    end
+    it 'calls ChecksumValidationJob for each eligible PreservedCopy' do
+      allow(Rails.logger).to receive(:info)
+      ep = create(:endpoint)
+      ep.preserved_copies = build_list(:preserved_copy, 2)
+      expect(ChecksumValidationJob).to receive(:perform_later).with(ep.preserved_copies.first)
+      expect(ChecksumValidationJob).to receive(:perform_later).with(ep.preserved_copies.second)
+      ep.validate_expired_checksums!
     end
   end
 end

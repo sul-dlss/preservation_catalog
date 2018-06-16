@@ -43,8 +43,15 @@ class Endpoint < ApplicationRecord
     archive_targets(druid).where.not(endpoint_has_pres_copy_subquery)
   }
 
-  # iterates over the storage roots enumerated in settings, creating an Endpoint for each if one doesn't
-  # already exist.
+  # Use a queue to validate PreservedCopy objects
+  def validate_expired_checksums!
+    raise 'Endpoint is not "online" type' unless endpoint_type.online?
+    pcs = preserved_copies.fixity_check_expired
+    Rails.logger.info "Endpoint #{id} (#{endpoint_name}), # of preserved_copies to be checksum validated: #{pcs.count}"
+    pcs.find_each { |pc| ChecksumValidationJob.perform_later(pc) }
+  end
+
+  # Iterates over the storage roots enumerated in settings, creating an Endpoint for each if it doesn't already exist.
   # @param endpoint_type [EndpointType] the EndpointType to use for any newly created Endpoint records
   # @param preservation_policies [Enumerable<PreservationPolicy>] the list of preservation policies
   #   which any newly created endpoints implement.
