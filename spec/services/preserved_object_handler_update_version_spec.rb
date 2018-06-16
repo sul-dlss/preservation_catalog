@@ -326,6 +326,24 @@ RSpec.describe PreservedObjectHandler do
               expect(pc.reload.size).to eq incoming_size
               expect(pc.size).not_to eq orig
             end
+            context 'caller has run checksum validation, original status was not ok' do
+              shared_examples 'POH#update_version_after_validation(true) sets status to "ok"' do |orig_status|
+                before { pc.update(status: orig_status) }
+                it 'status' do
+                  expect do
+                    po_handler.update_version_after_validation(true)
+                  end.to change { pc.reload.status }.from(orig_status).to('ok')
+                end
+              end
+
+              it_behaves_like 'POH#update_version_after_validation(true) sets status to "ok"', 'validity_unknown'
+              it_behaves_like 'POH#update_version_after_validation(true) sets status to "ok"', 'online_moab_not_found'
+              it_behaves_like 'POH#update_version_after_validation(true) sets status to "ok"', 'unexpected_version_on_storage'
+              it_behaves_like 'POH#update_version_after_validation(true) sets status to "ok"', 'invalid_moab'
+
+              # TODO: should caller CV clear this?  does it CV the whole moab, or just the new version?
+              it_behaves_like 'POH#update_version_after_validation(true) sets status to "ok"', 'invalid_checksum'
+            end
           end
           context 'unchanged' do
             it 'size if incoming size is nil' do
@@ -334,10 +352,14 @@ RSpec.describe PreservedObjectHandler do
               po_handler.update_version_after_validation
               expect(pc.reload.size).to eq orig
             end
-            it 'status' do
-              po_handler.update_version_after_validation
-              expect(pc.reload).to be_validity_unknown
-              skip 'is there a scenario when status should change here?  See #431'
+            it 'status started validity_unknown and caller has not verified checksums' do
+              pc.update(status: 'validity_unknown')
+              expect { po_handler.update_version_after_validation }.not_to change { pc.reload.status }.from('validity_unknown')
+            end
+            it 'status started ok and caller has verified checksums' do
+              expect do
+                po_handler.update_version_after_validation(true)
+              end.not_to change { pc.reload.status }.from('ok')
             end
           end
         end
@@ -398,10 +420,24 @@ RSpec.describe PreservedObjectHandler do
               expect(pc.reload.last_moab_validation).to be > orig
             end
             it 'status' do
-              orig = pc.status
-              po_handler.update_version_after_validation
-              expect(pc.reload.status).to eq PreservedCopy::INVALID_MOAB_STATUS
-              expect(pc.status).not_to eq orig
+              expect do
+                po_handler.update_version_after_validation
+              end.to change { pc.reload.status }.from('ok').to('invalid_moab')
+            end
+            context 'caller has run checksum validation, original status was not ok' do
+              shared_examples 'POH#update_version_after_validation(true) sets status to "invalid_moab"' do |orig_status|
+                before { pc.update(status: orig_status) }
+                it 'status' do
+                  expect do
+                    po_handler.update_version_after_validation(true)
+                  end.to change { pc.reload.status }.from(orig_status).to('invalid_moab')
+                end
+              end
+
+              it_behaves_like 'POH#update_version_after_validation(true) sets status to "invalid_moab"', 'validity_unknown'
+              it_behaves_like 'POH#update_version_after_validation(true) sets status to "invalid_moab"', 'online_moab_not_found'
+              it_behaves_like 'POH#update_version_after_validation(true) sets status to "invalid_moab"', 'unexpected_version_on_storage'
+              it_behaves_like 'POH#update_version_after_validation(true) sets status to "invalid_moab"', 'invalid_checksum'
             end
           end
           context 'unchanged' do
@@ -419,6 +455,19 @@ RSpec.describe PreservedObjectHandler do
               orig = pc.last_version_audit
               po_handler.update_version_after_validation
               expect(pc.reload.last_version_audit).to eq orig
+            end
+            context 'original status was invalid_moab' do
+              before { pc.update(status: 'invalid_moab') }
+              it 'status remains invalid_moab if caller has not verified checksums' do
+                expect do
+                  po_handler.update_version_after_validation
+                end.not_to change { pc.reload.status }.from('invalid_moab')
+              end
+              it 'status remains invalid_moab evne if caller has verified checksums' do
+                expect do
+                  po_handler.update_version_after_validation(true)
+                end.not_to change { pc.reload.status }.from('invalid_moab')
+              end
             end
           end
         end
