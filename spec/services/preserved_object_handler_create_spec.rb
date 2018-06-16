@@ -13,23 +13,26 @@ RSpec.describe PreservedObjectHandler do
   let(:ep) { Endpoint.find_by(storage_location: storage_dir) }
   let(:po_handler) { described_class.new(druid, incoming_version, incoming_size, ep) }
   let(:exp_msg) { "added object to db as it did not exist" }
+  let(:po_args) do
+    {
+      druid: druid,
+      current_version: incoming_version,
+      preservation_policy_id: PreservationPolicy.default_policy_id
+    }
+  end
+  let(:pc_args) do
+    {
+      preserved_object: an_instance_of(PreservedObject), # TODO: ensure we got the preserved object that we expected
+      version: incoming_version,
+      size: incoming_size,
+      endpoint: ep,
+      status: PreservedCopy::VALIDITY_UNKNOWN_STATUS # NOTE: ensuring this particular status is the default
+      # NOTE: lack of validation timestamps here
+    }
+  end
 
   describe '#create' do
     it 'creates PreservedObject and PreservedCopy in database' do
-      po_args = {
-        druid: druid,
-        current_version: incoming_version,
-        preservation_policy_id: PreservationPolicy.default_policy_id
-      }
-      pc_args = {
-        preserved_object: an_instance_of(PreservedObject), # TODO: ensure we got the preserved object that we expected
-        version: incoming_version,
-        size: incoming_size,
-        endpoint: ep,
-        status: PreservedCopy::VALIDITY_UNKNOWN_STATUS # NOTE: ensuring this particular status
-        # NOTE: lack of validation timestamps here
-      }
-
       expect(PreservedObject).to receive(:create!).with(po_args).and_call_original
       expect(PreservedCopy).to receive(:create!).with(pc_args).and_call_original
       po_handler.create
@@ -114,20 +117,11 @@ RSpec.describe PreservedObjectHandler do
     end
 
     it 'creates PreservedObject and PreservedCopy in database when there are no validation errors' do
-      po_args = {
-        druid: valid_druid,
-        current_version: incoming_version,
-        preservation_policy_id: PreservationPolicy.default_policy_id
-      }
-      pc_args = {
-        preserved_object: an_instance_of(PreservedObject), # TODO: ensure we got the preserved object that we expected
-        version: incoming_version,
-        size: incoming_size,
-        endpoint: ep,
-        status: PreservedCopy::VALIDITY_UNKNOWN_STATUS, # NOTE ensuring this particular status
+      po_args[:druid] = valid_druid
+      pc_args.merge!(
         last_moab_validation: an_instance_of(ActiveSupport::TimeWithZone),
         last_version_audit: an_instance_of(ActiveSupport::TimeWithZone)
-      }
+      )
 
       expect(PreservedObject).to receive(:create!).with(po_args).and_call_original
       expect(PreservedCopy).to receive(:create!).with(pc_args).and_call_original
@@ -159,20 +153,12 @@ RSpec.describe PreservedObjectHandler do
       end
 
       it 'creates PreservedObject and PreservedCopy with "invalid_moab" status in database' do
-        po_args = {
-          druid: invalid_druid,
-          current_version: incoming_version,
-          preservation_policy_id: PreservationPolicy.default_policy_id
-        }
-        pc_args = {
-          preserved_object: an_instance_of(PreservedObject), # TODO: ensure we got the preserved object that we expected
-          version: incoming_version,
-          size: incoming_size,
-          endpoint: ep,
-          status: PreservedCopy::INVALID_MOAB_STATUS, # NOTE ensuring this particular status
+        po_args[:druid] = invalid_druid
+        pc_args.merge!(
+          status: PreservedCopy::INVALID_MOAB_STATUS,
           last_moab_validation: an_instance_of(ActiveSupport::TimeWithZone),
           last_version_audit: an_instance_of(ActiveSupport::TimeWithZone)
-        }
+        )
 
         expect(PreservedObject).to receive(:create!).with(po_args).and_call_original
         expect(PreservedCopy).to receive(:create!).with(pc_args).and_call_original
