@@ -3,7 +3,8 @@ require 'rails_helper'
 RSpec.describe PreservedCopy, type: :model do
   let(:endpoint) { Endpoint.find_by(endpoint_name: 'fixture_sr1') }
   let(:preserved_object) do
-    PreservedObject.create!(
+    create(
+      :preserved_object,
       druid: 'ab123cd4567',
       current_version: 1,
       preservation_policy_id: PreservationPolicy.default_policy.id
@@ -19,7 +20,7 @@ RSpec.describe PreservedCopy, type: :model do
       size: 1
     }
   end
-  let(:preserved_copy) { described_class.create!(args) }
+  let(:pc) { create(:preserved_copy, args) }
   let(:now) { Time.now.utc }
 
   it 'is not valid without all required valid attributes' do
@@ -67,21 +68,19 @@ RSpec.describe PreservedCopy, type: :model do
 
   describe '#replicate!' do
     it 'raises if too large' do
-      preserved_copy.size = 10_000_000_000
-      expect { preserved_copy.replicate! }.to raise_error(RuntimeError, /too large/)
+      pc.size = 10_000_000_000
+      expect { pc.replicate! }.to raise_error(RuntimeError, /too large/)
     end
     it 'raises if unsaved' do
       expect { described_class.new(size: 1).replicate! }.to raise_error(RuntimeError, /must be persisted/)
     end
     it 'passes druid and version to Zipmaker' do
-      expect(ZipmakerJob).to receive(:perform_later).with(preserved_object.druid, preserved_copy.version)
-      preserved_copy.replicate!
+      expect(ZipmakerJob).to receive(:perform_later).with(preserved_object.druid, pc.version)
+      pc.replicate!
     end
   end
 
   describe '#update_audit_timestamps' do
-    let(:pc) { described_class.new(args.merge(version: 0, status: 'invalid_moab')) }
-
     it 'updates last_moab_validation time if moab_validated is true' do
       expect { pc.update_audit_timestamps(true, false) }.to change { pc.last_moab_validation }.from(nil)
     end
@@ -97,16 +96,12 @@ RSpec.describe PreservedCopy, type: :model do
   end
 
   describe '#upd_audstamps_version_size' do
-    let(:pc) { described_class.new(args.merge(status: 'invalid_moab')) }
-
     it 'updates version' do
       expect { pc.upd_audstamps_version_size(false, 3, nil) }.to change { pc.version }.to(3)
     end
-
     it 'updates size if size is not nil' do
       expect { pc.upd_audstamps_version_size(false, 0, 123) }.to change { pc.size }.to(123)
     end
-
     it 'does not update size if size is nil' do
       expect { pc.upd_audstamps_version_size(false, 0, nil) }.not_to change(pc, :size)
     end
@@ -120,36 +115,36 @@ RSpec.describe PreservedCopy, type: :model do
   describe '#update_status' do
     it 'does nothing if the status has not changed' do
       ran_the_block = false
-      preserved_copy.update_status(preserved_copy.status) { ran_the_block = true }
-      expect(preserved_copy.status).to eq 'validity_unknown'
+      pc.update_status(pc.status) { ran_the_block = true }
+      expect(pc.status).to eq 'validity_unknown'
       expect(ran_the_block).to eq false
-      expect(preserved_copy).not_to be_changed
+      expect(pc).not_to be_changed
     end
 
     it 'runs the block and updates the status if the status has changed' do
       ran_the_block = false
-      preserved_copy.update_status('ok') { ran_the_block = true }
-      expect(preserved_copy.status).to eq 'ok'
+      pc.update_status('ok') { ran_the_block = true }
+      expect(pc.status).to eq 'ok'
       expect(ran_the_block).to eq true
-      expect(preserved_copy.status_changed?).to eq true
+      expect(pc.status_changed?).to eq true
     end
   end
 
   describe '#matches_po_current_version?' do
+    before { pc.version = 666 }
+
     it 'returns true when its version matches its preserved objects current version' do
-      preserved_copy.version = 666
-      preserved_copy.preserved_object.current_version = 666
-      expect(preserved_copy.matches_po_current_version?).to be true
+      pc.preserved_object.current_version = 666
+      expect(pc.matches_po_current_version?).to be true
     end
 
     it 'returns false when its version does not match its preserved objects current version' do
-      preserved_copy.version = 666
-      preserved_copy.preserved_object.current_version = 777
-      expect(preserved_copy.matches_po_current_version?).to be false
+      pc.preserved_object.current_version = 777
+      expect(pc.matches_po_current_version?).to be false
     end
   end
 
-  describe '.least_recent_version_audit(last_checked_b4_date)' do
+  describe '.least_recent_version_audit' do
     let!(:newer_timestamp_pc) do
       create(:preserved_copy, args.merge(version: 6, last_version_audit: (now - 1.day)))
     end
@@ -159,13 +154,12 @@ RSpec.describe PreservedCopy, type: :model do
     let!(:future_timestamp_pc) do
       create(:preserved_copy, args.merge(version: 8, last_version_audit: (now + 1.day)))
     end
-    let(:pcs_ordered_by_query) { described_class.least_recent_version_audit(now) }
 
     it 'returns PreservedCopies with nils first, then old to new timestamps' do
-      expect(pcs_ordered_by_query).to eq [preserved_copy, older_timestamp_pc, newer_timestamp_pc]
+      expect(described_class.least_recent_version_audit(now)).to eq [pc, older_timestamp_pc, newer_timestamp_pc]
     end
     it 'returns no PreservedCopies with future timestamps' do
-      expect(pcs_ordered_by_query).not_to include future_timestamp_pc
+      expect(described_class.least_recent_version_audit(now)).not_to include future_timestamp_pc
     end
   end
 
@@ -207,20 +201,19 @@ RSpec.describe PreservedCopy, type: :model do
     let!(:recently_checked_pc2) do
       create(:preserved_copy, args.merge(version: 9, last_checksum_validation: now - (fixity_ttl * 0.1)))
     end
-    let(:pcs_ordered_by_query) { described_class.fixity_check_expired }
 
-    before { preserved_copy.save! }
+    before { pc.save! }
 
     it 'returns PreservedCopies that need fixity check, never checked first, then least-recently to most-recently' do
-      expect(pcs_ordered_by_query.to_a).to eq [preserved_copy, old_check_pc1, old_check_pc2]
+      expect(described_class.fixity_check_expired.to_a).to eq [pc, old_check_pc1, old_check_pc2]
     end
     it 'returns no PreservedCopies with timestamps indicating still-valid fixity check' do
-      expect(pcs_ordered_by_query).not_to include(recently_checked_pc1, recently_checked_pc2)
+      expect(described_class.fixity_check_expired).not_to include(recently_checked_pc1, recently_checked_pc2)
     end
   end
 
   context 'with a persisted object' do
-    before { preserved_copy.save! }
+    before { pc.save! }
 
     describe '.by_endpoint_name' do
       it 'returns the expected preserved copies' do
@@ -268,7 +261,7 @@ RSpec.describe PreservedCopy, type: :model do
         let(:pcs_ordered_by_query2) { described_class.fixity_check_expired.by_endpoint_name(endpoint2.endpoint_name) }
 
         it 'returns PreservedCopies with nils first, then old to new timestamps, only for the chosen storage root' do
-          expect(pcs_ordered_by_query1).to eq [preserved_copy, checked_before_threshold_pc1]
+          expect(pcs_ordered_by_query1).to eq [pc, checked_before_threshold_pc1]
           expect(pcs_ordered_by_query2).to eq [checked_before_threshold_pc2]
         end
         it 'returns no PreservedCopies with timestamps indicating fixity check in the last week' do
@@ -286,7 +279,7 @@ RSpec.describe PreservedCopy, type: :model do
         end
 
         it 'returns PreservedCopies with nils first, then old to new timestamps, only for the chosen storage root' do
-          expect(pcs_ordered_by_query1).to eq [preserved_copy, checked_before_threshold_pc1]
+          expect(pcs_ordered_by_query1).to eq [pc, checked_before_threshold_pc1]
           expect(pcs_ordered_by_query2).to eq [checked_before_threshold_pc2]
         end
         it 'returns no PreservedCopies with timestamps indicating fixity check in the last week' do
