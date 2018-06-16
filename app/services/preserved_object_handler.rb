@@ -40,6 +40,7 @@ class PreservedObjectHandler
       results.add_result(AuditResults::DB_OBJ_ALREADY_EXISTS, 'PreservedObject')
     elsif moab_validation_errors.empty?
       creation_status = (caller_verified_checksums ? PreservedCopy::OK_STATUS : PreservedCopy::VALIDITY_UNKNOWN_STATUS)
+      # TODO: what, if any, timestamps does this imply update for?
       create_db_objects(creation_status)
     else
       create_db_objects(PreservedCopy::INVALID_MOAB_STATUS)
@@ -56,6 +57,7 @@ class PreservedObjectHandler
       results.add_result(AuditResults::DB_OBJ_ALREADY_EXISTS, 'PreservedObject')
     else
       creation_status = (caller_verified_checksums ? PreservedCopy::OK_STATUS : PreservedCopy::VALIDITY_UNKNOWN_STATUS)
+      # TODO: what, if any, timestamps does this imply update for?
       create_db_objects(creation_status)
     end
 
@@ -129,6 +131,7 @@ class PreservedObjectHandler
       if moab_validation_errors.empty?
         # NOTE: we deal with active record transactions in update_online_version, not here
         new_status = (caller_verified_checksums ? PreservedCopy::OK_STATUS : PreservedCopy::VALIDITY_UNKNOWN_STATUS)
+        # TODO: what, if any, timestamps does this imply update for?
         update_online_version(new_status)
       else
         update_pc_invalid_moab
@@ -146,6 +149,7 @@ class PreservedObjectHandler
       Rails.logger.debug "update_version #{druid} called"
       # NOTE: we deal with active record transactions in update_online_version, not here
       new_status = (caller_verified_checksums ? PreservedCopy::OK_STATUS : nil)
+      # TODO: what, if any, timestamps does this imply update for?
       update_online_version(new_status, true)
     end
 
