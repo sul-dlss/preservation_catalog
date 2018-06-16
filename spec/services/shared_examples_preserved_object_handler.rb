@@ -339,7 +339,7 @@ RSpec.shared_examples 'PreservedObject current_version does not match online PC 
   let(:version_mismatch_msg) { "PreservedCopy online Moab version #{pc_v} does not match PreservedObject current_version #{po_v}" }
 
   it 'does not update PreservedCopy' do
-    orig = pc.updated_at
+    orig = pc.reload.updated_at
     po_handler.send(method_sym)
     expect(pc.reload.updated_at).to eq orig
   end

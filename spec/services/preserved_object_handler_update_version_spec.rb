@@ -22,8 +22,9 @@ RSpec.describe PreservedObjectHandler do
 
     context 'in Catalog' do
       before do
-        po = PreservedObject.create!(druid: druid, current_version: 2, preservation_policy: default_prez_policy)
-        @pc = PreservedCopy.create!(
+        po = create(:preserved_object, druid: druid, current_version: 2, preservation_policy: default_prez_policy)
+        create(
+          :preserved_copy,
           preserved_object: po,
           version: po.current_version,
           size: 1,
@@ -63,10 +64,7 @@ RSpec.describe PreservedObjectHandler do
               expect(pc.reload.size).to eq orig
             end
             it 'status' do
-              orig = pc.status
-              po_handler.update_version
-              expect(pc.reload.status).to eq orig
-              skip 'is there a scenario when status should change here?  See #431'
+              expect { po_handler.update_version }.not_to change { pc.reload.status }.from('ok')
             end
             it 'last_moab_validation' do
               orig = pc.last_moab_validation
@@ -104,8 +102,7 @@ RSpec.describe PreservedObjectHandler do
 
       context 'PreservedCopy and PreservedObject versions do not match' do
         before do
-          @pc.version = @pc.version + 1
-          @pc.save!
+          pc.update(version: pc.version + 1)
         end
 
         it_behaves_like 'PreservedObject current_version does not match online PC version', :update_version, 3, 3, 2
