@@ -161,23 +161,5 @@ RSpec.describe PreservedObject, type: :model do
         expect { po.create_archive_preserved_copies(version) }.not_to raise_error
       end
     end
-
-    it 'creates the pres copies in a transaction and allows exceptions to bubble up' do
-      new_archive_ep.preservation_policies = [PreservationPolicy.default_policy]
-      allow(PreservedCopy).to receive(:create!).with(
-        preserved_object: po,
-        version: current_version,
-        endpoint: new_archive_ep,
-        status: PreservedCopy::UNREPLICATED_STATUS
-      ).and_raise(ActiveRecord::ConnectionTimeoutError)
-
-      # would do `expect { }.not_to(change { })`, but the raised error doesn't play nicely with that construct
-      exp_ep_list = %w[mock_archive1 mock_archive2]
-      expect(Endpoint.which_need_archive_copy(druid, current_version).pluck(:endpoint_name).sort).to eq exp_ep_list
-      expect do
-        po.create_archive_preserved_copies(current_version)
-      end.to raise_error(ActiveRecord::ConnectionTimeoutError)
-      expect(Endpoint.which_need_archive_copy(druid, current_version).pluck(:endpoint_name).sort).to eq exp_ep_list
-    end
   end
 end
