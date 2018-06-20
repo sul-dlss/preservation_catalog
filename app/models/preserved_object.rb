@@ -15,19 +15,21 @@ class PreservedObject < ApplicationRecord
   validates :current_version, presence: true, numericality: { only_integer: true, greater_than: 0 }
   validates :preservation_policy, null: false
 
-  # given a version, create any PreservedCopy records for that version which don't yet exist for archive
-  #  endpoints which implement this PreservedObject's PreservationPolicy.
-  # @param archive_vers [Integer] the version for which preserved copies should be created.  must be between
-  #   1 and this PreservedObject's current version (inclusive).
+  # Create any needed archive PreservedCopy records which don't yet exist.
+  # Backfills for previous versions, because preservation_policy applies to the whole object, not versions.
+  # More pragmatically, only having (e.g.) v4 of a Moab is not enough to rebuild it!
   # @return [Array<PreservedCopy>] the PreservedCopy records that were created
-  def create_archive_preserved_copies(archive_vers)
-    unless archive_vers > 0 && archive_vers <= current_version
-      raise ArgumentError, "archive_vers (#{archive_vers}) must be between 0 and current_version (#{current_version})"
-    end
-
-    params = Endpoint.which_need_archive_copy(druid, archive_vers).map do |ep|
-      { version: archive_vers, endpoint: ep, status: PreservedCopy::UNREPLICATED_STATUS }
-    end
+  def create_archive_preserved_copies!
+    params = Endpoint.ids_to_versions_found(druid).map do |ep, versions|
+      missing = expected_versions.to_a - versions
+      next if missing.empty?
+      missing.map { |v| { version: v, endpoint_id: ep, status: 'unreplicated' } }
+    end.flatten.compact
     preserved_copies.create!(params)
+  end
+
+  # @return [Enumerable<Integer>]
+  def expected_versions
+    1..current_version
   end
 end

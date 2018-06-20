@@ -27,28 +27,28 @@ class Endpoint < ApplicationRecord
     archive.joins(preservation_policies: [:preserved_objects]).where(preserved_objects: { druid: druid })
   }
 
-  scope :which_need_archive_copy, lambda { |druid, version|
-    # testing indicates that the Arel::Table#eq will cast the input to the appropriate type for us.  i didn't
-    # didn't see that documented, so i'm casting version.to_i to be safe (since we're not using the usual bind
-    # variable machinery).  just trying to be extra cautious about injection attacks.  we shouldn't have to
-    # worry about druid, since it gets passed via the usual ActiveRecord bind var machinery.
-    pc_table = PreservedCopy.arel_table
-    ep_table = Endpoint.arel_table
-    endpoint_has_pres_copy_subquery =
-      PreservedCopy.where(
-        pc_table[:endpoint_id].eq(ep_table[:id])
-          .and(pc_table[:version].eq(version.to_i))
-      ).exists
-
-    archive_targets(druid).where.not(endpoint_has_pres_copy_subquery)
-  }
-
   # Use a queue to validate PreservedCopy objects
   def validate_expired_checksums!
     raise 'Endpoint is not "online" type' unless endpoint_type.online?
     pcs = preserved_copies.fixity_check_expired
     Rails.logger.info "Endpoint #{id} (#{endpoint_name}), # of preserved_copies to be checksum validated: #{pcs.count}"
     pcs.find_each { |pc| ChecksumValidationJob.perform_later(pc) }
+  end
+
+  # @param [String] druid
+  # @return [Hash<Integer => Array<Integer>>] Archive Endpoint IDs mapped to found version numbers for one druid
+  # @example Endpoint.ids_to_versions_found('zz964cr9336')
+  #  { 11 => [1, 2, 3], 12 => [1, 2, 3], 13 => [] }
+  def self.ids_to_versions_found(druid)
+    archive_targets(druid)
+      .left_outer_joins(:preserved_copies)
+      .where("preserved_copies.preserved_object_id = preserved_objects.id OR preserved_copies.id IS NULL")
+      .distinct
+      .pluck(:id, :version)
+      .each_with_object({}) do |(id, version), h|
+        h[id] ||= []
+        h[id] << version if version
+      end
   end
 
   # Iterates over the storage roots enumerated in settings, creating an Endpoint for each if it doesn't already exist.
