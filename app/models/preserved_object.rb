@@ -25,12 +25,9 @@ class PreservedObject < ApplicationRecord
       raise ArgumentError, "archive_vers (#{archive_vers}) must be between 0 and current_version (#{current_version})"
     end
 
-    ApplicationRecord.transaction do
-      Endpoint.which_need_archive_copy(druid, archive_vers).map do |ep|
-        PreservedCopy.create!(
-          preserved_object: self, version: archive_vers, endpoint: ep, status: PreservedCopy::UNREPLICATED_STATUS
-        )
-      end
+    params = Endpoint.which_need_archive_copy(druid, archive_vers).map do |ep|
+      { version: archive_vers, endpoint: ep, status: PreservedCopy::UNREPLICATED_STATUS }
     end
+    preserved_copies.create!(params)
   end
 end
