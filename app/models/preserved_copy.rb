@@ -71,6 +71,16 @@ class PreservedCopy < ApplicationRecord
     # to 0 for nulls, which sorts before 1 for non-nulls, which are then sorted by last_checksum_validation)
   }
 
+  # Send to asynchronous replication pipeline
+  # @raise [RuntimeError] if object is unpersisted or too large (>=~10GB)
+  # @todo reroute to large object pipeline instead of raise
+  def replicate!
+    raise 'PreservedCopy must be persisted' unless persisted?
+    raise 'Only online PCs can be replicated' unless endpoint.endpoint_type.online?
+    raise "#{size} is too large for pipeline" if size > 9_999_500_000 # build in overhead for zip structure
+    ZipmakerJob.perform_later(preserved_object.druid, version)
+  end
+
   def update_audit_timestamps(moab_validated, version_audited)
     t = Time.current
     self.last_moab_validation = t if moab_validated

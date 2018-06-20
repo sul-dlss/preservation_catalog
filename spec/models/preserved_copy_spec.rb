@@ -65,6 +65,20 @@ RSpec.describe PreservedCopy, type: :model do
   it { is_expected.to validate_presence_of(:version) }
   it { is_expected.to have_many(:zip_checksums) }
 
+  describe '#replicate!' do
+    it 'raises if too large' do
+      preserved_copy.size = 10_000_000_000
+      expect { preserved_copy.replicate! }.to raise_error(RuntimeError, /too large/)
+    end
+    it 'raises if unsaved' do
+      expect { described_class.new(size: 1).replicate! }.to raise_error(RuntimeError, /must be persisted/)
+    end
+    it 'passes druid and version to Zipmaker' do
+      expect(ZipmakerJob).to receive(:perform_later).with(preserved_object.druid, preserved_copy.version)
+      preserved_copy.replicate!
+    end
+  end
+
   describe '#update_audit_timestamps' do
     let(:pc) { described_class.new(args.merge(version: 0, status: 'invalid_moab')) }
 
