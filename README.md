@@ -9,20 +9,20 @@ Rails application to track, audit and replicate archival artifacts associated wi
 ## Table of Contents
 
 * [Getting Started](#getting-started)
-    * [PostgreSQL](#postgreSQL)
+    * [PostgreSQL](#postgresql)
     * [Redis](#redis)
-* [Usage Instructions](#usage)
+* [Usage Instructions](#usage-instructions)
     * [Moab to Catalog](#m2c) (M2C) existence/version check
     * [Catalog to Moab](#c2m) (C2M) existence/version check
     * [Checksum Validation](#cv) (CV)
-    * [Seed the catalog](#seeding)
+    * [Seed the catalog](#seed-the-catalog)
     * [Audit Checks via Console](#console)
 * [Development](#development)
 * [Deploying](#deploying)
 
-## <a name="getting-started"/>Getting Started
+## Getting Started
 
-### <a name="postgresSQL"/>PostgreSQL
+### PostgreSQL
 
 #### Installing Postgres
 
@@ -53,7 +53,7 @@ These scripts do the following for you:
 
 For more info on postgres commands, see https://www.postgresql.org/docs/
 
-### <a name="redis"/>Redis
+### Redis
 
 Install and run `redis`.  For example, using `homebrew`:
 ```sh
@@ -61,9 +61,9 @@ brew install redis
 brew services start redis
 ```
 
-# <a name="usage"/>Usage Instructions
+# Usage Instructions
 
-## <a name="general"/>General Info About Running These Rake Tasks
+## General Info About Running These Rake Tasks
 
 - Note: If the rake task takes multiple arguments, DO NOT put a space in between the commas.
 
@@ -186,7 +186,7 @@ RAILS_ENV=production bundle exec rake cv:druid[bz514sm9647]
 RAILS_ENV=production bundle exec rake cv:druid_list[/file/path/to/your/csv/druid_list.csv]
 ```
 
-## <a name="seeding"/>Seed the catalog
+## Seed the catalog
 
 Seeding the catalog presumes an empty or nearly empty database -- otherwise running the seed task will throw `druid NOT expected to exist in catalog but was found` errors for each found object.
 
@@ -310,7 +310,7 @@ Audit::Checksum.validate_druid('xx000xx0000')
 Audit::Checksum.validate_list_of_druids('/path/to/your/csv/druid_list.csv')
 ```
 
-## <a name="development"/>Development
+## Development
 
 ### Running Tests
 
@@ -320,7 +320,7 @@ To run the tests:
 rake spec
 ```
 
-## <a name="deploying"/>Deploying
+## Deploying
 
 Capistrano is used to deploy.
 
