@@ -71,6 +71,9 @@ Metrics/AbcSize:
 Metrics/BlockLength:
   Exclude:
     - 'app/services/preserved_object_handler.rb' # check_existence shameless green
+    - 'lib/tasks/c2m_tasks.rake'
+    - 'lib/tasks/cv_tasks.rake'
+    - 'lib/tasks/m2c_tasks.rake'
     - 'spec/**/*'
 
 Metrics/BlockNesting:
@@ -94,12 +97,13 @@ Metrics/CyclomaticComplexity:
 Metrics/LineLength:
   Max: 120
   Exclude:
-    - 'Rakefile' # Line length 133 for better readability
     - 'app/services/audit_results.rb' # line 35 is 121
     - 'app/services/checksum_validator.rb' # line 151 is 121
     - 'app/services/preserved_object_handler.rb' # line 269 is 121
     - 'app/services/workflow_reporter.rb' # line 7 is 143
     - 'config/schedule.rb'
+    - 'lib/tasks/c2m_tasks.rake'
+    - 'lib/tasks/m2c_tasks.rake'
     - 'spec/controllers/catalog_controller_spec.rb'
     - 'spec/lib/audit/moab_to_catalog_spec.rb' # 1 line 126
     - 'spec/models/endpoint_spec.rb' # line 83 is 123
@@ -212,6 +216,9 @@ Style/StringLiterals:
 Style/SymbolArray:
   Exclude:
     - 'Rakefile' # because [:spec, :rubocop] isn't a big deal
+    - 'lib/tasks/c2m_tasks.rake'
+    - 'lib/tasks/cv_tasks.rake'
+    - 'lib/tasks/m2c_tasks.rake'
     - 'config/deploy/*'
 
 Style/TernaryParentheses:
