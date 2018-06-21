@@ -318,10 +318,14 @@ RSpec.describe PreservedObjectHandler do
               po_handler.update_version_after_validation
               expect(pc.reload.size).to eq orig
             end
-            it 'status' do
-              po_handler.update_version_after_validation
-              expect(pc.reload).to be_validity_unknown
-              skip 'is there a scenario when status should change here?  See #431'
+            it 'status started validity_unknown and caller has not verified checksums' do
+              pc.update(status: 'validity_unknown')
+              expect { po_handler.update_version_after_validation }.not_to change { pc.reload.status }.from('validity_unknown')
+            end
+            it 'status started ok and caller has verified checksums' do
+              expect do
+                po_handler.update_version_after_validation(true)
+              end.not_to change { pc.reload.status }.from('ok')
             end
           end
         end
