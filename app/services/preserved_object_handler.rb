@@ -200,7 +200,7 @@ class PreservedObjectHandler
         results.add_result(code, db_obj_name: 'PreservedCopy', db_obj_version: pres_copy.version)
 
         pres_copy.upd_audstamps_version_size(ran_moab_validation?, incoming_version, incoming_size)
-        update_status(status) if status && ran_moab_validation?
+        update_status(status) if status
         pres_copy.save!
         pres_object.current_version = incoming_version
         pres_object.save!
