@@ -17,7 +17,6 @@ namespace :m2c do
       Audit::MoabToCatalog.seed_catalog_for_all_storage_roots
     end
     puts "#{Time.now.utc.iso8601} Seeding the catalog for all storage roots is done"
-    $stdout.flush
   end
 
   desc "Delete a single storage root's db data"
@@ -71,7 +70,6 @@ namespace :m2c do
     $stdout.flush # sometimes above is not visible (flushed) until last puts (when run finishes)
     Audit::MoabToCatalog.check_existence_for_druid(args[:druid])
     puts "#{Time.now.utc.iso8601} Moab to Catalog Existence Check for #{args[:druid]} is done"
-    $stdout.flush
   end
 
   desc "Run M2C existence/version checks on a list of druids"
@@ -79,8 +77,7 @@ namespace :m2c do
     druid_list_file_path = args[:file_path]
     puts "#{Time.now.utc.iso8601} Moab to Catalog Existence Check on the list of druids from #{druid_list_file_path} has started"
     Audit::MoabToCatalog.check_existence_for_druid_list(druid_list_file_path)
-    puts "#{Time.now.utc.iso8601} Moab to Catalog Existence Check on the list of druids from #{druid_list_file_path} has finished"
-    $stdout.flush
+    puts "#{Time.now.utc.iso8601} Moab to Catalog Existence Check on the list of druids from #{druid_list_file_path} is done"
   end
 
   desc "Run M2C existence/version checks on a single storage root"
@@ -101,7 +98,6 @@ namespace :m2c do
       Audit::MoabToCatalog.check_existence_for_dir(storage_dir)
     end
     puts "#{Time.now.utc.iso8601} Moab to Catalog Existence Check for #{storage_dir} is done"
-    $stdout.flush
   end
 
   desc "Run M2C existence/version checks on all storage roots"
@@ -117,7 +113,6 @@ namespace :m2c do
     elsif args[:profile].nil?
       Audit::MoabToCatalog.check_existence_for_all_storage_roots
     end
-    puts "#{Time.now.utc.iso8601} Moab to Catalog Existence Check for all storage roots are done"
-    $stdout.flush
+    puts "#{Time.now.utc.iso8601} Moab to Catalog Existence Check for all storage roots is done"
   end
 end
