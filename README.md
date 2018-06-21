@@ -9,20 +9,20 @@ Rails application to track, audit and replicate archival artifacts associated wi
 ## Table of Contents
 
 * [Getting Started](#getting-started)
-    * [PostgreSQL](#postgreSQL)
+    * [PostgreSQL](#postgresql)
     * [Redis](#redis)
-* [Usage Instructions](#usage)
+* [Usage Instructions](#usage-instructions)
     * [Moab to Catalog](#m2c) (M2C) existence/version check
     * [Catalog to Moab](#c2m) (C2M) existence/version check
     * [Checksum Validation](#cv) (CV)
-    * [Seed the catalog](#seeding)
+    * [Seed the catalog](#seed-the-catalog)
     * [Audit Checks via Console](#console)
 * [Development](#development)
 * [Deploying](#deploying)
 
-## <a name="getting-started"/>Getting Started
+## Getting Started
 
-### <a name="postgresSQL"/>PostgreSQL
+### PostgreSQL
 
 #### Installing Postgres
 
@@ -53,7 +53,7 @@ These scripts do the following for you:
 
 For more info on postgres commands, see https://www.postgresql.org/docs/
 
-### <a name="redis"/>Redis
+### Redis
 
 Install and run `redis`.  For example, using `homebrew`:
 ```sh
@@ -61,9 +61,9 @@ brew install redis
 brew services start redis
 ```
 
-# <a name="usage"/>Usage Instructions
+# Usage Instructions
 
-## <a name="general"/>General Info About Running These Rake Tasks
+## General Info About Running These Rake Tasks
 
 - Note: If the rake task takes multiple arguments, DO NOT put a space in between the commas.
 
@@ -74,7 +74,7 @@ brew services start redis
 As an alternative to `screen`, you can also run tasks in the background using `nohup` so the invoked command is not killed when you exist your session. Output that would've gone to stdout is instead redirected to a file called `nohup.out`, or you can redirect the output explicitly.  For example:
 
 ```sh
-RAILS_ENV=production nohup bundle exec rake seed_catalog >seed_whole_catalog_nohup-2017-12-12.txt &
+RAILS_ENV=production nohup bundle exec rake m2c:seed_all_roots >seed_all_roots_nohup-2017-12-12.txt &
 ```
 
 ## <a name="m2c"/>Moab to Catalog (M2C) existence/version check
@@ -84,36 +84,36 @@ To run rake tasks below, give the name of the moab storage_root (e.g. from setti
 ### Single Root
 - Without profiling
 ```sh
-RAILS_ENV=production bundle exec rake m2c_exist_single_root[fixture_sr1]
+RAILS_ENV=production bundle exec rake m2c:one_root[fixture_sr1]
 ```
 - With profiling:
 ```sh
 
-RAILS_ENV=production bundle exec rake m2c_exist_single_root[fixture_sr1,profile]
+RAILS_ENV=production bundle exec rake m2c:one_root[fixture_sr1,profile]
 ```
-this will generate a log at, for example, `log/profiler_check_existence_for_dir2017-12-11T14:34:06-flat.txt`
+this will generate a log at, for example, `log/profiler_M2C_check_existence_for_dir2017-12-11T14:34:06-flat.txt`
 
 ### All Roots
 - Without profiling:
 ```sh
-RAILS_ENV=production bundle exec rake m2c_exist_all_storage_roots
+RAILS_ENV=production bundle exec rake m2c:all_roots
 ```
 - With profiling:
 ```sh
-RAILS_ENV=production bundle exec rake m2c_exist_all_storage_roots[profile]
+RAILS_ENV=production bundle exec rake m2c:all_roots[profile]
 ```
-this will generate a log at, for example, `log/profile_check_existence_for_all_storage_roots2017-12-11T14:25:31-flat.txt`
+this will generate a log at, for example, `log/profile_M2C_check_existence_for_all_storage_roots2017-12-11T14:25:31-flat.txt`
 
 ### Single Druid
 ```sh
-RAILS_ENV=production bundle exec rake m2c_exist_druid['oo000oo0000']
+RAILS_ENV=production bundle exec rake m2c:druid['oo000oo0000']
 ```
 
 ### Druid List
 - Give the file path of the csv as the parameter. The first column of the csv should contain druids, without the prefix, and contain no headers.
 
 ```sh
-RAILS_ENV=production bundle exec rake m2c_exist_druid_list[/file/path/to/your/csv/druid_list.csv]
+RAILS_ENV=production bundle exec rake m2c:druid_list[/file/path/to/your/csv/druid_list.csv]
 ```
 ## <a name="c2m"/>Catalog to Moab (C2M) existence/version check
 
@@ -128,24 +128,24 @@ RAILS_ENV=production bundle exec rake m2c_exist_druid_list[/file/path/to/your/cs
 ### Single Root
 - Without profiling
 ```sh
-RAILS_ENV=production bundle exec rake c2m_check_version_on_dir['2018-01-22 22:54:48 UTC',fixture_sr1]
+RAILS_ENV=production bundle exec rake c2m:one_root['2018-01-22 22:54:48 UTC',fixture_sr1]
 ```
 - With profiling
 ```sh
-RAILS_ENV=production bundle exec rake c2m_check_version_on_dir['2018-01-22 22:54:48 UTC',fixture_sr1,profile]
+RAILS_ENV=production bundle exec rake c2m:one_root['2018-01-22 22:54:48 UTC',fixture_sr1,profile]
 ```
-this will generate a log at, for example, `log/profile_c2m_check_version_on_dir2018-01-01T14:25:31-flat.txt`
+this will generate a log at, for example, `log/profile_C2M_check_version_on_dir2018-01-01T14:25:31-flat.txt`
 
 ### All Roots
 - Without profiling:
 ```sh
-RAILS_ENV=production bundle exec rake c2m_check_version_all_dirs['2018-01-22 22:54:48 UTC']
+RAILS_ENV=production bundle exec rake c2m:all_roots['2018-01-22 22:54:48 UTC']
 ```
 - With profiling:
 ```sh
-RAILS_ENV=production bundle exec rake c2m_check_version_all_dirs['2018-01-22 22:54:48 UTC',profile]
+RAILS_ENV=production bundle exec rake c2m:all_roots['2018-01-22 22:54:48 UTC',profile]
 ```
-this will generate a log at, for example, `log/profile_c2m_check_version_all_roots2018-01-01T14:25:31-flat.txt`
+this will generate a log at, for example, `log/profile_C2M_check_version_all_dirs2018-01-01T14:25:31-flat.txt`
 
 ## <a name="cv"/>Checksum Validation (CV)
 - Parse all manifestInventory.xml and most recent signatureCatalog.xml for stored checksums and verify against computed checksums.
@@ -154,50 +154,50 @@ this will generate a log at, for example, `log/profile_c2m_check_version_all_roo
 ### Single Root
 - Without profiling
 ```sh
-RAILS_ENV=production bundle exec rake cv_single_endpoint[fixture_sr3]
+RAILS_ENV=production bundle exec rake cv:one_root[fixture_sr3]
 ```
 - With profiling
 ```sh
-RAILS_ENV=production bundle exec rake cv_single_endpoint[fixture_sr3,profile]
+RAILS_ENV=production bundle exec rake cv:one_root[fixture_sr3,profile]
 ```
 this will generate a log at, for example, `log/profile_cv_validate_disk2018-01-01T14:25:31-flat.txt`
 
 ### All Roots
 - Without profiling:
 ```sh
-RAILS_ENV=production bundle exec rake cv_all_endpoints
+RAILS_ENV=production bundle exec rake cv:all_roots
 ```
 - With profiling:
 ```sh
-RAILS_ENV=production bundle exec rake cv_all_endpoints[profile]
+RAILS_ENV=production bundle exec rake cv:all_roots[profile]
 ```
 this will generate a log at, for example, `log/profile_cv_validate_disk_all_endpoints2018-01-01T14:25:31-flat.txt`
 
 ### Single Druid
 - Without profiling:
 ```sh
-RAILS_ENV=production bundle exec rake cv_druid[bz514sm9647]
+RAILS_ENV=production bundle exec rake cv:druid[bz514sm9647]
 ```
 
 ### Druid List
 - Give the file path of the csv as the parameter. The first column of the csv should contain druids, without the prefix, and contain no headers.
 - Without profiling:
 ```sh
-RAILS_ENV=production bundle exec rake cv_druid_list[/file/path/to/your/csv/druid_list.csv]
+RAILS_ENV=production bundle exec rake cv:druid_list[/file/path/to/your/csv/druid_list.csv]
 ```
 
-## <a name="seeding"/>Seed the catalog
+## Seed the catalog
 
 Seeding the catalog presumes an empty or nearly empty database -- otherwise running the seed task will throw `druid NOT expected to exist in catalog but was found` errors for each found object.
 
 Without profiling:
 ```sh
-RAILS_ENV=production bundle exec rake seed_catalog
+RAILS_ENV=production bundle exec rake m2c:seed_all_roots
 ```
 
 With profiling:
 ```sh
-RAILS_ENV=production bundle exec rake seed_catalog[profile]
+RAILS_ENV=production bundle exec rake m2c:seed_all_roots[profile]
 ```
 this will generate a log at, for example, `log/profile_seed_catalog_for_all_storage_roots2017-11-13T13:57:01-flat.txt`
 
@@ -235,13 +235,13 @@ To run either of the rake tasks below, give the name of the moab storage_root (e
 #### Drop all database entries:
 
 ```sh
-RAILS_ENV=production bundle exec rake drop[fixture_sr1]
+RAILS_ENV=production bundle exec rake m2c:drop_root[fixture_sr1]
 ```
 
 #### Populate the catalog:
 
 ```sh
-RAILS_ENV=production bundle exec rake populate[fixture_sr1]
+RAILS_ENV=production bundle exec rake m2c:seed_root[fixture_sr1]
 ```
 
 ## <a name="console"/>Audit Checks via Console
@@ -310,7 +310,7 @@ Audit::Checksum.validate_druid('xx000xx0000')
 Audit::Checksum.validate_list_of_druids('/path/to/your/csv/druid_list.csv')
 ```
 
-## <a name="development"/>Development
+## Development
 
 ### Running Tests
 
@@ -320,7 +320,7 @@ To run the tests:
 rake spec
 ```
 
-## <a name="deploying"/>Deploying
+## Deploying
 
 Capistrano is used to deploy.
 

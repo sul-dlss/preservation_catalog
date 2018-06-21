@@ -27,7 +27,7 @@ module Audit
       end
     end
 
-    # NOTE: shameless green! code duplication with seed_catalog_for_dir
+    # NOTE: shameless green! code duplication with seed_catalog_for_dir but pohandler.check_existence
     def self.check_existence_for_dir(storage_dir)
       logger.info "#{Time.now.utc.iso8601} M2C check_existence starting for '#{storage_dir}'"
       results = []
@@ -46,7 +46,7 @@ module Audit
       Profiler.print_profile('M2C_check_existence_for_dir') { check_existence_for_dir(storage_dir) }
     end
 
-    # NOTE: shameless green! code duplication with check_existence_for_dir
+    # NOTE: shameless green! code duplication with check_existence_for_dir but poh.create_after_validation
     def self.seed_catalog_for_dir(storage_dir)
       logger.info "#{Time.now.utc.iso8601} Seeding starting for '#{storage_dir}'"
       results = []
