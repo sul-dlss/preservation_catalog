@@ -21,7 +21,6 @@ namespace :c2m do
       p "You've entered an incorrect timestamp format #{last_checked}."
       p "Please enter correct timestamp format (UTC) (2018-02-01T18:54:48Z)"
     end
-    $stdout.flush
   end
 
   desc "Run C2M version checks on all storage roots"
@@ -43,6 +42,5 @@ namespace :c2m do
       p "You've entered an incorrect timestamp format #{last_checked}."
       p "Please enter correct timestamp format (UTC) (2018-02-01T18:54:48Z)"
     end
-    $stdout.flush
   end
 end
