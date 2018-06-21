@@ -4,6 +4,7 @@ require 'services/shared_examples_preserved_object_handler'
 RSpec.describe PreservedObjectHandler do
   before do
     allow(Dor::WorkflowService).to receive(:update_workflow_error_status)
+    allow(Dor::WorkflowService).to receive(:update_workflow_status)
   end
 
   let(:druid) { 'ab123cd4567' }
@@ -55,6 +56,25 @@ RSpec.describe PreservedObjectHandler do
               expect(pc.reload.size).to eq incoming_size
               expect(pc.size).not_to eq orig
             end
+            context 'caller has run checksum validation and status was not ok' do
+              shared_examples 'POH#update_version(true) sets status to "ok"' do |old_status|
+                before { pc.update(status: old_status) }
+                it 'status' do
+                  expect do
+                    po_handler.update_version(true)
+                  end.to change { pc.reload.status }.from(old_status).to('ok')
+                end
+              end
+
+              it_behaves_like 'POH#update_version(true) sets status to "ok"', 'validity_unknown'
+              it_behaves_like 'POH#update_version(true) sets status to "ok"', 'online_moab_not_found'
+              it_behaves_like 'POH#update_version(true) sets status to "ok"', 'unexpected_version_on_storage'
+
+              # TODO: should caller CV clear these?  does it CV the whole moab, or just the new version?  is
+              # structural validation implied?
+              it_behaves_like 'POH#update_version(true) sets status to "ok"', 'invalid_moab'
+              it_behaves_like 'POH#update_version(true) sets status to "ok"', 'invalid_checksum'
+            end
           end
           context 'unchanged' do
             it 'size if incoming size is nil' do
@@ -63,8 +83,13 @@ RSpec.describe PreservedObjectHandler do
               po_handler.update_version
               expect(pc.reload.size).to eq orig
             end
-            it 'status' do
+            it 'status started ok and caller has not verified checksums' do
               expect { po_handler.update_version }.not_to change { pc.reload.status }.from('ok')
+            end
+            it 'status started ok and caller has verified checksums' do
+              expect do
+                po_handler.update_version(true)
+              end.not_to change { pc.reload.status }.from('ok')
             end
             it 'last_moab_validation' do
               orig = pc.last_moab_validation
