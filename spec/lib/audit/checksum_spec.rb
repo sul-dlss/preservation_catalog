@@ -13,87 +13,32 @@ RSpec.describe Audit::Checksum do
 
   describe '.validate_disk' do
     include_context 'fixture moabs in db'
-    let(:subject) { described_class.validate_disk(endpoint_name, limit) }
 
-    context 'when there are PreservedCopies to check' do
-      let(:cv_mock) { instance_double(ChecksumValidator) }
-
-      it 'creates an instance and calls #validate_checksums for every result when results are in a single batch' do
-        allow(ChecksumValidator).to receive(:new).and_return(cv_mock)
-        expect(cv_mock).to receive(:validate_checksums).exactly(3).times
-        described_class.validate_disk(endpoint_name, limit)
-      end
-
-      it 'creates an instance and calls #validate_checksums on everything in batches' do
-        pcs_from_scope = PreservedCopy.by_endpoint_name(endpoint_name).fixity_check_expired
-        cv_list = pcs_from_scope.map { |pc| ChecksumValidator.new(pc) }
-        expect(cv_list.size).to eq 3
-        cv_list.each do |cv|
-          allow(ChecksumValidator).to receive(:new).with(cv.preserved_copy).and_return(cv)
-          expect(cv).to receive(:validate_checksums).exactly(1).times.and_call_original
-        end
-        described_class.validate_disk(endpoint_name, 2)
-      end
+    it 'enqueues matching PCs for CV check' do
+      expect(ChecksumValidationJob).to receive(:perform_later).with(PreservedCopy).exactly(3).times
+      described_class.validate_disk(endpoint_name)
     end
 
     context 'when there are no PreservedCopies to check' do
-      it 'will not create an instance of ChecksumValidator' do
-        allow(ChecksumValidator).to receive(:new)
+      it 'will not enqueue PCs' do
+        expect(ChecksumValidationJob).not_to receive(:perform_later)
         PreservedCopy.all.update(last_checksum_validation: (Time.now.utc + 2.days))
-        expect(ChecksumValidator).not_to receive(:new)
-        subject
+        described_class.validate_disk(endpoint_name)
       end
-    end
-  end
-
-  describe ".validate_disk_profiled" do
-    let(:subject) { described_class.validate_disk_profiled('fixture_sr3') }
-
-    it "spins up a profiler, calling profiling and printing methods on it" do
-      mock_profiler = instance_double(Profiler)
-      expect(Profiler).to receive(:new).and_return(mock_profiler)
-      expect(mock_profiler).to receive(:prof)
-      expect(mock_profiler).to receive(:print_results_flat).with('cv_validate_disk')
-      subject
-    end
-
-    it "calls .validate_disk" do
-      expect(described_class).to receive(:validate_disk)
-      subject
     end
   end
 
   describe ".validate_disk_all_endpoints" do
-    let(:subject) { described_class.validate_disk_all_endpoints }
-
     it 'calls validate_disk once per storage root' do
       expect(described_class).to receive(:validate_disk).exactly(HostSettings.storage_roots.entries.count).times
-      subject
+      described_class.validate_disk_all_endpoints
     end
 
     it 'calls validate_disk with the right arguments' do
       HostSettings.storage_roots.to_h.each_key do |storage_name|
-        expect(described_class).to receive(:validate_disk).with(
-          storage_name
-        )
+        expect(described_class).to receive(:validate_disk).with(storage_name)
       end
-      subject
-    end
-  end
-
-  describe ".validate_disk_all_endpoints_profiled" do
-    let(:subject) { described_class.validate_disk_all_endpoints_profiled }
-
-    it "spins up a profiler, calling profiling and printing methods on it" do
-      mock_profiler = instance_double(Profiler)
-      expect(Profiler).to receive(:new).and_return(mock_profiler)
-      expect(mock_profiler).to receive(:prof)
-      expect(mock_profiler).to receive(:print_results_flat).with('cv_validate_disk_all_endpoints')
-      subject
-    end
-    it "calls .validate_disk_all_endpoints" do
-      expect(described_class).to receive(:validate_disk_all_endpoints)
-      subject
+      described_class.validate_disk_all_endpoints
     end
   end
 

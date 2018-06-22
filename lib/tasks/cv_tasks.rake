@@ -1,33 +1,18 @@
 namespace :cv do
 
   desc "Run CV (checksum validation) on a single storage root"
-  task :one_root, [:storage_root, :profile] => [:environment] do |_t, args|
-    unless args[:profile] == 'profile' || args[:profile].nil?
-      p "usage: rake cv:one_root[storage_root] || rake cv:one_root[storage_root,profile]"
+  task :one_root, [:storage_root] => [:environment] do |_t, args|
+    if args[:storage_root].nil?
+      p "usage: rake cv:one_root[storage_root]"
       exit 1
     end
-    storage_root = args[:storage_root].to_sym
-    if args[:profile] == 'profile'
-      puts "When done, check log/profile_cv_validate_disk[TIMESTAMP] for profiling details"
-      Audit::Checksum.validate_disk_profiled(storage_root)
-    elsif args[:profile].nil?
-      Audit::Checksum.validate_disk(storage_root)
-    end
+    Audit::Checksum.validate_disk(args[:storage_root].to_sym)
     puts "#{Time.now.utc.iso8601} Checksum Validation on #{storage_root} is done."
   end
 
   desc "Run CV (checksum validation) on all storage roots"
-  task :all_roots, [:profile] => [:environment] do |_t, args|
-    unless args[:profile] == 'profile' || args[:profile].nil?
-      p "usage: rake cv:all_roots || rake cv:all_roots[profile]"
-      exit 1
-    end
-    if args[:profile] == 'profile'
-      puts "When done, check log/profile_cv_validate_disk_all_endpoints[TIMESTAMP].txt for profiling details"
-      Audit::Checksum.validate_disk_all_endpoints_profiled
-    elsif args[:profile].nil?
-      Audit::Checksum.validate_disk_all_endpoints
-    end
+  task all_roots: [:environment] do
+    Audit::Checksum.validate_disk_all_endpoints
     puts "#{Time.now.utc.iso8601} Checksum Validation on all storage roots is done."
   end
 

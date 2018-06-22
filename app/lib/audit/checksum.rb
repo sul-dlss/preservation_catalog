@@ -5,35 +5,22 @@ module Audit
       delegate :logger, to: ::PreservationCatalog::Application
     end
 
-    def self.validate_disk(endpoint_name, limit=Settings.c2m_sql_limit)
+    # Queues asynchronous CV
+    def self.validate_disk(endpoint_name)
       logger.info "#{Time.now.utc.iso8601} CV validate_disk starting for #{endpoint_name}"
-      # pres_copies is an AR Relation; it could return a lot of results, so we want to process it in
-      # batches.  we can't use ActiveRecord's .find_each, because that'll disregard the order .fixity_check_expired
-      # specified.  so we use our own batch processing method, which does respect Relation order.
       pres_copies = PreservedCopy.by_endpoint_name(endpoint_name).for_online_endpoints.fixity_check_expired
-      logger.info "Number of Preserved Copies to be checksum validated: #{pres_copies.count}"
-      ActiveRecordUtils.process_in_batches(pres_copies, limit) do |pc|
-        ChecksumValidator.new(pc).validate_checksums
-      end
+      logger.info "Number of Preserved Copies to be enqueued for CV: #{pres_copies.count}"
+      pres_copies.find_each(&:validate_checksums!)
     ensure
-      logger.info "#{Time.now.utc.iso8601} CV validate_disk ended for #{endpoint_name}"
+      logger.info "#{Time.now.utc.iso8601} CV validate_disk for #{endpoint_name}"
     end
 
-    def self.validate_disk_profiled(endpoint_name)
-      Profiler.print_profile('cv_validate_disk') { validate_disk(endpoint_name) }
-    end
-
+    # Asynchronous
     def self.validate_disk_all_endpoints
       logger.info "#{Time.now.utc.iso8601} CV validate_disk_all_endpoints starting"
-      HostSettings.storage_roots.to_h.each_key do |strg_root_name|
-        validate_disk(strg_root_name)
-      end
+      HostSettings.storage_roots.to_h.each_key { |key| validate_disk(key) }
     ensure
       logger.info "#{Time.now.utc.iso8601} CV validate_disk_all_endpoints ended"
-    end
-
-    def self.validate_disk_all_endpoints_profiled
-      Profiler.print_profile('cv_validate_disk_all_endpoints') { validate_disk_all_endpoints }
     end
 
     def self.validate_druid(druid)

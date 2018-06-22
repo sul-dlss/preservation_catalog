@@ -82,8 +82,8 @@ RSpec.describe PreservedCopy, type: :model do
 
   describe '#validate_checksums!' do
     it 'passes self to ChecksumValidationJob' do
-      expect(ChecksumValidationJob).to receive(:perform_later).with(preserved_copy)
-      preserved_copy.validate_checksums!
+      expect(ChecksumValidationJob).to receive(:perform_later).with(pc)
+      pc.validate_checksums!
     end
   end
 
