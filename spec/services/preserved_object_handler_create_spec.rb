@@ -38,8 +38,11 @@ RSpec.describe PreservedObjectHandler do
       po_handler.create
     end
 
-    it 'creates the PreservedCopy with "ok" status if caller ran CV' do
+    it 'creates the PreservedCopy with "ok" status and validation timestamps if caller ran CV' do
       pc_args[:status] = PreservedCopy::OK_STATUS
+      pc_args[:last_version_audit] = ActiveSupport::TimeWithZone
+      pc_args[:last_moab_validation] = ActiveSupport::TimeWithZone
+      pc_args[:last_checksum_validation] = ActiveSupport::TimeWithZone
       expect(PreservedCopy).to receive(:create!).with(pc_args).and_call_original
       po_handler.create(true)
     end
@@ -135,11 +138,12 @@ RSpec.describe PreservedObjectHandler do
       po_handler.create_after_validation
     end
 
-    it 'creates PreservedCopy in "ok" status in db when there are no validation errors and caller ran CV' do
+    it 'creates PreservedCopy with "ok" status and validation timestamps if no validation errors and caller ran CV' do
       pc_args.merge!(
         status: PreservedCopy::OK_STATUS,
         last_moab_validation: an_instance_of(ActiveSupport::TimeWithZone),
-        last_version_audit: an_instance_of(ActiveSupport::TimeWithZone)
+        last_version_audit: an_instance_of(ActiveSupport::TimeWithZone),
+        last_checksum_validation: an_instance_of(ActiveSupport::TimeWithZone)
       )
 
       expect(PreservedCopy).to receive(:create!).with(pc_args).and_call_original
@@ -186,7 +190,8 @@ RSpec.describe PreservedObjectHandler do
         pc_args.merge!(
           status: PreservedCopy::INVALID_MOAB_STATUS,
           last_moab_validation: an_instance_of(ActiveSupport::TimeWithZone),
-          last_version_audit: an_instance_of(ActiveSupport::TimeWithZone)
+          last_version_audit: an_instance_of(ActiveSupport::TimeWithZone),
+          last_checksum_validation: an_instance_of(ActiveSupport::TimeWithZone)
         )
 
         expect(PreservedCopy).to receive(:create!).with(pc_args).and_call_original

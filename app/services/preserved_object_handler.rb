@@ -40,10 +40,9 @@ class PreservedObjectHandler
       results.add_result(AuditResults::DB_OBJ_ALREADY_EXISTS, 'PreservedObject')
     elsif moab_validation_errors.empty?
       creation_status = (checksums_validated ? PreservedCopy::OK_STATUS : PreservedCopy::VALIDITY_UNKNOWN_STATUS)
-      # TODO: what, if any, timestamps does this imply update for?
-      create_db_objects(creation_status)
+      create_db_objects(creation_status, checksums_validated)
     else
-      create_db_objects(PreservedCopy::INVALID_MOAB_STATUS)
+      create_db_objects(PreservedCopy::INVALID_MOAB_STATUS, checksums_validated)
     end
 
     results.report_results
@@ -57,8 +56,8 @@ class PreservedObjectHandler
       results.add_result(AuditResults::DB_OBJ_ALREADY_EXISTS, 'PreservedObject')
     else
       creation_status = (checksums_validated ? PreservedCopy::OK_STATUS : PreservedCopy::VALIDITY_UNKNOWN_STATUS)
-      # TODO: what, if any, timestamps does this imply update for?
-      create_db_objects(creation_status)
+      ran_moab_validation! if checksums_validated # set validation timestamps
+      create_db_objects(creation_status, checksums_validated)
     end
 
     results.report_results
@@ -131,6 +130,7 @@ class PreservedObjectHandler
       if moab_validation_errors.empty?
         # NOTE: we deal with active record transactions in update_online_version, not here
         new_status = (checksums_validated ? PreservedCopy::OK_STATUS : PreservedCopy::VALIDITY_UNKNOWN_STATUS)
+        # TODO: what should status be if status is not already ok?
         # TODO: what, if any, timestamps does this imply update for?
         update_online_version(new_status)
       else
@@ -149,6 +149,7 @@ class PreservedObjectHandler
       Rails.logger.debug "update_version #{druid} called"
       # NOTE: we deal with active record transactions in update_online_version, not here
       new_status = (checksums_validated ? PreservedCopy::OK_STATUS : nil)
+      # TODO: what should status be if status is not already ok?
       # TODO: what, if any, timestamps does this imply update for?
       update_online_version(new_status, true)
     end
@@ -171,7 +172,7 @@ class PreservedObjectHandler
 
   private
 
-  def create_db_objects(status)
+  def create_db_objects(status, checksums_validated = false)
     pp_default_id = PreservationPolicy.default_policy.id
     transaction_ok = with_active_record_transaction_and_rescue do
       po = PreservedObject.create!(druid: druid,
@@ -184,11 +185,12 @@ class PreservedObjectHandler
         endpoint: endpoint,
         status: status
       }
+      t = Time.current
       if ran_moab_validation?
-        t = Time.current
         pc_attrs[:last_version_audit] = t
         pc_attrs[:last_moab_validation] = t
       end
+      pc_attrs[:last_checksum_validation] = t if checksums_validated
       PreservedCopy.create!(pc_attrs)
     end
 
