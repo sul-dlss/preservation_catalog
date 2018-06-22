@@ -58,5 +58,20 @@ module Audit
         Checksum.validate_druid(row.first)
       end
     end
+
+    # validate objects with a particular status on a particular endpoint
+    def self.validate_status_root(status, endpoint_name, limit=Settings.c2m_sql_limit)
+      # pres_copies is an AR Relation; it could return a lot of results, so we want to process it in
+      # batches.  we can't use ActiveRecord's .find_each, because that'll disregard the order .fixity_check_expired
+      # specified.  so we use our own batch processing method, which does respect Relation order.
+      pres_copies = PreservedCopy.send(status).by_endpoint_name(endpoint_name).for_online_endpoints
+      desc = "Number of Preserved Copies of status #{status} from #{endpoint_name} to be checksum validated"
+      logger.info "#{desc}: #{pres_copies.count}"
+      ActiveRecordUtils.process_in_batches(pres_copies, limit) do |pc|
+        logger.info "CV beginning for #{pc.preserved_object.druid}; starting status #{pc.status}"
+        ChecksumValidator.new(pc).validate_checksums
+        logger.info "CV ended for #{pc.preserved_object.druid}; ending status #{pc.status}"
+      end
+    end
   end
 end

@@ -186,6 +186,16 @@ RAILS_ENV=production bundle exec rake cv:druid[bz514sm9647]
 RAILS_ENV=production bundle exec rake cv:druid_list[/file/path/to/your/csv/druid_list.csv]
 ```
 
+### Druids with a particular status on a particular storage root
+
+For example, if you wish to run CV on all the "validity_unknown" druids on storage root 15:
+
+```sh
+bundle exec rails r -e production "Audit::Checksum.validate_status_root(:validity_unknown, :services-disk15)"
+```
+
+[Valid status strings](https://github.com/sul-dlss/preservation_catalog/blob/master/app/models/preserved_copy.rb#L1-L10)
+
 ## Seed the catalog
 
 Seeding the catalog presumes an empty or nearly empty database -- otherwise running the seed task will throw `druid NOT expected to exist in catalog but was found` errors for each found object.
@@ -309,6 +319,13 @@ Audit::Checksum.validate_druid('xx000xx0000')
 ```ruby
 Audit::Checksum.validate_list_of_druids('/path/to/your/csv/druid_list.csv')
 ```
+
+#### Druids with a particular status on a particular storage root
+```ruby
+Audit::Checksum.validate_status_root('validity_unknown', 'services-disk15')
+```
+
+[Valid status strings](https://github.com/sul-dlss/preservation_catalog/blob/master/app/models/preserved_copy.rb#L1-L10)
 
 ## Development
 

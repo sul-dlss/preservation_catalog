@@ -26,9 +26,8 @@ RSpec.describe Audit::Checksum do
 
       it 'creates an instance and calls #validate_checksums on everything in batches' do
         pcs_from_scope = PreservedCopy.by_endpoint_name(endpoint_name).fixity_check_expired
-        cv_list = pcs_from_scope.map do |pc|
-          ChecksumValidator.new(pc)
-        end
+        cv_list = pcs_from_scope.map { |pc| ChecksumValidator.new(pc) }
+        expect(cv_list.size).to eq 3
         cv_list.each do |cv|
           allow(ChecksumValidator).to receive(:new).with(cv.preserved_copy).and_return(cv)
           expect(cv).to receive(:validate_checksums).exactly(1).times.and_call_original
@@ -38,7 +37,7 @@ RSpec.describe Audit::Checksum do
     end
 
     context 'when there are no PreservedCopies to check' do
-      it 'will not create an instance to call validate_manifest_inventories on' do
+      it 'will not create an instance of ChecksumValidator' do
         allow(ChecksumValidator).to receive(:new)
         PreservedCopy.all.update(last_checksum_validation: (Time.now.utc + 2.days))
         expect(ChecksumValidator).not_to receive(:new)
@@ -135,6 +134,51 @@ RSpec.describe Audit::Checksum do
         expect(described_class).to receive(:validate_druid).with(row.first)
       end
       described_class.validate_list_of_druids(csv_file_path)
+    end
+  end
+
+  describe '.validate_status_root' do
+    include_context 'fixture moabs in db'
+
+    context 'when there are PreservedCopies to check' do
+      let(:cv_mock) { instance_double(ChecksumValidator) }
+
+      it 'creates an instance and calls #validate_checksums for every result when results are in a single batch' do
+        allow(ChecksumValidator).to receive(:new).and_return(cv_mock)
+        expect(cv_mock).to receive(:validate_checksums).exactly(3).times
+        described_class.validate_status_root('validity_unknown', endpoint_name, limit)
+      end
+
+      it 'creates an instance and calls #validate_checksums on everything in batches' do
+        pcs_to_process = PreservedCopy.validity_unknown.by_endpoint_name(endpoint_name).for_online_endpoints
+        cv_list = pcs_to_process.map { |pc| ChecksumValidator.new(pc) }
+        expect(cv_list.size).to eq 3
+        cv_list.each do |cv|
+          allow(ChecksumValidator).to receive(:new).with(cv.preserved_copy).and_return(cv)
+          expect(cv).to receive(:validate_checksums).exactly(1).times.and_call_original
+        end
+        described_class.validate_status_root('validity_unknown', endpoint_name, 2)
+      end
+    end
+
+    context 'when there are no PreservedCopies to check' do
+      it 'will not create an instance of ChecksumValidator' do
+        expect(ChecksumValidator).not_to receive(:new)
+        described_class.validate_status_root('ok', endpoint_name, limit)
+      end
+    end
+
+    context 'when status given is invalid' do
+      it 'raises a NoMethodError' do
+        expect { described_class.validate_status_root('foo', endpoint_name, limit) }.to raise_error(NoMethodError, /^undefined method `foo'.*/)
+      end
+    end
+
+    context 'when endpoint given is invalid' do
+      it 'will not validate any objects' do
+        expect(ChecksumValidator).not_to receive(:new)
+        described_class.validate_status_root('validity_unknown', 'not_an_endpoint', limit)
+      end
     end
   end
 end

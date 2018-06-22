@@ -106,6 +106,7 @@ Metrics/LineLength:
     - 'lib/tasks/m2c_tasks.rake'
     - 'spec/controllers/catalog_controller_spec.rb'
     - 'spec/lib/audit/moab_to_catalog_spec.rb' # 1 line 126
+    - 'spec/lib/audit/checksum_spec.rb'
     - 'spec/models/endpoint_spec.rb' # line 83 is 123
     - 'spec/services/audit_results_spec.rb'
     - 'spec/services/checksum_validator_spec.rb'
