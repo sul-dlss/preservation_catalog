@@ -87,10 +87,10 @@ class PreservedCopy < ApplicationRecord
     self.last_version_audit = t if version_audited
   end
 
-  # moab_validated must not be nil. boolean indicating whether validation has been run (regardless of result).
-  # new_version is expected to be numeric
-  # new_size is expected to be numeric if provided (nil is allowed)
-  def upd_audstamps_version_size(moab_validated, new_version, new_size)
+  # @param [Boolean] moab_validated whether validation has been run (regardless of result)
+  # @param [Integer] new_version
+  # @param [Integer] new_size is expected to be numeric if provided
+  def upd_audstamps_version_size(moab_validated, new_version, new_size = nil)
     self.version = new_version
     self.size = new_size if new_size
     update_audit_timestamps(moab_validated, true)
