@@ -7,9 +7,6 @@ ask :branch, `git rev-parse --abbrev-ref HEAD`.chomp
 # Default deploy_to directory is /var/www/my_app_name
 set :deploy_to, "/opt/app/pres/#{fetch(:application)}"
 
-# update shared_configs before restarting app
-before 'deploy:restart', 'shared_configs:update'
-
 # Default value for :format is :airbrussh.
 # set :format, :airbrussh
 
@@ -37,6 +34,9 @@ set :whenever_identifier, -> { "#{fetch(:application)}_#{fetch(:stage)}" }
 
 # Default value for keep_releases is 5
 # set :keep_releases, 5
+
+# update shared_configs before db seed
+before 'deploy:migrate', 'shared_configs:update'
 
 after 'deploy:migrate', 'db_seed'
 
