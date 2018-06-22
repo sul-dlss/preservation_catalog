@@ -9,10 +9,14 @@ class PreservationPolicy < ApplicationRecord
   validates :archive_ttl, presence: true, numericality: { only_integer: true, greater_than: 0 }
   validates :fixity_ttl, presence: true, numericality: { only_integer: true, greater_than: 0 }
 
+  class << self
+    attr_writer :default_policy
+  end
+
   # this is a *very* naive cache eviction algorithm: if any pres policy changes, clear
   # the cache.  we expect pres policies to change very infrequently, so probably no big deal.
   # we can get smarter if/when we need to.
-  after_save { |_record| self.class.send(:clear_id_cache) }
+  after_save { |_record| self.class.default_policy = nil }
 
   # iterates over the preservation policies enumerated in the settings, creating any that don't already exist.
   # @return [Array<PreservationPolicy>] the PreservationPolicy list for the preservation policies defined in the
@@ -29,21 +33,6 @@ class PreservationPolicy < ApplicationRecord
   end
 
   def self.default_policy
-    find_by!(preservation_policy_name: Settings.preservation_policies.default_policy_name)
-  end
-
-  # note that this is cached.  prefer calling this method over .default_policy if an id
-  # will suffice (e.g., you only need the id, not the whole object, to set an association
-  # to a pres policy on another ActiveRecord object).
-  def self.default_policy_id
-    id_cache[:default_policy_id] ||= default_policy.id
-  end
-
-  private_class_method def self.id_cache
-    @id_cache ||= {}
-  end
-
-  private_class_method def self.clear_id_cache
-    @id_cache = {}
+    @default_policy ||= find_by!(preservation_policy_name: Settings.preservation_policies.default_policy_name)
   end
 end
