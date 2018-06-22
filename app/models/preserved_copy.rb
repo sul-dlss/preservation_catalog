@@ -81,6 +81,11 @@ class PreservedCopy < ApplicationRecord
     ZipmakerJob.perform_later(preserved_object.druid, version)
   end
 
+  # Send to asynchronous checksum validation pipeline
+  def validate_checksums!
+    ChecksumValidationJob.perform_later(self)
+  end
+
   def update_audit_timestamps(moab_validated, version_audited)
     t = Time.current
     self.last_moab_validation = t if moab_validated
