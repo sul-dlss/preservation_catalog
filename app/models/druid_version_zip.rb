@@ -96,7 +96,7 @@ class DruidVersionZip
   # @see #work_dir
   # @return [String] shell command to create this zip
   def zip_command
-    "zip -vr0X -s 10g #{file_path} #{druid.id}/#{v_version}"
+    "zip -vr0X -sv -s #{zip_split_size} #{file_path} #{druid.id}/#{v_version}"
   end
 
   # We presume the system guts do not change underneath a given class instance.
@@ -116,6 +116,11 @@ class DruidVersionZip
     end
     return match[1] if match && match[1].present?
     raise 'No version info matched from `zip -v` ouptut'
+  end
+
+  # @return [String] the option included with "zip -s"
+  def zip_split_size
+    '10g'
   end
 
   def zip_version_regexp
