@@ -75,11 +75,7 @@ RSpec.shared_examples 'PreservedCopy does not exist' do |method_sym|
   let(:exp_msg) { "#<ActiveRecord::RecordNotFound: foo> db object does not exist" }
   let(:results) do
     allow(Rails.logger).to receive(:log)
-    po = instance_double(PreservedObject)
-    allow(po).to receive(:current_version).and_return(2)
-    allow(po).to receive(:current_version=)
-    allow(po).to receive(:changed?).and_return(true)
-    allow(po).to receive(:save!)
+    po = create :preserved_object, current_version: 2
     allow(PreservedObject).to receive(:find_by!).and_return(po)
     allow(PreservedCopy).to receive(:find_by!).and_raise(ActiveRecord::RecordNotFound, 'foo')
     po_handler.send(method_sym)
