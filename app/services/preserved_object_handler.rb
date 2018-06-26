@@ -164,7 +164,7 @@ class PreservedObjectHandler
   private
 
   def create_db_objects(status)
-    pp_default_id = PreservationPolicy.default_policy_id
+    pp_default_id = PreservationPolicy.default_policy.id
     transaction_ok = with_active_record_transaction_and_rescue do
       po = PreservedObject.create!(druid: druid,
                                    current_version: incoming_version,
