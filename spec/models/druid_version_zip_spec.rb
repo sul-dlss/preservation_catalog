@@ -24,7 +24,7 @@ describe DruidVersionZip do
     end
   end
 
-  describe '.create_zip!' do
+  describe '#create_zip!' do
     let(:zip_path) { dvz.file_path }
     let(:version) { 3 } # v1 and v2 pre-existing
 
@@ -57,7 +57,7 @@ describe DruidVersionZip do
         let(:zip_command) { "zip -vr0X -sv -s 10g #{zip_path} /wrong/path" }
 
         it 'raises error' do
-          expect { dvz.create_zip! }.to raise_error(RuntimeError, %r{zipmaker failure.*/wrong/path})
+          expect { dvz.create_zip! }.to raise_error(RuntimeError, %r{zipmaker failure.*/wrong/path}m)
         end
       end
 
@@ -76,6 +76,22 @@ describe DruidVersionZip do
           expect { dvz.create_zip! }.to raise_error(Errno::ENOENT, /No such file/)
         end
       end
+    end
+  end
+
+  describe '#expected_parts' do
+    it 'raises for invalid integer' do
+      expect { dvz.expected_parts(0) }.to raise_error ArgumentError
+    end
+    it 'lists the files expected' do
+      expect(dvz.expected_parts(1)).to eq ['/tmp/bj/102/hs/9687/bj102hs9687.v0001.zip']
+      expect(dvz.expected_parts(2)).to eq [
+        '/tmp/bj/102/hs/9687/bj102hs9687.v0001.zip',
+        '/tmp/bj/102/hs/9687/bj102hs9687.v0001.z01'
+      ]
+      one_oh_one = dvz.expected_parts(101)
+      expect(one_oh_one.count).to eq(101)
+      expect(one_oh_one.last).to eq('/tmp/bj/102/hs/9687/bj102hs9687.v0001.z100')
     end
   end
 
@@ -109,6 +125,26 @@ describe DruidVersionZip do
     it 'returns authoritative file location' do
       expect(dvz.moab_version_path)
         .to eq 'spec/fixtures/storage_root01/sdr2objects/bj/102/hs/9687/bj102hs9687/v0001'
+    end
+  end
+
+  describe '#parts' do # zip splits
+    let(:druid) { 'dc048cw1328' } # fixture is 4.9 MB
+
+    before do
+      allow(dvz).to receive(:zip_split_size).and_return('1m')
+      FileUtils.rm_rf('/tmp/dc') # prep clean dir
+    end
+    after { FileUtils.rm_rf('/tmp/dc') } # cleanup
+
+    it 'lists the multiple files produced' do
+      dvz.create_zip!
+      expect(dvz.parts).to include(
+        "/tmp/dc/048/cw/1328/dc048cw1328.v0001.zip",
+        "/tmp/dc/048/cw/1328/dc048cw1328.v0001.z01",
+        "/tmp/dc/048/cw/1328/dc048cw1328.v0001.z04"
+      )
+      expect(dvz.parts.count).to eq 5
     end
   end
 
