@@ -1,4 +1,5 @@
 require 'okcomputer'
+require Rails.root.join('config', 'initializers', 'resque.rb').to_s
 
 OkComputer.mount_at = 'status' # use /status or /status/all or /status/<name-of-check>
 OkComputer.check_in_parallel = true
@@ -58,6 +59,16 @@ HostSettings.storage_roots.each do |storage_root_name_val|
 end
 
 OkComputer::Registry.register 'ruby_version', OkComputer::RubyVersionCheck.new
+
+# check for backed up resque queues
+Resque.queues.each do |queue|
+  OkComputer::Registry.register "feature-#{queue}-queue-depth",
+                                OkComputer::ResqueBackedUpCheck.new(queue, 5_000_000)
+end
+
+# check for failed resque jobs
+OkComputer::Registry.register "feature-resque-failures-threshold",
+                              OkComputer::ResqueFailureThresholdCheck.new(10)
 
 # ------------------------------------------------------------------------------
 
