@@ -225,20 +225,13 @@ RSpec.describe PreservedObjectHandler do
           let(:result_code) { AuditResults::DB_UPDATE_FAILED }
           let(:incoming_version) { 2 }
           let(:results) do
-
-            po = instance_double("PreservedObject")
+            po = create :preserved_object, current_version: 2
             allow(PreservedObject).to receive(:find_by).with(druid: druid).and_return(po)
-            pc = instance_double("PreservedCopy")
+            pc = create :preserved_copy, preserved_object: po, version: 2
             allow(PreservedCopy).to receive(:find_by).and_return(pc)
-            allow(pc).to receive(:version).and_return(2)
-            allow(pc).to receive(:status)
-            allow(pc).to receive(:update_status)
-            allow(pc).to receive(:update_audit_timestamps)
-            allow(pc).to receive(:changed?).and_return(true)
-            allow(pc).to receive(:save!).and_raise(ActiveRecord::ActiveRecordError, 'foo')
-            allow(pc).to receive(:matches_po_current_version?).and_return(true)
-            allow(po).to receive(:current_version).and_return(2)
             allow(po_handler).to receive(:moab_validation_errors).and_return([])
+
+            allow(pc).to receive(:save!).and_raise(ActiveRecord::ActiveRecordError, 'foo')
             po_handler.confirm_version
           end
 
@@ -249,39 +242,27 @@ RSpec.describe PreservedObjectHandler do
       end
 
       it 'calls PreservedCopy.save! (but not PreservedObject.save!) if the existing record is altered' do
-        po = instance_double(PreservedObject)
-        pc = instance_double(PreservedCopy)
-        status = PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
+        po = create :preserved_object
         allow(PreservedObject).to receive(:find_by).with(druid: druid).and_return(po)
-        allow(po).to receive(:current_version).and_return(1)
-        allow(po).to receive(:save!)
+        pc = create :preserved_copy, preserved_object: po
         allow(PreservedCopy).to receive(:find_by).with(preserved_object: po, endpoint: ep).and_return(pc)
-        allow(pc).to receive(:version).and_return(1)
-        allow(pc).to receive(:update_status).with(status)
-        allow(pc).to receive(:update_audit_timestamps)
-        allow(pc).to receive(:changed?).and_return(true)
-        allow(pc).to receive(:save!)
-        allow(pc).to receive(:matches_po_current_version?).and_return(true)
-        allow(pc).to receive(:status).and_return(PreservedCopy::OK_STATUS)
         allow(po_handler).to receive(:moab_validation_errors).and_return([])
+
+        allow(po).to receive(:save!)
+        allow(pc).to receive(:save!)
         po_handler.confirm_version
         expect(po).not_to have_received(:save!)
         expect(pc).to have_received(:save!)
       end
       it 'calls PreservedCopy.save! (but not PreservedObject.save!) if the existing record is NOT altered' do
         po_handler = described_class.new(druid, 1, 1, ep)
-        po = instance_double(PreservedObject)
-        pc = instance_double(PreservedCopy)
+        po = create :preserved_object
         allow(PreservedObject).to receive(:find_by).with(druid: druid).and_return(po)
-        allow(po).to receive(:current_version).and_return(1)
+        pc = create :preserved_copy, preserved_object: po
         allow(PreservedCopy).to receive(:find_by).with(preserved_object: po, endpoint: ep).and_return(pc)
-        allow(pc).to receive(:status).and_return(PreservedCopy::OK_STATUS)
-        allow(pc).to receive(:version).and_return(1)
-        allow(pc).to receive(:update_audit_timestamps)
-        allow(pc).to receive(:changed?).and_return(false)
+
         allow(po).to receive(:save!)
         allow(pc).to receive(:save!)
-        allow(pc).to receive(:matches_po_current_version?).and_return(true)
         po_handler.confirm_version
         expect(pc).to have_received(:save!)
         expect(po).not_to have_received(:save!)

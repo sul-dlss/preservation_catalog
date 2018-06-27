@@ -400,19 +400,15 @@ RSpec.describe PreservedObjectHandler do
       end
 
       it 'calls PreservedCopy.save! (but not PreservedObject.save!) if the existing record is NOT altered' do
-        po_handler = described_class.new(druid, 1, 1, ep)
-        po = instance_double(PreservedObject)
-        pc = instance_double(PreservedCopy)
+        druid = 'zy987xw6543'
+        po = create :preserved_object, druid: druid
         allow(PreservedObject).to receive(:find_by!).with(druid: druid).and_return(po)
-        allow(po).to receive(:current_version).and_return(1)
-        allow(po).to receive(:save!)
+        pc = create :preserved_copy, preserved_object: po
         allow(PreservedCopy).to receive(:find_by!).with(preserved_object: po, endpoint: ep).and_return(pc)
-        allow(pc).to receive(:matches_po_current_version?).and_return(true)
-        allow(pc).to receive(:status).and_return(PreservedCopy::OK_STATUS)
-        allow(pc).to receive(:version).and_return(1)
-        allow(pc).to receive(:update_audit_timestamps)
-        allow(pc).to receive(:changed?).and_return(false)
+
+        allow(po).to receive(:save!)
         allow(pc).to receive(:save!)
+        po_handler = described_class.new(druid, 1, 1, ep)
         po_handler.check_existence
         expect(po).not_to have_received(:save!)
         expect(pc).to have_received(:save!)

@@ -75,11 +75,7 @@ RSpec.shared_examples 'PreservedCopy does not exist' do |method_sym|
   let(:exp_msg) { "#<ActiveRecord::RecordNotFound: foo> db object does not exist" }
   let(:results) do
     allow(Rails.logger).to receive(:log)
-    po = instance_double(PreservedObject)
-    allow(po).to receive(:current_version).and_return(2)
-    allow(po).to receive(:current_version=)
-    allow(po).to receive(:changed?).and_return(true)
-    allow(po).to receive(:save!)
+    po = create :preserved_object, current_version: 2
     allow(PreservedObject).to receive(:find_by!).and_return(po)
     allow(PreservedCopy).to receive(:find_by!).and_raise(ActiveRecord::RecordNotFound, 'foo')
     po_handler.send(method_sym)
@@ -339,7 +335,7 @@ RSpec.shared_examples 'PreservedObject current_version does not match online PC 
   let(:version_mismatch_msg) { "PreservedCopy online Moab version #{pc_v} does not match PreservedObject current_version #{po_v}" }
 
   it 'does not update PreservedCopy' do
-    orig = pc.updated_at
+    orig = pc.reload.updated_at
     po_handler.send(method_sym)
     expect(pc.reload.updated_at).to eq orig
   end
