@@ -1,10 +1,10 @@
 # Confirms existence of PreservedCopy on an endpoint.
 # Confirms the MD5 checksum matches in database and s3.
-class EndpointCheckJob < ApplicationJob
+class ReplicationCheckJob < ApplicationJob
   # This queue is never expected to be used. For example:
-  # EndpointCheckJob.set(queue: :endpoint_check_us_west_2).perform_later(pc)
-  # EndpointCheckJob.set(queue: :endpoint_check_us_east_1).perform_later(pc)
-  queue_as :endpoint_check
+  # ReplicationCheck.set(queue: :endpoint_check_us_west_2).perform_later(pc)
+  # ReplicationCheck.set(queue: :endpoint_check_us_east_1).perform_later(pc)
+  queue_as :replication_check
   delegate :bucket, :bucket_name, to: PreservationCatalog::S3
 
   # @param [PreservedCopy] verify that the archived preserved_copy exists on an endpoint

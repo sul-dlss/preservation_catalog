@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe EndpointCheckJob, type: :job do
+describe ReplicationCheckJob, type: :job do
   let(:version) { 1 }
   let(:zip_checksum) { create(:zip_checksum, preserved_copy: pc) }
   let(:po) { create(:preserved_object, druid: 'bj102hs9687', current_version: version) }
