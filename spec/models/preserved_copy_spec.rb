@@ -38,8 +38,7 @@ RSpec.describe PreservedCopy, type: :model do
       'unexpected_version_on_storage' => 4,
       'validity_unknown' => 6,
       'unreplicated' => 7,
-      'file_not_found' => 8,
-      'checksum_mismatch' => 9
+      'replicated_copy_not_found' => 8
     )
   end
 

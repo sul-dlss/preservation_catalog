@@ -8,8 +8,7 @@ class PreservedCopy < ApplicationRecord
   UNEXPECTED_VERSION_ON_STORAGE_STATUS = 'unexpected_version_on_storage'.freeze
   VALIDITY_UNKNOWN_STATUS = 'validity_unknown'.freeze
   UNREPLICATED_STATUS = 'unreplicated'.freeze
-  FILE_NOT_FOUND = 'file_not_found'.freeze
-  CHECKSUM_MISMATCH = 'checksum_mismatch'.freeze
+  REPLICATED_COPY_NOT_FOUND_STATUS = 'replicated_copy_not_found'.freeze
 
   # @note Hash values cannot be modified without migrating any associated persisted data.
   # @see [enum docs] http://api.rubyonrails.org/classes/ActiveRecord/Enum.html
@@ -22,8 +21,7 @@ class PreservedCopy < ApplicationRecord
     UNEXPECTED_VERSION_ON_STORAGE_STATUS => 4,
     VALIDITY_UNKNOWN_STATUS => 6,
     UNREPLICATED_STATUS => 7,
-    FILE_NOT_FOUND => 8,
-    CHECKSUM_MISMATCH => 9
+    REPLICATED_COPY_NOT_FOUND_STATUS => 8
   }
 
   belongs_to :preserved_object

@@ -29,23 +29,20 @@ describe EndpointCheckJob, type: :job do
     end
 
     context 'stored db checksum matches replicated s3 object checksum' do
-      before { allow(STDOUT).to receive(:puts) }
-
       it 'updates the status and last_checksum_validation timestamp' do
         allow(stored_checksums).to receive(:include?).with(replicated_checksum).and_return(true)
-        expect(pc).to receive(:update_status).with(PreservedCopy::OK_STATUS)
         expect(pc).to receive(:update).with(last_checksum_validation: timestamp)
-        expect(pc).to receive(:save!)
+        expect(pc).to receive(:ok!)
         job.perform(pc)
       end
     end
+
     context 'stored db checksum does not match replicated aws object checksum' do
-      before { allow(STDOUT).to receive(:puts) }
 
       it "updates preserved copy status" do
         expect(stored_checksums).to receive(:include?).with(replicated_checksum).and_return(false)
-        expect(pc).to receive(:update_status).with(PreservedCopy::CHECKSUM_MISMATCH)
-        expect(pc).to receive(:save!)
+        expect(pc).to receive(:update).with(last_checksum_validation: timestamp)
+        expect(pc).to receive(:invalid_checksum!)
         job.perform(pc)
       end
     end
@@ -55,8 +52,7 @@ describe EndpointCheckJob, type: :job do
     before { allow(s3_object).to receive(:exists?).and_return(false) }
 
     it 'updates preserved copy status' do
-      expect(pc).to receive(:update_status).with(PreservedCopy::FILE_NOT_FOUND)
-      expect(pc).to receive(:save!)
+      expect(pc).to receive(:replicated_copy_not_found!)
       job.perform(pc)
     end
   end
