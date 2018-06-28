@@ -80,6 +80,13 @@ RSpec.describe PreservedCopy, type: :model do
     end
   end
 
+  describe '#validate_checksums!' do
+    it 'passes self to ChecksumValidationJob' do
+      expect(ChecksumValidationJob).to receive(:perform_later).with(pc)
+      pc.validate_checksums!
+    end
+  end
+
   describe '#update_audit_timestamps' do
     it 'updates last_moab_validation time if moab_validated is true' do
       expect { pc.update_audit_timestamps(true, false) }.to change { pc.last_moab_validation }.from(nil)

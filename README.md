@@ -151,27 +151,19 @@ this will generate a log at, for example, `log/profile_C2M_check_version_all_dir
 - Parse all manifestInventory.xml and most recent signatureCatalog.xml for stored checksums and verify against computed checksums.
 - To run rake tasks below, give the name of the endpoint (e.g. from settings/development.yml)
 
+Note: CV jobs that are asynchronous means that their execution happens in other processes.  Therefore there is no `profile` option,
+because the computational work that is valuable to profile happens elsewhere.
+
 ### Single Root
-- Without profiling
+This queues objects for asynchronous CV:
 ```sh
 RAILS_ENV=production bundle exec rake cv:one_root[fixture_sr3]
 ```
-- With profiling
-```sh
-RAILS_ENV=production bundle exec rake cv:one_root[fixture_sr3,profile]
-```
-this will generate a log at, for example, `log/profile_cv_validate_disk2018-01-01T14:25:31-flat.txt`
-
 ### All Roots
-- Without profiling:
+This is also asynchronous:
 ```sh
 RAILS_ENV=production bundle exec rake cv:all_roots
 ```
-- With profiling:
-```sh
-RAILS_ENV=production bundle exec rake cv:all_roots[profile]
-```
-this will generate a log at, for example, `log/profile_cv_validate_disk_all_endpoints2018-01-01T14:25:31-flat.txt`
 
 ### Single Druid
 - Without profiling:
