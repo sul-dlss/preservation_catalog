@@ -273,6 +273,9 @@ GEM
       sinatra (>= 0.9.2)
       vegas (~> 0.1.2)
     resque-lock (1.1.0)
+    resque-pool (0.6.0)
+      rake
+      resque (~> 1.22)
     retries (0.0.5)
     rspec-core (3.7.1)
       rspec-support (~> 3.7.0)
@@ -373,6 +376,7 @@ DEPENDENCIES
   rails-controller-testing
   resque (~> 1.27)
   resque-lock
+  resque-pool
   rspec-rails (~> 3.6)
   rubocop (~> 0.50.0)
   rubocop-rspec
