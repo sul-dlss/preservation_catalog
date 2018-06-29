@@ -2,6 +2,7 @@
 # objects.
 class ArchiveEndpoint < ApplicationRecord
   has_many :archive_preserved_copies, dependent: :restrict_with_exception
+  has_and_belongs_to_many :preservation_policies
 
   # @note Hash values cannot be modified without migrating any associated persisted data.
   # @see [enum docs] http://api.rubyonrails.org/classes/ActiveRecord/Enum.html

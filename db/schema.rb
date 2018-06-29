@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180626222814) do
+ActiveRecord::Schema.define(version: 20180628222502) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -23,6 +23,13 @@ ActiveRecord::Schema.define(version: 20180626222814) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["endpoint_name"], name: "index_archive_endpoints_on_endpoint_name", unique: true
+  end
+
+  create_table "archive_endpoints_preservation_policies", force: :cascade do |t|
+    t.bigint "preservation_policy_id", null: false
+    t.bigint "archive_endpoint_id", null: false
+    t.index ["archive_endpoint_id"], name: "index_archive_endpoints_pres_policies_on_archive_endpoint_id"
+    t.index ["preservation_policy_id"], name: "index_archive_endpoints_pres_policies_on_pres_policy_id"
   end
 
   create_table "archive_preserved_copies", force: :cascade do |t|
@@ -127,6 +134,8 @@ ActiveRecord::Schema.define(version: 20180626222814) do
     t.index ["preserved_copy_id"], name: "index_zip_checksums_on_preserved_copy_id"
   end
 
+  add_foreign_key "archive_endpoints_preservation_policies", "archive_endpoints"
+  add_foreign_key "archive_endpoints_preservation_policies", "preservation_policies"
   add_foreign_key "archive_preserved_copies", "archive_endpoints"
   add_foreign_key "archive_preserved_copies", "preserved_copies"
   add_foreign_key "archive_preserved_copy_parts", "archive_preserved_copies"
