@@ -21,6 +21,7 @@ gem 'puma', '~> 3.7' # app server
 gem 'rails', '~> 5.1.3'
 gem 'resque', '~> 1.27'
 gem 'resque-lock' # deduplication of worker queue jobs
+gem 'resque-pool'
 gem 'ruby-prof' # to profile methods
 gem 'whenever' # manage cron for audit checks
 
