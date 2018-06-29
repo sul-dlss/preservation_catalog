@@ -90,6 +90,9 @@ GEM
     capistrano-rails (1.4.0)
       capistrano (~> 3.1)
       capistrano-bundler (~> 1.1)
+    capistrano-resque-pool (0.1.2)
+      capistrano
+      resque-pool
     capistrano-shared_configs (0.2.2)
     chronic (0.10.2)
     coderay (1.1.2)
@@ -355,6 +358,7 @@ DEPENDENCIES
   aws-sdk-s3 (~> 1.9.1)
   capistrano-passenger
   capistrano-rails
+  capistrano-resque-pool
   config
   coveralls
   dlss-capistrano
