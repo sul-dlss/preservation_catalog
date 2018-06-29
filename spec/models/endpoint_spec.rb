@@ -1,5 +1,6 @@
 require 'rails_helper'
 
+# TODO: make this spec run against only unseeded data
 RSpec.describe Endpoint, type: :model do
   let(:default_pres_policies) { [PreservationPolicy.default_policy] }
   let(:druid) { 'ab123cd4567' }
@@ -15,15 +16,13 @@ RSpec.describe Endpoint, type: :model do
   end
 
   it 'is not valid unless it has all required attributes' do
-    expect(Endpoint.new).not_to be_valid
-    expect(Endpoint.new(endpoint_name: 'aws')).not_to be_valid
+    expect(described_class.new).not_to be_valid
+    expect(described_class.new(endpoint_name: 'aws')).not_to be_valid
     expect(endpoint).to be_valid
   end
 
   it 'enforces unique constraint on endpoint_name (model level)' do
-    expect do
-      Endpoint.create!(endpoint.attributes.slice('endpoint_name', 'endpoint_type', 'endpoint_node', 'storage_location'))
-    end.to raise_error(ActiveRecord::RecordInvalid)
+    expect { endpoint.dup.save! }.to raise_error(ActiveRecord::RecordInvalid)
   end
 
   it 'enforces unique constraint on endpoint_name (db level)' do
@@ -45,6 +44,36 @@ RSpec.describe Endpoint, type: :model do
   it { is_expected.to validate_presence_of(:endpoint_type) }
   it { is_expected.to validate_presence_of(:endpoint_node) }
   it { is_expected.to validate_presence_of(:storage_location) }
+
+  describe '.ids_to_versions_found' do
+    let(:po) { create :preserved_object, druid: druid, current_version: 3 }
+    let(:seed_ep) { described_class.archive.first }
+    let(:online_ep) { create(:endpoint) }
+
+    before do
+      po.preserved_copies.create!(
+        (1..3).map { |v| { version: v, size: 1, status: 'ok', endpoint: endpoint } }
+      )
+      create(:preserved_object, current_version: 5).preserved_copies.create!( # unrelated PO keeps query honest
+        (1..5).map { |v| { version: v, size: 1, status: 'ok', endpoint: endpoint } }
+      )
+    end
+
+    it 'includes all relevant endpoint IDs, including those missing all versions' do
+      hash = described_class.ids_to_versions_found(po.druid)
+      expect(hash[seed_ep.id]).to eq []
+      expect(hash[endpoint.id].sort).to eq [1, 2, 3]
+    end
+
+    it 'includes all relevant endpoint IDs and their found versions' do
+      po.preserved_copies.create!(
+        (2..3).map { |v| { version: v, size: 1, status: 'ok', endpoint: seed_ep } }
+      )
+      hash = described_class.ids_to_versions_found(po.druid)
+      expect(hash[endpoint.id].sort).to eq([1, 2, 3])
+      expect(hash[seed_ep.id].sort).to eq([2, 3])
+    end
+  end
 
   describe '.seed_storage_root_endpoints_from_config' do
     let(:endpoint_type) { EndpointType.default_for_storage_roots }
@@ -146,28 +175,6 @@ RSpec.describe Endpoint, type: :model do
       expect(Endpoint.archive_targets(druid).pluck(:endpoint_name)).to eq %w[aws-us-east-2 mock_archive1]
       endpoint.preservation_policies = [alternate_pres_policy]
       expect(Endpoint.archive_targets(druid).pluck(:endpoint_name)).to eq %w[mock_archive1]
-    end
-  end
-
-  describe '.which_need_archive_copy' do
-    let(:version) { 3 }
-
-    before { create(:preserved_object, current_version: version, druid: druid) }
-
-    it "returns the archive endpoints which should have a pres copy for the druid/version, but which don't yet" do
-      expect(Endpoint.which_need_archive_copy(druid, version).pluck(:endpoint_name)).to eq %w[mock_archive1]
-      expect(Endpoint.which_need_archive_copy(druid, version - 1).pluck(:endpoint_name)).to eq %w[mock_archive1]
-
-      create(:preserved_copy, version: version, endpoint: Endpoint.find_by!(endpoint_name: 'mock_archive1'))
-      expect(Endpoint.which_need_archive_copy(druid, version)).to eq []
-      expect(Endpoint.which_need_archive_copy(druid, version - 1).pluck(:endpoint_name)).to eq %w[mock_archive1]
-    end
-
-    # since we build AREL subquery, the cast is a guarantee against SQL injection
-    it 'Casts version to integer' do
-      bogus_version = instance_double(Integer)
-      expect(bogus_version).to receive(:to_i).and_return(1)
-      Endpoint.which_need_archive_copy(druid, bogus_version).first
     end
   end
 

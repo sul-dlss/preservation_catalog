@@ -50,59 +50,38 @@ RSpec.describe PreservedObject, type: :model do
     end
   end
 
-  describe '#create_archive_preserved_copies' do
-    let(:druid) { 'ab123cd4567' }
-    let(:current_version) { 3 }
-    let!(:po) { create(:preserved_object, druid: druid, current_version: current_version) }
-    let(:archive_ep) { Endpoint.find_by(endpoint_name: 'mock_archive1') }
-    let(:new_archive_ep) { create(:archive_endpoint, endpoint_name: 'mock_archive2') }
-    let(:archive_pcs_for_druid) do
-      PreservedCopy
-        .joins(endpoint: [:endpoint_type])
-        .where(preserved_object: po, endpoint_types: { endpoint_class: 'archive' })
+  describe '#expected_versions' do
+    let(:po) { build(:preserved_object) }
+
+    it 'returns range 1..current_version' do
+      expect(po.expected_versions).to eq(1..1)
+      po.current_version = 3
+      expect(po.expected_versions).to eq(1..3)
+    end
+  end
+
+  describe '#create_archive_preserved_copies!' do
+    let(:po) { create(:preserved_object, druid: 'ab123cd4567', current_version: 3) }
+    let(:ep) do
+      create(:archive_endpoint, endpoint_name: 'ep2', preservation_policies: [PreservationPolicy.default_policy])
     end
 
-    it "creates pres copies that don't yet exist for the given version, but should" do
-      expect { po.create_archive_preserved_copies(current_version) }.to change {
-        Endpoint.which_need_archive_copy(druid, current_version).to_a
-      }.from([archive_ep]).to([])
-
-      expect(archive_pcs_for_druid.count).to eq 1
-
-      expect { po.create_archive_preserved_copies(current_version - 1) }.to change {
-        Endpoint.which_need_archive_copy(druid, current_version - 1).to_a
-      }.from([archive_ep]).to([])
-      expect(archive_pcs_for_druid.count).to eq 2
-
-      expect(archive_pcs_for_druid.where(version: 1).count).to eq 0
+    it "backfills missing pres copies, without duplication" do
+      expect { po.create_archive_preserved_copies! }.to change { po.preserved_copies.count }.from(0).to(3)
+      expect { po.create_archive_preserved_copies! }.not_to(change { po.preserved_copies.count }) # 2nd run adds none
     end
 
-    it 'creates the pres copies so that they start with UNREPLICATED_STATUS' do
-      expect(po.create_archive_preserved_copies(current_version).all?(&:unreplicated?)).to be true
+    it 'created pres copies have status "unreplicated"' do
+      expect(po.create_archive_preserved_copies!).to all be_unreplicated
     end
 
-    it "creates pres copies that don't yet exist for the given endpoint, but should" do
-      expect { po.create_archive_preserved_copies(current_version) }.to change {
-        Endpoint.which_need_archive_copy(druid, current_version).to_a
-      }.from([archive_ep]).to([])
-      expect(archive_pcs_for_druid.where(version: current_version).count).to eq 1
-
-      new_archive_ep.preservation_policies = [PreservationPolicy.default_policy]
-      expect { po.create_archive_preserved_copies(current_version) }.to change {
-        Endpoint.which_need_archive_copy(druid, current_version).to_a
-      }.from([new_archive_ep]).to([])
-      expect(archive_pcs_for_druid.where(version: current_version).count).to eq 2
-    end
-
-    it 'checks that version is in range' do
-      [-1, 0, 4, 5].each do |version|
-        exp_err_msg = "archive_vers (#{version}) must be between 0 and current_version (#{current_version})"
-        expect { po.create_archive_preserved_copies(version) }.to raise_error ArgumentError, exp_err_msg
-      end
-
-      (1..3).each do |version|
-        expect { po.create_archive_preserved_copies(version) }.not_to raise_error
-      end
+    it "handles all archive endpoints" do
+      po.preserved_copies.create!(version: 2, endpoint: ep, status: 'ok')
+      pcs = []
+      expect { pcs = po.create_archive_preserved_copies! }.to change { po.preserved_copies.count }.from(1).to(6)
+      expect(pcs.map { |x| x.endpoint.endpoint_name }.sort).to eq %w[ep2 ep2 mock_archive1 mock_archive1 mock_archive1]
+      expect(pcs.map(&:version).sort).to eq [1, 1, 2, 3, 3]
+      expect(po.preserved_copies.count).to eq 6
     end
   end
 end

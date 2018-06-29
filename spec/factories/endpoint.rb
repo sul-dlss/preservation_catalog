@@ -4,6 +4,7 @@ FactoryBot.define do
     endpoint_node 'localhost'
     storage_location { "spec/fixtures/#{endpoint_name}/sdr2objects" }
     endpoint_type # default online
+    preservation_policies { [PreservationPolicy.default_policy] }
   end
 
   factory :archive_endpoint, parent: :endpoint do
