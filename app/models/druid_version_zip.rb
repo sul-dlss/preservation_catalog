@@ -30,6 +30,16 @@ class DruidVersionZip
     Pathname.new(file_path).tap { |pn| pn.dirname.mkpath }
   end
 
+  # @param [Integer] count Number of parts
+  # @return [Array<String>] Ordered pathnames expected to correspond to a zip broken into a given number of parts
+  def expected_parts(count = 1)
+    raise ArgumentError, "count (#{count}) must be >= 1" if count < 1
+    base = file_path.sub(/.zip\z/, '')
+    [file_path].concat(
+      (1..(count - 1)).map { |n| base + format('.z%02d', n) }
+    )
+  end
+
   # @return [String]
   # @see [S3 key name performance implications] https://docs.aws.amazon.com/AmazonS3/latest/dev/request-rate-perf-considerations.html
   # @example return 'ab/123/cd/4567/ab123cd4567/ab123cd4567.v0001.zip'
@@ -62,11 +72,16 @@ class DruidVersionZip
 
   # @return [Hash<Symbol => [String, Integer]>] metadata to accompany Zip file to an endpoint
   def metadata
-    { checksum_md5: hexdigest, size: size, zip_cmd: zip_command, zip_version: zip_version }
+    { checksum_md5: hexdigest, size: size, parts_count: parts.size, zip_cmd: zip_command, zip_version: zip_version }
   end
 
   def moab_version_path
     @moab_version_path ||= Moab::StorageServices.object_version_path(druid.id, version)
+  end
+
+  # @return [Array<String>] Existing pathnames for zip parts based on glob (.zip, .z01, .z02, etc.)
+  def parts
+    Dir.glob(file_path.sub(/.zip\z/, '.z*'))
   end
 
   # @return [Integer] Zip file size
@@ -96,7 +111,7 @@ class DruidVersionZip
   # @see #work_dir
   # @return [String] shell command to create this zip
   def zip_command
-    "zip -vr0X -s 10g #{file_path} #{druid.id}/#{v_version}"
+    "zip -vr0X -sv -s #{zip_split_size} #{file_path} #{druid.id}/#{v_version}"
   end
 
   # We presume the system guts do not change underneath a given class instance.
@@ -116,6 +131,11 @@ class DruidVersionZip
     end
     return match[1] if match && match[1].present?
     raise 'No version info matched from `zip -v` ouptut'
+  end
+
+  # @return [String] the option included with "zip -s"
+  def zip_split_size
+    '10g'
   end
 
   def zip_version_regexp
