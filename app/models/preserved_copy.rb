@@ -8,9 +8,11 @@ class PreservedCopy < ApplicationRecord
   UNEXPECTED_VERSION_ON_STORAGE_STATUS = 'unexpected_version_on_storage'.freeze
   VALIDITY_UNKNOWN_STATUS = 'validity_unknown'.freeze
   UNREPLICATED_STATUS = 'unreplicated'.freeze
+  REPLICATED_COPY_NOT_FOUND_STATUS = 'replicated_copy_not_found'.freeze
 
   # @note Hash values cannot be modified without migrating any associated persisted data.
   # @see [enum docs] http://api.rubyonrails.org/classes/ActiveRecord/Enum.html
+  # TODO: Port over statuses to archive pres_copy model
   enum status: {
     OK_STATUS => 0,
     INVALID_MOAB_STATUS => 1,
@@ -18,12 +20,15 @@ class PreservedCopy < ApplicationRecord
     ONLINE_MOAB_NOT_FOUND_STATUS => 3,
     UNEXPECTED_VERSION_ON_STORAGE_STATUS => 4,
     VALIDITY_UNKNOWN_STATUS => 6,
-    UNREPLICATED_STATUS => 7
+    UNREPLICATED_STATUS => 7,
+    REPLICATED_COPY_NOT_FOUND_STATUS => 8
   }
 
   belongs_to :preserved_object
   belongs_to :endpoint
   has_many :zip_checksums, dependent: :restrict_with_exception
+
+  delegate :s3_key, to: :druid_version_zip
 
   validates :endpoint, presence: true
   validates :preserved_object, presence: true
@@ -84,6 +89,10 @@ class PreservedCopy < ApplicationRecord
   # Send to asynchronous checksum validation pipeline
   def validate_checksums!
     ChecksumValidationJob.perform_later(self)
+  end
+
+  def druid_version_zip
+    @druid_version_zip ||= DruidVersionZip.new(preserved_object.druid, version)
   end
 
   def update_audit_timestamps(moab_validated, version_audited)

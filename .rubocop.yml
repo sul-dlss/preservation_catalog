@@ -59,6 +59,7 @@ Lint/RescueWithoutErrorClass:
 
 Metrics/AbcSize:
   Exclude:
+    - 'app/jobs/replicated_file_check_job.rb' # [18.49/15] method still readable
     - 'app/models/preserved_object.rb' # methods still readable
     - 'app/services/checksum_validator.rb' # methods still readable; shameless green
     - 'app/services/preserved_object_handler.rb' # methods still readable; shameless green

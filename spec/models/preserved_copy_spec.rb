@@ -37,7 +37,8 @@ RSpec.describe PreservedCopy, type: :model do
       'online_moab_not_found' => 3,
       'unexpected_version_on_storage' => 4,
       'validity_unknown' => 6,
-      'unreplicated' => 7
+      'unreplicated' => 7,
+      'replicated_copy_not_found' => 8
     )
   end
 
@@ -84,6 +85,18 @@ RSpec.describe PreservedCopy, type: :model do
     it 'passes self to ChecksumValidationJob' do
       expect(ChecksumValidationJob).to receive(:perform_later).with(pc)
       pc.validate_checksums!
+    end
+  end
+
+  context 'delegation to s3_key' do
+    it 'creates the s3_key correctly' do
+      expect(pc.s3_key).to eq("ab/123/cd/4567/ab123cd4567.v0001.zip")
+    end
+  end
+
+  describe '#druid_version_zip' do
+    it 'creates an instance of DruidVersionZip' do
+      expect(pc.druid_version_zip).to be_an_instance_of DruidVersionZip
     end
   end
 

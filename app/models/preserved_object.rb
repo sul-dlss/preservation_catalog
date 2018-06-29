@@ -15,6 +15,16 @@ class PreservedObject < ApplicationRecord
   validates :current_version, presence: true, numericality: { only_integer: true, greater_than: 0 }
   validates :preservation_policy, null: false
 
+  # Spawn asynchronous checks of all existing archive preserved_copies.
+  # This logic is similar to PlexerJob, for a different purpose.
+  # This logic should also include the archive_ttl, for pres_policies that have the oldest ttl.
+  # Calls ReplicatedFileCheckJob
+  # This builds off of #917
+  def check_endpoints!
+    # FIXME: STUB
+    # Ticket: 920
+  end
+
   # given a version, create any PreservedCopy records for that version which don't yet exist for archive
   #  endpoints which implement this PreservedObject's PreservationPolicy.
   # @param archive_vers [Integer] the version for which preserved copies should be created.  must be between
