@@ -87,7 +87,7 @@ RSpec.describe PreservedCopy, type: :model do
       pc.validate_checksums!
     end
   end
-  
+
   context 'delegation to s3_key' do
     it 'creates the s3_key correctly' do
       expect(pc.s3_key).to eq("ab/123/cd/4567/ab123cd4567.v0001.zip")

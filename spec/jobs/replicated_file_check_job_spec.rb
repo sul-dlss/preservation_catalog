@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe ReplicationCheckJob, type: :job do
+describe ReplicatedFileCheckJob, type: :job do
   let(:version) { 1 }
   let(:zip_checksum) { create(:zip_checksum, preserved_copy: pc) }
   let(:po) { create(:preserved_object, druid: 'bj102hs9687', current_version: version) }
@@ -31,9 +31,9 @@ describe ReplicationCheckJob, type: :job do
     context 'stored db checksum matches replicated s3 object checksum' do
       it 'updates the status and last_checksum_validation timestamp' do
         allow(stored_checksums).to receive(:include?).with(replicated_checksum).and_return(true)
-        expect(pc).to receive(:update).with(last_checksum_validation: timestamp)
         expect(pc).to receive(:ok!)
         job.perform(pc)
+        expect(pc.last_checksum_validation).to eq timestamp
       end
     end
 
@@ -41,9 +41,9 @@ describe ReplicationCheckJob, type: :job do
 
       it "updates preserved copy status" do
         expect(stored_checksums).to receive(:include?).with(replicated_checksum).and_return(false)
-        expect(pc).to receive(:update).with(last_checksum_validation: timestamp)
         expect(pc).to receive(:invalid_checksum!)
         job.perform(pc)
+        expect(pc.last_checksum_validation).to eq timestamp
       end
     end
   end
