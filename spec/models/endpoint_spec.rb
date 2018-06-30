@@ -3,14 +3,14 @@ require 'rails_helper'
 RSpec.describe Endpoint, type: :model do
   let(:default_pres_policies) { [PreservationPolicy.default_policy] }
   let(:druid) { 'ab123cd4567' }
-  let(:endpoint_type) { build(:endpoint_type, type_name: 'aws', endpoint_class: 'archive') }
+  let(:endpoint_type) { EndpointType.default_for_storage_roots }
   let!(:endpoint) do
     create(
       :endpoint,
-      endpoint_name: 'aws-us-east-2',
+      endpoint_name: 'storage-root-01',
       endpoint_type: endpoint_type,
-      endpoint_node: 's3.us-east-2.amazonaws.com',
-      storage_location: 'sdr-bucket-01'
+      endpoint_node: 'localhost',
+      storage_location: '/storage_root01'
     )
   end
 
@@ -47,8 +47,6 @@ RSpec.describe Endpoint, type: :model do
   it { is_expected.to validate_presence_of(:storage_location) }
 
   describe '.seed_storage_root_endpoints_from_config' do
-    let(:endpoint_type) { EndpointType.default_for_storage_roots }
-
     it 'creates a local online endpoint for each storage root' do
       HostSettings.storage_roots.each do |storage_root_name, storage_root_location|
         storage_root_attrs = {
@@ -65,7 +63,7 @@ RSpec.describe Endpoint, type: :model do
     it 'does not re-create records that already exist' do
       expect { Endpoint.seed_storage_root_endpoints_from_config(endpoint_type, default_pres_policies) }
         .not_to change { Endpoint.pluck(:endpoint_name).sort }
-        .from(%w[aws-us-east-2 fixture_empty fixture_sr1 fixture_sr2 fixture_sr3 mock_archive1])
+        .from(%w[fixture_empty fixture_sr1 fixture_sr2 fixture_sr3 mock_archive1 storage-root-01])
     end
 
     it 'adds new records if there are additions to Settings since the last run' do
@@ -79,8 +77,8 @@ RSpec.describe Endpoint, type: :model do
       # run it a second time
       expect { Endpoint.seed_storage_root_endpoints_from_config(endpoint_type, default_pres_policies) }
         .to change { Endpoint.pluck(:endpoint_name).sort }
-        .from(%w[aws-us-east-2 fixture_empty fixture_sr1 fixture_sr2 fixture_sr3 mock_archive1])
-        .to(%w[aws-us-east-2 fixture_empty fixture_sr1 fixture_sr2 fixture_sr3 fixture_srTest mock_archive1])
+        .from(%w[fixture_empty fixture_sr1 fixture_sr2 fixture_sr3 mock_archive1 storage-root-01])
+        .to(%w[fixture_empty fixture_sr1 fixture_sr2 fixture_sr3 fixture_srTest mock_archive1 storage-root-01])
     end
   end
 
@@ -104,7 +102,7 @@ RSpec.describe Endpoint, type: :model do
       # run it a second time
       expect { Endpoint.seed_archive_endpoints_from_config(default_pres_policies) }
         .not_to change { Endpoint.pluck(:endpoint_name).sort }
-        .from(%w[aws-us-east-2 fixture_empty fixture_sr1 fixture_sr2 fixture_sr3 mock_archive1])
+        .from(%w[fixture_empty fixture_sr1 fixture_sr2 fixture_sr3 mock_archive1 storage-root-01])
     end
 
     it 'adds new records if there are additions to Settings since the last run' do
@@ -121,14 +119,14 @@ RSpec.describe Endpoint, type: :model do
 
       # run it a second time
       Endpoint.seed_archive_endpoints_from_config(default_pres_policies)
-      expected_ep_names = %w[aws-us-east-2 fixture_archiveTest fixture_empty fixture_sr1 fixture_sr2 fixture_sr3 mock_archive1]
+      expected_ep_names = %w[fixture_archiveTest fixture_empty fixture_sr1 fixture_sr2 fixture_sr3 mock_archive1 storage-root-01]
       expect(Endpoint.pluck(:endpoint_name).sort).to eq expected_ep_names
     end
   end
 
   describe '.archive' do
     it 'returns only the archive endpoints' do
-      expect(Endpoint.archive.pluck(:endpoint_name).sort).to eq(%w[aws-us-east-2 mock_archive1])
+      expect(Endpoint.archive.pluck(:endpoint_name).sort).to eq(%w[mock_archive1])
     end
   end
 
@@ -138,12 +136,13 @@ RSpec.describe Endpoint, type: :model do
                                  archive_ttl: 666,
                                  fixity_ttl: 666)
     end
+    let(:endpoint) { create(:archive_endpoint_deprecated, endpoint_name: 'mock_archive0') }
 
     before { create(:preserved_object, druid: druid) }
 
     it "returns the archive endpoints which implement the PO's pres policy" do
       endpoint.preservation_policies = [PreservationPolicy.default_policy, alternate_pres_policy]
-      expect(Endpoint.archive_targets(druid).pluck(:endpoint_name)).to eq %w[aws-us-east-2 mock_archive1]
+      expect(Endpoint.archive_targets(druid).pluck(:endpoint_name)).to eq %w[mock_archive0 mock_archive1]
       endpoint.preservation_policies = [alternate_pres_policy]
       expect(Endpoint.archive_targets(druid).pluck(:endpoint_name)).to eq %w[mock_archive1]
     end
@@ -174,11 +173,11 @@ RSpec.describe Endpoint, type: :model do
   describe '#to_h' do
     it 'has the expected values' do
       expect(endpoint.to_h).to eq(
-        endpoint_name: 'aws-us-east-2',
-        endpoint_type_name: 'aws',
-        endpoint_type_class: 'archive',
-        endpoint_node: 's3.us-east-2.amazonaws.com',
-        storage_location: 'sdr-bucket-01'
+        endpoint_name: 'storage-root-01',
+        endpoint_type_name: 'online_nfs',
+        endpoint_type_class: 'online',
+        endpoint_node: 'localhost',
+        storage_location: '/storage_root01'
       )
     end
   end
@@ -190,6 +189,8 @@ RSpec.describe Endpoint, type: :model do
   end
 
   describe '#validate_expired_checksums!' do
+    let(:endpoint) { create(:archive_endpoint_deprecated) }
+
     it 'raises if endpoint is wrong type' do
       expect { endpoint.validate_expired_checksums! }.to raise_error(RuntimeError)
     end
