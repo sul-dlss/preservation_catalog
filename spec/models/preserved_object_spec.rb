@@ -55,7 +55,7 @@ RSpec.describe PreservedObject, type: :model do
     let(:current_version) { 3 }
     let!(:po) { create(:preserved_object, druid: druid, current_version: current_version) }
     let(:archive_ep) { Endpoint.find_by(endpoint_name: 'mock_archive1') }
-    let(:new_archive_ep) { create(:archive_endpoint, endpoint_name: 'mock_archive2') }
+    let(:new_archive_ep) { create(:archive_endpoint_deprecated, endpoint_name: 'mock_archive2') }
     let(:archive_pcs_for_druid) do
       PreservedCopy
         .joins(endpoint: [:endpoint_type])

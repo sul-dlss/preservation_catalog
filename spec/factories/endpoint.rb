@@ -6,7 +6,7 @@ FactoryBot.define do
     endpoint_type # default online
   end
 
-  factory :archive_endpoint, parent: :endpoint do
+  factory :archive_endpoint_deprecated, parent: :endpoint do
     delivery_class 1
     association :endpoint_type, endpoint_class: 'archive'
   end

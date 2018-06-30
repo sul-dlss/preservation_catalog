@@ -9,7 +9,7 @@ describe 'the whole replication pipeline', type: :job do # rubocop:disable RSpec
   let(:hash) do
     { druid: druid, version: version, endpoints: [pc.endpoint.endpoint_name] }
   end
-  let(:pc) { create(:unreplicated_copy) }
+  let(:pc) { create(:unreplicated_copy_deprecated) }
 
   around do |example|
     old_adapter = ApplicationJob.queue_adapter
