@@ -26,6 +26,8 @@ append :linked_dirs, "log", "config/settings" # , "tmp/pids", "tmp/cache", "tmp/
 set :honeybadger_env, fetch(:stage)
 set :whenever_identifier, -> { "#{fetch(:application)}_#{fetch(:stage)}" }
 
+set :resque_server_roles, :resque
+
 # Default value for default_env is {}
 # set :default_env, { path: "/opt/ruby/bin:$PATH" }
 
@@ -39,6 +41,11 @@ set :whenever_identifier, -> { "#{fetch(:application)}_#{fetch(:stage)}" }
 before 'deploy:migrate', 'shared_configs:update'
 
 after 'deploy:migrate', 'db_seed'
+
+before 'deploy:migrate', 'resque:pool:stop'
+# using stop and start instead of restart
+# because restart is not reliable
+after 'deploy:restart', 'resque:pool:start'
 
 desc 'Run rake db:seed'
 task :db_seed do
