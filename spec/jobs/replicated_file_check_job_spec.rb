@@ -41,6 +41,9 @@ describe ReplicatedFileCheckJob, type: :job do
 
       it "updates preserved copy status" do
         expect(stored_checksums).to receive(:include?).with(replicated_checksum).and_return(false)
+        expect(Rails.logger).to receive(:error).with(
+          "Stored checksum(#{stored_checksums}) doesn't include the replicated checksum(#{replicated_checksum})."
+        )
         expect(pc).to receive(:invalid_checksum!)
         job.perform(pc)
         expect(pc.last_checksum_validation).to eq timestamp
@@ -52,6 +55,8 @@ describe ReplicatedFileCheckJob, type: :job do
     before { allow(s3_object).to receive(:exists?).and_return(false) }
 
     it 'updates preserved copy status' do
+      expect(Rails.logger).to receive(:error).with("Archival Preserved Copy: #{pc} was not found on #{bucket_name}.")
+
       expect(pc).to receive(:replicated_copy_not_found!)
       job.perform(pc)
     end
@@ -61,9 +66,9 @@ describe ReplicatedFileCheckJob, type: :job do
     let!(:pc) { create(:archive_copy, preserved_object: po, version: version, status: 'unreplicated') }
 
     it "#perform returns on pres_copies" do
+      expect(Rails.logger).to receive(:error).with("#{pc} should be replicated, but has a status of #{pc.status}.")
       expect(job.perform(pc)).to be_nil
       expect(pc).not_to receive(:save!)
-
     end
   end
 
