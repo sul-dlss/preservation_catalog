@@ -67,8 +67,10 @@ Resque.queues.each do |queue|
 end
 
 # check for failed resque jobs
-OkComputer::Registry.register "feature-resque-failures-threshold",
-                              OkComputer::ResqueFailureThresholdCheck.new(10)
+Resque::Failure.queues.each do |queue|
+  OkComputer::Registry.register "feature-#{queue}-queue-threshold",
+                                OkComputer::SizeThresholdCheck.new(queue, 10) { Resque::Failure.count(queue) }
+end
 
 # ------------------------------------------------------------------------------
 
