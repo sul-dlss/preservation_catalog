@@ -7,11 +7,11 @@ FactoryBot.define do
     preserved_object
   end
 
-  factory :archive_copy, parent: :preserved_copy do
-    association :endpoint, factory: :archive_endpoint
+  factory :archive_copy_deprecated, parent: :preserved_copy do
+    association :endpoint, factory: :archive_endpoint_deprecated
   end
 
-  factory :unreplicated_copy, parent: :archive_copy do
+  factory :unreplicated_copy_deprecated, parent: :archive_copy_deprecated do
     status 'unreplicated'
   end
 end

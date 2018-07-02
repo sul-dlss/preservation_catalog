@@ -3,7 +3,7 @@ require 'rails_helper'
 describe PlexerJob, type: :job do
   let(:job) { described_class.new(druid, version, metadata).tap { |j| j.zip = DruidVersionZip.new(druid, version) } }
   let(:druid) { 'bj102hs9687' }
-  let(:endpoint) { create(:archive_endpoint, delivery_class: 1) } # default
+  let(:endpoint) { create(:archive_endpoint_deprecated, delivery_class: 1) } # default
   let(:version) { 1 }
   let(:md5) { 'd41d8cd98f00b204e9800998ecf8427e' }
   let(:metadata) do
@@ -30,7 +30,7 @@ describe PlexerJob, type: :job do
   end
 
   describe '#perform' do
-    let!(:pc) { create(:archive_copy, preserved_object: po, version: version) }
+    let!(:pc) { create(:archive_copy_deprecated, preserved_object: po, version: version) }
     let(:zc) { pc.zip_checksums.first }
 
     it 'splits the message out to endpoint(s)' do
@@ -69,7 +69,7 @@ describe PlexerJob, type: :job do
     end
 
     context 'with undeliverable PC Endpoint(s)' do
-      let(:endpoint) { create(:archive_endpoint, delivery_class: nil) }
+      let(:endpoint) { create(:archive_endpoint_deprecated, delivery_class: nil) }
 
       it 'logs but does not raise' do
         expect(Rails.logger).to receive(:error).with(/no delivery_class/)

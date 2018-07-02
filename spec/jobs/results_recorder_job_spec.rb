@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 describe ResultsRecorderJob, type: :job do
-  let(:pc) { create(:unreplicated_copy) }
+  let(:pc) { create(:unreplicated_copy_deprecated) }
   let(:druid)    { pc.preserved_object.druid }
   let(:endpoint) { pc.endpoint }
 
@@ -23,7 +23,13 @@ describe ResultsRecorderJob, type: :job do
   end
 
   context 'when other endpoints remain unreplicated' do
-    before { create(:unreplicated_copy, preserved_object: pc.preserved_object, endpoint: create(:archive_endpoint)) }
+    before do
+      create(
+        :unreplicated_copy_deprecated,
+        preserved_object: pc.preserved_object,
+        endpoint: create(:archive_endpoint_deprecated)
+      )
+    end
 
     it 'does not send to replication.results queue' do
       expect(Resque.redis.redis).not_to receive(:lpush)

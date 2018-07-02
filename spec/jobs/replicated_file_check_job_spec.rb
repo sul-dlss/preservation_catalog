@@ -4,7 +4,7 @@ describe ReplicatedFileCheckJob, type: :job do
   let(:version) { 1 }
   let(:zip_checksum) { create(:zip_checksum, preserved_copy: pc) }
   let(:po) { create(:preserved_object, druid: 'bj102hs9687', current_version: version) }
-  let!(:pc) { create(:archive_copy, preserved_object: po, version: version) }
+  let!(:pc) { create(:archive_copy_deprecated, preserved_object: po, version: version) }
   let(:s3_object) { instance_double(Aws::S3::Object, exists?: false, put: true) }
   let(:bucket) { instance_double(Aws::S3::Bucket, object: s3_object) }
   let(:bucket_name) { "sul-sdr-us-west-bucket" }
@@ -58,7 +58,7 @@ describe ReplicatedFileCheckJob, type: :job do
   end
 
   context "preserved copy has status 'unreplicated'" do
-    let!(:pc) { create(:archive_copy, preserved_object: po, version: version, status: 'unreplicated') }
+    let!(:pc) { create(:archive_copy_deprecated, preserved_object: po, version: version, status: 'unreplicated') }
 
     it "#perform returns on pres_copies" do
       expect(job.perform(pc)).to be_nil
