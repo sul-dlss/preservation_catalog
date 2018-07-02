@@ -11,6 +11,7 @@ class Endpoint < ApplicationRecord
 
   # @note Hash values cannot be modified without migrating any associated persisted data.
   # @see [enum docs] http://api.rubyonrails.org/classes/ActiveRecord/Enum.html
+  # TODO: deprecated, remove this field (and drop DB col) once this has transitioned to ArchiveEndpoint
   enum delivery_class: {
     S3WestDeliveryJob => 1,
     S3EastDeliveryJob => 2
@@ -81,6 +82,8 @@ class Endpoint < ApplicationRecord
   #   including any entries that may have been seeded already)
   # @note this adds new entries from the config, and leaves existing entries alone, but won't delete anything.
   # TODO: figure out deletion/update based on config?
+  # TODO: deprecated, remove once this functionality has been moved over to ArchiveEndpoint and rest
+  # of app code has been ported
   def self.seed_archive_endpoints_from_config(preservation_policies)
     return unless Settings.archive_endpoints
     Settings.archive_endpoints.map do |endpoint_name, endpoint_config|
@@ -94,6 +97,8 @@ class Endpoint < ApplicationRecord
     end
   end
 
+  # TODO: deprecated, remove (as joe pointed out, i think this was initially just to keep credentials from
+  # getting dumped by default #to_h, but we no longer store that in the db/models)
   def to_h
     {
       endpoint_name: endpoint_name,
@@ -104,6 +109,7 @@ class Endpoint < ApplicationRecord
     }
   end
 
+  # TODO: deprecated, remove (since we're getting rid of our custom #to_h)
   def to_s
     "<Endpoint: #{to_h}>"
   end
