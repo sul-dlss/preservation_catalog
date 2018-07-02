@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180628222502) do
+ActiveRecord::Schema.define(version: 20180702212656) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -34,12 +34,12 @@ ActiveRecord::Schema.define(version: 20180628222502) do
 
   create_table "archive_preserved_copies", force: :cascade do |t|
     t.integer "version", null: false
-    t.string "status", null: false
     t.datetime "last_existence_check"
     t.bigint "preserved_copy_id", null: false
     t.bigint "archive_endpoint_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "status", null: false
     t.index ["archive_endpoint_id"], name: "index_archive_preserved_copies_on_archive_endpoint_id"
     t.index ["last_existence_check"], name: "index_archive_preserved_copies_on_last_existence_check"
     t.index ["preserved_copy_id"], name: "index_archive_preserved_copies_on_preserved_copy_id"
