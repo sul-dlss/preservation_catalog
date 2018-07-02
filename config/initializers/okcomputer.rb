@@ -60,6 +60,9 @@ end
 
 OkComputer::Registry.register 'ruby_version', OkComputer::RubyVersionCheck.new
 
+# check whether resque workers are working
+OkComputer::Registry.register 'feature-resque-down', OkComputer::ResqueDownCheck.new
+
 # check for backed up resque queues
 Resque.queues.each do |queue|
   OkComputer::Registry.register "feature-#{queue}-queue-depth",
