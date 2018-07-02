@@ -26,7 +26,7 @@ class S3WestDeliveryJob < DruidVersionJobBase
   # @param [Hash<Symbol => #to_s>] metadata
   # @return [Hash<Symbol => String>] metadata
   def stringify_values(metadata)
-    metadata.merge(size: metadata[:size].to_s)
+    metadata.merge(size: metadata[:size].to_s, parts_count: metadata[:parts_count].to_s)
   end
 
   # @return [Aws::S3::Object]
