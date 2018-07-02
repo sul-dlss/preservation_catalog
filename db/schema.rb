@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180702212656) do
+ActiveRecord::Schema.define(version: 20180702212657) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -51,6 +51,8 @@ ActiveRecord::Schema.define(version: 20180702212656) do
     t.bigint "archive_preserved_copy_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "md5", null: false
+    t.string "create_info", null: false
     t.index ["archive_preserved_copy_id"], name: "index_archive_preserved_copy_parts_on_archive_preserved_copy_id"
   end
 

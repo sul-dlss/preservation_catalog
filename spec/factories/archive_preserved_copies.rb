@@ -4,5 +4,6 @@ FactoryBot.define do
     version 1
     archive_endpoint
     preserved_copy
+    version 1
   end
 end

@@ -3,5 +3,7 @@
 class ArchivePreservedCopyPart < ApplicationRecord
   belongs_to :archive_preserved_copy
 
+  validates :archive_preserved_copy, :create_info, presence: true
+  validates :md5, presence: true, format: { with: /\A[0-9a-f]{32}\z/ }
   validates :size, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
 end
