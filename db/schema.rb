@@ -59,26 +59,15 @@ ActiveRecord::Schema.define(version: 20180705234907) do
     t.index ["archive_preserved_copy_id"], name: "index_archive_preserved_copy_parts_on_archive_preserved_copy_id"
   end
 
-  create_table "endpoint_types", force: :cascade do |t|
-    t.string "type_name", null: false
-    t.string "endpoint_class", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["endpoint_class"], name: "index_endpoint_types_on_endpoint_class"
-    t.index ["type_name"], name: "index_endpoint_types_on_type_name", unique: true
-  end
-
   create_table "endpoints", force: :cascade do |t|
     t.string "endpoint_name", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "endpoint_node", null: false
     t.string "storage_location", null: false
-    t.bigint "endpoint_type_id", null: false
     t.integer "delivery_class"
     t.index ["endpoint_name"], name: "index_endpoints_on_endpoint_name", unique: true
     t.index ["endpoint_node"], name: "index_endpoints_on_endpoint_node"
-    t.index ["endpoint_type_id"], name: "index_endpoints_on_endpoint_type_id"
     t.index ["storage_location"], name: "index_endpoints_on_storage_location"
   end
 
@@ -144,7 +133,6 @@ ActiveRecord::Schema.define(version: 20180705234907) do
   add_foreign_key "archive_preserved_copies", "archive_endpoints"
   add_foreign_key "archive_preserved_copies", "preserved_copies"
   add_foreign_key "archive_preserved_copy_parts", "archive_preserved_copies"
-  add_foreign_key "endpoints", "endpoint_types"
   add_foreign_key "endpoints_preservation_policies", "endpoints"
   add_foreign_key "endpoints_preservation_policies", "preservation_policies"
   add_foreign_key "preserved_copies", "endpoints"
