@@ -2,9 +2,7 @@ require 'rails_helper'
 
 describe DruidVersionZipPart do
   let(:dvz) { DruidVersionZip.new(druid, version) }
-  let(:part) { described_class.new(dvz, part_name) }
-  let(:part_name) { dvz.part_s3_key(part_index) }
-  let(:part_index) { 2 }
+  let(:part) { described_class.new(dvz, 'bj/102/hs/9687/bj102hs9687.v0001.z02') }
   let(:druid) { 'bj102hs9687' }
   let(:version) { 1 }
 
@@ -28,7 +26,7 @@ describe DruidVersionZipPart do
   end
 
   context 'MD5 checksums' do
-    let(:part_index) { 0 }
+    let(:part) { described_class.new(dvz, 'bj/102/hs/9687/bj102hs9687.v0001.zip') }
 
     before do
       allow(Settings).to receive(:zip_storage).and_return(Rails.root.join('spec', 'fixtures', 'zip_storage'))

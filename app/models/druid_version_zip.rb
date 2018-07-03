@@ -35,25 +35,11 @@ class DruidVersionZip
     Pathname.new(file_path).tap { |pn| pn.dirname.mkpath }
   end
 
-  # @param [Integer] index, where 0 is the .zip, 1 is .z01, etc.
-  # @return [String] A single relative path for the index, regardless of whether it exists or not
-  # @note not a fully-qualified path, because the value is used as a s3 key also
-  def part_s3_key(index = 0)
-    return s3_key if index.zero?
-    base_key + format('.z%02d', index)
-  end
-
-  # @param [Integer] index, where 0 is the .zip, 1 is .z01, etc.
-  # @return [DruidVersionZipPart]
-  def part_object(index = 0)
-    DruidVersionZipPart(self, part_s3_key(index))
-  end
-
   # @param [Integer] count Number of parts
   # @return [Array<String>] Ordered pathnames expected to correspond to a zip broken into a given number of parts
-  def expected_part_names(count = 1)
+  def expected_part_keys(count = 1)
     raise ArgumentError, "count (#{count}) must be >= 1" if count < 1
-    [file_path].concat(
+    [s3_key].concat(
       (1..(count - 1)).map { |n| base_key + format('.z%02d', n) }
     )
   end
@@ -65,9 +51,9 @@ class DruidVersionZip
     druid.tree.join('/') + ".#{v_version}.zip"
   end
 
-  # @return [String] Path to the local temporary transfer zip
+  # @return [String] Path to the local temporary transfer root (.zip) part
   def file_path
-    File.join(Settings.zip_storage, s3_key)
+    File.join(zip_storage, s3_key)
   end
 
   # WITHOUT (re)digesting the file, convert a hexdigest MD5 value to base64-endcoded equivalent.
@@ -78,28 +64,18 @@ class DruidVersionZip
     [[hex].pack("H*")].pack("m0")
   end
 
-  # @return [Digest::MD5] cached md5 object
-  def md5
-    @md5 ||= Digest::MD5.file(file_path)
-  end
-
-  # @return [Hash<Symbol => [String, Integer]>] metadata to accompany Zip file to an endpoint
-  def metadata
-    { checksum_md5: hexdigest, size: size, parts_count: part_names.size, zip_cmd: zip_command, zip_version: zip_version }
-  end
-
   def moab_version_path
     @moab_version_path ||= Moab::StorageServices.object_version_path(druid.id, version)
   end
 
-  # @return [Array<String>] Existing pathnames for zip parts based on glob (.zip, .z01, .z02, etc.)
-  def part_names
-    @part_names ||= Dir.glob(file_path.sub(/.zip\z/, '.z*'))
+  # @return [Array<String>] relative paths, i.e. s3_part_keys for existing parts
+  def part_keys
+    part_paths.map { |part| part.relative_path_from(zip_storage).to_s }
   end
 
-  # @return [Integer] Zip file size
-  def size
-    @size ||= FileTest.size(file_path)
+  # @return [Array<Pathname>] Existing pathnames for zip parts based on glob (.zip, .z01, .z02, etc.)
+  def part_paths
+    @part_paths ||= Pathname.glob(file_path.sub(/.zip\z/, '.z*'))
   end
 
   # @return [String] "v" with zero-padded 4-digit version, e.g., v0001
@@ -131,6 +107,11 @@ class DruidVersionZip
   # We want to avoid shelling out (forking) unnecessarily, just for the version.
   def zip_version
     @@zip_version ||= fetch_zip_version # rubocop:disable Style/ClassVars
+  end
+
+  # @return [Pathname]
+  def zip_storage
+    @zip_storage ||= Pathname.new(Settings.zip_storage)
   end
 
   private
