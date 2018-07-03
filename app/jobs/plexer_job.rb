@@ -1,5 +1,8 @@
+# Preconditions:
+#  All needed PreservedCopy and ArchivePreservedCopy rows are already made.
+#
 # Responsibilities:
-# Record zip metadata info in DB.
+# Record zip part metadata info in DB.
 # Split message out to all necessary endpoints.
 # For example:
 #   Endpoint1Delivery.perform_later(druid, version)
@@ -22,10 +25,8 @@ class PlexerJob < DruidVersionJobBase
   # @option metadata [String] :zip_cmd
   # @option metadata [String] :zip_version
   def perform(druid, version, metadata)
-    ApplicationRecord.transaction do
-      update_size(metadata[:size])
-      pcs.each do |pc|
-        pc.zip_checksums.find_or_create_by!(
+    zip.parts.each do |part|
+      pc.archived_preserved_copies.find_or_create_by!(
           md5: metadata[:checksum_md5],
           create_info: metadata.slice(:zip_cmd, :zip_version).to_s
         )
@@ -34,29 +35,14 @@ class PlexerJob < DruidVersionJobBase
     targets(pcs.pluck(:endpoint_id)).each { |worker| worker.perform_later(druid, version, metadata) }
   end
 
-  # @return [PreservedCopy::ActiveRecord_Relation]
-  def pcs
-    @pcs ||= PreservedCopy.by_druid(zip.druid.id).for_archive_endpoints.where(version: zip.version)
+  # @return [PreservedCopy]
+  def pc
+    @pc ||= PreservedCopy.by_druid(zip.druid.id).archived_preserved_copies.where(version: zip.version)
   end
 
   # @param [Array<Integer>] endpoint_ids
   # @return [Array<Class>] Endpoint delivery classes to be targeted
   def targets(endpoint_ids)
-    Endpoint
-      .where(id: endpoint_ids)
-      .group(:delivery_class, :id)
-      .pluck(:delivery_class, :id)
-      .map do |pair|
-        Rails.logger.error("Archive Endpoint (id: #{pair.second}) has no delivery_class") unless pair.first
-        pair.first
-      end.compact
-  end
-
-  # Validate the incoming value and save once for all
-  # @param [Integer] size
-  def update_size(size)
-    raise ArgumentError, "Size should be an Integer, not #{size.class}" unless size.is_a?(Integer)
-    raise ArgumentError, "Inavlid size value '#{size}'" unless size > 0
-    pcs.update_all(size: size) # rubocop:disable Rails/SkipsModelValidations
+    ArchiveEndpoint.where(id: endpoint_ids).pluck(:delivery_class).distinct
   end
 end

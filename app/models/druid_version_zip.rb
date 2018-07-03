@@ -12,6 +12,11 @@ class DruidVersionZip
     @version = version
   end
 
+  # @return [String] Filename/key without extension, in common to all this object's zip parts
+  def base_key
+    @base_key ||= s3_key.sub(/.zip\z/, '')
+  end
+
   # Creates a zip of Druid-Version content.
   # Changes directory so that the storage root (and druid tree) are not part of
   # the archival directory structure, just the object, e.g. starting at 'ab123cd4567/...' directory,
@@ -30,26 +35,34 @@ class DruidVersionZip
     Pathname.new(file_path).tap { |pn| pn.dirname.mkpath }
   end
 
+  # @param [Integer] index, where 0 is the .zip, 1 is .z01, etc.
+  # @return [String] A single relative path for the index, regardless of whether it exists or not
+  # @note not a fully-qualified path, because the value is used as a s3 key also
+  def part_s3_key(index = 0)
+    return s3_key if index.zero?
+    base_key + format('.z%02d', index)
+  end
+
+  # @param [Integer] index, where 0 is the .zip, 1 is .z01, etc.
+  # @return [DruidVersionZipPart]
+  def part_object(index = 0)
+    DruidVersionZipPart(self, part_s3_key(index))
+  end
+
   # @param [Integer] count Number of parts
   # @return [Array<String>] Ordered pathnames expected to correspond to a zip broken into a given number of parts
-  def expected_parts(count = 1)
+  def expected_part_names(count = 1)
     raise ArgumentError, "count (#{count}) must be >= 1" if count < 1
-    base = file_path.sub(/.zip\z/, '')
     [file_path].concat(
-      (1..(count - 1)).map { |n| base + format('.z%02d', n) }
+      (1..(count - 1)).map { |n| base_key + format('.z%02d', n) }
     )
   end
 
   # @return [String]
   # @see [S3 key name performance implications] https://docs.aws.amazon.com/AmazonS3/latest/dev/request-rate-perf-considerations.html
-  # @example return 'ab/123/cd/4567/ab123cd4567/ab123cd4567.v0001.zip'
+  # @example return 'ab/123/cd/4567/ab123cd4567.v0001.zip'
   def s3_key
     druid.tree.join('/') + ".#{v_version}.zip"
-  end
-
-  # @return [File] opened zip file
-  def file
-    File.open(file_path)
   end
 
   # @return [String] Path to the local temporary transfer zip
@@ -72,7 +85,7 @@ class DruidVersionZip
 
   # @return [Hash<Symbol => [String, Integer]>] metadata to accompany Zip file to an endpoint
   def metadata
-    { checksum_md5: hexdigest, size: size, parts_count: parts.size, zip_cmd: zip_command, zip_version: zip_version }
+    { checksum_md5: hexdigest, size: size, parts_count: part_names.size, zip_cmd: zip_command, zip_version: zip_version }
   end
 
   def moab_version_path
@@ -80,8 +93,8 @@ class DruidVersionZip
   end
 
   # @return [Array<String>] Existing pathnames for zip parts based on glob (.zip, .z01, .z02, etc.)
-  def parts
-    Dir.glob(file_path.sub(/.zip\z/, '.z*'))
+  def part_names
+    @part_names ||= Dir.glob(file_path.sub(/.zip\z/, '.z*'))
   end
 
   # @return [Integer] Zip file size

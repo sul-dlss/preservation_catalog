@@ -1,4 +1,9 @@
-# metadata about a zipped version directory from a Moab
+# Corresponds to a Moab-Version on an Endpoint.
+# For a fully consistent system, given an (Online) PreservedCopy, the number of associated
+# ArchivePreservedCopy objects should be:
+#   pc.version * number_of_archive_endpoints
+#
+# @note Does not have size independent of part(s)
 class ArchivePreservedCopy < ApplicationRecord
   belongs_to :preserved_copy
   belongs_to :archive_endpoint

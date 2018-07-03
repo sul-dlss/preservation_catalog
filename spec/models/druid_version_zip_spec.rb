@@ -79,17 +79,17 @@ describe DruidVersionZip do
     end
   end
 
-  describe '#expected_parts' do
+  describe '#expected_part_names' do
     it 'raises for invalid integer' do
-      expect { dvz.expected_parts(0) }.to raise_error ArgumentError
+      expect { dvz.expected_part_names(0) }.to raise_error ArgumentError
     end
     it 'lists the files expected' do
-      expect(dvz.expected_parts(1)).to eq ['/tmp/bj/102/hs/9687/bj102hs9687.v0001.zip']
-      expect(dvz.expected_parts(2)).to eq [
+      expect(dvz.expected_part_names(1)).to eq ['/tmp/bj/102/hs/9687/bj102hs9687.v0001.zip']
+      expect(dvz.expected_part_names(2)).to eq [
         '/tmp/bj/102/hs/9687/bj102hs9687.v0001.zip',
         '/tmp/bj/102/hs/9687/bj102hs9687.v0001.z01'
       ]
-      one_oh_one = dvz.expected_parts(101)
+      one_oh_one = dvz.expected_part_names(101)
       expect(one_oh_one.count).to eq(101)
       expect(one_oh_one.last).to eq('/tmp/bj/102/hs/9687/bj102hs9687.v0001.z100')
     end
@@ -128,7 +128,7 @@ describe DruidVersionZip do
     end
   end
 
-  describe '#parts' do # zip splits
+  describe '#part_names' do # zip splits
     let(:druid) { 'dc048cw1328' } # fixture is 4.9 MB
 
     before do
@@ -139,12 +139,12 @@ describe DruidVersionZip do
 
     it 'lists the multiple files produced' do
       dvz.create_zip!
-      expect(dvz.parts).to include(
+      expect(dvz.part_names).to include(
         "/tmp/dc/048/cw/1328/dc048cw1328.v0001.zip",
         "/tmp/dc/048/cw/1328/dc048cw1328.v0001.z01",
         "/tmp/dc/048/cw/1328/dc048cw1328.v0001.z04"
       )
-      expect(dvz.parts.count).to eq 5
+      expect(dvz.part_names.count).to eq 5
     end
   end
 
