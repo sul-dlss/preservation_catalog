@@ -73,4 +73,55 @@ RSpec.describe ArchiveEndpoint, type: :model do
       expect(described_class.pluck(:endpoint_name).sort).to eq expected_ep_names
     end
   end
+
+  describe '.archive_targets' do
+    let!(:alternate_pres_policy) do
+      PreservationPolicy.create!(preservation_policy_name: 'alternate_pres_policy',
+                                 archive_ttl: 666,
+                                 fixity_ttl: 666)
+    end
+
+    before { create(:preserved_object, druid: druid) }
+
+    it "returns the archive endpoints which implement the PO's pres policy" do
+      archive_endpoint.preservation_policies = [PreservationPolicy.default_policy, alternate_pres_policy]
+      expect(ArchiveEndpoint.archive_targets(druid).pluck(:endpoint_name)).to eq %w[archive-endpoint mock_archive1]
+      archive_endpoint.preservation_policies = [alternate_pres_policy]
+      expect(ArchiveEndpoint.archive_targets(druid).pluck(:endpoint_name)).to eq %w[mock_archive1]
+    end
+  end
+
+  describe '.which_need_archive_copy' do
+    let(:version) { 3 }
+
+    before { create(:preserved_object, current_version: version, druid: druid) }
+
+    it "returns the archive endpoints which should have a pres copy for the druid/version, but which don't yet" do
+      expect(
+        ArchiveEndpoint.which_need_archive_copy(druid, version).pluck(:endpoint_name)
+      ).to eq %w[archive-endpoint mock_archive1]
+      expect(
+        ArchiveEndpoint.which_need_archive_copy(druid, version - 1).pluck(:endpoint_name)
+      ).to eq %w[archive-endpoint mock_archive1]
+
+      create(
+        :archive_preserved_copy,
+        version: version,
+        archive_endpoint: ArchiveEndpoint.find_by!(endpoint_name: 'mock_archive1')
+      )
+      expect(
+        ArchiveEndpoint.which_need_archive_copy(druid, version).pluck(:endpoint_name)
+      ).to eq %w[archive-endpoint]
+      expect(
+        ArchiveEndpoint.which_need_archive_copy(druid, version - 1).pluck(:endpoint_name)
+      ).to eq %w[archive-endpoint mock_archive1]
+    end
+
+    # since we build AREL subquery, the cast is a guarantee against SQL injection
+    it 'Casts version to integer' do
+      bogus_version = instance_double(Integer)
+      expect(bogus_version).to receive(:to_i).and_return(1)
+      ArchiveEndpoint.which_need_archive_copy(druid, bogus_version).first
+    end
+  end
 end
