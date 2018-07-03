@@ -22,8 +22,11 @@ RSpec.describe ArchivePreservedCopyPart, type: :model do
     end
   end
 
-  it { is_expected.to validate_presence_of(:md5) }
   it { is_expected.to validate_presence_of(:create_info) }
+  it { is_expected.to validate_presence_of(:md5) }
+  it { is_expected.to validate_presence_of(:parts_count) }
+  it { is_expected.to validate_presence_of(:size) }
+  it { is_expected.to validate_presence_of(:suffix) }
   it { is_expected.to validate_presence_of(:archive_preserved_copy) }
   it { is_expected.to belong_to(:archive_preserved_copy) }
 end
