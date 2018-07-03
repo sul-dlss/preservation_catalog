@@ -6,6 +6,17 @@ RSpec.describe Audit::CatalogToMoab do
   let(:storage_dir) { 'spec/fixtures/storage_root01/sdr2objects' }
   let(:limit) { Settings.c2m_sql_limit }
 
+  describe '.logger' do
+    let(:logfile) { Rails.root.join('log', 'c2m.log') }
+
+    after { FileUtils.rm_f(logfile) }
+
+    it 'writes to STDOUT and its own log' do
+      expect { described_class.logger.debug("foobar") }.to output(/foobar/).to_stdout_from_any_process
+      expect(File).to exist(logfile)
+    end
+  end
+
   before { allow(described_class.logger).to receive(:info) } # silence STDOUT chatter
 
   context '.check_version_on_dir' do

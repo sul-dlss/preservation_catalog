@@ -11,6 +11,17 @@ RSpec.describe Audit::MoabToCatalog do
     allow(Dor::WorkflowService).to receive(:update_workflow_error_status)
   end
 
+  describe '.logger' do
+    let(:logfile) { Rails.root.join('log', 'm2c.log') }
+
+    after { FileUtils.rm_f(logfile) }
+
+    it 'writes to STDOUT and its own log' do
+      expect { described_class.logger.debug("foobar") }.to output(/foobar/).to_stdout_from_any_process
+      expect(File).to exist(logfile)
+    end
+  end
+
   describe ".check_existence_for_all_storage_roots" do
     let(:subject) { described_class.check_existence_for_all_storage_roots }
 

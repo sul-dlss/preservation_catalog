@@ -1,8 +1,10 @@
 module Audit
   # Catalog to Moab existence check code
   class CatalogToMoab
-    class << self
-      delegate :logger, to: ::PreservationCatalog::Application
+
+    def self.logger
+      @logger ||= Logger.new(STDOUT)
+                        .extend(ActiveSupport::Logger.broadcast(Logger.new(Rails.root.join('log', 'c2m.log'))))
     end
 
     def self.check_version_on_dir(last_checked_b4_date, storage_dir, limit=Settings.c2m_sql_limit)
