@@ -21,21 +21,16 @@ class ArchiveEndpoint < ApplicationRecord
     joins(preservation_policies: [:preserved_objects]).where(preserved_objects: { druid: druid })
   }
 
-  # TODO: straight port of the scope from the old Endpoint class
-  scope :which_need_archive_copy, lambda { |druid, version|
-    # testing indicates that the Arel::Table#eq will cast the input to the appropriate type for us.  i didn't
-    # didn't see that documented, so i'm casting version.to_i to be safe (since we're not using the usual bind
-    # variable machinery).  just trying to be extra cautious about injection attacks.  we shouldn't have to
-    # worry about druid, since it gets passed via the usual ActiveRecord bind var machinery.
-    apc_table = ArchivePreservedCopy.arel_table
-    aep_table = ArchiveEndpoint.arel_table
-    endpoint_has_pres_copy_subquery =
-      ArchivePreservedCopy.where(
-        apc_table[:archive_endpoint_id].eq(aep_table[:id])
-          .and(apc_table[:version].eq(version.to_i))
-      ).exists
+  scope :which_have_archive_copy, lambda { |druid, version|
+    joins(archive_preserved_copies: [:preserved_object])
+      .where(
+        preserved_objects: { druid: druid },
+        archive_preserved_copies: { version: version }
+      )
+  }
 
-    archive_targets(druid).where.not(endpoint_has_pres_copy_subquery)
+  scope :which_need_archive_copy, lambda { |druid, version|
+    archive_targets(druid).where.not(id: which_have_archive_copy(druid, version))
   }
 
   # iterates over the archive endpoints enumerated in settings, creating an ArchiveEndpoint for each if one doesn't

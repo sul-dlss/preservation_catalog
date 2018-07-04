@@ -93,8 +93,13 @@ RSpec.describe ArchiveEndpoint, type: :model do
 
   describe '.which_need_archive_copy' do
     let(:version) { 3 }
-
-    before { create(:preserved_object, current_version: version, druid: druid) }
+    let!(:po) { create(:preserved_object, current_version: version, druid: druid) }
+    let(:pc) { create(:preserved_copy, preserved_object: po) }
+    let(:pc_other_druid) do
+      other_po = create(:preserved_object, current_version: version, druid: 'zy098xw7654')
+      create(:preserved_copy, version: version, preserved_object: other_po)
+    end
+    let(:ma1_ep) { ArchiveEndpoint.find_by!(endpoint_name: 'mock_archive1') }
 
     it "returns the archive endpoints which should have a pres copy for the druid/version, but which don't yet" do
       expect(
@@ -104,14 +109,17 @@ RSpec.describe ArchiveEndpoint, type: :model do
         ArchiveEndpoint.which_need_archive_copy(druid, version - 1).pluck(:endpoint_name)
       ).to eq %w[archive-endpoint mock_archive1]
 
-      create(
-        :archive_preserved_copy,
-        version: version,
-        archive_endpoint: ArchiveEndpoint.find_by!(endpoint_name: 'mock_archive1')
-      )
+      create(:archive_preserved_copy, preserved_copy: pc, version: version, archive_endpoint: ma1_ep)
       expect(
         ArchiveEndpoint.which_need_archive_copy(druid, version).pluck(:endpoint_name)
       ).to eq %w[archive-endpoint]
+      expect(
+        ArchiveEndpoint.which_need_archive_copy(druid, version - 1).pluck(:endpoint_name)
+      ).to eq %w[archive-endpoint mock_archive1]
+
+      create(
+        :archive_preserved_copy, preserved_copy: pc_other_druid, version: version - 1, archive_endpoint: ma1_ep
+      )
       expect(
         ArchiveEndpoint.which_need_archive_copy(druid, version - 1).pluck(:endpoint_name)
       ).to eq %w[archive-endpoint mock_archive1]
