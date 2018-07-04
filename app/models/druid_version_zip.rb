@@ -44,11 +44,12 @@ class DruidVersionZip
     )
   end
 
-  # @return [String]
+  # @param [String] suffix, e.g. '.zip', '.z01', '.z125', etc., including the dot
+  # @return [String] s3_key for the zip part specified by suffix
   # @see [S3 key name performance implications] https://docs.aws.amazon.com/AmazonS3/latest/dev/request-rate-perf-considerations.html
   # @example return 'ab/123/cd/4567/ab123cd4567.v0001.zip'
-  def s3_key
-    druid.tree.join('/') + ".#{v_version}.zip"
+  def s3_key(suffix = '.zip')
+    druid.tree.join('/') + ".#{v_version}#{suffix}"
   end
 
   # @return [String] Path to the local temporary transfer root (.zip) part

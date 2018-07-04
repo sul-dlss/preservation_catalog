@@ -4,7 +4,7 @@
 # Invoke PlexerJob for each zip part.
 class ZipmakerJob < DruidVersionJobBase
   queue_as :zipmaker
-  delegate :metadata_for_part, :create_zip!, :file_path, :part_names, to: :zip
+  delegate :create_zip!, :file_path, :part_names, to: :zip
 
   # @param [String] druid
   # @param [Integer] version
@@ -14,9 +14,8 @@ class ZipmakerJob < DruidVersionJobBase
     else
       create_zip!
     end
-    part_names.each do |part|
-      file = File.basename(part)
-      PlexerJob.perform_later(druid, version, file, metadata_for_part(part))
+    part_keys.each do |part_key|
+      PlexerJob.perform_later(druid, version, part_key, DruidVersionZipPart.new(zip, part).metadata)
     end
   end
 end

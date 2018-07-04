@@ -2,7 +2,7 @@
 class DruidVersionZipPart
   attr_reader :dvz, :part_filename
   delegate :base64digest, :hexdigest, to: :md5
-  delegate :druid, :parts, :hex_to_base64, :zip_command, :zip_version, to: :dvz
+  delegate :druid, :part_paths, :hex_to_base64, :zip_command, :zip_version, to: :dvz
 
   # @param [DruidVersionZip] dvz
   # @param [String] part_filename, e.g. 'ab/123/cd/4567/ab123cd4567.v0001.z03'
@@ -35,7 +35,13 @@ class DruidVersionZipPart
 
   # @return [Hash<Symbol => [String, Integer]>] metadata to accompany Zip (part) file to an endpoint
   def metadata
-    { checksum_md5: hexdigest, size: size, parts_count: parts.size, zip_cmd: zip_command, zip_version: zip_version }
+    {
+      checksum_md5: hexdigest,
+      size: size,
+      parts_count: part_paths.count,
+      zip_cmd: zip_command,
+      zip_version: zip_version
+    }
   end
 
   # @return [Integer] Zip file size

@@ -10,9 +10,10 @@ class S3WestDeliveryJob < DruidVersionJobBase
 
   # @param [String] druid
   # @param [Integer] version
+  # @param [String] part_s3_key
   # @param [Hash<Symbol => String, Integer>] metadata Zip info
   # @see PlexerJob#perform warning about why metadata must be passed
-  def perform(druid, version, metadata)
+  def perform(druid, version, part_s3_key, metadata)
     return if s3_object.exists?
     s3_object.put(
       body: zip.file,
