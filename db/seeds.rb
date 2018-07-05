@@ -12,7 +12,6 @@ ApplicationRecord.transaction(isolation: :serializable) do
   Endpoint.seed_storage_root_endpoints_from_config(
     [PreservationPolicy.default_policy]
   )
-  # Endpoint.seed_archive_endpoints_from_config([PreservationPolicy.default_policy]) # TODO: deprecated, will be removed
   ArchiveEndpoint.seed_archive_endpoints_from_config([PreservationPolicy.default_policy])
 end
 

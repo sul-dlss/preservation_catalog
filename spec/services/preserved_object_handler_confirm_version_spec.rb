@@ -34,7 +34,6 @@ RSpec.describe PreservedObjectHandler do
         druid = 'nd000lm0000'
         diff_ep = Endpoint.create!(
           endpoint_name: 'diff_endpoint',
-          endpoint_type: EndpointType.default_for_storage_roots,
           endpoint_node: 'localhost',
           storage_location: 'blah'
         )
