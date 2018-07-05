@@ -8,22 +8,21 @@ class ResultsRecorderJob < ApplicationJob
   attr_accessor :pc, :pcs
 
   before_perform do |job|
-    job.pcs ||= PreservedCopy
-                .by_druid(job.arguments.first)
-                .joins(endpoint: [:endpoint_type])
-                .where(
-                  endpoint_types: { endpoint_class: 'archive' },
-                  preserved_copies: { version: job.arguments.second }
-                )
-    job.pc ||= pcs.find_by!('endpoints.delivery_class' => Object.const_get(job.arguments.third))
+    job.apcs ||= ArchivePreservedCopy
+                   .by_druid(job.arguments.first)
+                   .joins(:archive_endpoint)
+                   .where(version: job.arguments.second)
+    job.apc ||= apcs.find_by!('archive_endpoints.delivery_class' => Object.const_get(job.arguments.third))
   end
 
   # @param [String] druid
   # @param [Integer] version
+  # @param [String] s3_part_key
   # @param [String] delivery_class Name of the worker class that performed delivery
-  def perform(druid, version, _delivery_class)
-    raise "Status shifted underneath replication: #{pc.inspect}" unless pc.unreplicated?
-    pc.ok!
+  def perform(druid, version, s3_part_key, _delivery_class)
+    raise "Status shifted underneath replication: #{apc.inspect}" unless apc.unreplicated?
+    if
+    apc.ok!
     return unless pcs.reload.all?(&:ok?)
     publish_result(message(druid, version).to_json)
   end

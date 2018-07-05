@@ -22,4 +22,8 @@ class ArchivePreservedCopy < ApplicationRecord
   validates :preserved_copy, presence: true
   validates :status, inclusion: { in: statuses.keys }
   validates :version, presence: true
+
+  scope :by_druid, lambda { |druid|
+    joins(preserved_copy: [:preserved_object]).where(preserved_objects: { druid: druid })
+  }
 end

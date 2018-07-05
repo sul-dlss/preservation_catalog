@@ -4,7 +4,7 @@ class ZipPartJobBase < DruidVersionJobBase
   attr_accessor :dvz_part
 
   before_perform do |job|
-    job.dvz_part = DruidVersionZip.new(zip, job.arguments.third)
+    job.dvz_part = DruidVersionZipPart.new(zip, job.arguments.third)
   end
 
   # Does queue locking on ONLY druid, version and part (as first 3 parameters)
