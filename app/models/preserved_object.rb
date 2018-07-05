@@ -17,7 +17,9 @@ class PreservedObject < ApplicationRecord
 
   # Spawn asynchronous checks of all existing archive preserved_copies.
   # This logic is similar to PlexerJob, for a different purpose.
-  # This logic should also include the archive_ttl, for pres_policies that have the oldest ttl.
+  # This should implement the start of the replication process if status is unreplicated for an archival pres_copy
+  # Compare last_existence_check (from archive pres_copy) with archive TTL when checking the archival pres_copy status
+  # Log an error message.
   # Calls ReplicatedFileCheckJob
   # This builds off of #917
   def check_endpoints!

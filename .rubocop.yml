@@ -98,6 +98,7 @@ Metrics/CyclomaticComplexity:
 Metrics/LineLength:
   Max: 120
   Exclude:
+    - 'app/jobs/replicated_file_check_job.rb' # line 28 is 129
     - 'app/services/audit_results.rb' # line 35 is 121
     - 'app/services/checksum_validator.rb' # line 151 is 121
     - 'app/services/preserved_object_handler.rb' # line 269 is 121

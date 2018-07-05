@@ -10,13 +10,24 @@ class ReplicatedFileCheckJob < ApplicationJob
 
   # @param [PreservedCopy] verify that the archived preserved_copy exists on an endpoint
   def perform(preserved_copy)
-    return if preserved_copy.unreplicated? # FIXME: storytime (Monday 07/02)
+    if preserved_copy.unreplicated?
+      Rails.logger.error("#{preserved_copy} should be replicated, but has a status of #{preserved_copy.status}.")
+      return
+    end
     aws_s3_object = bucket.object(preserved_copy.s3_key)
     stored_checksums = stored_checksums(preserved_copy)
     replicated_checksum = replicated_checksum(aws_s3_object)
-    return preserved_copy.replicated_copy_not_found! unless aws_s3_object.exists?
+    unless aws_s3_object.exists?
+      Rails.logger.error("Archival Preserved Copy: #{preserved_copy} was not found on #{bucket_name}.")
+      preserved_copy.replicated_copy_not_found!
+      return
+    end
     preserved_copy.last_checksum_validation = Time.zone.now
-    return preserved_copy.invalid_checksum! unless stored_checksums.include?(replicated_checksum)
+    unless stored_checksums.include?(replicated_checksum)
+      Rails.logger.error("Stored checksum(#{stored_checksums}) doesn't include the replicated checksum(#{replicated_checksum}).")
+      preserved_copy.invalid_checksum!
+      return
+    end
     preserved_copy.ok!
   end
 
