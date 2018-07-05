@@ -27,7 +27,7 @@ class PreservedCopy < ApplicationRecord
   belongs_to :preserved_object, inverse_of: :preserved_copies
   belongs_to :endpoint, inverse_of: :preserved_copies
   has_many :zip_checksums, dependent: :restrict_with_exception
-  has_many :archive_preserved_copies
+  has_many :archive_preserved_copies, inverse_of: :preserved_copy
 
   delegate :s3_key, to: :druid_version_zip
 

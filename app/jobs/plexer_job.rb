@@ -13,10 +13,10 @@
 # Do not assume we can just get metadata from (the DruidVersionZip) zip.
 # Jobs are not run at the same time or on the same system, so the info may not match.
 # Therefore, we receive the info passed by the process that was there when the file was created.
-class PlexerJob < DruidVersionJobBase
+class PlexerJob < ZipPartJobBase
   queue_as :zips_made
 
-  before_enqueue { |job| job.zip_info_check!(job.arguments.third) }
+  before_enqueue { |job| job.zip_info_check!(job.arguments.fourth) }
 
   # @param [String] druid
   # @param [Integer] version
@@ -44,8 +44,8 @@ class PlexerJob < DruidVersionJobBase
     end
   end
 
-  # @return [PreservedCopy]
+  # @return [ArchivePreservedCopy]
   def apcs
-    @apcs ||= PreservedCopy.by_druid(zip.druid.id).first!.archive_preserved_copies.where(version: zip.version)
+    @apcs ||= ArchivePreservedCopy.by_druid(zip.druid.id).where(version: zip.version)
   end
 end

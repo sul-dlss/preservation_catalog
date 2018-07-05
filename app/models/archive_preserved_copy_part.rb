@@ -11,17 +11,4 @@ class ArchivePreservedCopyPart < ApplicationRecord
   validates :size, presence: true, numericality: { only_integer: true, greater_than: 0 }
   validates :suffix, presence: true, format: { with: /\A\.z(ip|[0-9]+)\z/ }
   validates :parts_count, presence: true, numericality: { only_integer: true, greater_than: 0 }
-
-  # after_create :deliver!
-  #
-  # # asynchronously post the new zip part to the target endpoint
-  # def deliver!
-  #   dvz = DruidVersionZip.new(preserved_object.druid, archive_preserved_copy.version)
-  #   archive_endpoint.delivery_class.perform_later(
-  #     dvz.druid.id,
-  #     dvz.version,
-  #     dvz.s3_key(suffix),
-  #     metadata...
-  #   )
-  # end
 end

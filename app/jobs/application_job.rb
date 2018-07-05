@@ -36,6 +36,8 @@ class ApplicationJob < ActiveJob::Base
   # @param [Hash<Symbol => String>] metadata
   # @option metadata [String] :checksum_md5
   # @option metadata [Integer] :size
+  # @option metadata [Integer] :parts_count
+  # @option metadata [String] :suffix
   # @option metadata [String] :zip_cmd
   # @option metadata [String] :zip_version
   def zip_info_check!(metadata)

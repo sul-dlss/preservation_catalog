@@ -3,7 +3,6 @@ require 'rails_helper'
 describe PlexerJob, type: :job do
   let(:job) { described_class.new(druid, version, metadata).tap { |j| j.zip = DruidVersionZip.new(druid, version) } }
   let(:druid) { 'bj102hs9687' }
-  let(:endpoint) { create(:archive_endpoint_deprecated, delivery_class: 1) } # default
   let(:version) { 1 }
   let(:md5) { 'd41d8cd98f00b204e9800998ecf8427e' }
   let(:metadata) do
@@ -20,40 +19,42 @@ describe PlexerJob, type: :job do
 
   before { allow(S3WestDeliveryJob).to receive(:perform_later).with(any_args) }
 
-  it 'descends from DruidVersionJobBase' do
-    expect(job).to be_an(DruidVersionJobBase)
+  it 'descends from ZipPartJobBase' do
+    expect(job).to be_an(ZipPartJobBase)
   end
 
   it 'raises without enqueueing if metadata is incomplete' do
-    expect { described_class.perform_later(druid, version, metadata.merge(size: nil)) }
+    expect { described_class.perform_later(druid, version, 'part_key', metadata.merge(size: nil)) }
       .to raise_error(ArgumentError, /size/)
-    expect { described_class.perform_later(druid, version, metadata.reject { |x| x == :zip_cmd }) }
+    expect { described_class.perform_later(druid, version, 'part_key', metadata.reject { |x| x == :zip_cmd }) }
       .to raise_error(ArgumentError, /zip_cmd/)
   end
 
   describe '#perform' do
+    let(:east_ep) { create(:archive_endpoint, delivery_class: 2) }
     let(:pc) { create(:preserved_copy, preserved_object: po) }
-    let!(:apc) { create(:archive_preserved_copy, preserved_copy: pc, version: version) }
-    let(:zc) { pc.zip_checksums.first }
+    let!(:apc1) { create(:archive_preserved_copy, preserved_copy: pc, version: version) }
+    let!(:apc2) { create(:archive_preserved_copy, preserved_copy: pc, version: version, archive_endpoint: east_ep) }
     let(:s3_key) { job.zip.s3_key(metadata[:suffix]) }
 
-    it 'splits the message out to endpoint(s)' do
+    it 'splits the message out to endpoints' do
       expect(S3WestDeliveryJob).to receive(:perform_later)
-        .with(
-          druid,
-          version,
-          s3_key,
-          a_hash_including(:checksum_md5, :size, :zip_cmd, :zip_version)
-        )
+        .with(druid, version, s3_key, a_hash_including(:checksum_md5, :size, :zip_cmd, :zip_version))
+      expect(S3EastDeliveryJob).to receive(:perform_later)
+        .with(druid, version, s3_key, a_hash_including(:checksum_md5, :size, :zip_cmd, :zip_version))
       job.perform(druid, version, s3_key, metadata)
     end
 
-    it 'adds ArchivePreservedCopyPart rows' do
-      allow(job).to receive(:targets).and_return([])
+    it 'adds ArchivePreservedCopyPart to each related APC' do
       job.perform(druid, version, s3_key, metadata)
-      expect(pc).not_to be_nil
-      expect(zc.archive_preserved_copy).to eq md5
-      expect(zc.create_info).to eq metadata.slice(:zip_cmd, :zip_version).to_s
+      apc1.archive_preserved_copy_parts.reload
+      apc2.archive_preserved_copy_parts.reload
+      expect(apc1.archive_preserved_copy_parts.count).to eq 1
+      expect(apc2.archive_preserved_copy_parts.count).to eq 1
+      expect(apc1.archive_preserved_copy_parts.first!.md5).to eq md5
+      expect(apc2.archive_preserved_copy_parts.first!.md5).to eq md5
+      expect(apc1.archive_preserved_copy_parts.first!.create_info).to eq metadata.slice(:zip_cmd, :zip_version).to_s
+      expect(apc2.archive_preserved_copy_parts.first!.create_info).to eq metadata.slice(:zip_cmd, :zip_version).to_s
     end
   end
 end
