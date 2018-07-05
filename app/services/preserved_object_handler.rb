@@ -13,9 +13,7 @@ class PreservedObjectHandler
   validates :incoming_version, presence: true, numericality: { only_integer: true, greater_than: 0 }
   validates :incoming_size, numericality: { only_integer: true, greater_than: 0 }
   validates_each :endpoint do |record, attr, value|
-    if value.is_a?(Endpoint)
-      record.errors.add(attr, "must be an online Endpoint for #{name}") unless value.endpoint_type.online?
-    else
+    unless value.is_a?(Endpoint)
       record.errors.add(attr, 'must be an actual Endpoint')
     end
   end

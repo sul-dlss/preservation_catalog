@@ -22,7 +22,6 @@ class ChecksumValidator
   def initialize(preserved_copy)
     @preserved_copy = preserved_copy
     @bare_druid = preserved_copy.preserved_object.druid
-    raise ArgumentError, "#{self.class.name} requires PreservedCopy's Endpoint to be online" unless endpoint.endpoint_type.online?
     @results = AuditResults.new(bare_druid, nil, endpoint, 'validate_checksums')
   end
 

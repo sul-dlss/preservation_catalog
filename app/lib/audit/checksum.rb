@@ -10,7 +10,7 @@ module Audit
     # Queues asynchronous CV
     def self.validate_disk(endpoint_name)
       logger.info "#{Time.now.utc.iso8601} CV validate_disk starting for #{endpoint_name}"
-      pres_copies = PreservedCopy.by_endpoint_name(endpoint_name).for_online_endpoints.fixity_check_expired
+      pres_copies = PreservedCopy.by_endpoint_name(endpoint_name).fixity_check_expired
       logger.info "Number of Preserved Copies to be enqueued for CV: #{pres_copies.count}"
       pres_copies.find_each(&:validate_checksums!)
     ensure
@@ -27,7 +27,7 @@ module Audit
 
     def self.validate_druid(druid)
       logger.info "#{Time.now.utc.iso8601} CV validate_druid starting for #{druid}"
-      pres_copies = PreservedCopy.by_druid(druid).for_online_endpoints
+      pres_copies = PreservedCopy.by_druid(druid)
       logger.debug("Found #{pres_copies.size} preserved copies.")
       checksum_results_lists = []
       pres_copies.each do |pc|
@@ -53,7 +53,7 @@ module Audit
       # pres_copies is an AR Relation; it could return a lot of results, so we want to process it in
       # batches.  we can't use ActiveRecord's .find_each, because that'll disregard the order .fixity_check_expired
       # specified.  so we use our own batch processing method, which does respect Relation order.
-      pres_copies = PreservedCopy.send(status).by_endpoint_name(endpoint_name).for_online_endpoints
+      pres_copies = PreservedCopy.send(status).by_endpoint_name(endpoint_name)
       desc = "Number of Preserved Copies of status #{status} from #{endpoint_name} to be checksum validated"
       logger.info "#{desc}: #{pres_copies.count}"
       ActiveRecordUtils.process_in_batches(pres_copies, limit) do |pc|
