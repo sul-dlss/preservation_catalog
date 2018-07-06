@@ -54,7 +54,6 @@ describe PlexerJob, type: :job do
       expect(apc1.archive_preserved_copy_parts.first!.md5).to eq md5
       expect(apc2.archive_preserved_copy_parts.first!.md5).to eq md5
       expect(apc1.archive_preserved_copy_parts.first!.create_info).to eq metadata.slice(:zip_cmd, :zip_version).to_s
-      expect(apc2.archive_preserved_copy_parts.first!.create_info).to eq metadata.slice(:zip_cmd, :zip_version).to_s
     end
   end
 end

@@ -21,11 +21,16 @@ class ArchivePreservedCopyPart < ApplicationRecord
   # @return [Boolean] true if all expected parts are now replicated
   def all_parts_replicated?
     return false unless persisted? && ok?
-    suffixes = DruidVersionZip
-                 .new(preserved_object.druid, preserved_copy.version)
-                 .expected_part_keys(parts_count)
-                 .map { |key| File.extname(key) }
-    parts = archive_preserved_copy.archive_preserved_copy_parts.where(suffix: suffixes)
+    parts = archive_preserved_copy.archive_preserved_copy_parts.where(suffix: suffixes_in_set)
     parts.count == parts_count && parts.all?(&:ok?)
+  end
+
+  # For this part, the suffixes of all parts constituting the full zip
+  # @return [Array<String>]
+  def suffixes_in_set
+    DruidVersionZip
+      .new(preserved_object.druid, preserved_copy.version)
+      .expected_part_keys(parts_count)
+      .map { |key| File.extname(key) }
   end
 end
