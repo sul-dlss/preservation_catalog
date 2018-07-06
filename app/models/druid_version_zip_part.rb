@@ -4,18 +4,20 @@ class DruidVersionZipPart
   delegate :base64digest, :hexdigest, to: :md5
   delegate :druid, :part_paths, :hex_to_base64, :zip_command, :zip_version, to: :dvz
 
+  alias s3_key part_filename
+
   # @param [DruidVersionZip] dvz
   # @param [String] part_filename, e.g. 'ab/123/cd/4567/ab123cd4567.v0001.z03'
-  # @note part_filename locates the file in zip_storage AND is the s3_key
+  # @note part_filename locates the file inside zip_storage AND is the s3_key
+  # @see [S3 key name performance implications] https://docs.aws.amazon.com/AmazonS3/latest/dev/request-rate-perf-considerations.html
   def initialize(dvz, part_filename)
     @dvz = dvz
     @part_filename = part_filename
   end
 
-  # @return [String]
-  # @see [S3 key name performance implications] https://docs.aws.amazon.com/AmazonS3/latest/dev/request-rate-perf-considerations.html
-  def s3_key
-    part_filename
+  # @return [String] the filename extension, e.g. '.z03'
+  def extname
+    File.extname(part_filename)
   end
 
   # @return [File] opened zip file

@@ -1,3 +1,6 @@
+# Preconditions:
+# PlexerJob has made a matching ArchivePreservedCopyPart row
+#
 # Responsibilities:
 # Update DB per event info.
 # Is this event the last needed for the DV to be complete?
@@ -5,14 +8,14 @@
 # If YES, send a message to a non-job pub/sub queue.
 class ResultsRecorderJob < ApplicationJob
   queue_as :endpoint_events
-  attr_accessor :pc, :pcs
+  attr_accessor :apc, :apcs
 
   before_perform do |job|
     job.apcs ||= ArchivePreservedCopy
                    .by_druid(job.arguments.first)
                    .joins(:archive_endpoint)
                    .where(version: job.arguments.second)
-    job.apc ||= apcs.find_by!('archive_endpoints.delivery_class' => Object.const_get(job.arguments.third))
+    job.apc ||= apcs.find_by!('archive_endpoints.delivery_class' => Object.const_get(job.arguments.fourth))
   end
 
   # @param [String] druid
@@ -21,9 +24,13 @@ class ResultsRecorderJob < ApplicationJob
   # @param [String] delivery_class Name of the worker class that performed delivery
   def perform(druid, version, s3_part_key, _delivery_class)
     raise "Status shifted underneath replication: #{apc.inspect}" unless apc.unreplicated?
-    if
-    apc.ok!
-    return unless pcs.reload.all?(&:ok?)
+    apc_part = apc.archive_preserved_copy_parts.find_by!(
+      suffix: File.extname(s3_part_key),
+      status: 'unreplicated'
+    )
+    apc_part.ok!
+    apc.ok! if apc_part.all_parts_replicated?
+    return unless apcs.reload.all?(&:ok?)
     publish_result(message(druid, version).to_json)
   end
 
@@ -34,7 +41,7 @@ class ResultsRecorderJob < ApplicationJob
     {
       druid: druid,
       version: version,
-      endpoints: Endpoint.where(id: pcs.pluck(:endpoint_id)).pluck(:endpoint_name)
+      endpoints: apcs.pluck(:endpoint_name)
     }
   end
 

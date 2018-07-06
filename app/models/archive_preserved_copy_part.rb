@@ -26,6 +26,6 @@ class ArchivePreservedCopyPart < ApplicationRecord
                  .expected_part_keys(parts_count)
                  .map { |key| File.extname(key) }
     parts = archive_preserved_copy.archive_preserved_copy_parts.where(suffix: suffixes)
-    parts.count == parts_count && parts.all?(:ok?)
+    parts.count == parts_count && parts.all?(&:ok?)
   end
 end
