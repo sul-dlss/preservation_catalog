@@ -4,6 +4,7 @@ FactoryBot.define do
     create_info "ok"
     parts_count 1
     size 1234
+    status 'unreplicated'
     suffix { parts_count == 1 ? '.zip' : format('.z%02d', parts_count) }
     archive_preserved_copy
   end
