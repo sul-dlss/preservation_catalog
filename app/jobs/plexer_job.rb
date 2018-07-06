@@ -29,23 +29,26 @@ class PlexerJob < ZipPartJobBase
   # @option metadata [String] :zip_cmd
   # @option metadata [String] :zip_version
   def perform(druid, version, part_s3_key, metadata)
-    # dvz_part = DruidVersionZipPart.new(zip, part_s3_key)
     apcs.each do |apc|
       apc.archive_preserved_copy_parts.find_or_create_by(
         create_info: metadata.slice(:zip_cmd, :zip_version).to_s,
         md5: metadata[:checksum_md5],
         parts_count: metadata[:parts_count],
         size: metadata[:size],
-        suffix: metadata[:suffix]
-      )
+        suffix: File.extname(part_s3_key)
+      ) { |part| part.status = 'unreplicated' }
+      apc.save!
     end
-    apcs.map { |apc| apc.archive_endpoint.delivery_class }.uniq.each do |worker|
-      worker.perform_later(druid, version, part_s3_key, metadata)
-    end
+    deliverers.each { |worker| worker.perform_later(druid, version, part_s3_key, metadata) }
   end
 
   # @return [ArchivePreservedCopy]
   def apcs
     @apcs ||= ArchivePreservedCopy.by_druid(zip.druid.id).where(version: zip.version)
+  end
+
+  # @return [Array<Class>] target delivery worker classes
+  def deliverers
+    apcs.map { |apc| apc.archive_endpoint.delivery_class }.uniq
   end
 end

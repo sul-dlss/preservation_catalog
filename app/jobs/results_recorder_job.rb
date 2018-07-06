@@ -12,9 +12,9 @@ class ResultsRecorderJob < ApplicationJob
 
   before_perform do |job|
     job.apcs ||= ArchivePreservedCopy
-                   .by_druid(job.arguments.first)
-                   .joins(:archive_endpoint)
-                   .where(version: job.arguments.second)
+                 .by_druid(job.arguments.first)
+                 .joins(:archive_endpoint)
+                 .where(version: job.arguments.second)
     job.apc ||= apcs.find_by!('archive_endpoints.delivery_class' => Object.const_get(job.arguments.fourth))
   end
 
@@ -23,18 +23,22 @@ class ResultsRecorderJob < ApplicationJob
   # @param [String] s3_part_key
   # @param [String] delivery_class Name of the worker class that performed delivery
   def perform(druid, version, s3_part_key, _delivery_class)
-    raise "Status shifted underneath replication: #{apc.inspect}" unless apc.unreplicated?
-    apc_part = apc.archive_preserved_copy_parts.find_by!(
-      suffix: File.extname(s3_part_key),
-      status: 'unreplicated'
-    )
-    apc_part.ok!
-    apc.ok! if apc_part.all_parts_replicated?
+    part = apc_part!(s3_part_key)
+    part.ok!
+    apc.ok! if part.all_parts_replicated?
     return unless apcs.reload.all?(&:ok?)
     publish_result(message(druid, version).to_json)
   end
 
   private
+
+  def apc_part!(s3_part_key)
+    raise "Status shifted underneath replication: #{apc.inspect}" unless apc.unreplicated?
+    apc.archive_preserved_copy_parts.find_by!(
+      suffix: File.extname(s3_part_key),
+      status: 'unreplicated'
+    )
+  end
 
   # @return [Hash] response message to enqueue
   def message(druid, version)
