@@ -2,8 +2,10 @@ module Audit
   # finds Moab objects on a single Moab storage_dir and interacts with Catalog (db)
   #   according to method called
   class MoabToCatalog
-    class << self
-      delegate :logger, to: ::PreservationCatalog::Application
+
+    def self.logger
+      @logger ||= Logger.new(STDOUT)
+                        .extend(ActiveSupport::Logger.broadcast(Logger.new(Rails.root.join('log', 'm2c.log'))))
     end
 
     # this method intended to be called from rake task or via ReST call

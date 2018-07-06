@@ -11,6 +11,17 @@ RSpec.describe Audit::Checksum do
   let(:endpoint_name) { 'fixture_sr1' }
   let(:limit) { Settings.c2m_sql_limit }
 
+  describe '.logger' do
+    let(:logfile) { Rails.root.join('log', 'cv.log') }
+
+    after { FileUtils.rm_f(logfile) }
+
+    it 'writes to STDOUT and its own log' do
+      expect { described_class.logger.debug("foobar") }.to output(/foobar/).to_stdout_from_any_process
+      expect(File).to exist(logfile)
+    end
+  end
+
   describe '.validate_disk' do
     include_context 'fixture moabs in db'
 

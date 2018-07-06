@@ -1,8 +1,10 @@
 module Audit
   # Checksum validator code
   class Checksum
-    class << self
-      delegate :logger, to: ::PreservationCatalog::Application
+
+    def self.logger
+      @logger ||= Logger.new(STDOUT)
+                        .extend(ActiveSupport::Logger.broadcast(Logger.new(Rails.root.join('log', 'cv.log'))))
     end
 
     # Queues asynchronous CV
