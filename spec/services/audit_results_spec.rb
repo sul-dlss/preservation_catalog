@@ -52,24 +52,24 @@ RSpec.describe AuditResults do
       end
       it 'with log_msg_prefix' do
         expected = "FooCheck(#{druid}, fixture_sr1)"
-        expect(Rails.logger).to receive(:log).with(Logger::ERROR, a_string_matching(Regexp.escape(expected)))
+        expect(Rails.logger).to receive(:add).with(Logger::ERROR, a_string_matching(Regexp.escape(expected)))
         audit_results.report_results
       end
       it 'with check name' do
-        expect(Rails.logger).to receive(:log).with(Logger::ERROR, a_string_matching(check_name))
+        expect(Rails.logger).to receive(:add).with(Logger::ERROR, a_string_matching(check_name))
         audit_results.report_results
       end
       it 'with druid' do
-        expect(Rails.logger).to receive(:log).with(Logger::ERROR, a_string_matching(druid))
+        expect(Rails.logger).to receive(:add).with(Logger::ERROR, a_string_matching(druid))
         audit_results.report_results
       end
       it 'with endpoint name' do
-        expect(Rails.logger).to receive(:log).with(Logger::ERROR, a_string_matching(endpoint.endpoint_name))
+        expect(Rails.logger).to receive(:add).with(Logger::ERROR, a_string_matching(endpoint.endpoint_name))
         audit_results.report_results
       end
       it 'with severity assigned by .logger_severity_level' do
         expect(described_class).to receive(:logger_severity_level).with(result_code).and_return(Logger::FATAL)
-        expect(Rails.logger).to receive(:log).with(Logger::FATAL, a_string_matching(version_not_matched_str))
+        expect(Rails.logger).to receive(:add).with(Logger::FATAL, a_string_matching(version_not_matched_str))
         audit_results.report_results
       end
       it 'for every result' do
@@ -77,10 +77,10 @@ RSpec.describe AuditResults do
         status_details = { old_status: PreservedCopy::INVALID_MOAB_STATUS, new_status: PreservedCopy::OK_STATUS }
         audit_results.add_result(result_code2, status_details)
         severity_level = described_class.logger_severity_level(result_code)
-        expect(Rails.logger).to receive(:log).with(severity_level, a_string_matching(version_not_matched_str))
+        expect(Rails.logger).to receive(:add).with(severity_level, a_string_matching(version_not_matched_str))
         severity_level = described_class.logger_severity_level(result_code2)
         status_changed_str = "PreservedCopy status changed from #{PreservedCopy::INVALID_MOAB_STATUS}"
-        expect(Rails.logger).to receive(:log).with(severity_level, a_string_matching(status_changed_str))
+        expect(Rails.logger).to receive(:add).with(severity_level, a_string_matching(status_changed_str))
         audit_results.report_results
       end
       it 'actual_version number is in log message when set after initialization' do
@@ -88,7 +88,7 @@ RSpec.describe AuditResults do
         result_code = AuditResults::VERSION_MATCHES
         my_results.actual_version = 666 # NOTE: must be set before "add_result" call
         my_results.add_result(result_code, 'foo')
-        expect(Rails.logger).to receive(:log).with(anything, a_string_matching('666'))
+        expect(Rails.logger).to receive(:add).with(anything, a_string_matching('666'))
         my_results.report_results
       end
     end

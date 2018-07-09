@@ -198,6 +198,7 @@ RSpec.describe Audit::MoabToCatalog do
         instance_of(Integer), # size
         endpoint
       ).and_return(po_handler)
+      expect(po_handler).to receive(:logger=)
       expect(po_handler).to receive(:check_existence)
       subject
     end
