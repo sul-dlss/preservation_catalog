@@ -101,8 +101,9 @@ describe PreservationCatalog::S3 do
 
       let(:test_key_id) { ENV.fetch('TRAVIS_JOB_ID', '000') }
       let(:dvz) { DruidVersionZip.new('bj102hs9687', 2) }
-      let(:digest) { dvz.base64digest }
-      let(:file) { File.open(dvz.file) }
+      let(:dvz_part) { DruidVersionZipPart.new(dvz, dvz.s3_key('.zip')) }
+      let(:digest) { dvz_part.base64digest }
+      let(:file) { File.open(dvz_part.file) }
       let(:now) { Time.zone.now.iso8601 }
       let(:get_response) { s3_object.get }
 

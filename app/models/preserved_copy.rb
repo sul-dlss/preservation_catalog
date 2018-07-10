@@ -24,9 +24,10 @@ class PreservedCopy < ApplicationRecord
     REPLICATED_COPY_NOT_FOUND_STATUS => 8
   }
 
-  belongs_to :preserved_object
-  belongs_to :endpoint
+  belongs_to :preserved_object, inverse_of: :preserved_copies
+  belongs_to :endpoint, inverse_of: :preserved_copies
   has_many :zip_checksums, dependent: :restrict_with_exception
+  has_many :archive_preserved_copies, dependent: :restrict_with_exception, inverse_of: :preserved_copy
 
   delegate :s3_key, to: :druid_version_zip
 

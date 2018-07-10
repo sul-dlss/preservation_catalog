@@ -17,13 +17,6 @@ describe DruidVersionZip do
     end
   end
 
-  describe '#file' do
-    it 'opens file_path' do
-      expect(File).to receive(:open).with(dvz.file_path)
-      dvz.file
-    end
-  end
-
   describe '#create_zip!' do
     let(:zip_path) { dvz.file_path }
     let(:version) { 3 } # v1 and v2 pre-existing
@@ -79,45 +72,26 @@ describe DruidVersionZip do
     end
   end
 
-  describe '#expected_parts' do
+  describe '#expected_part_keys' do
     it 'raises for invalid integer' do
-      expect { dvz.expected_parts(0) }.to raise_error ArgumentError
+      expect { dvz.expected_part_keys(0) }.to raise_error ArgumentError
     end
     it 'lists the files expected' do
-      expect(dvz.expected_parts(1)).to eq ['/tmp/bj/102/hs/9687/bj102hs9687.v0001.zip']
-      expect(dvz.expected_parts(2)).to eq [
-        '/tmp/bj/102/hs/9687/bj102hs9687.v0001.zip',
-        '/tmp/bj/102/hs/9687/bj102hs9687.v0001.z01'
+      expect(dvz.expected_part_keys(1)).to eq ['bj/102/hs/9687/bj102hs9687.v0001.zip']
+      expect(dvz.expected_part_keys(2)).to eq [
+        'bj/102/hs/9687/bj102hs9687.v0001.zip',
+        'bj/102/hs/9687/bj102hs9687.v0001.z01'
       ]
-      one_oh_one = dvz.expected_parts(101)
+      one_oh_one = dvz.expected_part_keys(101)
       expect(one_oh_one.count).to eq(101)
-      expect(one_oh_one.last).to eq('/tmp/bj/102/hs/9687/bj102hs9687.v0001.z100')
+      expect(one_oh_one.last).to eq('bj/102/hs/9687/bj102hs9687.v0001.z100')
     end
   end
 
-  context 'MD5 checksums' do
-    before do
-      allow(Settings).to receive(:zip_storage).and_return(Rails.root.join('spec', 'fixtures', 'zip_storage'))
-    end
-
-    describe '#base64digest' do
-      it 'returns base64-encoded value' do
-        expect(dvz.base64digest).to eq 'T5j1nod+y4T/de8Pq0W6xQ=='
-      end
-    end
-
-    describe '#hexdigest' do
-      it 'returns base64-encoded value' do
-        expect(dvz.hexdigest).to eq '4f98f59e877ecb84ff75ef0fab45bac5'
-      end
-    end
-
-    describe '#hex_to_base64' do
-      it 'returns base64-encoded value' do
-        expect(dvz).not_to receive(:md5)
-        expect(dvz.hex_to_base64('4f98f59e877ecb84ff75ef0fab45bac5')).to eq 'T5j1nod+y4T/de8Pq0W6xQ=='
-        expect(dvz.hex_to_base64('d41d8cd98f00b204e9800998ecf8427e')).to eq '1B2M2Y8AsgTpgAmY7PhCfg=='
-      end
+  describe '#hex_to_base64' do
+    it 'returns base64-encoded value' do
+      expect(dvz.hex_to_base64('4f98f59e877ecb84ff75ef0fab45bac5')).to eq 'T5j1nod+y4T/de8Pq0W6xQ=='
+      expect(dvz.hex_to_base64('d41d8cd98f00b204e9800998ecf8427e')).to eq '1B2M2Y8AsgTpgAmY7PhCfg=='
     end
   end
 
@@ -128,7 +102,32 @@ describe DruidVersionZip do
     end
   end
 
-  describe '#parts' do # zip splits
+  describe '#part_keys' do
+    let(:druid) { 'dc048cw1328' }
+
+    before do
+      FileUtils.rm_rf('/tmp/dc') # prep dir
+      dvz.ensure_zip_directory!
+      %w[zip z01 z02 z03 z04].each do |f|
+        FileUtils.touch("/tmp/dc/048/cw/1328/dc048cw1328.v0001.#{f}")
+      end
+    end
+    after { FileUtils.rm_rf('/tmp/dc') } # cleanup
+
+    it 'lists the multiple files produced' do
+      expect(dvz.part_keys).to all(be_a String)
+      expect(dvz.part_keys).to include(
+        "dc/048/cw/1328/dc048cw1328.v0001.zip",
+        "dc/048/cw/1328/dc048cw1328.v0001.z01",
+        "dc/048/cw/1328/dc048cw1328.v0001.z02",
+        "dc/048/cw/1328/dc048cw1328.v0001.z03",
+        "dc/048/cw/1328/dc048cw1328.v0001.z04"
+      )
+      expect(dvz.part_keys.count).to eq 5
+    end
+  end
+
+  describe '#part_paths' do # zip splits
     let(:druid) { 'dc048cw1328' } # fixture is 4.9 MB
 
     before do
@@ -139,12 +138,13 @@ describe DruidVersionZip do
 
     it 'lists the multiple files produced' do
       dvz.create_zip!
-      expect(dvz.parts).to include(
+      expect(dvz.part_paths).to all(be_a Pathname)
+      expect(dvz.part_paths.map(&:to_s)).to include(
         "/tmp/dc/048/cw/1328/dc048cw1328.v0001.zip",
         "/tmp/dc/048/cw/1328/dc048cw1328.v0001.z01",
         "/tmp/dc/048/cw/1328/dc048cw1328.v0001.z04"
       )
-      expect(dvz.parts.count).to eq 5
+      expect(dvz.part_paths.count).to eq 5
     end
   end
 

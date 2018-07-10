@@ -11,6 +11,9 @@ RSpec.describe ArchivePreservedCopy, type: :model do
     expect(described_class.new(preserved_copy: pc)).not_to be_valid
     expect(apc).to be_valid
   end
+  it { is_expected.to validate_presence_of(:archive_endpoint) }
+  it { is_expected.to validate_presence_of(:preserved_copy) }
+  it { is_expected.to validate_presence_of(:version) }
 
   it 'defines a status enum with the expected values' do
     is_expected.to define_enum_for(:status).with(
@@ -36,6 +39,7 @@ RSpec.describe ArchivePreservedCopy, type: :model do
 
   it { is_expected.to belong_to(:preserved_copy) }
   it { is_expected.to belong_to(:archive_endpoint) }
+  it { is_expected.to have_many(:archive_preserved_copy_parts) }
   it { is_expected.to have_db_index(:archive_endpoint_id) }
   it { is_expected.to have_db_index(:last_existence_check) }
   it { is_expected.to have_db_index(:preserved_copy_id) }

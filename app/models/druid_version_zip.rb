@@ -1,5 +1,9 @@
 require 'open3'
 
+# For replication purposes, we may have to chunk archival objects (zips) of Moab versions into multiple files to avoid
+#   unwieldy file sizes.  This model is for interaction with the entire multi-part zip;
+#   see DruidVersionZipPart for individual parts; note that all zips will have at least one part.
+# See comment on part_paths method re: individual part suffixes.
 # Just a regular model, not an ActiveRecord-backed model
 class DruidVersionZip
   attr_reader :druid, :version
@@ -10,6 +14,11 @@ class DruidVersionZip
   def initialize(druid, version)
     @druid = DruidTools::Druid.new(druid.downcase)
     @version = version
+  end
+
+  # @return [String] Filename/key without extension, in common to all this object's zip parts
+  def base_key
+    @base_key ||= s3_key.sub(/.zip\z/, '')
   end
 
   # Creates a zip of Druid-Version content.
@@ -32,29 +41,24 @@ class DruidVersionZip
 
   # @param [Integer] count Number of parts
   # @return [Array<String>] Ordered pathnames expected to correspond to a zip broken into a given number of parts
-  def expected_parts(count = 1)
+  def expected_part_keys(count = 1)
     raise ArgumentError, "count (#{count}) must be >= 1" if count < 1
-    base = file_path.sub(/.zip\z/, '')
-    [file_path].concat(
-      (1..(count - 1)).map { |n| base + format('.z%02d', n) }
+    [s3_key].concat(
+      (1..(count - 1)).map { |n| base_key + format('.z%02d', n) }
     )
   end
 
-  # @return [String]
+  # @param [String] suffix, e.g. '.zip', '.z01', '.z125', etc., including the dot
+  # @return [String] s3_key for the zip part specified by suffix
   # @see [S3 key name performance implications] https://docs.aws.amazon.com/AmazonS3/latest/dev/request-rate-perf-considerations.html
-  # @example return 'ab/123/cd/4567/ab123cd4567/ab123cd4567.v0001.zip'
-  def s3_key
-    druid.tree.join('/') + ".#{v_version}.zip"
+  # @example return 'ab/123/cd/4567/ab123cd4567.v0001.zip'
+  def s3_key(suffix = '.zip')
+    druid.tree.join('/') + ".#{v_version}#{suffix}"
   end
 
-  # @return [File] opened zip file
-  def file
-    File.open(file_path)
-  end
-
-  # @return [String] Path to the local temporary transfer zip
+  # @return [String] Path to the local temporary transfer root (.zip) part
   def file_path
-    File.join(Settings.zip_storage, s3_key)
+    File.join(zip_storage, s3_key)
   end
 
   # WITHOUT (re)digesting the file, convert a hexdigest MD5 value to base64-endcoded equivalent.
@@ -65,28 +69,20 @@ class DruidVersionZip
     [[hex].pack("H*")].pack("m0")
   end
 
-  # @return [Digest::MD5] cached md5 object
-  def md5
-    @md5 ||= Digest::MD5.file(file_path)
-  end
-
-  # @return [Hash<Symbol => [String, Integer]>] metadata to accompany Zip file to an endpoint
-  def metadata
-    { checksum_md5: hexdigest, size: size, parts_count: parts.size, zip_cmd: zip_command, zip_version: zip_version }
-  end
-
   def moab_version_path
     @moab_version_path ||= Moab::StorageServices.object_version_path(druid.id, version)
   end
 
-  # @return [Array<String>] Existing pathnames for zip parts based on glob (.zip, .z01, .z02, etc.)
-  def parts
-    Dir.glob(file_path.sub(/.zip\z/, '.z*'))
+  # @return [Array<String>] relative paths, i.e. s3_part_keys for existing parts
+  def part_keys
+    part_paths.map { |part| part.relative_path_from(zip_storage).to_s }
   end
 
-  # @return [Integer] Zip file size
-  def size
-    @size ||= FileTest.size(file_path)
+  # note that if there is only ONE part, it will end .zip;  if there are multiple parts,
+  #  the last one will end .zip, so two parts is:  .z01, zip. (this agrees with zip utility)
+  # @return [Array<Pathname>] Existing pathnames for zip parts based on glob (.zip, .z01, .z02, etc.)
+  def part_paths
+    @part_paths ||= Pathname.glob(file_path.sub(/.zip\z/, '.z*'))
   end
 
   # @return [String] "v" with zero-padded 4-digit version, e.g., v0001
@@ -118,6 +114,11 @@ class DruidVersionZip
   # We want to avoid shelling out (forking) unnecessarily, just for the version.
   def zip_version
     @@zip_version ||= fetch_zip_version # rubocop:disable Style/ClassVars
+  end
+
+  # @return [Pathname]
+  def zip_storage
+    @zip_storage ||= Pathname.new(Settings.zip_storage)
   end
 
   private

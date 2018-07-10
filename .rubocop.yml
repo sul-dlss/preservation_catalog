@@ -224,6 +224,10 @@ Style/SymbolArray:
     - 'lib/tasks/m2c_tasks.rake'
     - 'config/deploy/*'
 
+Style/SymbolProc:
+  Exclude:
+    - app/jobs/plexer_job.rb # "Pass &:unreplicated! as an argument to find_or_create_by" - um, no.
+
 Style/TernaryParentheses:
   Exclude:
     - spec/lib/active_record_utils_spec.rb # reads better with parens
