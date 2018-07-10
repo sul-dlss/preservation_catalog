@@ -25,7 +25,8 @@ class ResultsRecorderJob < ApplicationJob
   def perform(druid, version, s3_part_key, _delivery_class)
     part = apc_part!(s3_part_key)
     part.ok!
-    apc.ok! if part.all_parts_replicated?
+    apc.ok! if part.all_parts_replicated? # are all of the parts replicated for this endpoint?
+    # only publish result if all of the parts replicated for all endpoints
     return unless apcs.reload.all?(&:ok?)
     publish_result(message(druid, version).to_json)
   end
