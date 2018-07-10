@@ -39,7 +39,7 @@ describe DruidVersionZipPart do
     end
 
     describe '#hexdigest' do
-      it 'returns base64-encoded value' do
+      it 'returns hex-encoded value' do
         expect(part.hexdigest).to eq '4f98f59e877ecb84ff75ef0fab45bac5'
       end
     end

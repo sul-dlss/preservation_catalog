@@ -22,7 +22,7 @@ describe S3WestDeliveryJob, type: :job do
     expect(described_class.new).to be_an(ZipPartJobBase)
   end
 
-  context 'zip already exists on s3' do
+  context 'zip part already exists on s3' do
     before { allow(object).to receive(:exists?).and_return(true) }
 
     it 'does nothing' do
@@ -31,7 +31,7 @@ describe S3WestDeliveryJob, type: :job do
     end
   end
 
-  context 'zip is new to S3' do
+  context 'zip part is new to S3' do
     it 'puts to S3' do
       expect(object).to receive(:put).with(
         a_hash_including(body: File, content_md5: base64, metadata: a_hash_including(checksum_md5: md5))
