@@ -1,4 +1,5 @@
-# Corresponds to a Moab-Version on an Endpoint.
+# Corresponds to a Moab-Version on an ArchiveEndpoint.
+#   There will be individual parts (at least one) - see ArchivepreservedCopyPart.
 # For a fully consistent system, given an (Online) PreservedCopy, the number of associated
 # ArchivePreservedCopy objects should be:
 #   pc.preserved_object.current_version * number_of_archive_endpoints

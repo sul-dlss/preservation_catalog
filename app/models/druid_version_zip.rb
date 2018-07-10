@@ -1,5 +1,8 @@
 require 'open3'
 
+# For replication purposes, we may have to chunk archival objects (zips) of Moab versions into multiple files to avoid
+#   unwieldy file sizes.  This model is for interaction with the entire multi-part zip;
+#   see DruidVersionZipPart for individual parts; note that all zips will have at least one part.
 # Just a regular model, not an ActiveRecord-backed model
 class DruidVersionZip
   attr_reader :druid, :version

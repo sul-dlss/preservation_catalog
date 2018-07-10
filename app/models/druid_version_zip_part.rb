@@ -1,3 +1,7 @@
+# For replication purposes, we may have to chunk archival objects (zips) of Moab versions into multiple files to avoid
+#   unwieldy file sizes.  This is the model for a single such part.  Many of our archival objects (zips) will only
+#   have one of these, but all will have at least one.
+#
 # Just a regular model, not an ActiveRecord-backed model
 class DruidVersionZipPart
   attr_reader :dvz, :part_filename
