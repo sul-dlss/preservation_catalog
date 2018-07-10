@@ -15,7 +15,7 @@ class ResultsRecorderJob < ApplicationJob
                  .by_druid(job.arguments.first)
                  .joins(:archive_endpoint)
                  .where(version: job.arguments.second)
-    job.apc ||= apcs.find_by!('archive_endpoints.delivery_class' => Object.const_get(job.arguments.fourth))
+    job.apc ||= apcs.find_by!(archive_endpoints: { delivery_class: Object.const_get(job.arguments.fourth) })
   end
 
   # @param [String] druid
