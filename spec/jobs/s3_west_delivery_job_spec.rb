@@ -27,6 +27,7 @@ describe S3WestDeliveryJob, type: :job do
 
     it 'does nothing' do
       expect(object).not_to receive(:put)
+      expect(ResultsRecorderJob).not_to receive(:perform_later)
       described_class.perform_now(druid, version, part_s3_key, metadata)
     end
   end
@@ -38,10 +39,9 @@ describe S3WestDeliveryJob, type: :job do
       )
       described_class.perform_now(druid, version, part_s3_key, metadata)
     end
-  end
-
-  it 'invokes ResultsRecorderJob' do
-    expect(ResultsRecorderJob).to receive(:perform_later).with(druid, version, part_s3_key, described_class.to_s)
-    described_class.perform_now(druid, version, part_s3_key, metadata)
+    it 'invokes ResultsRecorderJob' do
+      expect(ResultsRecorderJob).to receive(:perform_later).with(druid, version, part_s3_key, described_class.to_s)
+      described_class.perform_now(druid, version, part_s3_key, metadata)
+    end
   end
 end
