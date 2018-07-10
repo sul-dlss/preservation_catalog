@@ -45,6 +45,10 @@ describe PlexerJob, type: :job do
       job.perform(druid, version, s3_key, metadata)
     end
 
+    it 'ensures archive_preserved_copy_part exists with status unreplicated before queueing for delivery' do
+      skip('need test for ensuring part exists with status unreplicated')
+    end
+
     it 'adds ArchivePreservedCopyPart to each related APC' do
       job.perform(druid, version, s3_key, metadata)
       apc1.archive_preserved_copy_parts.reload

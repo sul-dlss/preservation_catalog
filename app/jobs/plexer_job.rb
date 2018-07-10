@@ -30,21 +30,26 @@ class PlexerJob < ZipPartJobBase
   # @option metadata [String] :zip_version
   def perform(druid, version, part_s3_key, metadata)
     apcs.each do |apc|
-      apc.archive_preserved_copy_parts.find_or_create_by(
-        create_info: metadata.slice(:zip_cmd, :zip_version).to_s,
-        md5: metadata[:checksum_md5],
-        parts_count: metadata[:parts_count],
-        size: metadata[:size],
-        suffix: File.extname(part_s3_key)
-      ) { |part| part.status = 'unreplicated' }
-      apc.save!
+      find_or_create_unreplicated_part(apc, part_s3_key, metadata)
     end
     deliverers.each { |worker| worker.perform_later(druid, version, part_s3_key, metadata) }
   end
 
-  # @return [ArchivePreservedCopy]
+  private
+
+  # @return [ActiveRecord::Relation] effectively an Array of ArchivePreservedCopy objects
   def apcs
     @apcs ||= ArchivePreservedCopy.by_druid(zip.druid.id).where(version: zip.version)
+  end
+
+  def find_or_create_unreplicated_part(apc, part_s3_key, metadata)
+    apc.archive_preserved_copy_parts.find_or_create_by(
+      create_info: metadata.slice(:zip_cmd, :zip_version).to_s,
+      md5: metadata[:checksum_md5],
+      parts_count: metadata[:parts_count],
+      size: metadata[:size],
+      suffix: File.extname(part_s3_key)
+    ) { |part| part.unreplicated! }
   end
 
   # @return [Array<Class>] target delivery worker classes
