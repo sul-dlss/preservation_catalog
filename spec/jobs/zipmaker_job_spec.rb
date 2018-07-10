@@ -18,7 +18,7 @@ describe ZipmakerJob, type: :job do
     expect(described_class.new).to be_a(DruidVersionJobBase)
   end
 
-  it 'invokes PlexerJob' do
+  it 'invokes PlexerJob (single part zip)' do
     expect(PlexerJob).to receive(:perform_later).with(druid, version, 'bj/102/hs/9687/bj102hs9687.v0001.zip', Hash)
     described_class.perform_now(druid, version)
   end

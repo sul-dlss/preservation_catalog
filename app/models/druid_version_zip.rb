@@ -3,6 +3,7 @@ require 'open3'
 # For replication purposes, we may have to chunk archival objects (zips) of Moab versions into multiple files to avoid
 #   unwieldy file sizes.  This model is for interaction with the entire multi-part zip;
 #   see DruidVersionZipPart for individual parts; note that all zips will have at least one part.
+# See comment on part_paths method re: individual part suffixes.
 # Just a regular model, not an ActiveRecord-backed model
 class DruidVersionZip
   attr_reader :druid, :version
@@ -77,6 +78,8 @@ class DruidVersionZip
     part_paths.map { |part| part.relative_path_from(zip_storage).to_s }
   end
 
+  # note that if there is only ONE part, it will end .zip;  if there are multiple parts,
+  #  the last one will end .zip, so two parts is:  .z01, zip. (this agrees with zip utility)
   # @return [Array<Pathname>] Existing pathnames for zip parts based on glob (.zip, .z01, .z02, etc.)
   def part_paths
     @part_paths ||= Pathname.glob(file_path.sub(/.zip\z/, '.z*'))
