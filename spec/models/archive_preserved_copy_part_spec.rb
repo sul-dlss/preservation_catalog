@@ -4,6 +4,13 @@ RSpec.describe ArchivePreservedCopyPart, type: :model do
   let(:apc) { create(:archive_preserved_copy) }
   let(:args) { attributes_for(:archive_preserved_copy_part).merge(archive_preserved_copy: apc) }
 
+  it 'defines a status enum with the expected values' do
+    is_expected.to define_enum_for(:status).with(
+      'ok' => 0,
+      'unreplicated' => 1
+    )
+  end
+
   it 'is not valid unless it has all required attributes' do
     expect(described_class.new).not_to be_valid
     expect(described_class.new(args.merge(md5: nil))).not_to be_valid
