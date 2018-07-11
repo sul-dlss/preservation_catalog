@@ -16,9 +16,9 @@ end
 
 every '0 5 8-14 * *', roles: [:c2m] do
   set :output, standard: 'log/c2m.log', error: 'log/c2m-err.log'
-  sat_only_rake "c2m:all_roots[`date --date='7 days ago' --iso-8601=s`]"
+  sat_only_rake "c2m:all_roots[`date --iso-8601=s`]"
 end
 every '0 5 22-28 * *', roles: [:c2m] do
   set :output, standard: 'log/c2m.log', error: 'log/c2m-err.log'
-  sat_only_rake "c2m:all_roots[`date --date='7 days ago' --iso-8601=s`]"
+  sat_only_rake "c2m:all_roots[`date --iso-8601=s`]"
 end
