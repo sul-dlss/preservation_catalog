@@ -118,10 +118,10 @@ class AuditResults
   #   results = [result1, result2]
   #   result1 = {response_code => msg}
   #   result2 = {response_code => msg}
-  def report_results
+  def report_results(logger=Rails.logger)
     candidate_workflow_results = []
     result_array.each do |r|
-      log_result(r)
+      log_result(r, logger)
       if r.key?(INVALID_MOAB)
         msg = "#{workflows_msg_prefix} || #{r.values.first}"
         WorkflowReporter.report_error(druid, 'moab-valid', msg)
@@ -159,9 +159,9 @@ class AuditResults
     WorkflowReporter.report_error(druid, 'preservation-audit', msg)
   end
 
-  def log_result(result)
+  def log_result(result, logger)
     severity = self.class.logger_severity_level(result.keys.first)
-    Rails.logger.log(severity, "#{log_msg_prefix} #{result.values.first}")
+    logger.add(severity, "#{log_msg_prefix} #{result.values.first}")
   end
 
   def result_code_msg(code, addl=nil)

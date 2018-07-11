@@ -60,7 +60,7 @@ module Audit
         results.add_result(AuditResults::PC_PO_VERSION_MISMATCH,
                            pc_version: preserved_copy.version,
                            po_version: preserved_copy.preserved_object.current_version)
-        results.report_results
+        results.report_results(Audit::CatalogToMoab.logger)
         return
       end
 
@@ -74,11 +74,11 @@ module Audit
         results.add_result(AuditResults::MOAB_NOT_FOUND,
                            db_created_at: preserved_copy.created_at.iso8601,
                            db_updated_at: preserved_copy.updated_at.iso8601)
-        results.report_results
+        results.report_results(Audit::CatalogToMoab.logger)
         return
       end
 
-      return results.report_results unless can_validate_current_pres_copy_status?
+      return results.report_results(Audit::CatalogToMoab.logger) unless can_validate_current_pres_copy_status?
 
       moab_version = moab.current_version_id
       results.actual_version = moab_version
@@ -87,7 +87,7 @@ module Audit
         if catalog_version == moab_version
           set_status_as_seen_on_disk(true) unless preserved_copy.status == PreservedCopy::OK_STATUS
           results.add_result(AuditResults::VERSION_MATCHES, 'PreservedCopy')
-          results.report_results
+          results.report_results(Audit::CatalogToMoab.logger)
         elsif catalog_version < moab_version
           set_status_as_seen_on_disk(true)
           pohandler = PreservedObjectHandler.new(druid, moab_version, moab.size, preserved_copy.endpoint)
@@ -97,7 +97,7 @@ module Audit
           results.add_result(
             AuditResults::UNEXPECTED_VERSION, db_obj_name: 'PreservedCopy', db_obj_version: preserved_copy.version
           )
-          results.report_results
+          results.report_results(Audit::CatalogToMoab.logger)
         end
 
         preserved_copy.update_audit_timestamps(ran_moab_validation?, true)

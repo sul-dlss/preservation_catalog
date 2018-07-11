@@ -21,6 +21,7 @@ class PreservedObjectHandler
   end
 
   attr_reader :druid, :incoming_version, :incoming_size, :endpoint, :results
+  attr_writer :logger
 
   delegate :storage_location, to: :endpoint
 
@@ -30,6 +31,7 @@ class PreservedObjectHandler
     @incoming_size = string_to_int(incoming_size)
     @endpoint = endpoint
     @results = AuditResults.new(druid, incoming_version, endpoint)
+    @logger = PreservationCatalog::Application.logger
   end
 
   def create_after_validation

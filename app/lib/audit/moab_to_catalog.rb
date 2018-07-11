@@ -16,6 +16,7 @@ module Audit
       storage_dir = "#{moab.object_pathname.to_s.split(storage_trunk).first}#{storage_trunk}"
       endpoint = Endpoint.find_by!(storage_location: storage_dir)
       po_handler = PreservedObjectHandler.new(druid, moab.current_version_id, moab.size, endpoint)
+      po_handler.logger = Audit::MoabToCatalog.logger
       results = po_handler.check_existence
       logger.info "#{results} for #{druid}"
       results
