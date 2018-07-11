@@ -70,6 +70,23 @@ class PreservedCopy < ApplicationRecord
     # to 0 for nulls, which sorts before 1 for non-nulls, which are then sorted by last_checksum_validation)
   }
 
+  # given a version, create any ArchivePreservedCopy records for that version which don't yet exist for archive
+  #  endpoints which implement the parent PreservedObject's PreservationPolicy.
+  # @param archive_vers [Integer] the version for which archive preserved copies should be created.  must be between
+  #   1 and this PreservedCopy's version (inclusive).  Because there's an ArchivePreservedCopy for
+  #   each version for each endpoint (whereas there is one PreservedCopy for an entire online Moab).
+  # @return [Array<ArchivePreservedCopy>] the ArchivePreservedCopy records that were created
+  def create_archive_preserved_copies!(archive_vers)
+    unless archive_vers > 0 && archive_vers <= version
+      raise ArgumentError, "archive_vers (#{archive_vers}) must be between 0 and version (#{version})"
+    end
+
+    params = ArchiveEndpoint.which_need_archive_copy(preserved_object.druid, archive_vers).map do |aep|
+      { version: archive_vers, archive_endpoint: aep, status: 'unreplicated' }
+    end
+    archive_preserved_copies.create!(params)
+  end
+
   # Send to asynchronous replication pipeline
   # @raise [RuntimeError] if object is unpersisted or too large (>=~10GB)
   # @todo reroute to large object pipeline instead of raise

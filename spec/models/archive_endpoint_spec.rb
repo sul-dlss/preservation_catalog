@@ -124,12 +124,5 @@ RSpec.describe ArchiveEndpoint, type: :model do
         ArchiveEndpoint.which_need_archive_copy(druid, version - 1).pluck(:endpoint_name)
       ).to eq %w[archive-endpoint mock_archive1]
     end
-
-    # since we build AREL subquery, the cast is a guarantee against SQL injection
-    it 'Casts version to integer' do
-      bogus_version = instance_double(Integer)
-      expect(bogus_version).to receive(:to_i).and_return(1)
-      ArchiveEndpoint.which_need_archive_copy(druid, bogus_version).first
-    end
   end
 end

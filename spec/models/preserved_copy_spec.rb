@@ -1,26 +1,31 @@
 require 'rails_helper'
 
 RSpec.describe PreservedCopy, type: :model do
+  let(:druid) { 'ab123cd4567' }
   let(:endpoint) { Endpoint.find_by(endpoint_name: 'fixture_sr1') }
   let(:preserved_object) do
     create(
       :preserved_object,
-      druid: 'ab123cd4567',
+      druid: druid,
       current_version: 1,
       preservation_policy_id: PreservationPolicy.default_policy.id
     )
   end
   let(:status) { 'validity_unknown' }
+  let(:pc_version) { 1 }
   let(:args) do # default constructor params
     {
       preserved_object: preserved_object,
       endpoint: endpoint,
-      version: 1,
+      version: pc_version,
       status: status,
       size: 1
     }
   end
-  let(:pc) { create(:preserved_copy, args) }
+
+  # some tests assume the PC and PO exist before the vars are referenced.  the eager instantiation of pc will cause
+  # instantiation of preserved_object, since pc depends on it (via args).
+  let!(:pc) { create(:preserved_copy, args) }
   let(:now) { Time.now.utc }
 
   it 'is not valid without all required valid attributes' do
@@ -90,7 +95,7 @@ RSpec.describe PreservedCopy, type: :model do
 
   context 'delegation to s3_key' do
     it 'creates the s3_key correctly' do
-      expect(pc.s3_key).to eq("ab/123/cd/4567/ab123cd4567.v0001.zip")
+      expect(pc.s3_key).to eq("ab/123/cd/4567/#{druid}.v0001.zip")
     end
   end
 
@@ -253,7 +258,7 @@ RSpec.describe PreservedCopy, type: :model do
 
     describe '.by_druid' do
       it 'returns the expected preserved copies' do
-        expect(described_class.by_druid('ab123cd4567').length).to eq 1
+        expect(described_class.by_druid(druid).length).to eq 1
         expect(described_class.by_druid('bj102hs9687')).to be_empty
       end
     end
@@ -306,6 +311,59 @@ RSpec.describe PreservedCopy, type: :model do
           expect(pcs_ordered_by_query1).not_to include recently_checked_pc1
           expect(pcs_ordered_by_query2).not_to include recently_checked_pc2
         end
+      end
+    end
+  end
+
+  describe '#create_archive_preserved_copies!' do
+    let(:pc_version) { 3 }
+    let(:archive_ep) { ArchiveEndpoint.find_by!(endpoint_name: 'mock_archive1') }
+    let(:new_archive_ep) { create(:archive_endpoint, endpoint_name: 'mock_archive2') }
+    # TODO: i think sarav's PR (or joe's?) adds a .by_druid scope to ArchivePreservedCopy
+    let(:archive_pcs_for_druid) do
+      ArchivePreservedCopy.joins(:preserved_object).where(preserved_objects: { druid: druid })
+    end
+
+    it "creates pres copies that don't yet exist for the given version, but should" do
+      expect { pc.create_archive_preserved_copies!(pc_version) }.to change {
+        ArchiveEndpoint.which_need_archive_copy(druid, pc_version).to_a
+      }.from([archive_ep]).to([])
+
+      expect(archive_pcs_for_druid.count).to eq 1
+
+      expect { pc.create_archive_preserved_copies!(pc_version - 1) }.to change {
+        ArchiveEndpoint.which_need_archive_copy(druid, pc_version - 1).to_a
+      }.from([archive_ep]).to([])
+      expect(archive_pcs_for_druid.count).to eq 2
+
+      expect(archive_pcs_for_druid.where(version: 1).count).to eq 0
+    end
+
+    it 'creates the pres copies so that they start with unreplicated status' do
+      expect(pc.create_archive_preserved_copies!(pc_version).all?(&:unreplicated?)).to be true
+    end
+
+    it "creates pres copies that don't yet exist for the given endpoint, but should" do
+      expect { pc.create_archive_preserved_copies!(pc_version) }.to change {
+        ArchiveEndpoint.which_need_archive_copy(druid, pc_version).to_a
+      }.from([archive_ep]).to([])
+      expect(archive_pcs_for_druid.where(version: pc_version).count).to eq 1
+
+      new_archive_ep.preservation_policies = [PreservationPolicy.default_policy]
+      expect { pc.create_archive_preserved_copies!(pc_version) }.to change {
+        ArchiveEndpoint.which_need_archive_copy(druid, pc_version).to_a
+      }.from([new_archive_ep]).to([])
+      expect(archive_pcs_for_druid.where(version: pc_version).count).to eq 2
+    end
+
+    it 'checks that version is in range' do
+      [-1, 0, 4, 5].each do |version|
+        exp_err_msg = "archive_vers (#{version}) must be between 0 and version (#{pc_version})"
+        expect { pc.create_archive_preserved_copies!(version) }.to raise_error ArgumentError, exp_err_msg
+      end
+
+      (1..3).each do |version|
+        expect { pc.create_archive_preserved_copies!(version) }.not_to raise_error
       end
     end
   end
