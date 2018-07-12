@@ -106,7 +106,7 @@ RSpec.describe Audit::Checksum do
       end
 
       it 'creates an instance and calls #validate_checksums on everything in batches' do
-        pcs_to_process = PreservedCopy.validity_unknown.by_endpoint_name(endpoint_name).for_online_endpoints
+        pcs_to_process = PreservedCopy.validity_unknown.by_endpoint_name(endpoint_name)
         cv_list = pcs_to_process.map { |pc| ChecksumValidator.new(pc) }
         expect(cv_list.size).to eq 3
         cv_list.each do |cv|
