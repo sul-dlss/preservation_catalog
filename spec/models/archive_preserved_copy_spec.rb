@@ -3,15 +3,15 @@ require 'rails_helper'
 RSpec.describe ArchivePreservedCopy, type: :model do
   let(:po) { build(:preserved_object) }
   let(:pc) { build(:preserved_copy) }
-  let(:archive_endpoint) { build(:archive_endpoint) }
-  let(:apc) { build(:archive_preserved_copy, preserved_copy: pc, archive_endpoint: archive_endpoint) }
+  let(:zip_endpoint) { build(:zip_endpoint) }
+  let(:apc) { build(:archive_preserved_copy, preserved_copy: pc, zip_endpoint: zip_endpoint) }
 
   it 'is not valid without all required valid attributes' do
     expect(described_class.new).not_to be_valid
     expect(described_class.new(preserved_copy: pc)).not_to be_valid
     expect(apc).to be_valid
   end
-  it { is_expected.to validate_presence_of(:archive_endpoint) }
+  it { is_expected.to validate_presence_of(:zip_endpoint) }
   it { is_expected.to validate_presence_of(:preserved_copy) }
   it { is_expected.to validate_presence_of(:version) }
 
@@ -38,9 +38,9 @@ RSpec.describe ArchivePreservedCopy, type: :model do
   end
 
   it { is_expected.to belong_to(:preserved_copy) }
-  it { is_expected.to belong_to(:archive_endpoint) }
+  it { is_expected.to belong_to(:zip_endpoint) }
   it { is_expected.to have_many(:archive_preserved_copy_parts) }
-  it { is_expected.to have_db_index(:archive_endpoint_id) }
+  it { is_expected.to have_db_index(:zip_endpoint_id) }
   it { is_expected.to have_db_index(:last_existence_check) }
   it { is_expected.to have_db_index(:preserved_copy_id) }
   it { is_expected.to have_db_index(:status) }

@@ -77,8 +77,6 @@ RSpec.describe Endpoint, type: :model do
   end
 
   describe '#validate_expired_checksums!' do
-    let(:endpoint) { create(:archive_endpoint_deprecated) }
-
     it 'calls ChecksumValidationJob for each eligible PreservedCopy' do
       allow(Rails.logger).to receive(:info)
       ep = create(:endpoint)
