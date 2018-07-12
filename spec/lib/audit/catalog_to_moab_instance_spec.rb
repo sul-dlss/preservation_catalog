@@ -235,33 +235,47 @@ RSpec.describe Audit::CatalogToMoab do
       end
 
       context 'runs validations other than checksum' do
-        [
-          PreservedCopy::VALIDITY_UNKNOWN_STATUS,
-          PreservedCopy::OK_STATUS,
-          PreservedCopy::ONLINE_MOAB_NOT_FOUND_STATUS,
-          PreservedCopy::INVALID_MOAB_STATUS,
-          PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
-        ].each do |orig_status|
-          it "had #{orig_status}, should now have validity_unknown" do
-            pres_copy.status = orig_status
-            pres_copy.save!
-            mock_sov = instance_double(Stanford::StorageObjectValidator)
-            allow(mock_sov).to receive(:validation_errors).and_return([])
-            allow(Stanford::StorageObjectValidator).to receive(:new).and_return(mock_sov)
-            c2m.check_catalog_version
-            expect(pres_copy.reload).to be_validity_unknown
+        context 'no validation errors' do
+          [
+            PreservedCopy::VALIDITY_UNKNOWN_STATUS,
+            PreservedCopy::OK_STATUS,
+            PreservedCopy::ONLINE_MOAB_NOT_FOUND_STATUS,
+            PreservedCopy::INVALID_MOAB_STATUS,
+            PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
+          ].each do |orig_status|
+            it "#{orig_status} changes to validity_unknown" do
+              pres_copy.status = orig_status
+              pres_copy.save!
+              mock_sov = instance_double(Stanford::StorageObjectValidator)
+              allow(mock_sov).to receive(:validation_errors).and_return([])
+              allow(Stanford::StorageObjectValidator).to receive(:new).and_return(mock_sov)
+              c2m.check_catalog_version
+              expect(pres_copy.reload).to be_validity_unknown
+            end
           end
         end
 
-        [
-          PreservedCopy::VALIDITY_UNKNOWN_STATUS,
-          PreservedCopy::OK_STATUS,
-          PreservedCopy::ONLINE_MOAB_NOT_FOUND_STATUS,
-          PreservedCopy::INVALID_MOAB_STATUS,
-          PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
-        ].each do |orig_status|
-          it "had #{orig_status}, should now have INVALID_MOAB_STATUS" do
-            pres_copy.status = orig_status
+        context 'finds validation errors' do
+          [
+            PreservedCopy::VALIDITY_UNKNOWN_STATUS,
+            PreservedCopy::OK_STATUS,
+            PreservedCopy::ONLINE_MOAB_NOT_FOUND_STATUS,
+            PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
+          ].each do |orig_status|
+            it "#{orig_status} changes to INVALID_MOAB_STATUS" do
+              pres_copy.status = orig_status
+              pres_copy.save!
+              mock_sov = instance_double(Stanford::StorageObjectValidator)
+              allow(mock_sov).to receive(:validation_errors).and_return(
+                [{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }]
+              )
+              allow(Stanford::StorageObjectValidator).to receive(:new).and_return(mock_sov)
+              c2m.check_catalog_version
+              expect(pres_copy.reload.status).to eq PreservedCopy::INVALID_MOAB_STATUS
+            end
+          end
+          it "invalid_moab changes to validity_unknown (due to newer version not checksum validated)" do
+            pres_copy.status = PreservedCopy::INVALID_MOAB_STATUS
             pres_copy.save!
             mock_sov = instance_double(Stanford::StorageObjectValidator)
             allow(mock_sov).to receive(:validation_errors).and_return(
@@ -269,7 +283,7 @@ RSpec.describe Audit::CatalogToMoab do
             )
             allow(Stanford::StorageObjectValidator).to receive(:new).and_return(mock_sov)
             c2m.check_catalog_version
-            expect(pres_copy.reload.status).to eq PreservedCopy::INVALID_MOAB_STATUS
+            expect(pres_copy.reload.status).to eq PreservedCopy::VALIDITY_UNKNOWN_STATUS
           end
         end
 
