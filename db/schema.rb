@@ -10,40 +10,22 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180711204251) do
-
+ActiveRecord::Schema.define(version: 20180712203748) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
-
-  create_table "archive_endpoints", force: :cascade do |t|
-    t.string "endpoint_name", null: false
-    t.integer "delivery_class", null: false
-    t.string "endpoint_node"
-    t.string "storage_location"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["endpoint_name"], name: "index_archive_endpoints_on_endpoint_name", unique: true
-  end
-
-  create_table "archive_endpoints_preservation_policies", force: :cascade do |t|
-    t.bigint "preservation_policy_id", null: false
-    t.bigint "archive_endpoint_id", null: false
-    t.index ["archive_endpoint_id"], name: "index_archive_endpoints_pres_policies_on_archive_endpoint_id"
-    t.index ["preservation_policy_id"], name: "index_archive_endpoints_pres_policies_on_pres_policy_id"
-  end
 
   create_table "archive_preserved_copies", force: :cascade do |t|
     t.integer "version", null: false
     t.datetime "last_existence_check"
     t.bigint "preserved_copy_id", null: false
-    t.bigint "archive_endpoint_id", null: false
+    t.bigint "zip_endpoint_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "status", null: false
-    t.index ["archive_endpoint_id"], name: "index_archive_preserved_copies_on_archive_endpoint_id"
     t.index ["last_existence_check"], name: "index_archive_preserved_copies_on_last_existence_check"
     t.index ["preserved_copy_id"], name: "index_archive_preserved_copies_on_preserved_copy_id"
     t.index ["status"], name: "index_archive_preserved_copies_on_status"
+    t.index ["zip_endpoint_id"], name: "index_archive_preserved_copies_on_zip_endpoint_id"
   end
 
   create_table "archive_preserved_copy_parts", force: :cascade do |t|
@@ -85,6 +67,13 @@ ActiveRecord::Schema.define(version: 20180711204251) do
     t.index ["preservation_policy_name"], name: "index_preservation_policies_on_preservation_policy_name", unique: true
   end
 
+  create_table "preservation_policies_zip_endpoints", force: :cascade do |t|
+    t.bigint "preservation_policy_id", null: false
+    t.bigint "zip_endpoint_id", null: false
+    t.index ["preservation_policy_id"], name: "index_pres_policies_zip_endpoints_on_pres_policy_id"
+    t.index ["zip_endpoint_id"], name: "index_pres_policies_zip_endpoints_on_zip_endpoint_id"
+  end
+
   create_table "preserved_copies", force: :cascade do |t|
     t.integer "version", null: false
     t.bigint "preserved_object_id", null: false
@@ -119,13 +108,23 @@ ActiveRecord::Schema.define(version: 20180711204251) do
     t.index ["updated_at"], name: "index_preserved_objects_on_updated_at"
   end
 
-  add_foreign_key "archive_endpoints_preservation_policies", "archive_endpoints"
-  add_foreign_key "archive_endpoints_preservation_policies", "preservation_policies"
-  add_foreign_key "archive_preserved_copies", "archive_endpoints"
+  create_table "zip_endpoints", force: :cascade do |t|
+    t.string "endpoint_name", null: false
+    t.integer "delivery_class", null: false
+    t.string "endpoint_node"
+    t.string "storage_location"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["endpoint_name"], name: "index_zip_endpoints_on_endpoint_name", unique: true
+  end
+
   add_foreign_key "archive_preserved_copies", "preserved_copies"
+  add_foreign_key "archive_preserved_copies", "zip_endpoints"
   add_foreign_key "archive_preserved_copy_parts", "archive_preserved_copies"
   add_foreign_key "endpoints_preservation_policies", "endpoints"
   add_foreign_key "endpoints_preservation_policies", "preservation_policies"
+  add_foreign_key "preservation_policies_zip_endpoints", "preservation_policies"
+  add_foreign_key "preservation_policies_zip_endpoints", "zip_endpoints"
   add_foreign_key "preserved_copies", "endpoints"
   add_foreign_key "preserved_copies", "preserved_objects"
   add_foreign_key "preserved_objects", "preservation_policies"

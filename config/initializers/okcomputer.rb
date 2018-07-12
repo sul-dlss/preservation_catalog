@@ -85,7 +85,7 @@ end
 workflows_url = "#{Settings.workflow_services_url}sdr/objects/druid:oo000oo0000/workflows"
 OkComputer::Registry.register "external-workflow-services-url", OkComputer::HttpCheck.new(workflows_url)
 
-# Replication (only) uses zip_storage directory to build the zips to send to endpoints
+# Replication (only) uses zip_storage directory to build the zips to send to zip endpoints
 OkComputer::Registry.register "feature-zip_storage_dir", OkComputer::DirectoryCheck.new(Settings.zip_storage)
 
 # check PreservedCopy#last_version_audit to ensure it isn't too old
