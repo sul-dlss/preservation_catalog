@@ -319,24 +319,20 @@ RSpec.describe PreservedCopy, type: :model do
     let(:pc_version) { 3 }
     let(:archive_ep) { ArchiveEndpoint.find_by!(endpoint_name: 'mock_archive1') }
     let(:new_archive_ep) { create(:archive_endpoint, endpoint_name: 'mock_archive2') }
-    # TODO: i think sarav's PR (or joe's?) adds a .by_druid scope to ArchivePreservedCopy
-    let(:archive_pcs_for_druid) do
-      ArchivePreservedCopy.joins(:preserved_object).where(preserved_objects: { druid: druid })
-    end
 
     it "creates pres copies that don't yet exist for the given version, but should" do
       expect { pc.create_archive_preserved_copies!(pc_version) }.to change {
         ArchiveEndpoint.which_need_archive_copy(druid, pc_version).to_a
       }.from([archive_ep]).to([])
 
-      expect(archive_pcs_for_druid.count).to eq 1
+      expect(ArchivePreservedCopy.by_druid(druid).count).to eq 1
 
       expect { pc.create_archive_preserved_copies!(pc_version - 1) }.to change {
         ArchiveEndpoint.which_need_archive_copy(druid, pc_version - 1).to_a
       }.from([archive_ep]).to([])
-      expect(archive_pcs_for_druid.count).to eq 2
+      expect(ArchivePreservedCopy.by_druid(druid).count).to eq 2
 
-      expect(archive_pcs_for_druid.where(version: 1).count).to eq 0
+      expect(ArchivePreservedCopy.by_druid(druid).where(version: 1).count).to eq 0
     end
 
     it 'creates the pres copies so that they start with unreplicated status' do
@@ -347,13 +343,13 @@ RSpec.describe PreservedCopy, type: :model do
       expect { pc.create_archive_preserved_copies!(pc_version) }.to change {
         ArchiveEndpoint.which_need_archive_copy(druid, pc_version).to_a
       }.from([archive_ep]).to([])
-      expect(archive_pcs_for_druid.where(version: pc_version).count).to eq 1
+      expect(ArchivePreservedCopy.by_druid(druid).where(version: pc_version).count).to eq 1
 
       new_archive_ep.preservation_policies = [PreservationPolicy.default_policy]
       expect { pc.create_archive_preserved_copies!(pc_version) }.to change {
         ArchiveEndpoint.which_need_archive_copy(druid, pc_version).to_a
       }.from([new_archive_ep]).to([])
-      expect(archive_pcs_for_druid.where(version: pc_version).count).to eq 2
+      expect(ArchivePreservedCopy.by_druid(druid).where(version: pc_version).count).to eq 2
     end
 
     it 'checks that version is in range' do
