@@ -45,19 +45,19 @@ describe PlexerJob, type: :job do
       job.perform(druid, version, s3_key, metadata)
     end
 
-    it 'ensures archive_preserved_copy_part exists with status unreplicated before queueing for delivery' do
+    it 'ensures zip_part exists with status unreplicated before queueing for delivery' do
       skip('need test for ensuring part exists with status unreplicated')
     end
 
-    it 'adds ArchivePreservedCopyPart to each related APC' do
+    it 'adds ZipPart to each related APC' do
       job.perform(druid, version, s3_key, metadata)
-      apc1.archive_preserved_copy_parts.reload
-      apc2.archive_preserved_copy_parts.reload
-      expect(apc1.archive_preserved_copy_parts.count).to eq 1
-      expect(apc2.archive_preserved_copy_parts.count).to eq 1
-      expect(apc1.archive_preserved_copy_parts.first!.md5).to eq md5
-      expect(apc2.archive_preserved_copy_parts.first!.md5).to eq md5
-      expect(apc1.archive_preserved_copy_parts.first!.create_info).to eq metadata.slice(:zip_cmd, :zip_version).to_s
+      apc1.zip_parts.reload
+      apc2.zip_parts.reload
+      expect(apc1.zip_parts.count).to eq 1
+      expect(apc2.zip_parts.count).to eq 1
+      expect(apc1.zip_parts.first!.md5).to eq md5
+      expect(apc2.zip_parts.first!.md5).to eq md5
+      expect(apc1.zip_parts.first!.create_info).to eq metadata.slice(:zip_cmd, :zip_version).to_s
     end
   end
 end

@@ -43,7 +43,7 @@ class PlexerJob < ZipPartJobBase
   end
 
   def find_or_create_unreplicated_part(apc, part_s3_key, metadata)
-    apc.archive_preserved_copy_parts.find_or_create_by(
+    apc.zip_parts.find_or_create_by(
       create_info: metadata.slice(:zip_cmd, :zip_version).to_s,
       md5: metadata[:checksum_md5],
       parts_count: metadata[:parts_count],

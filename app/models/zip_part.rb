@@ -1,8 +1,8 @@
 # We chunk archives of Moab versions into multiple files, so we don't get
 # completely unwieldy file sizes.  This represents metadata for one such part.
 # This model's data is populated by PlexerJob.
-class ArchivePreservedCopyPart < ApplicationRecord
-  belongs_to :archive_preserved_copy, inverse_of: :archive_preserved_copy_parts
+class ZipPart < ApplicationRecord
+  belongs_to :archive_preserved_copy, inverse_of: :zip_parts
   delegate :archive_endpoint, :preserved_copy, to: :archive_preserved_copy
   delegate :preserved_object, to: :preserved_copy
 
@@ -21,7 +21,7 @@ class ArchivePreservedCopyPart < ApplicationRecord
   # @return [Boolean] true if all expected parts are now replicated
   def all_parts_replicated?
     return false unless persisted? && ok?
-    parts = archive_preserved_copy.archive_preserved_copy_parts.where(suffix: suffixes_in_set)
+    parts = archive_preserved_copy.zip_parts.where(suffix: suffixes_in_set)
     parts.count == parts_count && parts.all?(&:ok?)
   end
 

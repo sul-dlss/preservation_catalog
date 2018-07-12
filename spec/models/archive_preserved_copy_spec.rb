@@ -39,7 +39,7 @@ RSpec.describe ArchivePreservedCopy, type: :model do
 
   it { is_expected.to belong_to(:preserved_copy) }
   it { is_expected.to belong_to(:archive_endpoint) }
-  it { is_expected.to have_many(:archive_preserved_copy_parts) }
+  it { is_expected.to have_many(:zip_parts) }
   it { is_expected.to have_db_index(:archive_endpoint_id) }
   it { is_expected.to have_db_index(:last_existence_check) }
   it { is_expected.to have_db_index(:preserved_copy_id) }
