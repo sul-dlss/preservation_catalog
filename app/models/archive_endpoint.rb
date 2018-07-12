@@ -16,11 +16,12 @@ class ArchiveEndpoint < ApplicationRecord
   # TODO: after switching to string, validate that input resolves to class which #is_a class of the right type?
   validates :delivery_class, presence: true
 
-  # for the given druid, which archive endpoints should have archive copies?
+  # for the given druid, which archive endpoints should have archive copies, as per the preservation_policy?
   scope :archive_targets, lambda { |druid|
     joins(preservation_policies: [:preserved_objects]).where(preserved_objects: { druid: druid })
   }
 
+  # for a given druid, which archive endpoints have an archive copy of the given version?
   scope :which_have_archive_copy, lambda { |druid, version|
     joins(archive_preserved_copies: [:preserved_object])
       .where(
@@ -29,6 +30,7 @@ class ArchiveEndpoint < ApplicationRecord
       )
   }
 
+  # for a given version of a druid, which archive endpoints need an archive copy, based on the governing pres policy?
   scope :which_need_archive_copy, lambda { |druid, version|
     archive_targets(druid).where.not(id: which_have_archive_copy(druid, version))
   }
