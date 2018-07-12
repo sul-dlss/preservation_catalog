@@ -1,5 +1,5 @@
 # Preconditions:
-# PlexerJob has made a matching ArchivePreservedCopyPart row
+# PlexerJob has made a matching ZipPart row
 #
 # Responsibilities:
 # Update DB per event info.
@@ -35,7 +35,7 @@ class ResultsRecorderJob < ApplicationJob
 
   def apc_part!(s3_part_key)
     raise "Status shifted underneath replication: #{apc.inspect}" unless apc.unreplicated?
-    apc.archive_preserved_copy_parts.find_by!(
+    apc.zip_parts.find_by!(
       suffix: File.extname(s3_part_key),
       status: 'unreplicated'
     )
