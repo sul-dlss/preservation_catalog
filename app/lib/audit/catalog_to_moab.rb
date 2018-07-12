@@ -78,6 +78,21 @@ module Audit
 
       return results.report_results(Audit::CatalogToMoab.logger) unless can_validate_current_pres_copy_status?
 
+      compare_version_and_take_action
+    end
+
+    alias storage_location storage_dir
+
+    private
+
+    def online_moab_found?
+      return true if moab
+      false
+    end
+
+    # compare the catalog version to the actual Moab;  update the catalog version if the Moab is newer
+    #   report results (and return them)
+    def compare_version_and_take_action
       moab_version = moab.current_version_id
       results.actual_version = moab_version
       catalog_version = preserved_copy.version
@@ -102,15 +117,6 @@ module Audit
         preserved_copy.save!
       end
       results.remove_db_updated_results unless transaction_ok
-    end
-
-    alias storage_location storage_dir
-
-    private
-
-    def online_moab_found?
-      return true if moab
-      false
     end
   end
 end
