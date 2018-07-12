@@ -125,16 +125,30 @@ class PreservedObjectHandler
     results.check_name = 'update_version_after_validation'
     if invalid?
       results.add_result(AuditResults::INVALID_ARGUMENTS, errors.full_messages)
-    else
+    elsif PreservedObject.exists?(druid: druid)
       Rails.logger.debug "update_version_after_validation #{druid} called"
       if moab_validation_errors.empty?
         # NOTE: we deal with active record transactions in update_online_version, not here
         new_status = (checksums_validated ? PreservedCopy::OK_STATUS : PreservedCopy::VALIDITY_UNKNOWN_STATUS)
-        # TODO: what should status be if status is not already ok?
-        # TODO: what, if any, timestamps does this imply update for?
-        update_online_version(new_status)
+        update_online_version(new_status, false, checksums_validated)
       else
-        update_pc_invalid_moab
+        Rails.logger.debug "update_version_after_validation #{druid} found validation errors"
+        if checksums_validated
+          update_online_version(PreservedCopy::INVALID_MOAB_STATUS, false, true)
+          # for case when no db updates b/c pres_obj version != pres_copy version
+          update_pc_invalid_moab unless pres_copy.invalid_moab?
+        else
+          update_online_version(PreservedCopy::VALIDITY_UNKNOWN_STATUS, false, false)
+          # for case when no db updates b/c pres_obj version != pres_copy version
+          update_pc_validity_unknown unless pres_copy.validity_unknown?
+        end
+      end
+    else
+      results.add_result(AuditResults::DB_OBJ_DOES_NOT_EXIST, 'PreservedObject')
+      if moab_validation_errors.empty?
+        create_db_objects(PreservedCopy::VALIDITY_UNKNOWN_STATUS)
+      else
+        create_db_objects(PreservedCopy::INVALID_MOAB_STATUS)
       end
     end
 
@@ -147,11 +161,10 @@ class PreservedObjectHandler
       results.add_result(AuditResults::INVALID_ARGUMENTS, errors.full_messages)
     else
       Rails.logger.debug "update_version #{druid} called"
+      # # only change status if checksums_validated is false
+      new_status = (checksums_validated ? nil : PreservedCopy::VALIDITY_UNKNOWN_STATUS)
       # NOTE: we deal with active record transactions in update_online_version, not here
-      new_status = (checksums_validated ? PreservedCopy::OK_STATUS : nil)
-      # TODO: what should status be if status is not already ok?
-      # TODO: what, if any, timestamps does this imply update for?
-      update_online_version(new_status, true)
+      update_online_version(new_status, true, checksums_validated)
     end
 
     results.report_results
@@ -199,7 +212,7 @@ class PreservedObjectHandler
 
   # TODO: this is "too complex" per rubocop: shameless green implementation
   # NOTE: if we can reduce complexity, remove Metrics/PerceivedComplexity exception in .rubocop.yml
-  def update_online_version(status=nil, set_status_to_unexp_version=false)
+  def update_online_version(status=nil, set_status_to_unexp_version=false, checksums_validated=false)
     transaction_ok = with_active_record_transaction_and_rescue do
       raise_rollback_if_pc_po_version_mismatch
 
@@ -210,6 +223,7 @@ class PreservedObjectHandler
         results.add_result(code, db_obj_name: 'PreservedCopy', db_obj_version: pres_copy.version)
 
         pres_copy.upd_audstamps_version_size(ran_moab_validation?, incoming_version, incoming_size)
+        pres_copy.last_checksum_validation = Time.current if checksums_validated && pres_copy.last_checksum_validation
         update_status(status) if status
         pres_copy.save!
         pres_object.current_version = incoming_version
@@ -231,6 +245,7 @@ class PreservedObjectHandler
       po_version = pres_copy.preserved_object.current_version
       res_code = AuditResults::PC_PO_VERSION_MISMATCH
       results.add_result(res_code, { pc_version: pc_version, po_version: po_version })
+      results.report_results(Audit::CatalogToMoab.logger)
       raise ActiveRecord::Rollback, "PreservedCopy version #{pc_version} != PreservedObject current_version #{po_version}"
     end
   end
@@ -238,6 +253,15 @@ class PreservedObjectHandler
   def update_pc_invalid_moab
     transaction_ok = with_active_record_transaction_and_rescue do
       update_status(PreservedCopy::INVALID_MOAB_STATUS)
+      pres_copy.update_audit_timestamps(ran_moab_validation?, false)
+      pres_copy.save!
+    end
+    results.remove_db_updated_results unless transaction_ok
+  end
+
+  def update_pc_validity_unknown
+    transaction_ok = with_active_record_transaction_and_rescue do
+      update_status(PreservedCopy::VALIDITY_UNKNOWN_STATUS)
       pres_copy.update_audit_timestamps(ran_moab_validation?, false)
       pres_copy.save!
     end

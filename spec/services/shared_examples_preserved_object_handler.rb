@@ -100,10 +100,16 @@ RSpec.shared_examples 'unexpected version' do |method_sym, actual_version|
         expect(pc.reload.last_version_audit).to be > orig
       end
       if method_sym == :update_version
-        it 'status becomes UNEXPECTED_VERSION_ON_STORAGE_STATUS' do
+        it 'status becomes unexpected_version_on_storage' do
           orig = pc.status
           po_handler.send(method_sym)
-          expect(pc.reload.status).to eq PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
+          expect(pc.reload.status).to eq 'unexpected_version_on_storage'
+          expect(pc.status).not_to eq orig
+        end
+        it 'status becomes unexpected_version_on_storage when checksums_validated' do
+          orig = pc.status
+          po_handler.send(method_sym, true)
+          expect(pc.reload.status).to eq "unexpected_version_on_storage"
           expect(pc.status).not_to eq orig
         end
       end
@@ -125,9 +131,14 @@ RSpec.shared_examples 'unexpected version' do |method_sym, actual_version|
         expect(pc.reload.last_moab_validation).to eq orig
       end
       if method_sym != :update_version
-        it 'status becomes UNEXPECTED_VERSION_ON_STORAGE_STATUS' do
+        it 'status' do
           orig = pc.status
           po_handler.send(method_sym)
+          expect(pc.status).to eq orig
+        end
+        it 'status when checksums_validated' do
+          orig = pc.status
+          po_handler.send(method_sym, true)
           expect(pc.status).to eq orig
         end
       end
@@ -184,58 +195,49 @@ RSpec.shared_examples 'unexpected version with validation' do |method_sym, incom
   let(:updated_status_msg_regex) { Regexp.new("PreservedCopy status changed from") }
 
   context 'PreservedCopy' do
-    context 'changed' do
-      it 'last_moab_validation' do
-        orig = Time.current
-        pc.last_moab_validation = orig
-        pc.save!
-        po_handler.send(method_sym)
-        expect(pc.reload.last_moab_validation).to be > orig
-      end
+    it 'last_moab_validation updated' do
+      expect { po_handler.send(method_sym) }.to change { pc.reload.last_moab_validation }
+    end
+    it "version unchanged" do
+      expect { po_handler.send(method_sym) }.not_to change { pc.reload.version }
+    end
+    it "size unchanged" do
+      expect { po_handler.send(method_sym) }.not_to change { pc.reload.size }
+    end
+    describe 'last_version_audit' do
       if method_sym == :check_existence
-        it 'last_version_audit' do
-          orig = Time.current
-          pc.last_version_audit = orig
-          pc.save!
-          po_handler.send(method_sym)
-          expect(pc.reload.last_version_audit).to be > orig
+        it 'updated' do
+          expect { po_handler.send(method_sym) }.to change { pc.reload.last_version_audit }
+        end
+      elsif method_sym == :update_version
+        it 'unchanged' do
+          expect { po_handler.send(method_sym) }.not_to change { pc.reload.last_version_audit }
         end
       end
     end
-    context 'unchanged' do
-      it "version" do
-        pcv = pc.version
-        po_handler.send(method_sym)
-        expect(pc.reload.version).to eq pcv
-      end
-      it "size" do
-        expect(pc.size).to eq 1
-        po_handler.send(method_sym)
-        expect(pc.reload.size).to eq 1
+    describe 'status becomes' do
+      before do
+        pc.status = 'ok'
+        pc.save!
       end
       if method_sym == :update_version_after_validation
-        it 'last_version_audit' do
-          orig = pc.last_version_audit
-          po_handler.send(method_sym)
-          expect(pc.reload.last_version_audit).to eq orig
+        it "#{new_status} when checksums_validated" do
+          expect { po_handler.send(method_sym, true) }.to change { pc.reload.status }.from('ok').to(new_status)
+        end
+        it "validity_unknown when not checksums_validated" do
+          expect { po_handler.send(method_sym) }.to change { pc.reload.status }.from('ok').to('validity_unknown')
+        end
+      else
+        it new_status do
+          expect { po_handler.send(method_sym) }.to change { pc.reload.status }.from('ok').to(new_status)
         end
       end
     end
   end
   context 'PreservedObject' do
-    context 'unchanged' do
-      it "current_version" do
-        pocv = po.current_version
-        po_handler.send(method_sym)
-        expect(po.reload.current_version).to eq pocv
-      end
+    it "current_version" do
+      expect { po_handler.send(method_sym) }.not_to change { po.reload.current_version }
     end
-  end
-  it "ensures status of PreservedCopy is #{new_status}" do
-    pc.status = PreservedCopy::OK_STATUS
-    pc.save!
-    po_handler.send(method_sym)
-    expect(pc.reload.status).to eq new_status
   end
 
   context 'returns' do
@@ -243,7 +245,11 @@ RSpec.shared_examples 'unexpected version with validation' do |method_sym, incom
 
     it "number of results" do
       expect(results).to be_an_instance_of Array
-      expect(results.size).to eq 2
+      if method_sym == :check_existence
+        expect(results.size).to eq 2
+      elsif method_sym == :update_version_after_validation
+        expect(results.size).to eq 4
+      end
     end
     if method_sym == :update_version_after_validation
       it 'UNEXPECTED_VERSION result unless INVALID_MOAB' do
@@ -264,65 +270,6 @@ RSpec.shared_examples 'unexpected version with validation' do |method_sym, incom
       unless results.find { |r| r.keys.first == AuditResults::INVALID_MOAB }
         expect(msgs).to include(a_string_matching("PreservedCopy"))
       end
-    end
-    it 'PC_STATUS_CHANGED result' do
-      expect(results).to include(a_hash_including(AuditResults::PC_STATUS_CHANGED => updated_status_msg_regex))
-    end
-  end
-end
-
-RSpec.shared_examples 'update for invalid moab' do |method_sym|
-  let(:updated_status_msg_regex) { Regexp.new("PreservedCopy status changed from") }
-  let(:invalid_moab_msg) { "Invalid Moab, validation errors: [\"Missing directory: [\\\"data\\\", \\\"manifests\\\"] Version: v0001\"]" }
-
-  context 'PreservedCopy' do
-    context 'changed' do
-      it 'last_moab_validation' do
-        orig = pc.last_moab_validation
-        po_handler.send(method_sym)
-        expect(pc.reload.last_moab_validation).to be > orig
-      end
-      it 'status' do
-        orig = pc.status
-        po_handler.send(method_sym)
-        expect(pc.reload.status).to eq PreservedCopy::INVALID_MOAB_STATUS
-        expect(pc.status).not_to eq orig
-      end
-    end
-    context 'unchanged' do
-      it 'last_version_audit' do
-        orig = pc.last_version_audit
-        po_handler.send(method_sym)
-        expect(pc.reload.last_version_audit).to eq orig
-      end
-      it 'size' do
-        orig = pc.size
-        po_handler.send(method_sym)
-        expect(pc.reload.size).to eq orig
-      end
-      it 'version' do
-        orig = pc.version
-        po_handler.send(method_sym)
-        expect(pc.reload.version).to eq orig
-      end
-    end
-  end
-  it 'does not update PreservedObject' do
-    orig = po.reload.updated_at
-    po_handler.send(method_sym)
-    expect(po.reload.updated_at).to eq orig
-  end
-
-  context 'returns' do
-    let!(:results) { po_handler.send(method_sym) }
-
-    it '3 results' do
-      expect(results).to be_an_instance_of Array
-      expect(results.size).to eq 2
-    end
-    it 'INVALID_MOAB result' do
-      code = AuditResults::INVALID_MOAB
-      expect(results).to include(hash_including(code => invalid_moab_msg))
     end
     it 'PC_STATUS_CHANGED result' do
       expect(results).to include(a_hash_including(AuditResults::PC_STATUS_CHANGED => updated_status_msg_regex))
