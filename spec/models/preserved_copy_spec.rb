@@ -315,51 +315,51 @@ RSpec.describe PreservedCopy, type: :model do
     end
   end
 
-  describe '#create_archive_preserved_copies!' do
+  describe '#create_zipped_moab_versions!' do
     let(:pc_version) { 3 }
     let(:archive_ep) { ArchiveEndpoint.find_by!(endpoint_name: 'mock_archive1') }
     let(:new_archive_ep) { create(:archive_endpoint, endpoint_name: 'mock_archive2') }
 
     it "creates pres copies that don't yet exist for the given version, but should" do
-      expect { pc.create_archive_preserved_copies!(pc_version) }.to change {
+      expect { pc.create_zipped_moab_versions!(pc_version) }.to change {
         ArchiveEndpoint.which_need_archive_copy(druid, pc_version).to_a
       }.from([archive_ep]).to([])
 
-      expect(ArchivePreservedCopy.by_druid(druid).count).to eq 1
+      expect(ZippedMoabVersion.by_druid(druid).count).to eq 1
 
-      expect { pc.create_archive_preserved_copies!(pc_version - 1) }.to change {
+      expect { pc.create_zipped_moab_versions!(pc_version - 1) }.to change {
         ArchiveEndpoint.which_need_archive_copy(druid, pc_version - 1).to_a
       }.from([archive_ep]).to([])
-      expect(ArchivePreservedCopy.by_druid(druid).count).to eq 2
+      expect(ZippedMoabVersion.by_druid(druid).count).to eq 2
 
-      expect(ArchivePreservedCopy.by_druid(druid).where(version: 1).count).to eq 0
+      expect(ZippedMoabVersion.by_druid(druid).where(version: 1).count).to eq 0
     end
 
     it 'creates the pres copies so that they start with unreplicated status' do
-      expect(pc.create_archive_preserved_copies!(pc_version).all?(&:unreplicated?)).to be true
+      expect(pc.create_zipped_moab_versions!(pc_version).all?(&:unreplicated?)).to be true
     end
 
     it "creates pres copies that don't yet exist for the given endpoint, but should" do
-      expect { pc.create_archive_preserved_copies!(pc_version) }.to change {
+      expect { pc.create_zipped_moab_versions!(pc_version) }.to change {
         ArchiveEndpoint.which_need_archive_copy(druid, pc_version).to_a
       }.from([archive_ep]).to([])
-      expect(ArchivePreservedCopy.by_druid(druid).where(version: pc_version).count).to eq 1
+      expect(ZippedMoabVersion.by_druid(druid).where(version: pc_version).count).to eq 1
 
       new_archive_ep.preservation_policies = [PreservationPolicy.default_policy]
-      expect { pc.create_archive_preserved_copies!(pc_version) }.to change {
+      expect { pc.create_zipped_moab_versions!(pc_version) }.to change {
         ArchiveEndpoint.which_need_archive_copy(druid, pc_version).to_a
       }.from([new_archive_ep]).to([])
-      expect(ArchivePreservedCopy.by_druid(druid).where(version: pc_version).count).to eq 2
+      expect(ZippedMoabVersion.by_druid(druid).where(version: pc_version).count).to eq 2
     end
 
     it 'checks that version is in range' do
       [-1, 0, 4, 5].each do |version|
         exp_err_msg = "archive_vers (#{version}) must be between 0 and version (#{pc_version})"
-        expect { pc.create_archive_preserved_copies!(version) }.to raise_error ArgumentError, exp_err_msg
+        expect { pc.create_zipped_moab_versions!(version) }.to raise_error ArgumentError, exp_err_msg
       end
 
       (1..3).each do |version|
-        expect { pc.create_archive_preserved_copies!(version) }.not_to raise_error
+        expect { pc.create_zipped_moab_versions!(version) }.not_to raise_error
       end
     end
   end

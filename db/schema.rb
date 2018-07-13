@@ -103,7 +103,7 @@ ActiveRecord::Schema.define(version: 20180713231710) do
 
   create_table "zip_parts", force: :cascade do |t|
     t.bigint "size"
-    t.bigint "archive_preserved_copy_id", null: false
+    t.bigint "zipped_moab_version_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "md5", null: false
@@ -111,7 +111,7 @@ ActiveRecord::Schema.define(version: 20180713231710) do
     t.integer "parts_count", null: false
     t.string "suffix", null: false
     t.integer "status", default: 1, null: false
-    t.index ["archive_preserved_copy_id"], name: "index_zip_parts_on_archive_preserved_copy_id"
+    t.index ["zipped_moab_version_id"], name: "index_zip_parts_on_zipped_moab_version_id"
   end
 
   create_table "zipped_moab_versions", force: :cascade do |t|
@@ -136,7 +136,7 @@ ActiveRecord::Schema.define(version: 20180713231710) do
   add_foreign_key "preserved_copies", "preserved_objects"
   add_foreign_key "preserved_objects", "preservation_policies"
   add_foreign_key "zip_checksums", "preserved_copies"
-  add_foreign_key "zip_parts", "zipped_moab_versions", column: "archive_preserved_copy_id"
+  add_foreign_key "zip_parts", "zipped_moab_versions"
   add_foreign_key "zipped_moab_versions", "archive_endpoints"
   add_foreign_key "zipped_moab_versions", "preserved_copies"
 end

@@ -3,12 +3,12 @@ require 'rails_helper'
 describe 'the whole replication pipeline', type: :job do # rubocop:disable RSpec/DescribeClass
   let(:s3_object) { instance_double(Aws::S3::Object, exists?: false, put: true) }
   let(:bucket) { instance_double(Aws::S3::Bucket, object: s3_object) }
-  let(:apc) { create(:archive_preserved_copy) }
-  let(:druid) { apc.preserved_object.druid }
-  let(:version) { apc.version }
-  let(:deliverer) { apc.archive_endpoint.delivery_class.to_s }
+  let(:zmv) { create(:zipped_moab_version) }
+  let(:druid) { zmv.preserved_object.druid }
+  let(:version) { zmv.version }
+  let(:deliverer) { zmv.archive_endpoint.delivery_class.to_s }
   let(:hash) do
-    { druid: druid, version: version, endpoints: [apc.archive_endpoint.endpoint_name] }
+    { druid: druid, version: version, endpoints: [zmv.archive_endpoint.endpoint_name] }
   end
   let(:s3_key) { 'bj/102/hs/9687/bj102hs9687.v0001.zip' }
 
