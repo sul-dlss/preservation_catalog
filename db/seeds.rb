@@ -9,12 +9,11 @@
 # https://www.postgresql.org/docs/current/static/transaction-iso.html
 ApplicationRecord.transaction(isolation: :serializable) do
   PreservationPolicy.seed_from_config
-  Endpoint.seed_storage_root_endpoints_from_config(
-    [PreservationPolicy.default_policy]
-  )
+  Endpoint.seed_storage_root_endpoints_from_config([PreservationPolicy.default_policy])
   ArchiveEndpoint.seed_archive_endpoints_from_config([PreservationPolicy.default_policy])
 end
 
 puts "seeded database.  state of seeded object types after seeding:"
 puts "> PreservationPolicy.all: #{PreservationPolicy.all.to_a}"
 puts "> Endpoint.all: #{Endpoint.all.to_a}"
+puts "> ArchiveEndpoint.all: #{ArchiveEndpoint.all.to_a}"

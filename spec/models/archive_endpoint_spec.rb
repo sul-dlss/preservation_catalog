@@ -73,4 +73,81 @@ RSpec.describe ArchiveEndpoint, type: :model do
       expect(described_class.pluck(:endpoint_name).sort).to eq expected_ep_names
     end
   end
+
+  describe '.archive_targets' do
+    let!(:alternate_pres_policy) do
+      PreservationPolicy.create!(preservation_policy_name: 'alternate_pres_policy',
+                                 archive_ttl: 666,
+                                 fixity_ttl: 666)
+    end
+
+    before { create(:preserved_object, druid: druid) }
+
+    it "returns the archive endpoints which implement the PO's pres policy" do
+      archive_endpoint.preservation_policies = [PreservationPolicy.default_policy, alternate_pres_policy]
+      expect(ArchiveEndpoint.archive_targets(druid).pluck(:endpoint_name)).to eq %w[archive-endpoint mock_archive1]
+      archive_endpoint.preservation_policies = [alternate_pres_policy]
+      expect(ArchiveEndpoint.archive_targets(druid).pluck(:endpoint_name)).to eq %w[mock_archive1]
+    end
+  end
+
+  context 'ArchivePreservedCopy presence on ArchiveEndpoint' do
+    let(:version) { 3 }
+    let!(:po) { create(:preserved_object, current_version: version, druid: druid) }
+    let(:pc) { create(:preserved_copy, preserved_object: po) }
+    let(:other_druid) { 'zy098xw7654' }
+    let!(:pc_other_druid) do
+      other_po = create(:preserved_object, current_version: version, druid: other_druid)
+      create(:preserved_copy, version: version, preserved_object: other_po)
+    end
+    let(:ma1_ep) { ArchiveEndpoint.find_by!(endpoint_name: 'mock_archive1') }
+
+    describe '.which_have_archive_copy' do
+      it 'returns the archive endpoints which have a pres copy for the druid version' do
+        expect(ArchiveEndpoint.which_have_archive_copy(druid, version).pluck(:endpoint_name)).to eq []
+        expect(ArchiveEndpoint.which_have_archive_copy(druid, version - 1).pluck(:endpoint_name)).to eq []
+        expect(ArchiveEndpoint.which_have_archive_copy(other_druid, version).pluck(:endpoint_name)).to eq []
+        expect(ArchiveEndpoint.which_have_archive_copy(other_druid, version - 1).pluck(:endpoint_name)).to eq []
+
+        create(:archive_preserved_copy, preserved_copy: pc, version: version, archive_endpoint: ma1_ep)
+        expect(ArchiveEndpoint.which_have_archive_copy(druid, version).pluck(:endpoint_name)).to eq %w[mock_archive1]
+        expect(ArchiveEndpoint.which_have_archive_copy(druid, version - 1).pluck(:endpoint_name)).to eq []
+        expect(ArchiveEndpoint.which_have_archive_copy(other_druid, version).pluck(:endpoint_name)).to eq []
+        expect(ArchiveEndpoint.which_have_archive_copy(other_druid, version - 1).pluck(:endpoint_name)).to eq []
+
+        create(:archive_preserved_copy, preserved_copy: pc_other_druid, version: version - 1, archive_endpoint: ma1_ep)
+        expect(ArchiveEndpoint.which_have_archive_copy(druid, version).pluck(:endpoint_name)).to eq %w[mock_archive1]
+        expect(ArchiveEndpoint.which_have_archive_copy(druid, version - 1).pluck(:endpoint_name)).to eq []
+        expect(ArchiveEndpoint.which_have_archive_copy(other_druid, version).pluck(:endpoint_name)).to eq []
+        expect(ArchiveEndpoint.which_have_archive_copy(other_druid, version - 1).pluck(:endpoint_name)).to eq %w[mock_archive1]
+
+        create(:archive_preserved_copy, preserved_copy: pc_other_druid, version: version - 1, archive_endpoint: archive_endpoint)
+        expect(ArchiveEndpoint.which_have_archive_copy(druid, version).pluck(:endpoint_name)).to eq %w[mock_archive1]
+        expect(ArchiveEndpoint.which_have_archive_copy(druid, version - 1).pluck(:endpoint_name)).to eq []
+        expect(ArchiveEndpoint.which_have_archive_copy(other_druid, version).pluck(:endpoint_name)).to eq []
+        expect(ArchiveEndpoint.which_have_archive_copy(other_druid, version - 1).pluck(:endpoint_name).sort).to eq %w[archive-endpoint mock_archive1]
+      end
+    end
+
+    describe '.which_need_archive_copy' do
+      it "returns the archive endpoints which should have a pres copy for the druid/version, but which don't yet" do
+        expect(ArchiveEndpoint.which_need_archive_copy(druid, version).pluck(:endpoint_name).sort).to eq %w[archive-endpoint mock_archive1]
+        expect(ArchiveEndpoint.which_need_archive_copy(druid, version - 1).pluck(:endpoint_name).sort).to eq %w[archive-endpoint mock_archive1]
+        expect(ArchiveEndpoint.which_need_archive_copy(other_druid, version).pluck(:endpoint_name).sort).to eq %w[archive-endpoint mock_archive1]
+        expect(ArchiveEndpoint.which_need_archive_copy(other_druid, version - 1).pluck(:endpoint_name).sort).to eq %w[archive-endpoint mock_archive1]
+
+        create(:archive_preserved_copy, preserved_copy: pc, version: version, archive_endpoint: ma1_ep)
+        expect(ArchiveEndpoint.which_need_archive_copy(druid, version).pluck(:endpoint_name)).to eq %w[archive-endpoint]
+        expect(ArchiveEndpoint.which_need_archive_copy(druid, version - 1).pluck(:endpoint_name).sort).to eq %w[archive-endpoint mock_archive1]
+        expect(ArchiveEndpoint.which_need_archive_copy(other_druid, version).pluck(:endpoint_name).sort).to eq %w[archive-endpoint mock_archive1]
+        expect(ArchiveEndpoint.which_need_archive_copy(other_druid, version - 1).pluck(:endpoint_name).sort).to eq %w[archive-endpoint mock_archive1]
+
+        create(:archive_preserved_copy, preserved_copy: pc_other_druid, version: version - 1, archive_endpoint: ma1_ep)
+        expect(ArchiveEndpoint.which_need_archive_copy(druid, version).pluck(:endpoint_name)).to eq %w[archive-endpoint]
+        expect(ArchiveEndpoint.which_need_archive_copy(druid, version - 1).pluck(:endpoint_name).sort).to eq %w[archive-endpoint mock_archive1]
+        expect(ArchiveEndpoint.which_need_archive_copy(other_druid, version).pluck(:endpoint_name).sort).to eq %w[archive-endpoint mock_archive1]
+        expect(ArchiveEndpoint.which_need_archive_copy(other_druid, version - 1).pluck(:endpoint_name)).to eq %w[archive-endpoint]
+      end
+    end
+  end
 end
