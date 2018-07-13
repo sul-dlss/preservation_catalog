@@ -1,3 +1,4 @@
+
 # Corresponds to a Moab-Version on a ZipEndpoint.
 #   There will be individual parts (at least one) - see ArchivepreservedCopyPart.
 # For a fully consistent system, given an (Online) PreservedCopy, the number of associated
@@ -10,7 +11,7 @@ class ArchivePreservedCopy < ApplicationRecord
   belongs_to :zip_endpoint
   has_many :zip_parts, dependent: :destroy, inverse_of: :archive_preserved_copy
   has_one :preserved_object, through: :preserved_copy, dependent: :restrict_with_exception
-  
+
   delegate :preserved_object, to: :preserved_copy
 
   # @note Hash values cannot be modified without migrating any associated persisted data.
