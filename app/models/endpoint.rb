@@ -1,7 +1,5 @@
 ##
 # Metadata about a Moab storage root (a POSIX file system which contains Moab objects).
-# TODO: rename to... OnlineEndpoint?  LocalMoabStorageRoot?
-# TODO: remove the old description (leaving while things are being refactored)
 class Endpoint < ApplicationRecord
   has_many :preserved_copies, dependent: :restrict_with_exception
   has_and_belongs_to_many :preservation_policies
