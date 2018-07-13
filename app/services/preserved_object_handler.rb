@@ -32,6 +32,7 @@ class PreservedObjectHandler
     @logger = PreservationCatalog::Application.logger
   end
 
+  # checksums_validated may be set to true if the caller takes responsibility for having validated the checksums
   def create_after_validation(checksums_validated = false)
     results.check_name = 'create_after_validation'
     if invalid?
@@ -48,6 +49,7 @@ class PreservedObjectHandler
     results.report_results
   end
 
+  # checksums_validated may be set to true if the caller takes responsibility for having validated the checksums
   def create(checksums_validated = false)
     results.check_name = 'create'
     if invalid?
@@ -56,7 +58,7 @@ class PreservedObjectHandler
       results.add_result(AuditResults::DB_OBJ_ALREADY_EXISTS, 'PreservedObject')
     else
       creation_status = (checksums_validated ? PreservedCopy::OK_STATUS : PreservedCopy::VALIDITY_UNKNOWN_STATUS)
-      ran_moab_validation! if checksums_validated # set validation timestamps
+      ran_moab_validation! if checksums_validated # ensure validation timestamps updated
       create_db_objects(creation_status, checksums_validated)
     end
 
@@ -121,6 +123,7 @@ class PreservedObjectHandler
     results.report_results
   end
 
+  # checksums_validated may be set to true if the caller takes responsibility for having validated the checksums
   def update_version_after_validation(checksums_validated = false)
     results.check_name = 'update_version_after_validation'
     if invalid?
@@ -155,13 +158,14 @@ class PreservedObjectHandler
     results.report_results
   end
 
+  # checksums_validated may be set to true if the caller takes responsibility for having validated the checksums
   def update_version(checksums_validated = false)
     results.check_name = 'update_version'
     if invalid?
       results.add_result(AuditResults::INVALID_ARGUMENTS, errors.full_messages)
     else
       Rails.logger.debug "update_version #{druid} called"
-      # # only change status if checksums_validated is false
+      # only change status if checksums_validated is false
       new_status = (checksums_validated ? nil : PreservedCopy::VALIDITY_UNKNOWN_STATUS)
       # NOTE: we deal with active record transactions in update_online_version, not here
       update_online_version(new_status, true, checksums_validated)
