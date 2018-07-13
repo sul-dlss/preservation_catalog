@@ -2,7 +2,6 @@ require 'resque/server'
 
 Rails.application.routes.draw do
   resources :catalog, param: :druid, only: %i[create update]
-  resources :moab_storage, only: %i[index show]
 
   mount Resque::Server.new, at: '/resque',
                             constraints: ->(req) { Settings.resque_dashboard_hostnames.include?(req.host) }
