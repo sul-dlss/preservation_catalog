@@ -102,7 +102,7 @@ RSpec.describe PreservedObjectHandler do
                 end.not_to change { pc.reload.status }.from('ok')
               end
               context 'original status was not ok' do
-                shared_examples 'POH#update_version(true) does not change status to "ok"' do |orig_status|
+                shared_examples 'POH#update_version(true) does not change status' do |orig_status|
                   before do
                     pc.update!(status: orig_status)
                   end
@@ -113,12 +113,12 @@ RSpec.describe PreservedObjectHandler do
                   end
                 end
 
-                it_behaves_like 'POH#update_version(true) does not change status to "ok"', 'validity_unknown'
-                it_behaves_like 'POH#update_version(true) does not change status to "ok"', 'invalid_moab'
-                it_behaves_like 'POH#update_version(true) does not change status to "ok"', 'invalid_checksum'
+                it_behaves_like 'POH#update_version(true) does not change status', 'validity_unknown'
+                it_behaves_like 'POH#update_version(true) does not change status', 'invalid_moab'
+                it_behaves_like 'POH#update_version(true) does not change status', 'invalid_checksum'
                 # TODO: do these statuses change?
-                it_behaves_like 'POH#update_version(true) does not change status to "ok"', 'online_moab_not_found'
-                it_behaves_like 'POH#update_version(true) does not change status to "ok"', 'unexpected_version_on_storage'
+                it_behaves_like 'POH#update_version(true) does not change status', 'online_moab_not_found'
+                it_behaves_like 'POH#update_version(true) does not change status', 'unexpected_version_on_storage'
               end
             end
           end
@@ -443,7 +443,7 @@ RSpec.describe PreservedObjectHandler do
             it 'last_moab_validation updated' do
               expect do
                 po_handler.update_version_after_validation
-              end.to change { pc.reload.status }
+              end.to change { pc.reload.status }.from('ok').to('validity_unknown')
             end
             it 'size updated to incoming_size' do
               expect do
@@ -471,6 +471,7 @@ RSpec.describe PreservedObjectHandler do
                 shared_examples 'POH#update_version_after_validation changes status to "validity_unknown"' do |orig_status|
                   before { pc.update(status: orig_status) }
                   it "original status #{orig_status}" do
+                    # (due to newer version not checksum validated)
                     expect do
                       po_handler.update_version_after_validation
                     end.to change { pc.reload.status }.from(orig_status).to('validity_unknown')
@@ -491,7 +492,7 @@ RSpec.describe PreservedObjectHandler do
             it 'last_moab_validation updated' do
               expect do
                 po_handler.update_version_after_validation(true)
-              end.to change { pc.reload.status }
+              end.to change { pc.reload.last_moab_validation }
             end
             it 'size updated to incoming_size' do
               expect do
@@ -584,7 +585,7 @@ RSpec.describe PreservedObjectHandler do
               it 'version unchanged' do
                 expect { po_handler.update_version_after_validation }.not_to change { pc.reload.version }
               end
-              it 'status becomes validity_unknown' do
+              it 'status becomes validity_unknown (due to newer version not checksum validated)' do
                 expect { po_handler.update_version_after_validation }.to change { pc.reload.status }.to('validity_unknown')
               end
             end
