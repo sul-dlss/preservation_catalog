@@ -141,6 +141,8 @@ class PreservedObjectHandler
           # for case when no db updates b/c pres_obj version != pres_copy version
           update_pc_invalid_moab unless pres_copy.invalid_moab?
         else
+          # TODO: we don't know checksum validity of incoming version, and we also have invalid moab
+          #   so ideally we could report on moab validation errors (done) *and* queue up a checksum validity check
           update_online_version(PreservedCopy::VALIDITY_UNKNOWN_STATUS, false, false)
           # for case when no db updates b/c pres_obj version != pres_copy version
           update_pc_validity_unknown unless pres_copy.validity_unknown?
