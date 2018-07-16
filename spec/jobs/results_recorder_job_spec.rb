@@ -2,7 +2,7 @@ require 'rails_helper'
 
 describe ResultsRecorderJob, type: :job do
   let(:apc) { create(:archive_preserved_copy) }
-  let(:druid)    { apc.preserved_object.druid }
+  let(:druid) { apc.preserved_object.druid }
   let(:zip_endpoint) { apc.zip_endpoint }
 
   before { apc.archive_preserved_copy_parts.create(attributes_for(:archive_preserved_copy_part)) }

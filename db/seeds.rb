@@ -16,4 +16,4 @@ end
 puts "seeded database.  state of seeded object types after seeding:"
 puts "> PreservationPolicy.all: #{PreservationPolicy.all.to_a}"
 puts "> Endpoint.all: #{Endpoint.all.to_a}"
-puts "> ArchiveEndpoint.all: #{ArchiveEndpoint.all.to_a}"
+puts "> ZipEndpoint.all: #{ZipEndpoint.all.to_a}"

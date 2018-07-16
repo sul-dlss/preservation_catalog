@@ -80,8 +80,8 @@ class PreservedCopy < ApplicationRecord
       raise ArgumentError, "archive_vers (#{archive_vers}) must be between 0 and version (#{version})"
     end
 
-    params = ArchiveEndpoint.which_need_archive_copy(preserved_object.druid, archive_vers).map do |aep|
-      { version: archive_vers, archive_endpoint: aep, status: 'unreplicated' }
+    params = ZipEndpoint.which_need_archive_copy(preserved_object.druid, archive_vers).map do |zep|
+      { version: archive_vers, zip_endpoint: zep, status: 'unreplicated' }
     end
     archive_preserved_copies.create!(params)
   end
