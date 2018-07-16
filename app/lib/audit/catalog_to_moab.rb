@@ -60,8 +60,7 @@ module Audit
         results.add_result(AuditResults::PC_PO_VERSION_MISMATCH,
                            pc_version: preserved_copy.version,
                            po_version: preserved_copy.preserved_object.current_version)
-        results.report_results(Audit::CatalogToMoab.logger)
-        return
+        return results.report_results(Audit::CatalogToMoab.logger)
       end
 
       unless online_moab_found?
@@ -74,12 +73,26 @@ module Audit
         results.add_result(AuditResults::MOAB_NOT_FOUND,
                            db_created_at: preserved_copy.created_at.iso8601,
                            db_updated_at: preserved_copy.updated_at.iso8601)
-        results.report_results(Audit::CatalogToMoab.logger)
-        return
+        return results.report_results(Audit::CatalogToMoab.logger)
       end
 
       return results.report_results(Audit::CatalogToMoab.logger) unless can_validate_current_pres_copy_status?
 
+      compare_version_and_take_action
+    end
+
+    alias storage_location storage_dir
+
+    private
+
+    def online_moab_found?
+      return true if moab
+      false
+    end
+
+    # compare the catalog version to the actual Moab;  update the catalog version if the Moab is newer
+    #   report results (and return them)
+    def compare_version_and_take_action
       moab_version = moab.current_version_id
       results.actual_version = moab_version
       catalog_version = preserved_copy.version
@@ -104,15 +117,6 @@ module Audit
         preserved_copy.save!
       end
       results.remove_db_updated_results unless transaction_ok
-    end
-
-    alias storage_location storage_dir
-
-    private
-
-    def online_moab_found?
-      return true if moab
-      false
     end
   end
 end

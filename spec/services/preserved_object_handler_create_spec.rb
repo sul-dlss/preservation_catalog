@@ -38,6 +38,15 @@ RSpec.describe PreservedObjectHandler do
       po_handler.create
     end
 
+    it 'creates the PreservedCopy with "ok" status and validation timestamps if caller ran CV' do
+      pc_args[:status] = PreservedCopy::OK_STATUS
+      pc_args[:last_version_audit] = ActiveSupport::TimeWithZone
+      pc_args[:last_moab_validation] = ActiveSupport::TimeWithZone
+      pc_args[:last_checksum_validation] = ActiveSupport::TimeWithZone
+      expect(PreservedCopy).to receive(:create!).with(pc_args).and_call_original
+      po_handler.create(true)
+    end
+
     it_behaves_like 'attributes validated', :create
 
     it 'object already exists' do
@@ -129,6 +138,19 @@ RSpec.describe PreservedObjectHandler do
       po_handler.create_after_validation
     end
 
+    it 'creates PreservedCopy with "ok" status and validation timestamps if no validation errors and caller ran CV' do
+      pc_args.merge!(
+        status: PreservedCopy::OK_STATUS,
+        last_moab_validation: an_instance_of(ActiveSupport::TimeWithZone),
+        last_version_audit: an_instance_of(ActiveSupport::TimeWithZone),
+        last_checksum_validation: an_instance_of(ActiveSupport::TimeWithZone)
+      )
+
+      expect(PreservedCopy).to receive(:create!).with(pc_args).and_call_original
+      po_handler = described_class.new(valid_druid, incoming_version, incoming_size, ep)
+      po_handler.create_after_validation(true)
+    end
+
     it 'calls moab-versioning Stanford::StorageObjectValidator.validation_errors' do
       mock_sov = instance_double(Stanford::StorageObjectValidator)
       expect(mock_sov).to receive(:validation_errors).and_return([])
@@ -151,7 +173,7 @@ RSpec.describe PreservedObjectHandler do
         end
       end
 
-      it 'creates PreservedObject and PreservedCopy with "invalid_moab" status in database' do
+      it 'creates PreservedObject, and PreservedCopy with "invalid_moab" status in database' do
         po_args[:druid] = invalid_druid
         pc_args.merge!(
           status: PreservedCopy::INVALID_MOAB_STATUS,
@@ -162,6 +184,18 @@ RSpec.describe PreservedObjectHandler do
         expect(PreservedObject).to receive(:create!).with(po_args).and_call_original
         expect(PreservedCopy).to receive(:create!).with(pc_args).and_call_original
         po_handler.create_after_validation
+      end
+
+      it 'creates PreservedCopy with "invalid_moab" status in database even if caller ran CV' do
+        pc_args.merge!(
+          status: PreservedCopy::INVALID_MOAB_STATUS,
+          last_moab_validation: an_instance_of(ActiveSupport::TimeWithZone),
+          last_version_audit: an_instance_of(ActiveSupport::TimeWithZone),
+          last_checksum_validation: an_instance_of(ActiveSupport::TimeWithZone)
+        )
+
+        expect(PreservedCopy).to receive(:create!).with(pc_args).and_call_original
+        po_handler.create_after_validation(true)
       end
 
       it 'includes invalid moab result' do

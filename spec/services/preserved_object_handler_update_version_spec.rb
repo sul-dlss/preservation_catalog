@@ -4,6 +4,7 @@ require 'services/shared_examples_preserved_object_handler'
 RSpec.describe PreservedObjectHandler do
   before do
     allow(Dor::WorkflowService).to receive(:update_workflow_error_status)
+    allow(Dor::WorkflowService).to receive(:update_workflow_status)
   end
 
   let(:druid) { 'ab123cd4567' }
@@ -63,30 +64,93 @@ RSpec.describe PreservedObjectHandler do
               po_handler.update_version
               expect(pc.reload.size).to eq orig
             end
-            it 'status' do
-              expect { po_handler.update_version }.not_to change { pc.reload.status }.from('ok')
-            end
             it 'last_moab_validation' do
               orig = pc.last_moab_validation
               po_handler.update_version
               expect(pc.reload.last_moab_validation).to eq orig
             end
           end
-          context 'PreservedObject' do
-            context 'changed' do
-              it "current_version becomes incoming version" do
-                orig = po.current_version
-                po_handler.update_version
-                expect(po.reload.current_version).to be > orig
-                expect(po.current_version).to eq incoming_version
+          context 'status' do
+            context 'checksums_validated = false' do
+              it 'starting status validity_unknown unchanged' do
+                pc.update!(status: 'validity_unknown')
+                expect do
+                  po_handler.update_version
+                end.not_to change { pc.reload.status }.from('validity_unknown')
               end
+              context 'starting status not validity_unknown' do
+                shared_examples 'POH#update_version changes status to "validity_unknown"' do |orig_status|
+                  before { pc.update!(status: orig_status) }
+                  it "original status #{orig_status}" do
+                    expect do
+                      po_handler.update_version
+                    end.to change { pc.reload.status }.from(orig_status).to('validity_unknown')
+                  end
+                end
+
+                it_behaves_like 'POH#update_version changes status to "validity_unknown"', 'ok'
+                it_behaves_like 'POH#update_version changes status to "validity_unknown"', 'invalid_moab'
+                it_behaves_like 'POH#update_version changes status to "validity_unknown"', 'invalid_checksum'
+                it_behaves_like 'POH#update_version changes status to "validity_unknown"', 'online_moab_not_found'
+                it_behaves_like 'POH#update_version changes status to "validity_unknown"', 'unexpected_version_on_storage'
+              end
+            end
+            context 'checksums_validated = true' do
+              it 'starting status ok unchanged' do
+                expect do
+                  po_handler.update_version(true)
+                end.not_to change { pc.reload.status }.from('ok')
+              end
+              context 'original status was not ok' do
+                shared_examples 'POH#update_version(true) does not change status' do |orig_status|
+                  before do
+                    pc.update!(status: orig_status)
+                  end
+                  it "original status #{orig_status}" do
+                    expect do
+                      po_handler.update_version(true)
+                    end.not_to change { pc.reload.status }
+                  end
+                end
+
+                it_behaves_like 'POH#update_version(true) does not change status', 'validity_unknown'
+                it_behaves_like 'POH#update_version(true) does not change status', 'invalid_moab'
+                it_behaves_like 'POH#update_version(true) does not change status', 'invalid_checksum'
+                # TODO: do these statuses change?
+                it_behaves_like 'POH#update_version(true) does not change status', 'online_moab_not_found'
+                it_behaves_like 'POH#update_version(true) does not change status', 'unexpected_version_on_storage'
+              end
+            end
+          end
+        end
+
+        context 'calls #update_online_version with' do
+          it 'status = "validity_unknown" for checksums_validated = false' do
+            expect(po_handler).to receive(:update_online_version).with('validity_unknown', true, false).and_call_original
+            po_handler.update_version
+            skip 'test is weak b/c we only indirectly show the effects of #update_online_version in #update_version specs'
+          end
+          it 'status = "ok" and checksums_validated = true for checksums_validated = true' do
+            expect(po_handler).to receive(:update_online_version).with(nil, true, true).and_call_original
+            po_handler.update_version(true)
+            skip 'test is weak b/c we only indirectly show the effects of #update_online_version in #update_version specs'
+          end
+        end
+
+        context 'PreservedObject' do
+          context 'changed' do
+            it "current_version becomes incoming version" do
+              orig = po.current_version
+              po_handler.update_version
+              expect(po.reload.current_version).to be > orig
+              expect(po.current_version).to eq incoming_version
             end
           end
         end
         it_behaves_like 'calls AuditResults.report_results', :update_version
 
         context 'returns' do
-          let!(:results) { po_handler.update_version }
+          let!(:results) { po_handler.update_version(true) }
 
           it '1 results' do
             expect(results).to be_an_instance_of Array
@@ -275,10 +339,54 @@ RSpec.describe PreservedObjectHandler do
               po_handler.update_version_after_validation
               expect(pc.reload.size).to eq orig
             end
-            it 'status' do
-              po_handler.update_version_after_validation
-              expect(pc.reload).to be_validity_unknown
-              skip 'is there a scenario when status should change here?  See #431'
+          end
+          context 'status' do
+            context 'checksums_validated = false' do
+              it 'starting status validity_unknown unchanged' do
+                pc.update(status: 'validity_unknown')
+                expect do
+                  po_handler.update_version_after_validation
+                end.not_to change { pc.reload.status }.from('validity_unknown')
+              end
+              context 'starting status not validity_unknown' do
+                shared_examples 'POH#update_version_after_validation changes status to "validity_unknown"' do |orig_status|
+                  before { pc.update(status: orig_status) }
+                  it "original status #{orig_status}" do
+                    expect do
+                      po_handler.update_version_after_validation
+                    end.to change { pc.reload.status }.from(orig_status).to('validity_unknown')
+                  end
+                end
+
+                it_behaves_like 'POH#update_version_after_validation changes status to "validity_unknown"', 'ok'
+                it_behaves_like 'POH#update_version_after_validation changes status to "validity_unknown"', 'invalid_moab'
+                it_behaves_like 'POH#update_version_after_validation changes status to "validity_unknown"', 'invalid_checksum'
+                it_behaves_like 'POH#update_version_after_validation changes status to "validity_unknown"', 'online_moab_not_found'
+                it_behaves_like 'POH#update_version_after_validation changes status to "validity_unknown"', 'unexpected_version_on_storage'
+              end
+            end
+            context 'checksums_validated = true' do
+              it 'starting status ok unchanged' do
+                expect do
+                  po_handler.update_version_after_validation(true)
+                end.not_to change { pc.reload.status }.from('ok')
+              end
+              context 'starting status not ok' do
+                shared_examples 'POH#update_version_after_validation(true) changes status to "ok"' do |orig_status|
+                  before { pc.update(status: orig_status) }
+                  it "original status #{orig_status}" do
+                    expect do
+                      po_handler.update_version_after_validation(true)
+                    end.to change { pc.reload.status }.from(orig_status).to('ok')
+                  end
+                end
+
+                it_behaves_like 'POH#update_version_after_validation(true) changes status to "ok"', 'validity_unknown'
+                it_behaves_like 'POH#update_version_after_validation(true) changes status to "ok"', 'invalid_moab'
+                it_behaves_like 'POH#update_version_after_validation(true) changes status to "ok"', 'invalid_checksum'
+                it_behaves_like 'POH#update_version_after_validation(true) changes status to "ok"', 'online_moab_not_found'
+                it_behaves_like 'POH#update_version_after_validation(true) changes status to "ok"', 'unexpected_version_on_storage'
+              end
             end
           end
         end
@@ -293,17 +401,17 @@ RSpec.describe PreservedObjectHandler do
           end
         end
 
-        it 'calls #update_online_version with validated = true and status = "validity_unknown"' do
-          expect(po_handler).to receive(:update_online_version).with(PreservedCopy::VALIDITY_UNKNOWN_STATUS).and_call_original
-          po_handler.update_version_after_validation
-          skip 'test is weak b/c we only indirectly show the effects of #update_online_version in #update_version specs'
-        end
-
-        it 'updates PreservedCopy status to "validity_unknown" if it was "moab_invalid"' do
-          pc.status = PreservedCopy::INVALID_MOAB_STATUS
-          pc.save!
-          po_handler.update_version_after_validation
-          expect(pc.reload.status).to eq PreservedCopy::VALIDITY_UNKNOWN_STATUS
+        context 'calls #update_online_version with' do
+          it 'status = "validity_unknown" for checksums_validated = false' do
+            expect(po_handler).to receive(:update_online_version).with('validity_unknown', false, false).and_call_original
+            po_handler.update_version_after_validation(false)
+            skip 'test is weak b/c we only indirectly show the effects of #update_online_version in #update_version specs'
+          end
+          it 'status = "ok" and checksums_validated = true for checksums_validated = true' do
+            expect(po_handler).to receive(:update_online_version).with('ok', false, true).and_call_original
+            po_handler.update_version_after_validation(true)
+            skip 'test is weak b/c we only indirectly show the effects of #update_online_version in #update_version specs'
+          end
         end
       end
 
@@ -330,35 +438,100 @@ RSpec.describe PreservedObjectHandler do
           )
         end
 
-        context 'PreservedCopy' do
-          context 'changed' do
-            it 'last_moab_validation' do
-              orig = pc.last_moab_validation
-              po_handler.update_version_after_validation
-              expect(pc.reload.last_moab_validation).to be > orig
+        context 'checksums_validated = false' do
+          context 'PreservedCopy' do
+            it 'last_moab_validation updated' do
+              expect do
+                po_handler.update_version_after_validation
+              end.to change { pc.reload.status }.from('ok').to('validity_unknown')
             end
-            it 'status' do
-              orig = pc.status
-              po_handler.update_version_after_validation
-              expect(pc.reload.status).to eq PreservedCopy::INVALID_MOAB_STATUS
-              expect(pc.status).not_to eq orig
+            it 'size updated to incoming_size' do
+              expect do
+                po_handler.update_version_after_validation
+              end.to change { pc.reload.size }.to(incoming_size)
+            end
+            it 'last_version_audit updated' do
+              expect do
+                po_handler.update_version_after_validation
+              end.to change { pc.reload.last_version_audit }
+            end
+            it 'version updated to incoming_version' do
+              expect do
+                po_handler.update_version_after_validation
+              end.to change { pc.reload.version }.from(2).to(incoming_version)
+            end
+            context 'status' do
+              it 'starting status validity_unknown unchanged' do
+                pc.update(status: 'validity_unknown')
+                expect do
+                  po_handler.update_version_after_validation
+                end.not_to change { pc.reload.status }.from('validity_unknown')
+              end
+              context 'starting status was not validity_unknown' do
+                shared_examples 'POH#update_version_after_validation changes status to "validity_unknown"' do |orig_status|
+                  before { pc.update(status: orig_status) }
+                  it "original status #{orig_status}" do
+                    # (due to newer version not checksum validated)
+                    expect do
+                      po_handler.update_version_after_validation
+                    end.to change { pc.reload.status }.from(orig_status).to('validity_unknown')
+                  end
+                end
+
+                it_behaves_like 'POH#update_version_after_validation changes status to "validity_unknown"', 'ok'
+                it_behaves_like 'POH#update_version_after_validation changes status to "validity_unknown"', 'online_moab_not_found'
+                it_behaves_like 'POH#update_version_after_validation changes status to "validity_unknown"', 'unexpected_version_on_storage'
+                it_behaves_like 'POH#update_version_after_validation changes status to "validity_unknown"', 'invalid_moab'
+                it_behaves_like 'POH#update_version_after_validation changes status to "validity_unknown"', 'invalid_checksum'
+              end
             end
           end
-          context 'unchanged' do
-            it 'version' do
-              orig = pc.version
-              po_handler.update_version_after_validation
-              expect(pc.reload.version).to eq orig
+        end
+        context 'checksums_validated = true' do
+          context 'PreservedCopy' do
+            it 'last_moab_validation updated' do
+              expect do
+                po_handler.update_version_after_validation(true)
+              end.to change { pc.reload.last_moab_validation }
             end
-            it 'size' do
-              orig = pc.size
-              po_handler.update_version_after_validation
-              expect(pc.reload.size).to eq orig
+            it 'size updated to incoming_size' do
+              expect do
+                po_handler.update_version_after_validation(true)
+              end.to change { pc.reload.size }.to(incoming_size)
             end
-            it 'last_version_audit' do
-              orig = pc.last_version_audit
-              po_handler.update_version_after_validation
-              expect(pc.reload.last_version_audit).to eq orig
+            it 'last_version_audit updated' do
+              expect do
+                po_handler.update_version_after_validation(true)
+              end.to change { pc.reload.last_version_audit }
+            end
+            it 'version updated to incoming_version' do
+              expect do
+                po_handler.update_version_after_validation(true)
+              end.to change { pc.reload.version }.from(2).to(incoming_version)
+            end
+            context 'status' do
+              it 'starting status invalid_moab unchanged' do
+                pc.update(status: 'invalid_moab')
+                expect do
+                  po_handler.update_version_after_validation(true)
+                end.not_to change { pc.reload.status }.from('invalid_moab')
+              end
+              context 'starting status was not invalid_moab' do
+                shared_examples 'POH#update_version_after_validation(true) changes status to "invalid_moab"' do |orig_status|
+                  before { pc.update(status: orig_status) }
+                  it "original status #{orig_status}" do
+                    expect do
+                      po_handler.update_version_after_validation(true)
+                    end.to change { pc.reload.status }.from(orig_status).to('invalid_moab')
+                  end
+                end
+
+                it_behaves_like 'POH#update_version_after_validation(true) changes status to "invalid_moab"', 'ok'
+                it_behaves_like 'POH#update_version_after_validation(true) changes status to "invalid_moab"', 'validity_unknown'
+                it_behaves_like 'POH#update_version_after_validation(true) changes status to "invalid_moab"', 'online_moab_not_found'
+                it_behaves_like 'POH#update_version_after_validation(true) changes status to "invalid_moab"', 'unexpected_version_on_storage'
+                it_behaves_like 'POH#update_version_after_validation(true) changes status to "invalid_moab"', 'invalid_checksum'
+              end
             end
           end
         end
@@ -372,11 +545,17 @@ RSpec.describe PreservedObjectHandler do
           end
         end
 
-        it 'ensures PreservedCopy status is invalid' do
-          pc.status = PreservedCopy::OK_STATUS
-          pc.save!
-          po_handler.update_version_after_validation
-          expect(pc.reload.status).to eq PreservedCopy::INVALID_MOAB_STATUS
+        context 'calls #update_online_version with' do
+          it 'status = "validity_unknown" for checksums_validated = false' do
+            expect(po_handler).to receive(:update_online_version).with('validity_unknown', false, false).and_call_original
+            po_handler.update_version_after_validation
+            skip 'test is weak b/c we only indirectly show the effects of #update_online_version in #update_version specs'
+          end
+          it 'status = "invalid_moab" and checksums_validated = true for checksums_validated = true' do
+            expect(po_handler).to receive(:update_online_version).with('invalid_moab', false, true).and_call_original
+            po_handler.update_version_after_validation(true)
+            skip 'test is weak b/c we only indirectly show the effects of #update_online_version in #update_version specs'
+          end
         end
 
         it 'logs a debug message' do
@@ -386,35 +565,102 @@ RSpec.describe PreservedObjectHandler do
           expect(Rails.logger).to have_received(:debug).with(msg)
         end
 
-        it 'does not call PreservedObject.save! when PreservedCopy only has timestamp updates' do
-          po = create :preserved_object
-          allow(PreservedObject).to receive(:find_by).with(druid: druid).and_return(po)
-          pc = create :preserved_copy
-          allow(PreservedCopy).to receive(:find_by).with(preserved_object: po, endpoint: ep).and_return(pc)
-          allow(po_handler).to receive(:moab_validation_errors).and_return(['foo'])
-
-          allow(po).to receive(:save!)
-          allow(pc).to receive(:save!)
-          po_handler.update_version_after_validation
-          expect(po).not_to have_received(:save!)
-          expect(pc).to have_received(:save!)
-        end
-
-        context 'incoming version newer than catalog versions (both) (happy path)' do
-          it 'calls #update_online_version with validated = true and status = "invalid_moab"' do
-            expect(po_handler).to receive(:update_online_version).with(true, PreservedCopy::INVALID_MOAB_STATUS).and_call_original
-            po_handler.update_version_after_validation
-            skip 'test is weak b/c we only indirectly show the effects of #update_online_version in #update_version specs'
-          end
-        end
-
         context 'PreservedCopy and PreservedObject versions do not match' do
           before do
             pc.version = pc.version + 1
             pc.save!
           end
 
-          it_behaves_like 'update for invalid moab', :update_version_after_validation
+          context 'checksums_validated = false' do
+            context 'PreservedCopy' do
+              it 'last_moab_validation updated' do
+                expect { po_handler.update_version_after_validation }.to change { pc.reload.last_moab_validation }
+              end
+              it 'last_version_audit unchanged' do
+                expect { po_handler.update_version_after_validation }.not_to change { pc.reload.last_version_audit }
+              end
+              it 'size unchanged' do
+                expect { po_handler.update_version_after_validation }.not_to change { pc.reload.size }
+              end
+              it 'version unchanged' do
+                expect { po_handler.update_version_after_validation }.not_to change { pc.reload.version }
+              end
+              it 'status becomes validity_unknown (due to newer version not checksum validated)' do
+                expect { po_handler.update_version_after_validation }.to change { pc.reload.status }.to('validity_unknown')
+              end
+            end
+            it 'does not update PreservedObject' do
+              expect { po_handler.update_version_after_validation }.not_to change { po.reload.updated_at }
+            end
+
+            context 'returns' do
+              let!(:results) { po_handler.update_version_after_validation }
+
+              it '3 results' do
+                expect(results).to be_an_instance_of Array
+                expect(results.size).to eq 3
+              end
+              it 'INVALID_MOAB result' do
+                code = AuditResults::INVALID_MOAB
+                invalid_moab_msg = "Invalid Moab, validation errors: [\"Missing directory: [\\\"data\\\", \\\"manifests\\\"] Version: v0001\"]"
+                expect(results).to include(hash_including(code => invalid_moab_msg))
+              end
+              it 'PC_PO_VERSION_MISMATCH result' do
+                code = AuditResults::PC_PO_VERSION_MISMATCH
+                mismatch_msg = "PreservedCopy online Moab version 3 does not match PreservedObject current_version 2"
+                expect(results).to include(hash_including(code => mismatch_msg))
+              end
+              it 'PC_STATUS_CHANGED result' do
+                updated_status_msg_regex = Regexp.new("PreservedCopy status changed from")
+                expect(results).to include(a_hash_including(AuditResults::PC_STATUS_CHANGED => updated_status_msg_regex))
+              end
+            end
+          end
+          context 'checksums_validated = true' do
+            context 'PreservedCopy' do
+              it 'last_moab_validation updated' do
+                expect { po_handler.update_version_after_validation(true) }.to change { pc.reload.last_moab_validation }
+              end
+              it 'last_version_audit unchanged' do
+                expect { po_handler.update_version_after_validation(true) }.not_to change { pc.reload.last_version_audit }
+              end
+              it 'size unchanged' do
+                expect { po_handler.update_version_after_validation(true) }.not_to change { pc.reload.size }
+              end
+              it 'version unchanged' do
+                expect { po_handler.update_version_after_validation(true) }.not_to change { pc.reload.version }
+              end
+              it 'status becomes invalid_moab' do
+                expect { po_handler.update_version_after_validation(true) }.to change { pc.reload.status }.to('invalid_moab')
+              end
+            end
+            it 'does not update PreservedObject' do
+              expect { po_handler.update_version_after_validation(true) }.not_to change { po.reload.updated_at }
+            end
+
+            context 'returns' do
+              let!(:results) { po_handler.update_version_after_validation(true) }
+
+              it '3 results' do
+                expect(results).to be_an_instance_of Array
+                expect(results.size).to eq 3
+              end
+              it 'INVALID_MOAB result' do
+                code = AuditResults::INVALID_MOAB
+                invalid_moab_msg = "Invalid Moab, validation errors: [\"Missing directory: [\\\"data\\\", \\\"manifests\\\"] Version: v0001\"]"
+                expect(results).to include(hash_including(code => invalid_moab_msg))
+              end
+              it 'PC_PO_VERSION_MISMATCH result' do
+                code = AuditResults::PC_PO_VERSION_MISMATCH
+                mismatch_msg = "PreservedCopy online Moab version 3 does not match PreservedObject current_version 2"
+                expect(results).to include(hash_including(code => mismatch_msg))
+              end
+              it 'PC_STATUS_CHANGED result' do
+                updated_status_msg_regex = Regexp.new("PreservedCopy status changed from")
+                expect(results).to include(a_hash_including(AuditResults::PC_STATUS_CHANGED => updated_status_msg_regex))
+              end
+            end
+          end
         end
 
         context 'incoming version same as catalog versions (both)' do
