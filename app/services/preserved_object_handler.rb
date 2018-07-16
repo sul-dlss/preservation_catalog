@@ -249,7 +249,6 @@ class PreservedObjectHandler
       po_version = pres_copy.preserved_object.current_version
       res_code = AuditResults::PC_PO_VERSION_MISMATCH
       results.add_result(res_code, { pc_version: pc_version, po_version: po_version })
-      results.report_results(Audit::CatalogToMoab.logger)
       raise ActiveRecord::Rollback, "PreservedCopy version #{pc_version} != PreservedObject current_version #{po_version}"
     end
   end
