@@ -70,7 +70,7 @@ RSpec.describe PreservedCopy, type: :model do
   it { is_expected.to validate_presence_of(:endpoint) }
   it { is_expected.to validate_presence_of(:preserved_object) }
   it { is_expected.to validate_presence_of(:version) }
-  it { is_expected.to have_many(:zip_checksums) }
+  it { is_expected.to have_many(:archive_preserved_copies) }
 
   describe '#replicate!' do
     it 'raises if too large' do
