@@ -1,5 +1,5 @@
 FactoryBot.define do
-  factory :archive_preserved_copy do
+  factory :zipped_moab_version do
     status 'unreplicated'
     version 1
     archive_endpoint

@@ -1,5 +1,5 @@
 # Preconditions:
-# PlexerJob has made a matching ArchivePreservedCopyPart row
+# PlexerJob has made a matching ZipPart row
 #
 # Responsibilities:
 # Update DB per event info.
@@ -8,14 +8,14 @@
 # If YES, send a message to a non-job pub/sub queue.
 class ResultsRecorderJob < ApplicationJob
   queue_as :endpoint_events
-  attr_accessor :apc, :apcs
+  attr_accessor :zmv, :zmvs
 
   before_perform do |job|
-    job.apcs ||= ArchivePreservedCopy
+    job.zmvs ||= ZippedMoabVersion
                  .by_druid(job.arguments.first)
                  .joins(:archive_endpoint)
                  .where(version: job.arguments.second)
-    job.apc ||= apcs.find_by!(archive_endpoints: { delivery_class: Object.const_get(job.arguments.fourth) })
+    job.zmv ||= zmvs.find_by!(archive_endpoints: { delivery_class: Object.const_get(job.arguments.fourth) })
   end
 
   # @param [String] druid
@@ -23,19 +23,19 @@ class ResultsRecorderJob < ApplicationJob
   # @param [String] s3_part_key
   # @param [String] delivery_class Name of the worker class that performed delivery
   def perform(druid, version, s3_part_key, _delivery_class)
-    part = apc_part!(s3_part_key)
+    part = zmv_part!(s3_part_key)
     part.ok!
-    apc.ok! if part.all_parts_replicated? # are all of the parts replicated for this endpoint?
+    zmv.ok! if part.all_parts_replicated? # are all of the parts replicated for this endpoint?
     # only publish result if all of the parts replicated for all endpoints
-    return unless apcs.reload.all?(&:ok?)
+    return unless zmvs.reload.all?(&:ok?)
     publish_result(message(druid, version).to_json)
   end
 
   private
 
-  def apc_part!(s3_part_key)
-    raise "Status shifted underneath replication: #{apc.inspect}" unless apc.unreplicated?
-    apc.archive_preserved_copy_parts.find_by!(
+  def zmv_part!(s3_part_key)
+    raise "Status shifted underneath replication: #{zmv.inspect}" unless zmv.unreplicated?
+    zmv.zip_parts.find_by!(
       suffix: File.extname(s3_part_key),
       status: 'unreplicated'
     )
@@ -46,7 +46,7 @@ class ResultsRecorderJob < ApplicationJob
     {
       druid: druid,
       version: version,
-      endpoints: apcs.pluck(:endpoint_name)
+      endpoints: zmvs.pluck(:endpoint_name)
     }
   end
 

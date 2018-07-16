@@ -1,7 +1,7 @@
 # Metadata about an endpoint which stores zipped archives of version directories from Moab
 # objects.
 class ArchiveEndpoint < ApplicationRecord
-  has_many :archive_preserved_copies, dependent: :restrict_with_exception
+  has_many :zipped_moab_versions, dependent: :restrict_with_exception
   has_and_belongs_to_many :preservation_policies
 
   # @note Hash values cannot be modified without migrating any associated persisted data.
@@ -23,10 +23,10 @@ class ArchiveEndpoint < ApplicationRecord
 
   # for a given druid, which archive endpoints have an archive copy of the given version?
   scope :which_have_archive_copy, lambda { |druid, version|
-    joins(archive_preserved_copies: [:preserved_object])
+    joins(zipped_moab_versions: [:preserved_object])
       .where(
         preserved_objects: { druid: druid },
-        archive_preserved_copies: { version: version }
+        zipped_moab_versions: { version: version }
       )
   }
 

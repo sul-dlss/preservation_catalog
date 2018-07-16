@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180705234907) do
+ActiveRecord::Schema.define(version: 20180713231710) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -30,33 +30,6 @@ ActiveRecord::Schema.define(version: 20180705234907) do
     t.bigint "archive_endpoint_id", null: false
     t.index ["archive_endpoint_id"], name: "index_archive_endpoints_pres_policies_on_archive_endpoint_id"
     t.index ["preservation_policy_id"], name: "index_archive_endpoints_pres_policies_on_pres_policy_id"
-  end
-
-  create_table "archive_preserved_copies", force: :cascade do |t|
-    t.integer "version", null: false
-    t.datetime "last_existence_check"
-    t.bigint "preserved_copy_id", null: false
-    t.bigint "archive_endpoint_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.integer "status", null: false
-    t.index ["archive_endpoint_id"], name: "index_archive_preserved_copies_on_archive_endpoint_id"
-    t.index ["last_existence_check"], name: "index_archive_preserved_copies_on_last_existence_check"
-    t.index ["preserved_copy_id"], name: "index_archive_preserved_copies_on_preserved_copy_id"
-    t.index ["status"], name: "index_archive_preserved_copies_on_status"
-  end
-
-  create_table "archive_preserved_copy_parts", force: :cascade do |t|
-    t.bigint "size"
-    t.bigint "archive_preserved_copy_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.string "md5", null: false
-    t.string "create_info", null: false
-    t.integer "parts_count", null: false
-    t.string "suffix", null: false
-    t.integer "status", default: 1, null: false
-    t.index ["archive_preserved_copy_id"], name: "index_archive_preserved_copy_parts_on_archive_preserved_copy_id"
   end
 
   create_table "endpoints", force: :cascade do |t|
@@ -128,15 +101,42 @@ ActiveRecord::Schema.define(version: 20180705234907) do
     t.index ["preserved_copy_id"], name: "index_zip_checksums_on_preserved_copy_id"
   end
 
+  create_table "zip_parts", force: :cascade do |t|
+    t.bigint "size"
+    t.bigint "zipped_moab_version_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "md5", null: false
+    t.string "create_info", null: false
+    t.integer "parts_count", null: false
+    t.string "suffix", null: false
+    t.integer "status", default: 1, null: false
+    t.index ["zipped_moab_version_id"], name: "index_zip_parts_on_zipped_moab_version_id"
+  end
+
+  create_table "zipped_moab_versions", force: :cascade do |t|
+    t.integer "version", null: false
+    t.datetime "last_existence_check"
+    t.bigint "preserved_copy_id", null: false
+    t.bigint "archive_endpoint_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "status", null: false
+    t.index ["archive_endpoint_id"], name: "index_zipped_moab_versions_on_archive_endpoint_id"
+    t.index ["last_existence_check"], name: "index_zipped_moab_versions_on_last_existence_check"
+    t.index ["preserved_copy_id"], name: "index_zipped_moab_versions_on_preserved_copy_id"
+    t.index ["status"], name: "index_zipped_moab_versions_on_status"
+  end
+
   add_foreign_key "archive_endpoints_preservation_policies", "archive_endpoints"
   add_foreign_key "archive_endpoints_preservation_policies", "preservation_policies"
-  add_foreign_key "archive_preserved_copies", "archive_endpoints"
-  add_foreign_key "archive_preserved_copies", "preserved_copies"
-  add_foreign_key "archive_preserved_copy_parts", "archive_preserved_copies"
   add_foreign_key "endpoints_preservation_policies", "endpoints"
   add_foreign_key "endpoints_preservation_policies", "preservation_policies"
   add_foreign_key "preserved_copies", "endpoints"
   add_foreign_key "preserved_copies", "preserved_objects"
   add_foreign_key "preserved_objects", "preservation_policies"
   add_foreign_key "zip_checksums", "preserved_copies"
+  add_foreign_key "zip_parts", "zipped_moab_versions"
+  add_foreign_key "zipped_moab_versions", "archive_endpoints"
+  add_foreign_key "zipped_moab_versions", "preserved_copies"
 end
