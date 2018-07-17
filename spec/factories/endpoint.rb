@@ -6,6 +6,5 @@ FactoryBot.define do
   end
 
   factory :archive_endpoint_deprecated, parent: :endpoint do
-    delivery_class 1
   end
 end

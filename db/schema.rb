@@ -10,7 +10,8 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180712203748) do
+ActiveRecord::Schema.define(version: 20180717191117) do
+
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -47,7 +48,6 @@ ActiveRecord::Schema.define(version: 20180712203748) do
     t.datetime "updated_at", null: false
     t.string "endpoint_node", null: false
     t.string "storage_location", null: false
-    t.integer "delivery_class"
     t.index ["endpoint_name"], name: "index_endpoints_on_endpoint_name", unique: true
     t.index ["endpoint_node"], name: "index_endpoints_on_endpoint_node"
     t.index ["storage_location"], name: "index_endpoints_on_storage_location"

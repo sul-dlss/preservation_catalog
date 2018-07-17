@@ -71,7 +71,7 @@ RSpec.describe ZipEndpoint, type: :model do
     end
   end
 
-  describe '.zip_targets' do
+  describe '.targets' do
     let!(:alternate_pres_policy) do
       PreservationPolicy.create!(preservation_policy_name: 'alternate_pres_policy',
                                  archive_ttl: 666,
@@ -82,9 +82,9 @@ RSpec.describe ZipEndpoint, type: :model do
 
     it "returns the zip endpoints which implement the PO's pres policy" do
       zip_endpoint.preservation_policies = [PreservationPolicy.default_policy, alternate_pres_policy]
-      expect(ZipEndpoint.zip_targets(druid).pluck(:endpoint_name)).to eq %w[zip-endpoint mock_archive1]
+      expect(ZipEndpoint.targets(druid).pluck(:endpoint_name)).to eq %w[zip-endpoint mock_archive1]
       zip_endpoint.preservation_policies = [alternate_pres_policy]
-      expect(ZipEndpoint.zip_targets(druid).pluck(:endpoint_name)).to eq %w[mock_archive1]
+      expect(ZipEndpoint.targets(druid).pluck(:endpoint_name)).to eq %w[mock_archive1]
     end
   end
 

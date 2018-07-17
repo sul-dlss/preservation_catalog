@@ -4,14 +4,6 @@ class Endpoint < ApplicationRecord
   has_many :preserved_copies, dependent: :restrict_with_exception
   has_and_belongs_to_many :preservation_policies
 
-  # @note Hash values cannot be modified without migrating any associated persisted data.
-  # @see [enum docs] http://api.rubyonrails.org/classes/ActiveRecord/Enum.html
-  # TODO: deprecated, remove this field (and drop DB col) once this has transitioned to ArchiveEndpoint
-  enum delivery_class: {
-    S3WestDeliveryJob => 1,
-    S3EastDeliveryJob => 2
-  }
-
   validates :endpoint_name, presence: true, uniqueness: true
   validates :endpoint_node, presence: true
   validates :storage_location, presence: true
