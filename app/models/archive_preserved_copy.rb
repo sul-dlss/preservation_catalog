@@ -1,4 +1,4 @@
-# Corresponds to a Moab-Version on an ZipEndpoint.
+# Corresponds to a Moab-Version on a ZipEndpoint.
 #   There will be individual parts (at least one) - see ArchivepreservedCopyPart.
 # For a fully consistent system, given an (Online) PreservedCopy, the number of associated
 # ArchivePreservedCopy objects should be:
