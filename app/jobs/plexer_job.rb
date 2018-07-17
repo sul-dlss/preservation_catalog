@@ -4,7 +4,7 @@
 #
 # Responsibilities:
 # Record zip part metadata info in DB.
-# Split message out to all necessary endpoints.
+# Split message out to all necessary zip endpoints.
 # For example:
 #   Endpoint1Delivery.perform_later(druid, version, part_s3_key)
 #   Endpoint2Delivery.perform_later(druid, version, part_s3_key)
@@ -54,6 +54,6 @@ class PlexerJob < ZipPartJobBase
 
   # @return [Array<Class>] target delivery worker classes
   def deliverers
-    apcs.map { |apc| apc.archive_endpoint.delivery_class }.uniq
+    apcs.map { |apc| apc.zip_endpoint.delivery_class }.uniq
   end
 end

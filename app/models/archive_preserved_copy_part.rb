@@ -3,7 +3,7 @@
 # This model's data is populated by PlexerJob.
 class ArchivePreservedCopyPart < ApplicationRecord
   belongs_to :archive_preserved_copy, inverse_of: :archive_preserved_copy_parts
-  delegate :archive_endpoint, :preserved_copy, to: :archive_preserved_copy
+  delegate :zip_endpoint, :preserved_copy, to: :archive_preserved_copy
   delegate :preserved_object, to: :preserved_copy
 
   enum status: {
@@ -17,7 +17,7 @@ class ArchivePreservedCopyPart < ApplicationRecord
   validates :suffix, presence: true, format: { with: /\A\.z(ip|[0-9]+)\z/ }
   validates :parts_count, presence: true, numericality: { only_integer: true, greater_than: 0 }
 
-  # For this persisted part, are it and all its cohort now replicated (to one endpoint)?
+  # For this persisted part, are it and all its cohort now replicated (to one zip_endpoint)?
   # @return [Boolean] true if all expected parts are now replicated
   def all_parts_replicated?
     return false unless persisted? && ok?

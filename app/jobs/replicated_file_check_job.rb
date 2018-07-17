@@ -1,4 +1,4 @@
-# Confirms existence of PreservedCopy on an endpoint.
+# Confirms existence of PreservedCopy on a zip endpoint.
 # Confirms the MD5 checksum matches in database and s3.
 # Usage info:
 # ReplicatedFileCheck.set(queue: :endpoint_check_us_west_2).perform_later(pc)
@@ -8,7 +8,7 @@ class ReplicatedFileCheckJob < ApplicationJob
   queue_as :override_this_queue
   delegate :bucket, :bucket_name, to: PreservationCatalog::S3
 
-  # @param [PreservedCopy] verify that the archived preserved_copy exists on an endpoint
+  # @param [PreservedCopy] verify that the archived preserved_copy exists on a zip endpoint
   def perform(preserved_copy)
     if preserved_copy.unreplicated?
       Rails.logger.error("#{preserved_copy} should be replicated, but has a status of #{preserved_copy.status}.")

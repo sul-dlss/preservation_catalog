@@ -7,15 +7,15 @@
 # If NO, do nothing further.
 # If YES, send a message to a non-job pub/sub queue.
 class ResultsRecorderJob < ApplicationJob
-  queue_as :endpoint_events
+  queue_as :zip_endpoint_events
   attr_accessor :apc, :apcs
 
   before_perform do |job|
     job.apcs ||= ArchivePreservedCopy
                  .by_druid(job.arguments.first)
-                 .joins(:archive_endpoint)
+                 .joins(:zip_endpoint)
                  .where(version: job.arguments.second)
-    job.apc ||= apcs.find_by!(archive_endpoints: { delivery_class: Object.const_get(job.arguments.fourth) })
+    job.apc ||= apcs.find_by!(zip_endpoints: { delivery_class: Object.const_get(job.arguments.fourth) })
   end
 
   # @param [String] druid
@@ -25,8 +25,8 @@ class ResultsRecorderJob < ApplicationJob
   def perform(druid, version, s3_part_key, _delivery_class)
     part = apc_part!(s3_part_key)
     part.ok!
-    apc.ok! if part.all_parts_replicated? # are all of the parts replicated for this endpoint?
-    # only publish result if all of the parts replicated for all endpoints
+    apc.ok! if part.all_parts_replicated? # are all of the parts replicated for this zip_endpoint?
+    # only publish result if all of the parts replicated for all zip_endpoints
     return unless apcs.reload.all?(&:ok?)
     publish_result(message(druid, version).to_json)
   end
@@ -46,7 +46,7 @@ class ResultsRecorderJob < ApplicationJob
     {
       druid: druid,
       version: version,
-      endpoints: apcs.pluck(:endpoint_name)
+      zip_endpoints: apcs.pluck(:endpoint_name)
     }
   end
 

@@ -22,7 +22,7 @@ class PreservedObject < ApplicationRecord
   # Log an error message.
   # Calls ReplicatedFileCheckJob
   # This builds off of #917
-  def check_endpoints!
+  def check_zip_endpoints!
     # FIXME: STUB
     # Ticket: 920
   end

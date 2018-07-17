@@ -6,9 +6,9 @@ describe 'the whole replication pipeline', type: :job do # rubocop:disable RSpec
   let(:apc) { create(:archive_preserved_copy) }
   let(:druid) { apc.preserved_object.druid }
   let(:version) { apc.version }
-  let(:deliverer) { apc.archive_endpoint.delivery_class.to_s }
+  let(:deliverer) { apc.zip_endpoint.delivery_class.to_s }
   let(:hash) do
-    { druid: druid, version: version, endpoints: [apc.archive_endpoint.endpoint_name] }
+    { druid: druid, version: version, zip_endpoints: [apc.zip_endpoint.endpoint_name] }
   end
   let(:s3_key) { 'bj/102/hs/9687/bj102hs9687.v0001.zip' }
 
@@ -20,7 +20,7 @@ describe 'the whole replication pipeline', type: :job do # rubocop:disable RSpec
   end
 
   before do
-    ArchiveEndpoint.destroy_all # seeds are trash
+    ZipEndpoint.destroy_all # seeds are trash
     FactoryBot.reload # we need the "first" PO, bj102hs9687, for PC to line up w/ fixture
     allow(Settings).to receive(:zip_storage).and_return(Rails.root.join('spec', 'fixtures', 'zip_storage'))
     allow(PreservationCatalog::S3).to receive(:bucket).and_return(bucket)

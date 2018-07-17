@@ -317,18 +317,18 @@ RSpec.describe PreservedCopy, type: :model do
 
   describe '#create_archive_preserved_copies!' do
     let(:pc_version) { 3 }
-    let(:archive_ep) { ArchiveEndpoint.find_by!(endpoint_name: 'mock_archive1') }
-    let(:new_archive_ep) { create(:archive_endpoint, endpoint_name: 'mock_archive2') }
+    let(:archive_ep) { ZipEndpoint.find_by!(endpoint_name: 'mock_archive1') }
+    let(:new_archive_ep) { create(:zip_endpoint, endpoint_name: 'mock_archive2') }
 
     it "creates pres copies that don't yet exist for the given version, but should" do
       expect { pc.create_archive_preserved_copies!(pc_version) }.to change {
-        ArchiveEndpoint.which_need_archive_copy(druid, pc_version).to_a
+        ZipEndpoint.which_need_archive_copy(druid, pc_version).to_a
       }.from([archive_ep]).to([])
 
       expect(ArchivePreservedCopy.by_druid(druid).count).to eq 1
 
       expect { pc.create_archive_preserved_copies!(pc_version - 1) }.to change {
-        ArchiveEndpoint.which_need_archive_copy(druid, pc_version - 1).to_a
+        ZipEndpoint.which_need_archive_copy(druid, pc_version - 1).to_a
       }.from([archive_ep]).to([])
       expect(ArchivePreservedCopy.by_druid(druid).count).to eq 2
 
@@ -341,13 +341,13 @@ RSpec.describe PreservedCopy, type: :model do
 
     it "creates pres copies that don't yet exist for the given endpoint, but should" do
       expect { pc.create_archive_preserved_copies!(pc_version) }.to change {
-        ArchiveEndpoint.which_need_archive_copy(druid, pc_version).to_a
+        ZipEndpoint.which_need_archive_copy(druid, pc_version).to_a
       }.from([archive_ep]).to([])
       expect(ArchivePreservedCopy.by_druid(druid).where(version: pc_version).count).to eq 1
 
       new_archive_ep.preservation_policies = [PreservationPolicy.default_policy]
       expect { pc.create_archive_preserved_copies!(pc_version) }.to change {
-        ArchiveEndpoint.which_need_archive_copy(druid, pc_version).to_a
+        ZipEndpoint.which_need_archive_copy(druid, pc_version).to_a
       }.from([new_archive_ep]).to([])
       expect(ArchivePreservedCopy.by_druid(druid).where(version: pc_version).count).to eq 2
     end
