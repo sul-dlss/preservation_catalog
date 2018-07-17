@@ -74,6 +74,8 @@ Metrics/AbcSize:
     - 'app/lib/audit/checksum.rb' # .validate_disk_all_dirs is decidedly readable
     - 'app/lib/audit/moab_to_catalog.rb' # .xxx_for_all_storage_roots is decidedly readable
     - 'app/controllers/catalog_controller.rb' # #create method is readable
+    - 'app/jobs/s3_east_delivery_job.rb' # WIP
+    - 'app/jobs/s3_west_delivery_job.rb' # WIP
 
 Metrics/BlockLength:
   Exclude:

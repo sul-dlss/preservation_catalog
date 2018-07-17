@@ -14,6 +14,8 @@ class S3WestDeliveryJob < ZipPartJobBase
   # @param [Hash<Symbol => String, Integer>] metadata Zip info
   # @see PlexerJob#perform warning about why metadata must be passed
   def perform(druid, version, part_s3_key, metadata)
+    ENV['AWS_PROFILE'] = 'us_west_2'
+    ENV['AWS_BUCKET_NAME'] = Settings.archive_endpoints.aws_s3_west_2.storage_location
     s3_part = bucket.object(part_s3_key) # Aws::S3::Object
     return if s3_part.exists?
     s3_part.put(
