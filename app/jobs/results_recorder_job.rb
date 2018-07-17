@@ -23,7 +23,7 @@ class ResultsRecorderJob < ApplicationJob
   # @param [String] s3_part_key
   # @param [String] delivery_class Name of the worker class that performed delivery
   def perform(druid, version, s3_part_key, _delivery_class)
-    part = apc_part!(s3_part_key)
+    part = zip_part!(s3_part_key)
     part.ok!
     apc.ok! if part.all_parts_replicated? # are all of the parts replicated for this zip_endpoint?
     # only publish result if all of the parts replicated for all zip_endpoints
@@ -33,7 +33,8 @@ class ResultsRecorderJob < ApplicationJob
 
   private
 
-  def apc_part!(s3_part_key)
+  # the exclamation point in the method name mirrors the punctuation of find_by!
+  def zip_part!(s3_part_key)
     raise "Status shifted underneath replication: #{apc.inspect}" unless apc.unreplicated?
     apc.zip_parts.find_by!(
       suffix: File.extname(s3_part_key),

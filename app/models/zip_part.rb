@@ -18,7 +18,9 @@ class ZipPart < ApplicationRecord
   validates :suffix, presence: true, format: { with: /\A\.z(ip|[0-9]+)\z/ }
   validates :parts_count, presence: true, numericality: { only_integer: true, greater_than: 0 }
 
-  # For this persisted part, are it and all its cohort now replicated (to one zip_endpoint)?
+
+  # Determines if all of the parts are replicated for this endpoint, or,
+  # For this persisted part, are it and all its cohort now replicated (to one endpoint)?
   # @return [Boolean] true if all expected parts are now replicated
   def all_parts_replicated?
     return false unless persisted? && ok?
