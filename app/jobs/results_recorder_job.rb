@@ -33,7 +33,6 @@ class ResultsRecorderJob < ApplicationJob
 
   private
 
-  # the exclamation point in the method name mirrors the punctuation of find_by!
   def zip_part!(s3_part_key)
     raise "Status shifted underneath replication: #{apc.inspect}" unless apc.unreplicated?
     apc.zip_parts.find_by!(
