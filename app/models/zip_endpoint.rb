@@ -17,7 +17,7 @@ class ZipEndpoint < ApplicationRecord
   validates :delivery_class, presence: true
 
   # for the given druid, which zip endpoints should have archive copies, as per the preservation_policy?
-  scope :zip_targets, lambda { |druid|
+  scope :targets, lambda { |druid|
     joins(preservation_policies: [:preserved_objects]).where(preserved_objects: { druid: druid })
   }
 
@@ -32,7 +32,7 @@ class ZipEndpoint < ApplicationRecord
 
   # for a given version of a druid, which zip endpoints need an archive copy, based on the governing pres policy?
   scope :which_need_archive_copy, lambda { |druid, version|
-    zip_targets(druid).where.not(id: which_have_archive_copy(druid, version))
+    targets(druid).where.not(id: which_have_archive_copy(druid, version))
   }
 
   # iterates over the zip endpoints enumerated in settings, creating a ZipEndpoint for each if one doesn't
