@@ -241,3 +241,6 @@ Style/TernaryParentheses:
   Exclude:
     - spec/lib/active_record_utils_spec.rb # reads better with parens
     - 'spec/models/preserved_copy_spec.rb'
+
+Style/WordArray:
+  Enabled: false # I hate this rule;  "precious" ruby syntax

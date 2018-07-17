@@ -8,12 +8,8 @@ class CatalogController < ApplicationController
 
   # POST /catalog
   def create
-    druid = poh_params[:druid].split(':', 2).last
-    incoming_version = poh_params[:incoming_version].to_i
-    incoming_size = poh_params[:incoming_size].to_i
-    endpoint = Endpoint.find_by(storage_location: "#{poh_params[:storage_location]}/#{Moab::Config.storage_trunk}")
-    @poh = PreservedObjectHandler.new(druid, incoming_version, incoming_size, endpoint)
-    poh.create
+    @poh = PreservedObjectHandler.new(bare_druid, incoming_version, incoming_size, endpoint)
+    poh.create(checksums_validated)
     status_code =
       if poh.results.contains_result_code?(:created_new_object)
         :created # 201
@@ -30,12 +26,8 @@ class CatalogController < ApplicationController
   # PATCH /catalog/:id
   # User can only update a partial record (application controls what can be updated)
   def update
-    druid = poh_params[:druid].split(':', 2).last
-    incoming_version = poh_params[:incoming_version].to_i
-    incoming_size = poh_params[:incoming_size].to_i
-    endpoint = Endpoint.find_by(storage_location: "#{poh_params[:storage_location]}/#{Moab::Config.storage_trunk}")
-    @poh = PreservedObjectHandler.new(druid, incoming_version, incoming_size, endpoint)
-    poh.update_version
+    @poh = PreservedObjectHandler.new(bare_druid, incoming_version, incoming_size, endpoint)
+    poh.update_version(checksums_validated)
     status_code =
       if poh.results.contains_result_code?(:actual_vers_gt_db_obj)
         :ok # 200
@@ -55,6 +47,29 @@ class CatalogController < ApplicationController
 
   # strong params / whitelist params
   def poh_params
-    params.permit(:druid, :incoming_version, :incoming_size, :storage_location)
+    params.permit(:druid, :incoming_version, :incoming_size, :storage_location, :checksums_validated)
+  end
+
+  def bare_druid
+    poh_params[:druid].split(':', 2).last if poh_params[:druid]
+  end
+
+  def incoming_version
+    poh_params[:incoming_version].to_i if poh_params[:incoming_version]
+  end
+
+  def incoming_size
+    poh_params[:incoming_size].to_i if poh_params[:incoming_size]
+  end
+
+  def endpoint
+    return unless poh_params[:storage_location]
+    Endpoint.find_by(storage_location: "#{poh_params[:storage_location]}/#{Moab::Config.storage_trunk}")
+  end
+
+  # @return boolean
+  def checksums_validated
+    return poh_params[:checksums_validated].casecmp('true').zero? if poh_params[:checksums_validated]
+    false
   end
 end
