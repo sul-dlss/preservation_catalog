@@ -1,8 +1,8 @@
 require 'rails_helper'
 
-RSpec.describe ArchivePreservedCopyPart, type: :model do
+RSpec.describe ZipPart, type: :model do
   let(:apc) { create(:archive_preserved_copy) }
-  let(:args) { attributes_for(:archive_preserved_copy_part).merge(archive_preserved_copy: apc) }
+  let(:args) { attributes_for(:zip_part).merge(archive_preserved_copy: apc) }
 
   it 'defines a status enum with the expected values' do
     is_expected.to define_enum_for(:status).with(

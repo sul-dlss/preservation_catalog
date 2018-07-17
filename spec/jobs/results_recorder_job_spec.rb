@@ -5,7 +5,7 @@ describe ResultsRecorderJob, type: :job do
   let(:druid) { apc.preserved_object.druid }
   let(:zip_endpoint) { apc.zip_endpoint }
 
-  before { apc.archive_preserved_copy_parts.create(attributes_for(:archive_preserved_copy_part)) }
+  before { apc.zip_parts.create(attributes_for(:zip_part)) }
 
   it 'descends from ApplicationJob' do
     expect(described_class.new).to be_an(ApplicationJob)

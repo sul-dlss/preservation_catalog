@@ -8,8 +8,9 @@
 class ArchivePreservedCopy < ApplicationRecord
   belongs_to :preserved_copy
   belongs_to :zip_endpoint
-  has_many :archive_preserved_copy_parts, dependent: :destroy, inverse_of: :archive_preserved_copy
+  has_many :zip_parts, dependent: :destroy, inverse_of: :archive_preserved_copy
   has_one :preserved_object, through: :preserved_copy, dependent: :restrict_with_exception
+
   delegate :preserved_object, to: :preserved_copy
 
   # @note Hash values cannot be modified without migrating any associated persisted data.
