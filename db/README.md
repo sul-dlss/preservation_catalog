@@ -39,10 +39,8 @@
   * `storage_location`: the bucket name (e.g. `sul-sdr-aws-us-east-1-test`)
 * `ZippedMoabVersion` corresponds to a Moab-Version on a `ZipEndpoint`.
   * `version`: the version from the Moab that was zipped.
-  * `last_existence_check` represents the last time the Moab-Version existed on a ZipEndpoint
   * `complete_moab_id`: references the parent complete moab on disk.
   * `zip_endpoint_id`: the endpoint on which the Moab-Version has been replicated
-  * `status`: represents whether `ZippedMoabVersion` has been replicated, needs to be replicated, or remediated.
 * `ZipParts`: We chunk archives of Moab versions into multiple files greater than 10GBs. This represents metadata for one such part.
   * `size` represents the size of the actual `zip_part`
   * `zipped_moab_version_id` references the parent Moab-Version on a `ZipEndpoint`. 99% of the time, we will have 1 `ZippedMoabVersion` to 1 `ZipPart`.
@@ -50,7 +48,9 @@
   * `create_info` is a hash containing the zip command and zip version.
   * `parts_count` displays how many total zip parts were created during replication.
   * `suffix` if there is 1 `ZipPart` suffix will always be `.zip` if there are more than 1 `ZipPart` the suffix will be `.z01` through `.z(n-1)` (e.g. 3 parts will be ['.z01', '.z02', '.zip'])
-  * `status`: displays whether the `ZipPart` has been replicated or not.
+  * `status`: displays whether the `ZipPart` has been replicated or not, whether there's an error with the cloud copy of the replicated part, etc.
+  * `last_existence_check`: the last time we confirmed whether the part was still on cloud storage.
+  * `last_checksum_validation`: the last time our stored checksum for the part was compared against the stored checksum on the cloud provider. Eventually we'd like this (or a separate but similar field) to denote an actual fixity check, where the copy is retrieved from the cloud and the checksum on the retrieved copy is compared to our stored checksum.
 
 #### other terminology
 * An "online" copy is an exploded moab folder structure, on which we can run structural verification or checksum verification for constituent files, and from which we can retrieve individual assets of the moab.

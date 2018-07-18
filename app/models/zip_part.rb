@@ -6,9 +6,13 @@ class ZipPart < ApplicationRecord
   delegate :zip_endpoint, :complete_moab, to: :zipped_moab_version
   delegate :preserved_object, to: :complete_moab
 
+  # @note Hash values cannot be modified without migrating any associated persisted data.
+  # @see [enum docs] http://api.rubyonrails.org/classes/ActiveRecord/Enum.html
   enum status: {
     'ok' => 0,
-    'unreplicated' => 1 # DB-level default
+    'unreplicated' => 1, # DB-level default
+    'not_found' => 2,
+    'replicated_checksum_mismatch' => 3
   }
 
   validates :zipped_moab_version, :create_info, presence: true
@@ -29,9 +33,14 @@ class ZipPart < ApplicationRecord
   # For this part, the suffixes of all parts constituting the full zip
   # @return [Array<String>]
   def suffixes_in_set
-    DruidVersionZip
-      .new(preserved_object.druid, complete_moab.version)
-      .expected_part_keys(parts_count)
-      .map { |key| File.extname(key) }
+    druid_version_zip.expected_part_keys(parts_count).map { |key| File.extname(key) }
+  end
+
+  def druid_version_zip
+    @druid_version_zip ||= DruidVersionZip.new(preserved_object.druid, complete_moab.version)
+  end
+
+  def s3_key
+    druid_version_zip.s3_key(suffix)
   end
 end

@@ -1,6 +1,6 @@
 module PreservationCatalog
   # The Application's configured interface to S3.
-  class S3
+  module S3
     class << self
       delegate :client, to: :bucket
 

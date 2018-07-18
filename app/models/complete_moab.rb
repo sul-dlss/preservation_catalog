@@ -3,16 +3,13 @@
 class CompleteMoab < ApplicationRecord
   # @note Hash values cannot be modified without migrating any associated persisted data.
   # @see [enum docs] http://api.rubyonrails.org/classes/ActiveRecord/Enum.html
-  # TODO: Port over replication related statuses to ZippedMoabVersion model
   enum status: {
     'ok' => 0,
     'invalid_moab' => 1,
     'invalid_checksum' => 2,
     'online_moab_not_found' => 3,
     'unexpected_version_on_storage' => 4,
-    'validity_unknown' => 6,
-    'unreplicated' => 7,
-    'replicated_copy_not_found' => 8
+    'validity_unknown' => 6
   }
 
   after_create :create_zipped_moab_versions!
@@ -68,9 +65,7 @@ class CompleteMoab < ApplicationRecord
   # @todo potential optimization: fold N which_need_archive_copy queries into one new query
   def create_zipped_moab_versions!
     params = (1..version).map do |v|
-      ZipEndpoint.which_need_archive_copy(preserved_object.druid, v).map do |zep|
-        { version: v, zip_endpoint: zep, status: 'unreplicated' }
-      end
+      ZipEndpoint.which_need_archive_copy(preserved_object.druid, v).map { |zep| { version: v, zip_endpoint: zep } }
     end.flatten.compact.uniq
     zipped_moab_versions.create!(params)
   end
@@ -84,9 +79,8 @@ class CompleteMoab < ApplicationRecord
     @druid_version_zip ||= DruidVersionZip.new(preserved_object.druid, version)
   end
 
-  # Based on object state and status, can it be fully replicated?
   def replicatable_status?
-    %w[ok unreplicated replicated_copy_not_found].include?(status)
+    ok?
   end
 
   def update_audit_timestamps(moab_validated, version_audited)
