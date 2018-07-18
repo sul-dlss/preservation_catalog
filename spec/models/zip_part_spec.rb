@@ -1,8 +1,8 @@
 require 'rails_helper'
 
 RSpec.describe ZipPart, type: :model do
-  let(:apc) { create(:archive_preserved_copy) }
-  let(:args) { attributes_for(:zip_part).merge(archive_preserved_copy: apc) }
+  let(:apc) { create(:zipped_moab_version) }
+  let(:args) { attributes_for(:zip_part).merge(zipped_moab_version: apc) }
 
   it 'defines a status enum with the expected values' do
     is_expected.to define_enum_for(:status).with(
@@ -34,6 +34,6 @@ RSpec.describe ZipPart, type: :model do
   it { is_expected.to validate_presence_of(:parts_count) }
   it { is_expected.to validate_presence_of(:size) }
   it { is_expected.to validate_presence_of(:suffix) }
-  it { is_expected.to validate_presence_of(:archive_preserved_copy) }
-  it { is_expected.to belong_to(:archive_preserved_copy) }
+  it { is_expected.to validate_presence_of(:zipped_moab_version) }
+  it { is_expected.to belong_to(:zipped_moab_version) }
 end

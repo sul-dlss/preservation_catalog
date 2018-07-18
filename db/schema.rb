@@ -10,24 +10,10 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180717191117) do
+ActiveRecord::Schema.define(version: 20180718223251) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
-
-  create_table "archive_preserved_copies", force: :cascade do |t|
-    t.integer "version", null: false
-    t.datetime "last_existence_check"
-    t.bigint "preserved_copy_id", null: false
-    t.bigint "zip_endpoint_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.integer "status", null: false
-    t.index ["last_existence_check"], name: "index_archive_preserved_copies_on_last_existence_check"
-    t.index ["preserved_copy_id"], name: "index_archive_preserved_copies_on_preserved_copy_id"
-    t.index ["status"], name: "index_archive_preserved_copies_on_status"
-    t.index ["zip_endpoint_id"], name: "index_archive_preserved_copies_on_zip_endpoint_id"
-  end
 
   create_table "endpoints", force: :cascade do |t|
     t.string "endpoint_name", null: false
@@ -107,7 +93,7 @@ ActiveRecord::Schema.define(version: 20180717191117) do
 
   create_table "zip_parts", force: :cascade do |t|
     t.bigint "size"
-    t.bigint "archive_preserved_copy_id", null: false
+    t.bigint "zipped_moab_version_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "md5", null: false
@@ -115,11 +101,23 @@ ActiveRecord::Schema.define(version: 20180717191117) do
     t.integer "parts_count", null: false
     t.string "suffix", null: false
     t.integer "status", default: 1, null: false
-    t.index ["archive_preserved_copy_id"], name: "index_zip_parts_on_archive_preserved_copy_id"
+    t.index ["zipped_moab_version_id"], name: "index_zip_parts_on_zipped_moab_version_id"
   end
 
-  add_foreign_key "archive_preserved_copies", "preserved_copies"
-  add_foreign_key "archive_preserved_copies", "zip_endpoints"
+  create_table "zipped_moab_versions", force: :cascade do |t|
+    t.integer "version", null: false
+    t.datetime "last_existence_check"
+    t.bigint "preserved_copy_id", null: false
+    t.bigint "zip_endpoint_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "status", null: false
+    t.index ["last_existence_check"], name: "index_zipped_moab_versions_on_last_existence_check"
+    t.index ["preserved_copy_id"], name: "index_zipped_moab_versions_on_preserved_copy_id"
+    t.index ["status"], name: "index_zipped_moab_versions_on_status"
+    t.index ["zip_endpoint_id"], name: "index_zipped_moab_versions_on_zip_endpoint_id"
+  end
+
   add_foreign_key "endpoints_preservation_policies", "endpoints"
   add_foreign_key "endpoints_preservation_policies", "preservation_policies"
   add_foreign_key "preservation_policies_zip_endpoints", "preservation_policies"
@@ -127,5 +125,7 @@ ActiveRecord::Schema.define(version: 20180717191117) do
   add_foreign_key "preserved_copies", "endpoints"
   add_foreign_key "preserved_copies", "preserved_objects"
   add_foreign_key "preserved_objects", "preservation_policies"
-  add_foreign_key "zip_parts", "archive_preserved_copies"
+  add_foreign_key "zip_parts", "zipped_moab_versions"
+  add_foreign_key "zipped_moab_versions", "preserved_copies"
+  add_foreign_key "zipped_moab_versions", "zip_endpoints"
 end

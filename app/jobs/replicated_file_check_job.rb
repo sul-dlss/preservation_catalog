@@ -34,7 +34,7 @@ class ReplicatedFileCheckJob < ApplicationJob
   # @param [PreservedCopy]
   # @return [Array<String>] MD5's
   def stored_checksums(complete_moab)
-    complete_moab.archive_preserved_copies.map(&:archive_preserved_copy_parts).flatten.map(&:md5)
+    complete_moab.zipped_moab_versions.map(&:zip_parts).flatten.map(&:md5)
   end
 
   # @param [Aws::S3::Object]

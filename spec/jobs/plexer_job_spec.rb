@@ -33,8 +33,8 @@ describe PlexerJob, type: :job do
   describe '#perform' do
     let(:east_ep) { create(:zip_endpoint, delivery_class: 2) }
     let(:pc) { create(:preserved_copy, preserved_object: po) }
-    let!(:apc1) { create(:archive_preserved_copy, preserved_copy: pc, version: version) }
-    let!(:apc2) { create(:archive_preserved_copy, preserved_copy: pc, version: version, zip_endpoint: east_ep) }
+    let!(:apc1) { create(:zipped_moab_version, preserved_copy: pc, version: version) }
+    let!(:apc2) { create(:zipped_moab_version, preserved_copy: pc, version: version, zip_endpoint: east_ep) }
     let(:s3_key) { job.zip.s3_key(metadata[:suffix]) }
 
     it 'splits the message out to endpoints' do

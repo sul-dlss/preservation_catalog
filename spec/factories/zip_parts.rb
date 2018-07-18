@@ -6,6 +6,6 @@ FactoryBot.define do
     size 1234
     status 'unreplicated'
     suffix { parts_count == 1 ? '.zip' : format('.z%02d', parts_count) }
-    archive_preserved_copy
+    zipped_moab_version
   end
 end
