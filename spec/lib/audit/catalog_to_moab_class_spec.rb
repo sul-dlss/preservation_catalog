@@ -22,6 +22,9 @@ RSpec.describe Audit::CatalogToMoab do
   context '.check_version_on_dir' do
     include_context 'fixture moabs in db'
     let(:subject) { described_class.check_version_on_dir(last_checked_version_b4_date, storage_dir, limit) }
+    let(:logger_double) { instance_double(ActiveSupport::Logger, info: nil, add: nil) }
+
+    before { allow(described_class).to receive(:logger).and_return(logger_double) } # silence log output
 
     context 'when there are PreservedCopies to check' do
       let(:c2m_mock) { instance_double(described_class) }

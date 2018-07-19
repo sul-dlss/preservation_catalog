@@ -2,10 +2,6 @@ require 'rails_helper'
 require_relative '../../load_fixtures_helper.rb'
 
 RSpec.describe Audit::CatalogToMoab do
-  before do
-    allow(Dor::WorkflowService).to receive(:update_workflow_error_status)
-  end
-
   let(:last_checked_version_b4_date) { (Time.now.utc - 1.day).iso8601 }
   let(:storage_dir) { 'spec/fixtures/storage_root01/sdr2objects' }
   let(:druid) { 'bj102hs9687' }
@@ -13,6 +9,12 @@ RSpec.describe Audit::CatalogToMoab do
   let(:mock_sov) { instance_double(Stanford::StorageObjectValidator) }
   let(:po) { PreservedObject.find_by!(druid: druid) }
   let(:pres_copy) { Endpoint.find_by!(storage_location: storage_dir).preserved_copies.find_by!(preserved_object: po) }
+  let(:logger_double) { instance_double(ActiveSupport::Logger, info: nil, error: nil, add: nil) }
+
+  before do
+    allow(Dor::WorkflowService).to receive(:update_workflow_error_status)
+    allow(described_class).to receive(:logger).and_return(logger_double) # silence log output
+  end
 
   include_context 'fixture moabs in db'
 

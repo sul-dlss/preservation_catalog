@@ -2,18 +2,20 @@ require 'rails_helper'
 require_relative '../../load_fixtures_helper.rb'
 
 RSpec.describe Audit::Checksum do
+  let(:endpoint_name) { 'fixture_sr1' }
+  let(:limit) { Settings.c2m_sql_limit }
+  let(:logger_double) { instance_double(ActiveSupport::Logger, info: nil, add: nil, debug: nil) }
+
   before do
     allow(Dor::WorkflowService).to receive(:update_workflow_error_status)
     allow(Dor::WorkflowService).to receive(:update_workflow_status)
-    allow(described_class.logger).to receive(:info) # silence STDOUT chatter
+    allow(described_class).to receive(:logger).and_return(logger_double) # silence log output
   end
-
-  let(:endpoint_name) { 'fixture_sr1' }
-  let(:limit) { Settings.c2m_sql_limit }
 
   describe '.logger' do
     let(:logfile) { Rails.root.join('log', 'cv.log') }
 
+    before { allow(described_class).to receive(:logger).and_call_original } # undo silencing for 1 test
     after { FileUtils.rm_f(logfile) }
 
     it 'writes to STDOUT and its own log' do
@@ -57,11 +59,8 @@ RSpec.describe Audit::Checksum do
     include_context 'fixture moabs in db'
     it 'creates an instance ancd calls #validate_checksums for every result' do
       druid = 'bz514sm9647'
-      pres_copies = PreservedCopy.by_druid(druid)
-      cv_list = pres_copies.map do |pc|
-        ChecksumValidator.new(pc)
-      end
-      cv_list.each do |cv|
+      PreservedCopy.by_druid(druid).each do |pc|
+        cv = ChecksumValidator.new(pc)
         allow(ChecksumValidator).to receive(:new).with(cv.preserved_copy).and_return(cv)
         expect(cv).to receive(:validate_checksums).exactly(1).times.and_call_original
       end
@@ -69,8 +68,6 @@ RSpec.describe Audit::Checksum do
     end
 
     it "logs a debug message" do
-      allow(described_class.logger).to receive(:info)
-      allow(described_class.logger).to receive(:debug)
       expect(described_class.logger).to receive(:debug).with('Found 0 preserved copies.')
       described_class.validate_druid('xx000xx0500')
     end

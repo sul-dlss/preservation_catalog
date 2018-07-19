@@ -2,22 +2,23 @@ require 'rails_helper'
 require_relative '../load_fixtures_helper.rb'
 
 RSpec.describe ChecksumValidator do
-  before do
-    allow(Dor::WorkflowService).to receive(:update_workflow_error_status)
-    allow(Dor::WorkflowService).to receive(:update_workflow_status)
-  end
-
   include_context 'fixture moabs in db'
   let(:druid) { 'zz102hs9687' }
-  let(:endpoint_name) { "fixture_sr3" }
+  let(:endpoint_name) { 'fixture_sr3' }
   let(:endpoint) { Endpoint.find_by(endpoint_name: endpoint_name) }
   let(:object_dir) { "#{endpoint.storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}" }
   let(:pres_copy) do
-    po = PreservedObject.find_by(druid: druid)
-    PreservedCopy.find_by(preserved_object: po, endpoint: endpoint)
+    PreservedObject.find_by!(druid: druid).preserved_copies.find_by!(endpoint: endpoint)
   end
   let(:cv) { described_class.new(pres_copy) }
   let(:results) { instance_double(AuditResults, report_results: nil, check_name: nil) }
+  let(:logger_double) { instance_double(ActiveSupport::Logger, info: nil, error: nil, add: nil) }
+
+  before do
+    allow(Audit::Checksum).to receive(:logger).and_return(logger_double) # silence log output
+    allow(Dor::WorkflowService).to receive(:update_workflow_error_status)
+    allow(Dor::WorkflowService).to receive(:update_workflow_status)
+  end
 
   describe '#initialize' do
     it 'sets attributes' do
