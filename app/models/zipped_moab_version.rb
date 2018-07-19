@@ -1,14 +1,14 @@
 # Corresponds to a Moab-Version on a ZipEndpoint.
-#   There will be individual parts (at least one) - see ArchivepreservedCopyPart.
+#   There will be individual parts (at least one) - see ZipPart.
 # For a fully consistent system, given an (Online) PreservedCopy, the number of associated
-# ArchivePreservedCopy objects should be:
+# ZippedMoabVersion objects should be:
 #   pc.preserved_object.current_version * number_of_zip_endpoints
 #
 # @note Does not have size independent of part(s)
-class ArchivePreservedCopy < ApplicationRecord
+class ZippedMoabVersion < ApplicationRecord
   belongs_to :preserved_copy
   belongs_to :zip_endpoint
-  has_many :zip_parts, dependent: :destroy, inverse_of: :archive_preserved_copy
+  has_many :zip_parts, dependent: :destroy, inverse_of: :zipped_moab_version
   has_one :preserved_object, through: :preserved_copy, dependent: :restrict_with_exception
 
   delegate :preserved_object, to: :preserved_copy

@@ -8,14 +8,14 @@
 # If YES, send a message to a non-job pub/sub queue.
 class ResultsRecorderJob < ApplicationJob
   queue_as :zip_endpoint_events
-  attr_accessor :apc, :apcs
+  attr_accessor :zmv, :zmvs
 
   before_perform do |job|
-    job.apcs ||= ArchivePreservedCopy
+    job.zmvs ||= ZippedMoabVersion
                  .by_druid(job.arguments.first)
                  .joins(:zip_endpoint)
                  .where(version: job.arguments.second)
-    job.apc ||= apcs.find_by!(zip_endpoints: { delivery_class: Object.const_get(job.arguments.fourth) })
+    job.zmv ||= zmvs.find_by!(zip_endpoints: { delivery_class: Object.const_get(job.arguments.fourth) })
   end
 
   # @param [String] druid
@@ -25,17 +25,17 @@ class ResultsRecorderJob < ApplicationJob
   def perform(druid, version, s3_part_key, _delivery_class)
     part = zip_part!(s3_part_key)
     part.ok!
-    apc.ok! if part.all_parts_replicated? # are all of the parts replicated for this zip_endpoint?
+    zmv.ok! if part.all_parts_replicated? # are all of the parts replicated for this zip_endpoint?
     # only publish result if all of the parts replicated for all zip_endpoints
-    return unless apcs.reload.all?(&:ok?)
+    return unless zmvs.reload.all?(&:ok?)
     publish_result(message(druid, version).to_json)
   end
 
   private
 
   def zip_part!(s3_part_key)
-    raise "Status shifted underneath replication: #{apc.inspect}" unless apc.unreplicated?
-    apc.zip_parts.find_by!(
+    raise "Status shifted underneath replication: #{zmv.inspect}" unless zmv.unreplicated?
+    zmv.zip_parts.find_by!(
       suffix: File.extname(s3_part_key),
       status: 'unreplicated'
     )
@@ -46,7 +46,7 @@ class ResultsRecorderJob < ApplicationJob
     {
       druid: druid,
       version: version,
-      zip_endpoints: apcs.pluck(:endpoint_name)
+      zip_endpoints: zmvs.pluck(:endpoint_name)
     }
   end
 

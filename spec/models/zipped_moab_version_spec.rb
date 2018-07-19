@@ -1,15 +1,15 @@
 require 'rails_helper'
 
-RSpec.describe ArchivePreservedCopy, type: :model do
+RSpec.describe ZippedMoabVersion, type: :model do
   let(:po) { build(:preserved_object) }
   let(:pc) { build(:preserved_copy) }
   let(:zip_endpoint) { build(:zip_endpoint) }
-  let(:apc) { build(:archive_preserved_copy, preserved_copy: pc, zip_endpoint: zip_endpoint) }
+  let(:zmv) { build(:zipped_moab_version, preserved_copy: pc, zip_endpoint: zip_endpoint) }
 
   it 'is not valid without all required valid attributes' do
     expect(described_class.new).not_to be_valid
     expect(described_class.new(preserved_copy: pc)).not_to be_valid
-    expect(apc).to be_valid
+    expect(zmv).to be_valid
   end
   it { is_expected.to validate_presence_of(:zip_endpoint) }
   it { is_expected.to validate_presence_of(:preserved_copy) }

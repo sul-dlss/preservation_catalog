@@ -1,5 +1,5 @@
 # Preconditions:
-#  All needed PreservedCopy and ArchivePreservedCopy rows are already made.
+#  All needed PreservedCopy and ZippedMoabVersion rows are already made.
 #  Possible TODO: replace precondition w/ invocation of PO2PC/PC2APC method.
 #
 # Responsibilities:
@@ -29,21 +29,21 @@ class PlexerJob < ZipPartJobBase
   # @option metadata [String] :zip_cmd
   # @option metadata [String] :zip_version
   def perform(druid, version, part_s3_key, metadata)
-    apcs.each do |apc|
-      find_or_create_unreplicated_part(apc, part_s3_key, metadata)
+    zmvs.each do |zmv|
+      find_or_create_unreplicated_part(zmv, part_s3_key, metadata)
     end
     deliverers.each { |worker| worker.perform_later(druid, version, part_s3_key, metadata) }
   end
 
   private
 
-  # @return [ActiveRecord::Relation] effectively an Array of ArchivePreservedCopy objects
-  def apcs
-    @apcs ||= ArchivePreservedCopy.by_druid(zip.druid.id).where(version: zip.version)
+  # @return [ActiveRecord::Relation] effectively an Array of ZippedMoabVersion objects
+  def zmvs
+    @zmvs ||= ZippedMoabVersion.by_druid(zip.druid.id).where(version: zip.version)
   end
 
-  def find_or_create_unreplicated_part(apc, part_s3_key, metadata)
-    apc.zip_parts.find_or_create_by(
+  def find_or_create_unreplicated_part(zmv, part_s3_key, metadata)
+    zmv.zip_parts.find_or_create_by(
       create_info: metadata.slice(:zip_cmd, :zip_version).to_s,
       md5: metadata[:checksum_md5],
       parts_count: metadata[:parts_count],
@@ -54,7 +54,7 @@ class PlexerJob < ZipPartJobBase
 
   # @return [Array<Class>] target delivery worker classes
   def deliverers
-    apcs.map { |apc| apc.zip_endpoint.delivery_class }.uniq
+    zmvs.map { |zmv| zmv.zip_endpoint.delivery_class }.uniq
   end
 
   def metadata_args(job)
