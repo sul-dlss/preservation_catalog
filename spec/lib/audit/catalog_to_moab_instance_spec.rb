@@ -10,15 +10,13 @@ RSpec.describe Audit::CatalogToMoab do
   let(:storage_dir) { 'spec/fixtures/storage_root01/sdr2objects' }
   let(:druid) { 'bj102hs9687' }
   let(:c2m) { described_class.new(pres_copy, storage_dir) }
+  let(:mock_sov) { instance_double(Stanford::StorageObjectValidator) }
+  let(:po) { PreservedObject.find_by!(druid: druid) }
+  let(:pres_copy) { Endpoint.find_by!(storage_location: storage_dir).preserved_copies.find_by!(preserved_object: po) }
+
+  include_context 'fixture moabs in db'
 
   context '#initialize' do
-    include_context 'fixture moabs in db'
-    let(:pres_copy) do
-      po = PreservedObject.find_by(druid: druid)
-      ep = Endpoint.find_by(storage_location: storage_dir).id
-      PreservedCopy.find_by(preserved_object: po, endpoint: ep)
-    end
-
     it 'sets attributes' do
       expect(c2m.preserved_copy).to eq pres_copy
       expect(c2m.storage_dir).to eq storage_dir
@@ -28,15 +26,9 @@ RSpec.describe Audit::CatalogToMoab do
   end
 
   context '#check_catalog_version' do
-    include_context 'fixture moabs in db'
-    let(:pres_copy) do
-      po = PreservedObject.find_by(druid: druid)
-      ep = Endpoint.find_by(storage_location: storage_dir).id
-      pc = PreservedCopy.find_by(preserved_object: po, endpoint: ep)
-      pc.update(status: PreservedCopy::OK_STATUS)
-      pc
-    end
     let(:object_dir) { "#{storage_dir}/#{DruidTools::Druid.new(druid).tree.join('/')}" }
+
+    before { pres_copy.ok! }
 
     it 'instantiates Moab::StorageObject from druid and storage_dir' do
       expect(Moab::StorageObject).to receive(:new).with(druid, a_string_matching(object_dir)).and_call_original
@@ -157,8 +149,7 @@ RSpec.describe Audit::CatalogToMoab do
 
       context 'check whether PreservedCopy already has a status other than OK_STATUS, re-check status if so;' do
         it "had OK_STATUS, should keep OK_STATUS" do
-          pres_copy.status = 'ok'
-          pres_copy.save!
+          pres_copy.ok!
           allow(c2m).to receive(:moab_validation_errors).and_return([])
           c2m.check_catalog_version
           expect(pres_copy.reload).to be_ok
@@ -199,10 +190,7 @@ RSpec.describe Audit::CatalogToMoab do
         end
 
         context 'started with INVALID_CHECKSUM_STATUS' do
-          before do
-            pres_copy.status = PreservedCopy::INVALID_CHECKSUM_STATUS
-            pres_copy.save!
-          end
+          before { pres_copy.invalid_checksum! }
 
           it 'remains in INVALID_CHECKSUM_STATUS' do
             allow(c2m).to receive(:moab_validation_errors).and_return(
@@ -246,7 +234,6 @@ RSpec.describe Audit::CatalogToMoab do
             it "#{orig_status} changes to validity_unknown" do
               pres_copy.status = orig_status
               pres_copy.save!
-              mock_sov = instance_double(Stanford::StorageObjectValidator)
               allow(mock_sov).to receive(:validation_errors).and_return([])
               allow(Stanford::StorageObjectValidator).to receive(:new).and_return(mock_sov)
               c2m.check_catalog_version
@@ -265,7 +252,6 @@ RSpec.describe Audit::CatalogToMoab do
             it "#{orig_status} changes to INVALID_MOAB_STATUS" do
               pres_copy.status = orig_status
               pres_copy.save!
-              mock_sov = instance_double(Stanford::StorageObjectValidator)
               allow(mock_sov).to receive(:validation_errors).and_return(
                 [{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }]
               )
@@ -275,9 +261,7 @@ RSpec.describe Audit::CatalogToMoab do
             end
           end
           it "invalid_moab changes to validity_unknown (due to newer version not checksum validated)" do
-            pres_copy.status = PreservedCopy::INVALID_MOAB_STATUS
-            pres_copy.save!
-            mock_sov = instance_double(Stanford::StorageObjectValidator)
+            pres_copy.invalid_moab!
             allow(mock_sov).to receive(:validation_errors).and_return(
               [{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }]
             )
@@ -288,12 +272,9 @@ RSpec.describe Audit::CatalogToMoab do
         end
 
         context 'had INVALID_CHECKSUM_STATUS (which C2M cannot validate)' do
-          let(:mock_sov) { instance_double(Stanford::StorageObjectValidator) }
-
           before do
             allow(Stanford::StorageObjectValidator).to receive(:new).and_return(mock_sov)
-            pres_copy.status = PreservedCopy::INVALID_CHECKSUM_STATUS
-            pres_copy.save!
+            pres_copy.invalid_checksum!
           end
 
           it 'may have moab validation errors, but should still have INVALID_CHECKSUM_STATUS' do
@@ -320,9 +301,8 @@ RSpec.describe Audit::CatalogToMoab do
 
     context 'catalog version > moab version' do
       before do
-        moab = instance_double(Moab::StorageObject, size: 666, object_pathname: object_dir)
+        moab = instance_double(Moab::StorageObject, size: 666, object_pathname: object_dir, current_version_id: 2)
         allow(Moab::StorageObject).to receive(:new).with(druid, instance_of(String)).and_return(moab)
-        allow(moab).to receive(:current_version_id).and_return(2)
       end
 
       it 'adds an UNEXPECTED_VERSION result' do
@@ -336,7 +316,6 @@ RSpec.describe Audit::CatalogToMoab do
       end
 
       it 'calls Stanford::StorageObjectValidator.validation_errors for moab' do
-        mock_sov = instance_double(Stanford::StorageObjectValidator)
         expect(mock_sov).to receive(:validation_errors).and_return([])
         allow(Stanford::StorageObjectValidator).to receive(:new).and_return(mock_sov)
         c2m.check_catalog_version
@@ -350,7 +329,6 @@ RSpec.describe Audit::CatalogToMoab do
       end
       context 'invalid moab' do
         before do
-          mock_sov = instance_double(Stanford::StorageObjectValidator)
           allow(mock_sov).to receive(:validation_errors).and_return([foo: 'error message'])
           allow(Stanford::StorageObjectValidator).to receive(:new).and_return(mock_sov)
         end
@@ -415,12 +393,9 @@ RSpec.describe Audit::CatalogToMoab do
         end
 
         context 'had INVALID_CHECKSUM_STATUS, which C2M cannot validate' do
-          let(:mock_sov) { instance_double(Stanford::StorageObjectValidator) }
-
           before do
             allow(Stanford::StorageObjectValidator).to receive(:new).and_return(mock_sov)
-            pres_copy.status = PreservedCopy::INVALID_CHECKSUM_STATUS
-            pres_copy.save!
+            pres_copy.invalid_checksum!
           end
 
           it 'may have moab validation errors, but should still have INVALID_CHECKSUM_STATUS' do
