@@ -30,12 +30,9 @@ class PreservedCopy < ApplicationRecord
 
   delegate :s3_key, to: :druid_version_zip
 
-  validates :endpoint, presence: true
-  validates :preserved_object, presence: true
+  validates :endpoint, :preserved_object, :status, :version, presence: true
   # NOTE: size here is approximate and not used for fixity checking
   validates :size, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
-  validates :status, inclusion: { in: statuses.keys }
-  validates :version, presence: true
 
   scope :by_endpoint_name, lambda { |endpoint_name|
     joins(:endpoint).where(endpoints: { endpoint_name: endpoint_name })
