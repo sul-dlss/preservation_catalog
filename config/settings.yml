@@ -1,6 +1,17 @@
 aws:
   bucket_name: 'sul-sdr-aws-us-west-2-test' # override in prod
 
+# rename to zip_endpoints
+archive_endpoints:
+  aws_s3_west_2:
+    endpoint_node: 'us-west-2'
+    storage_location: 'sul-sdr-aws-us-west-2-test'
+    delivery_class: 'S3WestDeliveryJob'
+  aws_s3_east_1:
+    endpoint_node: 'us-east-1'
+    storage_location: 'sul-sdr-aws-us-east-1-test'
+    delivery_class: 'S3EastDeliveryJob'
+
 # named storage roots are in the storage_root_map (see config/settings for examples).
 # the storage_root_map contains lookups of storage roots per host.
 # see sul-dlss/shared_configs for the storage_root_map of all hosts we deploy to.
