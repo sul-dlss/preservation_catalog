@@ -1,8 +1,8 @@
 require 'rails_helper'
 
 RSpec.describe ZipPart, type: :model do
-  let(:apc) { create(:zipped_moab_version) }
-  let(:args) { attributes_for(:zip_part).merge(zipped_moab_version: apc) }
+  let(:zmv) { create(:zipped_moab_version) }
+  let(:args) { attributes_for(:zip_part).merge(zipped_moab_version: zmv) }
 
   it 'defines a status enum with the expected values' do
     is_expected.to define_enum_for(:status).with(
