@@ -30,12 +30,14 @@ class PreservedCopy < ApplicationRecord
 
   delegate :s3_key, to: :druid_version_zip
 
+<<<<<<< HEAD
   validates :moab_storage_root, presence: true
   validates :preserved_object, presence: true
+=======
+  validates :endpoint, :preserved_object, :status, :version, presence: true
+>>>>>>> Remove redundant modeling
   # NOTE: size here is approximate and not used for fixity checking
   validates :size, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
-  validates :status, inclusion: { in: statuses.keys }
-  validates :version, presence: true
 
   scope :by_moab_storage_root_name, lambda { |name|
     joins(:moab_storage_root).where(moab_storage_roots: { name: name })
