@@ -15,22 +15,20 @@ ActiveRecord::Schema.define(version: 20180718223251) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
-  create_table "endpoints", force: :cascade do |t|
-    t.string "endpoint_name", null: false
+  create_table "moab_storage_roots", force: :cascade do |t|
+    t.string "name", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "endpoint_node", null: false
     t.string "storage_location", null: false
-    t.index ["endpoint_name"], name: "index_endpoints_on_endpoint_name", unique: true
-    t.index ["endpoint_node"], name: "index_endpoints_on_endpoint_node"
-    t.index ["storage_location"], name: "index_endpoints_on_storage_location"
+    t.index ["name"], name: "index_moab_storage_roots_on_name", unique: true
+    t.index ["storage_location"], name: "index_moab_storage_roots_on_storage_location"
   end
 
-  create_table "endpoints_preservation_policies", force: :cascade do |t|
+  create_table "moab_storage_roots_preservation_policies", force: :cascade do |t|
     t.bigint "preservation_policy_id", null: false
-    t.bigint "endpoint_id", null: false
-    t.index ["endpoint_id"], name: "index_endpoints_preservation_policies_on_endpoint_id"
-    t.index ["preservation_policy_id"], name: "index_endpoints_preservation_policies_on_preservation_policy_id"
+    t.bigint "moab_storage_root_id", null: false
+    t.index ["moab_storage_root_id"], name: "index_moab_storage_roots_pres_policies_on_moab_storage_root_id"
+    t.index ["preservation_policy_id"], name: "index_moab_storage_roots_pres_policies_on_pres_policy_id"
   end
 
   create_table "preservation_policies", force: :cascade do |t|
@@ -50,7 +48,7 @@ ActiveRecord::Schema.define(version: 20180718223251) do
   create_table "preserved_copies", force: :cascade do |t|
     t.integer "version", null: false
     t.bigint "preserved_object_id", null: false
-    t.bigint "endpoint_id", null: false
+    t.bigint "moab_storage_root_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.datetime "last_moab_validation"
@@ -59,11 +57,11 @@ ActiveRecord::Schema.define(version: 20180718223251) do
     t.integer "status", null: false
     t.datetime "last_version_audit"
     t.index ["created_at"], name: "index_preserved_copies_on_created_at"
-    t.index ["endpoint_id"], name: "index_preserved_copies_on_endpoint_id"
     t.index ["last_checksum_validation"], name: "index_preserved_copies_on_last_checksum_validation"
     t.index ["last_moab_validation"], name: "index_preserved_copies_on_last_moab_validation"
     t.index ["last_version_audit"], name: "index_preserved_copies_on_last_version_audit"
-    t.index ["preserved_object_id", "endpoint_id", "version"], name: "index_preserved_copies_on_po_and_endpoint_and_version", unique: true
+    t.index ["moab_storage_root_id"], name: "index_preserved_copies_on_moab_storage_root_id"
+    t.index ["preserved_object_id", "moab_storage_root_id", "version"], name: "index_preserved_copies_on_po_and_storage_root_and_version", unique: true
     t.index ["preserved_object_id"], name: "index_preserved_copies_on_preserved_object_id"
     t.index ["status"], name: "index_preserved_copies_on_status"
     t.index ["updated_at"], name: "index_preserved_copies_on_updated_at"
@@ -118,11 +116,11 @@ ActiveRecord::Schema.define(version: 20180718223251) do
     t.index ["zip_endpoint_id"], name: "index_zipped_moab_versions_on_zip_endpoint_id"
   end
 
-  add_foreign_key "endpoints_preservation_policies", "endpoints"
-  add_foreign_key "endpoints_preservation_policies", "preservation_policies"
+  add_foreign_key "moab_storage_roots_preservation_policies", "moab_storage_roots"
+  add_foreign_key "moab_storage_roots_preservation_policies", "preservation_policies"
   add_foreign_key "preservation_policies_zip_endpoints", "preservation_policies"
   add_foreign_key "preservation_policies_zip_endpoints", "zip_endpoints"
-  add_foreign_key "preserved_copies", "endpoints"
+  add_foreign_key "preserved_copies", "moab_storage_roots"
   add_foreign_key "preserved_copies", "preserved_objects"
   add_foreign_key "preserved_objects", "preservation_policies"
   add_foreign_key "zip_parts", "zipped_moab_versions"
