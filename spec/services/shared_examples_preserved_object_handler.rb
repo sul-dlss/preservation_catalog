@@ -2,15 +2,15 @@ RSpec.shared_examples "attributes validated" do |method_sym|
   let(:bad_druid) { '666' }
   let(:bad_version) { 'vv666' }
   let(:bad_size) { '-666' }
-  let(:bad_endpoint) { nil }
+  let(:bad_storage_root) { nil }
   let(:bad_druid_msg) { 'Druid is invalid' }
   let(:bad_version_msg) { 'Incoming version is not a number' }
   let(:bad_size_msg) { 'Incoming size must be greater than 0' }
-  let(:bad_endpoint_msg) { "Endpoint must be an actual Endpoint" }
+  let(:bad_storage_root_msg) { "Moab storage root must be an actual MoabStorageRoot" }
 
   context 'returns' do
     let!(:result) do
-      po_handler = described_class.new(bad_druid, bad_version, bad_size, bad_endpoint)
+      po_handler = described_class.new(bad_druid, bad_version, bad_size, bad_storage_root)
       po_handler.send(method_sym)
     end
 
@@ -36,8 +36,8 @@ RSpec.shared_examples "attributes validated" do |method_sym|
       it "size error" do
         expect(msg).to match(bad_size_msg)
       end
-      it "endpoint error" do
-        expect(msg).to match(bad_endpoint_msg)
+      it "moab_storage_root error" do
+        expect(msg).to match(bad_storage_root_msg)
       end
     end
   end
@@ -88,7 +88,7 @@ RSpec.shared_examples 'PreservedCopy does not exist' do |method_sym|
 end
 
 RSpec.shared_examples 'unexpected version' do |method_sym, actual_version|
-  let(:po_handler) { described_class.new(druid, actual_version, 1, ep) }
+  let(:po_handler) { described_class.new(druid, actual_version, 1, ms_root) }
   let(:version_msg_prefix) { "actual version (#{actual_version})" }
   let(:unexpected_version_msg) { "#{version_msg_prefix} has unexpected relationship to PreservedCopy db version (2); ERROR!" }
 
@@ -189,7 +189,7 @@ RSpec.shared_examples 'unexpected version' do |method_sym, actual_version|
 end
 
 RSpec.shared_examples 'unexpected version with validation' do |method_sym, incoming_version, new_status|
-  let(:po_handler) { described_class.new(druid, incoming_version, 1, ep) }
+  let(:po_handler) { described_class.new(druid, incoming_version, 1, ms_root) }
   let(:version_msg_prefix) { "actual version (#{incoming_version})" }
   let(:unexpected_version_msg) { "#{version_msg_prefix} has unexpected relationship to PreservedCopy db version; ERROR!" }
   let(:updated_status_msg_regex) { Regexp.new("PreservedCopy status changed from") }
@@ -278,7 +278,7 @@ RSpec.shared_examples 'unexpected version with validation' do |method_sym, incom
 end
 
 RSpec.shared_examples 'PreservedObject current_version does not match online PC version' do |method_sym, incoming_version, pc_v, po_v|
-  let(:po_handler) { described_class.new(druid, incoming_version, 1, ep) }
+  let(:po_handler) { described_class.new(druid, incoming_version, 1, ms_root) }
   let(:version_mismatch_msg) { "PreservedCopy online Moab version #{pc_v} does not match PreservedObject current_version #{po_v}" }
 
   it 'does not update PreservedCopy' do

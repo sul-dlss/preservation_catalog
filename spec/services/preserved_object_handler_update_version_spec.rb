@@ -12,11 +12,11 @@ RSpec.describe PreservedObjectHandler do
   let(:incoming_size) { 9876 }
   let!(:default_prez_policy) { PreservationPolicy.default_policy }
   let(:po) { PreservedObject.find_by(druid: druid) }
-  let(:ep) { Endpoint.find_by(storage_location: 'spec/fixtures/storage_root01/sdr2objects') }
-  let(:pc) { PreservedCopy.find_by(preserved_object: po, endpoint: ep) }
+  let(:ms_root) { MoabStorageRoot.find_by(storage_location: 'spec/fixtures/storage_root01/sdr2objects') }
+  let(:pc) { PreservedCopy.find_by(preserved_object: po, moab_storage_root: ms_root) }
   let(:db_update_failed_prefix) { "db update failed" }
 
-  let(:po_handler) { described_class.new(druid, incoming_version, incoming_size, ep) }
+  let(:po_handler) { described_class.new(druid, incoming_version, incoming_size, ms_root) }
 
   describe '#update_version' do
     it_behaves_like 'attributes validated', :update_version
@@ -29,7 +29,7 @@ RSpec.describe PreservedObjectHandler do
           preserved_object: po,
           version: po.current_version,
           size: 1,
-          endpoint: ep,
+          moab_storage_root: ms_root,
           status: PreservedCopy::OK_STATUS, # pretending we checked for moab validation errs at create time
           last_version_audit: Time.current,
           last_moab_validation: Time.current
@@ -60,7 +60,7 @@ RSpec.describe PreservedObjectHandler do
           context 'unchanged' do
             it 'size if incoming size is nil' do
               orig = pc.size
-              po_handler = described_class.new(druid, incoming_version, nil, ep)
+              po_handler = described_class.new(druid, incoming_version, nil, ms_root)
               po_handler.update_version
               expect(pc.reload.size).to eq orig
             end
@@ -190,7 +190,7 @@ RSpec.describe PreservedObjectHandler do
               po = instance_double('PreservedObject', current_version: 1)
               allow(PreservedObject).to receive(:find_by!).with(druid: druid).and_return(po)
               pc = create :preserved_copy
-              allow(PreservedCopy).to receive(:find_by!).with(preserved_object: po, endpoint: ep).and_return(pc)
+              allow(PreservedCopy).to receive(:find_by!).with(preserved_object: po, moab_storage_root: ms_root).and_return(pc)
 
               allow(pc).to receive(:save!).and_raise(ActiveRecord::ActiveRecordError, 'foo')
               po_handler.update_version
@@ -216,7 +216,7 @@ RSpec.describe PreservedObjectHandler do
               po = create :preserved_object, current_version: 5
               allow(PreservedObject).to receive(:find_by).with(druid: druid).and_return(po)
               pc = create :preserved_copy
-              allow(PreservedCopy).to receive(:find_by).with(preserved_object: po, endpoint: ep).and_return(pc)
+              allow(PreservedCopy).to receive(:find_by).with(preserved_object: po, moab_storage_root: ms_root).and_return(pc)
 
               allow(po).to receive(:save!).and_raise(ActiveRecord::ActiveRecordError, 'foo')
               po_handler.update_version
@@ -241,7 +241,7 @@ RSpec.describe PreservedObjectHandler do
         po = create :preserved_object
         allow(PreservedObject).to receive(:find_by).with(druid: druid).and_return(po)
         pc = create :preserved_copy
-        allow(PreservedCopy).to receive(:find_by).with(preserved_object: po, endpoint: ep).and_return(pc)
+        allow(PreservedCopy).to receive(:find_by).with(preserved_object: po, moab_storage_root: ms_root).and_return(pc)
 
         allow(po).to receive(:save!)
         allow(pc).to receive(:save!)
@@ -254,11 +254,11 @@ RSpec.describe PreservedObjectHandler do
         po = create :preserved_object
         allow(PreservedObject).to receive(:find_by).with(druid: druid).and_return(po)
         pc = create :preserved_copy
-        allow(PreservedCopy).to receive(:find_by).with(preserved_object: po, endpoint: ep).and_return(pc)
+        allow(PreservedCopy).to receive(:find_by).with(preserved_object: po, moab_storage_root: ms_root).and_return(pc)
 
         allow(po).to receive(:save!)
         allow(pc).to receive(:save!)
-        po_handler = described_class.new(druid, 1, 1, ep)
+        po_handler = described_class.new(druid, 1, 1, ms_root)
         po_handler.update_version
         expect(po).not_to have_received(:save!)
         expect(pc).to have_received(:save!)
@@ -279,7 +279,7 @@ RSpec.describe PreservedObjectHandler do
 
   describe '#update_version_after_validation' do
     let(:druid) { 'bp628nk4868' }
-    let(:ep) { Endpoint.find_by(storage_location: 'spec/fixtures/storage_root02/sdr2objects') }
+    let(:ms_root) { MoabStorageRoot.find_by(storage_location: 'spec/fixtures/storage_root02/sdr2objects') }
 
     it_behaves_like 'attributes validated', :update_version_after_validation
 
@@ -298,14 +298,14 @@ RSpec.describe PreservedObjectHandler do
             preserved_object: po,
             version: po.current_version,
             size: 1,
-            endpoint: ep,
+            moab_storage_root: ms_root,
             status: PreservedCopy::OK_STATUS, # NOTE: pretending we checked for moab validation errs at create time
             last_version_audit: t,
             last_moab_validation: t
           )
         end
         let(:po) { PreservedObject.create!(druid: druid, current_version: 2, preservation_policy: default_prez_policy) }
-        let(:pc) { PreservedCopy.find_by!(preserved_object: po, endpoint: ep) }
+        let(:pc) { PreservedCopy.find_by!(preserved_object: po, moab_storage_root: ms_root) }
 
         context 'PreservedCopy' do
           context 'changed' do
@@ -335,7 +335,7 @@ RSpec.describe PreservedObjectHandler do
           context 'unchanged' do
             it 'size if incoming size is nil' do
               orig = pc.size
-              po_handler = described_class.new(druid, incoming_version, nil, ep)
+              po_handler = described_class.new(druid, incoming_version, nil, ms_root)
               po_handler.update_version_after_validation
               expect(pc.reload.size).to eq orig
             end
@@ -418,12 +418,11 @@ RSpec.describe PreservedObjectHandler do
       context 'when moab is invalid' do
         let(:druid) { 'xx000xx0000' }
         let(:storage_dir) { 'spec/fixtures/bad_root01/bad_moab_storage_trunk' }
-        let(:ep) { Endpoint.find_by(storage_location: storage_dir) }
+        let(:ms_root) { MoabStorageRoot.find_by(storage_location: storage_dir) }
 
         before do
-          Endpoint.find_or_create_by!(endpoint_name: 'bad_fixture_dir') do |endpoint|
-            endpoint.endpoint_node = Settings.endpoints.storage_root_defaults.endpoint_node
-            endpoint.storage_location = storage_dir
+          MoabStorageRoot.find_or_create_by!(name: 'bad_fixture_dir') do |msr|
+            msr.storage_location = storage_dir
           end
           po = PreservedObject.create!(druid: druid, current_version: 2, preservation_policy: default_prez_policy)
           t = Time.current
@@ -431,7 +430,7 @@ RSpec.describe PreservedObjectHandler do
             preserved_object: po,
             version: po.current_version,
             size: 1,
-            endpoint: ep,
+            moab_storage_root: ms_root,
             status: PreservedCopy::OK_STATUS, # pretending we checked for moab validation errs at create time
             last_version_audit: t,
             last_moab_validation: t
@@ -681,7 +680,7 @@ RSpec.describe PreservedObjectHandler do
                 po = instance_double(PreservedObject, current_version: 1)
                 allow(PreservedObject).to receive(:find_by!).with(druid: druid).and_return(po)
                 pc = create :preserved_copy
-                allow(PreservedCopy).to receive(:find_by!).with(preserved_object: po, endpoint: ep).and_return(pc)
+                allow(PreservedCopy).to receive(:find_by!).with(preserved_object: po, moab_storage_root: ms_root).and_return(pc)
 
                 allow(pc).to receive(:save!).and_raise(ActiveRecord::ActiveRecordError, 'foo')
                 po_handler.update_version_after_validation

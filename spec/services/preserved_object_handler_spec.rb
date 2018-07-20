@@ -11,13 +11,13 @@ RSpec.describe PreservedObjectHandler do
   let(:incoming_size) { 9876 }
   let!(:default_prez_policy) { PreservationPolicy.default_policy }
   let(:po) { PreservedObject.find_by(druid: druid) }
-  let(:ep) { Endpoint.find_by(storage_location: 'spec/fixtures/storage_root01/sdr2objects') }
-  let(:pc) { PreservedCopy.find_by(preserved_object: po, endpoint: ep) }
-  let(:po_handler) { described_class.new(druid, incoming_version, incoming_size, ep) }
+  let(:ms_root) { MoabStorageRoot.find_by(storage_location: 'spec/fixtures/storage_root01/sdr2objects') }
+  let(:pc) { PreservedCopy.find_by(preserved_object: po, moab_storage_root: ms_root) }
+  let(:po_handler) { described_class.new(druid, incoming_version, incoming_size, ms_root) }
 
   describe '#initialize' do
     it 'sets druid' do
-      po_handler = described_class.new(druid, incoming_version, nil, ep)
+      po_handler = described_class.new(druid, incoming_version, nil, ms_root)
       expect(po_handler.druid).to eq druid
     end
     context 'sets incoming_version' do
@@ -34,7 +34,7 @@ RSpec.describe PreservedObjectHandler do
         'asdf' => 'asdf'
       }.each do |k, v|
         it "by parsing '#{k}' to '#{v}'" do
-          po_handler = described_class.new(druid, k, nil, ep)
+          po_handler = described_class.new(druid, k, nil, ms_root)
           expect(po_handler.incoming_version).to eq v
         end
       end
@@ -53,18 +53,18 @@ RSpec.describe PreservedObjectHandler do
         'asdf' => 'asdf'
       }.each do |k, v|
         it "by parsing '#{k}' to '#{v}'" do
-          po_handler = described_class.new(druid, nil, k, ep)
+          po_handler = described_class.new(druid, nil, k, ms_root)
           expect(po_handler.incoming_size).to eq v
         end
       end
     end
-    it 'exposes storage_location (from endpoint)' do
-      po_handler = described_class.new(druid, incoming_version, nil, ep)
-      expect(po_handler.storage_location).to eq ep.storage_location
+    it 'exposes storage_location (from MoabStorageRoot)' do
+      po_handler = described_class.new(druid, incoming_version, nil, ms_root)
+      expect(po_handler.storage_location).to eq ms_root.storage_location
     end
-    it 'sets endpoint' do
-      po_handler = described_class.new(druid, incoming_version, nil, ep)
-      expect(po_handler.endpoint).to eq ep
+    it 'sets MoabStorageRoot' do
+      po_handler = described_class.new(druid, incoming_version, nil, ms_root)
+      expect(po_handler.moab_storage_root).to eq ms_root
     end
   end
 
@@ -75,10 +75,10 @@ RSpec.describe PreservedObjectHandler do
         preserved_object: po,
         version: po.current_version,
         size: 1,
-        endpoint: ep,
+        moab_storage_root: ms_root,
         status: PreservedCopy::VALIDITY_UNKNOWN_STATUS
       )
-      bad_po_handler = described_class.new(druid, 6, incoming_size, ep)
+      bad_po_handler = described_class.new(druid, 6, incoming_size, ms_root)
       allow(pc).to receive(:save!).and_raise(ActiveRecord::ActiveRecordError)
       allow(bad_po_handler).to receive(:moab_validation_errors).and_return([])
       bad_po_handler.confirm_version
@@ -111,11 +111,11 @@ RSpec.describe PreservedObjectHandler do
     end
   end
 
-  describe 'endpoint validation' do
-    it 'errors when endpoint is not an Endpoint object' do
+  describe 'MoabStorageRoot validation' do
+    it 'errors when moab_storage_root is not an MoabStorageRoot object' do
       poh = described_class.new(druid, incoming_version, incoming_size, 1)
       expect(poh).to be_invalid
-      expect(poh.errors.messages).to include(endpoint: ["must be an actual Endpoint"])
+      expect(poh.errors.messages).to include(moab_storage_root: ["must be an actual MoabStorageRoot"])
     end
   end
 end

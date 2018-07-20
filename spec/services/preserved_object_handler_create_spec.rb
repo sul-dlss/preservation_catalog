@@ -10,8 +10,8 @@ RSpec.describe PreservedObjectHandler do
   let(:incoming_version) { 6 }
   let(:incoming_size) { 9876 }
   let(:storage_dir) { 'spec/fixtures/storage_root01/sdr2objects' }
-  let(:ep) { Endpoint.find_by(storage_location: storage_dir) }
-  let(:po_handler) { described_class.new(druid, incoming_version, incoming_size, ep) }
+  let(:ms_root) { MoabStorageRoot.find_by(storage_location: storage_dir) }
+  let(:po_handler) { described_class.new(druid, incoming_version, incoming_size, ms_root) }
   let(:exp_msg) { "added object to db as it did not exist" }
   let(:po_args) do
     {
@@ -25,7 +25,7 @@ RSpec.describe PreservedObjectHandler do
       preserved_object: an_instance_of(PreservedObject), # TODO: ensure we got the preserved object that we expected
       version: incoming_version,
       size: incoming_size,
-      endpoint: ep,
+      moab_storage_root: ms_root,
       status: PreservedCopy::VALIDITY_UNKNOWN_STATUS # NOTE: ensuring this particular status is the default
       # NOTE: lack of validation timestamps here
     }
@@ -51,7 +51,7 @@ RSpec.describe PreservedObjectHandler do
 
     it 'object already exists' do
       po_handler.create
-      new_po_handler = described_class.new(druid, incoming_version, incoming_size, ep)
+      new_po_handler = described_class.new(druid, incoming_version, incoming_size, ms_root)
       results = new_po_handler.create
       code = AuditResults::DB_OBJ_ALREADY_EXISTS
       expect(results).to include(a_hash_including(code => a_string_matching('PreservedObject db object already exists')))
@@ -99,7 +99,7 @@ RSpec.describe PreservedObjectHandler do
   describe '#create_after_validation' do
     let(:valid_druid) { 'bp628nk4868' }
     let(:storage_dir) { 'spec/fixtures/storage_root02/sdr2objects' }
-    let(:po_handler) { described_class.new(valid_druid, incoming_version, incoming_size, ep) }
+    let(:po_handler) { described_class.new(valid_druid, incoming_version, incoming_size, ms_root) }
 
     it_behaves_like 'attributes validated', :create_after_validation
 
@@ -107,11 +107,11 @@ RSpec.describe PreservedObjectHandler do
 
     context 'sets validation timestamps' do
       let(:t) { Time.current }
-      let(:ep) { Endpoint.find_by(storage_location: storage_dir) }
+      let(:ms_root) { MoabStorageRoot.find_by(storage_location: storage_dir) }
       let(:po_db_obj) { PreservedObject.find_by(druid: valid_druid) }
       let(:pc_db_obj) { PreservedCopy.find_by(preserved_object: po_db_obj) }
       let(:results) do
-        po_handler = described_class.new(valid_druid, incoming_version, incoming_size, ep)
+        po_handler = described_class.new(valid_druid, incoming_version, incoming_size, ms_root)
         po_handler.create_after_validation
       end
 
@@ -134,7 +134,7 @@ RSpec.describe PreservedObjectHandler do
 
       expect(PreservedObject).to receive(:create!).with(po_args).and_call_original
       expect(PreservedCopy).to receive(:create!).with(pc_args).and_call_original
-      po_handler = described_class.new(valid_druid, incoming_version, incoming_size, ep)
+      po_handler = described_class.new(valid_druid, incoming_version, incoming_size, ms_root)
       po_handler.create_after_validation
     end
 
@@ -147,7 +147,7 @@ RSpec.describe PreservedObjectHandler do
       )
 
       expect(PreservedCopy).to receive(:create!).with(pc_args).and_call_original
-      po_handler = described_class.new(valid_druid, incoming_version, incoming_size, ep)
+      po_handler = described_class.new(valid_druid, incoming_version, incoming_size, ms_root)
       po_handler.create_after_validation(true)
     end
 
@@ -155,21 +155,20 @@ RSpec.describe PreservedObjectHandler do
       mock_sov = instance_double(Stanford::StorageObjectValidator)
       expect(mock_sov).to receive(:validation_errors).and_return([])
       allow(Stanford::StorageObjectValidator).to receive(:new).and_return(mock_sov)
-      po_handler = described_class.new(valid_druid, incoming_version, incoming_size, ep)
+      po_handler = described_class.new(valid_druid, incoming_version, incoming_size, ms_root)
       po_handler.create_after_validation
     end
 
     context 'when moab is invalid' do
       let(:storage_dir) { 'spec/fixtures/bad_root01/bad_moab_storage_trunk' }
-      let(:ep) { Endpoint.find_by(storage_location: storage_dir) }
+      let(:ms_root) { MoabStorageRoot.find_by(storage_location: storage_dir) }
       let(:invalid_druid) { 'xx000xx0000' }
-      let(:po_handler) { described_class.new(invalid_druid, incoming_version, incoming_size, ep) }
+      let(:po_handler) { described_class.new(invalid_druid, incoming_version, incoming_size, ms_root) }
 
-      # add storage root with invalid moab to the Endpoints table
+      # add storage root with invalid moab to the MoabStorageRoots table
       before do
-        Endpoint.find_or_create_by!(endpoint_name: 'bad_fixture_dir') do |endpoint|
-          endpoint.endpoint_node = Settings.endpoints.storage_root_defaults.endpoint_node
-          endpoint.storage_location = storage_dir
+        MoabStorageRoot.find_or_create_by!(name: 'bad_fixture_dir') do |ms_root|
+          ms_root.storage_location = storage_dir
         end
       end
 
@@ -209,7 +208,7 @@ RSpec.describe PreservedObjectHandler do
           let(:results) do
             allow(PreservedObject).to receive(:create!).with(hash_including(druid: invalid_druid))
                                                        .and_raise(ActiveRecord::ActiveRecordError, 'foo')
-            po_handler = described_class.new(invalid_druid, incoming_version, incoming_size, ep)
+            po_handler = described_class.new(invalid_druid, incoming_version, incoming_size, ms_root)
             po_handler.create_after_validation
           end
 
@@ -223,7 +222,7 @@ RSpec.describe PreservedObjectHandler do
 
         it "rolls back PreservedObject creation if the PreservedCopy can't be created (e.g. due to DB constraint violation)" do
           allow(PreservedCopy).to receive(:create!).and_raise(ActiveRecord::RecordInvalid)
-          po_handler = described_class.new(invalid_druid, incoming_version, incoming_size, ep)
+          po_handler = described_class.new(invalid_druid, incoming_version, incoming_size, ms_root)
           po_handler.create
           expect(PreservedObject.where(druid: druid)).not_to exist
         end
