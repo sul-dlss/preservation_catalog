@@ -92,13 +92,14 @@ module Audit
       Profiler.print_profile('M2C_check_existence_for_all_storage_roots') { check_existence_for_all_storage_roots }
     end
 
-    def self.drop_moab_storage_root(name)
+    # @todo This method may not be useful anymore.  Every PC has 1..n DMZs, so either this method must
+    # figure out how to specially delete them too, or we can loosen the restrictions from PC to ZMV
+    # @todo Move this method (and pouplate_endpoint/seed_catalog_for_dir) onto the Endpoint model
+    def self.drop_moab_storage_root(endpoint_name)
+      endpoint = Endpoint.find_by!(endpoint_name: endpoint_name.to_s)
       ApplicationRecord.transaction do
-        PreservedCopy.joins(:moab_storage_root).where(
-          "moab_storage_roots.name = :name",
-          name: name.to_s
-        ).destroy_all
-        PreservedObject.left_outer_joins(:preserved_copies).where(preserved_copies: { id: nil }).destroy_all
+        endpoint.preserved_copies.destroy_all
+        PreservedObject.without_preserved_copies.destroy_all
       end
     end
 

@@ -247,19 +247,16 @@ RSpec.describe Audit::MoabToCatalog do
     before { described_class.seed_catalog_for_all_storage_roots }
 
     it 'drops PreservedCopies that correspond to the given moab storage root' do
+      ZippedMoabVersion.destroy_all
       expect { described_class.drop_moab_storage_root('fixture_sr1') }.to change { PreservedCopy.count }.from(16).to(13)
     end
 
     it 'drops PreservedObjects that correspond to the given moab storage root' do
+      ZippedMoabVersion.destroy_all
       expect { described_class.drop_moab_storage_root('fixture_sr1') }.to change { PreservedObject.count }.from(16).to(13)
     end
 
-    it 'rolls back pres obj delete if pres copy cannot be deleted' do
-      active_record_double1 = instance_double(ActiveRecord::Relation)
-      active_record_double2 = instance_double(ActiveRecord::Relation)
-      allow(PreservedObject).to receive(:left_outer_joins).with(:preserved_copies).and_return(active_record_double1)
-      allow(active_record_double1).to receive(:where).with(preserved_copies: { id: nil }).and_return(active_record_double2)
-      allow(active_record_double2).to receive(:destroy_all).and_raise(ActiveRecord::ActiveRecordError, 'foo')
+    it 'rolls back pres obj delete if PCs cannot be deleted' do
       expect { described_class.drop_moab_storage_root('fixture_sr1') }.to raise_error(ActiveRecord::ActiveRecordError)
       expect(PreservedCopy.count).to eq 16
       expect(PreservedObject.count).to eq 16
@@ -275,6 +272,7 @@ RSpec.describe Audit::MoabToCatalog do
     end
 
     it 're-adds objects for a dropped MoabStorageRoot' do
+      ZippedMoabVersion.destroy_all
       described_class.drop_moab_storage_root('fixture_sr1')
       expect(PreservedObject.count).to eq 13
       expect { described_class.populate_endpoint('fixture_sr1') }.to change { PreservedCopy.count }.from(13).to(16)
