@@ -25,7 +25,7 @@ RSpec.describe PreservationPolicy, type: :model do
   end
 
   it { is_expected.to have_many(:preserved_objects) }
-  it { is_expected.to have_and_belong_to_many(:endpoints) }
+  it { is_expected.to have_and_belong_to_many(:moab_storage_roots) }
   it { is_expected.to validate_presence_of(:preservation_policy_name) }
   it { is_expected.to validate_presence_of(:archive_ttl) }
   it { is_expected.to validate_presence_of(:fixity_ttl) }
