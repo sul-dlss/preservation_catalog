@@ -27,7 +27,7 @@ RSpec.describe CatalogController, type: :controller do
         expect(pc).to be_an_instance_of PreservedCopy
       end
       it 'PreservedCopy and PreservedObject have correct attributes' do
-        expect(pres_copy.endpoint.storage_location).to eq storage_location
+        expect(pres_copy.moab_storage_root.storage_location).to eq storage_location
         expect(pres_copy.version).to eq ver
         expect(pres_copy.size).to eq size
         expect(pres_obj.druid).to eq bare_druid
@@ -129,7 +129,7 @@ RSpec.describe CatalogController, type: :controller do
       )
       PreservedCopy.create!(
         preserved_object: po,
-        endpoint: Endpoint.find_by(storage_location: storage_location),
+        moab_storage_root: MoabStorageRoot.find_by(storage_location: storage_location),
         version: ver,
         status: PreservedCopy::VALIDITY_UNKNOWN_STATUS
       )
@@ -157,7 +157,7 @@ RSpec.describe CatalogController, type: :controller do
         patch :update, params: { druid: prefixed_druid, incoming_version: ver, incoming_size: size, storage_location: nil }
       end
       it 'response contains error message' do
-        errors = ["Endpoint must be an actual Endpoint"]
+        errors = ["Moab storage root must be an actual MoabStorageRoot"]
         exp_msg = [{ AuditResults::INVALID_ARGUMENTS => "encountered validation error(s): #{errors}" }]
         expect(response.body).to include(exp_msg.to_json)
       end
