@@ -8,8 +8,8 @@ RSpec.describe AuditResults do
 
   let(:druid) { 'ab123cd4567' }
   let(:actual_version) { 6 }
-  let(:endpoint) { Endpoint.find_by(storage_location: 'spec/fixtures/storage_root01/sdr2objects') }
-  let(:audit_results) { described_class.new(druid, actual_version, endpoint) }
+  let(:ms_root) { MoabStorageRoot.find_by(storage_location: 'spec/fixtures/storage_root01/sdr2objects') }
+  let(:audit_results) { described_class.new(druid, actual_version, ms_root) }
 
   describe '.logger_severity_level' do
     it 'PC_PO_VERSION_MISMATCH is an ERROR' do
@@ -63,8 +63,8 @@ RSpec.describe AuditResults do
         expect(Rails.logger).to receive(:add).with(Logger::ERROR, a_string_matching(druid))
         audit_results.report_results
       end
-      it 'with endpoint name' do
-        expect(Rails.logger).to receive(:add).with(Logger::ERROR, a_string_matching(endpoint.endpoint_name))
+      it 'with moab_storage_root name' do
+        expect(Rails.logger).to receive(:add).with(Logger::ERROR, a_string_matching(ms_root.name))
         audit_results.report_results
       end
       it 'with severity assigned by .logger_severity_level' do
@@ -84,7 +84,7 @@ RSpec.describe AuditResults do
         audit_results.report_results
       end
       it 'actual_version number is in log message when set after initialization' do
-        my_results = described_class.new(druid, nil, endpoint)
+        my_results = described_class.new(druid, nil, ms_root)
         result_code = AuditResults::VERSION_MATCHES
         my_results.actual_version = 666 # NOTE: must be set before "add_result" call
         my_results.add_result(result_code, 'foo')
@@ -103,7 +103,7 @@ RSpec.describe AuditResults do
           ]
         }
         let(:im_audit_results) {
-          ar = described_class.new(druid, actual_version, endpoint)
+          ar = described_class.new(druid, actual_version, ms_root)
           ar.check_name = check_name
           ar.add_result(result_code, moab_valid_errs)
           ar
@@ -118,8 +118,8 @@ RSpec.describe AuditResults do
           expect(WorkflowReporter).to receive(:report_error).with(druid, 'moab-valid', a_string_matching(check_name))
           im_audit_results.report_results
         end
-        it 'endpoint name' do
-          expected = Regexp.escape("actual location: #{endpoint.endpoint_name}")
+        it 'ms_root name' do
+          expected = Regexp.escape("actual location: #{ms_root.name}")
           expect(WorkflowReporter).to receive(:report_error).with(druid, 'moab-valid', a_string_matching(expected))
           im_audit_results.report_results
         end
@@ -163,16 +163,16 @@ RSpec.describe AuditResults do
           druid, 'preservation-audit', a_string_matching(result_msg2)
         )
       end
-      it 'message sent includes endpoint information' do
+      it 'message sent includes moab_storage_root information' do
         code = AuditResults::DB_UPDATE_FAILED
         audit_results.add_result(code)
-        expected = Regexp.escape("actual location: #{endpoint.endpoint_name}")
+        expected = Regexp.escape("actual location: #{ms_root.name}")
         expect(WorkflowReporter).to receive(:report_error).with(
           druid, 'preservation-audit', a_string_matching(expected)
         )
         audit_results.report_results
       end
-      it 'does NOT send endpoint information if there is none' do
+      it 'does NOT send moab_storage_root information if there is none' do
         audit_results = described_class.new(druid, actual_version, nil)
         code = AuditResults::DB_UPDATE_FAILED
         audit_results.add_result(code)
@@ -193,7 +193,7 @@ RSpec.describe AuditResults do
         audit_results.report_results
       end
       it 'does NOT send actual version if there is none' do
-        audit_results = described_class.new(druid, nil, endpoint)
+        audit_results = described_class.new(druid, nil, ms_root)
         code = AuditResults::DB_UPDATE_FAILED
         audit_results.add_result(code)
         unexpected = Regexp.escape("actual version: ")
@@ -209,7 +209,7 @@ RSpec.describe AuditResults do
         let(:update_date) { Time.current.utc.iso8601 }
         let(:addl) { { db_created_at: create_date, db_updated_at: update_date } }
         let(:my_audit_results) {
-          ar = described_class.new(druid, actual_version, endpoint)
+          ar = described_class.new(druid, actual_version, ms_root)
           ar.add_result(result_code, addl)
           ar
         }

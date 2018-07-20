@@ -93,13 +93,13 @@ class AuditResults
     end
   end
 
-  attr_reader :result_array, :druid, :endpoint
+  attr_reader :result_array, :druid, :moab_storage_root
   attr_accessor :actual_version, :check_name
 
-  def initialize(druid, actual_version, endpoint, check_name=nil)
+  def initialize(druid, actual_version, moab_storage_root, check_name=nil)
     @druid = druid
     @actual_version = actual_version
-    @endpoint = endpoint
+    @moab_storage_root = moab_storage_root
     @check_name = check_name
     @result_array = []
   end
@@ -175,12 +175,12 @@ class AuditResults
   end
 
   def log_msg_prefix
-    @log_msg_prefix ||= "#{check_name}(#{druid}, #{endpoint.endpoint_name if endpoint})"
+    @log_msg_prefix ||= "#{check_name}(#{druid}, #{moab_storage_root.name if moab_storage_root})"
   end
 
   def workflows_msg_prefix
     @workflows_msg_prefix ||= begin
-      location_info = "actual location: #{endpoint.endpoint_name}" if endpoint
+      location_info = "actual location: #{moab_storage_root.name}" if moab_storage_root
       actual_version_info = "actual version: #{actual_version}" if actual_version
       "#{check_name} (#{location_info}; #{actual_version_info})"
     end
