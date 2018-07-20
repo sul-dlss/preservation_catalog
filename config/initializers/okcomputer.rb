@@ -8,7 +8,7 @@ OkComputer.check_in_parallel = true
 class TablesHaveDataCheck < OkComputer::Check
   def check
     msg = [
-      Endpoint,
+      MoabStorageRoot,
       PreservationPolicy
     ].map { |klass| table_check(klass) }.join(' ')
     mark_message msg
@@ -78,7 +78,7 @@ end
 # ------------------------------------------------------------------------------
 
 # NON-CRUCIAL (Optional) checks, avail at /status/<name-of-check>
-#   - at individual endpoint, HTTP response code reflects the actual result
+#   - at individual moab_storage_root, HTTP response code reflects the actual result
 #   - in /status/all, these checks will display their result text, but will not affect HTTP response code
 
 # Audit Checks (only) report errors to workflow service so they appear in Argo
