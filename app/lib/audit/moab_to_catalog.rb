@@ -14,8 +14,8 @@ module Audit
       moab = Stanford::StorageServices.find_storage_object(druid)
       storage_trunk = Settings.moab.storage_trunk
       storage_dir = "#{moab.object_pathname.to_s.split(storage_trunk).first}#{storage_trunk}"
-      endpoint = Endpoint.find_by!(storage_location: storage_dir)
-      po_handler = PreservedObjectHandler.new(druid, moab.current_version_id, moab.size, endpoint)
+      ms_root = MoabStorageRoot.find_by!(storage_location: storage_dir)
+      po_handler = PreservedObjectHandler.new(druid, moab.current_version_id, moab.size, ms_root)
       po_handler.logger = Audit::MoabToCatalog.logger
       results = po_handler.check_existence
       logger.info "#{results} for #{druid}"
@@ -34,10 +34,10 @@ module Audit
     def self.check_existence_for_dir(storage_dir)
       logger.info "#{Time.now.utc.iso8601} M2C check_existence starting for '#{storage_dir}'"
       results = []
-      endpoint = Endpoint.find_by!(storage_location: storage_dir)
+      ms_root = MoabStorageRoot.find_by!(storage_location: storage_dir)
       Stanford::MoabStorageDirectory.find_moab_paths(storage_dir) do |druid, path, _path_match_data|
         moab = Moab::StorageObject.new(druid, path)
-        po_handler = PreservedObjectHandler.new(druid, moab.current_version_id, moab.size, endpoint)
+        po_handler = PreservedObjectHandler.new(druid, moab.current_version_id, moab.size, ms_root)
         results.concat po_handler.check_existence
       end
       results
@@ -53,10 +53,10 @@ module Audit
     def self.seed_catalog_for_dir(storage_dir)
       logger.info "#{Time.now.utc.iso8601} Seeding starting for '#{storage_dir}'"
       results = []
-      endpoint = Endpoint.find_by!(storage_location: storage_dir)
+      ms_root = MoabStorageRoot.find_by!(storage_location: storage_dir)
       Stanford::MoabStorageDirectory.find_moab_paths(storage_dir) do |druid, path, _path_match_data|
         moab = Moab::StorageObject.new(druid, path)
-        po_handler = PreservedObjectHandler.new(druid, moab.current_version_id, moab.size, endpoint)
+        po_handler = PreservedObjectHandler.new(druid, moab.current_version_id, moab.size, ms_root)
         results << po_handler.create_after_validation
       end
       results
@@ -92,23 +92,23 @@ module Audit
       Profiler.print_profile('M2C_check_existence_for_all_storage_roots') { check_existence_for_all_storage_roots }
     end
 
-    def self.drop_endpoint(endpoint_name)
+    def self.drop_moab_storage_root(name)
       ApplicationRecord.transaction do
-        PreservedCopy.joins(:endpoint).where(
-          "endpoints.endpoint_name = :endpoint_name",
-          endpoint_name: endpoint_name.to_s
+        PreservedCopy.joins(:moab_storage_root).where(
+          "moab_storage_roots.name = :name",
+          name: name.to_s
         ).destroy_all
         PreservedObject.left_outer_joins(:preserved_copies).where(preserved_copies: { id: nil }).destroy_all
       end
     end
 
-    def self.populate_endpoint(endpoint_name)
-      endpoint = Endpoint.find_by!(endpoint_name: endpoint_name)
-      MoabToCatalog.seed_catalog_for_dir(endpoint.storage_location)
+    def self.populate_moab_storage_root(name)
+      ms_root = MoabStorageRoot.find_by!(name: name)
+      MoabToCatalog.seed_catalog_for_dir(ms_root.storage_location)
     end
 
-    def self.populate_endpoint_profiled(endpoint_name)
-      Profiler.print_profile('populate_endpoint') { populate_endpoint(endpoint_name) }
+    def self.populate_moab_storage_root_profiled(name)
+      Profiler.print_profile('populate_moab_storage_root') { populate_moab_storage_root(name) }
     end
   end
 end
