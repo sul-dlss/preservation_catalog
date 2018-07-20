@@ -73,12 +73,13 @@ RSpec.describe PreservedCopy, type: :model do
   it { is_expected.to have_many(:zipped_moab_versions) }
 
   describe '#replicate!' do
-    it 'raises if too large' do
-      pc.size = 10_000_000_000
-      expect { pc.replicate! }.to raise_error(RuntimeError, /too large/)
-    end
     it 'raises if unsaved' do
       expect { described_class.new(size: 1).replicate! }.to raise_error(RuntimeError, /must be persisted/)
+    end
+    it 'accepts large objects' do
+      allow(ZipmakerJob).to receive(:perform_later).with(preserved_object.druid, pc.version)
+      pc.size = 30_000_000_000
+      expect { pc.replicate! }.not_to raise_error
     end
     it 'passes druid and version to Zipmaker' do
       expect(ZipmakerJob).to receive(:perform_later).with(preserved_object.druid, pc.version)

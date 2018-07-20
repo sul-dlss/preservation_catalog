@@ -1,5 +1,5 @@
 ##
-# PreservedCopy represents a concrete instance of a PreservedObject, in physical storage on some node.
+# PreservedCopy represents a concrete instance of a PreservedObject version, in physical storage on some node.
 class PreservedCopy < ApplicationRecord
   OK_STATUS = 'ok'.freeze
   INVALID_MOAB_STATUS = 'invalid_moab'.freeze
@@ -93,7 +93,6 @@ class PreservedCopy < ApplicationRecord
   # @todo reroute to large object pipeline instead of raise
   def replicate!
     raise 'PreservedCopy must be persisted' unless persisted?
-    raise "#{size} is too large for pipeline" if size > 9_999_500_000 # build in overhead for zip structure
     ZipmakerJob.perform_later(preserved_object.druid, version)
   end
 
