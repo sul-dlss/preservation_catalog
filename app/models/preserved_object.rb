@@ -15,6 +15,8 @@ class PreservedObject < ApplicationRecord
   validates :current_version, presence: true, numericality: { only_integer: true, greater_than: 0 }
   validates :preservation_policy, null: false
 
+  scope :without_preserved_copies, lambda { left_outer_joins(:preserved_copies).where(preserved_copies: { id: nil }) }
+
   # Spawn asynchronous checks of all existing archive preserved_copies.
   # This logic is similar to PlexerJob, for a different purpose.
   # This should implement the start of the replication process if status is unreplicated for an archival pres_copy
