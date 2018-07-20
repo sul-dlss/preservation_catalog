@@ -24,7 +24,9 @@ class PreservedCopy < ApplicationRecord
     REPLICATED_COPY_NOT_FOUND_STATUS => 8
   }
 
-  after_create(&:create_zipped_moab_versions!)
+  after_create do |pc| # rubocop:disable Style/SymbolProc
+    pc.create_zipped_moab_versions!
+  end
 
   belongs_to :preserved_object, inverse_of: :preserved_copies
   belongs_to :endpoint, inverse_of: :preserved_copies
@@ -79,8 +81,7 @@ class PreservedCopy < ApplicationRecord
   end
 
   # Send to asynchronous replication pipeline
-  # @raise [RuntimeError] if object is unpersisted or too large (>=~10GB)
-  # @todo reroute to large object pipeline instead of raise
+  # @raise [RuntimeError] if object is unpersisted
   def replicate!
     raise 'PreservedCopy must be persisted' unless persisted?
     ZipmakerJob.perform_later(preserved_object.druid, version)
