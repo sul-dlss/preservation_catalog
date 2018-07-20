@@ -275,7 +275,7 @@ RSpec.describe Audit::MoabToCatalog do
       ZippedMoabVersion.destroy_all
       described_class.drop_moab_storage_root('fixture_sr1')
       expect(PreservedObject.count).to eq 13
-      expect { described_class.populate_endpoint('fixture_sr1') }.to change { PreservedCopy.count }.from(13).to(16)
+      expect { described_class.populate_moab_storage_root('fixture_sr1') }.to change { PreservedCopy.count }.from(13).to(16)
       expect(PreservedObject.count).to eq 16
     end
   end
@@ -283,8 +283,8 @@ RSpec.describe Audit::MoabToCatalog do
   describe ".populate_moab_storage_root_profiled" do
     it "spins up a profiler, calling profiling and printing methods on it" do
       expect(mock_profiler).to receive(:prof)
-      expect(mock_profiler).to receive(:print_results_flat).with('populate_endpoint')
-      described_class.populate_endpoint_profiled('fixture_sr1')
+      expect(mock_profiler).to receive(:print_results_flat).with('populate_moab_storage_root')
+      described_class.populate_moab_storage_root_profiled('fixture_sr1')
     end
   end
 end

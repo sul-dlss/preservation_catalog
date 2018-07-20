@@ -94,11 +94,11 @@ module Audit
 
     # @todo This method may not be useful anymore.  Every PC has 1..n DMZs, so either this method must
     # figure out how to specially delete them too, or we can loosen the restrictions from PC to ZMV
-    # @todo Move this method (and pouplate_endpoint/seed_catalog_for_dir) onto the Endpoint model
-    def self.drop_moab_storage_root(endpoint_name)
-      endpoint = Endpoint.find_by!(endpoint_name: endpoint_name.to_s)
+    # @todo Move this method (and pouplate_m_s_r/seed_catalog_for_dir) onto the MoabStorageRoot model
+    def self.drop_moab_storage_root(name)
+      ms_root = MoabStorageRoot.find_by!(name: name.to_s)
       ApplicationRecord.transaction do
-        endpoint.preserved_copies.destroy_all
+        ms_root.preserved_copies.destroy_all
         PreservedObject.without_preserved_copies.destroy_all
       end
     end

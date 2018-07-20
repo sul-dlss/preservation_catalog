@@ -6,8 +6,8 @@
 #
 # @note Does not have size independent of part(s)
 class ZippedMoabVersion < ApplicationRecord
-  belongs_to :preserved_copy
-  belongs_to :zip_endpoint
+  belongs_to :preserved_copy, inverse_of: :zipped_moab_versions
+  belongs_to :zip_endpoint, inverse_of: :zipped_moab_versions
   has_many :zip_parts, dependent: :destroy, inverse_of: :zipped_moab_version
   has_one :preserved_object, through: :preserved_copy, dependent: :restrict_with_exception
 
