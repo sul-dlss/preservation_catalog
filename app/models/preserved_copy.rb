@@ -24,6 +24,8 @@ class PreservedCopy < ApplicationRecord
     REPLICATED_COPY_NOT_FOUND_STATUS => 8
   }
 
+  after_create(&:create_zipped_moab_versions!)
+
   belongs_to :preserved_object, inverse_of: :preserved_copies
   belongs_to :endpoint, inverse_of: :preserved_copies
   has_many :zipped_moab_versions, dependent: :restrict_with_exception, inverse_of: :preserved_copy
@@ -66,19 +68,12 @@ class PreservedCopy < ApplicationRecord
     # to 0 for nulls, which sorts before 1 for non-nulls, which are then sorted by last_checksum_validation)
   }
 
-  # given a version, create any ZippedMoabVersion records for that version which don't yet exist for archive
-  #  endpoints which implement the parent PreservedObject's PreservationPolicy.
-  # @param archive_vers [Integer] the version for which archive preserved copies should be created.  must be between
-  #   1 and this PreservedCopy's version (inclusive).  Because there's an ZippedMoabVersion for
-  #   each version for each endpoint (whereas there is one PreservedCopy for an entire online Moab).
+  # For *this* version, create any ZippedMoabVersion records which don't yet exist for
+  # ZipEndpoints on the parent PreservedObject's PreservationPolicy.
   # @return [Array<ZippedMoabVersion>] the ZippedMoabVersion records that were created
-  def create_zipped_moab_versions!(archive_vers)
-    unless archive_vers > 0 && archive_vers <= version
-      raise ArgumentError, "archive_vers (#{archive_vers}) must be between 0 and version (#{version})"
-    end
-
-    params = ZipEndpoint.which_need_archive_copy(preserved_object.druid, archive_vers).map do |zep|
-      { version: archive_vers, zip_endpoint: zep, status: 'unreplicated' }
+  def create_zipped_moab_versions!
+    params = ZipEndpoint.which_need_archive_copy(preserved_object.druid, version).map do |zep|
+      { version: version, zip_endpoint: zep, status: 'unreplicated' }
     end
     zipped_moab_versions.create!(params)
   end
