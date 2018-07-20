@@ -1,6 +1,6 @@
-# Preconditions:
+# Precondition(s):
 #  All needed PreservedCopy and ZippedMoabVersion rows are already made.
-#  Possible TODO: replace precondition w/ invocation of PO2PC/PC2APC method.
+# @see PreservedCopy#create_zipped_moab_versions!
 #
 # Responsibilities:
 # Record zip part metadata info in DB.
