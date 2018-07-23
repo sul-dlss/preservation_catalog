@@ -24,8 +24,9 @@ class PreservedCopy < ApplicationRecord
     REPLICATED_COPY_NOT_FOUND_STATUS => 8
   }
 
-  after_create do |pc| # rubocop:disable Style/SymbolProc
+  after_create do |pc|
     pc.create_zipped_moab_versions!
+    pc.replicate!
   end
 
   belongs_to :preserved_object, inverse_of: :preserved_copies

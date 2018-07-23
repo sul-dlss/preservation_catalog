@@ -10,6 +10,7 @@ describe ZipmakerJob, type: :job do
   end
 
   before do
+    allow(ZipmakerJob).to receive(:perform_later).and_call_original # undo rails_helper block
     allow(PlexerJob).to receive(:perform_later).with(any_args)
     allow(Settings).to receive(:zip_storage).and_return('spec/fixtures/zip_storage')
   end
