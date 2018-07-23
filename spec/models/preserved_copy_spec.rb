@@ -73,6 +73,11 @@ RSpec.describe PreservedCopy, type: :model do
   it { is_expected.to have_many(:zipped_moab_versions) }
 
   describe '#replicate!' do
+    it 'is called from after_create hook' do
+      obj = build(:preserved_copy, args.merge(status: 'ok', version: 2))
+      expect(obj).to receive(:replicate!)
+      obj.save!
+    end
     it 'raises if unsaved' do
       expect { described_class.new(size: 1).replicate! }.to raise_error(RuntimeError, /must be persisted/)
     end
