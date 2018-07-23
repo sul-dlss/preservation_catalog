@@ -13,18 +13,7 @@ end
 RSpec.shared_context "fixture moabs in db" do
   before do
     setup
-    load_fixture_moabs
-  end
-  after do
-    # TODO: danger - if there are objects in the test db we want to keep
-    HostSettings.storage_roots.to_h.each_value do |storage_root|
-      storage_dir = File.join(storage_root, Settings.moab.storage_trunk)
-      PreservedCopy.where(endpoint_id: Endpoint.find_by(storage_location: storage_dir).id).each do |pc|
-        po_id = pc.preserved_object_id
-        pc.destroy
-        PreservedObject.find(po_id).destroy
-      end
-    end
+    load_fixture_moabs # automatically undone by rails transactional test scope
   end
 end
 
