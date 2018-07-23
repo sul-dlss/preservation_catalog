@@ -216,10 +216,8 @@ RSpec.shared_examples 'unexpected version with validation' do |method_sym, incom
       end
     end
     describe 'status becomes' do
-      before do
-        pc.status = 'ok'
-        pc.save!
-      end
+      before { pc.ok! }
+
       if method_sym == :update_version_after_validation
         it "#{new_status} when checksums_validated" do
           expect { po_handler.send(method_sym, true) }.to change { pc.reload.status }.from('ok').to(new_status)
@@ -307,16 +305,14 @@ RSpec.shared_examples 'PreservedObject current_version does not match online PC 
 end
 
 RSpec.shared_examples 'cannot validate something with INVALID_CHECKSUM_STATUS' do |method_sym|
+  before { pc.invalid_checksum! }
+
   it 'PreservedCopy keeps INVALID_CHECKSUM_STATUS' do
-    pc.status = PreservedCopy::INVALID_CHECKSUM_STATUS
-    pc.save!
     po_handler.send(method_sym)
-    expect(pc.reload.status).to eq PreservedCopy::INVALID_CHECKSUM_STATUS
+    expect(pc.reload.status).to eq 'invalid_checksum'
   end
 
   it 'has an AuditResults entry indicating inability to check the given status' do
-    pc.status = PreservedCopy::INVALID_CHECKSUM_STATUS
-    pc.save!
     po_handler.send(method_sym)
     expect(po_handler.results.contains_result_code?(AuditResults::UNABLE_TO_CHECK_STATUS)).to eq true
   end
@@ -325,59 +321,48 @@ end
 RSpec.shared_examples 'PreservedCopy may have its status checked when incoming_version == pc.version' do |method_sym|
   let(:incoming_version) { pc.version }
 
+  before { allow(po_handler).to receive(:moab_validation_errors).and_return([]) } # default
+
   it 'had OK_STATUS, keeps OK_STATUS' do
-    pc.status = PreservedCopy::OK_STATUS
-    pc.save!
-    allow(po_handler).to receive(:moab_validation_errors).and_return([])
+    pc.ok!
     po_handler.send(method_sym)
-    expect(pc.reload.status).to eq PreservedCopy::OK_STATUS
+    expect(pc.reload.status).to eq 'ok'
   end
   it 'had UNEXPECTED_VERSION_ON_STORAGE_STATUS, but is now VALIDITY_UNKNOWN_STATUS' do
-    pc.status = PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
-    pc.save!
-    allow(po_handler).to receive(:moab_validation_errors).and_return([])
+    pc.unexpected_version_on_storage!
     po_handler.send(method_sym)
-    expect(pc.reload.status).to eq PreservedCopy::VALIDITY_UNKNOWN_STATUS
+    expect(pc.reload.status).to eq 'validity_unknown'
   end
   it 'had UNEXPECTED_VERSION_ON_STORAGE_STATUS, but is now INVALID_MOAB_STATUS' do
-    pc.status = PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
-    pc.save!
+    pc.unexpected_version_on_storage!
     allow(po_handler).to receive(:moab_validation_errors).and_return([{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }])
     po_handler.send(method_sym)
-    expect(pc.reload.status).to eq PreservedCopy::INVALID_MOAB_STATUS
+    expect(pc.reload.status).to eq 'invalid_moab'
   end
   it 'had INVALID_MOAB_STATUS, but is now VALIDITY_UNKNOWN_STATUS' do
-    pc.status = PreservedCopy::INVALID_MOAB_STATUS
-    pc.save!
-    allow(po_handler).to receive(:moab_validation_errors).and_return([])
+    pc.invalid_moab!
     po_handler.send(method_sym)
-    expect(pc.reload.status).to eq PreservedCopy::VALIDITY_UNKNOWN_STATUS
+    expect(pc.reload.status).to eq 'validity_unknown'
   end
   it 'had VALIDITY_UNKNOWN_STATUS, keeps VALIDITY_UNKNOWN_STATUS' do
-    pc.status = PreservedCopy::VALIDITY_UNKNOWN_STATUS
-    pc.save!
-    allow(po_handler).to receive(:moab_validation_errors).and_return([])
+    pc.validity_unknown!
     po_handler.send(method_sym)
-    expect(pc.reload.status).to eq PreservedCopy::VALIDITY_UNKNOWN_STATUS
+    expect(pc.reload.status).to eq 'validity_unknown'
   end
   it 'had VALIDITY_UNKNOWN_STATUS, but is now INVALID_MOAB_STATUS' do
-    pc.status = PreservedCopy::VALIDITY_UNKNOWN_STATUS
-    pc.save!
+    pc.validity_unknown!
     allow(po_handler).to receive(:moab_validation_errors).and_return([{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }])
     po_handler.send(method_sym)
-    expect(pc.reload.status).to eq PreservedCopy::INVALID_MOAB_STATUS
+    expect(pc.reload.status).to eq 'invalid_moab'
   end
   it 'had UNEXPECTED_VERSION_ON_STORAGE_STATUS, seems to have an acceptable version now' do
-    pc.status = PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
-    pc.save!
-    allow(po_handler).to receive(:moab_validation_errors).and_return([])
+    pc.unexpected_version_on_storage!
     po_handler.send(method_sym)
-    expect(pc.reload.status).to eq PreservedCopy::VALIDITY_UNKNOWN_STATUS
+    expect(pc.reload.status).to eq 'validity_unknown'
   end
 
   context 'had INVALID_CHECKSUM_STATUS' do
     context 'without moab validation errors' do
-      before { allow(po_handler).to receive(:moab_validation_errors).and_return([]) }
       it_behaves_like 'cannot validate something with INVALID_CHECKSUM_STATUS', method_sym
     end
     context 'with moab validation errors' do
@@ -392,52 +377,43 @@ end
 RSpec.shared_examples 'PreservedCopy may have its status checked when incoming_version < pc.version' do |method_sym|
   let(:incoming_version) { pc.version - 1 }
 
+  before { allow(po_handler).to receive(:moab_validation_errors).and_return([]) } # default
+
   it 'had OK_STATUS, but is now UNEXPECTED_VERSION_ON_STORAGE_STATUS' do
-    pc.status = PreservedCopy::OK_STATUS
-    pc.save!
-    allow(po_handler).to receive(:moab_validation_errors).and_return([])
+    pc.ok!
     po_handler.send(method_sym)
-    expect(pc.reload.status).to eq PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
+    expect(pc.reload.status).to eq 'unexpected_version_on_storage'
   end
   it 'had OK_STATUS, but is now INVALID_MOAB_STATUS' do
-    pc.status = PreservedCopy::OK_STATUS
-    pc.save!
+    pc.ok!
     allow(po_handler).to receive(:moab_validation_errors).and_return([{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }])
     po_handler.send(method_sym)
-    expect(pc.reload.status).to eq PreservedCopy::INVALID_MOAB_STATUS
+    expect(pc.reload.status).to eq 'invalid_moab'
   end
   it 'had INVALID_MOAB_STATUS, was made to a valid moab, but is now UNEXPECTED_VERSION_ON_STORAGE_STATUS' do
-    pc.status = PreservedCopy::INVALID_MOAB_STATUS
-    pc.save!
-    allow(po_handler).to receive(:moab_validation_errors).and_return([])
+    pc.invalid_moab!
     po_handler.send(method_sym)
-    expect(pc.reload.status).to eq PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
+    expect(pc.reload.status).to eq 'unexpected_version_on_storage'
   end
   it 'had UNEXPECTED_VERSION_ON_STORAGE_STATUS, still seeing an unexpected version' do
-    pc.status = PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
-    pc.save!
-    allow(po_handler).to receive(:moab_validation_errors).and_return([])
+    pc.unexpected_version_on_storage!
     po_handler.send(method_sym)
-    expect(pc.reload.status).to eq PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
+    expect(pc.reload.status).to eq 'unexpected_version_on_storage'
   end
   it 'had VALIDITY_UNKNOWN_STATUS, but is now INVALID_MOAB_STATUS' do
-    pc.status = PreservedCopy::VALIDITY_UNKNOWN_STATUS
-    pc.save!
+    pc.validity_unknown!
     allow(po_handler).to receive(:moab_validation_errors).and_return([{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }])
     po_handler.send(method_sym)
-    expect(pc.reload.status).to eq PreservedCopy::INVALID_MOAB_STATUS
+    expect(pc.reload.status).to eq 'invalid_moab'
   end
   it 'had VALIDITY_UNKNOWN_STATUS, but is now UNEXPECTED_VERSION_ON_STORAGE_STATUS' do
-    pc.status = PreservedCopy::VALIDITY_UNKNOWN_STATUS
-    pc.save!
-    allow(po_handler).to receive(:moab_validation_errors).and_return([])
+    pc.validity_unknown!
     po_handler.send(method_sym)
-    expect(pc.reload.status).to eq PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
+    expect(pc.reload.status).to eq 'unexpected_version_on_storage'
   end
 
   context 'had INVALID_CHECKSUM_STATUS' do
     context 'without moab validation errors' do
-      before { allow(po_handler).to receive(:moab_validation_errors).and_return([]) }
       it_behaves_like 'cannot validate something with INVALID_CHECKSUM_STATUS', method_sym
     end
     context 'with moab validation errors' do

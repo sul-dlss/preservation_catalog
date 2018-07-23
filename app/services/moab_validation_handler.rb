@@ -20,7 +20,7 @@ module MoabValidationHandler
   end
 
   def can_validate_current_pres_copy_status?
-    can_do = can_validate_checksums? || preserved_copy.status != PreservedCopy::INVALID_CHECKSUM_STATUS
+    can_do = can_validate_checksums? || preserved_copy.status != 'invalid_checksum'
     results.add_result(AuditResults::UNABLE_TO_CHECK_STATUS, current_status: preserved_copy.status) unless can_do
     can_do
   end
@@ -62,26 +62,21 @@ module MoabValidationHandler
   # on disk is the expected version according to the catalog.  NOTE: in the case of an update
   # this might mean the on disk version is one higher than the catalog version, if the
   # catalog hasn't been updated yet.
+  # @param [Boolean] found_expected_version
+  # @return [void]
   def set_status_as_seen_on_disk(found_expected_version)
-    if moab_validation_errors.any?
-      update_status(PreservedCopy::INVALID_MOAB_STATUS)
-      return
-    end
-
-    unless found_expected_version
-      update_status(PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS)
-      return
-    end
+    return update_status('invalid_moab') if moab_validation_errors.any?
+    return update_status('unexpected_version_on_storage') unless found_expected_version
 
     # NOTE: subclasses which override this method should NOT perform checksum validation inside of this method!
     # CV is expensive, and can run a while, and this method should likely be called from within a DB transaction,
     # but CV definitely shouldn't happen inside a DB transaction.
     if results.contains_result_code?(AuditResults::MOAB_CHECKSUM_VALID)
-      update_status(PreservedCopy::OK_STATUS)
+      update_status('ok')
     elsif can_validate_checksums?
-      update_status(PreservedCopy::INVALID_CHECKSUM_STATUS)
+      update_status('invalid_checksum')
     else
-      update_status(PreservedCopy::VALIDITY_UNKNOWN_STATUS)
+      update_status('validity_unknown')
     end
   end
 end

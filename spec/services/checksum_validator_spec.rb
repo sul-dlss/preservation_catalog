@@ -223,25 +223,25 @@ RSpec.describe ChecksumValidator do
       end
 
       [
-        PreservedCopy::ONLINE_MOAB_NOT_FOUND_STATUS,
-        PreservedCopy::INVALID_MOAB_STATUS,
-        PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS,
-        PreservedCopy::INVALID_CHECKSUM_STATUS,
-        PreservedCopy::VALIDITY_UNKNOWN_STATUS
+        'online_moab_not_found',
+        'invalid_moab',
+        'unexpected_version_on_storage',
+        'invalid_checksum',
+        'validity_unknown'
       ].each do |initial_status|
         it "sets status to OK_STATUS if it was previously #{initial_status}" do
           pres_copy.status = initial_status
           pres_copy.save!
-          expect { cv.validate_checksums }.to change { pres_copy.status }.to PreservedCopy::OK_STATUS
-          expect(pres_copy.reload.status).to eq PreservedCopy::OK_STATUS
+          expect { cv.validate_checksums }.to change { pres_copy.status }.to 'ok'
+          expect(pres_copy.reload.status).to eq 'ok'
         end
       end
 
       it "leaves status of OK_STATUS as-is" do
-        pres_copy.status = PreservedCopy::OK_STATUS
+        pres_copy.status = 'ok'
         pres_copy.save!
         expect { cv.validate_checksums }.not_to(change { pres_copy.status })
-        expect(pres_copy.reload.status).to eq PreservedCopy::OK_STATUS
+        expect(pres_copy.reload.status).to eq 'ok'
       end
 
       it 'updates audit timestamps' do
@@ -261,27 +261,27 @@ RSpec.describe ChecksumValidator do
           end
 
           [
-            PreservedCopy::OK_STATUS,
-            PreservedCopy::ONLINE_MOAB_NOT_FOUND_STATUS,
-            PreservedCopy::INVALID_MOAB_STATUS,
-            PreservedCopy::INVALID_CHECKSUM_STATUS,
-            PreservedCopy::VALIDITY_UNKNOWN_STATUS
+            'ok',
+            'online_moab_not_found',
+            'invalid_moab',
+            'invalid_checksum',
+            'validity_unknown'
           ].each do |initial_status|
             it "sets status to UNEXPECTED_VERSION_ON_STORAGE_STATUS if it was previously #{initial_status}" do
               pres_copy.status = initial_status
               pres_copy.save!
-              expect { cv.validate_checksums }.to change { pres_copy.status }.to PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
+              expect { cv.validate_checksums }.to change { pres_copy.status }.to 'unexpected_version_on_storage'
               expect(cv.results.contains_result_code?(AuditResults::UNEXPECTED_VERSION)).to be true
-              expect(pres_copy.reload.status).to eq PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
+              expect(pres_copy.reload.status).to eq 'unexpected_version_on_storage'
             end
           end
 
           it 'leaves status as UNEXPECTED_VERSION_ON_STORAGE_STATUS if pres copy started in that state' do
-            pres_copy.status = PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
+            pres_copy.status = 'unexpected_version_on_storage'
             pres_copy.save!
             expect { cv.validate_checksums }.not_to(change { pres_copy.status })
             expect(cv.results.contains_result_code?(AuditResults::UNEXPECTED_VERSION)).to be true
-            expect(pres_copy.reload.status).to eq PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
+            expect(pres_copy.reload.status).to eq 'unexpected_version_on_storage'
           end
         end
 
@@ -291,25 +291,25 @@ RSpec.describe ChecksumValidator do
           end
 
           [
-            PreservedCopy::OK_STATUS,
-            PreservedCopy::ONLINE_MOAB_NOT_FOUND_STATUS,
-            PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS,
-            PreservedCopy::INVALID_CHECKSUM_STATUS,
-            PreservedCopy::VALIDITY_UNKNOWN_STATUS
+            'ok',
+            'online_moab_not_found',
+            'unexpected_version_on_storage',
+            'invalid_checksum',
+            'validity_unknown'
           ].each do |initial_status|
             it "sets status as INVALID_MOAB_STATUS if it was #{initial_status}" do
               pres_copy.status = initial_status
               pres_copy.save!
-              expect { cv.validate_checksums }.to change { pres_copy.status }.to PreservedCopy::INVALID_MOAB_STATUS
-              expect(pres_copy.reload.status).to eq PreservedCopy::INVALID_MOAB_STATUS
+              expect { cv.validate_checksums }.to change { pres_copy.status }.to 'invalid_moab'
+              expect(pres_copy.reload.status).to eq 'invalid_moab'
             end
           end
 
           it 'leaves status as INVALID_MOAB_STATUS if pres copy started in that state' do
-            pres_copy.status = PreservedCopy::INVALID_MOAB_STATUS
+            pres_copy.status = 'invalid_moab'
             pres_copy.save!
             expect { cv.validate_checksums }.not_to(change { pres_copy.status })
-            expect(pres_copy.reload.status).to eq PreservedCopy::INVALID_MOAB_STATUS
+            expect(pres_copy.reload.status).to eq 'invalid_moab'
           end
         end
       end
@@ -322,20 +322,20 @@ RSpec.describe ChecksumValidator do
       end
 
       [
-        PreservedCopy::OK_STATUS,
-        PreservedCopy::ONLINE_MOAB_NOT_FOUND_STATUS,
-        PreservedCopy::INVALID_MOAB_STATUS,
-        PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS,
-        PreservedCopy::VALIDITY_UNKNOWN_STATUS
+        'ok',
+        'online_moab_not_found',
+        'invalid_moab',
+        'unexpected_version_on_storage',
+        'validity_unknown'
       ].each do |initial_status|
         it "sets PreservedCopy status to INVALID_CHECKSUM_STATUS if it was initially #{initial_status}" do
           pres_copy.status = initial_status
-          expect { cv.validate_checksums }.to change { pres_copy.status }.to PreservedCopy::INVALID_CHECKSUM_STATUS
+          expect { cv.validate_checksums }.to change { pres_copy.status }.to 'invalid_checksum'
         end
       end
 
       it 'leaves PreservedCopy status as INVALID_CHECKSUM_STATUS if it already was' do
-        pres_copy.status = PreservedCopy::INVALID_CHECKSUM_STATUS
+        pres_copy.status = 'invalid_checksum'
         expect { cv.validate_checksums }.not_to(change { pres_copy.status })
       end
 
@@ -347,25 +347,25 @@ RSpec.describe ChecksumValidator do
           end
 
           [
-            PreservedCopy::OK_STATUS,
-            PreservedCopy::ONLINE_MOAB_NOT_FOUND_STATUS,
-            PreservedCopy::INVALID_MOAB_STATUS,
-            PreservedCopy::VALIDITY_UNKNOWN_STATUS,
-            PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
+            'ok',
+            'online_moab_not_found',
+            'invalid_moab',
+            'validity_unknown',
+            'unexpected_version_on_storage'
           ].each do |initial_status|
             it "sets status to INVALID_CHECKSUM_STATUS if it was previously #{initial_status}" do
               pres_copy.status = initial_status
               pres_copy.save!
-              expect { cv.validate_checksums }.to change { pres_copy.status }.to PreservedCopy::INVALID_CHECKSUM_STATUS
-              expect(pres_copy.reload.status).to eq PreservedCopy::INVALID_CHECKSUM_STATUS
+              expect { cv.validate_checksums }.to change { pres_copy.status }.to 'invalid_checksum'
+              expect(pres_copy.reload.status).to eq 'invalid_checksum'
             end
           end
 
           it 'leaves status as INVALID_CHECKSUM_STATUS if pres copy started in that state' do
-            pres_copy.status = PreservedCopy::INVALID_CHECKSUM_STATUS
+            pres_copy.status = 'invalid_checksum'
             pres_copy.save!
             expect { cv.validate_checksums }.not_to(change { pres_copy.status })
-            expect(pres_copy.reload.status).to eq PreservedCopy::INVALID_CHECKSUM_STATUS
+            expect(pres_copy.reload.status).to eq 'invalid_checksum'
           end
         end
 
@@ -375,25 +375,25 @@ RSpec.describe ChecksumValidator do
           end
 
           [
-            PreservedCopy::OK_STATUS,
-            PreservedCopy::ONLINE_MOAB_NOT_FOUND_STATUS,
-            PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS,
-            PreservedCopy::VALIDITY_UNKNOWN_STATUS,
-            PreservedCopy::INVALID_MOAB_STATUS
+            'ok',
+            'online_moab_not_found',
+            'unexpected_version_on_storage',
+            'validity_unknown',
+            'invalid_moab'
           ].each do |initial_status|
             it "sets status as INVALID_CHECKSUM_STATUS if it was #{initial_status}" do
               pres_copy.status = initial_status
               pres_copy.save!
-              expect { cv.validate_checksums }.to change { pres_copy.status }.to PreservedCopy::INVALID_CHECKSUM_STATUS
-              expect(pres_copy.reload.status).to eq PreservedCopy::INVALID_CHECKSUM_STATUS
+              expect { cv.validate_checksums }.to change { pres_copy.status }.to 'invalid_checksum'
+              expect(pres_copy.reload.status).to eq 'invalid_checksum'
             end
           end
 
           it 'leaves status as INVALID_CHECKSUM_STATUS if pres copy started in that state' do
-            pres_copy.status = PreservedCopy::INVALID_CHECKSUM_STATUS
+            pres_copy.status = 'invalid_checksum'
             pres_copy.save!
             expect { cv.validate_checksums }.not_to(change { pres_copy.status })
-            expect(pres_copy.reload.status).to eq PreservedCopy::INVALID_CHECKSUM_STATUS
+            expect(pres_copy.reload.status).to eq 'invalid_checksum'
           end
         end
       end
@@ -412,7 +412,7 @@ RSpec.describe ChecksumValidator do
 
       before do
         # would result in a status update if the save succeeded
-        pres_copy.status = PreservedCopy::ONLINE_MOAB_NOT_FOUND_STATUS
+        pres_copy.status = 'online_moab_not_found'
         pres_copy.save!
 
         # do this second since we save! as part of setup
@@ -537,14 +537,14 @@ RSpec.describe ChecksumValidator do
     let(:root_name) { 'fixture_sr1' }
 
     it 'has status changed to OK_STATUS and completes workflow' do
-      pres_copy.status = PreservedCopy::INVALID_MOAB_STATUS
+      pres_copy.status = 'invalid_moab'
       pres_copy.save!
       expect(WorkflowReporter).to receive(:report_completed).with(druid, 'preservation-audit')
       cv.validate_checksums
     end
 
     it 'has status that does not change and does not complete workflow' do
-      pres_copy.status = PreservedCopy::OK_STATUS
+      pres_copy.status = 'ok'
       pres_copy.save!
       expect(WorkflowReporter).not_to receive(:report_completed).with(druid, 'preservation-audit')
       cv.validate_checksums
@@ -557,7 +557,7 @@ RSpec.describe ChecksumValidator do
       end
 
       it "does not complete workflow" do
-        pres_copy.status = PreservedCopy::OK_STATUS
+        pres_copy.status = 'ok'
         pres_copy.save!
         expect(WorkflowReporter).not_to receive(:report_completed).with(druid, 'preservation-audit')
         cv.validate_checksums
@@ -567,7 +567,7 @@ RSpec.describe ChecksumValidator do
     context 'transaction is rolled back' do
       before do
         # would result in a status update if the save succeeded
-        pres_copy.status = PreservedCopy::ONLINE_MOAB_NOT_FOUND_STATUS
+        pres_copy.status = 'online_moab_not_found'
         pres_copy.save!
 
         # do this second since we save! as part of setup

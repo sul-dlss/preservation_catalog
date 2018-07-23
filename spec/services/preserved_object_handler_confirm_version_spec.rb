@@ -26,7 +26,7 @@ RSpec.describe PreservedObjectHandler do
           version: po.current_version,
           size: 1,
           moab_storage_root: ms_root,
-          status: PreservedCopy::OK_STATUS # NOTE: we are pretending we checked for moab validation errs
+          status: 'ok' # NOTE: we are pretending we checked for moab validation errs
         )
       end
 
@@ -116,18 +116,18 @@ RSpec.describe PreservedObjectHandler do
           let(:incoming_version) { pc.version + 1 }
 
           it 'had OK_STATUS, but is now UNEXPECTED_VERSION_ON_STORAGE_STATUS' do
-            pc.status = PreservedCopy::OK_STATUS
+            pc.status = 'ok'
             pc.save!
             allow(po_handler).to receive(:moab_validation_errors).and_return([])
             po_handler.confirm_version
-            expect(pc.reload.status).to eq PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
+            expect(pc.reload.status).to eq 'unexpected_version_on_storage'
           end
           it 'had INVALID_MOAB_STATUS, structure seems to be remediated, but is now UNEXPECTED_VERSION_ON_STORAGE_STATUS' do
-            pc.status = PreservedCopy::INVALID_MOAB_STATUS
+            pc.status = 'invalid_moab'
             pc.save!
             allow(po_handler).to receive(:moab_validation_errors).and_return([])
             po_handler.confirm_version
-            expect(pc.reload.status).to eq PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
+            expect(pc.reload.status).to eq 'unexpected_version_on_storage'
           end
         end
       end
@@ -147,9 +147,9 @@ RSpec.describe PreservedObjectHandler do
           context 'PreservedCopy' do
             context 'changed' do
               it 'status to unexpected_version_on_storage' do
-                expect(pc.status).to eq PreservedCopy::OK_STATUS
+                expect(pc.status).to eq 'ok'
                 po_handler.confirm_version
-                expect(pc.reload.status).to eq PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
+                expect(pc.reload.status).to eq 'unexpected_version_on_storage'
               end
               it 'last_version_audit' do
                 orig = Time.current

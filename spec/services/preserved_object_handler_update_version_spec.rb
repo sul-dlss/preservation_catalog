@@ -30,7 +30,7 @@ RSpec.describe PreservedObjectHandler do
           version: po.current_version,
           size: 1,
           moab_storage_root: ms_root,
-          status: PreservedCopy::OK_STATUS, # pretending we checked for moab validation errs at create time
+          status: 'ok', # pretending we checked for moab validation errs at create time
           last_version_audit: Time.current,
           last_moab_validation: Time.current
         )
@@ -173,7 +173,7 @@ RSpec.describe PreservedObjectHandler do
       end
 
       context 'incoming version same as catalog versions (both)' do
-        it_behaves_like 'unexpected version', :update_version, 2, PreservedCopy::OK_STATUS
+        it_behaves_like 'unexpected version', :update_version, 2, 'ok'
       end
 
       context 'incoming version lower than catalog versions (both)' do
@@ -187,7 +187,7 @@ RSpec.describe PreservedObjectHandler do
           context 'ActiveRecordError' do
             let(:results) do
               allow(Rails.logger).to receive(:log)
-              po = instance_double('PreservedObject', current_version: 1)
+              po = instance_double(PreservedObject, current_version: 1)
               allow(PreservedObject).to receive(:find_by!).with(druid: druid).and_return(po)
               pc = create :preserved_copy
               allow(PreservedCopy).to receive(:find_by!).with(preserved_object: po, moab_storage_root: ms_root).and_return(pc)
@@ -299,7 +299,7 @@ RSpec.describe PreservedObjectHandler do
             version: po.current_version,
             size: 1,
             moab_storage_root: ms_root,
-            status: PreservedCopy::OK_STATUS, # NOTE: pretending we checked for moab validation errs at create time
+            status: 'ok', # NOTE: pretending we checked for moab validation errs at create time
             last_version_audit: t,
             last_moab_validation: t
           )
@@ -431,7 +431,7 @@ RSpec.describe PreservedObjectHandler do
             version: po.current_version,
             size: 1,
             moab_storage_root: ms_root,
-            status: PreservedCopy::OK_STATUS, # pretending we checked for moab validation errs at create time
+            status: 'ok', # pretending we checked for moab validation errs at create time
             last_version_audit: t,
             last_moab_validation: t
           )
@@ -663,11 +663,11 @@ RSpec.describe PreservedObjectHandler do
         end
 
         context 'incoming version same as catalog versions (both)' do
-          it_behaves_like 'unexpected version with validation', :update_version_after_validation, 2, PreservedCopy::INVALID_MOAB_STATUS
+          it_behaves_like 'unexpected version with validation', :update_version_after_validation, 2, 'invalid_moab'
         end
 
         context 'incoming version lower than catalog versions (both)' do
-          it_behaves_like 'unexpected version with validation', :update_version_after_validation, 1, PreservedCopy::INVALID_MOAB_STATUS
+          it_behaves_like 'unexpected version with validation', :update_version_after_validation, 1, 'invalid_moab'
         end
 
         context 'db update error' do

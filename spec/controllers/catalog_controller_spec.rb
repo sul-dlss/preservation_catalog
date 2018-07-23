@@ -131,7 +131,7 @@ RSpec.describe CatalogController, type: :controller do
         preserved_object: po,
         moab_storage_root: MoabStorageRoot.find_by(storage_location: storage_location),
         version: ver,
-        status: PreservedCopy::VALIDITY_UNKNOWN_STATUS
+        status: 'validity_unknown'
       )
     end
     let(:pres_obj) { PreservedObject.find_by(druid: bare_druid) }

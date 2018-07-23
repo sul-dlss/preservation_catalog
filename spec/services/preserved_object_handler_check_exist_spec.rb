@@ -29,7 +29,7 @@ RSpec.describe PreservedObjectHandler do
           version: po.current_version,
           size: 1,
           moab_storage_root: ms_root,
-          status: PreservedCopy::OK_STATUS # NOTE: we are pretending we checked for moab validation errs
+          status: 'ok' # NOTE: we are pretending we checked for moab validation errs
         )
       end
 
@@ -148,10 +148,10 @@ RSpec.describe PreservedObjectHandler do
                 expect(pc.reload.updated_at).to be > orig
               end
               it 'status becomes "ok" if it was invalid_moab (b/c after validation)' do
-                pc.status = PreservedCopy::INVALID_MOAB_STATUS
+                pc.status = 'invalid_moab'
                 pc.save!
                 po_handler.check_existence
-                expect(pc.reload.status).to eq PreservedCopy::VALIDITY_UNKNOWN_STATUS
+                expect(pc.reload.status).to eq 'validity_unknown'
               end
             end
             context 'unchanged' do
@@ -159,10 +159,10 @@ RSpec.describe PreservedObjectHandler do
                 allow(po_handler).to receive(:moab_validation_errors).and_return([])
               end
               it 'status if former status was ok' do
-                pc.status = PreservedCopy::OK_STATUS
+                pc.status = 'ok'
                 pc.save!
                 po_handler.check_existence
-                expect(pc.reload.status).to eq PreservedCopy::OK_STATUS
+                expect(pc.reload.status).to eq 'ok'
               end
               it 'size if incoming size is nil' do
                 orig = pc.size
@@ -235,7 +235,7 @@ RSpec.describe PreservedObjectHandler do
               version: invalid_po.current_version,
               size: 1,
               moab_storage_root: invalid_root,
-              status: PreservedCopy::OK_STATUS, # NOTE: we are pretending we checked for moab validation errs
+              status: 'ok', # NOTE: we are pretending we checked for moab validation errs
               last_version_audit: t,
               last_moab_validation: t
             )
@@ -259,16 +259,16 @@ RSpec.describe PreservedObjectHandler do
                 expect(invalid_pc.reload.updated_at).to be > orig
               end
               it 'ensures status becomes invalid_moab from ok' do
-                invalid_pc.status = PreservedCopy::OK_STATUS
+                invalid_pc.status = 'ok'
                 invalid_pc.save!
                 invalid_po_handler.check_existence
-                expect(invalid_pc.reload.status).to eq PreservedCopy::INVALID_MOAB_STATUS
+                expect(invalid_pc.reload.status).to eq 'invalid_moab'
               end
               it 'ensures status becomes invalid_moab from unexpected_version_on_storage' do
-                invalid_pc.status = PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
+                invalid_pc.status = 'unexpected_version_on_storage'
                 invalid_pc.save!
                 invalid_po_handler.check_existence
-                expect(invalid_pc.reload.status).to eq PreservedCopy::INVALID_MOAB_STATUS
+                expect(invalid_pc.reload.status).to eq 'invalid_moab'
               end
             end
             context 'unchanged' do
@@ -314,7 +314,7 @@ RSpec.describe PreservedObjectHandler do
         let(:druid) { 'bp628nk4868' }
         let(:ms_root) { MoabStorageRoot.find_by(storage_location: 'spec/fixtures/storage_root02/sdr2objects') }
 
-        it_behaves_like 'unexpected version with validation', :check_existence, 1, PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
+        it_behaves_like 'unexpected version with validation', :check_existence, 1, 'unexpected_version_on_storage'
       end
 
       context 'PreservedCopy already has a status other than OK_STATUS' do
@@ -326,25 +326,25 @@ RSpec.describe PreservedObjectHandler do
           let(:incoming_version) { pc.version + 1 }
 
           it 'had OK_STATUS, version increased, should still have OK_STATUS' do
-            pc.status = PreservedCopy::OK_STATUS
+            pc.status = 'ok'
             pc.save!
             allow(po_handler).to receive(:moab_validation_errors).and_return([])
             po_handler.check_existence
-            expect(pc.reload.status).to eq PreservedCopy::OK_STATUS
+            expect(pc.reload.status).to eq 'ok'
           end
           it 'had INVALID_MOAB_STATUS, was remediated, should now have VALIDITY_UNKNOWN_STATUS' do
-            pc.status = PreservedCopy::INVALID_MOAB_STATUS
+            pc.status = 'invalid_moab'
             pc.save!
             allow(po_handler).to receive(:moab_validation_errors).and_return([])
             po_handler.check_existence
-            expect(pc.reload.status).to eq PreservedCopy::VALIDITY_UNKNOWN_STATUS
+            expect(pc.reload.status).to eq 'validity_unknown'
           end
           it 'had UNEXPECTED_VERSION_ON_STORAGE_STATUS, seems to have an acceptable version now' do
-            pc.status = PreservedCopy::UNEXPECTED_VERSION_ON_STORAGE_STATUS
+            pc.status = 'unexpected_version_on_storage'
             pc.save!
             allow(po_handler).to receive(:moab_validation_errors).and_return([])
             po_handler.check_existence
-            expect(pc.reload.status).to eq PreservedCopy::VALIDITY_UNKNOWN_STATUS
+            expect(pc.reload.status).to eq 'validity_unknown'
           end
         end
       end
@@ -469,7 +469,7 @@ RSpec.describe PreservedObjectHandler do
               version: incoming_version,
               size: incoming_size,
               moab_storage_root: ms_root,
-              status: PreservedCopy::VALIDITY_UNKNOWN_STATUS, # NOTE: ensuring this particular status
+              status: 'validity_unknown', # NOTE: ensuring this particular status
               last_moab_validation: an_instance_of(ActiveSupport::TimeWithZone),
               last_version_audit: an_instance_of(ActiveSupport::TimeWithZone)
             }
@@ -555,7 +555,7 @@ RSpec.describe PreservedObjectHandler do
               version: incoming_version,
               size: incoming_size,
               moab_storage_root: ms_root,
-              status: PreservedCopy::INVALID_MOAB_STATUS, # NOTE ensuring this particular status
+              status: 'invalid_moab', # NOTE ensuring this particular status
               last_moab_validation: an_instance_of(ActiveSupport::TimeWithZone),
               last_version_audit: an_instance_of(ActiveSupport::TimeWithZone)
             }
