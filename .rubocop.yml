@@ -81,6 +81,7 @@ Metrics/BlockLength:
     - 'lib/tasks/c2m_tasks.rake'
     - 'lib/tasks/cv_tasks.rake'
     - 'lib/tasks/m2c_tasks.rake'
+    - 'lib/capistrano/tasks/capistrano-resque-pool.rake' # shameless green cribbing from capistrano-resque-pool
     - 'spec/**/*'
 
 Metrics/BlockNesting:
@@ -112,6 +113,7 @@ Metrics/LineLength:
     - 'config/schedule.rb'
     - 'lib/tasks/c2m_tasks.rake'
     - 'lib/tasks/m2c_tasks.rake'
+    - 'lib/capistrano/tasks/capistrano-resque-pool.rake' # lines 12-13
     - 'spec/controllers/catalog_controller_spec.rb'
     - 'spec/lib/audit/moab_to_catalog_spec.rb' # 1 line 126
     - 'spec/lib/audit/checksum_spec.rb'
