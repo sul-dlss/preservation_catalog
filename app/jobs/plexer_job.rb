@@ -16,7 +16,7 @@
 class PlexerJob < ZipPartJobBase
   queue_as :zips_made
 
-  before_enqueue { |job| job.zip_info_check!(metadata_args(job)) }
+  before_enqueue { |job| job.zip_info_check!(job.arguments.fourth) }
 
   # @param [String] druid
   # @param [Integer] version
@@ -55,9 +55,5 @@ class PlexerJob < ZipPartJobBase
   # @return [Array<Class>] target delivery worker classes
   def deliverers
     zmvs.map { |zmv| zmv.zip_endpoint.delivery_class }.uniq
-  end
-
-  def metadata_args(job)
-    job.arguments.fourth
   end
 end
