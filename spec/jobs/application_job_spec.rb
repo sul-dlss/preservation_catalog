@@ -13,7 +13,10 @@ describe ApplicationJob, type: :job do
   end
 
   context 'a subclass with message(s) queued' do
-    before { ZipmakerJob.perform_later('1234abc', 1) }
+    before do
+      allow(ZipmakerJob).to receive(:perform_later).and_call_original # undo rails_helper block
+      ZipmakerJob.perform_later('1234abc', 1)
+    end
 
     it 'does not add duplicate messages' do
       expect { ZipmakerJob.perform_later('1234abc', 1) }
