@@ -1,5 +1,5 @@
 ##
-# PreservedCopy represents a concrete instance of a PreservedObject version, in physical storage on some node.
+# PreservedCopy represents a concrete instance of a PreservedObject across ALL versions, in physical storage.
 class PreservedCopy < ApplicationRecord
   OK_STATUS = 'ok'.freeze
   INVALID_MOAB_STATUS = 'invalid_moab'.freeze

@@ -92,7 +92,7 @@ module Audit
       Profiler.print_profile('M2C_check_existence_for_all_storage_roots') { check_existence_for_all_storage_roots }
     end
 
-    # @todo This method may not be useful anymore.  Every PC has 1..n DMZs, so either this method must
+    # @todo This method may not be useful anymore.  Every PC has 1..n ZMVs, so either this method must
     # figure out how to specially delete them too, or we can loosen the restrictions from PC to ZMV
     # @todo Move this method (and pouplate_m_s_r/seed_catalog_for_dir) onto the MoabStorageRoot model
     def self.drop_moab_storage_root(name)
