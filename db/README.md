@@ -106,10 +106,10 @@ ORDER BY endpoint_name asc
 [["storage_root2", 2017-11-18 05:49:54 UTC, 2017-11-18 06:06:50 UTC, "00:16:55.845987", 9122, 0.3132092573e10]]
 ```
 
-#### how many moabs on each storage root are in a status other than PreservedCopy::OK_STATUS?
+#### how many moabs on each storage root are have `status != 'ok'`?
 ```ruby
 # example AR query
-[12] pry(main)> PreservedCopy.joins(:preserved_object, :endpoint).where.not(status: PreservedCopy::OK_STATUS).group(:status, :storage_location).order('preserved_copies.status asc, endpoints.storage_location asc').pluck('preserved_copies.status, endpoints.storage_location, count(preserved_objects.druid)')
+[12] pry(main)> PreservedCopy.joins(:preserved_object, :endpoint).where.not(status: 'ok').group(:status, :storage_location).order('preserved_copies.status asc, endpoints.storage_location asc').pluck('preserved_copies.status, endpoints.storage_location, count(preserved_objects.druid)')
 ```
 ```sql
 -- example sql produced by above AR query
@@ -130,7 +130,7 @@ ORDER BY preserved_copies.status asc, endpoints.storage_location asc
 ```
 
 #### view the druids on a given endpoint
-- will return tons of results on prod 
+- will return tons of results on prod
 ```ruby
 input> PreservedCopy.joins(:preserved_object, :endpoint).where(endpoints: {endpoint_name: :fixture_sr2}).pluck('preserved_objects.druid')
 ```
@@ -138,7 +138,7 @@ input> PreservedCopy.joins(:preserved_object, :endpoint).where(endpoints: {endpo
 -- example sql produced by above AR query
  SELECT preserved_objects.druid
  FROM "preserved_copies"
- INNER JOIN "preserved_objects" ON "preserved_objects"."id" = "preserved_copies"."preserved_object_id" 
+ INNER JOIN "preserved_objects" ON "preserved_objects"."id" = "preserved_copies"."preserved_object_id"
  INNER JOIN "endpoints" ON "endpoints"."id" = "preserved_copies"."endpoint_id"
  WHERE "endpoints"."endpoint_name" = $1  [["endpoint_name", "fixture_sr2"]]
 ```
