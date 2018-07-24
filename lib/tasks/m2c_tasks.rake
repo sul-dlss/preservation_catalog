@@ -50,7 +50,7 @@ namespace :m2c do
       if input.casecmp("y").zero? # rubocop prefers casecmp because it is faster than '.downcase =='
         puts " #{Time.now.utc.iso8601} Starting to populate db for #{root}"
         if args[:profile]
-          puts "When done, check log/populate_moab_storage_root.txt for profiling details"
+          puts "When done, check log/profile_populate_moab_storage_root.txt for profiling details"
           Audit::MoabToCatalog.populate_moab_storage_root_profiled(root)
         else
           Audit::MoabToCatalog.populate_moab_storage_root(root)
