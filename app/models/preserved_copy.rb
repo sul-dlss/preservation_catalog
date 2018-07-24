@@ -24,9 +24,8 @@ class PreservedCopy < ApplicationRecord
     REPLICATED_COPY_NOT_FOUND_STATUS => 8
   }
 
-  after_create do |pc| # rubocop:disable Style/SymbolProc
-    pc.create_zipped_moab_versions!
-  end
+  after_create :create_zipped_moab_versions!
+  after_update :create_zipped_moab_versions!, if: :saved_change_to_version? # an ActiveRecord dynamic method
 
   belongs_to :preserved_object, inverse_of: :preserved_copies
   belongs_to :moab_storage_root, inverse_of: :preserved_copies

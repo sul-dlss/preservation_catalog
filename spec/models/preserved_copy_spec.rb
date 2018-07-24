@@ -359,4 +359,17 @@ RSpec.describe PreservedCopy, type: :model do
       }.from(1).to(2)
     end
   end
+
+  describe '.after_update callback' do
+    it 'does not call create_zipped_moab_versions when version is unchanged' do
+      pc.size = 234
+      expect(pc).not_to receive(:create_zipped_moab_versions!)
+      pc.save!
+    end
+    it 'calls create_zipped_moab_versions when version was changed' do
+      pc.version = 55
+      expect(pc).to receive(:create_zipped_moab_versions!)
+      pc.save!
+    end
+  end
 end
