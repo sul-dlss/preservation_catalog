@@ -51,11 +51,11 @@ module MoabValidationHandler
   end
 
   def update_status(new_status)
-    preserved_copy.update_status(new_status) do
-      results.add_result(
-        AuditResults::PC_STATUS_CHANGED, old_status: preserved_copy.status, new_status: new_status
-      )
-    end
+    preserved_copy.status = new_status
+    return unless preserved_copy.status_changed?
+    results.add_result(
+      AuditResults::PC_STATUS_CHANGED, old_status: preserved_copy.status_was, new_status: preserved_copy.status
+    )
   end
 
   # found_expected_version is a boolean indicating whether the latest version of the moab

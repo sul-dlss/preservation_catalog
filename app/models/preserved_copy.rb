@@ -106,12 +106,6 @@ class PreservedCopy < ApplicationRecord
     update_audit_timestamps(moab_validated, true)
   end
 
-  def update_status(new_status)
-    return unless new_status != status
-    yield
-    self.status = new_status
-  end
-
   def matches_po_current_version?
     version == preserved_object.current_version
   end
