@@ -325,21 +325,21 @@ RSpec.describe PreservedCopy, type: :model do
 
     before { pc.zipped_moab_versions.destroy_all } # undo auto-spawned rows from callback
 
-    it "creates pres copies that don't yet exist for the given version, but should" do
+    it "creates ZMVs that don't yet exist for expected versions, but should" do
       expect { pc.create_zipped_moab_versions! }.to change {
         ZipEndpoint.which_need_archive_copy(druid, pc_version).to_a
       }.from([archive_ep]).to([]).and change {
         zmvs_by_druid.where(version: pc_version).count
       }.from(0).to(1)
 
-      expect(zmvs_by_druid.where(version: 1).count).to eq 0
+      expect(zmvs_by_druid.pluck(:version).sort).to eq [1, 2, 3]
     end
 
-    it 'creates the pres copies so that they start with unreplicated status' do
+    it 'creates ZMVs so that they start with unreplicated status' do
       expect(pc.create_zipped_moab_versions!.all?(&:unreplicated?)).to be true
     end
 
-    it "creates pres copies that don't yet exist for new endpoint, but should" do
+    it "creates ZMVs that don't yet exist for new endpoint, but should" do
       expect { pc.create_zipped_moab_versions! }.to change {
         ZipEndpoint.which_need_archive_copy(druid, pc_version).to_a
       }.from([archive_ep]).to([]).and change {

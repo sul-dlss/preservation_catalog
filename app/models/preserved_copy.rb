@@ -70,13 +70,18 @@ class PreservedCopy < ApplicationRecord
     # to 0 for nulls, which sorts before 1 for non-nulls, which are then sorted by last_checksum_validation)
   }
 
-  # For *this* version, create any ZippedMoabVersion records which don't yet exist for
+  # This is where we make sure we have ZMV rows for all needed ZipEndpoints and versions.
+  # Endpoints may have been added, so we must check all dimensions.
+  # For *this* and *previous* versions, create any ZippedMoabVersion records which don't yet exist for
   # ZipEndpoints on the parent PreservedObject's PreservationPolicy.
   # @return [Array<ZippedMoabVersion>] the ZippedMoabVersion records that were created
+  # @todo potential optimization: fold N which_need_archive_copy queries into one new query
   def create_zipped_moab_versions!
-    params = ZipEndpoint.which_need_archive_copy(preserved_object.druid, version).map do |zep|
-      { version: version, zip_endpoint: zep, status: 'unreplicated' }
-    end
+    params = (1..version).map do |v|
+      ZipEndpoint.which_need_archive_copy(preserved_object.druid, v).map do |zep|
+        { version: v, zip_endpoint: zep, status: 'unreplicated' }
+      end
+    end.flatten.compact.uniq
     zipped_moab_versions.create!(params)
   end
 
