@@ -1,27 +1,18 @@
 ##
 # PreservedCopy represents a concrete instance of a PreservedObject across ALL versions, in physical storage.
 class PreservedCopy < ApplicationRecord
-  OK_STATUS = 'ok'.freeze
-  INVALID_MOAB_STATUS = 'invalid_moab'.freeze
-  INVALID_CHECKSUM_STATUS = 'invalid_checksum'.freeze
-  ONLINE_MOAB_NOT_FOUND_STATUS = 'online_moab_not_found'.freeze
-  UNEXPECTED_VERSION_ON_STORAGE_STATUS = 'unexpected_version_on_storage'.freeze
-  VALIDITY_UNKNOWN_STATUS = 'validity_unknown'.freeze
-  UNREPLICATED_STATUS = 'unreplicated'.freeze
-  REPLICATED_COPY_NOT_FOUND_STATUS = 'replicated_copy_not_found'.freeze
-
   # @note Hash values cannot be modified without migrating any associated persisted data.
   # @see [enum docs] http://api.rubyonrails.org/classes/ActiveRecord/Enum.html
   # TODO: Port over statuses to archive pres_copy model
   enum status: {
-    OK_STATUS => 0,
-    INVALID_MOAB_STATUS => 1,
-    INVALID_CHECKSUM_STATUS => 2,
-    ONLINE_MOAB_NOT_FOUND_STATUS => 3,
-    UNEXPECTED_VERSION_ON_STORAGE_STATUS => 4,
-    VALIDITY_UNKNOWN_STATUS => 6,
-    UNREPLICATED_STATUS => 7,
-    REPLICATED_COPY_NOT_FOUND_STATUS => 8
+    'ok' => 0,
+    'invalid_moab' => 1,
+    'invalid_checksum' => 2,
+    'online_moab_not_found' => 3,
+    'unexpected_version_on_storage' => 4,
+    'validity_unknown' => 6,
+    'unreplicated' => 7,
+    'replicated_copy_not_found' => 8
   }
 
   after_create :create_zipped_moab_versions!
