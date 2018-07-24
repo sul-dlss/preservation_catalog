@@ -90,38 +90,42 @@ RSpec.describe ZipEndpoint, type: :model do
 
   context 'ZippedMoabVersion presence on ZipEndpoint' do
     let(:version) { 3 }
-    let!(:po) { create(:preserved_object, current_version: version, druid: druid) }
-    let(:pc) { create(:preserved_copy, preserved_object: po) }
     let(:other_druid) { 'zy098xw7654' }
-    let!(:pc_other_druid) do
-      other_po = create(:preserved_object, current_version: version, druid: other_druid)
-      create(:preserved_copy, version: version, preserved_object: other_po)
+    let(:ep) { ZipEndpoint.find_by!(endpoint_name: 'mock_archive1') }
+    let!(:pc) do
+      po = create(:preserved_object, current_version: version, druid: druid)
+      create(:preserved_copy, version: version, preserved_object: po)
     end
-    let(:ma1_ep) { ZipEndpoint.find_by!(endpoint_name: 'mock_archive1') }
+    let!(:pc2) do
+      po = create(:preserved_object, current_version: version, druid: other_druid)
+      create(:preserved_copy, version: version, preserved_object: po)
+    end
+
+    before { ZippedMoabVersion.destroy_all }
 
     describe '.which_have_archive_copy' do
       it 'returns the zip endpoints which have a pres copy for the druid version' do
         expect(ZipEndpoint.which_have_archive_copy(druid, version).pluck(:endpoint_name)).to eq []
-        expect(ZipEndpoint.which_have_archive_copy(druid, version - 1).pluck(:endpoint_name)).to eq []
-        expect(ZipEndpoint.which_have_archive_copy(other_druid, version).pluck(:endpoint_name)).to eq []
-        expect(ZipEndpoint.which_have_archive_copy(other_druid, version - 1).pluck(:endpoint_name)).to eq []
-
-        create(:zipped_moab_version, preserved_copy: pc, version: version, zip_endpoint: ma1_ep)
+        expect { pc.zipped_moab_versions.create!(status: 'ok', version: version, zip_endpoint: ep) }.not_to change {
+          [
+            ZipEndpoint.which_have_archive_copy(druid, version - 1).pluck(:endpoint_name),
+            ZipEndpoint.which_have_archive_copy(other_druid, version).pluck(:endpoint_name),
+            ZipEndpoint.which_have_archive_copy(other_druid, version - 1).pluck(:endpoint_name)
+          ]
+        }.from([[], [], []])
         expect(ZipEndpoint.which_have_archive_copy(druid, version).pluck(:endpoint_name)).to eq %w[mock_archive1]
-        expect(ZipEndpoint.which_have_archive_copy(druid, version - 1).pluck(:endpoint_name)).to eq []
-        expect(ZipEndpoint.which_have_archive_copy(other_druid, version).pluck(:endpoint_name)).to eq []
-        expect(ZipEndpoint.which_have_archive_copy(other_druid, version - 1).pluck(:endpoint_name)).to eq []
 
-        create(:zipped_moab_version, preserved_copy: pc_other_druid, version: version - 1, zip_endpoint: ma1_ep)
-        expect(ZipEndpoint.which_have_archive_copy(druid, version).pluck(:endpoint_name)).to eq %w[mock_archive1]
-        expect(ZipEndpoint.which_have_archive_copy(druid, version - 1).pluck(:endpoint_name)).to eq []
-        expect(ZipEndpoint.which_have_archive_copy(other_druid, version).pluck(:endpoint_name)).to eq []
-        expect(ZipEndpoint.which_have_archive_copy(other_druid, version - 1).pluck(:endpoint_name)).to eq %w[mock_archive1]
+        expect { pc2.zipped_moab_versions.create!(status: 'ok', version: version - 1, zip_endpoint: ep) }.to change {
+          ZipEndpoint.which_have_archive_copy(other_druid, version - 1).pluck(:endpoint_name)
+        }.from([]).to(%w[mock_archive1])
 
-        create(:zipped_moab_version, preserved_copy: pc_other_druid, version: version - 1, zip_endpoint: zip_endpoint)
-        expect(ZipEndpoint.which_have_archive_copy(druid, version).pluck(:endpoint_name)).to eq %w[mock_archive1]
-        expect(ZipEndpoint.which_have_archive_copy(druid, version - 1).pluck(:endpoint_name)).to eq []
-        expect(ZipEndpoint.which_have_archive_copy(other_druid, version).pluck(:endpoint_name)).to eq []
+        expect { pc2.zipped_moab_versions.create!(status: 'ok', version: version - 1, zip_endpoint: zip_endpoint) }.not_to change {
+          [
+            ZipEndpoint.which_have_archive_copy(druid, version).pluck(:endpoint_name),
+            ZipEndpoint.which_have_archive_copy(druid, version - 1).pluck(:endpoint_name),
+            ZipEndpoint.which_have_archive_copy(other_druid, version).pluck(:endpoint_name)
+          ]
+        }.from([%w[mock_archive1], [], []])
         expect(ZipEndpoint.which_have_archive_copy(other_druid, version - 1).pluck(:endpoint_name).sort).to eq %w[mock_archive1 zip-endpoint]
       end
     end
@@ -133,13 +137,13 @@ RSpec.describe ZipEndpoint, type: :model do
         expect(ZipEndpoint.which_need_archive_copy(other_druid, version).pluck(:endpoint_name).sort).to eq %w[mock_archive1 zip-endpoint]
         expect(ZipEndpoint.which_need_archive_copy(other_druid, version - 1).pluck(:endpoint_name).sort).to eq %w[mock_archive1 zip-endpoint]
 
-        create(:zipped_moab_version, preserved_copy: pc, version: version, zip_endpoint: ma1_ep)
+        pc.zipped_moab_versions.create!(status: 'ok', version: version, zip_endpoint: ep)
         expect(ZipEndpoint.which_need_archive_copy(druid, version).pluck(:endpoint_name)).to eq %w[zip-endpoint]
         expect(ZipEndpoint.which_need_archive_copy(druid, version - 1).pluck(:endpoint_name).sort).to eq %w[mock_archive1 zip-endpoint]
         expect(ZipEndpoint.which_need_archive_copy(other_druid, version).pluck(:endpoint_name).sort).to eq %w[mock_archive1 zip-endpoint]
         expect(ZipEndpoint.which_need_archive_copy(other_druid, version - 1).pluck(:endpoint_name).sort).to eq %w[mock_archive1 zip-endpoint]
 
-        create(:zipped_moab_version, preserved_copy: pc_other_druid, version: version - 1, zip_endpoint: ma1_ep)
+        pc2.zipped_moab_versions.create!(status: 'ok', version: version - 1, zip_endpoint: ep)
         expect(ZipEndpoint.which_need_archive_copy(druid, version).pluck(:endpoint_name)).to eq %w[zip-endpoint]
         expect(ZipEndpoint.which_need_archive_copy(druid, version - 1).pluck(:endpoint_name).sort).to eq %w[mock_archive1 zip-endpoint]
         expect(ZipEndpoint.which_need_archive_copy(other_druid, version).pluck(:endpoint_name).sort).to eq %w[mock_archive1 zip-endpoint]
