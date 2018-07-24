@@ -1,13 +1,9 @@
 aws:
   bucket_name: 'sul-sdr-aws-us-west-2-test' # override in prod
 
-# named storage roots are in the storage_root_map (see config/settings for examples).
+# named storage roots are in the storage_root_map (see config/settings/xxx.yml for examples).
 # the storage_root_map contains lookups of storage roots per host.
 # see sul-dlss/shared_configs for the storage_root_map of all hosts we deploy to.
-endpoints:
-  # the defaults used when seeding the endpoints that correspond to local storage roots
-  storage_root_defaults:
-    endpoint_node: 'localhost'
 
 moab:
   # storage_trunk is the name of the directory under a storage_root which contains

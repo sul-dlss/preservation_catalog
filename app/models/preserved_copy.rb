@@ -25,24 +25,24 @@ class PreservedCopy < ApplicationRecord
   }
 
   belongs_to :preserved_object, inverse_of: :preserved_copies
-  belongs_to :endpoint, inverse_of: :preserved_copies
+  belongs_to :moab_storage_root, inverse_of: :preserved_copies
   has_many :zipped_moab_versions, dependent: :restrict_with_exception, inverse_of: :preserved_copy
 
   delegate :s3_key, to: :druid_version_zip
 
-  validates :endpoint, presence: true
+  validates :moab_storage_root, presence: true
   validates :preserved_object, presence: true
   # NOTE: size here is approximate and not used for fixity checking
   validates :size, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
   validates :status, inclusion: { in: statuses.keys }
   validates :version, presence: true
 
-  scope :by_endpoint_name, lambda { |endpoint_name|
-    joins(:endpoint).where(endpoints: { endpoint_name: endpoint_name })
+  scope :by_moab_storage_root_name, lambda { |name|
+    joins(:moab_storage_root).where(moab_storage_roots: { name: name })
   }
 
   scope :by_storage_location, lambda { |storage_dir|
-    joins(:endpoint).where(endpoints: { storage_location: storage_dir })
+    joins(:moab_storage_root).where(moab_storage_roots: { storage_location: storage_dir })
   }
 
   scope :by_druid, lambda { |druid|
@@ -69,11 +69,11 @@ class PreservedCopy < ApplicationRecord
     # to 0 for nulls, which sorts before 1 for non-nulls, which are then sorted by last_checksum_validation)
   }
 
-  # given a version, create any ZippedMoabVersion records for that version which don't yet exist for archive
-  #  endpoints which implement the parent PreservedObject's PreservationPolicy.
+  # given a version, create any ZippedMoabVersion records for that version which don't yet exist for
+  #  zip_endpoints which implement the parent PreservedObject's PreservationPolicy.
   # @param archive_vers [Integer] the version for which archive preserved copies should be created.  must be between
-  #   1 and this PreservedCopy's version (inclusive).  Because there's an ZippedMoabVersion for
-  #   each version for each endpoint (whereas there is one PreservedCopy for an entire online Moab).
+  #   1 and this PreservedCopy's version (inclusive).  Because there's a ZippedMoabVersion for
+  #   each version for each zip_endpoint (whereas there is one PreservedCopy for an entire online Moab).
   # @return [Array<ZippedMoabVersion>] the ZippedMoabVersion records that were created
   def create_zipped_moab_versions!(archive_vers)
     unless archive_vers > 0 && archive_vers <= version

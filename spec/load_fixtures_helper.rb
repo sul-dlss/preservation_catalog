@@ -26,7 +26,7 @@ def load_fixture_moabs
                                   current_version: version,
                                   preservation_policy: PreservationPolicy.default_policy)
       PreservedCopy.create(preserved_object_id: po.id,
-                           endpoint_id: @storage_dir_to_endpoint_id[storage_dir],
+                           moab_storage_root_id: @storage_dir_to_moab_storage_root_id[storage_dir],
                            version: version,
                            size: size,
                            status: PreservedCopy::VALIDITY_UNKNOWN_STATUS)
@@ -36,10 +36,10 @@ end
 
 def setup
   @moab_storage_dirs = []
-  @storage_dir_to_endpoint_id = {}
+  @storage_dir_to_moab_storage_root_id = {}
   HostSettings.storage_roots.to_h.each_value do |storage_root|
     storage_dir = File.join(storage_root, Settings.moab.storage_trunk)
     @moab_storage_dirs << storage_dir
-    @storage_dir_to_endpoint_id[storage_dir] = Endpoint.find_by(storage_location: storage_dir).id
+    @storage_dir_to_moab_storage_root_id[storage_dir] = MoabStorageRoot.find_by(storage_location: storage_dir).id
   end
 end

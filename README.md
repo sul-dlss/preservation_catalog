@@ -149,7 +149,7 @@ this will generate a log at, for example, `log/profile_C2M_check_version_all_dir
 
 ## <a name="cv"/>Checksum Validation (CV)
 - Parse all manifestInventory.xml and most recent signatureCatalog.xml for stored checksums and verify against computed checksums.
-- To run rake tasks below, give the name of the endpoint (e.g. from settings/development.yml)
+- To run rake tasks below, give the name of the storage root (e.g. from settings/development.yml)
 
 Note: CV jobs that are asynchronous means that their execution happens in other processes.  Therefore there is no `profile` option,
 because the computational work that is valuable to profile happens elsewhere.
@@ -230,7 +230,7 @@ or
 bundle exec cap prod db_seed # for the prod servers
 ```
 
-### Drop or Populate the catalog for a single endpoint
+### Drop or Populate the catalog for a single storage root
 
 To run either of the rake tasks below, give the name of the moab storage_root (e.g. from settings/development.yml) as an argument.
 
@@ -300,7 +300,7 @@ Audit::Checksum.validate_disk('fixture_sr3')
 ```
 #### All Storage Roots
 ```ruby
-Audit::Checksum.validate_disk_all_endpoints
+Audit::Checksum.validate_disk_all_storage_roots
 ```
 #### Single Druid
 ```ruby

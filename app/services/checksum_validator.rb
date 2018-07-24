@@ -5,8 +5,8 @@ class ChecksumValidator
   attr_reader :bare_druid, :results, :preserved_copy
 
   alias druid bare_druid
-  delegate :endpoint, to: :preserved_copy
-  delegate :storage_location, to: :endpoint
+  delegate :moab_storage_root, to: :preserved_copy
+  delegate :storage_location, to: :moab_storage_root
 
   DATA = 'data'.freeze
   MANIFESTS = 'manifests'.freeze
@@ -22,7 +22,7 @@ class ChecksumValidator
   def initialize(preserved_copy)
     @preserved_copy = preserved_copy
     @bare_druid = preserved_copy.preserved_object.druid
-    @results = AuditResults.new(bare_druid, nil, endpoint, 'validate_checksums')
+    @results = AuditResults.new(bare_druid, nil, moab_storage_root, 'validate_checksums')
   end
 
   def validate_checksums

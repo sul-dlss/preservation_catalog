@@ -11,9 +11,9 @@ RSpec.describe PreservedObjectHandler do
   let(:incoming_size) { 9876 }
   let!(:default_prez_policy) { PreservationPolicy.default_policy }
   let(:po) { PreservedObject.find_by(druid: druid) }
-  let(:ep) { Endpoint.find_by(storage_location: 'spec/fixtures/storage_root01/sdr2objects') }
-  let(:pc) { PreservedCopy.find_by(preserved_object: po, endpoint: ep) }
-  let(:po_handler) { described_class.new(druid, incoming_version, incoming_size, ep) }
+  let(:ms_root) { MoabStorageRoot.find_by(storage_location: 'spec/fixtures/storage_root01/sdr2objects') }
+  let(:pc) { PreservedCopy.find_by(preserved_object: po, moab_storage_root: ms_root) }
+  let(:po_handler) { described_class.new(druid, incoming_version, incoming_size, ms_root) }
 
   describe '#confirm_version' do
     it_behaves_like 'attributes validated', :confirm_version
@@ -25,20 +25,19 @@ RSpec.describe PreservedObjectHandler do
           preserved_object: po,
           version: po.current_version,
           size: 1,
-          endpoint: ep,
+          moab_storage_root: ms_root,
           status: PreservedCopy::OK_STATUS # NOTE: we are pretending we checked for moab validation errs
         )
       end
 
       it 'stops processing if there is no PreservedCopy' do
         druid = 'nd000lm0000'
-        diff_ep = Endpoint.create!(
-          endpoint_name: 'diff_endpoint',
-          endpoint_node: 'localhost',
+        diff_root = MoabStorageRoot.create!(
+          name: 'diff_root',
           storage_location: 'blah'
         )
         PreservedObject.create!(druid: druid, current_version: 2, preservation_policy: default_prez_policy)
-        po_handler = described_class.new(druid, 3, incoming_size, diff_ep)
+        po_handler = described_class.new(druid, 3, incoming_size, diff_root)
         results = po_handler.confirm_version
         code = AuditResults::DB_OBJ_DOES_NOT_EXIST
         exp_str = "ActiveRecord::RecordNotFound: Couldn't find PreservedCopy> db object does not exist"
@@ -47,7 +46,7 @@ RSpec.describe PreservedObjectHandler do
       end
 
       context "incoming and db versions match" do
-        let(:po_handler) { described_class.new(druid, 2, 1, ep) }
+        let(:po_handler) { described_class.new(druid, 2, 1, ms_root) }
         let(:version_matches_pc_msg) { "actual version (2) matches PreservedCopy db version" }
 
         context 'PreservedCopy' do
@@ -135,7 +134,7 @@ RSpec.describe PreservedObjectHandler do
 
       context 'incoming version does NOT match db version' do
         let(:druid) { 'bj102hs9687' } # for shared_examples 'calls AuditResults.report_results'
-        let(:po_handler) { described_class.new(druid, 1, 666, ep) }
+        let(:po_handler) { described_class.new(druid, 1, 666, ms_root) }
 
         it_behaves_like 'calls AuditResults.report_results', :confirm_version
 
@@ -244,7 +243,7 @@ RSpec.describe PreservedObjectHandler do
         po = create :preserved_object
         allow(PreservedObject).to receive(:find_by).with(druid: druid).and_return(po)
         pc = create :preserved_copy, preserved_object: po
-        allow(PreservedCopy).to receive(:find_by).with(preserved_object: po, endpoint: ep).and_return(pc)
+        allow(PreservedCopy).to receive(:find_by).with(preserved_object: po, moab_storage_root: ms_root).and_return(pc)
         allow(po_handler).to receive(:moab_validation_errors).and_return([])
 
         allow(po).to receive(:save!)
@@ -254,11 +253,11 @@ RSpec.describe PreservedObjectHandler do
         expect(pc).to have_received(:save!)
       end
       it 'calls PreservedCopy.save! (but not PreservedObject.save!) if the existing record is NOT altered' do
-        po_handler = described_class.new(druid, 1, 1, ep)
+        po_handler = described_class.new(druid, 1, 1, ms_root)
         po = create :preserved_object
         allow(PreservedObject).to receive(:find_by).with(druid: druid).and_return(po)
         pc = create :preserved_copy, preserved_object: po
-        allow(PreservedCopy).to receive(:find_by).with(preserved_object: po, endpoint: ep).and_return(pc)
+        allow(PreservedCopy).to receive(:find_by).with(preserved_object: po, moab_storage_root: ms_root).and_return(pc)
 
         allow(po).to receive(:save!)
         allow(pc).to receive(:save!)

@@ -4,11 +4,11 @@ require_relative '../load_fixtures_helper.rb'
 RSpec.describe ChecksumValidator do
   include_context 'fixture moabs in db'
   let(:druid) { 'zz102hs9687' }
-  let(:endpoint_name) { 'fixture_sr3' }
-  let(:endpoint) { Endpoint.find_by(endpoint_name: endpoint_name) }
-  let(:object_dir) { "#{endpoint.storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}" }
+  let(:root_name) { 'fixture_sr3' }
+  let(:ms_root) { MoabStorageRoot.find_by(name: root_name) }
+  let(:object_dir) { "#{ms_root.storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}" }
   let(:pres_copy) do
-    PreservedObject.find_by!(druid: druid).preserved_copies.find_by!(endpoint: endpoint)
+    PreservedObject.find_by!(druid: druid).preserved_copies.find_by!(moab_storage_root: ms_root)
   end
   let(:cv) { described_class.new(pres_copy) }
   let(:results) { instance_double(AuditResults, report_results: nil, check_name: nil) }
@@ -24,7 +24,7 @@ RSpec.describe ChecksumValidator do
     it 'sets attributes' do
       expect(cv.preserved_copy).to eq pres_copy
       expect(cv.bare_druid).to eq druid
-      expect(cv.endpoint).to eq endpoint
+      expect(cv.moab_storage_root).to eq ms_root
       expect(cv.results).to be_an_instance_of AuditResults
     end
   end
@@ -55,7 +55,7 @@ RSpec.describe ChecksumValidator do
       before { allow(AuditResults).to receive(:new).and_return(results) }
 
       it 'adds a MOAB_FILE_CHECKSUM_MISMATCH result' do
-        object_dir = "#{endpoint.storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}"
+        object_dir = "#{ms_root.storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}"
         file_path1 = "#{object_dir}/v0001/manifests/versionAdditions.xml"
         file_path2 = "#{object_dir}/v0002/manifests/versionInventory.xml"
         expect(results).to receive(:add_result).with(
@@ -87,7 +87,7 @@ RSpec.describe ChecksumValidator do
       before { allow(AuditResults).to receive(:new).and_return(results) }
 
       it 'adds a FILE_NOT_IN_MOAB result' do
-        object_dir = "#{endpoint.storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}"
+        object_dir = "#{ms_root.storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}"
         manifest_file_path = "#{object_dir}/v0003/manifests/manifestInventory.xml"
         file_path = "#{object_dir}/v0003/manifests/versionInventory.xml"
         expect(results).to receive(:add_result).with(
@@ -128,7 +128,7 @@ RSpec.describe ChecksumValidator do
 
   describe '#validate_signature_catalog_listing' do
     let(:druid) { 'bj102hs9687' }
-    let(:endpoint_name) { 'fixture_sr1' }
+    let(:root_name) { 'fixture_sr1' }
     let(:results) { instance_double(AuditResults, report_results: nil, :check_name= => nil) }
 
     it 'instantiates storage_object from druid and druid_path' do
@@ -150,12 +150,12 @@ RSpec.describe ChecksumValidator do
 
     context 'file checksums in singatureCatalog.xml do not match' do
       let(:druid) { 'zz111rr1111' }
-      let(:endpoint_name) { 'fixture_sr3' }
+      let(:root_name) { 'fixture_sr3' }
 
       before { allow(AuditResults).to receive(:new).and_return(results) }
 
       it 'adds a MOAB_FILE_CHECKSUM_MISMATCH result' do
-        object_dir = "#{endpoint.storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}"
+        object_dir = "#{ms_root.storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}"
         file_path = "#{object_dir}/v0001/data/content/eric-smith-dissertation-augmented.pdf"
         expect(results).to receive(:add_result).with(
           AuditResults::MOAB_FILE_CHECKSUM_MISMATCH, file_path: file_path, version: 1
@@ -166,12 +166,12 @@ RSpec.describe ChecksumValidator do
 
     context "SC1258_FUR_032a.jpg not on disk, but it's entry element exists in signatureCatalog.xml" do
       let(:druid) { 'tt222tt2222' }
-      let(:endpoint_name) { 'fixture_sr3' }
+      let(:root_name) { 'fixture_sr3' }
 
       before { allow(AuditResults).to receive(:new).and_return(results) }
 
       it 'adds a FILE_NOT_IN_MOAB error' do
-        object_dir = "#{endpoint.storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}"
+        object_dir = "#{ms_root.storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}"
         manifest_file_path = "#{object_dir}/v0003/manifests/signatureCatalog.xml"
         file_path = "#{object_dir}/v0001/data/content/SC1258_FUR_032a.jpg"
         expect(results).to receive(:add_result).with(
@@ -183,12 +183,12 @@ RSpec.describe ChecksumValidator do
 
     context 'signatureCatalog.xml not found in moab' do
       let(:druid) { 'zz333vv3333' }
-      let(:endpoint_name) { 'fixture_sr3' }
+      let(:root_name) { 'fixture_sr3' }
 
       before { allow(AuditResults).to receive(:new).and_return(results) }
 
       it 'adds a MANIFEST_NOT_IN_MOAB error' do
-        object_dir = "#{endpoint.storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}"
+        object_dir = "#{ms_root.storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}"
         expect(results).to receive(:add_result).with(
           AuditResults::SIGNATURE_CATALOG_NOT_IN_MOAB, signature_catalog_path: "#{object_dir}/v0002/manifests/signatureCatalog.xml"
         )
@@ -198,12 +198,12 @@ RSpec.describe ChecksumValidator do
 
     context 'cannot parse signatureCatalog.xml' do
       let(:druid) { 'xx444xx4444' }
-      let(:endpoint_name) { 'fixture_sr3' }
+      let(:root_name) { 'fixture_sr3' }
 
       before { allow(AuditResults).to receive(:new).and_return(results) }
 
       it 'adds an INVALID_MANIFEST error' do
-        object_dir = "#{endpoint.storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}"
+        object_dir = "#{ms_root.storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}"
         expect(results).to receive(:add_result).with(
           AuditResults::INVALID_MANIFEST, manifest_file_path: "#{object_dir}/v0001/manifests/signatureCatalog.xml"
         )
@@ -215,7 +215,7 @@ RSpec.describe ChecksumValidator do
   describe '#validate_checksums' do
     context 'passes checksum validation' do
       let(:druid) { 'bz514sm9647' }
-      let(:endpoint_name) { 'fixture_sr1' }
+      let(:root_name) { 'fixture_sr1' }
 
       it 'returns a positive result for a pres_copy' do
         cv.validate_checksums
@@ -408,7 +408,7 @@ RSpec.describe ChecksumValidator do
 
     context 'deals with transactions properly' do
       let(:druid) { 'bz514sm9647' } # should pass validation
-      let(:endpoint_name) { 'fixture_sr1' }
+      let(:root_name) { 'fixture_sr1' }
 
       before do
         # would result in a status update if the save succeeded
@@ -437,7 +437,7 @@ RSpec.describe ChecksumValidator do
 
   describe '#flag_unexpected_data_files' do
     let(:druid) { 'bj102hs9687' }
-    let(:endpoint_name) { 'fixture_sr1' }
+    let(:root_name) { 'fixture_sr1' }
 
     it 'calls validate_against_signature_catalog on each of the data_files' do
       # for easier reading, we assume data_files has a smaller return value
@@ -453,12 +453,12 @@ RSpec.describe ChecksumValidator do
 
     context 'files are on disk but not present in signatureCatalog.xml' do
       let(:druid) { 'zz555zz5555' }
-      let(:endpoint_name) { 'fixture_sr3' }
+      let(:root_name) { 'fixture_sr3' }
 
       before { allow(AuditResults).to receive(:new).and_return(results) }
 
       it 'adds a FILE_NOT_IN_SIGNATURE_CATALOG error' do
-        object_dir = "#{endpoint.storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}"
+        object_dir = "#{ms_root.storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}"
         content_file_path = "#{object_dir}/v0001/data/content/not_in_sigcat.txt"
         metadata_file_path = "#{object_dir}/v0001/data/metadata/also_not_in_sigcat.txt"
         nested_file_path = "#{object_dir}/v0001/data/content/unexpected/another_not_in_sigcat.txt"
@@ -479,7 +479,7 @@ RSpec.describe ChecksumValidator do
 
   describe '#validate_signature_catalog' do
     let(:druid) { 'bj102hs9687' }
-    let(:endpoint_name) { 'fixture_sr1' }
+    let(:root_name) { 'fixture_sr1' }
 
     it 'calls validate_signature_catalog_listing' do
       expect(cv).to receive(:validate_signature_catalog_listing)
@@ -493,7 +493,7 @@ RSpec.describe ChecksumValidator do
 
     context 'file or directory does not exist' do
       let(:druid) { 'yy000yy0000' }
-      let(:endpoint_name) { 'fixture_sr2' }
+      let(:root_name) { 'fixture_sr2' }
       let(:results) { instance_double(AuditResults, report_results: nil, :check_name= => nil) }
 
       it 'adds error code and continues executing' do
@@ -534,7 +534,7 @@ RSpec.describe ChecksumValidator do
 
   context 'preservationAuditWF reporting' do
     let(:druid) { 'bz514sm9647' }
-    let(:endpoint_name) { 'fixture_sr1' }
+    let(:root_name) { 'fixture_sr1' }
 
     it 'has status changed to OK_STATUS and completes workflow' do
       pres_copy.status = PreservedCopy::INVALID_MOAB_STATUS

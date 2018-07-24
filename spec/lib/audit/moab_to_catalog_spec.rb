@@ -3,7 +3,7 @@ require 'stringio'
 
 RSpec.describe Audit::MoabToCatalog do
   let(:storage_dir) { 'spec/fixtures/storage_root01/sdr2objects' }
-  let(:endpoint) { Endpoint.find_by!(storage_location: storage_dir) }
+  let(:ms_root) { MoabStorageRoot.find_by!(storage_location: storage_dir) }
 
   before do
     PreservationPolicy.seed_from_config
@@ -130,7 +130,7 @@ RSpec.describe Audit::MoabToCatalog do
             arg_hash[:druid],
             arg_hash[:storage_root_current_version],
             instance_of(Integer),
-            endpoint
+            ms_root
           ).and_return(po_handler)
         end
       end
@@ -149,7 +149,7 @@ RSpec.describe Audit::MoabToCatalog do
       expect(subject.count).to eq 6
     end
     it "storage directory doesn't exist (misspelling, read write permissions)" do
-      allow(Endpoint).to receive(:find_by!).and_return(instance_double(Endpoint))
+      allow(MoabStorageRoot).to receive(:find_by!).and_return(instance_double(MoabStorageRoot))
       expect { described_class.check_existence_for_dir('spec/fixtures/moab_strge_root') }.to raise_error(
         SystemCallError, /No such file or directory/
       )
@@ -186,8 +186,8 @@ RSpec.describe Audit::MoabToCatalog do
       expect(Stanford::StorageServices).to receive(:find_storage_object).with(druid).and_call_original
       subject
     end
-    it 'finds the correct Endpoint' do
-      expect(Endpoint).to receive(:find_by!).with(storage_location: storage_dir)
+    it 'finds the correct MoabStorageRoot' do
+      expect(MoabStorageRoot).to receive(:find_by!).with(storage_location: storage_dir)
       subject
     end
     it 'calls pohandler.check_existence' do
@@ -196,7 +196,7 @@ RSpec.describe Audit::MoabToCatalog do
         druid,
         3, # current_version
         instance_of(Integer), # size
-        endpoint
+        ms_root
       ).and_return(po_handler)
       expect(po_handler).to receive(:logger=)
       expect(po_handler).to receive(:check_existence)
@@ -266,7 +266,7 @@ RSpec.describe Audit::MoabToCatalog do
             arg_hash[:druid],
             arg_hash[:storage_root_current_version],
             instance_of(Integer),
-            endpoint
+            ms_root
           ).and_return(po_handler)
         end
       end
@@ -282,7 +282,7 @@ RSpec.describe Audit::MoabToCatalog do
       expect(subject.count).to eq 3
     end
     it "storage directory doesn't exist (misspelling, read write permissions)" do
-      allow(Endpoint).to receive(:find_by!).and_return(instance_double(Endpoint))
+      allow(MoabStorageRoot).to receive(:find_by!).and_return(instance_double(MoabStorageRoot))
       expect { described_class.check_existence_for_dir('spec/fixtures/moab_strge_root') }.to raise_error(
         SystemCallError, /No such file or directory/
       )
@@ -293,20 +293,20 @@ RSpec.describe Audit::MoabToCatalog do
     end
   end
 
-  describe ".drop_endpoint" do
-    let(:subject) { described_class.drop_endpoint('fixture_sr1') }
+  describe ".drop_moab_storage_root" do
+    let(:subject) { described_class.drop_moab_storage_root('fixture_sr1') }
 
     before do
       described_class.seed_catalog_for_all_storage_roots
     end
 
-    it 'drops PreservedCopies that correspond to the given endpoint' do
+    it 'drops PreservedCopies that correspond to the given moab storage root' do
       expect(PreservedCopy.count).to eq 16
       subject
       expect(PreservedCopy.count).to eq 13
     end
 
-    it 'drops PreservedObjects that correspond to the given endpoint' do
+    it 'drops PreservedObjects that correspond to the given moab storage root' do
       expect(PreservedObject.count).to eq 16
       subject
       expect(PreservedObject.count).to eq 13
@@ -321,7 +321,7 @@ RSpec.describe Audit::MoabToCatalog do
       begin
         subject
       rescue
-        # Expect this to fail and don't need error handling in the .drop_endpoint class method
+        # Expect this to fail and don't need error handling in the .drop_moab_storage_root class method
         # let subject still run instead of catching ActiveRecordError and stop the execution
       end
       expect(PreservedCopy.count).to eq 16
@@ -329,9 +329,9 @@ RSpec.describe Audit::MoabToCatalog do
     end
   end
 
-  describe ".populate_endpoint" do
-    let(:endpoint_name) { 'fixture_sr1' }
-    let(:subject) { described_class.populate_endpoint(endpoint_name) }
+  describe ".populate_moab_storage_root" do
+    let(:root_name) { 'fixture_sr1' }
+    let(:subject) { described_class.populate_moab_storage_root(root_name) }
 
     before do
       described_class.seed_catalog_for_all_storage_roots
@@ -343,8 +343,8 @@ RSpec.describe Audit::MoabToCatalog do
       expect(PreservedObject.count).to eq 16
     end
 
-    it 're-adds objects for a dropped endpoint' do
-      described_class.drop_endpoint(endpoint_name)
+    it 're-adds objects for a dropped MoabStorageRoot' do
+      described_class.drop_moab_storage_root(root_name)
       expect(PreservedCopy.count).to eq 13
       expect(PreservedObject.count).to eq 13
       subject
@@ -353,15 +353,15 @@ RSpec.describe Audit::MoabToCatalog do
     end
   end
 
-  describe ".populate_endpoint.profiled" do
+  describe ".populate_moab_storage_root_profiled" do
     let(:root) { 'fixture_sr1' }
-    let(:subject) { described_class.populate_endpoint_profiled(root) }
+    let(:subject) { described_class.populate_moab_storage_root_profiled(root) }
 
     it "spins up a profiler, calling profiling and printing methods on it" do
       mock_profiler = instance_double(Profiler)
       expect(Profiler).to receive(:new).and_return(mock_profiler)
       expect(mock_profiler).to receive(:prof)
-      expect(mock_profiler).to receive(:print_results_flat).with('populate_endpoint')
+      expect(mock_profiler).to receive(:print_results_flat).with('populate_moab_storage_root')
 
       subject
     end

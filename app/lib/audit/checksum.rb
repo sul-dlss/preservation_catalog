@@ -8,21 +8,21 @@ module Audit
     end
 
     # Queues asynchronous CV
-    def self.validate_disk(endpoint_name)
-      logger.info "#{Time.now.utc.iso8601} CV validate_disk starting for #{endpoint_name}"
-      pres_copies = PreservedCopy.by_endpoint_name(endpoint_name).fixity_check_expired
+    def self.validate_disk(storage_root_name)
+      logger.info "#{Time.now.utc.iso8601} CV validate_disk starting for #{storage_root_name}"
+      pres_copies = PreservedCopy.by_moab_storage_root_name(storage_root_name).fixity_check_expired
       logger.info "Number of Preserved Copies to be enqueued for CV: #{pres_copies.count}"
       pres_copies.find_each(&:validate_checksums!)
     ensure
-      logger.info "#{Time.now.utc.iso8601} CV validate_disk for #{endpoint_name}"
+      logger.info "#{Time.now.utc.iso8601} CV validate_disk for #{storage_root_name}"
     end
 
     # Asynchronous
-    def self.validate_disk_all_endpoints
-      logger.info "#{Time.now.utc.iso8601} CV validate_disk_all_endpoints starting"
+    def self.validate_disk_all_storage_roots
+      logger.info "#{Time.now.utc.iso8601} CV validate_disk_all_storage_roots starting"
       HostSettings.storage_roots.to_h.each_key { |key| validate_disk(key) }
     ensure
-      logger.info "#{Time.now.utc.iso8601} CV validate_disk_all_endpoints ended"
+      logger.info "#{Time.now.utc.iso8601} CV validate_disk_all_storage_roots ended"
     end
 
     def self.validate_druid(druid)
@@ -48,13 +48,13 @@ module Audit
       end
     end
 
-    # validate objects with a particular status on a particular endpoint
-    def self.validate_status_root(status, endpoint_name, limit=Settings.c2m_sql_limit)
+    # validate objects with a particular status on a particular moab_storage_root
+    def self.validate_status_root(status, storage_root_name, limit=Settings.c2m_sql_limit)
       # pres_copies is an AR Relation; it could return a lot of results, so we want to process it in
       # batches.  we can't use ActiveRecord's .find_each, because that'll disregard the order .fixity_check_expired
       # specified.  so we use our own batch processing method, which does respect Relation order.
-      pres_copies = PreservedCopy.send(status).by_endpoint_name(endpoint_name)
-      desc = "Number of Preserved Copies of status #{status} from #{endpoint_name} to be checksum validated"
+      pres_copies = PreservedCopy.send(status).by_moab_storage_root_name(storage_root_name)
+      desc = "Number of Preserved Copies of status #{status} from #{storage_root_name} to be checksum validated"
       logger.info "#{desc}: #{pres_copies.count}"
       ActiveRecordUtils.process_in_batches(pres_copies, limit) do |pc|
         logger.info "CV beginning for #{pc.preserved_object.druid}; starting status #{pc.status}"

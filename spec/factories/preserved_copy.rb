@@ -3,12 +3,12 @@ FactoryBot.define do
     version 1
     status 'ok'
     size 231
-    endpoint
+    moab_storage_root
     preserved_object
   end
 
   factory :archive_copy_deprecated, parent: :preserved_copy do
-    association :endpoint, factory: :archive_endpoint_deprecated
+    association :moab_storage_root, factory: :archive_endpoint_deprecated
   end
 
   factory :unreplicated_copy_deprecated, parent: :archive_copy_deprecated do

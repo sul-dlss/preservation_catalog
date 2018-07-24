@@ -8,7 +8,7 @@ class CatalogController < ApplicationController
 
   # POST /catalog
   def create
-    @poh = PreservedObjectHandler.new(bare_druid, incoming_version, incoming_size, endpoint)
+    @poh = PreservedObjectHandler.new(bare_druid, incoming_version, incoming_size, moab_storage_root)
     poh.create(checksums_validated)
     status_code =
       if poh.results.contains_result_code?(:created_new_object)
@@ -26,7 +26,7 @@ class CatalogController < ApplicationController
   # PATCH /catalog/:id
   # User can only update a partial record (application controls what can be updated)
   def update
-    @poh = PreservedObjectHandler.new(bare_druid, incoming_version, incoming_size, endpoint)
+    @poh = PreservedObjectHandler.new(bare_druid, incoming_version, incoming_size, moab_storage_root)
     poh.update_version(checksums_validated)
     status_code =
       if poh.results.contains_result_code?(:actual_vers_gt_db_obj)
@@ -62,9 +62,9 @@ class CatalogController < ApplicationController
     poh_params[:incoming_size].to_i if poh_params[:incoming_size]
   end
 
-  def endpoint
+  def moab_storage_root
     return unless poh_params[:storage_location]
-    Endpoint.find_by(storage_location: "#{poh_params[:storage_location]}/#{Moab::Config.storage_trunk}")
+    MoabStorageRoot.find_by(storage_location: "#{poh_params[:storage_location]}/#{Moab::Config.storage_trunk}")
   end
 
   # @return boolean

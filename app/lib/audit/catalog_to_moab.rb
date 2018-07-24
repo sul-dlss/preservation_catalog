@@ -50,7 +50,7 @@ module Audit
       @preserved_copy = preserved_copy
       @storage_dir = storage_dir
       @druid = preserved_copy.preserved_object.druid
-      @results = AuditResults.new(druid, nil, preserved_copy.endpoint)
+      @results = AuditResults.new(druid, nil, preserved_copy.moab_storage_root)
     end
 
     # shameless green implementation
@@ -103,7 +103,7 @@ module Audit
           results.report_results(Audit::CatalogToMoab.logger)
         elsif catalog_version < moab_version
           set_status_as_seen_on_disk(true)
-          pohandler = PreservedObjectHandler.new(druid, moab_version, moab.size, preserved_copy.endpoint)
+          pohandler = PreservedObjectHandler.new(druid, moab_version, moab.size, preserved_copy.moab_storage_root)
           pohandler.update_version_after_validation # results reported by this call
         else # catalog_version > moab_version
           set_status_as_seen_on_disk(false)

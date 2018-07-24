@@ -8,7 +8,9 @@ RSpec.describe Audit::CatalogToMoab do
   let(:c2m) { described_class.new(pres_copy, storage_dir) }
   let(:mock_sov) { instance_double(Stanford::StorageObjectValidator) }
   let(:po) { PreservedObject.find_by!(druid: druid) }
-  let(:pres_copy) { Endpoint.find_by!(storage_location: storage_dir).preserved_copies.find_by!(preserved_object: po) }
+  let(:pres_copy) do
+    MoabStorageRoot.find_by!(storage_location: storage_dir).preserved_copies.find_by!(preserved_object: po)
+  end
   let(:logger_double) { instance_double(ActiveSupport::Logger, info: nil, error: nil, add: nil) }
 
   before do

@@ -3,7 +3,7 @@
 class PreservationPolicy < ApplicationRecord
   # NOTE: The time to live (ttl) fields stored in PreservationPolicy are Integer measurements in seconds
   has_many :preserved_objects, dependent: :restrict_with_exception
-  has_and_belongs_to_many :endpoints
+  has_and_belongs_to_many :moab_storage_roots
   has_and_belongs_to_many :zip_endpoints
 
   validates :preservation_policy_name, presence: true, uniqueness: true

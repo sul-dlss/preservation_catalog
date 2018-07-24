@@ -10,16 +10,16 @@ RSpec.describe ActiveRecordUtils do
     it 'returns true when the transaction finishes successfully (and adds no results)' do
       expect(audit_results).not_to receive(:add_result)
       tx_result = described_class.with_transaction_and_rescue(audit_results) do
-        Endpoint.count
+        MoabStorageRoot.count
       end
       expect(tx_result).to eq true
     end
     it 'adds DB_OBJ_DOES_NOT_EXIST result and returns false when the transaction raises RecordNotFound' do
       expect(audit_results).to receive(:add_result).with(
-        AuditResults::DB_OBJ_DOES_NOT_EXIST, a_string_matching("Couldn't find Endpoint")
+        AuditResults::DB_OBJ_DOES_NOT_EXIST, a_string_matching("Couldn't find MoabStorageRoot")
       )
       tx_result = described_class.with_transaction_and_rescue(audit_results) do
-        Endpoint.find(-1)
+        MoabStorageRoot.find(-1)
       end
       expect(tx_result).to eq false
     end
@@ -48,7 +48,7 @@ RSpec.describe ActiveRecordUtils do
       # integer division returns an integer.  add a cleanup batch if there's any remainder.
       (num_objs % batch_size == 0) ? (num_objs / batch_size) : (num_objs / batch_size + 1)
     end
-    let(:endpoint) { Endpoint.find_by(endpoint_name: 'fixture_sr1') }
+    let(:ms_root) { MoabStorageRoot.find_by(name: 'fixture_sr1') }
 
     it 'processes the all of the relation results in order' do
       pres_copies_to_process = (1..num_objs).map do |n|
@@ -57,7 +57,7 @@ RSpec.describe ActiveRecordUtils do
         )
         PreservedCopy.create!(
           preserved_object: po,
-          endpoint: endpoint,
+          moab_storage_root: ms_root,
           version: 1,
           status: PreservedCopy::VALIDITY_UNKNOWN_STATUS
         )
@@ -67,7 +67,7 @@ RSpec.describe ActiveRecordUtils do
       expected_ids = pres_copies_to_process.map(&:id).reverse
 
       relation = PreservedCopy
-                 .where(endpoint: endpoint, status: PreservedCopy::VALIDITY_UNKNOWN_STATUS)
+                 .where(moab_storage_root: ms_root, status: PreservedCopy::VALIDITY_UNKNOWN_STATUS)
                  .order(created_at: :desc)
       allow(relation).to receive(:limit).with(batch_size).and_call_original
 

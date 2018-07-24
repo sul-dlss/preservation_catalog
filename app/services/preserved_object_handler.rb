@@ -12,23 +12,23 @@ class PreservedObjectHandler
   validates :druid, presence: true, format: { with: DruidTools::Druid.pattern }
   validates :incoming_version, presence: true, numericality: { only_integer: true, greater_than: 0 }
   validates :incoming_size, numericality: { only_integer: true, greater_than: 0 }
-  validates_each :endpoint do |record, attr, value|
-    unless value.is_a?(Endpoint)
-      record.errors.add(attr, 'must be an actual Endpoint')
+  validates_each :moab_storage_root do |record, attr, value|
+    unless value.is_a?(MoabStorageRoot)
+      record.errors.add(attr, 'must be an actual MoabStorageRoot')
     end
   end
 
-  attr_reader :druid, :incoming_version, :incoming_size, :endpoint, :results
+  attr_reader :druid, :incoming_version, :incoming_size, :moab_storage_root, :results
   attr_writer :logger
 
-  delegate :storage_location, to: :endpoint
+  delegate :storage_location, to: :moab_storage_root
 
-  def initialize(druid, incoming_version, incoming_size, endpoint)
+  def initialize(druid, incoming_version, incoming_size, moab_storage_root)
     @druid = druid
     @incoming_version = version_string_to_int(incoming_version)
     @incoming_size = string_to_int(incoming_size)
-    @endpoint = endpoint
-    @results = AuditResults.new(druid, incoming_version, endpoint)
+    @moab_storage_root = moab_storage_root
+    @results = AuditResults.new(druid, incoming_version, moab_storage_root)
     @logger = PreservationCatalog::Application.logger
   end
 
@@ -184,7 +184,7 @@ class PreservedObjectHandler
 
   def pres_copy
     # FIXME: what if there is more than one associated pres_copy?
-    @pres_copy ||= PreservedCopy.find_by!(preserved_object: pres_object, endpoint: endpoint)
+    @pres_copy ||= PreservedCopy.find_by!(preserved_object: pres_object, moab_storage_root: moab_storage_root)
   end
 
   alias preserved_copy pres_copy
@@ -201,7 +201,7 @@ class PreservedObjectHandler
         preserved_object: po,
         version: incoming_version,
         size: incoming_size,
-        endpoint: endpoint,
+        moab_storage_root: moab_storage_root,
         status: status
       }
       t = Time.current

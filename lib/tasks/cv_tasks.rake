@@ -12,7 +12,7 @@ namespace :cv do
 
   desc "Run CV (checksum validation) on all storage roots"
   task all_roots: [:environment] do
-    Audit::Checksum.validate_disk_all_endpoints
+    Audit::Checksum.validate_disk_all_storage_roots
     puts "#{Time.now.utc.iso8601} Checksum Validation on all storage roots is done."
   end
 

@@ -2,7 +2,7 @@ require 'rails_helper'
 
 RSpec.describe PreservedCopy, type: :model do
   let(:druid) { 'ab123cd4567' }
-  let(:endpoint) { Endpoint.find_by(endpoint_name: 'fixture_sr1') }
+  let(:ms_root) { MoabStorageRoot.find_by(name: 'fixture_sr1') }
   let(:preserved_object) do
     create(
       :preserved_object,
@@ -16,7 +16,7 @@ RSpec.describe PreservedCopy, type: :model do
   let(:args) do # default constructor params
     {
       preserved_object: preserved_object,
-      endpoint: endpoint,
+      moab_storage_root: ms_root,
       version: pc_version,
       status: status,
       size: 1
@@ -60,14 +60,14 @@ RSpec.describe PreservedCopy, type: :model do
     end
   end
 
-  it { is_expected.to belong_to(:endpoint) }
+  it { is_expected.to belong_to(:moab_storage_root) }
   it { is_expected.to belong_to(:preserved_object) }
   it { is_expected.to have_db_index(:last_version_audit) }
   it { is_expected.to have_db_index(:last_moab_validation) }
   it { is_expected.to have_db_index(:last_checksum_validation) }
-  it { is_expected.to have_db_index(:endpoint_id) }
+  it { is_expected.to have_db_index(:moab_storage_root_id) }
   it { is_expected.to have_db_index(:preserved_object_id) }
-  it { is_expected.to validate_presence_of(:endpoint) }
+  it { is_expected.to validate_presence_of(:moab_storage_root) }
   it { is_expected.to validate_presence_of(:preserved_object) }
   it { is_expected.to validate_presence_of(:version) }
   it { is_expected.to have_many(:zipped_moab_versions) }
@@ -240,11 +240,11 @@ RSpec.describe PreservedCopy, type: :model do
   context 'with a persisted object' do
     before { pc.save! }
 
-    describe '.by_endpoint_name' do
+    describe '.by_moab_storage_root_name' do
       it 'returns the expected preserved copies' do
-        expect(described_class.by_endpoint_name('fixture_sr1').length).to eq 1
-        expect(described_class.by_endpoint_name('fixture_sr2')).to be_empty
-        expect(described_class.by_endpoint_name('fixture_empty')).to be_empty
+        expect(described_class.by_moab_storage_root_name('fixture_sr1').length).to eq 1
+        expect(described_class.by_moab_storage_root_name('fixture_sr2')).to be_empty
+        expect(described_class.by_moab_storage_root_name('fixture_empty')).to be_empty
       end
     end
 
@@ -267,23 +267,25 @@ RSpec.describe PreservedCopy, type: :model do
   # this is not intended to exhaustively test all permutations, but to highlight/test likely useful combos
   context 'chained scopes' do
     describe '.fixity_check_expired' do
-      let(:endpoint2) { Endpoint.find_by(endpoint_name: 'fixture_sr2') }
+      let(:ms_root2) { MoabStorageRoot.find_by(name: 'fixture_sr2') }
       let!(:checked_before_threshold_pc1) do
         create(:preserved_copy, args.merge(version: 6, last_checksum_validation: now - 3.weeks))
       end
       let!(:checked_before_threshold_pc2) do
-        create(:preserved_copy, args.merge(version: 7, last_checksum_validation: now - 7.01.days, endpoint: endpoint2))
+        my_args = args.merge(version: 7, last_checksum_validation: now - 7.01.days, moab_storage_root: ms_root2)
+        create(:preserved_copy, my_args)
       end
       let!(:recently_checked_pc1) do
         create(:preserved_copy, args.merge(version: 8, last_checksum_validation: now - 6.99.days))
       end
       let!(:recently_checked_pc2) do
-        create(:preserved_copy, args.merge(version: 9, last_checksum_validation: now - 1.day, endpoint: endpoint2))
+        my_args = args.merge(version: 9, last_checksum_validation: now - 1.day, moab_storage_root: ms_root2)
+        create(:preserved_copy, my_args)
       end
 
-      describe '.by_endpoint_name' do
-        let(:pcs_ordered_by_query1) { described_class.fixity_check_expired.by_endpoint_name(endpoint.endpoint_name) }
-        let(:pcs_ordered_by_query2) { described_class.fixity_check_expired.by_endpoint_name(endpoint2.endpoint_name) }
+      describe '.by_moab_storage_root_name' do
+        let(:pcs_ordered_by_query1) { described_class.fixity_check_expired.by_moab_storage_root_name(ms_root.name) }
+        let(:pcs_ordered_by_query2) { described_class.fixity_check_expired.by_moab_storage_root_name(ms_root2.name) }
 
         it 'returns PreservedCopies with nils first, then old to new timestamps, only for the chosen storage root' do
           expect(pcs_ordered_by_query1).to eq [pc, checked_before_threshold_pc1]
@@ -339,7 +341,7 @@ RSpec.describe PreservedCopy, type: :model do
       expect(pc.create_zipped_moab_versions!(pc_version).all?(&:unreplicated?)).to be true
     end
 
-    it "creates pres copies that don't yet exist for the given endpoint, but should" do
+    it "creates pres copies that don't yet exist for the given moab_storage_root, but should" do
       expect { pc.create_zipped_moab_versions!(pc_version) }.to change {
         ZipEndpoint.which_need_archive_copy(druid, pc_version).to_a
       }.from([archive_ep]).to([])
