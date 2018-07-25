@@ -26,7 +26,7 @@ RSpec.describe PreservedObjectHandler do
       version: incoming_version,
       size: incoming_size,
       moab_storage_root: ms_root,
-      status: PreservedCopy::VALIDITY_UNKNOWN_STATUS # NOTE: ensuring this particular status is the default
+      status: 'validity_unknown' # NOTE: ensuring this particular status is the default
       # NOTE: lack of validation timestamps here
     }
   end
@@ -39,7 +39,7 @@ RSpec.describe PreservedObjectHandler do
     end
 
     it 'creates the PreservedCopy with "ok" status and validation timestamps if caller ran CV' do
-      pc_args[:status] = PreservedCopy::OK_STATUS
+      pc_args[:status] = 'ok'
       pc_args[:last_version_audit] = ActiveSupport::TimeWithZone
       pc_args[:last_moab_validation] = ActiveSupport::TimeWithZone
       pc_args[:last_checksum_validation] = ActiveSupport::TimeWithZone
@@ -140,7 +140,7 @@ RSpec.describe PreservedObjectHandler do
 
     it 'creates PreservedCopy with "ok" status and validation timestamps if no validation errors and caller ran CV' do
       pc_args.merge!(
-        status: PreservedCopy::OK_STATUS,
+        status: 'ok',
         last_moab_validation: an_instance_of(ActiveSupport::TimeWithZone),
         last_version_audit: an_instance_of(ActiveSupport::TimeWithZone),
         last_checksum_validation: an_instance_of(ActiveSupport::TimeWithZone)
@@ -175,7 +175,7 @@ RSpec.describe PreservedObjectHandler do
       it 'creates PreservedObject, and PreservedCopy with "invalid_moab" status in database' do
         po_args[:druid] = invalid_druid
         pc_args.merge!(
-          status: PreservedCopy::INVALID_MOAB_STATUS,
+          status: 'invalid_moab',
           last_moab_validation: an_instance_of(ActiveSupport::TimeWithZone),
           last_version_audit: an_instance_of(ActiveSupport::TimeWithZone)
         )
@@ -187,7 +187,7 @@ RSpec.describe PreservedObjectHandler do
 
       it 'creates PreservedCopy with "invalid_moab" status in database even if caller ran CV' do
         pc_args.merge!(
-          status: PreservedCopy::INVALID_MOAB_STATUS,
+          status: 'invalid_moab',
           last_moab_validation: an_instance_of(ActiveSupport::TimeWithZone),
           last_version_audit: an_instance_of(ActiveSupport::TimeWithZone),
           last_checksum_validation: an_instance_of(ActiveSupport::TimeWithZone)

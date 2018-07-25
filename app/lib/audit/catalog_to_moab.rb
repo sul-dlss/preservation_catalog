@@ -65,7 +65,7 @@ module Audit
 
       unless online_moab_found?
         transaction_ok = ActiveRecordUtils.with_transaction_and_rescue(results) do
-          update_status(PreservedCopy::ONLINE_MOAB_NOT_FOUND_STATUS)
+          update_status('online_moab_not_found')
           preserved_copy.save!
         end
         results.remove_db_updated_results unless transaction_ok
@@ -98,7 +98,7 @@ module Audit
       catalog_version = preserved_copy.version
       transaction_ok = ActiveRecordUtils.with_transaction_and_rescue(results) do
         if catalog_version == moab_version
-          set_status_as_seen_on_disk(true) unless preserved_copy.status == PreservedCopy::OK_STATUS
+          set_status_as_seen_on_disk(true) unless preserved_copy.ok?
           results.add_result(AuditResults::VERSION_MATCHES, 'PreservedCopy')
           results.report_results(Audit::CatalogToMoab.logger)
         elsif catalog_version < moab_version

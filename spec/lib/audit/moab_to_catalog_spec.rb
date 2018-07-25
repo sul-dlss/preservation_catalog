@@ -180,7 +180,7 @@ RSpec.describe Audit::MoabToCatalog do
 
       it 'does not call pohandler.check_existence' do
         expect(PreservedObjectHandler).not_to receive(:new)
-        subject
+        described_class.check_existence_for_druid(druid)
       end
     end
   end

@@ -29,7 +29,7 @@ def load_fixture_moabs
                            moab_storage_root_id: @storage_dir_to_moab_storage_root_id[storage_dir],
                            version: version,
                            size: size,
-                           status: PreservedCopy::VALIDITY_UNKNOWN_STATUS)
+                           status: 'validity_unknown')
     end
   end
 end

@@ -59,7 +59,7 @@ RSpec.describe ActiveRecordUtils do
           preserved_object: po,
           moab_storage_root: ms_root,
           version: 1,
-          status: PreservedCopy::VALIDITY_UNKNOWN_STATUS
+          status: 'validity_unknown'
         )
       end
       # we're going to query by creation date descending, since DBs often return in order of create or upd date in
@@ -67,14 +67,14 @@ RSpec.describe ActiveRecordUtils do
       expected_ids = pres_copies_to_process.map(&:id).reverse
 
       relation = PreservedCopy
-                 .where(moab_storage_root: ms_root, status: PreservedCopy::VALIDITY_UNKNOWN_STATUS)
+                 .where(moab_storage_root: ms_root, status: 'validity_unknown')
                  .order(created_at: :desc)
       allow(relation).to receive(:limit).with(batch_size).and_call_original
 
       actual_ids = []
       described_class.process_in_batches(relation, batch_size) do |row|
         actual_ids << row.id
-        row.update!(status: PreservedCopy::OK_STATUS)
+        row.update!(status: 'ok')
       end
 
       expect(relation).to have_received(:limit).with(batch_size).exactly(expect_num_batches).times

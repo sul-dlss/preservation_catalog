@@ -74,12 +74,12 @@ RSpec.describe AuditResults do
       end
       it 'for every result' do
         result_code2 = AuditResults::PC_STATUS_CHANGED
-        status_details = { old_status: PreservedCopy::INVALID_MOAB_STATUS, new_status: PreservedCopy::OK_STATUS }
+        status_details = { old_status: 'invalid_moab', new_status: 'ok' }
         audit_results.add_result(result_code2, status_details)
         severity_level = described_class.logger_severity_level(result_code)
         expect(Rails.logger).to receive(:add).with(severity_level, a_string_matching(version_not_matched_str))
         severity_level = described_class.logger_severity_level(result_code2)
-        status_changed_str = "PreservedCopy status changed from #{PreservedCopy::INVALID_MOAB_STATUS}"
+        status_changed_str = "PreservedCopy status changed from invalid_moab"
         expect(Rails.logger).to receive(:add).with(severity_level, a_string_matching(status_changed_str))
         audit_results.report_results
       end
@@ -269,7 +269,7 @@ RSpec.describe AuditResults do
       result_msg_args = { pc_version: 1, po_version: 2 }
       audit_results.add_result(code, result_msg_args)
       code = AuditResults::PC_STATUS_CHANGED
-      result_msg_args = { old_status: PreservedCopy::OK_STATUS, new_status: PreservedCopy::INVALID_MOAB_STATUS }
+      result_msg_args = { old_status: 'ok', new_status: 'invalid_moab' }
       audit_results.add_result(code, result_msg_args)
       code = AuditResults::CREATED_NEW_OBJECT
       audit_results.add_result(code)

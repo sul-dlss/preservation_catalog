@@ -138,24 +138,6 @@ RSpec.describe PreservedCopy, type: :model do
     end
   end
 
-  describe '#update_status' do
-    it 'does nothing if the status has not changed' do
-      ran_the_block = false
-      pc.update_status(pc.status) { ran_the_block = true }
-      expect(pc.status).to eq 'validity_unknown'
-      expect(ran_the_block).to eq false
-      expect(pc).not_to be_changed
-    end
-
-    it 'runs the block and updates the status if the status has changed' do
-      ran_the_block = false
-      pc.update_status('ok') { ran_the_block = true }
-      expect(pc.status).to eq 'ok'
-      expect(ran_the_block).to eq true
-      expect(pc.status_changed?).to eq true
-    end
-  end
-
   describe '#matches_po_current_version?' do
     before { pc.version = 666 }
 
