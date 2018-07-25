@@ -152,7 +152,7 @@ RSpec.describe PreservedCopy, type: :model do
     end
   end
 
-  describe '.least_recent_version_audit' do
+  context 'ordered (by last version_audited) and unordered least_recent_version_audit' do
     let!(:newer_timestamp_pc) do
       create(:preserved_copy, args.merge(version: 6, last_version_audit: (now - 1.day)))
     end
@@ -163,11 +163,27 @@ RSpec.describe PreservedCopy, type: :model do
       create(:preserved_copy, args.merge(version: 8, last_version_audit: (now + 1.day)))
     end
 
-    it 'returns PreservedCopies with nils first, then old to new timestamps' do
-      expect(described_class.least_recent_version_audit(now)).to eq [pc, older_timestamp_pc, newer_timestamp_pc]
+    describe '.least_recent_version_audit' do
+
+      it 'returns PreservedCopies with nils and PreservedCopies < given date (not orded by last_version_audit)' do
+        expect(described_class.least_recent_version_audit(now).sort).to eq [pc, newer_timestamp_pc, older_timestamp_pc]
+      end
+      it 'returns no PreservedCopies with future timestamps' do
+        expect(described_class.least_recent_version_audit(now)).not_to include future_timestamp_pc
+      end
     end
-    it 'returns no PreservedCopies with future timestamps' do
-      expect(described_class.least_recent_version_audit(now)).not_to include future_timestamp_pc
+
+    describe '.order_last_version_audit' do
+      let(:least_recent_version) { described_class.least_recent_version_audit(now) }
+
+      it 'returns PreservedCopies with nils first, then old to new timestamps' do
+        expect(described_class.order_last_version_audit(least_recent_version))
+          .to eq [pc, older_timestamp_pc, newer_timestamp_pc]
+      end
+      it 'returns no PreservedCopies with future timestamps' do
+        expect(described_class.order_last_version_audit(least_recent_version))
+          .not_to include future_timestamp_pc
+      end
     end
   end
 
@@ -194,8 +210,7 @@ RSpec.describe PreservedCopy, type: :model do
       expect { described_class.send(:normalize_date, '2014') }.to raise_error(ArgumentError, /argument out of range/)
     end
   end
-
-  describe '.fixity_check_expired' do
+  context 'ordered (by fixity_check_expired) and unordered fixity_check_expired methods' do
     let(:fixity_ttl) { preserved_object.preservation_policy.fixity_ttl }
     let!(:old_check_pc1) do
       create(:preserved_copy, args.merge(version: 6, last_checksum_validation: now - (fixity_ttl * 2)))
@@ -212,11 +227,26 @@ RSpec.describe PreservedCopy, type: :model do
 
     before { pc.save! }
 
-    it 'returns PreservedCopies that need fixity check, never checked first, then least-recently to most-recently' do
-      expect(described_class.fixity_check_expired.to_a).to eq [pc, old_check_pc1, old_check_pc2]
+    describe '.fixity_check_expired' do
+      it 'returns PreservedCopies that need fixity check' do
+        expect(described_class.fixity_check_expired.to_a.sort).to eq [pc, old_check_pc1, old_check_pc2]
+      end
+      it 'returns no PreservedCopies with timestamps indicating still-valid fixity check' do
+        expect(described_class.fixity_check_expired).not_to include(recently_checked_pc1, recently_checked_pc2)
+      end
     end
-    it 'returns no PreservedCopies with timestamps indicating still-valid fixity check' do
-      expect(described_class.fixity_check_expired).not_to include(recently_checked_pc1, recently_checked_pc2)
+
+    describe '.order_fixity_check_expired' do
+      let(:fixity_check_expired) { described_class.fixity_check_expired }
+
+      it 'returns PreservedCopies that need fixity check, never checked first, then least-recently to most-recently' do
+        expect(described_class.order_fixity_check_expired(fixity_check_expired).to_a)
+          .to eq [pc, old_check_pc1, old_check_pc2]
+      end
+      it 'returns no PreservedCopies with timestamps indicating still-valid fixity check' do
+        expect(described_class.order_fixity_check_expired(fixity_check_expired))
+          .not_to include(recently_checked_pc1, recently_checked_pc2)
+      end
     end
   end
 
@@ -267,34 +297,34 @@ RSpec.describe PreservedCopy, type: :model do
       end
 
       describe '.by_moab_storage_root_name' do
-        let(:pcs_ordered_by_query1) { described_class.fixity_check_expired.by_moab_storage_root_name(ms_root.name) }
-        let(:pcs_ordered_by_query2) { described_class.fixity_check_expired.by_moab_storage_root_name(ms_root2.name) }
+        let(:pcs_by_query1) { described_class.fixity_check_expired.by_moab_storage_root_name(ms_root.name) }
+        let(:pcs_by_query2) { described_class.fixity_check_expired.by_moab_storage_root_name(ms_root2.name) }
 
-        it 'returns PreservedCopies with nils first, then old to new timestamps, only for the chosen storage root' do
-          expect(pcs_ordered_by_query1).to eq [pc, checked_before_threshold_pc1]
-          expect(pcs_ordered_by_query2).to eq [checked_before_threshold_pc2]
+        it 'returns PreservedCopies < given date only for the chosen storage root(not ordered by last_version_audit)' do
+          expect(pcs_by_query1.sort).to eq [pc, checked_before_threshold_pc1]
+          expect(pcs_by_query2.sort).to eq [checked_before_threshold_pc2]
         end
         it 'returns no PreservedCopies with timestamps indicating fixity check in the last week' do
-          expect(pcs_ordered_by_query1).not_to include recently_checked_pc1
-          expect(pcs_ordered_by_query2).not_to include recently_checked_pc2
+          expect(pcs_by_query1).not_to include recently_checked_pc1
+          expect(pcs_by_query2).not_to include recently_checked_pc2
         end
       end
 
       describe '.by_storage_location' do
-        let!(:pcs_ordered_by_query1) do
+        let!(:pcs_by_query1) do
           described_class.fixity_check_expired.by_storage_location('spec/fixtures/storage_root01/sdr2objects')
         end
-        let!(:pcs_ordered_by_query2) do
+        let!(:pcs_by_query2) do
           described_class.fixity_check_expired.by_storage_location('spec/fixtures/storage_root02/sdr2objects')
         end
 
-        it 'returns PreservedCopies with nils first, then old to new timestamps, only for the chosen storage root' do
-          expect(pcs_ordered_by_query1).to eq [pc, checked_before_threshold_pc1]
-          expect(pcs_ordered_by_query2).to eq [checked_before_threshold_pc2]
+        it 'returns PreservedCopies < given date only for the chosen storage root(not ordered by last_version_audit)' do
+          expect(pcs_by_query1.sort).to eq [pc, checked_before_threshold_pc1]
+          expect(pcs_by_query2.sort).to eq [checked_before_threshold_pc2]
         end
         it 'returns no PreservedCopies with timestamps indicating fixity check in the last week' do
-          expect(pcs_ordered_by_query1).not_to include recently_checked_pc1
-          expect(pcs_ordered_by_query2).not_to include recently_checked_pc2
+          expect(pcs_by_query1).not_to include recently_checked_pc1
+          expect(pcs_by_query2).not_to include recently_checked_pc2
         end
       end
     end

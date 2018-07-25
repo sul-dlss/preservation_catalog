@@ -42,7 +42,7 @@ class PreservedCopy < ApplicationRecord
 
   scope :least_recent_version_audit, lambda { |last_checked_b4_date|
     where('last_version_audit IS NULL or last_version_audit < ?', normalize_date(last_checked_b4_date))
-      .order('last_version_audit IS NOT NULL, last_version_audit ASC')
+
     # possibly counter-intuitive: the .order sorts so that null values come first (because IS NOT NULL evaluates
     # to 0 for nulls, which sorts before 1 for non-nulls, which are then sorted by last_version_audit)
   }
@@ -55,7 +55,6 @@ class PreservedCopy < ApplicationRecord
         ' AND (last_checksum_validation + (fixity_ttl * INTERVAL \'1 SECOND\')) < CURRENT_TIMESTAMP'\
         ' OR last_checksum_validation IS NULL'
       )
-      .order('last_checksum_validation IS NOT NULL, last_checksum_validation ASC')
     # possibly counter-intuitive: the .order sorts so that null values come first (because IS NOT NULL evaluates
     # to 0 for nulls, which sorts before 1 for non-nulls, which are then sorted by last_checksum_validation)
   }
@@ -113,5 +112,13 @@ class PreservedCopy < ApplicationRecord
   private_class_method def self.normalize_date(timestamp)
     return timestamp if timestamp.is_a?(Time) || timestamp.is_a?(ActiveSupport::TimeWithZone)
     Time.parse(timestamp).utc
+  end
+
+  def self.order_last_version_audit(active_record_relation)
+    active_record_relation.order('last_version_audit IS NOT NULL, last_version_audit ASC')
+  end
+
+  def self.order_fixity_check_expired(active_record_relation)
+    active_record_relation.order('last_checksum_validation IS NOT NULL, last_checksum_validation ASC')
   end
 end
