@@ -3,7 +3,7 @@ require 'rails_helper'
 describe 'the whole replication pipeline', type: :job do # rubocop:disable RSpec/DescribeClass
   let(:s3_object) { instance_double(Aws::S3::Object, exists?: false, put: true) }
   let(:bucket) { instance_double(Aws::S3::Bucket, object: s3_object) }
-  let(:zmv) { create(:zipped_moab_version) }
+  let(:zmv) { create(:preserved_copy).zipped_moab_versions.first! }
   let(:druid) { zmv.preserved_object.druid }
   let(:version) { zmv.version }
   let(:deliverer) { zmv.zip_endpoint.delivery_class.to_s }
@@ -20,7 +20,6 @@ describe 'the whole replication pipeline', type: :job do # rubocop:disable RSpec
   end
 
   before do
-    ZipEndpoint.destroy_all # seeds are trash
     FactoryBot.reload # we need the "first" PO, bj102hs9687, for PC to line up w/ fixture
     allow(Settings).to receive(:zip_storage).and_return(Rails.root.join('spec', 'fixtures', 'zip_storage'))
     allow(PreservationCatalog::S3).to receive(:bucket).and_return(bucket)

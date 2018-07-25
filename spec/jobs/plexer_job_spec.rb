@@ -31,10 +31,12 @@ describe PlexerJob, type: :job do
   end
 
   describe '#perform' do
-    let(:east_ep) { create(:zip_endpoint, delivery_class: 2) }
-    let(:pc) { create(:preserved_copy, preserved_object: po) }
-    let!(:zmv1) { create(:zipped_moab_version, preserved_copy: pc, version: version) }
-    let!(:zmv2) { create(:zipped_moab_version, preserved_copy: pc, version: version, zip_endpoint: east_ep) }
+    let!(:pc) do
+      create(:zip_endpoint, delivery_class: 2) # 2nd endpoint ensures pc has 2 ZMVs
+      create(:preserved_copy, preserved_object: po)
+    end
+    let(:parts1) { pc.zipped_moab_versions.first!.zip_parts }
+    let(:parts2) { pc.zipped_moab_versions.second!.zip_parts }
     let(:s3_key) { job.zip.s3_key(metadata[:suffix]) }
 
     it 'splits the message out to endpoints' do
@@ -49,15 +51,12 @@ describe PlexerJob, type: :job do
       skip('need test for ensuring part exists with status unreplicated')
     end
 
-    it 'adds ZipPart to each related APC' do
+    it 'adds ZipPart to each related ZMV' do
+      expect(pc.zipped_moab_versions.count).to eq 2
       job.perform(druid, version, s3_key, metadata)
-      zmv1.zip_parts.reload
-      zmv2.zip_parts.reload
-      expect(zmv1.zip_parts.count).to eq 1
-      expect(zmv2.zip_parts.count).to eq 1
-      expect(zmv1.zip_parts.first!.md5).to eq md5
-      expect(zmv2.zip_parts.first!.md5).to eq md5
-      expect(zmv1.zip_parts.first!.create_info).to eq metadata.slice(:zip_cmd, :zip_version).to_s
+      expect(parts1.map(&:md5)).to eq [md5]
+      expect(parts2.map(&:md5)).to eq [md5]
+      expect(parts1.first!.create_info).to eq metadata.slice(:zip_cmd, :zip_version).to_s
     end
   end
 end

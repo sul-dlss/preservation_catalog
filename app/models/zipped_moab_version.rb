@@ -6,12 +6,10 @@
 #
 # @note Does not have size independent of part(s)
 class ZippedMoabVersion < ApplicationRecord
-  belongs_to :preserved_copy
-  belongs_to :zip_endpoint
+  belongs_to :preserved_copy, inverse_of: :zipped_moab_versions
+  belongs_to :zip_endpoint, inverse_of: :zipped_moab_versions
   has_many :zip_parts, dependent: :destroy, inverse_of: :zipped_moab_version
   has_one :preserved_object, through: :preserved_copy, dependent: :restrict_with_exception
-
-  delegate :preserved_object, to: :preserved_copy
 
   # @note Hash values cannot be modified without migrating any associated persisted data.
   # @see [enum docs] http://api.rubyonrails.org/classes/ActiveRecord/Enum.html
@@ -22,10 +20,7 @@ class ZippedMoabVersion < ApplicationRecord
     'invalid_checksum' => 3
   }
 
-  validates :zip_endpoint, presence: true
-  validates :preserved_copy, presence: true
-  validates :status, inclusion: { in: statuses.keys }
-  validates :version, presence: true
+  validates :preserved_copy, :status, :version, :zip_endpoint, presence: true
 
   scope :by_druid, lambda { |druid|
     joins(preserved_copy: [:preserved_object]).where(preserved_objects: { druid: druid })

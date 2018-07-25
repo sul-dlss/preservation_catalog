@@ -1,5 +1,5 @@
 ##
-# PreservedCopy represents a concrete instance of a PreservedObject, in physical storage on some node.
+# PreservedCopy represents a concrete instance of a PreservedObject across ALL versions, in physical storage.
 class PreservedCopy < ApplicationRecord
   OK_STATUS = 'ok'.freeze
   INVALID_MOAB_STATUS = 'invalid_moab'.freeze
@@ -24,18 +24,18 @@ class PreservedCopy < ApplicationRecord
     REPLICATED_COPY_NOT_FOUND_STATUS => 8
   }
 
+  after_create :create_zipped_moab_versions!
+  after_update :create_zipped_moab_versions!, if: :saved_change_to_version? # an ActiveRecord dynamic method
+
   belongs_to :preserved_object, inverse_of: :preserved_copies
   belongs_to :moab_storage_root, inverse_of: :preserved_copies
   has_many :zipped_moab_versions, dependent: :restrict_with_exception, inverse_of: :preserved_copy
 
   delegate :s3_key, to: :druid_version_zip
 
-  validates :moab_storage_root, presence: true
-  validates :preserved_object, presence: true
+  validates :moab_storage_root, :preserved_object, :status, :version, presence: true
   # NOTE: size here is approximate and not used for fixity checking
   validates :size, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
-  validates :status, inclusion: { in: statuses.keys }
-  validates :version, presence: true
 
   scope :by_moab_storage_root_name, lambda { |name|
     joins(:moab_storage_root).where(moab_storage_roots: { name: name })
@@ -69,29 +69,25 @@ class PreservedCopy < ApplicationRecord
     # to 0 for nulls, which sorts before 1 for non-nulls, which are then sorted by last_checksum_validation)
   }
 
-  # given a version, create any ZippedMoabVersion records for that version which don't yet exist for
-  #  zip_endpoints which implement the parent PreservedObject's PreservationPolicy.
-  # @param archive_vers [Integer] the version for which archive preserved copies should be created.  must be between
-  #   1 and this PreservedCopy's version (inclusive).  Because there's a ZippedMoabVersion for
-  #   each version for each zip_endpoint (whereas there is one PreservedCopy for an entire online Moab).
+  # This is where we make sure we have ZMV rows for all needed ZipEndpoints and versions.
+  # Endpoints may have been added, so we must check all dimensions.
+  # For *this* and *previous* versions, create any ZippedMoabVersion records which don't yet exist for
+  # ZipEndpoints on the parent PreservedObject's PreservationPolicy.
   # @return [Array<ZippedMoabVersion>] the ZippedMoabVersion records that were created
-  def create_zipped_moab_versions!(archive_vers)
-    unless archive_vers > 0 && archive_vers <= version
-      raise ArgumentError, "archive_vers (#{archive_vers}) must be between 0 and version (#{version})"
-    end
-
-    params = ZipEndpoint.which_need_archive_copy(preserved_object.druid, archive_vers).map do |zep|
-      { version: archive_vers, zip_endpoint: zep, status: 'unreplicated' }
-    end
+  # @todo potential optimization: fold N which_need_archive_copy queries into one new query
+  def create_zipped_moab_versions!
+    params = (1..version).map do |v|
+      ZipEndpoint.which_need_archive_copy(preserved_object.druid, v).map do |zep|
+        { version: v, zip_endpoint: zep, status: 'unreplicated' }
+      end
+    end.flatten.compact.uniq
     zipped_moab_versions.create!(params)
   end
 
   # Send to asynchronous replication pipeline
-  # @raise [RuntimeError] if object is unpersisted or too large (>=~10GB)
-  # @todo reroute to large object pipeline instead of raise
+  # @raise [RuntimeError] if object is unpersisted
   def replicate!
     raise 'PreservedCopy must be persisted' unless persisted?
-    raise "#{size} is too large for pipeline" if size > 9_999_500_000 # build in overhead for zip structure
     ZipmakerJob.perform_later(preserved_object.druid, version)
   end
 

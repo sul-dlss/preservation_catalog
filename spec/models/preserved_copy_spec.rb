@@ -73,12 +73,13 @@ RSpec.describe PreservedCopy, type: :model do
   it { is_expected.to have_many(:zipped_moab_versions) }
 
   describe '#replicate!' do
-    it 'raises if too large' do
-      pc.size = 10_000_000_000
-      expect { pc.replicate! }.to raise_error(RuntimeError, /too large/)
-    end
     it 'raises if unsaved' do
       expect { described_class.new(size: 1).replicate! }.to raise_error(RuntimeError, /must be persisted/)
+    end
+    it 'accepts large objects' do
+      allow(ZipmakerJob).to receive(:perform_later).with(preserved_object.druid, pc.version)
+      pc.size = 30_000_000_000
+      expect { pc.replicate! }.not_to raise_error
     end
     it 'passes druid and version to Zipmaker' do
       expect(ZipmakerJob).to receive(:perform_later).with(preserved_object.druid, pc.version)
@@ -320,49 +321,55 @@ RSpec.describe PreservedCopy, type: :model do
   describe '#create_zipped_moab_versions!' do
     let(:pc_version) { 3 }
     let(:archive_ep) { ZipEndpoint.find_by!(endpoint_name: 'mock_archive1') }
-    let(:new_archive_ep) { create(:zip_endpoint, endpoint_name: 'mock_archive2') }
+    let(:zmvs_by_druid) { ZippedMoabVersion.by_druid(druid) }
 
-    it "creates pres copies that don't yet exist for the given version, but should" do
-      expect { pc.create_zipped_moab_versions!(pc_version) }.to change {
+    before { pc.zipped_moab_versions.destroy_all } # undo auto-spawned rows from callback
+
+    it "creates ZMVs that don't yet exist for expected versions, but should" do
+      expect { pc.create_zipped_moab_versions! }.to change {
         ZipEndpoint.which_need_archive_copy(druid, pc_version).to_a
-      }.from([archive_ep]).to([])
+      }.from([archive_ep]).to([]).and change {
+        zmvs_by_druid.where(version: pc_version).count
+      }.from(0).to(1)
 
-      expect(ZippedMoabVersion.by_druid(druid).count).to eq 1
-
-      expect { pc.create_zipped_moab_versions!(pc_version - 1) }.to change {
-        ZipEndpoint.which_need_archive_copy(druid, pc_version - 1).to_a
-      }.from([archive_ep]).to([])
-      expect(ZippedMoabVersion.by_druid(druid).count).to eq 2
-
-      expect(ZippedMoabVersion.by_druid(druid).where(version: 1).count).to eq 0
+      expect(zmvs_by_druid.pluck(:version).sort).to eq [1, 2, 3]
     end
 
-    it 'creates the pres copies so that they start with unreplicated status' do
-      expect(pc.create_zipped_moab_versions!(pc_version).all?(&:unreplicated?)).to be true
+    it 'creates ZMVs so that they start with unreplicated status' do
+      expect(pc.create_zipped_moab_versions!.all?(&:unreplicated?)).to be true
     end
 
-    it "creates pres copies that don't yet exist for the given moab_storage_root, but should" do
-      expect { pc.create_zipped_moab_versions!(pc_version) }.to change {
+    it "creates ZMVs that don't yet exist for new endpoint, but should" do
+      expect { pc.create_zipped_moab_versions! }.to change {
         ZipEndpoint.which_need_archive_copy(druid, pc_version).to_a
-      }.from([archive_ep]).to([])
-      expect(ZippedMoabVersion.by_druid(druid).where(version: pc_version).count).to eq 1
+      }.from([archive_ep]).to([]).and change {
+        zmvs_by_druid.where(version: pc_version).count
+      }.from(0).to(1)
 
-      new_archive_ep.preservation_policies = [PreservationPolicy.default_policy]
-      expect { pc.create_zipped_moab_versions!(pc_version) }.to change {
+      new_archive_ep = create(
+        :zip_endpoint,
+        endpoint_name: 'mock_archive2',
+        preservation_policies: [PreservationPolicy.default_policy]
+      )
+
+      expect { pc.create_zipped_moab_versions! }.to change {
         ZipEndpoint.which_need_archive_copy(druid, pc_version).to_a
-      }.from([new_archive_ep]).to([])
-      expect(ZippedMoabVersion.by_druid(druid).where(version: pc_version).count).to eq 2
+      }.from([new_archive_ep]).to([]).and change {
+        zmvs_by_druid.where(version: pc_version).count
+      }.from(1).to(2)
     end
+  end
 
-    it 'checks that version is in range' do
-      [-1, 0, 4, 5].each do |version|
-        exp_err_msg = "archive_vers (#{version}) must be between 0 and version (#{pc_version})"
-        expect { pc.create_zipped_moab_versions!(version) }.to raise_error ArgumentError, exp_err_msg
-      end
-
-      (1..3).each do |version|
-        expect { pc.create_zipped_moab_versions!(version) }.not_to raise_error
-      end
+  describe '.after_update callback' do
+    it 'does not call create_zipped_moab_versions when version is unchanged' do
+      pc.size = 234
+      expect(pc).not_to receive(:create_zipped_moab_versions!)
+      pc.save!
+    end
+    it 'calls create_zipped_moab_versions when version was changed' do
+      pc.version = 55
+      expect(pc).to receive(:create_zipped_moab_versions!)
+      pc.save!
     end
   end
 end
