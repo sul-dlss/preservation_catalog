@@ -246,7 +246,7 @@ RSpec.describe PreservedCopy, type: :model do
     before { pc.save! }
 
     describe '.fixity_check_expired' do
-      it 'returns PreservedCopies that need fixity check, never checked first, then least-recently to most-recently' do
+      it 'returns PreservedCopies that need fixity check' do
         expect(described_class.fixity_check_expired.to_a.sort).to eq [pc, old_check_pc1, old_check_pc2]
       end
       it 'returns no PreservedCopies with timestamps indicating still-valid fixity check' do
@@ -315,34 +315,34 @@ RSpec.describe PreservedCopy, type: :model do
       end
 
       describe '.by_moab_storage_root_name' do
-        let(:random_pcs_by_query1) { described_class.fixity_check_expired.by_moab_storage_root_name(ms_root.name) }
-        let(:random_pcs_by_query2) { described_class.fixity_check_expired.by_moab_storage_root_name(ms_root2.name) }
+        let(:pcs_by_query1) { described_class.fixity_check_expired.by_moab_storage_root_name(ms_root.name) }
+        let(:pcs_by_query2) { described_class.fixity_check_expired.by_moab_storage_root_name(ms_root2.name) }
 
         it 'returns PreservedCopies < given date only for the chosen storage root(not ordered by last_version_audit)' do
-          expect(random_pcs_by_query1.sort).to eq [pc, checked_before_threshold_pc1]
-          expect(random_pcs_by_query2.sort).to eq [checked_before_threshold_pc2]
+          expect(pcs_by_query1.sort).to eq [pc, checked_before_threshold_pc1]
+          expect(pcs_by_query2.sort).to eq [checked_before_threshold_pc2]
         end
         it 'returns no PreservedCopies with timestamps indicating fixity check in the last week' do
-          expect(random_pcs_by_query1).not_to include recently_checked_pc1
-          expect(random_pcs_by_query2).not_to include recently_checked_pc2
+          expect(pcs_by_query1).not_to include recently_checked_pc1
+          expect(pcs_by_query2).not_to include recently_checked_pc2
         end
       end
 
       describe '.by_storage_location' do
-        let!(:random_pcs_by_query1) do
+        let!(:pcs_by_query1) do
           described_class.fixity_check_expired.by_storage_location('spec/fixtures/storage_root01/sdr2objects')
         end
-        let!(:random_pcs_by_query2) do
+        let!(:pcs_by_query2) do
           described_class.fixity_check_expired.by_storage_location('spec/fixtures/storage_root02/sdr2objects')
         end
 
         it 'returns PreservedCopies < given date only for the chosen storage root(not ordered by last_version_audit)' do
-          expect(random_pcs_by_query1.sort).to eq [pc, checked_before_threshold_pc1]
-          expect(random_pcs_by_query2.sort).to eq [checked_before_threshold_pc2]
+          expect(pcs_by_query1.sort).to eq [pc, checked_before_threshold_pc1]
+          expect(pcs_by_query2.sort).to eq [checked_before_threshold_pc2]
         end
         it 'returns no PreservedCopies with timestamps indicating fixity check in the last week' do
-          expect(random_pcs_by_query1).not_to include recently_checked_pc1
-          expect(random_pcs_by_query2).not_to include recently_checked_pc2
+          expect(pcs_by_query1).not_to include recently_checked_pc1
+          expect(pcs_by_query2).not_to include recently_checked_pc2
         end
       end
     end
