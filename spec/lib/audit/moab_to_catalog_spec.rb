@@ -205,6 +205,14 @@ RSpec.describe Audit::MoabToCatalog do
     it 'returns results' do
       expect(subject).to eq results
     end
+    context 'given a druid that does not exist' do
+      let(:druid) { 'db102hs2345' }
+
+      it 'does not call pohandler.check_existence' do
+        expect(PreservedObjectHandler).not_to receive(:new)
+        subject
+      end
+    end
   end
 
   describe '.check_existence_for_druid_list' do

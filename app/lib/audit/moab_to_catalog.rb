@@ -20,6 +20,8 @@ module Audit
       results = po_handler.check_existence
       logger.info "#{results} for #{druid}"
       results
+    rescue TypeError
+      logger.info "#{Time.now.utc.iso8601} Moab object path does not exist."
     ensure
       logger.info "#{Time.now.utc.iso8601} M2C check_existence_for_druid ended for #{druid}"
     end
