@@ -174,15 +174,13 @@ class PreservedObjectHandler
     results.report_results
   end
 
-  protected
-
   def pres_object
     @pres_object ||= PreservedObject.find_by!(druid: druid)
   end
 
   def comp_moab
     # FIXME: what if there is more than one associated comp_moab?
-    @comp_moab ||= CompleteMoab.find_by!(preserved_object: pres_object, moab_storage_root: moab_storage_root)
+    @comp_moab ||= pres_object.complete_moabs.find_by!(moab_storage_root: moab_storage_root)
   end
 
   alias complete_moab comp_moab
@@ -190,11 +188,10 @@ class PreservedObjectHandler
   private
 
   def create_db_objects(status, checksums_validated = false)
-    pp_default_id = PreservationPolicy.default_policy.id
     transaction_ok = with_active_record_transaction_and_rescue do
       po = PreservedObject.create!(druid: druid,
                                    current_version: incoming_version,
-                                   preservation_policy_id: pp_default_id)
+                                   preservation_policy_id: PreservationPolicy.default_policy.id)
       cm_attrs = {
         preserved_object: po,
         version: incoming_version,
@@ -208,7 +205,7 @@ class PreservedObjectHandler
         cm_attrs[:last_moab_validation] = t
       end
       cm_attrs[:last_checksum_validation] = t if checksums_validated
-      CompleteMoab.create!(cm_attrs)
+      po.complete_moabs.create!(cm_attrs)
     end
 
     results.add_result(AuditResults::CREATED_NEW_OBJECT) if transaction_ok

@@ -69,16 +69,13 @@ RSpec.shared_examples 'druid not in catalog' do |method_sym|
 end
 
 RSpec.shared_examples 'CompleteMoab does not exist' do |method_sym|
-  before do
-    PreservedObject.create!(druid: druid, current_version: 2, preservation_policy: default_prez_policy)
-  end
-
   let(:exp_msg) { "#<ActiveRecord::RecordNotFound: foo> db object does not exist" }
   let(:results) do
     allow(Rails.logger).to receive(:log)
-    po = create :preserved_object, current_version: 2
-    allow(PreservedObject).to receive(:find_by!).and_return(po)
-    allow(CompleteMoab).to receive(:find_by!).and_raise(ActiveRecord::RecordNotFound, 'foo')
+    allow(po_handler).to receive(:pres_object).and_return(create(:preserved_object))
+    allow(PreservedObject).to receive(:exists?).with(druid: po_handler.druid).and_return(true)
+    allow(po_handler.pres_object.complete_moabs).to receive(:find_by!)
+      .with(any_args).and_raise(ActiveRecord::RecordNotFound, 'foo')
     po_handler.send(method_sym)
   end
 
