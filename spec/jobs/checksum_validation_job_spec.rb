@@ -2,7 +2,7 @@ require 'rails_helper'
 
 describe ChecksumValidationJob, type: :job do
   let(:job) { described_class.new(pc) }
-  let(:pc) { create :preserved_copy }
+  let(:pc) { create :complete_moab }
 
   describe '#perform' do
     let(:validator) { instance_double(ChecksumValidator) }

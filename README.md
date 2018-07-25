@@ -186,7 +186,7 @@ For example, if you wish to run CV on all the "validity_unknown" druids on stora
 bundle exec rails r -e production "Audit::Checksum.validate_status_root(:validity_unknown, :services-disk15)"
 ```
 
-[Valid status strings](https://github.com/sul-dlss/preservation_catalog/blob/master/app/models/preserved_copy.rb#L1-L10)
+[Valid status strings](https://github.com/sul-dlss/preservation_catalog/blob/master/app/models/complete_moab.rb#L1-L10)
 
 ## Seed the catalog
 
@@ -317,7 +317,7 @@ Audit::Checksum.validate_list_of_druids('/path/to/your/csv/druid_list.csv')
 Audit::Checksum.validate_status_root('validity_unknown', 'services-disk15')
 ```
 
-[Valid status strings](https://github.com/sul-dlss/preservation_catalog/blob/master/app/models/preserved_copy.rb#L1-L10)
+[Valid status strings](https://github.com/sul-dlss/preservation_catalog/blob/master/app/models/complete_moab.rb#L1-L10)
 
 ## Development
 

@@ -51,11 +51,11 @@ RSpec.describe ActiveRecordUtils do
     let(:ms_root) { MoabStorageRoot.find_by(name: 'fixture_sr1') }
 
     it 'processes the all of the relation results in order' do
-      pres_copies_to_process = (1..num_objs).map do |n|
+      comp_moabs_to_process = (1..num_objs).map do |n|
         po = PreservedObject.create!(
           druid: "zy123cd456#{n}", current_version: 1, preservation_policy: PreservationPolicy.default_policy
         )
-        PreservedCopy.create!(
+        CompleteMoab.create!(
           preserved_object: po,
           moab_storage_root: ms_root,
           version: 1,
@@ -64,9 +64,9 @@ RSpec.describe ActiveRecordUtils do
       end
       # we're going to query by creation date descending, since DBs often return in order of create or upd date in
       # the absence of sort criteria (we just want to be extra sure in testing that our order by clause is respected).
-      expected_ids = pres_copies_to_process.map(&:id).reverse
+      expected_ids = comp_moabs_to_process.map(&:id).reverse
 
-      relation = PreservedCopy
+      relation = CompleteMoab
                  .where(moab_storage_root: ms_root, status: 'validity_unknown')
                  .order(created_at: :desc)
       allow(relation).to receive(:limit).with(batch_size).and_call_original

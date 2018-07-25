@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 describe ResultsRecorderJob, type: :job do
-  let(:pc) { create(:preserved_copy) }
+  let(:pc) { create(:complete_moab) }
   let(:zmv) { pc.zipped_moab_versions.first }
   let(:druid) { zmv.preserved_object.druid }
   let(:zip_endpoint) { zmv.zip_endpoint }

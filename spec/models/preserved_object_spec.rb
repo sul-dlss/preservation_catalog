@@ -12,7 +12,7 @@ RSpec.describe PreservedObject, type: :model do
   end
 
   it { is_expected.to belong_to(:preservation_policy) }
-  it { is_expected.to have_many(:preserved_copies) }
+  it { is_expected.to have_many(:complete_moabs) }
   it { is_expected.to have_db_index(:druid) }
   it { is_expected.to have_db_index(:preservation_policy_id) }
   it { is_expected.to validate_presence_of(:druid) }

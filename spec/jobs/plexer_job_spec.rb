@@ -33,7 +33,7 @@ describe PlexerJob, type: :job do
   describe '#perform' do
     let!(:pc) do
       create(:zip_endpoint, delivery_class: 2) # 2nd endpoint ensures pc has 2 ZMVs
-      create(:preserved_copy, preserved_object: po)
+      create(:complete_moab, preserved_object: po)
     end
     let(:parts1) { pc.zipped_moab_versions.first!.zip_parts }
     let(:parts2) { pc.zipped_moab_versions.second!.zip_parts }

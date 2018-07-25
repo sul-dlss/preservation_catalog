@@ -1,6 +1,6 @@
 ##
-# PreservedCopy represents a concrete instance of a PreservedObject across ALL versions, in physical storage.
-class PreservedCopy < ApplicationRecord
+# CompleteMoab represents a concrete instance of a PreservedObject across ALL versions, in physical storage.
+class CompleteMoab < ApplicationRecord
   # @note Hash values cannot be modified without migrating any associated persisted data.
   # @see [enum docs] http://api.rubyonrails.org/classes/ActiveRecord/Enum.html
   # TODO: Port over statuses to archive pres_copy model
@@ -18,9 +18,9 @@ class PreservedCopy < ApplicationRecord
   after_create :create_zipped_moab_versions!
   after_update :create_zipped_moab_versions!, if: :saved_change_to_version? # an ActiveRecord dynamic method
 
-  belongs_to :preserved_object, inverse_of: :preserved_copies
-  belongs_to :moab_storage_root, inverse_of: :preserved_copies
-  has_many :zipped_moab_versions, dependent: :restrict_with_exception, inverse_of: :preserved_copy
+  belongs_to :preserved_object, inverse_of: :complete_moabs
+  belongs_to :moab_storage_root, inverse_of: :complete_moabs
+  has_many :zipped_moab_versions, dependent: :restrict_with_exception, inverse_of: :complete_moab
 
   delegate :s3_key, to: :druid_version_zip
 

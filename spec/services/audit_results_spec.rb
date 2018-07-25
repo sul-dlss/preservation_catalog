@@ -12,8 +12,8 @@ RSpec.describe AuditResults do
   let(:audit_results) { described_class.new(druid, actual_version, ms_root) }
 
   describe '.logger_severity_level' do
-    it 'PC_PO_VERSION_MISMATCH is an ERROR' do
-      expect(described_class.logger_severity_level(AuditResults::PC_PO_VERSION_MISMATCH)).to eq Logger::ERROR
+    it 'CM_PO_VERSION_MISMATCH is an ERROR' do
+      expect(described_class.logger_severity_level(AuditResults::CM_PO_VERSION_MISMATCH)).to eq Logger::ERROR
     end
     it 'DB_OBJ_DOES_NOT_EXIST is WARN' do
       expect(described_class.logger_severity_level(AuditResults::DB_OBJ_DOES_NOT_EXIST)).to eq Logger::WARN
@@ -43,11 +43,11 @@ RSpec.describe AuditResults do
 
     context 'writes to Rails log' do
       let(:version_not_matched_str) { 'does not match PreservedObject current_version' }
-      let(:result_code) { AuditResults::PC_PO_VERSION_MISMATCH }
+      let(:result_code) { AuditResults::CM_PO_VERSION_MISMATCH }
 
       before do
         audit_results.check_name = check_name
-        addl_hash = { pc_version: 1, po_version: 2 }
+        addl_hash = { cm_version: 1, po_version: 2 }
         audit_results.add_result(result_code, addl_hash)
       end
       it 'with log_msg_prefix' do
@@ -73,13 +73,13 @@ RSpec.describe AuditResults do
         audit_results.report_results
       end
       it 'for every result' do
-        result_code2 = AuditResults::PC_STATUS_CHANGED
+        result_code2 = AuditResults::CM_STATUS_CHANGED
         status_details = { old_status: 'invalid_moab', new_status: 'ok' }
         audit_results.add_result(result_code2, status_details)
         severity_level = described_class.logger_severity_level(result_code)
         expect(Rails.logger).to receive(:add).with(severity_level, a_string_matching(version_not_matched_str))
         severity_level = described_class.logger_severity_level(result_code2)
-        status_changed_str = "PreservedCopy status changed from invalid_moab"
+        status_changed_str = "CompleteMoab status changed from invalid_moab"
         expect(Rails.logger).to receive(:add).with(severity_level, a_string_matching(status_changed_str))
         audit_results.report_results
       end
@@ -131,8 +131,8 @@ RSpec.describe AuditResults do
         audit_results.report_results
       end
       it 'sends results in WORKFLOW_REPORT_CODES errors' do
-        code = AuditResults::PC_PO_VERSION_MISMATCH
-        addl_hash = { pc_version: 1, po_version: 2 }
+        code = AuditResults::CM_PO_VERSION_MISMATCH
+        addl_hash = { cm_version: 1, po_version: 2 }
         audit_results.add_result(code, addl_hash)
         wf_err_msg = audit_results.send(:result_code_msg, code, addl_hash)
         expect(WorkflowReporter).to receive(:report_error).with(
@@ -141,8 +141,8 @@ RSpec.describe AuditResults do
         audit_results.report_results
       end
       it 'multiple errors are concatenated together with || separator' do
-        code1 = AuditResults::PC_PO_VERSION_MISMATCH
-        result_msg_args1 = { pc_version: 1, po_version: 2 }
+        code1 = AuditResults::CM_PO_VERSION_MISMATCH
+        result_msg_args1 = { cm_version: 1, po_version: 2 }
         audit_results.add_result(code1, result_msg_args1)
         result_msg1 = audit_results.send(:result_code_msg, code1, result_msg_args1)
         code2 = AuditResults::DB_OBJ_ALREADY_EXISTS
@@ -214,15 +214,15 @@ RSpec.describe AuditResults do
           ar
         }
 
-        it 'message sent includes PreservedCopy create date' do
-          expected = Regexp.escape("db PreservedCopy (created #{create_date}")
+        it 'message sent includes CompleteMoab create date' do
+          expected = Regexp.escape("db CompleteMoab (created #{create_date}")
           expect(WorkflowReporter).to receive(:report_error).with(
             druid, 'preservation-audit', a_string_matching(expected)
           )
           my_audit_results.report_results
         end
-        it 'message sent includes PreservedCopy updated date' do
-          expected = "db PreservedCopy .* last updated #{update_date}"
+        it 'message sent includes CompleteMoab updated date' do
+          expected = "db CompleteMoab .* last updated #{update_date}"
           expect(WorkflowReporter).to receive(:report_error).with(
             druid, 'preservation-audit', a_string_matching(expected)
           )
@@ -232,8 +232,8 @@ RSpec.describe AuditResults do
     end
 
     context 'resets workflow error' do
-      it 'has AuditResult:PC_STATUS_CHANGED and PreseredCopy::OK_STATUS' do
-        result_code = AuditResults::PC_STATUS_CHANGED
+      it 'has AuditResult:CM_STATUS_CHANGED and PreseredCopy::OK_STATUS' do
+        result_code = AuditResults::CM_STATUS_CHANGED
         addl_hash = { old_status: 'invalid_checksum', new_status: 'ok' }
         audit_results.add_result(result_code, addl_hash)
         expect(WorkflowReporter).to receive(:report_completed).with(druid, 'preservation-audit')
@@ -245,8 +245,8 @@ RSpec.describe AuditResults do
   describe '#add_result' do
     it 'adds a hash entry to the result_array' do
       expect(audit_results.result_array.size).to eq 0
-      code = AuditResults::PC_PO_VERSION_MISMATCH
-      addl_hash = { pc_version: 1, po_version: 2 }
+      code = AuditResults::CM_PO_VERSION_MISMATCH
+      addl_hash = { cm_version: 1, po_version: 2 }
       audit_results.add_result(code, addl_hash)
       expect(audit_results.result_array.size).to eq 1
       exp_msg = AuditResults::RESPONSE_CODE_TO_MESSAGES[code] % addl_hash
@@ -265,10 +265,10 @@ RSpec.describe AuditResults do
 
   describe '#remove_db_updated_results' do
     before do
-      code = AuditResults::PC_PO_VERSION_MISMATCH
-      result_msg_args = { pc_version: 1, po_version: 2 }
+      code = AuditResults::CM_PO_VERSION_MISMATCH
+      result_msg_args = { cm_version: 1, po_version: 2 }
       audit_results.add_result(code, result_msg_args)
-      code = AuditResults::PC_STATUS_CHANGED
+      code = AuditResults::CM_STATUS_CHANGED
       result_msg_args = { old_status: 'ok', new_status: 'invalid_moab' }
       audit_results.add_result(code, result_msg_args)
       code = AuditResults::CREATED_NEW_OBJECT
@@ -284,11 +284,11 @@ RSpec.describe AuditResults do
         expect(AuditResults::DB_UPDATED_CODES).not_to include(result_hash.keys.first)
       end
       expect(audit_results.result_array).not_to include(a_hash_including(AuditResults::CREATED_NEW_OBJECT))
-      expect(audit_results.result_array).not_to include(a_hash_including(AuditResults::PC_STATUS_CHANGED))
+      expect(audit_results.result_array).not_to include(a_hash_including(AuditResults::CM_STATUS_CHANGED))
     end
     it 'keeps results not matching DB_UPDATED_CODES' do
       audit_results.remove_db_updated_results
-      expect(audit_results.result_array).to include(a_hash_including(AuditResults::PC_PO_VERSION_MISMATCH))
+      expect(audit_results.result_array).to include(a_hash_including(AuditResults::CM_PO_VERSION_MISMATCH))
       expect(audit_results.result_array).to include(a_hash_including(AuditResults::INVALID_MOAB))
     end
   end
@@ -296,9 +296,9 @@ RSpec.describe AuditResults do
   describe '#contains_result_code?' do
     it 'returns true if the result code is there, false if not' do
       expect(audit_results.result_array.size).to eq 0
-      added_code = AuditResults::PC_PO_VERSION_MISMATCH
+      added_code = AuditResults::CM_PO_VERSION_MISMATCH
       other_code = AuditResults::VERSION_MATCHES
-      audit_results.add_result(added_code, pc_version: 1, po_version: 2)
+      audit_results.add_result(added_code, cm_version: 1, po_version: 2)
       expect(audit_results.contains_result_code?(added_code)).to eq true
       expect(audit_results.contains_result_code?(other_code)).to eq false
     end
@@ -306,12 +306,12 @@ RSpec.describe AuditResults do
 
   describe '#status_changed_to_ok?' do
     it 'returns true if the new status is ok' do
-      added_code = AuditResults::PC_STATUS_CHANGED
+      added_code = AuditResults::CM_STATUS_CHANGED
       audit_results.add_result(added_code, old_status: 'invalid_checksum', new_status: 'ok')
       expect(audit_results.status_changed_to_ok?(audit_results.result_array.first)).to eq true
     end
     it 'returns false if the new status is not ok' do
-      added_code = AuditResults::PC_STATUS_CHANGED
+      added_code = AuditResults::CM_STATUS_CHANGED
       audit_results.add_result(added_code, old_status: 'invalid_checksum', new_status: 'invalid_moab')
       expect(audit_results.status_changed_to_ok?(audit_results.result_array.first)).to eq false
     end
@@ -319,15 +319,15 @@ RSpec.describe AuditResults do
 
   describe '#to_json' do
     it 'returns valid JSON for the current result_array' do
-      audit_results.add_result(AuditResults::PC_PO_VERSION_MISMATCH, pc_version: 1, po_version: 2)
+      audit_results.add_result(AuditResults::CM_PO_VERSION_MISMATCH, cm_version: 1, po_version: 2)
       json_text = audit_results.to_json
       json_parsed = JSON.parse(json_text)
 
-      exp_msg = "PreservedCopy online Moab version 1 does not match PreservedObject current_version 2"
+      exp_msg = "CompleteMoab online Moab version 1 does not match PreservedObject current_version 2"
       expect(json_parsed.length).to eq 2
       expect(json_parsed["result_array"].first.length).to eq 1
-      expect(json_parsed["result_array"].first.keys).to eq [AuditResults::PC_PO_VERSION_MISMATCH.to_s]
-      expect(json_parsed["result_array"].first[AuditResults::PC_PO_VERSION_MISMATCH.to_s]).to eq exp_msg
+      expect(json_parsed["result_array"].first.keys).to eq [AuditResults::CM_PO_VERSION_MISMATCH.to_s]
+      expect(json_parsed["result_array"].first[AuditResults::CM_PO_VERSION_MISMATCH.to_s]).to eq exp_msg
       expect(json_parsed["druid"]).to eq druid
     end
   end

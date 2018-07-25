@@ -1,5 +1,5 @@
 # creating a PreservedObject and/or updating check timestamps may require interactions
-#  beyond the single PreservedObject model (e.g. PreservedCopy, PreservationPolicy).
+#  beyond the single PreservedObject model (e.g. CompleteMoab, PreservationPolicy).
 #  This service class encapsulates logic to keep the controller and the model object
 #    code simpler/thinner.
 # NOTE: performing validation here to allow this class to be called directly avoiding http overhead
@@ -74,29 +74,29 @@ class PreservedObjectHandler
     elsif PreservedObject.exists?(druid: druid)
       Rails.logger.debug "check_existence #{druid} called"
       transaction_ok = with_active_record_transaction_and_rescue do
-        raise_rollback_if_pc_po_version_mismatch
+        raise_rollback_if_cm_po_version_mismatch
 
-        return results.report_results unless can_validate_current_pres_copy_status?
+        return results.report_results unless can_validate_current_comp_moab_status?
 
-        if incoming_version == pres_copy.version
-          set_status_as_seen_on_disk(true) unless pres_copy.status == 'ok'
-          results.add_result(AuditResults::VERSION_MATCHES, 'PreservedCopy')
-        elsif incoming_version > pres_copy.version
-          set_status_as_seen_on_disk(true) unless pres_copy.status == 'ok'
-          results.add_result(AuditResults::ACTUAL_VERS_GT_DB_OBJ, db_obj_name: 'PreservedCopy', db_obj_version: pres_copy.version)
+        if incoming_version == comp_moab.version
+          set_status_as_seen_on_disk(true) unless comp_moab.status == 'ok'
+          results.add_result(AuditResults::VERSION_MATCHES, 'CompleteMoab')
+        elsif incoming_version > comp_moab.version
+          set_status_as_seen_on_disk(true) unless comp_moab.status == 'ok'
+          results.add_result(AuditResults::ACTUAL_VERS_GT_DB_OBJ, db_obj_name: 'CompleteMoab', db_obj_version: comp_moab.version)
           if moab_validation_errors.empty?
-            pres_copy.upd_audstamps_version_size(ran_moab_validation?, incoming_version, incoming_size)
+            comp_moab.upd_audstamps_version_size(ran_moab_validation?, incoming_version, incoming_size)
             pres_object.current_version = incoming_version
             pres_object.save!
           else
             update_status('invalid_moab')
           end
-        else # incoming_version < pres_copy.version
+        else # incoming_version < comp_moab.version
           set_status_as_seen_on_disk(false)
-          results.add_result(AuditResults::ACTUAL_VERS_LT_DB_OBJ, db_obj_name: 'PreservedCopy', db_obj_version: pres_copy.version)
+          results.add_result(AuditResults::ACTUAL_VERS_LT_DB_OBJ, db_obj_name: 'CompleteMoab', db_obj_version: comp_moab.version)
         end
-        pres_copy.update_audit_timestamps(ran_moab_validation?, true)
-        pres_copy.save!
+        comp_moab.update_audit_timestamps(ran_moab_validation?, true)
+        comp_moab.save!
       end
       results.remove_db_updated_results unless transaction_ok
     else
@@ -138,14 +138,14 @@ class PreservedObjectHandler
         Rails.logger.debug "update_version_after_validation #{druid} found validation errors"
         if checksums_validated
           update_online_version('invalid_moab', false, true)
-          # for case when no db updates b/c pres_obj version != pres_copy version
-          update_pc_invalid_moab unless pres_copy.invalid_moab?
+          # for case when no db updates b/c pres_obj version != comp_moab version
+          update_cm_invalid_moab unless comp_moab.invalid_moab?
         else
           # TODO: we don't know checksum validity of incoming version, and we also have invalid moab
           #   so ideally we could report on moab validation errors (done) *and* queue up a checksum validity check
           update_online_version('validity_unknown', false, false)
-          # for case when no db updates b/c pres_obj version != pres_copy version
-          update_pc_validity_unknown unless pres_copy.validity_unknown?
+          # for case when no db updates b/c pres_obj version != comp_moab version
+          update_cm_validity_unknown unless comp_moab.validity_unknown?
         end
       end
     else
@@ -182,12 +182,12 @@ class PreservedObjectHandler
     @pres_object ||= PreservedObject.find_by!(druid: druid)
   end
 
-  def pres_copy
-    # FIXME: what if there is more than one associated pres_copy?
-    @pres_copy ||= PreservedCopy.find_by!(preserved_object: pres_object, moab_storage_root: moab_storage_root)
+  def comp_moab
+    # FIXME: what if there is more than one associated comp_moab?
+    @comp_moab ||= CompleteMoab.find_by!(preserved_object: pres_object, moab_storage_root: moab_storage_root)
   end
 
-  alias preserved_copy pres_copy
+  alias complete_moab comp_moab
 
   private
 
@@ -197,7 +197,7 @@ class PreservedObjectHandler
       po = PreservedObject.create!(druid: druid,
                                    current_version: incoming_version,
                                    preservation_policy_id: pp_default_id)
-      pc_attrs = {
+      cm_attrs = {
         preserved_object: po,
         version: incoming_version,
         size: incoming_size,
@@ -206,11 +206,11 @@ class PreservedObjectHandler
       }
       t = Time.current
       if ran_moab_validation?
-        pc_attrs[:last_version_audit] = t
-        pc_attrs[:last_moab_validation] = t
+        cm_attrs[:last_version_audit] = t
+        cm_attrs[:last_moab_validation] = t
       end
-      pc_attrs[:last_checksum_validation] = t if checksums_validated
-      PreservedCopy.create!(pc_attrs)
+      cm_attrs[:last_checksum_validation] = t if checksums_validated
+      CompleteMoab.create!(cm_attrs)
     end
 
     results.add_result(AuditResults::CREATED_NEW_OBJECT) if transaction_ok
@@ -220,82 +220,82 @@ class PreservedObjectHandler
   # NOTE: if we can reduce complexity, remove Metrics/PerceivedComplexity exception in .rubocop.yml
   def update_online_version(status=nil, set_status_to_unexp_version=false, checksums_validated=false)
     transaction_ok = with_active_record_transaction_and_rescue do
-      raise_rollback_if_pc_po_version_mismatch
+      raise_rollback_if_cm_po_version_mismatch
 
-      # FIXME: what if there is more than one associated pres_copy?
-      if incoming_version > pres_copy.version && pres_copy.matches_po_current_version?
+      # FIXME: what if there is more than one associated comp_moab?
+      if incoming_version > comp_moab.version && comp_moab.matches_po_current_version?
         # add results without db updates
         code = AuditResults::ACTUAL_VERS_GT_DB_OBJ
-        results.add_result(code, db_obj_name: 'PreservedCopy', db_obj_version: pres_copy.version)
+        results.add_result(code, db_obj_name: 'CompleteMoab', db_obj_version: comp_moab.version)
 
-        pres_copy.upd_audstamps_version_size(ran_moab_validation?, incoming_version, incoming_size)
-        pres_copy.last_checksum_validation = Time.current if checksums_validated && pres_copy.last_checksum_validation
+        comp_moab.upd_audstamps_version_size(ran_moab_validation?, incoming_version, incoming_size)
+        comp_moab.last_checksum_validation = Time.current if checksums_validated && comp_moab.last_checksum_validation
         update_status(status) if status
-        pres_copy.save!
+        comp_moab.save!
         pres_object.current_version = incoming_version
         pres_object.save!
       else
         status = 'unexpected_version_on_storage' if set_status_to_unexp_version
-        update_pc_unexpected_version(status)
+        update_cm_unexpected_version(status)
       end
     end
 
     results.remove_db_updated_results unless transaction_ok
   end
 
-  def raise_rollback_if_pc_po_version_mismatch
-    unless pres_copy.matches_po_current_version?
-      pc_version = pres_copy.version
-      po_version = pres_copy.preserved_object.current_version
-      res_code = AuditResults::PC_PO_VERSION_MISMATCH
-      results.add_result(res_code, { pc_version: pc_version, po_version: po_version })
-      raise ActiveRecord::Rollback, "PreservedCopy version #{pc_version} != PreservedObject current_version #{po_version}"
+  def raise_rollback_if_cm_po_version_mismatch
+    unless comp_moab.matches_po_current_version?
+      cm_version = comp_moab.version
+      po_version = comp_moab.preserved_object.current_version
+      res_code = AuditResults::CM_PO_VERSION_MISMATCH
+      results.add_result(res_code, { cm_version: cm_version, po_version: po_version })
+      raise ActiveRecord::Rollback, "CompleteMoab version #{cm_version} != PreservedObject current_version #{po_version}"
     end
   end
 
-  def update_pc_invalid_moab
+  def update_cm_invalid_moab
     transaction_ok = with_active_record_transaction_and_rescue do
       update_status('invalid_moab')
-      pres_copy.update_audit_timestamps(ran_moab_validation?, false)
-      pres_copy.save!
+      comp_moab.update_audit_timestamps(ran_moab_validation?, false)
+      comp_moab.save!
     end
     results.remove_db_updated_results unless transaction_ok
   end
 
-  def update_pc_validity_unknown
+  def update_cm_validity_unknown
     transaction_ok = with_active_record_transaction_and_rescue do
       update_status('validity_unknown')
-      pres_copy.update_audit_timestamps(ran_moab_validation?, false)
-      pres_copy.save!
+      comp_moab.update_audit_timestamps(ran_moab_validation?, false)
+      comp_moab.save!
     end
     results.remove_db_updated_results unless transaction_ok
   end
 
-  def update_pc_unexpected_version(new_status)
-    results.add_result(AuditResults::UNEXPECTED_VERSION, db_obj_name: 'PreservedCopy', db_obj_version: pres_copy.version)
+  def update_cm_unexpected_version(new_status)
+    results.add_result(AuditResults::UNEXPECTED_VERSION, db_obj_name: 'CompleteMoab', db_obj_version: comp_moab.version)
     version_comparison_results
 
     update_status(new_status) if new_status
-    pres_copy.update_audit_timestamps(ran_moab_validation?, true)
-    pres_copy.save!
+    comp_moab.update_audit_timestamps(ran_moab_validation?, true)
+    comp_moab.save!
   end
 
   # shameless green implementation
   def confirm_online_version
     transaction_ok = with_active_record_transaction_and_rescue do
-      raise_rollback_if_pc_po_version_mismatch
+      raise_rollback_if_cm_po_version_mismatch
 
-      return results.report_results unless can_validate_current_pres_copy_status?
+      return results.report_results unless can_validate_current_comp_moab_status?
 
-      if incoming_version == pres_copy.version
-        set_status_as_seen_on_disk(true) unless pres_copy.status == 'ok'
-        results.add_result(AuditResults::VERSION_MATCHES, 'PreservedCopy')
+      if incoming_version == comp_moab.version
+        set_status_as_seen_on_disk(true) unless comp_moab.status == 'ok'
+        results.add_result(AuditResults::VERSION_MATCHES, 'CompleteMoab')
       else
         set_status_as_seen_on_disk(false)
-        results.add_result(AuditResults::UNEXPECTED_VERSION, db_obj_name: 'PreservedCopy', db_obj_version: pres_copy.version)
+        results.add_result(AuditResults::UNEXPECTED_VERSION, db_obj_name: 'CompleteMoab', db_obj_version: comp_moab.version)
       end
-      pres_copy.update_audit_timestamps(ran_moab_validation?, true)
-      pres_copy.save!
+      comp_moab.update_audit_timestamps(ran_moab_validation?, true)
+      comp_moab.save!
     end
     results.remove_db_updated_results unless transaction_ok
   end
@@ -307,17 +307,17 @@ class PreservedObjectHandler
 
   # expects @incoming_version to be numeric
   def version_comparison_results
-    if incoming_version == pres_copy.version
-      results.add_result(AuditResults::VERSION_MATCHES, pres_copy.class.name)
-    elsif incoming_version < pres_copy.version
+    if incoming_version == comp_moab.version
+      results.add_result(AuditResults::VERSION_MATCHES, comp_moab.class.name)
+    elsif incoming_version < comp_moab.version
       results.add_result(
         AuditResults::ACTUAL_VERS_LT_DB_OBJ,
-        { db_obj_name: pres_copy.class.name, db_obj_version: pres_copy.version }
+        { db_obj_name: comp_moab.class.name, db_obj_version: comp_moab.version }
       )
-    elsif incoming_version > pres_copy.version
+    elsif incoming_version > comp_moab.version
       results.add_result(
         AuditResults::ACTUAL_VERS_GT_DB_OBJ,
-        { db_obj_name: pres_copy.class.name, db_obj_version: pres_copy.version }
+        { db_obj_name: comp_moab.class.name, db_obj_version: comp_moab.version }
       )
     end
   end

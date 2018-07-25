@@ -14,7 +14,7 @@ module Audit
       # We can't use ActiveRecord's .find_each, because that'll disregard the order .least_recent_version_audit
       # specified.  so we use our own batch processing method, which does respect Relation order.
       pcs_to_audit_relation =
-        PreservedCopy.least_recent_version_audit(last_checked_b4_date).by_storage_location(storage_dir)
+        CompleteMoab.least_recent_version_audit(last_checked_b4_date).by_storage_location(storage_dir)
       ActiveRecordUtils.process_in_batches(pcs_to_audit_relation, limit) do |pc|
         c2m = CatalogToMoab.new(pc, storage_dir)
         c2m.check_catalog_version
@@ -44,39 +44,39 @@ module Audit
 
     include ::MoabValidationHandler
 
-    attr_reader :preserved_copy, :storage_dir, :druid, :results
+    attr_reader :complete_moab, :storage_dir, :druid, :results
 
-    def initialize(preserved_copy, storage_dir)
-      @preserved_copy = preserved_copy
+    def initialize(complete_moab, storage_dir)
+      @complete_moab = complete_moab
       @storage_dir = storage_dir
-      @druid = preserved_copy.preserved_object.druid
-      @results = AuditResults.new(druid, nil, preserved_copy.moab_storage_root)
+      @druid = complete_moab.preserved_object.druid
+      @results = AuditResults.new(druid, nil, complete_moab.moab_storage_root)
     end
 
     # shameless green implementation
     def check_catalog_version
       results.check_name = 'check_catalog_version'
-      unless preserved_copy.matches_po_current_version?
-        results.add_result(AuditResults::PC_PO_VERSION_MISMATCH,
-                           pc_version: preserved_copy.version,
-                           po_version: preserved_copy.preserved_object.current_version)
+      unless complete_moab.matches_po_current_version?
+        results.add_result(AuditResults::CM_PO_VERSION_MISMATCH,
+                           cm_version: complete_moab.version,
+                           po_version: complete_moab.preserved_object.current_version)
         return results.report_results(Audit::CatalogToMoab.logger)
       end
 
       unless online_moab_found?
         transaction_ok = ActiveRecordUtils.with_transaction_and_rescue(results) do
           update_status('online_moab_not_found')
-          preserved_copy.save!
+          complete_moab.save!
         end
         results.remove_db_updated_results unless transaction_ok
 
         results.add_result(AuditResults::MOAB_NOT_FOUND,
-                           db_created_at: preserved_copy.created_at.iso8601,
-                           db_updated_at: preserved_copy.updated_at.iso8601)
+                           db_created_at: complete_moab.created_at.iso8601,
+                           db_updated_at: complete_moab.updated_at.iso8601)
         return results.report_results(Audit::CatalogToMoab.logger)
       end
 
-      return results.report_results(Audit::CatalogToMoab.logger) unless can_validate_current_pres_copy_status?
+      return results.report_results(Audit::CatalogToMoab.logger) unless can_validate_current_comp_moab_status?
 
       compare_version_and_take_action
     end
@@ -95,26 +95,26 @@ module Audit
     def compare_version_and_take_action
       moab_version = moab.current_version_id
       results.actual_version = moab_version
-      catalog_version = preserved_copy.version
+      catalog_version = complete_moab.version
       transaction_ok = ActiveRecordUtils.with_transaction_and_rescue(results) do
         if catalog_version == moab_version
-          set_status_as_seen_on_disk(true) unless preserved_copy.ok?
-          results.add_result(AuditResults::VERSION_MATCHES, 'PreservedCopy')
+          set_status_as_seen_on_disk(true) unless complete_moab.ok?
+          results.add_result(AuditResults::VERSION_MATCHES, 'CompleteMoab')
           results.report_results(Audit::CatalogToMoab.logger)
         elsif catalog_version < moab_version
           set_status_as_seen_on_disk(true)
-          pohandler = PreservedObjectHandler.new(druid, moab_version, moab.size, preserved_copy.moab_storage_root)
+          pohandler = PreservedObjectHandler.new(druid, moab_version, moab.size, complete_moab.moab_storage_root)
           pohandler.update_version_after_validation # results reported by this call
         else # catalog_version > moab_version
           set_status_as_seen_on_disk(false)
           results.add_result(
-            AuditResults::UNEXPECTED_VERSION, db_obj_name: 'PreservedCopy', db_obj_version: preserved_copy.version
+            AuditResults::UNEXPECTED_VERSION, db_obj_name: 'CompleteMoab', db_obj_version: complete_moab.version
           )
           results.report_results(Audit::CatalogToMoab.logger)
         end
 
-        preserved_copy.update_audit_timestamps(ran_moab_validation?, true)
-        preserved_copy.save!
+        complete_moab.update_audit_timestamps(ran_moab_validation?, true)
+        complete_moab.save!
       end
       results.remove_db_updated_results unless transaction_ok
     end

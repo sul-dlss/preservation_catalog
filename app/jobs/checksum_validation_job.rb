@@ -1,14 +1,14 @@
-# Confirm checksum for one (online) PreservedCopy, updating database
+# Confirm checksum for one (online) CompleteMoab, updating database
 # @see ChecksumValidator
 class ChecksumValidationJob < ApplicationJob
   queue_as :checksum_validation
 
   before_enqueue do |job|
-    raise ArgumentError, 'PreservedCopy param required' unless job.arguments.first.is_a?(PreservedCopy)
+    raise ArgumentError, 'CompleteMoab param required' unless job.arguments.first.is_a?(CompleteMoab)
   end
 
-  # @param [PreservedCopy] preserved_copy object to checksum
-  def perform(preserved_copy)
-    ChecksumValidator.new(preserved_copy).validate_checksums
+  # @param [CompleteMoab] complete_moab object to checksum
+  def perform(complete_moab)
+    ChecksumValidator.new(complete_moab).validate_checksums
   end
 end

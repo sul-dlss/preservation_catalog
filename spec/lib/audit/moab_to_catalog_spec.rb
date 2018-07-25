@@ -254,9 +254,9 @@ RSpec.describe Audit::MoabToCatalog do
   describe ".drop_moab_storage_root" do
     before { described_class.seed_catalog_for_all_storage_roots }
 
-    it 'drops PreservedCopies that correspond to the given moab storage root' do
+    it 'drops CompleteMoabs that correspond to the given moab storage root' do
       ZippedMoabVersion.destroy_all
-      expect { described_class.drop_moab_storage_root('fixture_sr1') }.to change { PreservedCopy.count }.from(16).to(13)
+      expect { described_class.drop_moab_storage_root('fixture_sr1') }.to change { CompleteMoab.count }.from(16).to(13)
     end
 
     it 'drops PreservedObjects that correspond to the given moab storage root' do
@@ -266,7 +266,7 @@ RSpec.describe Audit::MoabToCatalog do
 
     it 'rolls back pres obj delete if PCs cannot be deleted' do
       expect { described_class.drop_moab_storage_root('fixture_sr1') }.to raise_error(ActiveRecord::ActiveRecordError)
-      expect(PreservedCopy.count).to eq 16
+      expect(CompleteMoab.count).to eq 16
       expect(PreservedObject.count).to eq 16
     end
   end
@@ -275,7 +275,7 @@ RSpec.describe Audit::MoabToCatalog do
     before { described_class.seed_catalog_for_all_storage_roots }
 
     it "won't change objects in a fully seeded db" do
-      expect { described_class.populate_moab_storage_root('fixture_sr1') }.not_to change { PreservedCopy.count }.from(16)
+      expect { described_class.populate_moab_storage_root('fixture_sr1') }.not_to change { CompleteMoab.count }.from(16)
       expect(PreservedObject.count).to eq 16
     end
 
@@ -283,7 +283,7 @@ RSpec.describe Audit::MoabToCatalog do
       ZippedMoabVersion.destroy_all
       described_class.drop_moab_storage_root('fixture_sr1')
       expect(PreservedObject.count).to eq 13
-      expect { described_class.populate_moab_storage_root('fixture_sr1') }.to change { PreservedCopy.count }.from(13).to(16)
+      expect { described_class.populate_moab_storage_root('fixture_sr1') }.to change { CompleteMoab.count }.from(13).to(16)
       expect(PreservedObject.count).to eq 16
     end
   end

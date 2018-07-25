@@ -25,11 +25,11 @@ def load_fixture_moabs
       po = PreservedObject.create(druid: druid,
                                   current_version: version,
                                   preservation_policy: PreservationPolicy.default_policy)
-      PreservedCopy.create(preserved_object_id: po.id,
-                           moab_storage_root_id: @storage_dir_to_moab_storage_root_id[storage_dir],
-                           version: version,
-                           size: size,
-                           status: 'validity_unknown')
+      CompleteMoab.create(preserved_object_id: po.id,
+                          moab_storage_root_id: @storage_dir_to_moab_storage_root_id[storage_dir],
+                          version: version,
+                          size: size,
+                          status: 'validity_unknown')
     end
   end
 end

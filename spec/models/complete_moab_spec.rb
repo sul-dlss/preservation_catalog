@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-RSpec.describe PreservedCopy, type: :model do
+RSpec.describe CompleteMoab, type: :model do
   let(:druid) { 'ab123cd4567' }
   let(:ms_root) { MoabStorageRoot.find_by(name: 'fixture_sr1') }
   let(:preserved_object) do
@@ -12,12 +12,12 @@ RSpec.describe PreservedCopy, type: :model do
     )
   end
   let(:status) { 'validity_unknown' }
-  let(:pc_version) { 1 }
+  let(:cm_version) { 1 }
   let(:args) do # default constructor params
     {
       preserved_object: preserved_object,
       moab_storage_root: ms_root,
-      version: pc_version,
+      version: cm_version,
       status: status,
       size: 1
     }
@@ -25,7 +25,7 @@ RSpec.describe PreservedCopy, type: :model do
 
   # some tests assume the PC and PO exist before the vars are referenced.  the eager instantiation of pc will cause
   # instantiation of preserved_object, since pc depends on it (via args).
-  let!(:pc) { create(:preserved_copy, args) }
+  let!(:pc) { create(:complete_moab, args) }
   let(:now) { Time.now.utc }
 
   it 'is not valid without all required valid attributes' do
@@ -150,13 +150,13 @@ RSpec.describe PreservedCopy, type: :model do
 
   context 'ordered (by last version_audited) and unordered least_recent_version_audit' do
     let!(:newer_timestamp_pc) do
-      create(:preserved_copy, args.merge(version: 6, last_version_audit: (now - 1.day)))
+      create(:complete_moab, args.merge(version: 6, last_version_audit: (now - 1.day)))
     end
     let!(:older_timestamp_pc) do
-      create(:preserved_copy, args.merge(version: 7, last_version_audit: (now - 2.days)))
+      create(:complete_moab, args.merge(version: 7, last_version_audit: (now - 2.days)))
     end
     let!(:future_timestamp_pc) do
-      create(:preserved_copy, args.merge(version: 8, last_version_audit: (now + 1.day)))
+      create(:complete_moab, args.merge(version: 8, last_version_audit: (now + 1.day)))
     end
 
     describe '.least_recent_version_audit' do
@@ -209,16 +209,16 @@ RSpec.describe PreservedCopy, type: :model do
   context 'ordered (by fixity_check_expired) and unordered fixity_check_expired methods' do
     let(:fixity_ttl) { preserved_object.preservation_policy.fixity_ttl }
     let!(:old_check_pc1) do
-      create(:preserved_copy, args.merge(version: 6, last_checksum_validation: now - (fixity_ttl * 2)))
+      create(:complete_moab, args.merge(version: 6, last_checksum_validation: now - (fixity_ttl * 2)))
     end
     let!(:old_check_pc2) do
-      create(:preserved_copy, args.merge(version: 7, last_checksum_validation: now - fixity_ttl - 1.second))
+      create(:complete_moab, args.merge(version: 7, last_checksum_validation: now - fixity_ttl - 1.second))
     end
     let!(:recently_checked_pc1) do
-      create(:preserved_copy, args.merge(version: 8, last_checksum_validation: now - fixity_ttl + 1.second))
+      create(:complete_moab, args.merge(version: 8, last_checksum_validation: now - fixity_ttl + 1.second))
     end
     let!(:recently_checked_pc2) do
-      create(:preserved_copy, args.merge(version: 9, last_checksum_validation: now - (fixity_ttl * 0.1)))
+      create(:complete_moab, args.merge(version: 9, last_checksum_validation: now - (fixity_ttl * 0.1)))
     end
 
     before { pc.save! }
@@ -250,7 +250,7 @@ RSpec.describe PreservedCopy, type: :model do
     before { pc.save! }
 
     describe '.by_moab_storage_root_name' do
-      it 'returns the expected preserved copies' do
+      it 'returns the expected complete moabs' do
         expect(described_class.by_moab_storage_root_name('fixture_sr1').length).to eq 1
         expect(described_class.by_moab_storage_root_name('fixture_sr2')).to be_empty
         expect(described_class.by_moab_storage_root_name('fixture_empty')).to be_empty
@@ -258,7 +258,7 @@ RSpec.describe PreservedCopy, type: :model do
     end
 
     describe '.by_storage_location' do
-      it 'returns the expected preserved copies' do
+      it 'returns the expected complete moabs' do
         expect(described_class.by_storage_location('spec/fixtures/storage_root01/sdr2objects').length).to eq 1
         expect(described_class.by_storage_location('spec/fixtures/storage_root02/sdr2objects')).to be_empty
         expect(described_class.by_storage_location('spec/fixtures/empty/sdr2objects')).to be_empty
@@ -266,7 +266,7 @@ RSpec.describe PreservedCopy, type: :model do
     end
 
     describe '.by_druid' do
-      it 'returns the expected preserved copies' do
+      it 'returns the expected complete moabs' do
         expect(described_class.by_druid(druid).length).to eq 1
         expect(described_class.by_druid('bj102hs9687')).to be_empty
       end
@@ -278,18 +278,18 @@ RSpec.describe PreservedCopy, type: :model do
     describe '.fixity_check_expired' do
       let(:ms_root2) { MoabStorageRoot.find_by(name: 'fixture_sr2') }
       let!(:checked_before_threshold_pc1) do
-        create(:preserved_copy, args.merge(version: 6, last_checksum_validation: now - 3.weeks))
+        create(:complete_moab, args.merge(version: 6, last_checksum_validation: now - 3.weeks))
       end
       let!(:checked_before_threshold_pc2) do
         my_args = args.merge(version: 7, last_checksum_validation: now - 7.01.days, moab_storage_root: ms_root2)
-        create(:preserved_copy, my_args)
+        create(:complete_moab, my_args)
       end
       let!(:recently_checked_pc1) do
-        create(:preserved_copy, args.merge(version: 8, last_checksum_validation: now - 6.99.days))
+        create(:complete_moab, args.merge(version: 8, last_checksum_validation: now - 6.99.days))
       end
       let!(:recently_checked_pc2) do
         my_args = args.merge(version: 9, last_checksum_validation: now - 1.day, moab_storage_root: ms_root2)
-        create(:preserved_copy, my_args)
+        create(:complete_moab, my_args)
       end
 
       describe '.by_moab_storage_root_name' do
@@ -327,7 +327,7 @@ RSpec.describe PreservedCopy, type: :model do
   end
 
   describe '#create_zipped_moab_versions!' do
-    let(:pc_version) { 3 }
+    let(:cm_version) { 3 }
     let(:zip_ep) { ZipEndpoint.find_by!(endpoint_name: 'mock_archive1') }
     let(:zmvs_by_druid) { ZippedMoabVersion.by_druid(druid) }
 
@@ -335,9 +335,9 @@ RSpec.describe PreservedCopy, type: :model do
 
     it "creates ZMVs that don't yet exist for expected versions, but should" do
       expect { pc.create_zipped_moab_versions! }.to change {
-        ZipEndpoint.which_need_archive_copy(druid, pc_version).to_a
+        ZipEndpoint.which_need_archive_copy(druid, cm_version).to_a
       }.from([zip_ep]).to([]).and change {
-        zmvs_by_druid.where(version: pc_version).count
+        zmvs_by_druid.where(version: cm_version).count
       }.from(0).to(1)
 
       expect(zmvs_by_druid.pluck(:version).sort).to eq [1, 2, 3]
@@ -349,9 +349,9 @@ RSpec.describe PreservedCopy, type: :model do
 
     it "creates ZMVs that don't yet exist for new endpoint, but should" do
       expect { pc.create_zipped_moab_versions! }.to change {
-        ZipEndpoint.which_need_archive_copy(druid, pc_version).to_a
+        ZipEndpoint.which_need_archive_copy(druid, cm_version).to_a
       }.from([zip_ep]).to([]).and change {
-        zmvs_by_druid.where(version: pc_version).count
+        zmvs_by_druid.where(version: cm_version).count
       }.from(0).to(1)
 
       new_zip_ep = create(
@@ -361,9 +361,9 @@ RSpec.describe PreservedCopy, type: :model do
       )
 
       expect { pc.create_zipped_moab_versions! }.to change {
-        ZipEndpoint.which_need_archive_copy(druid, pc_version).to_a
+        ZipEndpoint.which_need_archive_copy(druid, cm_version).to_a
       }.from([new_zip_ep]).to([]).and change {
-        zmvs_by_druid.where(version: pc_version).count
+        zmvs_by_druid.where(version: cm_version).count
       }.from(1).to(2)
     end
   end

@@ -88,14 +88,14 @@ OkComputer::Registry.register "external-workflow-services-url", OkComputer::Http
 # Replication (only) uses zip_storage directory to build the zips to send to zip endpoints
 OkComputer::Registry.register "feature-zip_storage_dir", OkComputer::DirectoryCheck.new(Settings.zip_storage)
 
-# check PreservedCopy#last_version_audit to ensure it isn't too old
+# check CompleteMoab#last_version_audit to ensure it isn't too old
 class VersionAuditWindowCheck < OkComputer::Check
   def check
-    if PreservedCopy.least_recent_version_audit(clause).first
-      mark_message "PreservedCopy\#last_version_audit older than #{clause}. "
+    if CompleteMoab.least_recent_version_audit(clause).first
+      mark_message "CompleteMoab\#last_version_audit older than #{clause}. "
       mark_failure
     else
-      mark_message "PreservedCopy\#last_version_audit all newer than #{clause}. "
+      mark_message "CompleteMoab\#last_version_audit all newer than #{clause}. "
     end
   end
 

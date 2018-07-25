@@ -10,9 +10,9 @@ module Audit
     # Queues asynchronous CV
     def self.validate_disk(storage_root_name)
       logger.info "#{Time.now.utc.iso8601} CV validate_disk starting for #{storage_root_name}"
-      pres_copies = PreservedCopy.by_moab_storage_root_name(storage_root_name).fixity_check_expired
-      logger.info "Number of Preserved Copies to be enqueued for CV: #{pres_copies.count}"
-      pres_copies.find_each(&:validate_checksums!)
+      complete_moabs = CompleteMoab.by_moab_storage_root_name(storage_root_name).fixity_check_expired
+      logger.info "Number of Preserved Copies to be enqueued for CV: #{complete_moabs.count}"
+      complete_moabs.find_each(&:validate_checksums!)
     ensure
       logger.info "#{Time.now.utc.iso8601} CV validate_disk for #{storage_root_name}"
     end
@@ -27,10 +27,10 @@ module Audit
 
     def self.validate_druid(druid)
       logger.info "#{Time.now.utc.iso8601} CV validate_druid starting for #{druid}"
-      pres_copies = PreservedCopy.by_druid(druid)
-      logger.debug("Found #{pres_copies.size} preserved copies.")
+      complete_moabs = CompleteMoab.by_druid(druid)
+      logger.debug("Found #{complete_moabs.size} complete moabs.")
       checksum_results_lists = []
-      pres_copies.each do |pc|
+      complete_moabs.each do |pc|
         cv = ChecksumValidator.new(pc)
         cv.validate_checksums
         checksum_results_lists << cv.results
@@ -50,13 +50,13 @@ module Audit
 
     # validate objects with a particular status on a particular moab_storage_root
     def self.validate_status_root(status, storage_root_name, limit=Settings.c2m_sql_limit)
-      # pres_copies is an AR Relation; it could return a lot of results, so we want to process it in
+      # complete_moabs is an AR Relation; it could return a lot of results, so we want to process it in
       # batches.  we can't use ActiveRecord's .find_each, because that'll disregard the order .fixity_check_expired
       # specified.  so we use our own batch processing method, which does respect Relation order.
-      pres_copies = PreservedCopy.send(status).by_moab_storage_root_name(storage_root_name)
+      complete_moabs = CompleteMoab.send(status).by_moab_storage_root_name(storage_root_name)
       desc = "Number of Preserved Copies of status #{status} from #{storage_root_name} to be checksum validated"
-      logger.info "#{desc}: #{pres_copies.count}"
-      ActiveRecordUtils.process_in_batches(pres_copies, limit) do |pc|
+      logger.info "#{desc}: #{complete_moabs.count}"
+      ActiveRecordUtils.process_in_batches(complete_moabs, limit) do |pc|
         logger.info "CV beginning for #{pc.preserved_object.druid}; starting status #{pc.status}"
         ChecksumValidator.new(pc).validate_checksums
         logger.info "CV ended for #{pc.preserved_object.druid}; ending status #{pc.status}"

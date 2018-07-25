@@ -6,7 +6,7 @@
 class PreservedObject < ApplicationRecord
   PREFIX_RE = /druid:/i
   belongs_to :preservation_policy
-  has_many :preserved_copies, dependent: :restrict_with_exception
+  has_many :complete_moabs, dependent: :restrict_with_exception
   validates :druid,
             presence: true,
             uniqueness: true,
@@ -15,9 +15,9 @@ class PreservedObject < ApplicationRecord
   validates :current_version, presence: true, numericality: { only_integer: true, greater_than: 0 }
   validates :preservation_policy, null: false
 
-  scope :without_preserved_copies, -> { left_outer_joins(:preserved_copies).where(preserved_copies: { id: nil }) }
+  scope :without_complete_moabs, -> { left_outer_joins(:complete_moabs).where(complete_moabs: { id: nil }) }
 
-  # Spawn asynchronous checks of all existing archive preserved_copies.
+  # Spawn asynchronous checks of all existing archive complete_moabs.
   # This logic is similar to PlexerJob, for a different purpose.
   # This should implement the start of the replication process if status is unreplicated for an archival pres_copy
   # Compare last_existence_check (from archive pres_copy) with archive TTL when checking the archival pres_copy status

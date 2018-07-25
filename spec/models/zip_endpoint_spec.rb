@@ -94,11 +94,11 @@ RSpec.describe ZipEndpoint, type: :model do
     let(:ep) { ZipEndpoint.find_by!(endpoint_name: 'mock_archive1') }
     let!(:pc) do
       po = create(:preserved_object, current_version: version, druid: druid)
-      create(:preserved_copy, version: version, preserved_object: po)
+      create(:complete_moab, version: version, preserved_object: po)
     end
     let!(:pc2) do
       po = create(:preserved_object, current_version: version, druid: other_druid)
-      create(:preserved_copy, version: version, preserved_object: po)
+      create(:complete_moab, version: version, preserved_object: po)
     end
 
     before { ZippedMoabVersion.destroy_all }

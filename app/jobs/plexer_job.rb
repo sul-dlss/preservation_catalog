@@ -1,6 +1,6 @@
 # Precondition(s):
-#  All needed PreservedCopy and ZippedMoabVersion rows are already made.
-# @see PreservedCopy#create_zipped_moab_versions!
+#  All needed CompleteMoab and ZippedMoabVersion rows are already made.
+# @see CompleteMoab#create_zipped_moab_versions!
 #
 # Responsibilities:
 # Record zip part metadata info in DB.

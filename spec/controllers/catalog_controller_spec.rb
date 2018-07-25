@@ -14,22 +14,22 @@ RSpec.describe CatalogController, type: :controller do
   describe 'POST #create' do
     context 'with valid params' do
       let(:pres_obj) { PreservedObject.find_by(druid: bare_druid) }
-      let(:pres_copy) { PreservedCopy.find_by(preserved_object: pres_obj) }
+      let(:comp_moab) { CompleteMoab.find_by(preserved_object: pres_obj) }
 
       before do
         post :create, params: { druid: prefixed_druid, incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
       end
 
-      it 'saves PreservedObject and PreservedCopy in db' do
+      it 'saves PreservedObject and CompleteMoab in db' do
         po = PreservedObject.find_by(druid: bare_druid)
-        pc = PreservedCopy.find_by(preserved_object: po)
+        cm = CompleteMoab.find_by(preserved_object: po)
         expect(po).to be_an_instance_of PreservedObject
-        expect(pc).to be_an_instance_of PreservedCopy
+        expect(cm).to be_an_instance_of CompleteMoab
       end
-      it 'PreservedCopy and PreservedObject have correct attributes' do
-        expect(pres_copy.moab_storage_root.storage_location).to eq storage_location
-        expect(pres_copy.version).to eq ver
-        expect(pres_copy.size).to eq size
+      it 'CompleteMoab and PreservedObject have correct attributes' do
+        expect(comp_moab.moab_storage_root.storage_location).to eq storage_location
+        expect(comp_moab.version).to eq ver
+        expect(comp_moab.size).to eq size
         expect(pres_obj.druid).to eq bare_druid
       end
 
@@ -48,11 +48,11 @@ RSpec.describe CatalogController, type: :controller do
         post :create, params: { druid: nil, incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
       end
 
-      it 'does not save PreservedObject or PreservedCopy in db' do
+      it 'does not save PreservedObject or CompleteMoab in db' do
         po = PreservedObject.find_by(druid: prefixed_druid)
-        pc = PreservedCopy.find_by(preserved_object: po)
+        cm = CompleteMoab.find_by(preserved_object: po)
         expect(po).to be_nil
-        expect(pc).to be_nil
+        expect(cm).to be_nil
       end
 
       it 'response contains error message' do
@@ -127,7 +127,7 @@ RSpec.describe CatalogController, type: :controller do
       po = PreservedObject.create!(
         druid: "bj102hs9687", current_version: ver, preservation_policy: PreservationPolicy.default_policy
       )
-      PreservedCopy.create!(
+      CompleteMoab.create!(
         preserved_object: po,
         moab_storage_root: MoabStorageRoot.find_by(storage_location: storage_location),
         version: ver,
@@ -135,7 +135,7 @@ RSpec.describe CatalogController, type: :controller do
       )
     end
     let(:pres_obj) { PreservedObject.find_by(druid: bare_druid) }
-    let(:pres_copy) { PreservedCopy.find_by(preserved_object: pres_obj) }
+    let(:comp_moab) { CompleteMoab.find_by(preserved_object: pres_obj) }
 
     context 'with valid params' do
       before do
@@ -144,7 +144,7 @@ RSpec.describe CatalogController, type: :controller do
       let(:upd_version) { 4 }
 
       it 'updates the version' do
-        expect(pres_copy.version).to eq upd_version
+        expect(comp_moab.version).to eq upd_version
       end
 
       it 'returns an ok response code' do
@@ -182,14 +182,14 @@ RSpec.describe CatalogController, type: :controller do
       end
     end
 
-    context 'pc po version mismatch' do
+    context 'cm po version mismatch' do
       before do
-        pres_copy.version = pres_copy.version + 1
-        pres_copy.save!
+        comp_moab.version = comp_moab.version + 1
+        comp_moab.save!
         patch :update, params: { druid: prefixed_druid, incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
       end
       it 'response contains error message' do
-        exp_msg = [{ AuditResults::PC_PO_VERSION_MISMATCH => "PreservedCopy online Moab version 4 does not match PreservedObject current_version 3" }]
+        exp_msg = [{ AuditResults::CM_PO_VERSION_MISMATCH => "CompleteMoab online Moab version 4 does not match PreservedObject current_version 3" }]
         expect(response.body).to include(exp_msg.to_json)
       end
 
@@ -204,13 +204,13 @@ RSpec.describe CatalogController, type: :controller do
       end
 
       it 'response contains error message' do
-        unexp_ver = "actual version (1) has unexpected relationship to PreservedCopy db version (3); ERROR!"
-        ver_lt_db = "actual version (1) less than PreservedCopy db version (3); ERROR!"
-        status_change = "PreservedCopy status changed from validity_unknown to unexpected_version_on_storage"
+        unexp_ver = "actual version (1) has unexpected relationship to CompleteMoab db version (3); ERROR!"
+        ver_lt_db = "actual version (1) less than CompleteMoab db version (3); ERROR!"
+        status_change = "CompleteMoab status changed from validity_unknown to unexpected_version_on_storage"
         exp_msg = [
           { AuditResults::UNEXPECTED_VERSION => unexp_ver.to_s },
           { AuditResults::ACTUAL_VERS_LT_DB_OBJ => ver_lt_db.to_s },
-          { AuditResults::PC_STATUS_CHANGED => status_change.to_s }
+          { AuditResults::CM_STATUS_CHANGED => status_change.to_s }
         ]
         expect(response.body).to include(exp_msg.to_json)
       end
