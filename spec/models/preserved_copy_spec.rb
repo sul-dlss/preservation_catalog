@@ -320,7 +320,7 @@ RSpec.describe PreservedCopy, type: :model do
 
   describe '#create_zipped_moab_versions!' do
     let(:pc_version) { 3 }
-    let(:archive_ep) { ZipEndpoint.find_by!(endpoint_name: 'mock_archive1') }
+    let(:zip_ep) { ZipEndpoint.find_by!(endpoint_name: 'mock_archive1') }
     let(:zmvs_by_druid) { ZippedMoabVersion.by_druid(druid) }
 
     before { pc.zipped_moab_versions.destroy_all } # undo auto-spawned rows from callback
@@ -328,7 +328,7 @@ RSpec.describe PreservedCopy, type: :model do
     it "creates ZMVs that don't yet exist for expected versions, but should" do
       expect { pc.create_zipped_moab_versions! }.to change {
         ZipEndpoint.which_need_archive_copy(druid, pc_version).to_a
-      }.from([archive_ep]).to([]).and change {
+      }.from([zip_ep]).to([]).and change {
         zmvs_by_druid.where(version: pc_version).count
       }.from(0).to(1)
 
@@ -342,11 +342,11 @@ RSpec.describe PreservedCopy, type: :model do
     it "creates ZMVs that don't yet exist for new endpoint, but should" do
       expect { pc.create_zipped_moab_versions! }.to change {
         ZipEndpoint.which_need_archive_copy(druid, pc_version).to_a
-      }.from([archive_ep]).to([]).and change {
+      }.from([zip_ep]).to([]).and change {
         zmvs_by_druid.where(version: pc_version).count
       }.from(0).to(1)
 
-      new_archive_ep = create(
+      new_zip_ep = create(
         :zip_endpoint,
         endpoint_name: 'mock_archive2',
         preservation_policies: [PreservationPolicy.default_policy]
@@ -354,7 +354,7 @@ RSpec.describe PreservedCopy, type: :model do
 
       expect { pc.create_zipped_moab_versions! }.to change {
         ZipEndpoint.which_need_archive_copy(druid, pc_version).to_a
-      }.from([new_archive_ep]).to([]).and change {
+      }.from([new_zip_ep]).to([]).and change {
         zmvs_by_druid.where(version: pc_version).count
       }.from(1).to(2)
     end
