@@ -47,7 +47,7 @@ RSpec.describe PreservedCopy, type: :model do
     )
   end
 
-  context '#status=' do
+  describe '#status=' do
     it "validation rejects a value if it does not match the enum" do
       expect { described_class.new(status: 654) }
         .to raise_error(ArgumentError, "'654' is not a valid status")
@@ -57,6 +57,17 @@ RSpec.describe PreservedCopy, type: :model do
 
     it "will accept a symbol, but will always return a string" do
       expect(described_class.new(status: :invalid_moab).status).to eq 'invalid_moab'
+    end
+  end
+
+  describe '#replicatable_status?' do
+    it 'reponds true IFF status should allow replication' do
+      # validity_unknown initial status implicitly tested (otherwise assignment wouldn't change the reponse)
+      expect { pc.status = 'ok'                        }.to change { pc.replicatable_status? }.to(true)
+      expect { pc.status = 'invalid_checksum'          }.to change { pc.replicatable_status? }.to(false)
+      expect { pc.status = 'replicated_copy_not_found' }.to change { pc.replicatable_status? }.to(true)
+      expect { pc.status = 'invalid_moab'              }.to change { pc.replicatable_status? }.to(false)
+      expect { pc.status = 'unreplicated'              }.to change { pc.replicatable_status? }.to(true)
     end
   end
 
@@ -71,21 +82,6 @@ RSpec.describe PreservedCopy, type: :model do
   it { is_expected.to validate_presence_of(:preserved_object) }
   it { is_expected.to validate_presence_of(:version) }
   it { is_expected.to have_many(:zipped_moab_versions) }
-
-  describe '#replicate!' do
-    it 'raises if unsaved' do
-      expect { described_class.new(size: 1).replicate! }.to raise_error(RuntimeError, /must be persisted/)
-    end
-    it 'accepts large objects' do
-      allow(ZipmakerJob).to receive(:perform_later).with(preserved_object.druid, pc.version)
-      pc.size = 30_000_000_000
-      expect { pc.replicate! }.not_to raise_error
-    end
-    it 'passes druid and version to Zipmaker' do
-      expect(ZipmakerJob).to receive(:perform_later).with(preserved_object.druid, pc.version)
-      pc.replicate!
-    end
-  end
 
   describe '#validate_checksums!' do
     it 'passes self to ChecksumValidationJob' do
