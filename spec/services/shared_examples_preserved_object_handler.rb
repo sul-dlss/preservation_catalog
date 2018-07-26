@@ -307,7 +307,7 @@ end
 RSpec.shared_examples 'cannot validate something with INVALID_CHECKSUM_STATUS' do |method_sym|
   before { cm.invalid_checksum! }
 
-  it 'PreservedCopy keeps INVALID_CHECKSUM_STATUS' do
+  it 'CompleteMoab keeps INVALID_CHECKSUM_STATUS' do
     po_handler.send(method_sym)
     expect(cm.reload.status).to eq 'invalid_checksum'
   end

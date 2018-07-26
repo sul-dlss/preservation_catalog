@@ -38,7 +38,7 @@ RSpec.describe PreservedObjectHandler do
       po_handler.create
     end
 
-    it 'creates the PreservedCopy with "ok" status and validation timestamps if caller ran CV' do
+    it 'creates the CompleteMoab with "ok" status and validation timestamps if caller ran CV' do
       cm_args[:status] = 'ok'
       cm_args[:last_version_audit] = ActiveSupport::TimeWithZone
       cm_args[:last_moab_validation] = ActiveSupport::TimeWithZone

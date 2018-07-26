@@ -328,7 +328,7 @@ RSpec.describe ChecksumValidator do
         'unexpected_version_on_storage',
         'validity_unknown'
       ].each do |initial_status|
-        it "sets PreservedCopy status to INVALID_CHECKSUM_STATUS if it was initially #{initial_status}" do
+        it "sets CompleteMoab status to INVALID_CHECKSUM_STATUS if it was initially #{initial_status}" do
           comp_moab.status = initial_status
           expect { cv.validate_checksums }.to change { comp_moab.status }.to 'invalid_checksum'
         end
