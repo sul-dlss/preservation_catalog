@@ -11,7 +11,7 @@ module Audit
     def self.validate_disk(storage_root_name)
       logger.info "#{Time.now.utc.iso8601} CV validate_disk starting for #{storage_root_name}"
       complete_moabs = CompleteMoab.by_moab_storage_root_name(storage_root_name).fixity_check_expired
-      logger.info "Number of Preserved Copies to be enqueued for CV: #{complete_moabs.count}"
+      logger.info "Number of Complete Moabs to be enqueued for CV: #{complete_moabs.count}"
       complete_moabs.find_each(&:validate_checksums!)
     ensure
       logger.info "#{Time.now.utc.iso8601} CV validate_disk for #{storage_root_name}"
@@ -54,7 +54,7 @@ module Audit
       # batches.  we can't use ActiveRecord's .find_each, because that'll disregard the order .fixity_check_expired
       # specified.  so we use our own batch processing method, which does respect Relation order.
       complete_moabs = CompleteMoab.send(status).by_moab_storage_root_name(storage_root_name)
-      desc = "Number of Preserved Copies of status #{status} from #{storage_root_name} to be checksum validated"
+      desc = "Number of Complete Moabs of status #{status} from #{storage_root_name} to be checksum validated"
       logger.info "#{desc}: #{complete_moabs.count}"
       ActiveRecordUtils.process_in_batches(complete_moabs, limit) do |cm|
         logger.info "CV beginning for #{cm.preserved_object.druid}; starting status #{cm.status}"
