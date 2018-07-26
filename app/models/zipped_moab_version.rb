@@ -31,9 +31,9 @@ class ZippedMoabVersion < ApplicationRecord
   }
 
   # Send to asynchronous replication pipeline
-  # @return [ZipmakerJob, false] false if unpersisted or parent PC has non-replicatable status
+  # @return [ZipmakerJob, nil] nil if unpersisted or parent PC has non-replicatable status
   def replicate!
-    return false unless persisted? && complete_moab.replicatable_status?
+    return nil unless persisted? && complete_moab.replicatable_status?
     ZipmakerJob.perform_later(preserved_object.druid, version)
   end
 end
