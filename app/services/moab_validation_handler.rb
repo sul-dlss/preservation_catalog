@@ -5,7 +5,7 @@ module MoabValidationHandler
   # #druid - String (the "bare" druid, e.g. 'ab123cd4567', sans 'druid:' prefix)
   # #storage_location - String - the root directory holding the druid tree (the storage root path)
   # #results - AuditResults - the instance the including class is using to track findings of interest
-  # #complete_moab - CompleteMoab - instance of the pres copy being validated
+  # #complete_moab - CompleteMoab - instance of the complete moab being validated
 
   def object_dir
     @object_dir ||= "#{storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}"

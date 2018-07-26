@@ -104,7 +104,7 @@ RSpec.describe ZipEndpoint, type: :model do
     before { ZippedMoabVersion.destroy_all }
 
     describe '.which_have_archive_copy' do
-      it 'returns the zip endpoints which have a pres copy for the druid version' do
+      it 'returns the zip endpoints which have a complete moab for the druid version' do
         expect(ZipEndpoint.which_have_archive_copy(druid, version).pluck(:endpoint_name)).to eq []
         expect { pc.zipped_moab_versions.create!(status: 'ok', version: version, zip_endpoint: ep) }.not_to change {
           [
@@ -131,7 +131,7 @@ RSpec.describe ZipEndpoint, type: :model do
     end
 
     describe '.which_need_archive_copy' do
-      it "returns the zip endpoints which should have a pres copy for the druid/version, but which don't yet" do
+      it "returns the zip endpoints which should have a complete moab for the druid/version, but which don't yet" do
         expect(ZipEndpoint.which_need_archive_copy(druid, version).pluck(:endpoint_name).sort).to eq %w[mock_archive1 zip-endpoint]
         expect(ZipEndpoint.which_need_archive_copy(druid, version - 1).pluck(:endpoint_name).sort).to eq %w[mock_archive1 zip-endpoint]
         expect(ZipEndpoint.which_need_archive_copy(other_druid, version).pluck(:endpoint_name).sort).to eq %w[mock_archive1 zip-endpoint]
