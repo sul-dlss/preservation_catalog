@@ -30,8 +30,8 @@ module Audit
       complete_moabs = CompleteMoab.by_druid(druid)
       logger.debug("Found #{complete_moabs.size} complete moabs.")
       checksum_results_lists = []
-      complete_moabs.each do |pc|
-        cv = ChecksumValidator.new(pc)
+      complete_moabs.each do |cm|
+        cv = ChecksumValidator.new(cm)
         cv.validate_checksums
         checksum_results_lists << cv.results
         logger.info "#{cv.results.result_array} for #{druid}"
@@ -56,10 +56,10 @@ module Audit
       complete_moabs = CompleteMoab.send(status).by_moab_storage_root_name(storage_root_name)
       desc = "Number of Preserved Copies of status #{status} from #{storage_root_name} to be checksum validated"
       logger.info "#{desc}: #{complete_moabs.count}"
-      ActiveRecordUtils.process_in_batches(complete_moabs, limit) do |pc|
-        logger.info "CV beginning for #{pc.preserved_object.druid}; starting status #{pc.status}"
-        ChecksumValidator.new(pc).validate_checksums
-        logger.info "CV ended for #{pc.preserved_object.druid}; ending status #{pc.status}"
+      ActiveRecordUtils.process_in_batches(complete_moabs, limit) do |cm|
+        logger.info "CV beginning for #{cm.preserved_object.druid}; starting status #{cm.status}"
+        ChecksumValidator.new(cm).validate_checksums
+        logger.info "CV ended for #{cm.preserved_object.druid}; ending status #{cm.status}"
       end
     end
   end

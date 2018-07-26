@@ -9,9 +9,9 @@ class MoabStorageRoot < ApplicationRecord
 
   # Use a queue to validate CompleteMoab objects
   def validate_expired_checksums!
-    pcs = complete_moabs.fixity_check_expired
-    Rails.logger.info "MoabStorageRoot #{id} (#{name}), # of complete_moabs to be checksum validated: #{pcs.count}"
-    pcs.find_each { |pc| ChecksumValidationJob.perform_later(pc) }
+    cms = complete_moabs.fixity_check_expired
+    Rails.logger.info "MoabStorageRoot #{id} (#{name}), # of complete_moabs to be checksum validated: #{cms.count}"
+    cms.find_each { |cm| ChecksumValidationJob.perform_later(cm) }
   end
 
   # Iterates over the storage roots enumerated in settings, creating a MoabStorageRoot for

@@ -40,10 +40,10 @@ RSpec.describe Audit::CatalogToMoab do
         # and we are ensuring that we call #check_catalog_version on all 3 objects.
 
         # we must set up all the described_class instance objects ahead of any process calling CatalogToMoab.new
-        pcs_from_scope =
+        cms_from_scope =
           CompleteMoab.least_recent_version_audit(last_checked_version_b4_date).by_storage_location(storage_dir)
-        c2m_list = pcs_from_scope.map do |pc|
-          described_class.new(pc, storage_dir)
+        c2m_list = cms_from_scope.map do |cm|
+          described_class.new(cm, storage_dir)
         end
         c2m_list.each do |c2m|
           allow(described_class).to receive(:new).with(c2m.complete_moab, storage_dir).and_return(c2m)

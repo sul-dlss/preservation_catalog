@@ -1,8 +1,8 @@
 require 'rails_helper'
 
 describe ResultsRecorderJob, type: :job do
-  let(:pc) { create(:complete_moab) }
-  let(:zmv) { pc.zipped_moab_versions.first }
+  let(:cm) { create(:complete_moab) }
+  let(:zmv) { cm.zipped_moab_versions.first }
   let(:druid) { zmv.preserved_object.druid }
   let(:zip_endpoint) { zmv.zip_endpoint }
 
@@ -40,7 +40,7 @@ describe ResultsRecorderJob, type: :job do
     let(:other_ep) { create(:zip_endpoint, delivery_class: 2) }
 
     before do
-      pc.zipped_moab_versions.create!(version: zmv.version, status: 'unreplicated', zip_endpoint: other_ep)
+      cm.zipped_moab_versions.create!(version: zmv.version, status: 'unreplicated', zip_endpoint: other_ep)
     end
 
     it 'does not send to replication.results queue' do

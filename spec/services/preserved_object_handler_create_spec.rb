@@ -109,7 +109,7 @@ RSpec.describe PreservedObjectHandler do
       let(:t) { Time.current }
       let(:ms_root) { MoabStorageRoot.find_by(storage_location: storage_dir) }
       let(:po_db_obj) { PreservedObject.find_by(druid: valid_druid) }
-      let(:pc_db_obj) { CompleteMoab.find_by(preserved_object: po_db_obj) }
+      let(:cm_db_obj) { CompleteMoab.find_by(preserved_object: po_db_obj) }
       let(:results) do
         po_handler = described_class.new(valid_druid, incoming_version, incoming_size, ms_root)
         po_handler.create_after_validation
@@ -118,10 +118,10 @@ RSpec.describe PreservedObjectHandler do
       before { results }
 
       it "sets last_moab_validation with current time" do
-        expect(pc_db_obj.last_moab_validation).to be_within(10).of(t)
+        expect(cm_db_obj.last_moab_validation).to be_within(10).of(t)
       end
       it "sets last_version_audit with current time" do
-        expect(pc_db_obj.last_version_audit).to be_within(10).of(t)
+        expect(cm_db_obj.last_version_audit).to be_within(10).of(t)
       end
     end
 

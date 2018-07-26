@@ -23,9 +23,9 @@ RSpec.describe CompleteMoab, type: :model do
     }
   end
 
-  # some tests assume the PC and PO exist before the vars are referenced.  the eager instantiation of pc will cause
-  # instantiation of preserved_object, since pc depends on it (via args).
-  let!(:pc) { create(:complete_moab, args) }
+  # some tests assume the PC and PO exist before the vars are referenced.  the eager instantiation of cm will cause
+  # instantiation of preserved_object, since cm depends on it (via args).
+  let!(:cm) { create(:complete_moab, args) }
   let(:now) { Time.now.utc }
 
   it 'is not valid without all required valid attributes' do
@@ -63,11 +63,11 @@ RSpec.describe CompleteMoab, type: :model do
   describe '#replicatable_status?' do
     it 'reponds true IFF status should allow replication' do
       # validity_unknown initial status implicitly tested (otherwise assignment wouldn't change the reponse)
-      expect { pc.status = 'ok'                        }.to change { pc.replicatable_status? }.to(true)
-      expect { pc.status = 'invalid_checksum'          }.to change { pc.replicatable_status? }.to(false)
-      expect { pc.status = 'replicated_copy_not_found' }.to change { pc.replicatable_status? }.to(true)
-      expect { pc.status = 'invalid_moab'              }.to change { pc.replicatable_status? }.to(false)
-      expect { pc.status = 'unreplicated'              }.to change { pc.replicatable_status? }.to(true)
+      expect { cm.status = 'ok'                        }.to change { cm.replicatable_status? }.to(true)
+      expect { cm.status = 'invalid_checksum'          }.to change { cm.replicatable_status? }.to(false)
+      expect { cm.status = 'replicated_copy_not_found' }.to change { cm.replicatable_status? }.to(true)
+      expect { cm.status = 'invalid_moab'              }.to change { cm.replicatable_status? }.to(false)
+      expect { cm.status = 'unreplicated'              }.to change { cm.replicatable_status? }.to(true)
     end
   end
 
@@ -85,87 +85,87 @@ RSpec.describe CompleteMoab, type: :model do
 
   describe '#validate_checksums!' do
     it 'passes self to ChecksumValidationJob' do
-      expect(ChecksumValidationJob).to receive(:perform_later).with(pc)
-      pc.validate_checksums!
+      expect(ChecksumValidationJob).to receive(:perform_later).with(cm)
+      cm.validate_checksums!
     end
   end
 
   context 'delegation to s3_key' do
     it 'creates the s3_key correctly' do
-      expect(pc.s3_key).to eq("ab/123/cd/4567/#{druid}.v0001.zip")
+      expect(cm.s3_key).to eq("ab/123/cd/4567/#{druid}.v0001.zip")
     end
   end
 
   describe '#druid_version_zip' do
     it 'creates an instance of DruidVersionZip' do
-      expect(pc.druid_version_zip).to be_an_instance_of DruidVersionZip
+      expect(cm.druid_version_zip).to be_an_instance_of DruidVersionZip
     end
   end
 
   describe '#update_audit_timestamps' do
     it 'updates last_moab_validation time if moab_validated is true' do
-      expect { pc.update_audit_timestamps(true, false) }.to change { pc.last_moab_validation }.from(nil)
+      expect { cm.update_audit_timestamps(true, false) }.to change { cm.last_moab_validation }.from(nil)
     end
     it 'does not update last_moab_validation time if moab_validated is false' do
-      expect { pc.update_audit_timestamps(false, false) }.not_to change { pc.last_moab_validation }.from(nil)
+      expect { cm.update_audit_timestamps(false, false) }.not_to change { cm.last_moab_validation }.from(nil)
     end
     it 'updates last_version_audit time if version_audited is true' do
-      expect { pc.update_audit_timestamps(false, true) }.to change { pc.last_version_audit }.from(nil)
+      expect { cm.update_audit_timestamps(false, true) }.to change { cm.last_version_audit }.from(nil)
     end
     it 'does not update last_version_audit time if version_audited is false' do
-      expect { pc.update_audit_timestamps(false, false) }.not_to change { pc.last_version_audit }.from(nil)
+      expect { cm.update_audit_timestamps(false, false) }.not_to change { cm.last_version_audit }.from(nil)
     end
   end
 
   describe '#upd_audstamps_version_size' do
     it 'updates version' do
-      expect { pc.upd_audstamps_version_size(false, 3, nil) }.to change { pc.version }.to(3)
+      expect { cm.upd_audstamps_version_size(false, 3, nil) }.to change { cm.version }.to(3)
     end
     it 'updates size if size is not nil' do
-      expect { pc.upd_audstamps_version_size(false, 0, 123) }.to change { pc.size }.to(123)
+      expect { cm.upd_audstamps_version_size(false, 0, 123) }.to change { cm.size }.to(123)
     end
     it 'does not update size if size is nil' do
-      expect { pc.upd_audstamps_version_size(false, 0, nil) }.not_to change(pc, :size)
+      expect { cm.upd_audstamps_version_size(false, 0, nil) }.not_to change(cm, :size)
     end
 
     it 'calls update_audit_timestamps with the appropriate params' do
-      expect(pc).to receive(:update_audit_timestamps).with(false, true)
-      pc.upd_audstamps_version_size(false, 3, nil)
+      expect(cm).to receive(:update_audit_timestamps).with(false, true)
+      cm.upd_audstamps_version_size(false, 3, nil)
     end
   end
 
   describe '#matches_po_current_version?' do
-    before { pc.version = 666 }
+    before { cm.version = 666 }
 
     it 'returns true when its version matches its preserved objects current version' do
-      pc.preserved_object.current_version = 666
-      expect(pc.matches_po_current_version?).to be true
+      cm.preserved_object.current_version = 666
+      expect(cm.matches_po_current_version?).to be true
     end
 
     it 'returns false when its version does not match its preserved objects current version' do
-      pc.preserved_object.current_version = 777
-      expect(pc.matches_po_current_version?).to be false
+      cm.preserved_object.current_version = 777
+      expect(cm.matches_po_current_version?).to be false
     end
   end
 
   context 'ordered (by last version_audited) and unordered least_recent_version_audit' do
-    let!(:newer_timestamp_pc) do
+    let!(:newer_timestamp_cm) do
       create(:complete_moab, args.merge(version: 6, last_version_audit: (now - 1.day)))
     end
-    let!(:older_timestamp_pc) do
+    let!(:older_timestamp_cm) do
       create(:complete_moab, args.merge(version: 7, last_version_audit: (now - 2.days)))
     end
-    let!(:future_timestamp_pc) do
+    let!(:future_timestamp_cm) do
       create(:complete_moab, args.merge(version: 8, last_version_audit: (now + 1.day)))
     end
 
     describe '.least_recent_version_audit' do
 
       it 'returns PreservedCopies with nils and PreservedCopies < given date (not orded by last_version_audit)' do
-        expect(described_class.least_recent_version_audit(now).sort).to eq [pc, newer_timestamp_pc, older_timestamp_pc]
+        expect(described_class.least_recent_version_audit(now).sort).to eq [cm, newer_timestamp_cm, older_timestamp_cm]
       end
       it 'returns no PreservedCopies with future timestamps' do
-        expect(described_class.least_recent_version_audit(now)).not_to include future_timestamp_pc
+        expect(described_class.least_recent_version_audit(now)).not_to include future_timestamp_cm
       end
     end
 
@@ -174,11 +174,11 @@ RSpec.describe CompleteMoab, type: :model do
 
       it 'returns PreservedCopies with nils first, then old to new timestamps' do
         expect(described_class.order_last_version_audit(least_recent_version))
-          .to eq [pc, older_timestamp_pc, newer_timestamp_pc]
+          .to eq [cm, older_timestamp_cm, newer_timestamp_cm]
       end
       it 'returns no PreservedCopies with future timestamps' do
         expect(described_class.order_last_version_audit(least_recent_version))
-          .not_to include future_timestamp_pc
+          .not_to include future_timestamp_cm
       end
     end
   end
@@ -208,27 +208,27 @@ RSpec.describe CompleteMoab, type: :model do
   end
   context 'ordered (by fixity_check_expired) and unordered fixity_check_expired methods' do
     let(:fixity_ttl) { preserved_object.preservation_policy.fixity_ttl }
-    let!(:old_check_pc1) do
+    let!(:old_check_cm1) do
       create(:complete_moab, args.merge(version: 6, last_checksum_validation: now - (fixity_ttl * 2)))
     end
-    let!(:old_check_pc2) do
+    let!(:old_check_cm2) do
       create(:complete_moab, args.merge(version: 7, last_checksum_validation: now - fixity_ttl - 1.second))
     end
-    let!(:recently_checked_pc1) do
+    let!(:recently_checked_cm1) do
       create(:complete_moab, args.merge(version: 8, last_checksum_validation: now - fixity_ttl + 1.second))
     end
-    let!(:recently_checked_pc2) do
+    let!(:recently_checked_cm2) do
       create(:complete_moab, args.merge(version: 9, last_checksum_validation: now - (fixity_ttl * 0.1)))
     end
 
-    before { pc.save! }
+    before { cm.save! }
 
     describe '.fixity_check_expired' do
       it 'returns PreservedCopies that need fixity check' do
-        expect(described_class.fixity_check_expired.to_a.sort).to eq [pc, old_check_pc1, old_check_pc2]
+        expect(described_class.fixity_check_expired.to_a.sort).to eq [cm, old_check_cm1, old_check_cm2]
       end
       it 'returns no PreservedCopies with timestamps indicating still-valid fixity check' do
-        expect(described_class.fixity_check_expired).not_to include(recently_checked_pc1, recently_checked_pc2)
+        expect(described_class.fixity_check_expired).not_to include(recently_checked_cm1, recently_checked_cm2)
       end
     end
 
@@ -237,17 +237,17 @@ RSpec.describe CompleteMoab, type: :model do
 
       it 'returns PreservedCopies that need fixity check, never checked first, then least-recently to most-recently' do
         expect(described_class.order_fixity_check_expired(fixity_check_expired).to_a)
-          .to eq [pc, old_check_pc1, old_check_pc2]
+          .to eq [cm, old_check_cm1, old_check_cm2]
       end
       it 'returns no PreservedCopies with timestamps indicating still-valid fixity check' do
         expect(described_class.order_fixity_check_expired(fixity_check_expired))
-          .not_to include(recently_checked_pc1, recently_checked_pc2)
+          .not_to include(recently_checked_cm1, recently_checked_cm2)
       end
     end
   end
 
   context 'with a persisted object' do
-    before { pc.save! }
+    before { cm.save! }
 
     describe '.by_moab_storage_root_name' do
       it 'returns the expected complete moabs' do
@@ -277,50 +277,50 @@ RSpec.describe CompleteMoab, type: :model do
   context 'chained scopes' do
     describe '.fixity_check_expired' do
       let(:ms_root2) { MoabStorageRoot.find_by(name: 'fixture_sr2') }
-      let!(:checked_before_threshold_pc1) do
+      let!(:checked_before_threshold_cm1) do
         create(:complete_moab, args.merge(version: 6, last_checksum_validation: now - 3.weeks))
       end
-      let!(:checked_before_threshold_pc2) do
+      let!(:checked_before_threshold_cm2) do
         my_args = args.merge(version: 7, last_checksum_validation: now - 7.01.days, moab_storage_root: ms_root2)
         create(:complete_moab, my_args)
       end
-      let!(:recently_checked_pc1) do
+      let!(:recently_checked_cm1) do
         create(:complete_moab, args.merge(version: 8, last_checksum_validation: now - 6.99.days))
       end
-      let!(:recently_checked_pc2) do
+      let!(:recently_checked_cm2) do
         my_args = args.merge(version: 9, last_checksum_validation: now - 1.day, moab_storage_root: ms_root2)
         create(:complete_moab, my_args)
       end
 
       describe '.by_moab_storage_root_name' do
-        let(:pcs_by_query1) { described_class.fixity_check_expired.by_moab_storage_root_name(ms_root.name) }
-        let(:pcs_by_query2) { described_class.fixity_check_expired.by_moab_storage_root_name(ms_root2.name) }
+        let(:cms_by_query1) { described_class.fixity_check_expired.by_moab_storage_root_name(ms_root.name) }
+        let(:cms_by_query2) { described_class.fixity_check_expired.by_moab_storage_root_name(ms_root2.name) }
 
         it 'returns PreservedCopies < given date only for the chosen storage root(not ordered by last_version_audit)' do
-          expect(pcs_by_query1.sort).to eq [pc, checked_before_threshold_pc1]
-          expect(pcs_by_query2.sort).to eq [checked_before_threshold_pc2]
+          expect(cms_by_query1.sort).to eq [cm, checked_before_threshold_cm1]
+          expect(cms_by_query2.sort).to eq [checked_before_threshold_cm2]
         end
         it 'returns no PreservedCopies with timestamps indicating fixity check in the last week' do
-          expect(pcs_by_query1).not_to include recently_checked_pc1
-          expect(pcs_by_query2).not_to include recently_checked_pc2
+          expect(cms_by_query1).not_to include recently_checked_cm1
+          expect(cms_by_query2).not_to include recently_checked_cm2
         end
       end
 
       describe '.by_storage_location' do
-        let!(:pcs_by_query1) do
+        let!(:cms_by_query1) do
           described_class.fixity_check_expired.by_storage_location('spec/fixtures/storage_root01/sdr2objects')
         end
-        let!(:pcs_by_query2) do
+        let!(:cms_by_query2) do
           described_class.fixity_check_expired.by_storage_location('spec/fixtures/storage_root02/sdr2objects')
         end
 
         it 'returns PreservedCopies < given date only for the chosen storage root(not ordered by last_version_audit)' do
-          expect(pcs_by_query1.sort).to eq [pc, checked_before_threshold_pc1]
-          expect(pcs_by_query2.sort).to eq [checked_before_threshold_pc2]
+          expect(cms_by_query1.sort).to eq [cm, checked_before_threshold_cm1]
+          expect(cms_by_query2.sort).to eq [checked_before_threshold_cm2]
         end
         it 'returns no PreservedCopies with timestamps indicating fixity check in the last week' do
-          expect(pcs_by_query1).not_to include recently_checked_pc1
-          expect(pcs_by_query2).not_to include recently_checked_pc2
+          expect(cms_by_query1).not_to include recently_checked_cm1
+          expect(cms_by_query2).not_to include recently_checked_cm2
         end
       end
     end
@@ -331,10 +331,10 @@ RSpec.describe CompleteMoab, type: :model do
     let(:zip_ep) { ZipEndpoint.find_by!(endpoint_name: 'mock_archive1') }
     let(:zmvs_by_druid) { ZippedMoabVersion.by_druid(druid) }
 
-    before { pc.zipped_moab_versions.destroy_all } # undo auto-spawned rows from callback
+    before { cm.zipped_moab_versions.destroy_all } # undo auto-spawned rows from callback
 
     it "creates ZMVs that don't yet exist for expected versions, but should" do
-      expect { pc.create_zipped_moab_versions! }.to change {
+      expect { cm.create_zipped_moab_versions! }.to change {
         ZipEndpoint.which_need_archive_copy(druid, cm_version).to_a
       }.from([zip_ep]).to([]).and change {
         zmvs_by_druid.where(version: cm_version).count
@@ -344,11 +344,11 @@ RSpec.describe CompleteMoab, type: :model do
     end
 
     it 'creates ZMVs so that they start with unreplicated status' do
-      expect(pc.create_zipped_moab_versions!.all?(&:unreplicated?)).to be true
+      expect(cm.create_zipped_moab_versions!.all?(&:unreplicated?)).to be true
     end
 
     it "creates ZMVs that don't yet exist for new endpoint, but should" do
-      expect { pc.create_zipped_moab_versions! }.to change {
+      expect { cm.create_zipped_moab_versions! }.to change {
         ZipEndpoint.which_need_archive_copy(druid, cm_version).to_a
       }.from([zip_ep]).to([]).and change {
         zmvs_by_druid.where(version: cm_version).count
@@ -360,7 +360,7 @@ RSpec.describe CompleteMoab, type: :model do
         preservation_policies: [PreservationPolicy.default_policy]
       )
 
-      expect { pc.create_zipped_moab_versions! }.to change {
+      expect { cm.create_zipped_moab_versions! }.to change {
         ZipEndpoint.which_need_archive_copy(druid, cm_version).to_a
       }.from([new_zip_ep]).to([]).and change {
         zmvs_by_druid.where(version: cm_version).count
@@ -370,14 +370,14 @@ RSpec.describe CompleteMoab, type: :model do
 
   describe '.after_update callback' do
     it 'does not call create_zipped_moab_versions when version is unchanged' do
-      pc.size = 234
-      expect(pc).not_to receive(:create_zipped_moab_versions!)
-      pc.save!
+      cm.size = 234
+      expect(cm).not_to receive(:create_zipped_moab_versions!)
+      cm.save!
     end
     it 'calls create_zipped_moab_versions when version was changed' do
-      pc.version = 55
-      expect(pc).to receive(:create_zipped_moab_versions!)
-      pc.save!
+      cm.version = 55
+      expect(cm).to receive(:create_zipped_moab_versions!)
+      cm.save!
     end
   end
 end

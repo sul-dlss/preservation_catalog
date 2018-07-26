@@ -1,16 +1,16 @@
 require 'rails_helper'
 
 describe ChecksumValidationJob, type: :job do
-  let(:job) { described_class.new(pc) }
-  let(:pc) { create :complete_moab }
+  let(:job) { described_class.new(cm) }
+  let(:cm) { create :complete_moab }
 
   describe '#perform' do
     let(:validator) { instance_double(ChecksumValidator) }
 
     it 'calls ChecksumValidator#validate_checksums' do
       expect(validator).to receive(:validate_checksums)
-      expect(ChecksumValidator).to receive(:new).with(pc).and_return(validator)
-      job.perform(pc)
+      expect(ChecksumValidator).to receive(:new).with(cm).and_return(validator)
+      job.perform(cm)
     end
   end
 

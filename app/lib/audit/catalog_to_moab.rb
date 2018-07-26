@@ -10,13 +10,13 @@ module Audit
     def self.check_version_on_dir(last_checked_b4_date, storage_dir, limit=Settings.c2m_sql_limit)
       logger.info "#{Time.now.utc.iso8601} C2M check_version starting for #{storage_dir}"
 
-      # pcs_to_audit_relation is an AR Relation; it could return a lot of results, so we want to process in batches.
+      # cms_to_audit_relation is an AR Relation; it could return a lot of results, so we want to process in batches.
       # We can't use ActiveRecord's .find_each, because that'll disregard the order .least_recent_version_audit
       # specified.  so we use our own batch processing method, which does respect Relation order.
-      pcs_to_audit_relation =
+      cms_to_audit_relation =
         CompleteMoab.least_recent_version_audit(last_checked_b4_date).by_storage_location(storage_dir)
-      ActiveRecordUtils.process_in_batches(pcs_to_audit_relation, limit) do |pc|
-        c2m = CatalogToMoab.new(pc, storage_dir)
+      ActiveRecordUtils.process_in_batches(cms_to_audit_relation, limit) do |cm|
+        c2m = CatalogToMoab.new(cm, storage_dir)
         c2m.check_catalog_version
       end
     ensure

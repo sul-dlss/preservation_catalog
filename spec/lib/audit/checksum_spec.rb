@@ -59,8 +59,8 @@ RSpec.describe Audit::Checksum do
     include_context 'fixture moabs in db'
     it 'creates an instance ancd calls #validate_checksums for every result' do
       druid = 'bz514sm9647'
-      CompleteMoab.by_druid(druid).each do |pc|
-        cv = ChecksumValidator.new(pc)
+      CompleteMoab.by_druid(druid).each do |cm|
+        cv = ChecksumValidator.new(cm)
         allow(ChecksumValidator).to receive(:new).with(cv.complete_moab).and_return(cv)
         expect(cv).to receive(:validate_checksums).exactly(1).times.and_call_original
       end
@@ -103,8 +103,8 @@ RSpec.describe Audit::Checksum do
       end
 
       it 'creates an instance and calls #validate_checksums on everything in batches' do
-        pcs_to_process = CompleteMoab.validity_unknown.by_moab_storage_root_name(ms_root_name)
-        cv_list = pcs_to_process.map { |pc| ChecksumValidator.new(pc) }
+        cms_to_process = CompleteMoab.validity_unknown.by_moab_storage_root_name(ms_root_name)
+        cv_list = cms_to_process.map { |cm| ChecksumValidator.new(cm) }
         expect(cv_list.size).to eq 3
         cv_list.each do |cv|
           allow(ChecksumValidator).to receive(:new).with(cv.complete_moab).and_return(cv)

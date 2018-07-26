@@ -1,8 +1,8 @@
 # Confirms existence of CompleteMoab on a zip endpoint.
 # Confirms the MD5 checksum matches in database and s3.
 # Usage info:
-# ReplicatedFileCheck.set(queue: :endpoint_check_us_west_2).perform_later(pc)
-# ReplicatedFileCheck.set(queue: :endpoint_check_us_east_1).perform_later(pc)
+# ReplicatedFileCheck.set(queue: :endpoint_check_us_west_2).perform_later(cm)
+# ReplicatedFileCheck.set(queue: :endpoint_check_us_east_1).perform_later(cm)
 class ReplicatedFileCheckJob < ApplicationJob
   # This queue is never expected to be used.
   queue_as :override_this_queue
