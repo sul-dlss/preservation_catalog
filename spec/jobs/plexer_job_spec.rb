@@ -31,12 +31,12 @@ describe PlexerJob, type: :job do
   end
 
   describe '#perform' do
-    let!(:pc) do
-      create(:zip_endpoint, delivery_class: 2) # 2nd endpoint ensures pc has 2 ZMVs
-      create(:preserved_copy, preserved_object: po)
+    let!(:cm) do
+      create(:zip_endpoint, delivery_class: 2) # 2nd endpoint ensures cm has 2 ZMVs
+      create(:complete_moab, preserved_object: po)
     end
-    let(:parts1) { pc.zipped_moab_versions.first!.zip_parts }
-    let(:parts2) { pc.zipped_moab_versions.second!.zip_parts }
+    let(:parts1) { cm.zipped_moab_versions.first!.zip_parts }
+    let(:parts2) { cm.zipped_moab_versions.second!.zip_parts }
     let(:s3_key) { job.zip.s3_key(metadata[:suffix]) }
 
     it 'splits the message out to endpoints' do
@@ -52,7 +52,7 @@ describe PlexerJob, type: :job do
     end
 
     it 'adds ZipPart to each related ZMV' do
-      expect(pc.zipped_moab_versions.count).to eq 2
+      expect(cm.zipped_moab_versions.count).to eq 2
       job.perform(druid, version, s3_key, metadata)
       expect(parts1.map(&:md5)).to eq [md5]
       expect(parts2.map(&:md5)).to eq [md5]

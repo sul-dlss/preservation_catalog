@@ -12,7 +12,7 @@ RSpec.describe PreservedObjectHandler do
   let!(:default_prez_policy) { PreservationPolicy.default_policy }
   let(:po) { PreservedObject.find_by(druid: druid) }
   let(:ms_root) { MoabStorageRoot.find_by(storage_location: 'spec/fixtures/storage_root01/sdr2objects') }
-  let(:pc) { PreservedCopy.find_by(preserved_object: po, moab_storage_root: ms_root) }
+  let(:cm) { CompleteMoab.find_by(preserved_object: po, moab_storage_root: ms_root) }
   let(:po_handler) { described_class.new(druid, incoming_version, incoming_size, ms_root) }
 
   describe '#initialize' do
@@ -69,9 +69,9 @@ RSpec.describe PreservedObjectHandler do
   end
 
   describe '#with_active_record_transaction_and_rescue' do
-    it '#confirm_version rolls back preserved object if there is a problem updating preserved copy' do
+    it '#confirm_version rolls back preserved object if there is a problem updating complete moab' do
       po = PreservedObject.create!(druid: druid, current_version: 2, preservation_policy: default_prez_policy)
-      pc = PreservedCopy.create!(
+      cm = CompleteMoab.create!(
         preserved_object: po,
         version: po.current_version,
         size: 1,
@@ -79,7 +79,7 @@ RSpec.describe PreservedObjectHandler do
         status: 'validity_unknown'
       )
       bad_po_handler = described_class.new(druid, 6, incoming_size, ms_root)
-      allow(pc).to receive(:save!).and_raise(ActiveRecord::ActiveRecordError)
+      allow(cm).to receive(:save!).and_raise(ActiveRecord::ActiveRecordError)
       allow(bad_po_handler).to receive(:moab_validation_errors).and_return([])
       bad_po_handler.confirm_version
       expect(PreservedObject.find_by(druid: druid).current_version).to eq 2

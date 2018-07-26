@@ -3,8 +3,8 @@
 # This model's data is populated by PlexerJob.
 class ZipPart < ApplicationRecord
   belongs_to :zipped_moab_version, inverse_of: :zip_parts
-  delegate :zip_endpoint, :preserved_copy, to: :zipped_moab_version
-  delegate :preserved_object, to: :preserved_copy
+  delegate :zip_endpoint, :complete_moab, to: :zipped_moab_version
+  delegate :preserved_object, to: :complete_moab
 
   enum status: {
     'ok' => 0,
@@ -30,7 +30,7 @@ class ZipPart < ApplicationRecord
   # @return [Array<String>]
   def suffixes_in_set
     DruidVersionZip
-      .new(preserved_object.druid, preserved_copy.version)
+      .new(preserved_object.druid, complete_moab.version)
       .expected_part_keys(parts_count)
       .map { |key| File.extname(key) }
   end

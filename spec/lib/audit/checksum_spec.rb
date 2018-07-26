@@ -28,14 +28,14 @@ RSpec.describe Audit::Checksum do
     include_context 'fixture moabs in db'
 
     it 'enqueues matching PCs for CV check' do
-      expect(ChecksumValidationJob).to receive(:perform_later).with(PreservedCopy).exactly(3).times
+      expect(ChecksumValidationJob).to receive(:perform_later).with(CompleteMoab).exactly(3).times
       described_class.validate_disk(ms_root_name)
     end
 
-    context 'when there are no PreservedCopies to check' do
+    context 'when there are no CompleteMoabs to check' do
       it 'will not enqueue PCs' do
         expect(ChecksumValidationJob).not_to receive(:perform_later)
-        PreservedCopy.all.update(last_checksum_validation: (Time.now.utc + 2.days))
+        CompleteMoab.all.update(last_checksum_validation: (Time.now.utc + 2.days))
         described_class.validate_disk(ms_root_name)
       end
     end
@@ -59,20 +59,20 @@ RSpec.describe Audit::Checksum do
     include_context 'fixture moabs in db'
     it 'creates an instance ancd calls #validate_checksums for every result' do
       druid = 'bz514sm9647'
-      PreservedCopy.by_druid(druid).each do |pc|
-        cv = ChecksumValidator.new(pc)
-        allow(ChecksumValidator).to receive(:new).with(cv.preserved_copy).and_return(cv)
+      CompleteMoab.by_druid(druid).each do |cm|
+        cv = ChecksumValidator.new(cm)
+        allow(ChecksumValidator).to receive(:new).with(cv.complete_moab).and_return(cv)
         expect(cv).to receive(:validate_checksums).exactly(1).times.and_call_original
       end
       described_class.validate_druid(druid)
     end
 
     it "logs a debug message" do
-      expect(described_class.logger).to receive(:debug).with('Found 0 preserved copies.')
+      expect(described_class.logger).to receive(:debug).with('Found 0 complete moabs.')
       described_class.validate_druid('xx000xx0500')
     end
 
-    it 'returns the checksum results lists for each PreservedCopy that was checked' do
+    it 'returns the checksum results lists for each CompleteMoab that was checked' do
       checksum_results_lists = described_class.validate_druid('bz514sm9647')
       expect(checksum_results_lists.size).to eq 1 # should just be one PC for the druid
       checksum_results = checksum_results_lists.first
@@ -93,7 +93,7 @@ RSpec.describe Audit::Checksum do
   describe '.validate_status_root' do
     include_context 'fixture moabs in db'
 
-    context 'when there are PreservedCopies to check' do
+    context 'when there are CompleteMoabs to check' do
       let(:cv_mock) { instance_double(ChecksumValidator) }
 
       it 'creates an instance and calls #validate_checksums for every result when results are in a single batch' do
@@ -103,18 +103,18 @@ RSpec.describe Audit::Checksum do
       end
 
       it 'creates an instance and calls #validate_checksums on everything in batches' do
-        pcs_to_process = PreservedCopy.validity_unknown.by_moab_storage_root_name(ms_root_name)
-        cv_list = pcs_to_process.map { |pc| ChecksumValidator.new(pc) }
+        cms_to_process = CompleteMoab.validity_unknown.by_moab_storage_root_name(ms_root_name)
+        cv_list = cms_to_process.map { |cm| ChecksumValidator.new(cm) }
         expect(cv_list.size).to eq 3
         cv_list.each do |cv|
-          allow(ChecksumValidator).to receive(:new).with(cv.preserved_copy).and_return(cv)
+          allow(ChecksumValidator).to receive(:new).with(cv.complete_moab).and_return(cv)
           expect(cv).to receive(:validate_checksums).exactly(1).times.and_call_original
         end
         described_class.validate_status_root('validity_unknown', ms_root_name, 2)
       end
     end
 
-    context 'when there are no PreservedCopies to check' do
+    context 'when there are no CompleteMoabs to check' do
       it 'will not create an instance of ChecksumValidator' do
         expect(ChecksumValidator).not_to receive(:new)
         described_class.validate_status_root('ok', ms_root_name, limit)

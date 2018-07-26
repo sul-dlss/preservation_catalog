@@ -10,10 +10,32 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180718223251) do
+ActiveRecord::Schema.define(version: 20180725203750) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "complete_moabs", force: :cascade do |t|
+    t.integer "version", null: false
+    t.bigint "preserved_object_id", null: false
+    t.bigint "moab_storage_root_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.datetime "last_moab_validation"
+    t.datetime "last_checksum_validation"
+    t.bigint "size"
+    t.integer "status", null: false
+    t.datetime "last_version_audit"
+    t.index ["created_at"], name: "index_complete_moabs_on_created_at"
+    t.index ["last_checksum_validation"], name: "index_complete_moabs_on_last_checksum_validation"
+    t.index ["last_moab_validation"], name: "index_complete_moabs_on_last_moab_validation"
+    t.index ["last_version_audit"], name: "index_complete_moabs_on_last_version_audit"
+    t.index ["moab_storage_root_id"], name: "index_complete_moabs_on_moab_storage_root_id"
+    t.index ["preserved_object_id", "moab_storage_root_id", "version"], name: "index_preserved_copies_on_po_and_storage_root_and_version", unique: true
+    t.index ["preserved_object_id"], name: "index_complete_moabs_on_preserved_object_id"
+    t.index ["status"], name: "index_complete_moabs_on_status"
+    t.index ["updated_at"], name: "index_complete_moabs_on_updated_at"
+  end
 
   create_table "moab_storage_roots", force: :cascade do |t|
     t.string "name", null: false
@@ -43,28 +65,6 @@ ActiveRecord::Schema.define(version: 20180718223251) do
     t.bigint "zip_endpoint_id", null: false
     t.index ["preservation_policy_id"], name: "index_pres_policies_zip_endpoints_on_pres_policy_id"
     t.index ["zip_endpoint_id"], name: "index_pres_policies_zip_endpoints_on_zip_endpoint_id"
-  end
-
-  create_table "preserved_copies", force: :cascade do |t|
-    t.integer "version", null: false
-    t.bigint "preserved_object_id", null: false
-    t.bigint "moab_storage_root_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.datetime "last_moab_validation"
-    t.datetime "last_checksum_validation"
-    t.bigint "size"
-    t.integer "status", null: false
-    t.datetime "last_version_audit"
-    t.index ["created_at"], name: "index_preserved_copies_on_created_at"
-    t.index ["last_checksum_validation"], name: "index_preserved_copies_on_last_checksum_validation"
-    t.index ["last_moab_validation"], name: "index_preserved_copies_on_last_moab_validation"
-    t.index ["last_version_audit"], name: "index_preserved_copies_on_last_version_audit"
-    t.index ["moab_storage_root_id"], name: "index_preserved_copies_on_moab_storage_root_id"
-    t.index ["preserved_object_id", "moab_storage_root_id", "version"], name: "index_preserved_copies_on_po_and_storage_root_and_version", unique: true
-    t.index ["preserved_object_id"], name: "index_preserved_copies_on_preserved_object_id"
-    t.index ["status"], name: "index_preserved_copies_on_status"
-    t.index ["updated_at"], name: "index_preserved_copies_on_updated_at"
   end
 
   create_table "preserved_objects", force: :cascade do |t|
@@ -105,25 +105,25 @@ ActiveRecord::Schema.define(version: 20180718223251) do
   create_table "zipped_moab_versions", force: :cascade do |t|
     t.integer "version", null: false
     t.datetime "last_existence_check"
-    t.bigint "preserved_copy_id", null: false
+    t.bigint "complete_moab_id", null: false
     t.bigint "zip_endpoint_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "status", null: false
+    t.index ["complete_moab_id"], name: "index_zipped_moab_versions_on_complete_moab_id"
     t.index ["last_existence_check"], name: "index_zipped_moab_versions_on_last_existence_check"
-    t.index ["preserved_copy_id"], name: "index_zipped_moab_versions_on_preserved_copy_id"
     t.index ["status"], name: "index_zipped_moab_versions_on_status"
     t.index ["zip_endpoint_id"], name: "index_zipped_moab_versions_on_zip_endpoint_id"
   end
 
+  add_foreign_key "complete_moabs", "moab_storage_roots"
+  add_foreign_key "complete_moabs", "preserved_objects"
   add_foreign_key "moab_storage_roots_preservation_policies", "moab_storage_roots"
   add_foreign_key "moab_storage_roots_preservation_policies", "preservation_policies"
   add_foreign_key "preservation_policies_zip_endpoints", "preservation_policies"
   add_foreign_key "preservation_policies_zip_endpoints", "zip_endpoints"
-  add_foreign_key "preserved_copies", "moab_storage_roots"
-  add_foreign_key "preserved_copies", "preserved_objects"
   add_foreign_key "preserved_objects", "preservation_policies"
   add_foreign_key "zip_parts", "zipped_moab_versions"
-  add_foreign_key "zipped_moab_versions", "preserved_copies"
+  add_foreign_key "zipped_moab_versions", "complete_moabs"
   add_foreign_key "zipped_moab_versions", "zip_endpoints"
 end

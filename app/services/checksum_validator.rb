@@ -2,10 +2,10 @@
 class ChecksumValidator
   include ::MoabValidationHandler
 
-  attr_reader :bare_druid, :results, :preserved_copy
+  attr_reader :bare_druid, :results, :complete_moab
 
   alias druid bare_druid
-  delegate :moab_storage_root, to: :preserved_copy
+  delegate :moab_storage_root, to: :complete_moab
   delegate :storage_location, to: :moab_storage_root
 
   DATA = 'data'.freeze
@@ -19,9 +19,9 @@ class ChecksumValidator
   DELETED = 'deleted'.freeze
   FILES = 'files'.freeze
 
-  def initialize(preserved_copy)
-    @preserved_copy = preserved_copy
-    @bare_druid = preserved_copy.preserved_object.druid
+  def initialize(complete_moab)
+    @complete_moab = complete_moab
+    @bare_druid = complete_moab.preserved_object.druid
     @results = AuditResults.new(bare_druid, nil, moab_storage_root, 'validate_checksums')
   end
 
@@ -30,19 +30,19 @@ class ChecksumValidator
     validate_signature_catalog
 
     transaction_ok = ActiveRecordUtils.with_transaction_and_rescue(results) do
-      preserved_copy.last_checksum_validation = Time.current
+      complete_moab.last_checksum_validation = Time.current
       if results.result_array.empty?
         results.add_result(AuditResults::MOAB_CHECKSUM_VALID)
-        found_expected_version = moab.current_version_id == preserved_copy.version
+        found_expected_version = moab.current_version_id == complete_moab.version
         set_status_as_seen_on_disk(found_expected_version)
-        preserved_copy.update_audit_timestamps(true, true)
+        complete_moab.update_audit_timestamps(true, true)
         unless found_expected_version
-          results.add_result(AuditResults::UNEXPECTED_VERSION, actual_version: moab.current_version_id, db_obj_name: 'PreservedCopy', db_obj_version: preserved_copy.version)
+          results.add_result(AuditResults::UNEXPECTED_VERSION, actual_version: moab.current_version_id, db_obj_name: 'CompleteMoab', db_obj_version: complete_moab.version)
         end
       else
         update_status('invalid_checksum')
       end
-      preserved_copy.save!
+      complete_moab.save!
     end
     results.remove_db_updated_results unless transaction_ok
 

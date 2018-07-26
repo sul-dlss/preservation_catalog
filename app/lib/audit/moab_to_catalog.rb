@@ -100,8 +100,8 @@ module Audit
     def self.drop_moab_storage_root(name)
       ms_root = MoabStorageRoot.find_by!(name: name.to_s)
       ApplicationRecord.transaction do
-        ms_root.preserved_copies.destroy_all
-        PreservedObject.without_preserved_copies.destroy_all
+        ms_root.complete_moabs.destroy_all
+        PreservedObject.without_complete_moabs.destroy_all
       end
     end
 

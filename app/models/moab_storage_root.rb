@@ -1,17 +1,17 @@
 ##
 # Metadata about a Moab storage root (a POSIX file system which contains Moab objects).
 class MoabStorageRoot < ApplicationRecord
-  has_many :preserved_copies, dependent: :restrict_with_exception
+  has_many :complete_moabs, dependent: :restrict_with_exception
   has_and_belongs_to_many :preservation_policies
 
   validates :name, presence: true, uniqueness: true
   validates :storage_location, presence: true
 
-  # Use a queue to validate PreservedCopy objects
+  # Use a queue to validate CompleteMoab objects
   def validate_expired_checksums!
-    pcs = preserved_copies.fixity_check_expired
-    Rails.logger.info "MoabStorageRoot #{id} (#{name}), # of preserved_copies to be checksum validated: #{pcs.count}"
-    pcs.find_each { |pc| ChecksumValidationJob.perform_later(pc) }
+    cms = complete_moabs.fixity_check_expired
+    Rails.logger.info "MoabStorageRoot #{id} (#{name}), # of complete_moabs to be checksum validated: #{cms.count}"
+    cms.find_each { |cm| ChecksumValidationJob.perform_later(cm) }
   end
 
   # Iterates over the storage roots enumerated in settings, creating a MoabStorageRoot for

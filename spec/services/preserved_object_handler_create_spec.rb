@@ -20,7 +20,7 @@ RSpec.describe PreservedObjectHandler do
       preservation_policy_id: PreservationPolicy.default_policy.id
     }
   end
-  let(:pc_args) do
+  let(:cm_args) do
     {
       preserved_object: an_instance_of(PreservedObject), # TODO: ensure we got the preserved object that we expected
       version: incoming_version,
@@ -32,18 +32,18 @@ RSpec.describe PreservedObjectHandler do
   end
 
   describe '#create' do
-    it 'creates PreservedObject and PreservedCopy in database' do
+    it 'creates PreservedObject and CompleteMoab in database' do
       expect(PreservedObject).to receive(:create!).with(po_args).and_call_original
-      expect(PreservedCopy).to receive(:create!).with(pc_args).and_call_original
+      expect(CompleteMoab).to receive(:create!).with(cm_args).and_call_original
       po_handler.create
     end
 
-    it 'creates the PreservedCopy with "ok" status and validation timestamps if caller ran CV' do
-      pc_args[:status] = 'ok'
-      pc_args[:last_version_audit] = ActiveSupport::TimeWithZone
-      pc_args[:last_moab_validation] = ActiveSupport::TimeWithZone
-      pc_args[:last_checksum_validation] = ActiveSupport::TimeWithZone
-      expect(PreservedCopy).to receive(:create!).with(pc_args).and_call_original
+    it 'creates the CompleteMoab with "ok" status and validation timestamps if caller ran CV' do
+      cm_args[:status] = 'ok'
+      cm_args[:last_version_audit] = ActiveSupport::TimeWithZone
+      cm_args[:last_moab_validation] = ActiveSupport::TimeWithZone
+      cm_args[:last_checksum_validation] = ActiveSupport::TimeWithZone
+      expect(CompleteMoab).to receive(:create!).with(cm_args).and_call_original
       po_handler.create(true)
     end
 
@@ -75,8 +75,8 @@ RSpec.describe PreservedObjectHandler do
         end
       end
 
-      it "rolls back PreservedObject creation if the PreservedCopy can't be created (e.g. due to DB constraint violation)" do
-        allow(PreservedCopy).to receive(:create!).and_raise(ActiveRecord::RecordInvalid)
+      it "rolls back PreservedObject creation if the CompleteMoab can't be created (e.g. due to DB constraint violation)" do
+        allow(CompleteMoab).to receive(:create!).and_raise(ActiveRecord::RecordInvalid)
         po_handler.create
         expect(PreservedObject.where(druid: druid)).not_to exist
       end
@@ -109,7 +109,7 @@ RSpec.describe PreservedObjectHandler do
       let(:t) { Time.current }
       let(:ms_root) { MoabStorageRoot.find_by(storage_location: storage_dir) }
       let(:po_db_obj) { PreservedObject.find_by(druid: valid_druid) }
-      let(:pc_db_obj) { PreservedCopy.find_by(preserved_object: po_db_obj) }
+      let(:cm_db_obj) { CompleteMoab.find_by(preserved_object: po_db_obj) }
       let(:results) do
         po_handler = described_class.new(valid_druid, incoming_version, incoming_size, ms_root)
         po_handler.create_after_validation
@@ -118,35 +118,35 @@ RSpec.describe PreservedObjectHandler do
       before { results }
 
       it "sets last_moab_validation with current time" do
-        expect(pc_db_obj.last_moab_validation).to be_within(10).of(t)
+        expect(cm_db_obj.last_moab_validation).to be_within(10).of(t)
       end
       it "sets last_version_audit with current time" do
-        expect(pc_db_obj.last_version_audit).to be_within(10).of(t)
+        expect(cm_db_obj.last_version_audit).to be_within(10).of(t)
       end
     end
 
-    it 'creates PreservedObject and PreservedCopy in database when there are no validation errors' do
+    it 'creates PreservedObject and CompleteMoab in database when there are no validation errors' do
       po_args[:druid] = valid_druid
-      pc_args.merge!(
+      cm_args.merge!(
         last_moab_validation: an_instance_of(ActiveSupport::TimeWithZone),
         last_version_audit: an_instance_of(ActiveSupport::TimeWithZone)
       )
 
       expect(PreservedObject).to receive(:create!).with(po_args).and_call_original
-      expect(PreservedCopy).to receive(:create!).with(pc_args).and_call_original
+      expect(CompleteMoab).to receive(:create!).with(cm_args).and_call_original
       po_handler = described_class.new(valid_druid, incoming_version, incoming_size, ms_root)
       po_handler.create_after_validation
     end
 
-    it 'creates PreservedCopy with "ok" status and validation timestamps if no validation errors and caller ran CV' do
-      pc_args.merge!(
+    it 'creates CompleteMoab with "ok" status and validation timestamps if no validation errors and caller ran CV' do
+      cm_args.merge!(
         status: 'ok',
         last_moab_validation: an_instance_of(ActiveSupport::TimeWithZone),
         last_version_audit: an_instance_of(ActiveSupport::TimeWithZone),
         last_checksum_validation: an_instance_of(ActiveSupport::TimeWithZone)
       )
 
-      expect(PreservedCopy).to receive(:create!).with(pc_args).and_call_original
+      expect(CompleteMoab).to receive(:create!).with(cm_args).and_call_original
       po_handler = described_class.new(valid_druid, incoming_version, incoming_size, ms_root)
       po_handler.create_after_validation(true)
     end
@@ -172,28 +172,28 @@ RSpec.describe PreservedObjectHandler do
         end
       end
 
-      it 'creates PreservedObject, and PreservedCopy with "invalid_moab" status in database' do
+      it 'creates PreservedObject, and CompleteMoab with "invalid_moab" status in database' do
         po_args[:druid] = invalid_druid
-        pc_args.merge!(
+        cm_args.merge!(
           status: 'invalid_moab',
           last_moab_validation: an_instance_of(ActiveSupport::TimeWithZone),
           last_version_audit: an_instance_of(ActiveSupport::TimeWithZone)
         )
 
         expect(PreservedObject).to receive(:create!).with(po_args).and_call_original
-        expect(PreservedCopy).to receive(:create!).with(pc_args).and_call_original
+        expect(CompleteMoab).to receive(:create!).with(cm_args).and_call_original
         po_handler.create_after_validation
       end
 
-      it 'creates PreservedCopy with "invalid_moab" status in database even if caller ran CV' do
-        pc_args.merge!(
+      it 'creates CompleteMoab with "invalid_moab" status in database even if caller ran CV' do
+        cm_args.merge!(
           status: 'invalid_moab',
           last_moab_validation: an_instance_of(ActiveSupport::TimeWithZone),
           last_version_audit: an_instance_of(ActiveSupport::TimeWithZone),
           last_checksum_validation: an_instance_of(ActiveSupport::TimeWithZone)
         )
 
-        expect(PreservedCopy).to receive(:create!).with(pc_args).and_call_original
+        expect(CompleteMoab).to receive(:create!).with(cm_args).and_call_original
         po_handler.create_after_validation(true)
       end
 
@@ -220,8 +220,8 @@ RSpec.describe PreservedObjectHandler do
           end
         end
 
-        it "rolls back PreservedObject creation if the PreservedCopy can't be created (e.g. due to DB constraint violation)" do
-          allow(PreservedCopy).to receive(:create!).and_raise(ActiveRecord::RecordInvalid)
+        it "rolls back PreservedObject creation if the CompleteMoab can't be created (e.g. due to DB constraint violation)" do
+          allow(CompleteMoab).to receive(:create!).and_raise(ActiveRecord::RecordInvalid)
           po_handler = described_class.new(invalid_druid, incoming_version, incoming_size, ms_root)
           po_handler.create
           expect(PreservedObject.where(druid: druid)).not_to exist

@@ -38,7 +38,7 @@ class CatalogController < ApplicationController
       elsif poh.results.contains_result_code?(:actual_vers_lt_db_obj)
         :bad_request # 400
       else
-        :internal_server_error # 500 including  :unexpected_version, :pc_po_version_mismatch, :db_update_failed
+        :internal_server_error # 500 including  :unexpected_version, :cm_po_version_mismatch, :db_update_failed
       end
     render status: status_code, json: poh.results.to_json
   end

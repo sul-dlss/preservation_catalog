@@ -20,10 +20,10 @@ class AuditResults
   DB_UPDATE_FAILED = :db_update_failed
   DB_OBJ_ALREADY_EXISTS = :db_obj_already_exists
   DB_OBJ_DOES_NOT_EXIST = :db_obj_does_not_exist
-  PC_STATUS_CHANGED = :pc_status_changed
+  CM_STATUS_CHANGED = :cm_status_changed
   UNEXPECTED_VERSION = :unexpected_version
   INVALID_MOAB = :invalid_moab
-  PC_PO_VERSION_MISMATCH = :pc_po_version_mismatch
+  CM_PO_VERSION_MISMATCH = :cm_po_version_mismatch
   MOAB_NOT_FOUND = :moab_not_found
   MOAB_FILE_CHECKSUM_MISMATCH = :moab_file_checksum_mismatch
   MOAB_CHECKSUM_VALID = :moab_checksum_valid
@@ -44,11 +44,11 @@ class AuditResults
     DB_UPDATE_FAILED => "db update failed: %{addl}",
     DB_OBJ_ALREADY_EXISTS => "%{addl} db object already exists",
     DB_OBJ_DOES_NOT_EXIST => "%{addl} db object does not exist",
-    PC_STATUS_CHANGED => "PreservedCopy status changed from %{old_status} to %{new_status}",
+    CM_STATUS_CHANGED => "CompleteMoab status changed from %{old_status} to %{new_status}",
     UNEXPECTED_VERSION => "actual version (%{actual_version}) has unexpected relationship to %{db_obj_name} db version (%{db_obj_version}); ERROR!",
     INVALID_MOAB => "Invalid Moab, validation errors: %{addl}",
-    PC_PO_VERSION_MISMATCH => "PreservedCopy online Moab version %{pc_version} does not match PreservedObject current_version %{po_version}",
-    MOAB_NOT_FOUND => "db PreservedCopy (created %{db_created_at}; last updated %{db_updated_at}) exists but Moab not found",
+    CM_PO_VERSION_MISMATCH => "CompleteMoab online Moab version %{cm_version} does not match PreservedObject current_version %{po_version}",
+    MOAB_NOT_FOUND => "db CompleteMoab (created %{db_created_at}; last updated %{db_updated_at}) exists but Moab not found",
     MOAB_FILE_CHECKSUM_MISMATCH => "checksums for %{file_path} version %{version} do not match.",
     MOAB_CHECKSUM_VALID => "checksum(s) match",
     FILE_NOT_IN_MOAB => "%{manifest_file_path} refers to file (%{file_path}) not found in Moab",
@@ -57,7 +57,7 @@ class AuditResults
     MANIFEST_NOT_IN_MOAB => "%{manifest_file_path} not found in Moab",
     SIGNATURE_CATALOG_NOT_IN_MOAB => "%{signature_catalog_path} not found in Moab",
     INVALID_MANIFEST => "unable to parse %{manifest_file_path} in Moab",
-    UNABLE_TO_CHECK_STATUS => "unable to validate when PreservedCopy status is %{current_status}"
+    UNABLE_TO_CHECK_STATUS => "unable to validate when CompleteMoab status is %{current_status}"
   }.freeze
 
   WORKFLOW_REPORT_CODES = [
@@ -65,7 +65,7 @@ class AuditResults
     DB_UPDATE_FAILED,
     DB_OBJ_ALREADY_EXISTS,
     UNEXPECTED_VERSION,
-    PC_PO_VERSION_MISMATCH,
+    CM_PO_VERSION_MISMATCH,
     MOAB_NOT_FOUND,
     MOAB_FILE_CHECKSUM_MISMATCH,
     FILE_NOT_IN_MOAB,
@@ -79,14 +79,14 @@ class AuditResults
 
   DB_UPDATED_CODES = [
     CREATED_NEW_OBJECT,
-    PC_STATUS_CHANGED
+    CM_STATUS_CHANGED
   ].freeze
 
   def self.logger_severity_level(result_code)
     case result_code
     when DB_OBJ_DOES_NOT_EXIST
       Logger::WARN
-    when VERSION_MATCHES, ACTUAL_VERS_GT_DB_OBJ, CREATED_NEW_OBJECT, PC_STATUS_CHANGED, MOAB_CHECKSUM_VALID
+    when VERSION_MATCHES, ACTUAL_VERS_GT_DB_OBJ, CREATED_NEW_OBJECT, CM_STATUS_CHANGED, MOAB_CHECKSUM_VALID
       Logger::INFO
     else
       Logger::ERROR
@@ -140,7 +140,7 @@ class AuditResults
   end
 
   def status_changed_to_ok?(result)
-    /to ok$/.match(result[AuditResults::PC_STATUS_CHANGED]) != nil
+    /to ok$/.match(result[AuditResults::CM_STATUS_CHANGED]) != nil
   end
 
   def to_json

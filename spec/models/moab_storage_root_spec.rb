@@ -27,7 +27,7 @@ RSpec.describe MoabStorageRoot, type: :model do
     expect { moab_storage_root.dup.save(validate: false) }.to raise_error(ActiveRecord::RecordNotUnique)
   end
 
-  it { is_expected.to have_many(:preserved_copies) }
+  it { is_expected.to have_many(:complete_moabs) }
   it { is_expected.to have_db_index(:name) }
   it { is_expected.to have_db_index(:storage_location) }
   it { is_expected.to have_and_belong_to_many(:preservation_policies) }
@@ -69,12 +69,12 @@ RSpec.describe MoabStorageRoot, type: :model do
   end
 
   describe '#validate_expired_checksums!' do
-    it 'calls ChecksumValidationJob for each eligible PreservedCopy' do
+    it 'calls ChecksumValidationJob for each eligible CompleteMoab' do
       allow(Rails.logger).to receive(:info)
       ms_root = create(:moab_storage_root)
-      ms_root.preserved_copies = build_list(:preserved_copy, 2)
-      expect(ChecksumValidationJob).to receive(:perform_later).with(ms_root.preserved_copies.first)
-      expect(ChecksumValidationJob).to receive(:perform_later).with(ms_root.preserved_copies.second)
+      ms_root.complete_moabs = build_list(:complete_moab, 2)
+      expect(ChecksumValidationJob).to receive(:perform_later).with(ms_root.complete_moabs.first)
+      expect(ChecksumValidationJob).to receive(:perform_later).with(ms_root.complete_moabs.second)
       ms_root.validate_expired_checksums!
     end
   end

@@ -5,7 +5,7 @@ module MoabValidationHandler
   # #druid - String (the "bare" druid, e.g. 'ab123cd4567', sans 'druid:' prefix)
   # #storage_location - String - the root directory holding the druid tree (the storage root path)
   # #results - AuditResults - the instance the including class is using to track findings of interest
-  # #preserved_copy - PreservedCopy - instance of the pres copy being validated
+  # #complete_moab - CompleteMoab - instance of the complete moab being validated
 
   def object_dir
     @object_dir ||= "#{storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}"
@@ -19,9 +19,9 @@ module MoabValidationHandler
     false
   end
 
-  def can_validate_current_pres_copy_status?
-    can_do = can_validate_checksums? || preserved_copy.status != 'invalid_checksum'
-    results.add_result(AuditResults::UNABLE_TO_CHECK_STATUS, current_status: preserved_copy.status) unless can_do
+  def can_validate_current_comp_moab_status?
+    can_do = can_validate_checksums? || complete_moab.status != 'invalid_checksum'
+    results.add_result(AuditResults::UNABLE_TO_CHECK_STATUS, current_status: complete_moab.status) unless can_do
     can_do
   end
 
@@ -51,10 +51,10 @@ module MoabValidationHandler
   end
 
   def update_status(new_status)
-    preserved_copy.status = new_status
-    return unless preserved_copy.status_changed?
+    complete_moab.status = new_status
+    return unless complete_moab.status_changed?
     results.add_result(
-      AuditResults::PC_STATUS_CHANGED, old_status: preserved_copy.status_was, new_status: preserved_copy.status
+      AuditResults::CM_STATUS_CHANGED, old_status: complete_moab.status_was, new_status: complete_moab.status
     )
   end
 

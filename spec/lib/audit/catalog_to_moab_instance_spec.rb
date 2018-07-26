@@ -5,11 +5,11 @@ RSpec.describe Audit::CatalogToMoab do
   let(:last_checked_version_b4_date) { (Time.now.utc - 1.day).iso8601 }
   let(:storage_dir) { 'spec/fixtures/storage_root01/sdr2objects' }
   let(:druid) { 'bj102hs9687' }
-  let(:c2m) { described_class.new(pres_copy, storage_dir) }
+  let(:c2m) { described_class.new(comp_moab, storage_dir) }
   let(:mock_sov) { instance_double(Stanford::StorageObjectValidator) }
   let(:po) { PreservedObject.find_by!(druid: druid) }
-  let(:pres_copy) do
-    MoabStorageRoot.find_by!(storage_location: storage_dir).preserved_copies.find_by!(preserved_object: po)
+  let(:comp_moab) do
+    MoabStorageRoot.find_by!(storage_location: storage_dir).complete_moabs.find_by!(preserved_object: po)
   end
   let(:logger_double) { instance_double(ActiveSupport::Logger, info: nil, error: nil, add: nil) }
 
@@ -22,7 +22,7 @@ RSpec.describe Audit::CatalogToMoab do
 
   context '#initialize' do
     it 'sets attributes' do
-      expect(c2m.preserved_copy).to eq pres_copy
+      expect(c2m.complete_moab).to eq comp_moab
       expect(c2m.storage_dir).to eq storage_dir
       expect(c2m.druid).to eq druid
       expect(c2m.results).to be_an_instance_of AuditResults
@@ -32,7 +32,7 @@ RSpec.describe Audit::CatalogToMoab do
   context '#check_catalog_version' do
     let(:object_dir) { "#{storage_dir}/#{DruidTools::Druid.new(druid).tree.join('/')}" }
 
-    before { pres_copy.ok! }
+    before { comp_moab.ok! }
 
     it 'instantiates Moab::StorageObject from druid and storage_dir' do
       expect(Moab::StorageObject).to receive(:new).with(druid, a_string_matching(object_dir)).and_call_original
@@ -46,13 +46,13 @@ RSpec.describe Audit::CatalogToMoab do
       c2m.check_catalog_version
     end
 
-    it 'calls PreservedCopy.update_audit_timestamps' do
-      expect(pres_copy).to receive(:update_audit_timestamps).with(anything, true)
+    it 'calls CompleteMoab.update_audit_timestamps' do
+      expect(comp_moab).to receive(:update_audit_timestamps).with(anything, true)
       c2m.check_catalog_version
     end
 
-    it 'calls PreservedCopy.save!' do
-      expect(pres_copy).to receive(:save!)
+    it 'calls CompleteMoab.save!' do
+      expect(comp_moab).to receive(:save!)
       c2m.check_catalog_version
     end
 
@@ -77,7 +77,7 @@ RSpec.describe Audit::CatalogToMoab do
           AuditResults::MOAB_NOT_FOUND, db_created_at: anything, db_updated_at: anything
         )
         expect(results).to receive(:add_result).with(
-          AuditResults::PC_STATUS_CHANGED, old_status: "ok", new_status: "online_moab_not_found"
+          AuditResults::CM_STATUS_CHANGED, old_status: "ok", new_status: "online_moab_not_found"
         )
         c2m.check_catalog_version
       end
@@ -95,10 +95,10 @@ RSpec.describe Audit::CatalogToMoab do
           'invalid_checksum'
         ].each do |orig_status|
           it "had #{orig_status}, should now have ONLINE_MOAB_NOT_FOUND_STATUS" do
-            pres_copy.status = orig_status
-            pres_copy.save!
+            comp_moab.status = orig_status
+            comp_moab.save!
             c2m.check_catalog_version
-            expect(pres_copy.reload.status).to eq 'online_moab_not_found'
+            expect(comp_moab.reload.status).to eq 'online_moab_not_found'
           end
         end
       end
@@ -109,32 +109,32 @@ RSpec.describe Audit::CatalogToMoab do
         c2m.check_catalog_version
       end
       context 'DB transaction handling' do
-        it 'on transaction failure, completes without raising error, removes PC_STATUS_CHANGED result code' do
+        it 'on transaction failure, completes without raising error, removes CM_STATUS_CHANGED result code' do
           allow(Moab::StorageObject).to receive(:new).with(druid, instance_of(String)).and_return(nil)
-          allow(pres_copy).to receive(:save!).and_raise(ActiveRecord::ConnectionTimeoutError)
+          allow(comp_moab).to receive(:save!).and_raise(ActiveRecord::ConnectionTimeoutError)
           c2m.check_catalog_version
           expect(c2m.results.result_array).to include(a_hash_including(AuditResults::MOAB_NOT_FOUND))
-          expect(c2m.results.result_array).not_to include(a_hash_including(AuditResults::PC_STATUS_CHANGED))
-          expect(pres_copy.reload.status).not_to eq 'online_moab_not_found'
+          expect(c2m.results.result_array).not_to include(a_hash_including(AuditResults::CM_STATUS_CHANGED))
+          expect(comp_moab.reload.status).not_to eq 'online_moab_not_found'
         end
       end
     end
 
-    context 'preserved_copy version != current_version of preserved_object' do
-      it 'adds a PC_PO_VERSION_MISMATCH result and finishes processing' do
-        pres_copy.version = 666
+    context 'complete_moab version != current_version of preserved_object' do
+      it 'adds a CM_PO_VERSION_MISMATCH result and finishes processing' do
+        comp_moab.version = 666
         results = instance_double(AuditResults, report_results: nil, :check_name= => nil)
         allow(AuditResults).to receive(:new).and_return(results)
         expect(results).to receive(:add_result).with(
-          AuditResults::PC_PO_VERSION_MISMATCH,
-          pc_version: pres_copy.version,
-          po_version: pres_copy.preserved_object.current_version
+          AuditResults::CM_PO_VERSION_MISMATCH,
+          cm_version: comp_moab.version,
+          po_version: comp_moab.preserved_object.current_version
         )
         expect(Moab::StorageObject).not_to receive(:new).with(druid, a_string_matching(object_dir)).and_call_original
         c2m.check_catalog_version
       end
       it 'calls AuditResults.report_results' do
-        pres_copy.version = 666
+        comp_moab.version = 666
         results = instance_double(AuditResults, report_results: nil, :check_name= => nil)
         allow(results).to receive(:add_result)
         allow(AuditResults).to receive(:new).and_return(results)
@@ -147,16 +147,16 @@ RSpec.describe Audit::CatalogToMoab do
       it 'adds a VERSION_MATCHES result' do
         results = instance_double(AuditResults, report_results: nil, :actual_version= => nil, :check_name= => nil)
         allow(AuditResults).to receive(:new).and_return(results)
-        expect(results).to receive(:add_result).with(AuditResults::VERSION_MATCHES, 'PreservedCopy')
+        expect(results).to receive(:add_result).with(AuditResults::VERSION_MATCHES, 'CompleteMoab')
         c2m.check_catalog_version
       end
 
-      context 'check whether PreservedCopy already has a status other than OK_STATUS, re-check status if so;' do
+      context 'check whether CompleteMoab already has a status other than OK_STATUS, re-check status if so;' do
         it "had OK_STATUS, should keep OK_STATUS" do
-          pres_copy.ok!
+          comp_moab.ok!
           allow(c2m).to receive(:moab_validation_errors).and_return([])
           c2m.check_catalog_version
-          expect(pres_copy.reload).to be_ok
+          expect(comp_moab.reload).to be_ok
         end
 
         [
@@ -166,11 +166,11 @@ RSpec.describe Audit::CatalogToMoab do
           'unexpected_version_on_storage'
         ].each do |orig_status|
           it "had #{orig_status}, should now have validity_unknown" do
-            pres_copy.status = orig_status
-            pres_copy.save!
+            comp_moab.status = orig_status
+            comp_moab.save!
             allow(c2m).to receive(:moab_validation_errors).and_return([])
             c2m.check_catalog_version
-            expect(pres_copy.reload).to be_validity_unknown
+            expect(comp_moab.reload).to be_validity_unknown
           end
         end
 
@@ -183,25 +183,25 @@ RSpec.describe Audit::CatalogToMoab do
           'unexpected_version_on_storage'
         ].each do |orig_status|
           it "had #{orig_status}, should now have INVALID_MOAB_STATUS" do
-            pres_copy.status = orig_status
-            pres_copy.save!
+            comp_moab.status = orig_status
+            comp_moab.save!
             allow(c2m).to receive(:moab_validation_errors).and_return(
               [{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }]
             )
             c2m.check_catalog_version
-            expect(pres_copy.reload.status).to eq 'invalid_moab'
+            expect(comp_moab.reload.status).to eq 'invalid_moab'
           end
         end
 
         context 'started with INVALID_CHECKSUM_STATUS' do
-          before { pres_copy.invalid_checksum! }
+          before { comp_moab.invalid_checksum! }
 
           it 'remains in INVALID_CHECKSUM_STATUS' do
             allow(c2m).to receive(:moab_validation_errors).and_return(
               [{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }]
             )
             c2m.check_catalog_version
-            expect(pres_copy.reload.status).to eq 'invalid_checksum'
+            expect(comp_moab.reload.status).to eq 'invalid_checksum'
           end
 
           it 'has an AuditResults entry indicating inability to check the given status' do
@@ -236,12 +236,12 @@ RSpec.describe Audit::CatalogToMoab do
             'unexpected_version_on_storage'
           ].each do |orig_status|
             it "#{orig_status} changes to validity_unknown" do
-              pres_copy.status = orig_status
-              pres_copy.save!
+              comp_moab.status = orig_status
+              comp_moab.save!
               allow(mock_sov).to receive(:validation_errors).and_return([])
               allow(Stanford::StorageObjectValidator).to receive(:new).and_return(mock_sov)
               c2m.check_catalog_version
-              expect(pres_copy.reload).to be_validity_unknown
+              expect(comp_moab.reload).to be_validity_unknown
             end
           end
         end
@@ -254,31 +254,31 @@ RSpec.describe Audit::CatalogToMoab do
             'unexpected_version_on_storage'
           ].each do |orig_status|
             it "#{orig_status} changes to INVALID_MOAB_STATUS" do
-              pres_copy.status = orig_status
-              pres_copy.save!
+              comp_moab.status = orig_status
+              comp_moab.save!
               allow(mock_sov).to receive(:validation_errors).and_return(
                 [{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }]
               )
               allow(Stanford::StorageObjectValidator).to receive(:new).and_return(mock_sov)
               c2m.check_catalog_version
-              expect(pres_copy.reload.status).to eq 'invalid_moab'
+              expect(comp_moab.reload.status).to eq 'invalid_moab'
             end
           end
           it "invalid_moab changes to validity_unknown (due to newer version not checksum validated)" do
-            pres_copy.invalid_moab!
+            comp_moab.invalid_moab!
             allow(mock_sov).to receive(:validation_errors).and_return(
               [{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }]
             )
             allow(Stanford::StorageObjectValidator).to receive(:new).and_return(mock_sov)
             c2m.check_catalog_version
-            expect(pres_copy.reload.status).to eq 'validity_unknown'
+            expect(comp_moab.reload.status).to eq 'validity_unknown'
           end
         end
 
         context 'had INVALID_CHECKSUM_STATUS (which C2M cannot validate)' do
           before do
             allow(Stanford::StorageObjectValidator).to receive(:new).and_return(mock_sov)
-            pres_copy.invalid_checksum!
+            comp_moab.invalid_checksum!
           end
 
           it 'may have moab validation errors, but should still have INVALID_CHECKSUM_STATUS' do
@@ -286,13 +286,13 @@ RSpec.describe Audit::CatalogToMoab do
               [{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }]
             )
             c2m.check_catalog_version
-            expect(pres_copy.reload.status).to eq 'invalid_checksum'
+            expect(comp_moab.reload.status).to eq 'invalid_checksum'
           end
 
           it 'would have no moab validation errors, but should still have INVALID_CHECKSUM_STATUS' do
             allow(mock_sov).to receive(:validation_errors).and_return([])
             c2m.check_catalog_version
-            expect(pres_copy.reload.status).to eq 'invalid_checksum'
+            expect(comp_moab.reload.status).to eq 'invalid_checksum'
           end
 
           it 'has an AuditResults entry indicating inability to check the given status' do
@@ -312,7 +312,7 @@ RSpec.describe Audit::CatalogToMoab do
       it 'adds an UNEXPECTED_VERSION result' do
         results = instance_double(AuditResults, report_results: nil, :actual_version= => nil, :check_name= => nil)
         expect(results).to receive(:add_result).with(
-          AuditResults::UNEXPECTED_VERSION, db_obj_name: 'PreservedCopy', db_obj_version: pres_copy.version
+          AuditResults::UNEXPECTED_VERSION, db_obj_name: 'CompleteMoab', db_obj_version: comp_moab.version
         )
         allow(results).to receive(:add_result).with(any_args)
         allow(AuditResults).to receive(:new).and_return(results)
@@ -325,9 +325,9 @@ RSpec.describe Audit::CatalogToMoab do
         c2m.check_catalog_version
       end
       it 'valid moab sets status to UNEXPECTED_VERSION_ON_STORAGE_STATUS' do
-        orig = pres_copy.status
+        orig = comp_moab.status
         c2m.check_catalog_version
-        new_status = pres_copy.reload.status
+        new_status = comp_moab.reload.status
         expect(new_status).not_to eq orig
         expect(new_status).to eq 'unexpected_version_on_storage'
       end
@@ -337,9 +337,9 @@ RSpec.describe Audit::CatalogToMoab do
           allow(Stanford::StorageObjectValidator).to receive(:new).and_return(mock_sov)
         end
         it 'sets status to INVALID_MOAB_STATUS' do
-          orig = pres_copy.status
+          orig = comp_moab.status
           c2m.check_catalog_version
-          new_status = pres_copy.reload.status
+          new_status = comp_moab.reload.status
           expect(new_status).not_to eq orig
           expect(new_status).to eq 'invalid_moab'
         end
@@ -351,17 +351,17 @@ RSpec.describe Audit::CatalogToMoab do
           c2m.check_catalog_version
         end
       end
-      it 'adds a PC_STATUS_CHANGED result' do
+      it 'adds a CM_STATUS_CHANGED result' do
         results = instance_double(AuditResults, report_results: nil, :actual_version= => nil, :check_name= => nil)
         expect(results).to receive(:add_result).with(
-          AuditResults::PC_STATUS_CHANGED, a_hash_including(:old_status, :new_status)
+          AuditResults::CM_STATUS_CHANGED, a_hash_including(:old_status, :new_status)
         )
         allow(results).to receive(:add_result).with(any_args)
         allow(AuditResults).to receive(:new).and_return(results)
         c2m.check_catalog_version
       end
 
-      context 'check whether PreservedCopy already has a status other than OK_STATUS, re-check status if possible' do
+      context 'check whether CompleteMoab already has a status other than OK_STATUS, re-check status if possible' do
         [
           'validity_unknown',
           'ok',
@@ -370,11 +370,11 @@ RSpec.describe Audit::CatalogToMoab do
           'unexpected_version_on_storage'
         ].each do |orig_status|
           it "had #{orig_status}, should now have EXPECTED_VERS_NOT_FOUND_ON_STORAGE_STATUS" do
-            pres_copy.status = orig_status
-            pres_copy.save!
+            comp_moab.status = orig_status
+            comp_moab.save!
             allow(c2m).to receive(:moab_validation_errors).and_return([])
             c2m.check_catalog_version
-            expect(pres_copy.reload.status).to eq 'unexpected_version_on_storage'
+            expect(comp_moab.reload.status).to eq 'unexpected_version_on_storage'
           end
         end
 
@@ -386,20 +386,20 @@ RSpec.describe Audit::CatalogToMoab do
           'unexpected_version_on_storage'
         ].each do |orig_status|
           it "had #{orig_status}, should now have INVALID_MOAB_STATUS" do
-            pres_copy.status = orig_status
-            pres_copy.save!
+            comp_moab.status = orig_status
+            comp_moab.save!
             allow(c2m).to receive(:moab_validation_errors).and_return(
               [{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }]
             )
             c2m.check_catalog_version
-            expect(pres_copy.reload.status).to eq 'invalid_moab'
+            expect(comp_moab.reload.status).to eq 'invalid_moab'
           end
         end
 
         context 'had INVALID_CHECKSUM_STATUS, which C2M cannot validate' do
           before do
             allow(Stanford::StorageObjectValidator).to receive(:new).and_return(mock_sov)
-            pres_copy.invalid_checksum!
+            comp_moab.invalid_checksum!
           end
 
           it 'may have moab validation errors, but should still have INVALID_CHECKSUM_STATUS' do
@@ -407,13 +407,13 @@ RSpec.describe Audit::CatalogToMoab do
               [{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }]
             )
             c2m.check_catalog_version
-            expect(pres_copy.reload.status).to eq 'invalid_checksum'
+            expect(comp_moab.reload.status).to eq 'invalid_checksum'
           end
 
           it 'would have no moab validation errors, but should still have INVALID_CHECKSUM_STATUS' do
             allow(mock_sov).to receive(:validation_errors).and_return([])
             c2m.check_catalog_version
-            expect(pres_copy.reload.status).to eq 'invalid_checksum'
+            expect(comp_moab.reload.status).to eq 'invalid_checksum'
           end
 
           it 'has an AuditResults entry indicating inability to check the given status' do
@@ -434,12 +434,12 @@ RSpec.describe Audit::CatalogToMoab do
       end
 
       context 'DB transaction handling' do
-        it 'on transaction failure, completes without raising error, removes PC_STATUS_CHANGED result code' do
-          allow(pres_copy).to receive(:save!).and_raise(ActiveRecord::ConnectionTimeoutError)
+        it 'on transaction failure, completes without raising error, removes CM_STATUS_CHANGED result code' do
+          allow(comp_moab).to receive(:save!).and_raise(ActiveRecord::ConnectionTimeoutError)
           c2m.check_catalog_version
           expect(c2m.results.result_array).to include(a_hash_including(AuditResults::UNEXPECTED_VERSION))
-          expect(c2m.results.result_array).not_to include(a_hash_including(AuditResults::PC_STATUS_CHANGED))
-          expect(pres_copy.reload.status).not_to eq 'unexpected_version_on_storage'
+          expect(c2m.results.result_array).not_to include(a_hash_including(AuditResults::CM_STATUS_CHANGED))
+          expect(comp_moab.reload.status).not_to eq 'unexpected_version_on_storage'
         end
       end
     end
