@@ -45,11 +45,9 @@ end
 
 RSpec.shared_examples 'calls AuditResults.report_results' do |method_sym|
   it 'outputs results to Rails.logger and sends errors to WorkflowErrorReporter' do
-    mock_results = instance_double(AuditResults)
-    allow(mock_results).to receive(:add_result)
-    allow(mock_results).to receive(:check_name=)
+    mock_results = instance_double(AuditResults, add_result: nil, :check_name= => nil)
     expect(mock_results).to receive(:report_results)
-    expect(AuditResults).to receive(:new).and_return(mock_results)
+    allow(po_handler).to receive(:results).and_return(mock_results)
     po_handler.send(method_sym)
   end
 end
@@ -63,8 +61,7 @@ RSpec.shared_examples 'druid not in catalog' do |method_sym|
   end
 
   it 'DB_OBJ_DOES_NOT_EXIST error' do
-    code = AuditResults::DB_OBJ_DOES_NOT_EXIST
-    expect(results).to include(a_hash_including(code => a_string_matching(exp_msg)))
+    expect(results).to include(a_hash_including(AuditResults::DB_OBJ_DOES_NOT_EXIST => a_string_matching(exp_msg)))
   end
 end
 
