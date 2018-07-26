@@ -1,7 +1,6 @@
 require 'rails_helper'
 
 RSpec.describe ZippedMoabVersion, type: :model do
-  let(:po) { build(:preserved_object) }
   let(:pc) { build(:preserved_copy) }
   let(:zip_endpoint) { build(:zip_endpoint) }
   let(:zmv) { build(:zipped_moab_version, preserved_copy: pc, zip_endpoint: zip_endpoint) }
@@ -45,4 +44,18 @@ RSpec.describe ZippedMoabVersion, type: :model do
   it { is_expected.to have_db_index(:preserved_copy_id) }
   it { is_expected.to have_db_index(:status) }
 
+  describe '#replicate!' do
+    before { zmv.save! }
+
+    it 'if PC is unreplicatable, returns false, does not enqueue' do
+      expect(pc).to receive(:replicatable_status?).and_return(false)
+      expect(ZipmakerJob).not_to receive(:perform_later)
+      expect(zmv.replicate!).to be(false)
+    end
+    it 'if PC is replicatable, passes druid and version to Zipmaker' do
+      expect(pc).to receive(:replicatable_status?).and_return(true)
+      expect(ZipmakerJob).to receive(:perform_later).with(pc.preserved_object.druid, pc.version)
+      zmv.replicate!
+    end
+  end
 end

@@ -74,13 +74,6 @@ class PreservedCopy < ApplicationRecord
     zipped_moab_versions.create!(params)
   end
 
-  # Send to asynchronous replication pipeline
-  # @raise [RuntimeError] if object is unpersisted
-  def replicate!
-    raise 'PreservedCopy must be persisted' unless persisted?
-    ZipmakerJob.perform_later(preserved_object.druid, version)
-  end
-
   # Send to asynchronous checksum validation pipeline
   def validate_checksums!
     ChecksumValidationJob.perform_later(self)
@@ -88,6 +81,11 @@ class PreservedCopy < ApplicationRecord
 
   def druid_version_zip
     @druid_version_zip ||= DruidVersionZip.new(preserved_object.druid, version)
+  end
+
+  # Based on object state and status, can it be fully replicated?
+  def replicatable_status?
+    %w[ok unreplicated replicated_copy_not_found].include?(status)
   end
 
   def update_audit_timestamps(moab_validated, version_audited)

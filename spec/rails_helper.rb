@@ -53,4 +53,7 @@ RSpec.configure do |config|
     end
   end
 
+  config.before do
+    allow(ZipmakerJob).to receive(:perform_later).with(any_args) # by default, block callback replication
+  end
 end
