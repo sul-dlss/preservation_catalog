@@ -38,7 +38,7 @@ describe ReplicatedFileCheckJob, type: :job do
 
     context 'stored db checksum does not match replicated aws object checksum' do
 
-      it "updates preserved copy status" do
+      it "updates complete moab status" do
         expect(stored_checksums).to receive(:include?).with(replicated_checksum).and_return(false)
         expect(Rails.logger).to receive(:error).with(
           "Stored checksum(#{stored_checksums}) doesn't include the replicated checksum(#{replicated_checksum})."
@@ -53,7 +53,7 @@ describe ReplicatedFileCheckJob, type: :job do
   context 'zip does not exist on s3' do
     before { allow(s3_object).to receive(:exists?).and_return(false) }
 
-    it 'updates preserved copy status' do
+    it 'updates complete moab status' do
       expect(Rails.logger).to receive(:error).with("Archival Complete Moab: #{cm} was not found on #{bucket_name}.")
 
       expect(cm).to receive(:replicated_copy_not_found!)
@@ -61,7 +61,7 @@ describe ReplicatedFileCheckJob, type: :job do
     end
   end
 
-  context "preserved copy has status 'unreplicated'" do
+  context "complete moab has status 'unreplicated'" do
     let!(:cm) { create(:archive_copy_deprecated, preserved_object: po, version: version, status: 'unreplicated') }
 
     it "#perform returns on pres_copies" do

@@ -3,7 +3,7 @@
 class CompleteMoab < ApplicationRecord
   # @note Hash values cannot be modified without migrating any associated persisted data.
   # @see [enum docs] http://api.rubyonrails.org/classes/ActiveRecord/Enum.html
-  # TODO: Port over statuses to archive pres_copy model
+  # TODO: Port over statuses to archive comp_moab model
   enum status: {
     'ok' => 0,
     'invalid_moab' => 1,
