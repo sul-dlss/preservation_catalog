@@ -188,26 +188,26 @@ class PreservedObjectHandler
   private
 
   def create_db_objects(status, checksums_validated = false)
-    transaction_ok = with_active_record_transaction_and_rescue do
-      po = PreservedObject.create!(druid: druid,
-                                   current_version: incoming_version,
-                                   preservation_policy_id: PreservationPolicy.default_policy.id)
-      cm_attrs = {
-        preserved_object: po,
-        version: incoming_version,
-        size: incoming_size,
-        moab_storage_root: moab_storage_root,
-        status: status
-      }
-      t = Time.current
-      if ran_moab_validation?
-        cm_attrs[:last_version_audit] = t
-        cm_attrs[:last_moab_validation] = t
-      end
-      cm_attrs[:last_checksum_validation] = t if checksums_validated
-      po.complete_moabs.create!(cm_attrs)
+    cm_attrs = {
+      version: incoming_version,
+      size: incoming_size,
+      moab_storage_root: moab_storage_root,
+      status: status
+    }
+    t = Time.current
+    if ran_moab_validation?
+      cm_attrs[:last_version_audit] = t
+      cm_attrs[:last_moab_validation] = t
     end
+    cm_attrs[:last_checksum_validation] = t if checksums_validated
+    ppid = PreservationPolicy.default_policy.id
 
+    # TODO: remove tests' dependence on 2 "create!" calls, use single built-in AR transactionality
+    transaction_ok = with_active_record_transaction_and_rescue do
+      PreservedObject
+        .create!(druid: druid, current_version: incoming_version, preservation_policy_id: ppid)
+        .complete_moabs.create!(cm_attrs)
+    end
     results.add_result(AuditResults::CREATED_NEW_OBJECT) if transaction_ok
   end
 
