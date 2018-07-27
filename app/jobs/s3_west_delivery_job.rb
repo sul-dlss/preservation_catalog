@@ -16,9 +16,8 @@ class S3WestDeliveryJob < ZipPartJobBase
   def perform(druid, version, part_s3_key, metadata)
     s3_part = bucket.object(part_s3_key) # Aws::S3::Object
     return if s3_part.exists?
-    s3_part.put(
-      body: dvz_part.file,
-      content_md5: zip.hex_to_base64(metadata[:checksum_md5]),
+    s3_part.upload_file(
+      dvz_part.file,
       metadata: stringify_values(metadata)
     )
     ResultsRecorderJob.perform_later(druid, version, part_s3_key, self.class.to_s)
