@@ -73,9 +73,9 @@ RSpec.describe ZipEndpoint, type: :model do
 
   describe '.targets' do
     let!(:alternate_pres_policy) do
-      PreservationPolicy.create!(preservation_policy_name: 'alternate_pres_policy',
-                                 archive_ttl: 666,
-                                 fixity_ttl: 666)
+      create(:preservation_policy, preservation_policy_name: 'alternate_pres_policy',
+                                   archive_ttl: 666,
+                                   fixity_ttl: 666)
     end
 
     before { create(:preserved_object, druid: druid) }
