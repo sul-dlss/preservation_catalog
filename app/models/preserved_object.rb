@@ -6,7 +6,7 @@
 class PreservedObject < ApplicationRecord
   PREFIX_RE = /druid:/i
   belongs_to :preservation_policy
-  has_many :complete_moabs, dependent: :restrict_with_exception
+  has_many :complete_moabs, dependent: :restrict_with_exception, autosave: true
   validates :druid,
             presence: true,
             uniqueness: true,
