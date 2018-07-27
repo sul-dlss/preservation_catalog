@@ -2,9 +2,7 @@ require 'rails_helper'
 require 'services/shared_examples_preserved_object_handler'
 
 RSpec.describe PreservedObjectHandler do
-  before do
-    allow(Dor::WorkflowService).to receive(:update_workflow_error_status)
-  end
+  before { allow(Dor::WorkflowService).to receive(:update_workflow_error_status) }
 
   let(:druid) { 'ab123cd4567' }
   let(:incoming_version) { 6 }
@@ -88,13 +86,10 @@ RSpec.describe PreservedObjectHandler do
         context 'returns' do
           let(:results) { po_handler.check_existence }
 
-          it '1 result' do
+          it '1 VERSION_MATCHES result' do
             expect(results).to be_an_instance_of Array
             expect(results.size).to eq 1
-          end
-          it 'VERSION_MATCHES results' do
-            code = AuditResults::VERSION_MATCHES
-            expect(results).to include(a_hash_including(code => version_matches_cm_msg))
+            expect(results).to include(a_hash_including(AuditResults::VERSION_MATCHES => version_matches_cm_msg))
           end
         end
       end
@@ -173,6 +168,7 @@ RSpec.describe PreservedObjectHandler do
 
           context 'returns' do
             let(:results) { po_handler.check_existence }
+
             before { allow(po_handler).to receive(:moab_validation_errors).and_return([]) }
 
             it 'ACTUAL_VERS_GT_DB_OBJ results' do
@@ -293,21 +289,20 @@ RSpec.describe PreservedObjectHandler do
         context 'incoming_version > db version' do
           let(:incoming_version) { cm.version + 1 }
 
+          before { allow(po_handler).to receive(:moab_validation_errors).and_return([]) }
+
           it 'had OK_STATUS, version increased, should still have OK_STATUS' do
             cm.ok!
-            allow(po_handler).to receive(:moab_validation_errors).and_return([])
             po_handler.check_existence
             expect(cm.reload.status).to eq 'ok'
           end
           it 'had INVALID_MOAB_STATUS, was remediated, should now have VALIDITY_UNKNOWN_STATUS' do
             cm.invalid_moab!
-            allow(po_handler).to receive(:moab_validation_errors).and_return([])
             po_handler.check_existence
             expect(cm.reload.status).to eq 'validity_unknown'
           end
           it 'had UNEXPECTED_VERSION_ON_STORAGE_STATUS, seems to have an acceptable version now' do
             cm.unexpected_version_on_storage!
-            allow(po_handler).to receive(:moab_validation_errors).and_return([])
             po_handler.check_existence
             expect(cm.reload.status).to eq 'validity_unknown'
           end
@@ -326,6 +321,7 @@ RSpec.describe PreservedObjectHandler do
       context 'db update error' do
         context 'ActiveRecordError' do
           let(:incoming_version) { 2 }
+
           before do
             allow(PreservedObject).to receive(:find_by!).with(druid: druid).and_return(po)
             allow(po.complete_moabs).to receive(:find_by!).with(moab_storage_root: ms_root).and_return(cm)
@@ -344,6 +340,7 @@ RSpec.describe PreservedObjectHandler do
           context 'DB_UPDATE_FAILED error' do
             let(:results) { po_handler.check_existence }
             let(:result_code) { AuditResults::DB_UPDATE_FAILED }
+
             it 'returns expected message(s)' do
               expect(results).to include(a_hash_including(result_code => a_string_matching(db_update_failed_prefix)))
               expect(results).to include(a_hash_including(result_code => a_string_matching('ActiveRecord::ActiveRecordError')))
@@ -435,7 +432,7 @@ RSpec.describe PreservedObjectHandler do
           context 'db update error (ActiveRecordError)' do
             let(:results) do
               allow(Rails.logger).to receive(:log)
-              po = instance_double("PreservedObject", complete_moabs: double(create!: nil))
+              po = instance_double(PreservedObject, complete_moabs: instance_double(ActiveRecord::Relation))
               allow(po.complete_moabs).to receive(:create!).and_raise(ActiveRecord::ActiveRecordError, 'foo')
               allow(PreservedObject).to receive(:create!).with(hash_including(druid: valid_druid)).and_return(po)
               po_handler.check_existence
@@ -448,6 +445,7 @@ RSpec.describe PreservedObjectHandler do
 
             context 'DB_UPDATE_FAILED error' do
               let(:result_code) { AuditResults::DB_UPDATE_FAILED }
+
               it 'returns expected message(s)' do
                 expect(results).to include(a_hash_including(result_code => a_string_matching(db_update_failed_prefix)))
                 expect(results).to include(a_hash_including(result_code => a_string_matching('ActiveRecord::ActiveRecordError')))
@@ -496,11 +494,12 @@ RSpec.describe PreservedObjectHandler do
           context 'db update error (ActiveRecordError)' do
             let(:result_code) { AuditResults::DB_UPDATE_FAILED }
             let(:results) do
-              po = instance_double("PreservedObject", complete_moabs: double(create!: nil))
+              po = instance_double(PreservedObject, complete_moabs: instance_double(ActiveRecord::Relation))
               allow(po.complete_moabs).to receive(:create!).and_raise(ActiveRecord::ActiveRecordError, 'foo')
               allow(PreservedObject).to receive(:create!).with(hash_including(druid: invalid_druid)).and_return(po)
               po_handler.check_existence
             end
+
             before { allow(Rails.logger).to receive(:log) }
 
             it 'transaction is rolled back' do

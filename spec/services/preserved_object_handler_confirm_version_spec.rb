@@ -98,6 +98,7 @@ RSpec.describe PreservedObjectHandler do
 
         context 'incoming_version > db version' do
           let(:incoming_version) { cm.version + 1 }
+
           before { allow(po_handler).to receive(:moab_validation_errors).and_return([]) }
 
           it 'had OK_STATUS, but is now UNEXPECTED_VERSION_ON_STORAGE_STATUS' do
@@ -203,6 +204,7 @@ RSpec.describe PreservedObjectHandler do
       context 'db update error (ActiveRecordError)' do
         let(:result_code) { AuditResults::DB_UPDATE_FAILED }
         let(:incoming_version) { 2 }
+
         before do
           po = create(:preserved_object, current_version: 2)
           cm = create(:complete_moab, preserved_object: po, version: po.current_version)
