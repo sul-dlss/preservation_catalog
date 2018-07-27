@@ -19,8 +19,8 @@ class PreservedObject < ApplicationRecord
 
   # Spawn asynchronous checks of all existing archive complete_moabs.
   # This logic is similar to PlexerJob, for a different purpose.
-  # This should implement the start of the replication process if status is unreplicated for an archival comp_moab
-  # Compare last_existence_check (from archive comp_moab) with archive TTL when checking the archival comp_moab status
+  # This should implement the start of the replication process if status is unreplicated for a ZippedMoabVersion
+  # Compare last_existence_check (from archive comp_moab) with archive TTL when checking the ZippedMoabVersion status
   # Log an error message.
   # Calls ReplicatedFileCheckJob
   # This builds off of #917
