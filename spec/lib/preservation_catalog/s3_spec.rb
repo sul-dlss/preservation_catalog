@@ -96,7 +96,7 @@ describe PreservationCatalog::S3 do
 
     it { is_expected.to exist }
 
-    describe 'Aws::S3::Object#put' do
+    describe 'Aws::S3::Object#upload_file' do
       subject(:s3_object) { bucket.object("test_key_#{test_key_id}") }
 
       let(:test_key_id) { ENV.fetch('TRAVIS_JOB_ID', '000') }
@@ -113,29 +113,11 @@ describe PreservationCatalog::S3 do
 
       it 'accepts/returns File body and arbitrary metadata' do
         resp = nil
-        expect { s3_object.put(body: file, metadata: { our_time: now }) }.not_to raise_error
+        expect { s3_object.upload_file(file, metadata: { our_time: now }) }.not_to raise_error
         expect { resp = s3_object.get }.not_to raise_error
         expect(resp).to be_a(Aws::S3::Types::GetObjectOutput)
         expect(resp.metadata.symbolize_keys).to eq(our_time: now)
         expect(resp.body.read).to eq("FOOOOBAR\n")
-      end
-
-      context 'when content_md5 matches body' do
-        it 'accepts upload' do
-          expect { s3_object.put(body: file, content_md5: digest) }.not_to raise_error
-        end
-      end
-
-      context 'when content_md5 does not match body' do
-        it 'rejects upload' do
-          expect { s3_object.put(body: 'ZUBAZ', content_md5: digest) }.to raise_error Aws::S3::Errors::BadDigest
-        end
-      end
-
-      context 'when content_md5 is invalid' do
-        it 'rejects upload' do
-          expect { s3_object.put(body: file, content_md5: "X#{digest}") }.to raise_error Aws::S3::Errors::InvalidDigest
-        end
       end
     end
   end

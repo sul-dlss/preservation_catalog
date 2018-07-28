@@ -5,7 +5,7 @@ describe S3WestDeliveryJob, type: :job do
   let(:version) { 1 }
   let(:dvz) { DruidVersionZip.new(druid, version) }
   let(:dvz_part) { DruidVersionZipPart.new(dvz, part_s3_key) }
-  let(:object) { instance_double(Aws::S3::Object, exists?: false, put: true) }
+  let(:object) { instance_double(Aws::S3::Object, exists?: false, upload_file: true) }
   let(:bucket) { instance_double(Aws::S3::Bucket, object: object) }
   let(:md5) { '4f98f59e877ecb84ff75ef0fab45bac5' }
   let(:base64) { dvz.hex_to_base64(md5) }
@@ -26,16 +26,16 @@ describe S3WestDeliveryJob, type: :job do
     before { allow(object).to receive(:exists?).and_return(true) }
 
     it 'does nothing' do
-      expect(object).not_to receive(:put)
+      expect(object).not_to receive(:upload_file)
       expect(ResultsRecorderJob).not_to receive(:perform_later)
       described_class.perform_now(druid, version, part_s3_key, metadata)
     end
   end
 
   context 'zip part is new to S3' do
-    it 'puts to S3' do
-      expect(object).to receive(:put).with(
-        a_hash_including(body: File, content_md5: base64, metadata: a_hash_including(checksum_md5: md5))
+    it 'uploads_file to S3' do
+      expect(object).to receive(:upload_file).with(
+        File, metadata: a_hash_including(checksum_md5: md5)
       )
       described_class.perform_now(druid, version, part_s3_key, metadata)
     end
