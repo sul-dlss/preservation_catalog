@@ -50,7 +50,7 @@ RSpec.describe ZippedMoabVersion, type: :model do
     it 'if PC is unreplicatable, returns false, does not enqueue' do
       expect(cm).to receive(:replicatable_status?).and_return(false)
       expect(ZipmakerJob).not_to receive(:perform_later)
-      expect(zmv.replicate!).to be(false)
+      expect(zmv.replicate!).to be(nil)
     end
     it 'if PC is replicatable, passes druid and version to Zipmaker' do
       expect(cm).to receive(:replicatable_status?).and_return(true)
