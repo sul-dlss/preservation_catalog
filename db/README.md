@@ -9,33 +9,50 @@
 * <sub>`PK` in the diagram indicates the [primary key](https://en.wikipedia.org/wiki/Unique_key#Defining_primary_keys_in_SQL) column for the table.</sub>
 * <sub>The cross side of the connection between tables indictates a required foreign key relationship, or what ActiveRecord would call `belongs_to` (with a `null: false` constraint on the column definition and a corresponding `presence: true` on the ActiveRecord class definition).  In our current data model, none of our foreign key reference fields may be null.  Each such ActiveRecord object must point to exactly one instance of its foreign key referent.</sub>
   * <sub>E.g., a row in `complete_moabs` (retrievable as a `CompleteMoab` ActiveRecord object) must point to (`belong_to`) exactly one row in `preserved_objects` (a `PreservedObject`).</sub>
-* <sub>The fork side of the connection between tables indicates a one to 0 or more relationship, or what ActiveRecord calls `has_many`.</sub>
-  * <sub>E.g., a row in `endpoint_types` (an `EndpointType`) may have many corresponding rows in `endpoints` (retrievable as `Endpoint` objects).  And while it's possible for an `EndpointType` to have no associated `Endpoint` objects, this would be a fishy situation: one might define an endpoint type ahead of the corresponding endpoints that implement it, but in general, we should probably not have `PreservedObject`s, `EndpointType`s, or `PreservationPolicy`s that aren't actually used by anything else.</sub>
-* <sub>We have one thin "join table", `endpoint_preservation_policies`, which has no corresponding ActiveRecord class.  ActiveRecord is made aware of the mapping between the `endpoints` and `preservation_policies` tables by way of `has_and_belongs_to_many` relationship declarations on `Endpoint` (to `preservation_policies`) and `PreservationPolicy` (to `endpoints`).</sub>
-  * <sub>Semantically, the idea is that an endpoint may be used by more than one preservation policy, and a preservation policy may be implemented by multiple endpoints.  Typically, this sort of many-to-many relationship is expressed in a relational database schema by way of an intermediary table that maps related rows in the two tables.  This is more structured and easier to query/update than, e.g., a list field on a row in one table enumerating all the related row IDs in the other table.</sub>
+* <sub>The fork side of the connection between tables indicates a one to zero or more relationship, or what ActiveRecord calls `has_many`.</sub>
+  * <sub> E.g., a row in `zip_parts` (a `ZipPart`) may have many corresponding rows in `zipped_moab_version` (retrievable as `ZippedMoabVersion` objects).
+* <sub>We have one thin "join table", `moab_storage_roots_preservation_policies`, which has no corresponding ActiveRecord class.  ActiveRecord is made aware of the mapping between the `moab_storage_roots` and `preservation_policies` tables by way of `has_and_belongs_to_many` relationship declarations o `moab_storage_root` (to `preservation_policies`) and `PreservationPolicy` (to `moab_storage_roots`).</sub>
+  * <sub>Semantically, the idea is that a moab_storage_root may be used by more than one preservation policy, and a preservation policy may be implemented by multiple moab_storage_roots.  Typically, this sort of many-to-many relationship is expressed in a relational database schema by way of an intermediary table that maps related rows in the two tables.  This is more structured and easier to query/update than, e.g., a list field on a row in one table enumerating all the related row IDs in the other table.</sub>
 
 #### What do these table rows (ActiveRecord objects) represent in the "real" world?  (a list of the ActiveRecord subclasses, and a (non-exhaustive) list of their fields)
-* A `PreservedObject` represents the master record for a moab object that we intend to preserve, tying together all of the physically instantiated copies (whether "online" or "archive").  It also holds some high level summary info that applies to all of the related complete moabs.
+* A `PreservedObject` represents the master record for a `complete_moab_object` as well as the `zipped_moab_version` that we intend to preserve. It also holds some high level summary info that applies to all of the related complete moabs.
+  * `druid` is the digital resource unique identifier
   * `current_version` is current latest version we've seen for the druid across all instances.
   * `preservation_policy_id` points to the policy governing how the object should be preserved.
-* A `CompleteMoab` represents a physical copy of a `PreservedObject`, e.g. an "online" moab stored on premesis and accessed via NFS mount, an "archive" copy sitting on a cloud endpoint (manipulable via REST calls to a 3rd party cloud service), etc.
+* A `CompleteMoab` represents a physical copy of a `PreservedObject`, e.g. a moab (represents all versions) stored on premesis and accessed via NFS mount, the `zipped_moab_vesion` (represents a single version) copy sitting on a cloud endpoint (manipulable via REST calls to a 3rd party cloud service), etc.
   * `size`: is approximate, and given in bytes.  It's intended to be used for things like allocating storage.  It should _not_ be treated as an exact value for fixity checking.
   * `status`: a high-level summary of the copy's current state.  This is just a reflection of what we last saw on disk, and does not capture history, nor does it necessarily enumerate all errors for a copy that needs remediation.
-* An `Endpoint` represents a physical storage location on which a `CompleteMoab` resides.  E.g., a single NFS-mounted storage root for "online" moabs, or a single bucket from a cloud service holding "archive" copies (such as an Amazon AWS or Oracle Cloud bucket).  The `Endpoint` fields include info about:
-  * `endpoint_type_id`: the `EndpointType` implemented by this `Endpoint`.
-  * `endpoint_node`: the network location of the endpoint relative to the preservation catalog instance (e.g. localhost for a locally mounted NFS volume, s3.us-east-2.amazonaws.com for an S3 bucket, etc).
+  * `version`: should be the same as `PreservedObject` current version. This is left over from when `complete_moab` and `zipped_moab_version` shared a table.
+* An `MoabStorageRoot` represents a physical storage location on which a `CompleteMoab` resides.  E.g., a single NFS-mounted storage root for `complete_moabs`, or a single bucket from a cloud service holding `zipped_moab_versions`.  The `MoabStorageRoot` fields include info about:
   * `storage_location`: the path or bucket name or similar from which to read (e.g. "/services-disk03/sdr2objects", "sdr-bucket-01", etc).
   * `preservation_policies`: the preservation policies for which governed objects are preserved (declared to ActiveRecord via `has_and_belongs_to_many :preservation_policies`).
-* An `EndpointType`, as the name implies, describes general shared characteristics common to many `Endpoint` instances.  At present these include a general type name describing what sort of storage the endpoint is to be implemented on (e.g. our own NFS mounts, an AWS bucket, a Ceph instance, etc), as well as the type of objects the endpoint stores (at present, only "online" exploded moabs, or "archive" moabs packed into a single file).
 * A `PreservationPolicy` defines
-  * `endpoints`: the endpoints to which the objects governed by the policy should preserved (declared to ActiveRecord via `has_and_belongs_to_many :endpoints`).
+  * `moab_storage_roots`: the endpoints to which the objects governed by the policy should preserved (declared to ActiveRecord via `has_and_belongs_to_many :moab_storage_root`).
   * `archive_ttl`: the frequency with which the existence of the appropriate archive copies should be checked.
   * `fixity_ttl`: the frequency with which the online copies should be checked for fixity.
-
+* `ZipEndpoint` represents the endpoint where the `zipped_moab_version` will be replicated to.
+  * `endpoint_name`: the human readable name of the endpoint (e.g. `aws_s3_us_east_1`)
+  * `delivery_class`: the name of the class that does the delivery (e.g `S3WestDeliveryJob`)
+  * `endpoint_node`: the network location of the endpoint relative to the preservation catalog instance (e.g. localhost for a locally mounted NFS volume, s3.us-east-2.amazonaws.com for a S3 bucket, etc).
+  * `storage_location`: the bucket name (e.g. `sul-sdr-aws-us-east-1-test`)
+* `ZippedMoabVersion` corresponds to a Moab-Version on a `ZipEndpoint`.
+  * `version`: the version from the Moab that was zipped.
+  * `last_existence_check` represents the last time the Moab-Version existed on a ZipEndpoint
+  * `complete_moab_id`: references the parent complete moab on disk.
+  * `zip_endpoint_id`: the endpoint on which the Moab-Version has been replicated
+  * `status`: represents whether `ZippedMoabVersion` has been replicated, needs to be replicated, or remediated.
+* `ZipParts`: We chunk archives of Moab versions into multiple files greater than 10GBs. This represents metadata for one such part.
+  * `size` represents the size of the actual `zip_part`
+  * `zipped_moab_version_id` references the parent Moab-Version on a `ZipEndpoint`. 99% of the time, we will have 1 `ZippedMoabVersion` to 1 `ZipPart`.
+  * `md5` represents the checksum used for checksum validation
+  * `create_info` is a hash containing the zip command and zip version.
+  * `parts_count` displays how many total zip parts were created during replication.
+  * `suffix` if there is 1 `ZipPart` suffix will always be `.zip` if there are more than 1 `ZipPart` the suffix will be `.z01` through `.z(n-1)` (e.g. 3 parts will be ['.z01', '.z02', '.zip'])
+  * `status`: displays whether the `ZipPart` has been replicated or not.
 
 #### other terminology
 * An "online" copy is an exploded moab folder structure, on which we can run structural verification or checksum verification for constituent files, and from which we can retrieve individual assets of the moab.
-* An "archive" copy is a single file containing a moab's file and folder structure.  Format is still TBD, possibly a plain tar file of a moab object, possibly Bagit bag, possibly ??
+* An "archive" copy corresponds to a Moab-Version on a `ZipEndpoint`. The format is a multipart zip upload.
 * "TTL" is an acronym for "time-to-live", or an expiry age.  In the case of our `archive_ttl` and `fixity_ttl` values, it's the age beyond which we consider the last archive or fixity check result to be stale (in which case those checks should be re-run at the next scheduled opportunity).
 
 
@@ -72,16 +89,15 @@ General advice:
 #### which objects aren't in a good state?
 ```ruby
 # example AR query
-[25] pry(main)> CompleteMoab.joins(:preserved_object, :endpoint).where.not(status: :ok).order('complete_moabs.status asc, endpoints.storage_location asc').pluck(:status, :storage_location, :druid)
+[25] pry(main)> CompleteMoab.joins(:preserved_object, :moab_storage_root).where.not(status: :ok).order('complete_moabs.status asc, moab_storage_roots.storage_location asc').pluck(:status, :storage_location, :druid)
 ```
 ```sql
 -- example sql produced by above AR query
-SELECT "complete_moabs"."status", "storage_location", "druid"
-FROM "complete_moabs"
+SELECT "complete_moabs"."status", "storage_location", "druid" FROM "complete_moabs"
 INNER JOIN "preserved_objects" ON "preserved_objects"."id" = "complete_moabs"."preserved_object_id"
-INNER JOIN "endpoints" ON "endpoints"."id" = "complete_moabs"."endpoint_id"
+INNER JOIN "moab_storage_roots" ON "moab_storage_roots"."id" = "complete_moabs"."moab_storage_root_id"
 WHERE ("complete_moabs"."status" != $1)
-ORDER BY complete_moabs.status asc, endpoints.storage_location asc
+ORDER BY complete_moabs.status asc, moab_storage_roots.storage_location asc
 ```
 ```ruby
 # example result, one bad object on disk 2
@@ -91,15 +107,14 @@ ORDER BY complete_moabs.status asc, endpoints.storage_location asc
 #### catalog seeding just ran for the first time.  how long did it take to crawl each storage root, how many moabs does each have, what's the average moab size?
 ```ruby
 # example AR query
-[2] pry(main)> Endpoint.joins(:complete_moabs).group(:endpoint_name).order('endpoint_name asc').pluck(:endpoint_name, 'min(complete_moabs.created_at)', 'max(complete_moabs.created_at)', '(max(complete_moabs.created_at)-min(complete_moabs.created_at))', 'count(complete_moabs.id)', 'round(avg(complete_moabs.size))')
+[2] pry(main)> MoabStorageRoot.joins(:complete_moabs).group(:name).order('name asc').pluck(:name, 'min(complete_moabs.created_at)', 'max(complete_moabs.created_at)', '(max(complete_moabs.created_at)-min(complete_moabs.created_at))', 'count(complete_moabs.id)', 'round(avg(complete_moabs.size))')
 ```
 ```sql
 -- example sql produced by above AR query
-SELECT "endpoints"."endpoint_name", min(complete_moabs.created_at), max(complete_moabs.created_at), (max(complete_moabs.created_at)-min(complete_moabs.created_at)), count(complete_moabs.id), round(avg(complete_moabs.size))
-FROM "endpoints"
-INNER JOIN "complete_moabs" ON "complete_moabs"."endpoint_id" = "endpoints"."id"
-GROUP BY "endpoints"."endpoint_name"
-ORDER BY endpoint_name asc
+SELECT "moab_storage_roots"."name", min(complete_moabs.created_at), max(complete_moabs.created_at), (max(complete_moabs.created_at)-min(complete_moabs.created_at)), count(complete_moabs.id), round(avg(complete_moabs.size)) FROM "moab_storage_roots"
+INNER JOIN "complete_moabs" ON "complete_moabs"."moab_storage_root_id" = "moab_storage_roots"."id"
+GROUP BY "moab_storage_roots"."name"
+ORDER BY name asc
 ```
 ```ruby
 # example result when there's one storage root configured, would automatically list all if there were multiple
@@ -109,17 +124,16 @@ ORDER BY endpoint_name asc
 #### how many moabs on each storage root are `status != 'ok'`?
 ```ruby
 # example AR query
-[12] pry(main)> CompleteMoab.joins(:preserved_object, :endpoint).where.not(status: 'ok').group(:status, :storage_location).order('complete_moabs.status asc, endpoints.storage_location asc').pluck('complete_moabs.status, endpoints.storage_location, count(preserved_objects.druid)')
+[12] pry(main)> CompleteMoab.joins(:preserved_object, :moab_storage_root).where.not(status: 'ok').group(:status, :storage_location).order('complete_moabs.status asc, moab_storage_roots.storage_location asc').pluck('complete_moabs.status, moab_storage_roots.storage_location, count(preserved_objects.druid)')
 ```
 ```sql
 -- example sql produced by above AR query
-SELECT complete_moabs.status, endpoints.storage_location, count(preserved_objects.druid)
-FROM "complete_moabs"
+SELECT complete_moabs.status, moab_storage_roots.storage_location, count(preserved_objects.druid) FROM "complete_moabs"
 INNER JOIN "preserved_objects" ON "preserved_objects"."id" = "complete_moabs"."preserved_object_id"
-INNER JOIN "endpoints" ON "endpoints"."id" = "complete_moabs"."endpoint_id"
+INNER JOIN "moab_storage_roots" ON "moab_storage_roots"."id" = "complete_moabs"."moab_storage_root_id"
 WHERE ("complete_moabs"."status" != $1)
 GROUP BY "complete_moabs"."status", "storage_location"
-ORDER BY complete_moabs.status asc, endpoints.storage_location asc
+ORDER BY complete_moabs.status asc, moab_storage_roots.storage_location asc 
 ```
 ```ruby
 # example result, some moabs that failed structural validation
@@ -132,15 +146,14 @@ ORDER BY complete_moabs.status asc, endpoints.storage_location asc
 #### view the druids on a given endpoint
 - will return tons of results on prod
 ```ruby
-input> CompleteMoab.joins(:preserved_object, :endpoint).where(endpoints: {endpoint_name: :fixture_sr2}).pluck('preserved_objects.druid')
+input> CompleteMoab.joins(:preserved_object, :moab_storage_root).where(moab_storage_roots: {name: :fixture_sr1}).pluck('preserved_objects.druid')
 ```
 ```sql
 -- example sql produced by above AR query
- SELECT preserved_objects.druid
- FROM "complete_moabs"
+ SELECT preserved_objects.druid FROM "complete_moabs"
  INNER JOIN "preserved_objects" ON "preserved_objects"."id" = "complete_moabs"."preserved_object_id"
- INNER JOIN "endpoints" ON "endpoints"."id" = "complete_moabs"."endpoint_id"
- WHERE "endpoints"."endpoint_name" = $1  [["endpoint_name", "fixture_sr2"]]
+ INNER JOIN "moab_storage_roots" ON "moab_storage_roots"."id" = "complete_moabs"."moab_storage_root_id"
+ WHERE "moab_storage_roots"."name" = $1  [["name", "fixture_sr1"]]
 ```
 ```ruby
 # example result
