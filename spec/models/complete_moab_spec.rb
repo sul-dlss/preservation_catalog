@@ -278,10 +278,10 @@ RSpec.describe CompleteMoab, type: :model do
     describe '.fixity_check_expired' do
       let(:ms_root2) { MoabStorageRoot.find_by(name: 'fixture_sr2') }
       let!(:checked_before_threshold_cm1) do
-        create(:complete_moab, args.merge(version: 6, last_checksum_validation: now - 3.weeks))
+        create(:complete_moab, args.merge(version: 6, last_checksum_validation: now - 56.weeks))
       end
       let!(:checked_before_threshold_cm2) do
-        my_args = args.merge(version: 7, last_checksum_validation: now - 7.01.days, moab_storage_root: ms_root2)
+        my_args = args.merge(version: 7, last_checksum_validation: now - 90.01.days, moab_storage_root: ms_root2)
         create(:complete_moab, my_args)
       end
       let!(:recently_checked_cm1) do
