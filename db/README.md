@@ -1,7 +1,9 @@
 ### schema explanation (as of 2017-12-14)
 
 ##### Schema Entity-Relationship Diagram
-![Schema Entity-Relationship Diagram as of 2017-12-14](schema_ER_diagram.2017-12-14.png)
+![Schema Entity-Relationship Diagram as of 2018-07-31](schema_ER_diagram.2018-07-31.png)
+
+<sub>Diagram generated from lucidchart.com (File > Import Data > Entity Relationship > SQL Import > PostgreSQL; follow instructions for schema dump/import, arrange tables given on left-hand toolbar)</sub>
 
 ###### Key:
 * <sub>The diagram is generated from a Postgres schema dump, so the tables are listed by their SQL names.  Each SQL table has a corresponding ActiveRecord class, whose name is a camel case version of the snake case SQL name (with one exception, explained below).  The explanation tries to use the SQL table name or the ActiveRecord classname according to which is most appropriate, and may be arbitrary when either would suffice.</sub>
