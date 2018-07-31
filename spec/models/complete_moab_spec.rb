@@ -380,4 +380,19 @@ RSpec.describe CompleteMoab, type: :model do
       cm.save!
     end
   end
+
+  describe '.after_save callback' do
+    before { allow(ChecksumValidationJob).to receive(:perform_later).and_call_original } # undo rails_helper block
+    it 'does not call validate_checksums when status is unchanged' do
+      cm.size = 234
+      expect(cm).not_to receive(:validate_checksums!)
+      cm.save!
+    end
+
+    it 'does calls validate_checksums when status is validity_unknown' do
+      cm.ok! # object starts out with validity_unknown status
+      expect(cm).to receive(:validate_checksums!)
+      cm.validity_unknown!
+    end
+  end
 end
