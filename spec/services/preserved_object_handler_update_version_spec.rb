@@ -57,6 +57,7 @@ RSpec.describe PreservedObjectHandler do
               expect(cm.size).not_to eq orig
             end
           end
+
           context 'unchanged' do
             it 'size if incoming size is nil' do
               orig = cm.size
@@ -70,6 +71,7 @@ RSpec.describe PreservedObjectHandler do
               expect(cm.reload.last_moab_validation).to eq orig
             end
           end
+
           context 'status' do
             context 'checksums_validated = false' do
               it 'starting status validity_unknown unchanged' do
@@ -81,6 +83,7 @@ RSpec.describe PreservedObjectHandler do
               context 'starting status not validity_unknown' do
                 shared_examples 'POH#update_version changes status to "validity_unknown"' do |orig_status|
                   before { cm.update!(status: orig_status) }
+
                   it "original status #{orig_status}" do
                     expect do
                       po_handler.update_version
@@ -95,6 +98,7 @@ RSpec.describe PreservedObjectHandler do
                 it_behaves_like 'POH#update_version changes status to "validity_unknown"', 'unexpected_version_on_storage'
               end
             end
+
             context 'checksums_validated = true' do
               it 'starting status ok unchanged' do
                 expect do
@@ -106,6 +110,7 @@ RSpec.describe PreservedObjectHandler do
                   before do
                     cm.update!(status: orig_status)
                   end
+
                   it "original status #{orig_status}" do
                     expect do
                       po_handler.update_version(true)
@@ -147,6 +152,7 @@ RSpec.describe PreservedObjectHandler do
             end
           end
         end
+
         it_behaves_like 'calls AuditResults.report_results', :update_version
 
         context 'returns' do
@@ -209,6 +215,7 @@ RSpec.describe PreservedObjectHandler do
             end
           end
         end
+
         context 'PreservedObject' do
           context 'ActiveRecordError' do
             let(:results) do
@@ -304,6 +311,7 @@ RSpec.describe PreservedObjectHandler do
             last_moab_validation: t
           )
         end
+
         let(:po) { PreservedObject.create!(druid: druid, current_version: 2, preservation_policy: default_prez_policy) }
         let(:cm) { CompleteMoab.find_by!(preserved_object: po, moab_storage_root: ms_root) }
 
@@ -332,6 +340,7 @@ RSpec.describe PreservedObjectHandler do
               expect(cm.size).not_to eq orig
             end
           end
+
           context 'unchanged' do
             it 'size if incoming size is nil' do
               orig = cm.size
@@ -340,6 +349,7 @@ RSpec.describe PreservedObjectHandler do
               expect(cm.reload.size).to eq orig
             end
           end
+
           context 'status' do
             context 'checksums_validated = false' do
               it 'starting status validity_unknown unchanged' do
@@ -351,6 +361,7 @@ RSpec.describe PreservedObjectHandler do
               context 'starting status not validity_unknown' do
                 shared_examples 'POH#update_version_after_validation changes status to "validity_unknown"' do |orig_status|
                   before { cm.update(status: orig_status) }
+
                   it "original status #{orig_status}" do
                     expect do
                       po_handler.update_version_after_validation
@@ -365,6 +376,7 @@ RSpec.describe PreservedObjectHandler do
                 it_behaves_like 'POH#update_version_after_validation changes status to "validity_unknown"', 'unexpected_version_on_storage'
               end
             end
+
             context 'checksums_validated = true' do
               it 'starting status ok unchanged' do
                 expect do
@@ -374,6 +386,7 @@ RSpec.describe PreservedObjectHandler do
               context 'starting status not ok' do
                 shared_examples 'POH#update_version_after_validation(true) changes status to "ok"' do |orig_status|
                   before { cm.update(status: orig_status) }
+
                   it "original status #{orig_status}" do
                     expect do
                       po_handler.update_version_after_validation(true)
@@ -390,6 +403,7 @@ RSpec.describe PreservedObjectHandler do
             end
           end
         end
+
         context 'PreservedObject' do
           context 'changed' do
             it 'current_version' do
@@ -469,6 +483,7 @@ RSpec.describe PreservedObjectHandler do
               context 'starting status was not validity_unknown' do
                 shared_examples 'POH#update_version_after_validation changes status to "validity_unknown"' do |orig_status|
                   before { cm.update(status: orig_status) }
+
                   it "original status #{orig_status}" do
                     # (due to newer version not checksum validated)
                     expect do
@@ -486,6 +501,7 @@ RSpec.describe PreservedObjectHandler do
             end
           end
         end
+
         context 'checksums_validated = true' do
           context 'CompleteMoab' do
             it 'last_moab_validation updated' do
@@ -518,6 +534,7 @@ RSpec.describe PreservedObjectHandler do
               context 'starting status was not invalid_moab' do
                 shared_examples 'POH#update_version_after_validation(true) changes status to "invalid_moab"' do |orig_status|
                   before { cm.update(status: orig_status) }
+
                   it "original status #{orig_status}" do
                     expect do
                       po_handler.update_version_after_validation(true)
@@ -534,6 +551,7 @@ RSpec.describe PreservedObjectHandler do
             end
           end
         end
+
         context 'PreservedObject' do
           context 'unchanged' do
             it 'current_version' do
@@ -588,6 +606,7 @@ RSpec.describe PreservedObjectHandler do
                 expect { po_handler.update_version_after_validation }.to change { cm.reload.status }.to('validity_unknown')
               end
             end
+
             it 'does not update PreservedObject' do
               expect { po_handler.update_version_after_validation }.not_to change { po.reload.updated_at }
             end
@@ -615,6 +634,7 @@ RSpec.describe PreservedObjectHandler do
               end
             end
           end
+
           context 'checksums_validated = true' do
             context 'CompleteMoab' do
               it 'last_moab_validation updated' do
@@ -633,6 +653,7 @@ RSpec.describe PreservedObjectHandler do
                 expect { po_handler.update_version_after_validation(true) }.to change { cm.reload.status }.to('invalid_moab')
               end
             end
+
             it 'does not update PreservedObject' do
               expect { po_handler.update_version_after_validation(true) }.not_to change { po.reload.updated_at }
             end

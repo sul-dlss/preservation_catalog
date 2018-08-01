@@ -64,6 +64,7 @@ RSpec.describe PreservedObjectHandler do
               expect(cm.reload.updated_at).to be > orig
             end
           end
+
           context 'unchanged' do
             it 'status' do
               orig = cm.status
@@ -87,6 +88,7 @@ RSpec.describe PreservedObjectHandler do
             end
           end
         end
+
         it 'PreservedObject is not updated' do
           orig_timestamp = po.updated_at
           po_handler.confirm_version
@@ -164,6 +166,7 @@ RSpec.describe PreservedObjectHandler do
                 expect(cm.reload.updated_at).to be > orig
               end
             end
+
             context 'unchanged' do
               it 'version' do
                 orig = cm.version
@@ -182,6 +185,7 @@ RSpec.describe PreservedObjectHandler do
               end
             end
           end
+
           it 'PreservedObject is not updated' do
             orig_timestamp = po.updated_at
             po_handler.confirm_version

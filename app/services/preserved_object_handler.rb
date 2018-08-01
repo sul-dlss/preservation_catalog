@@ -13,9 +13,7 @@ class PreservedObjectHandler
   validates :incoming_version, presence: true, numericality: { only_integer: true, greater_than: 0 }
   validates :incoming_size, numericality: { only_integer: true, greater_than: 0 }
   validates_each :moab_storage_root do |record, attr, value|
-    unless value.is_a?(MoabStorageRoot)
-      record.errors.add(attr, 'must be an actual MoabStorageRoot')
-    end
+    record.errors.add(attr, 'must be an actual MoabStorageRoot') unless value.is_a?(MoabStorageRoot)
   end
 
   attr_reader :druid, :incoming_version, :incoming_size, :moab_storage_root, :results

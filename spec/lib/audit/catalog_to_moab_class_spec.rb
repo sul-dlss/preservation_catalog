@@ -47,7 +47,7 @@ RSpec.describe Audit::CatalogToMoab do
         end
         c2m_list.each do |c2m|
           allow(described_class).to receive(:new).with(c2m.complete_moab, storage_dir).and_return(c2m)
-          expect(c2m).to receive(:check_catalog_version).exactly(1).times.and_call_original
+          expect(c2m).to receive(:check_catalog_version).once.and_call_original
         end
         described_class.check_version_on_dir(last_checked_version_b4_date, storage_dir, 2)
       end

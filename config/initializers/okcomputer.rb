@@ -24,7 +24,7 @@ class TablesHaveDataCheck < OkComputer::Check
   rescue ActiveRecord::RecordNotFound
     mark_failure
     "#{klass.name} has no data."
-  rescue => e # rubocop:disable Lint/RescueWithoutErrorClass
+  rescue => e # rubocop:disable Style/RescueStandardError
     mark_failure
     "#{e.class.name} received: #{e.message}."
   end

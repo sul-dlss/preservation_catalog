@@ -1,7 +1,5 @@
-
 # send errors to preservationAuditWF workflow for an object via ReST calls.
 class WorkflowReporter
-
   DOR = 'dor'.freeze
   PRESERVATIONAUDITWF = 'preservationAuditWF'.freeze
   NO_WORKFLOW_HOOKUP = 'no workflow hookup - assume you are in test or dev environment'.freeze

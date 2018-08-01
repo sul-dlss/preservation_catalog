@@ -83,8 +83,8 @@ RSpec.describe Audit::MoabToCatalog do
     end
 
     it 'gets moab size and current version from Moab::StorageObject' do
-      expect(moab).to receive(:current_version_id).at_least(1).times
-      expect(moab).to receive(:size).at_least(1).times
+      expect(moab).to receive(:current_version_id).at_least(:once)
+      expect(moab).to receive(:size).at_least(:once)
       expect(Moab::StorageServices).not_to receive(:new)
       described_class.check_existence_for_dir(storage_dir)
     end
@@ -202,8 +202,8 @@ RSpec.describe Audit::MoabToCatalog do
     end
 
     it 'gets moab size and current version from Moab::StorageObject' do
-      expect(moab).to receive(:size).at_least(1).times
-      expect(moab).to receive(:current_version_id).at_least(1).times
+      expect(moab).to receive(:size).at_least(:once)
+      expect(moab).to receive(:current_version_id).at_least(:once)
       expect(Moab::StorageServices).not_to receive(:new)
       described_class.seed_catalog_for_dir(storage_dir)
     end
@@ -229,6 +229,7 @@ RSpec.describe Audit::MoabToCatalog do
           ).and_return(po_handler)
         end
       end
+
       it "call #create_after_validation" do
         expected_argument_list.each do |arg_hash|
           expect(arg_hash[:po_handler]).to receive(:create_after_validation)
@@ -256,12 +257,12 @@ RSpec.describe Audit::MoabToCatalog do
 
     it 'drops CompleteMoabs that correspond to the given moab storage root' do
       ZippedMoabVersion.destroy_all
-      expect { described_class.drop_moab_storage_root('fixture_sr1') }.to change { CompleteMoab.count }.from(16).to(13)
+      expect { described_class.drop_moab_storage_root('fixture_sr1') }.to change(CompleteMoab, :count).from(16).to(13)
     end
 
     it 'drops PreservedObjects that correspond to the given moab storage root' do
       ZippedMoabVersion.destroy_all
-      expect { described_class.drop_moab_storage_root('fixture_sr1') }.to change { PreservedObject.count }.from(16).to(13)
+      expect { described_class.drop_moab_storage_root('fixture_sr1') }.to change(PreservedObject, :count).from(16).to(13)
     end
 
     it 'rolls back pres obj delete if PCs cannot be deleted' do
@@ -275,7 +276,7 @@ RSpec.describe Audit::MoabToCatalog do
     before { described_class.seed_catalog_for_all_storage_roots }
 
     it "won't change objects in a fully seeded db" do
-      expect { described_class.populate_moab_storage_root('fixture_sr1') }.not_to change { CompleteMoab.count }.from(16)
+      expect { described_class.populate_moab_storage_root('fixture_sr1') }.not_to change(CompleteMoab, :count).from(16)
       expect(PreservedObject.count).to eq 16
     end
 
@@ -283,7 +284,7 @@ RSpec.describe Audit::MoabToCatalog do
       ZippedMoabVersion.destroy_all
       described_class.drop_moab_storage_root('fixture_sr1')
       expect(PreservedObject.count).to eq 13
-      expect { described_class.populate_moab_storage_root('fixture_sr1') }.to change { CompleteMoab.count }.from(13).to(16)
+      expect { described_class.populate_moab_storage_root('fixture_sr1') }.to change(CompleteMoab, :count).from(13).to(16)
       expect(PreservedObject.count).to eq 16
     end
   end

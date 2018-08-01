@@ -16,7 +16,7 @@ class ApplicationRecord < ActiveRecord::Base
   end
 
   def self.provlog
-    @provlogger ||= Logger.new Rails.root.join('log', 'prov.log')
+    @provlog ||= Logger.new Rails.root.join('log', 'prov.log')
   end
 
   def provlog

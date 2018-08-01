@@ -63,11 +63,11 @@ RSpec.describe CompleteMoab, type: :model do
   describe '#replicatable_status?' do
     it 'reponds true IFF status should allow replication' do
       # validity_unknown initial status implicitly tested (otherwise assignment wouldn't change the reponse)
-      expect { cm.status = 'ok'                        }.to change { cm.replicatable_status? }.to(true)
-      expect { cm.status = 'invalid_checksum'          }.to change { cm.replicatable_status? }.to(false)
-      expect { cm.status = 'replicated_copy_not_found' }.to change { cm.replicatable_status? }.to(true)
-      expect { cm.status = 'invalid_moab'              }.to change { cm.replicatable_status? }.to(false)
-      expect { cm.status = 'unreplicated'              }.to change { cm.replicatable_status? }.to(true)
+      expect { cm.status = 'ok'                        }.to change(cm, :replicatable_status?).to(true)
+      expect { cm.status = 'invalid_checksum'          }.to change(cm, :replicatable_status?).to(false)
+      expect { cm.status = 'replicated_copy_not_found' }.to change(cm, :replicatable_status?).to(true)
+      expect { cm.status = 'invalid_moab'              }.to change(cm, :replicatable_status?).to(false)
+      expect { cm.status = 'unreplicated'              }.to change(cm, :replicatable_status?).to(true)
     end
   end
 
@@ -104,25 +104,25 @@ RSpec.describe CompleteMoab, type: :model do
 
   describe '#update_audit_timestamps' do
     it 'updates last_moab_validation time if moab_validated is true' do
-      expect { cm.update_audit_timestamps(true, false) }.to change { cm.last_moab_validation }.from(nil)
+      expect { cm.update_audit_timestamps(true, false) }.to change(cm, :last_moab_validation).from(nil)
     end
     it 'does not update last_moab_validation time if moab_validated is false' do
-      expect { cm.update_audit_timestamps(false, false) }.not_to change { cm.last_moab_validation }.from(nil)
+      expect { cm.update_audit_timestamps(false, false) }.not_to change(cm, :last_moab_validation).from(nil)
     end
     it 'updates last_version_audit time if version_audited is true' do
-      expect { cm.update_audit_timestamps(false, true) }.to change { cm.last_version_audit }.from(nil)
+      expect { cm.update_audit_timestamps(false, true) }.to change(cm, :last_version_audit).from(nil)
     end
     it 'does not update last_version_audit time if version_audited is false' do
-      expect { cm.update_audit_timestamps(false, false) }.not_to change { cm.last_version_audit }.from(nil)
+      expect { cm.update_audit_timestamps(false, false) }.not_to change(cm, :last_version_audit).from(nil)
     end
   end
 
   describe '#upd_audstamps_version_size' do
     it 'updates version' do
-      expect { cm.upd_audstamps_version_size(false, 3, nil) }.to change { cm.version }.to(3)
+      expect { cm.upd_audstamps_version_size(false, 3, nil) }.to change(cm, :version).to(3)
     end
     it 'updates size if size is not nil' do
-      expect { cm.upd_audstamps_version_size(false, 0, 123) }.to change { cm.size }.to(123)
+      expect { cm.upd_audstamps_version_size(false, 0, 123) }.to change(cm, :size).to(123)
     end
     it 'does not update size if size is nil' do
       expect { cm.upd_audstamps_version_size(false, 0, nil) }.not_to change(cm, :size)
@@ -206,6 +206,7 @@ RSpec.describe CompleteMoab, type: :model do
       expect { described_class.send(:normalize_date, '2014') }.to raise_error(ArgumentError, /argument out of range/)
     end
   end
+
   context 'ordered (by fixity_check_expired) and unordered fixity_check_expired methods' do
     let(:fixity_ttl) { preserved_object.preservation_policy.fixity_ttl }
     let!(:old_check_cm1) do
@@ -383,6 +384,7 @@ RSpec.describe CompleteMoab, type: :model do
 
   describe '.after_save callback' do
     before { allow(ChecksumValidationJob).to receive(:perform_later).and_call_original } # undo rails_helper block
+
     it 'does not call validate_checksums when status is unchanged' do
       cm.size = 234
       expect(cm).not_to receive(:validate_checksums!)

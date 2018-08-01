@@ -52,6 +52,7 @@ RSpec.describe PreservedObjectHandler do
               expect(cm.reload.updated_at).to be > orig
             end
           end
+
           context 'unchanged' do
             it 'status' do
               orig = cm.status
@@ -75,6 +76,7 @@ RSpec.describe PreservedObjectHandler do
             end
           end
         end
+
         it 'PreservedObject is not updated' do
           orig = po.updated_at
           po_handler.check_existence
@@ -116,6 +118,7 @@ RSpec.describe PreservedObjectHandler do
                 allow(po_handler).to receive(:moab_validation_errors).and_return([])
                 allow(po_handler).to receive(:ran_moab_validation?).and_return(true)
               end
+
               it 'version to incoming_version' do
                 orig = cm.version
                 po_handler.check_existence
@@ -154,10 +157,12 @@ RSpec.describe PreservedObjectHandler do
                 expect(cm.reload.status).to eq 'validity_unknown'
               end
             end
+
             context 'unchanged' do
               before do
                 allow(po_handler).to receive(:moab_validation_errors).and_return([])
               end
+
               it 'status if former status was ok' do
                 cm.status = 'ok'
                 cm.save!
@@ -172,11 +177,13 @@ RSpec.describe PreservedObjectHandler do
               end
             end
           end
+
           context 'PreservedObject' do
             context 'changed' do
               before do
                 allow(po_handler).to receive(:moab_validation_errors).and_return([])
               end
+
               it 'current_version' do
                 orig = po.current_version
                 po_handler.check_existence
@@ -199,6 +206,7 @@ RSpec.describe PreservedObjectHandler do
             before do
               allow(po_handler).to receive(:moab_validation_errors).and_return([])
             end
+
             it '1 result' do
               expect(results).to be_an_instance_of Array
               expect(results.size).to eq 1
@@ -271,6 +279,7 @@ RSpec.describe PreservedObjectHandler do
                 expect(invalid_cm.reload.status).to eq 'invalid_moab'
               end
             end
+
             context 'unchanged' do
               it 'version' do
                 orig = invalid_cm.version
@@ -284,6 +293,7 @@ RSpec.describe PreservedObjectHandler do
               end
             end
           end
+
           it 'PreservedObject is not updated' do
             orig_timestamp = invalid_po.updated_at
             invalid_po_handler.check_existence

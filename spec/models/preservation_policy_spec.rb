@@ -60,6 +60,7 @@ RSpec.describe PreservationPolicy, type: :model do
   describe '.default_policy' do
     # clear the cache before each test (and after all) to reset
     before { described_class.default_policy = nil }
+
     after(:all) { described_class.default_policy = nil }
 
     it 'returns the default preservation policy object' do

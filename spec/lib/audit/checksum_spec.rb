@@ -16,6 +16,7 @@ RSpec.describe Audit::Checksum do
     let(:logfile) { Rails.root.join('log', 'cv.log') }
 
     before { allow(described_class).to receive(:logger).and_call_original } # undo silencing for 1 test
+
     after { FileUtils.rm_f(logfile) }
 
     it 'writes to STDOUT and its own log' do
@@ -62,7 +63,7 @@ RSpec.describe Audit::Checksum do
       CompleteMoab.by_druid(druid).each do |cm|
         cv = ChecksumValidator.new(cm)
         allow(ChecksumValidator).to receive(:new).with(cv.complete_moab).and_return(cv)
-        expect(cv).to receive(:validate_checksums).exactly(1).times.and_call_original
+        expect(cv).to receive(:validate_checksums).once.and_call_original
       end
       described_class.validate_druid(druid)
     end
@@ -108,7 +109,7 @@ RSpec.describe Audit::Checksum do
         expect(cv_list.size).to eq 3
         cv_list.each do |cv|
           allow(ChecksumValidator).to receive(:new).with(cv.complete_moab).and_return(cv)
-          expect(cv).to receive(:validate_checksums).exactly(1).times.and_call_original
+          expect(cv).to receive(:validate_checksums).once.and_call_original
         end
         described_class.validate_status_root('validity_unknown', ms_root_name, 2)
       end
