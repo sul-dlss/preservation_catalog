@@ -7,6 +7,7 @@ describe PreservationCatalog::S3 do
         expect(described_class.bucket_name).to eq 'sul-sdr-aws-us-west-2-test'
       end
     end
+
     context 'with ENV variable AWS_BUCKET_NAME' do
       around do |example|
         old_val = ENV['AWS_BUCKET_NAME']
@@ -14,6 +15,7 @@ describe PreservationCatalog::S3 do
         example.run
         ENV['AWS_BUCKET_NAME'] = old_val
       end
+
       it 'returns the ENV value' do
         expect(described_class.bucket_name).to eq 'bucket_44'
       end
@@ -37,6 +39,7 @@ describe PreservationCatalog::S3 do
         example.run
         old_vals.each { |k, v| ENV[k] = v }
       end
+
       it 'pulls from ENV vars' do
         expect(config.region).to eq 'us-east-1'
         expect(config.credentials).to be_an(Aws::Credentials)
@@ -72,6 +75,7 @@ describe PreservationCatalog::S3 do
           expect(config.credentials.credentials.secret_access_key).to eq 'bar'
         end
       end
+
       context 'profile us_east_1' do
         let(:envs) { Hash['AWS_PROFILE' => 'us_east_1'] }
 
@@ -81,6 +85,7 @@ describe PreservationCatalog::S3 do
           example.run
           old_vals.each { |k, v| ENV[k] = v }
         end
+
         it 'pulls the other profile from a config file' do
           Aws.config.update(region: 'us-east-1', credentials: shared_credentials)
           expect(config.region).to eq 'us-east-1'

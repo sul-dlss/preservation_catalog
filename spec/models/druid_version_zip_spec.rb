@@ -112,6 +112,7 @@ describe DruidVersionZip do
         FileUtils.touch("/tmp/dc/048/cw/1328/dc048cw1328.v0001.#{f}")
       end
     end
+
     after { FileUtils.rm_rf('/tmp/dc') } # cleanup
 
     it 'lists the multiple files produced' do
@@ -134,6 +135,7 @@ describe DruidVersionZip do
       allow(dvz).to receive(:zip_split_size).and_return('1m')
       FileUtils.rm_rf('/tmp/dc') # prep clean dir
     end
+
     after { FileUtils.rm_rf('/tmp/dc') } # cleanup
 
     it 'lists the multiple files produced' do

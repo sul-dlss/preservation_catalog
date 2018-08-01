@@ -26,7 +26,7 @@ module MoabValidationHandler
   end
 
   def moab_validation_errors
-    @moab_errors ||=
+    @moab_validation_errors ||=
       begin
         object_validator = Stanford::StorageObjectValidator.new(moab)
         moab_errors = object_validator.validation_errors(Settings.moab.allow_content_subdirs)

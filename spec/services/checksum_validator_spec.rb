@@ -232,7 +232,7 @@ RSpec.describe ChecksumValidator do
         it "sets status to OK_STATUS if it was previously #{initial_status}" do
           comp_moab.status = initial_status
           comp_moab.save!
-          expect { cv.validate_checksums }.to change { comp_moab.status }.to 'ok'
+          expect { cv.validate_checksums }.to change(comp_moab, :status).to 'ok'
           expect(comp_moab.reload.status).to eq 'ok'
         end
       end
@@ -240,7 +240,7 @@ RSpec.describe ChecksumValidator do
       it "leaves status of OK_STATUS as-is" do
         comp_moab.status = 'ok'
         comp_moab.save!
-        expect { cv.validate_checksums }.not_to(change { comp_moab.status })
+        expect { cv.validate_checksums }.not_to(change(comp_moab, :status))
         expect(comp_moab.reload.status).to eq 'ok'
       end
 
@@ -270,7 +270,7 @@ RSpec.describe ChecksumValidator do
             it "sets status to UNEXPECTED_VERSION_ON_STORAGE_STATUS if it was previously #{initial_status}" do
               comp_moab.status = initial_status
               comp_moab.save!
-              expect { cv.validate_checksums }.to change { comp_moab.status }.to 'unexpected_version_on_storage'
+              expect { cv.validate_checksums }.to change(comp_moab, :status).to 'unexpected_version_on_storage'
               expect(cv.results.contains_result_code?(AuditResults::UNEXPECTED_VERSION)).to be true
               expect(comp_moab.reload.status).to eq 'unexpected_version_on_storage'
             end
@@ -279,7 +279,7 @@ RSpec.describe ChecksumValidator do
           it 'leaves status as UNEXPECTED_VERSION_ON_STORAGE_STATUS if complete moab started in that state' do
             comp_moab.status = 'unexpected_version_on_storage'
             comp_moab.save!
-            expect { cv.validate_checksums }.not_to(change { comp_moab.status })
+            expect { cv.validate_checksums }.not_to(change(comp_moab, :status))
             expect(cv.results.contains_result_code?(AuditResults::UNEXPECTED_VERSION)).to be true
             expect(comp_moab.reload.status).to eq 'unexpected_version_on_storage'
           end
@@ -300,7 +300,7 @@ RSpec.describe ChecksumValidator do
             it "sets status as INVALID_MOAB_STATUS if it was #{initial_status}" do
               comp_moab.status = initial_status
               comp_moab.save!
-              expect { cv.validate_checksums }.to change { comp_moab.status }.to 'invalid_moab'
+              expect { cv.validate_checksums }.to change(comp_moab, :status).to 'invalid_moab'
               expect(comp_moab.reload.status).to eq 'invalid_moab'
             end
           end
@@ -308,7 +308,7 @@ RSpec.describe ChecksumValidator do
           it 'leaves status as INVALID_MOAB_STATUS if complete moab started in that state' do
             comp_moab.status = 'invalid_moab'
             comp_moab.save!
-            expect { cv.validate_checksums }.not_to(change { comp_moab.status })
+            expect { cv.validate_checksums }.not_to(change(comp_moab, :status))
             expect(comp_moab.reload.status).to eq 'invalid_moab'
           end
         end
@@ -330,13 +330,13 @@ RSpec.describe ChecksumValidator do
       ].each do |initial_status|
         it "sets CompleteMoab status to INVALID_CHECKSUM_STATUS if it was initially #{initial_status}" do
           comp_moab.status = initial_status
-          expect { cv.validate_checksums }.to change { comp_moab.status }.to 'invalid_checksum'
+          expect { cv.validate_checksums }.to change(comp_moab, :status).to 'invalid_checksum'
         end
       end
 
       it 'leaves CompleteMoab status as INVALID_CHECKSUM_STATUS if it already was' do
         comp_moab.status = 'invalid_checksum'
-        expect { cv.validate_checksums }.not_to(change { comp_moab.status })
+        expect { cv.validate_checksums }.not_to(change(comp_moab, :status))
       end
 
       context 'fails other moab validation' do
@@ -356,7 +356,7 @@ RSpec.describe ChecksumValidator do
             it "sets status to INVALID_CHECKSUM_STATUS if it was previously #{initial_status}" do
               comp_moab.status = initial_status
               comp_moab.save!
-              expect { cv.validate_checksums }.to change { comp_moab.status }.to 'invalid_checksum'
+              expect { cv.validate_checksums }.to change(comp_moab, :status).to 'invalid_checksum'
               expect(comp_moab.reload.status).to eq 'invalid_checksum'
             end
           end
@@ -364,7 +364,7 @@ RSpec.describe ChecksumValidator do
           it 'leaves status as INVALID_CHECKSUM_STATUS if complete moab started in that state' do
             comp_moab.status = 'invalid_checksum'
             comp_moab.save!
-            expect { cv.validate_checksums }.not_to(change { comp_moab.status })
+            expect { cv.validate_checksums }.not_to(change(comp_moab, :status))
             expect(comp_moab.reload.status).to eq 'invalid_checksum'
           end
         end
@@ -384,7 +384,7 @@ RSpec.describe ChecksumValidator do
             it "sets status as INVALID_CHECKSUM_STATUS if it was #{initial_status}" do
               comp_moab.status = initial_status
               comp_moab.save!
-              expect { cv.validate_checksums }.to change { comp_moab.status }.to 'invalid_checksum'
+              expect { cv.validate_checksums }.to change(comp_moab, :status).to 'invalid_checksum'
               expect(comp_moab.reload.status).to eq 'invalid_checksum'
             end
           end
@@ -392,7 +392,7 @@ RSpec.describe ChecksumValidator do
           it 'leaves status as INVALID_CHECKSUM_STATUS if complete moab started in that state' do
             comp_moab.status = 'invalid_checksum'
             comp_moab.save!
-            expect { cv.validate_checksums }.not_to(change { comp_moab.status })
+            expect { cv.validate_checksums }.not_to(change(comp_moab, :status))
             expect(comp_moab.reload.status).to eq 'invalid_checksum'
           end
         end

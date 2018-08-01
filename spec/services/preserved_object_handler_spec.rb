@@ -39,6 +39,7 @@ RSpec.describe PreservedObjectHandler do
         end
       end
     end
+
     context 'sets incoming_size' do
       { # passed value => expected parsed value
         6 => 6,
@@ -58,6 +59,7 @@ RSpec.describe PreservedObjectHandler do
         end
       end
     end
+
     it 'exposes storage_location (from MoabStorageRoot)' do
       po_handler = described_class.new(druid, incoming_version, nil, ms_root)
       expect(po_handler.storage_location).to eq ms_root.storage_location

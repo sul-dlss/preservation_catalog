@@ -54,6 +54,7 @@ RSpec.describe Profiler do
     let(:path) { 'log/profile_test-flat.txt' }
 
     before { allow(profiler).to receive(:output_path).and_return(path) }
+
     after { FileUtils.rm_f(path) } # cleanup
 
     it 'returns the printer and prints to the path we pass in' do

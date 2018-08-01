@@ -34,7 +34,7 @@ group :development, :test do
   gem 'rails-controller-testing'
   gem 'coveralls'
   # Ruby static code analyzer http://rubocop.readthedocs.io/en/latest/
-  gem 'rubocop', '~> 0.50.0' # avoid code churn due to rubocop changes
+  gem 'rubocop', '~> 0.58'
   gem 'rubocop-rspec'
   gem 'webmock'
 end

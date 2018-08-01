@@ -134,6 +134,7 @@ RSpec.describe CatalogController, type: :controller do
         status: 'validity_unknown'
       )
     end
+
     let(:pres_obj) { PreservedObject.find_by(druid: bare_druid) }
     let(:comp_moab) { CompleteMoab.find_by(preserved_object: pres_obj) }
 
@@ -141,6 +142,7 @@ RSpec.describe CatalogController, type: :controller do
       before do
         patch :update, params: { druid: prefixed_druid, incoming_version: upd_version, incoming_size: size, storage_location: storage_location_param }
       end
+
       let(:upd_version) { 4 }
 
       it 'updates the version' do
@@ -156,6 +158,7 @@ RSpec.describe CatalogController, type: :controller do
       before do
         patch :update, params: { druid: prefixed_druid, incoming_version: ver, incoming_size: size, storage_location: nil }
       end
+
       it 'response contains error message' do
         errors = ["Moab storage root must be an actual MoabStorageRoot"]
         exp_msg = [{ AuditResults::INVALID_ARGUMENTS => "encountered validation error(s): #{errors}" }]
@@ -171,6 +174,7 @@ RSpec.describe CatalogController, type: :controller do
       before do
         patch :update, params: { druid: 'druid:rr111rr1111', incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
       end
+
       it 'response contains error message' do
         error = "#<ActiveRecord::RecordNotFound: Couldn't find PreservedObject>"
         exp_msg = [{ AuditResults::DB_OBJ_DOES_NOT_EXIST => "#{error} db object does not exist" }]
@@ -188,6 +192,7 @@ RSpec.describe CatalogController, type: :controller do
         comp_moab.save!
         patch :update, params: { druid: prefixed_druid, incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
       end
+
       it 'response contains error message' do
         exp_msg = [{ AuditResults::CM_PO_VERSION_MISMATCH => "CompleteMoab online Moab version 4 does not match PreservedObject current_version 3" }]
         expect(response.body).to include(exp_msg.to_json)
@@ -246,6 +251,7 @@ RSpec.describe CatalogController, type: :controller do
       before do
         post :create, params: { druid: prefixed_druid, incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
       end
+
       let(:prefixed_druid) { "druid:#{bare_druid}" }
       let(:bare_druid) { 'jj925bx9565' }
 

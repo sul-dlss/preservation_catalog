@@ -136,7 +136,7 @@ class AuditResults
   end
 
   def contains_result_code?(code)
-    result_array.detect { |result_hash| result_hash.keys.include?(code) } != nil
+    result_array.detect { |result_hash| result_hash.key?(code) } != nil
   end
 
   def status_changed_to_ok?(result)

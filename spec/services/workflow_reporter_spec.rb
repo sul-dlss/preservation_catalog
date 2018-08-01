@@ -21,6 +21,7 @@ RSpec.describe WorkflowReporter do
       expect(described_class.report_error(druid, process_name, result)).to be true
     end
   end
+
   describe '.report_completed' do
     it 'returns true' do
       full_url = 'https://workflows.example.org/workflow/dor/objects/druid:jj925bx9565/workflows/preservationAuditWF/preservation-audit'

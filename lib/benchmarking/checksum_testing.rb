@@ -94,3 +94,5 @@ puts "Time taken to compute all checksums: #{time_for_all_checksums}"
 puts "md5    = #{all_checksums_result['md5']}"
 puts "sha1   = #{all_checksums_result['sha1']}"
 puts "sha256 = #{all_checksums_result['sha256']}"
+
+# rubocop:enable Metrics/LineLength, Lint/AssignmentInCondition, Rails/Output

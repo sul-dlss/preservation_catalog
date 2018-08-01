@@ -102,6 +102,7 @@ RSpec.describe Audit::CatalogToMoab do
           end
         end
       end
+
       it 'stops processing .check_catalog_version' do
         moab = instance_double(Moab::StorageObject)
         allow(Moab::StorageObject).to receive(:new).with(druid, instance_of(String)).and_return(nil)
@@ -336,6 +337,7 @@ RSpec.describe Audit::CatalogToMoab do
           allow(mock_sov).to receive(:validation_errors).and_return([foo: 'error message'])
           allow(Stanford::StorageObjectValidator).to receive(:new).and_return(mock_sov)
         end
+
         it 'sets status to INVALID_MOAB_STATUS' do
           orig = comp_moab.status
           c2m.check_catalog_version
@@ -351,6 +353,7 @@ RSpec.describe Audit::CatalogToMoab do
           c2m.check_catalog_version
         end
       end
+
       it 'adds a CM_STATUS_CHANGED result' do
         results = instance_double(AuditResults, report_results: nil, :actual_version= => nil, :check_name= => nil)
         expect(results).to receive(:add_result).with(

@@ -50,6 +50,7 @@ RSpec.describe AuditResults do
         addl_hash = { cm_version: 1, po_version: 2 }
         audit_results.add_result(result_code, addl_hash)
       end
+
       it 'with log_msg_prefix' do
         expected = "FooCheck(#{druid}, fixture_sr1)"
         expect(Rails.logger).to receive(:add).with(Logger::ERROR, a_string_matching(Regexp.escape(expected)))
@@ -124,6 +125,7 @@ RSpec.describe AuditResults do
           im_audit_results.report_results
         end
       end
+
       it "does not send results that aren't in WORKFLOW_REPORT_CODES" do
         code = AuditResults::CREATED_NEW_OBJECT
         audit_results.add_result(code)
@@ -276,6 +278,7 @@ RSpec.describe AuditResults do
       code = AuditResults::INVALID_MOAB
       audit_results.add_result(code, 'foo')
     end
+
     it 'removes results matching DB_UPDATED_CODES' do
       expect(audit_results.result_array.size).to eq 4
       audit_results.remove_db_updated_results

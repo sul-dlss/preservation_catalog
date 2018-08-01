@@ -9,7 +9,7 @@ class ZippedMoabVersion < ApplicationRecord
   belongs_to :complete_moab, inverse_of: :zipped_moab_versions
   belongs_to :zip_endpoint, inverse_of: :zipped_moab_versions
   has_many :zip_parts, dependent: :destroy, inverse_of: :zipped_moab_version
-  has_one :preserved_object, through: :complete_moab, dependent: :restrict_with_exception
+  has_one :preserved_object, through: :complete_moab
 
   # Note: In the context of creating many ZMV rows, this may *attempt* to queue the same druid/version multiple times,
   # but queue locking easily prevents duplicates (and the job is idempotent anyway).

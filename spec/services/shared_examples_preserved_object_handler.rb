@@ -72,6 +72,7 @@ RSpec.shared_examples 'CompleteMoab does not exist' do |method_sym|
   before do
     PreservedObject.create!(druid: druid, current_version: 2, preservation_policy: default_prez_policy)
   end
+
   let(:exp_msg) { "#<ActiveRecord::RecordNotFound: foo> db object does not exist" }
   let(:results) do
     allow(Rails.logger).to receive(:log)
@@ -114,6 +115,7 @@ RSpec.shared_examples 'unexpected version' do |method_sym, actual_version|
         end
       end
     end
+
     context 'unchanged' do
       it "version" do
         orig = cm.version
@@ -144,6 +146,7 @@ RSpec.shared_examples 'unexpected version' do |method_sym, actual_version|
       end
     end
   end
+
   context 'PreservedObject' do
     context 'unchanged' do
       it "PreservedObject current_version stays the same" do
@@ -215,6 +218,7 @@ RSpec.shared_examples 'unexpected version with validation' do |method_sym, incom
         end
       end
     end
+
     describe 'status becomes' do
       before { cm.ok! }
 
@@ -232,6 +236,7 @@ RSpec.shared_examples 'unexpected version with validation' do |method_sym, incom
       end
     end
   end
+
   context 'PreservedObject' do
     it "current_version" do
       expect { po_handler.send(method_sym) }.not_to change { po.reload.current_version }
@@ -365,10 +370,12 @@ RSpec.shared_examples 'CompleteMoab may have its status checked when incoming_ve
     context 'without moab validation errors' do
       it_behaves_like 'cannot validate something with INVALID_CHECKSUM_STATUS', method_sym
     end
+
     context 'with moab validation errors' do
       before do
         allow(po_handler).to receive(:moab_validation_errors).and_return([{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }])
       end
+
       it_behaves_like 'cannot validate something with INVALID_CHECKSUM_STATUS', method_sym
     end
   end
@@ -416,10 +423,12 @@ RSpec.shared_examples 'CompleteMoab may have its status checked when incoming_ve
     context 'without moab validation errors' do
       it_behaves_like 'cannot validate something with INVALID_CHECKSUM_STATUS', method_sym
     end
+
     context 'with moab validation errors' do
       before do
         allow(po_handler).to receive(:moab_validation_errors).and_return([{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }])
       end
+
       it_behaves_like 'cannot validate something with INVALID_CHECKSUM_STATUS', method_sym
     end
   end
