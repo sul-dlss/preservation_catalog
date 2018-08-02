@@ -6,7 +6,7 @@ git_source(:github) do |repo_name|
 end
 
 # general Ruby/Rails gems
-gem 'aws-sdk-s3', '~> 1.9.1'
+gem 'aws-sdk-s3', '~> 1.17'
 gem 'config' # Settings to manage configs on different instances
 gem 'dor-workflow-service' # audit errors are reported to the workflow service
 gem 'honeybadger' # for error reporting / tracking / notifications
