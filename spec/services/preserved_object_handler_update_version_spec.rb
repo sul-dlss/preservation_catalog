@@ -83,14 +83,14 @@ RSpec.describe PreservedObjectHandler do
 
             context 'checksums_validated = true' do
               it 'starting status ok unchanged' do
-                expect { po_handler.update_version(true) }.not_to change { cm.status }.from('ok')
+                expect { po_handler.update_version(true) }.not_to change(cm, :status).from('ok')
               end
               context 'original status was not ok' do
                 shared_examples 'POH#update_version(true) does not change status' do |orig_status|
                   before { cm.update!(status: orig_status) }
 
                   it "original status #{orig_status}" do
-                    expect { po_handler.update_version(true) }.not_to change { cm.status }
+                    expect { po_handler.update_version(true) }.not_to change(cm, :status)
                   end
                 end
 

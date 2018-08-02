@@ -224,6 +224,7 @@ RSpec.describe PreservedObjectHandler do
           allow(PreservedObject).to receive(:find_by).with(druid: druid).and_return(po)
           allow(po.complete_moabs).to receive(:find_by!).with(moab_storage_root: ms_root).and_return(cm)
         end
+
         it 'if the existing record is altered' do
           allow(po_handler).to receive(:moab_validation_errors).and_return([])
           expect(cm).to receive(:save!)

@@ -49,6 +49,7 @@ RSpec.describe PreservedObjectHandler do
           allow(PreservedObject).to receive(:create!).with(hash_including(druid: druid))
                                                      .and_raise(ActiveRecord::ActiveRecordError, 'foo')
         end
+
         it 'DB_UPDATE_FAILED result' do
           expect(po_handler.create).to include(a_hash_including(AuditResults::DB_UPDATE_FAILED))
         end

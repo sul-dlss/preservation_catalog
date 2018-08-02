@@ -106,6 +106,7 @@ RSpec.describe PreservedObjectHandler do
 
         context 'when moab is valid' do
           before { allow(po_handler).to receive(:moab_validation_errors).and_return([]) }
+
           context 'CompleteMoab' do
             context 'changed' do
               before { allow(po_handler).to receive(:ran_moab_validation?).and_return(true) }
@@ -154,6 +155,7 @@ RSpec.describe PreservedObjectHandler do
               end
             end
           end
+
           context 'PreservedObject changed' do
             it 'current_version' do
               expect { po_handler.check_existence }.to change { po_handler.pres_object.current_version }
@@ -173,7 +175,7 @@ RSpec.describe PreservedObjectHandler do
 
             it 'ACTUAL_VERS_GT_DB_OBJ results' do
               expect(results).to be_an Array
-              expect(results.size).to eq 1 #
+              expect(results.size).to eq 1
               expect(results.first).to include(AuditResults::ACTUAL_VERS_GT_DB_OBJ => version_gt_cm_msg)
             end
           end
