@@ -10,9 +10,9 @@ RSpec.describe PreservedObjectHandler do
   let(:incoming_version) { 6 }
   let(:incoming_size) { 9876 }
   let!(:default_prez_policy) { PreservationPolicy.default_policy }
-  let(:po) { PreservedObject.find_by(druid: druid) }
-  let(:ms_root) { MoabStorageRoot.find_by(storage_location: 'spec/fixtures/storage_root01/sdr2objects') }
-  let(:cm) { CompleteMoab.find_by(preserved_object: po, moab_storage_root: ms_root) }
+  let(:po) { PreservedObject.find_by!(druid: druid) }
+  let(:ms_root) { MoabStorageRoot.find_by!(storage_location: 'spec/fixtures/storage_root01/sdr2objects') }
+  let(:cm) { po.complete_moabs.find_by!(moab_storage_root: ms_root) }
   let(:po_handler) { described_class.new(druid, incoming_version, incoming_size, ms_root) }
 
   describe '#confirm_version' do
@@ -36,12 +36,11 @@ RSpec.describe PreservedObjectHandler do
           name: 'diff_root',
           storage_location: 'blah'
         )
-        PreservedObject.create!(druid: druid, current_version: 2, preservation_policy: default_prez_policy)
+        create(:preserved_object, druid: druid, current_version: 2)
         po_handler = described_class.new(druid, 3, incoming_size, diff_root)
         results = po_handler.confirm_version
-        code = AuditResults::DB_OBJ_DOES_NOT_EXIST
-        exp_str = "ActiveRecord::RecordNotFound: Couldn't find CompleteMoab> db object does not exist"
-        expect(results).to include(a_hash_including(code => a_string_matching(exp_str)))
+        exp_str = "ActiveRecord::RecordNotFound: Couldn't find CompleteMoab.* db object does not exist"
+        expect(results).to include(a_hash_including(AuditResults::DB_OBJ_DOES_NOT_EXIST => a_string_matching(exp_str)))
         expect(PreservedObject.find_by(druid: druid).current_version).to eq 2
       end
 
@@ -52,39 +51,25 @@ RSpec.describe PreservedObjectHandler do
         context 'CompleteMoab' do
           context 'changed' do
             it 'last_version_audit' do
-              orig = Time.current
-              cm.last_version_audit = orig
-              cm.save!
-              po_handler.confirm_version
-              expect(cm.reload.last_version_audit).to be > orig
+              expect { po_handler.confirm_version }.to change { po_handler.complete_moab.last_version_audit }
             end
             it 'updated_at' do
-              orig = cm.updated_at
-              po_handler.confirm_version
-              expect(cm.reload.updated_at).to be > orig
+              expect { po_handler.confirm_version }.to change { po_handler.complete_moab.reload.updated_at }
             end
           end
 
           context 'unchanged' do
             it 'status' do
-              orig = cm.status
-              po_handler.confirm_version
-              expect(cm.reload.status).to eq orig
+              expect { po_handler.confirm_version }.not_to change { po_handler.complete_moab.status }
             end
             it 'version' do
-              orig = cm.version
-              po_handler.confirm_version
-              expect(cm.reload.version).to eq orig
+              expect { po_handler.confirm_version }.not_to change { po_handler.complete_moab.version }
             end
             it 'size' do
-              orig = cm.size
-              po_handler.confirm_version
-              expect(cm.reload.size).to eq orig
+              expect { po_handler.confirm_version }.not_to change { po_handler.complete_moab.size }
             end
             it 'last_moab_validation' do
-              orig = cm.last_moab_validation
-              po_handler.confirm_version
-              expect(cm.reload.last_moab_validation).to eq orig
+              expect { po_handler.confirm_version }.not_to change { po_handler.complete_moab.last_moab_validation }
             end
           end
         end
@@ -96,15 +81,12 @@ RSpec.describe PreservedObjectHandler do
         end
         it_behaves_like 'calls AuditResults.report_results', :confirm_version
         context 'returns' do
-          let!(:results) { po_handler.confirm_version }
+          let(:results) { po_handler.confirm_version }
 
-          it '1 result' do
+          it '1 result of VERSION_MATCHES' do
             expect(results).to be_an_instance_of Array
             expect(results.size).to eq 1
-          end
-          it 'VERSION_MATCHES results' do
-            code = AuditResults::VERSION_MATCHES
-            expect(results).to include(a_hash_including(code => version_matches_cm_msg))
+            expect(results.first).to match(a_hash_including(AuditResults::VERSION_MATCHES => version_matches_cm_msg))
           end
         end
       end
@@ -117,16 +99,15 @@ RSpec.describe PreservedObjectHandler do
         context 'incoming_version > db version' do
           let(:incoming_version) { cm.version + 1 }
 
+          before { allow(po_handler).to receive(:moab_validation_errors).and_return([]) }
+
           it 'had OK_STATUS, but is now UNEXPECTED_VERSION_ON_STORAGE_STATUS' do
-            cm.status = 'ok'
-            cm.save!
-            allow(po_handler).to receive(:moab_validation_errors).and_return([])
+            cm.ok!
             po_handler.confirm_version
             expect(cm.reload.status).to eq 'unexpected_version_on_storage'
           end
           it 'had INVALID_MOAB_STATUS, structure seems to be remediated, but is now UNEXPECTED_VERSION_ON_STORAGE_STATUS' do
-            cm.status = 'invalid_moab'
-            cm.save!
+            cm.invalid_moab!
             allow(po_handler).to receive(:moab_validation_errors).and_return([])
             po_handler.confirm_version
             expect(cm.reload.status).to eq 'unexpected_version_on_storage'
@@ -141,10 +122,8 @@ RSpec.describe PreservedObjectHandler do
         it_behaves_like 'calls AuditResults.report_results', :confirm_version
 
         context '' do
-          before do
-            # Note this context cannot work with shared_examples 'calls AuditResults.report_results
-            allow(po_handler).to receive(:moab_validation_errors).and_return([])
-          end
+          before { allow(po_handler).to receive(:moab_validation_errors).and_return([]) }
+          # Note this context cannot work with shared_examples 'calls AuditResults.report_results
 
           context 'CompleteMoab' do
             context 'changed' do
@@ -222,59 +201,50 @@ RSpec.describe PreservedObjectHandler do
         it_behaves_like 'PreservedObject current_version does not match online CM version', :confirm_version, 3, 2, 8
       end
 
-      context 'db update error' do
-        context 'ActiveRecordError' do
-          let(:result_code) { AuditResults::DB_UPDATE_FAILED }
-          let(:incoming_version) { 2 }
-          let(:results) do
-            po = create :preserved_object, current_version: 2
-            allow(PreservedObject).to receive(:find_by).with(druid: druid).and_return(po)
-            cm = create :complete_moab, preserved_object: po, version: 2
-            allow(CompleteMoab).to receive(:find_by).and_return(cm)
-            allow(po_handler).to receive(:moab_validation_errors).and_return([])
+      context 'db update error (ActiveRecordError)' do
+        let(:result_code) { AuditResults::DB_UPDATE_FAILED }
+        let(:incoming_version) { 2 }
 
-            allow(cm).to receive(:save!).and_raise(ActiveRecord::ActiveRecordError, 'foo')
-            po_handler.confirm_version
-          end
+        before do
+          po = create(:preserved_object, current_version: 2)
+          cm = create(:complete_moab, preserved_object: po, version: po.current_version)
+          allow(PreservedObject).to receive(:find_by!).with(druid: druid).and_return(po)
+          allow(po.complete_moabs).to receive(:find_by!).and_return(cm)
+          allow(po_handler).to receive(:moab_validation_errors).and_return([])
+          allow(cm).to receive(:save!).and_raise(ActiveRecord::ActiveRecordError, 'foo')
+        end
 
-          it 'DB_UPDATE_FAILED error' do
-            expect(results).to include(a_hash_including(AuditResults::DB_UPDATE_FAILED))
-          end
+        it 'DB_UPDATE_FAILED error' do
+          expect(po_handler.confirm_version).to include(a_hash_including(AuditResults::DB_UPDATE_FAILED))
         end
       end
 
-      it 'calls CompleteMoab.save! (but not PreservedObject.save!) if the existing record is altered' do
-        po = create :preserved_object
-        allow(PreservedObject).to receive(:find_by).with(druid: druid).and_return(po)
-        cm = create :complete_moab, preserved_object: po
-        allow(CompleteMoab).to receive(:find_by).with(preserved_object: po, moab_storage_root: ms_root).and_return(cm)
-        allow(po_handler).to receive(:moab_validation_errors).and_return([])
+      describe 'calls CompleteMoab.save! (but not PreservedObject.save!)' do
+        before do
+          allow(PreservedObject).to receive(:find_by).with(druid: druid).and_return(po)
+          allow(po.complete_moabs).to receive(:find_by!).with(moab_storage_root: ms_root).and_return(cm)
+        end
 
-        allow(po).to receive(:save!)
-        allow(cm).to receive(:save!)
-        po_handler.confirm_version
-        expect(po).not_to have_received(:save!)
-        expect(cm).to have_received(:save!)
+        it 'if the existing record is altered' do
+          allow(po_handler).to receive(:moab_validation_errors).and_return([])
+          expect(cm).to receive(:save!)
+          expect(po).not_to receive(:save!)
+          po_handler.confirm_version
+        end
+        it 'calls CompleteMoab.save! (but not PreservedObject.save!) if the existing record is NOT altered' do
+          po_handler = described_class.new(druid, 1, 1, ms_root)
+          allow(po_handler).to receive(:moab_validation_errors).and_return([]) # different po_handler now
+          expect(cm).to receive(:save!)
+          expect(po).not_to receive(:save!)
+          po_handler.confirm_version
+        end
       end
-      it 'calls CompleteMoab.save! (but not PreservedObject.save!) if the existing record is NOT altered' do
-        po_handler = described_class.new(druid, 1, 1, ms_root)
-        po = create :preserved_object
-        allow(PreservedObject).to receive(:find_by).with(druid: druid).and_return(po)
-        cm = create :complete_moab, preserved_object: po
-        allow(CompleteMoab).to receive(:find_by).with(preserved_object: po, moab_storage_root: ms_root).and_return(cm)
 
-        allow(po).to receive(:save!)
-        allow(cm).to receive(:save!)
-        po_handler.confirm_version
-        expect(cm).to have_received(:save!)
-        expect(po).not_to have_received(:save!)
-      end
       it 'logs a debug message' do
-        msg = "confirm_version #{druid} called"
         allow(Rails.logger).to receive(:debug)
+        expect(Rails.logger).to receive(:debug).with("confirm_version #{druid} called")
         allow(po_handler).to receive(:moab_validation_errors).and_return([])
         po_handler.confirm_version
-        expect(Rails.logger).to have_received(:debug).with(msg)
       end
     end
 

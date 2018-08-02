@@ -2,10 +2,6 @@ require 'rails_helper'
 require 'services/shared_examples_preserved_object_handler'
 
 RSpec.describe PreservedObjectHandler do
-  before do
-    allow(Dor::WorkflowService).to receive(:update_workflow_error_status)
-  end
-
   let(:druid) { 'ab123cd4567' }
   let(:incoming_version) { 6 }
   let(:incoming_size) { 9876 }
@@ -13,38 +9,26 @@ RSpec.describe PreservedObjectHandler do
   let(:ms_root) { MoabStorageRoot.find_by(storage_location: storage_dir) }
   let(:po_handler) { described_class.new(druid, incoming_version, incoming_size, ms_root) }
   let(:exp_msg) { "added object to db as it did not exist" }
-  let(:po_args) do
-    {
-      druid: druid,
-      current_version: incoming_version,
-      preservation_policy_id: PreservationPolicy.default_policy.id
-    }
-  end
-  let(:cm_args) do
-    {
-      preserved_object: an_instance_of(PreservedObject), # TODO: ensure we got the preserved object that we expected
-      version: incoming_version,
-      size: incoming_size,
-      moab_storage_root: ms_root,
-      status: 'validity_unknown' # NOTE: ensuring this particular status is the default
-      # NOTE: lack of validation timestamps here
-    }
-  end
+
+  before { allow(Dor::WorkflowService).to receive(:update_workflow_error_status) }
 
   describe '#create' do
     it 'creates PreservedObject and CompleteMoab in database' do
-      expect(PreservedObject).to receive(:create!).with(po_args).and_call_original
-      expect(CompleteMoab).to receive(:create!).with(cm_args).and_call_original
       po_handler.create
+      new_po = PreservedObject.find_by(druid: druid)
+      new_cm = new_po.complete_moabs.find_by(version: incoming_version)
+      expect(new_po.current_version).to eq incoming_version
+      expect(new_cm.moab_storage_root).to eq ms_root
+      expect(new_cm.size).to eq incoming_size
     end
 
     it 'creates the CompleteMoab with "ok" status and validation timestamps if caller ran CV' do
-      cm_args[:status] = 'ok'
-      cm_args[:last_version_audit] = ActiveSupport::TimeWithZone
-      cm_args[:last_moab_validation] = ActiveSupport::TimeWithZone
-      cm_args[:last_checksum_validation] = ActiveSupport::TimeWithZone
-      expect(CompleteMoab).to receive(:create!).with(cm_args).and_call_original
       po_handler.create(true)
+      new_cm = po_handler.pres_object.complete_moabs.find_by(version: incoming_version)
+      expect(new_cm.status).to eq 'ok'
+      expect(new_cm.last_version_audit).to be_a ActiveSupport::TimeWithZone
+      expect(new_cm.last_moab_validation).to be_a ActiveSupport::TimeWithZone
+      expect(new_cm.last_checksum_validation).to be_a ActiveSupport::TimeWithZone
     end
 
     it_behaves_like 'attributes validated', :create
@@ -61,37 +45,35 @@ RSpec.describe PreservedObjectHandler do
 
     context 'db update error' do
       context 'ActiveRecordError' do
-        let(:results) do
+        before do
           allow(PreservedObject).to receive(:create!).with(hash_including(druid: druid))
                                                      .and_raise(ActiveRecord::ActiveRecordError, 'foo')
-          po_handler.create
         end
 
         it 'DB_UPDATE_FAILED result' do
-          expect(results).to include(a_hash_including(AuditResults::DB_UPDATE_FAILED))
+          expect(po_handler.create).to include(a_hash_including(AuditResults::DB_UPDATE_FAILED))
         end
         it 'does NOT get CREATED_NEW_OBJECT result' do
-          expect(results).not_to include(hash_including(AuditResults::CREATED_NEW_OBJECT))
+          expect(po_handler.create).not_to include(hash_including(AuditResults::CREATED_NEW_OBJECT))
         end
       end
 
       it "rolls back PreservedObject creation if the CompleteMoab can't be created (e.g. due to DB constraint violation)" do
-        allow(CompleteMoab).to receive(:create!).and_raise(ActiveRecord::RecordInvalid)
+        po = instance_double(PreservedObject, complete_moabs: instance_double(ActiveRecord::Relation))
+        allow(PreservedObject).to receive(:create!).with(hash_including(druid: druid)).and_return(po)
+        allow(po.complete_moabs).to receive(:create!).and_raise(ActiveRecord::RecordInvalid)
         po_handler.create
-        expect(PreservedObject.where(druid: druid)).not_to exist
+        expect(PreservedObject.find_by(druid: druid)).to be_nil
       end
     end
 
     context 'returns' do
-      let!(:result) { po_handler.create }
+      let(:result) { po_handler.create }
 
-      it '1 result' do
+      it '1 result of CREATED_NEW_OBJECT' do
         expect(result).to be_an_instance_of Array
         expect(result.size).to eq 1
-      end
-      it 'CREATED_NEW_OBJECT result' do
-        code = AuditResults::CREATED_NEW_OBJECT
-        expect(result).to include(a_hash_including(code => exp_msg))
+        expect(result.first).to match(a_hash_including(AuditResults::CREATED_NEW_OBJECT => exp_msg))
       end
     end
   end
@@ -108,14 +90,9 @@ RSpec.describe PreservedObjectHandler do
     context 'sets validation timestamps' do
       let(:t) { Time.current }
       let(:ms_root) { MoabStorageRoot.find_by(storage_location: storage_dir) }
-      let(:po_db_obj) { PreservedObject.find_by(druid: valid_druid) }
-      let(:cm_db_obj) { CompleteMoab.find_by(preserved_object: po_db_obj) }
-      let(:results) do
-        po_handler = described_class.new(valid_druid, incoming_version, incoming_size, ms_root)
-        po_handler.create_after_validation
-      end
+      let(:cm_db_obj) { po_handler.pres_object.complete_moabs.first! }
 
-      before { results }
+      before { po_handler.create_after_validation }
 
       it "sets last_moab_validation with current time" do
         expect(cm_db_obj.last_moab_validation).to be_within(10).of(t)
@@ -126,29 +103,24 @@ RSpec.describe PreservedObjectHandler do
     end
 
     it 'creates PreservedObject and CompleteMoab in database when there are no validation errors' do
-      po_args[:druid] = valid_druid
-      cm_args.merge!(
-        last_moab_validation: an_instance_of(ActiveSupport::TimeWithZone),
-        last_version_audit: an_instance_of(ActiveSupport::TimeWithZone)
-      )
-
-      expect(PreservedObject).to receive(:create!).with(po_args).and_call_original
-      expect(CompleteMoab).to receive(:create!).with(cm_args).and_call_original
       po_handler = described_class.new(valid_druid, incoming_version, incoming_size, ms_root)
       po_handler.create_after_validation
+      new_po = PreservedObject.find_by(druid: valid_druid, current_version: incoming_version)
+      expect(new_po).not_to be_nil
+      new_cm = new_po.complete_moabs.find_by(moab_storage_root: ms_root, version: incoming_version)
+      expect(new_cm).not_to be_nil
+      expect(new_cm.status).to eq 'validity_unknown'
     end
 
     it 'creates CompleteMoab with "ok" status and validation timestamps if no validation errors and caller ran CV' do
-      cm_args.merge!(
-        status: 'ok',
-        last_moab_validation: an_instance_of(ActiveSupport::TimeWithZone),
-        last_version_audit: an_instance_of(ActiveSupport::TimeWithZone),
-        last_checksum_validation: an_instance_of(ActiveSupport::TimeWithZone)
-      )
-
-      expect(CompleteMoab).to receive(:create!).with(cm_args).and_call_original
       po_handler = described_class.new(valid_druid, incoming_version, incoming_size, ms_root)
       po_handler.create_after_validation(true)
+      new_po = PreservedObject.find_by(druid: valid_druid, current_version: incoming_version)
+      expect(new_po).not_to be_nil
+      new_cm = new_po.complete_moabs.find_by(moab_storage_root: ms_root, version: incoming_version)
+      expect(new_cm).not_to be_nil
+      expect(new_cm.status).to eq 'ok'
+      expect(new_cm.last_checksum_validation).to be_an ActiveSupport::TimeWithZone
     end
 
     it 'calls moab-versioning Stanford::StorageObjectValidator.validation_errors' do
@@ -173,34 +145,28 @@ RSpec.describe PreservedObjectHandler do
       end
 
       it 'creates PreservedObject, and CompleteMoab with "invalid_moab" status in database' do
-        po_args[:druid] = invalid_druid
-        cm_args.merge!(
-          status: 'invalid_moab',
-          last_moab_validation: an_instance_of(ActiveSupport::TimeWithZone),
-          last_version_audit: an_instance_of(ActiveSupport::TimeWithZone)
-        )
-
-        expect(PreservedObject).to receive(:create!).with(po_args).and_call_original
-        expect(CompleteMoab).to receive(:create!).with(cm_args).and_call_original
         po_handler.create_after_validation
+        new_po = PreservedObject.find_by(druid: invalid_druid, current_version: incoming_version)
+        expect(new_po).not_to be_nil
+        new_cm = new_po.complete_moabs.find_by(moab_storage_root: ms_root, version: incoming_version)
+        expect(new_cm).not_to be_nil
+        expect(new_cm.status).to eq 'invalid_moab'
+        expect(new_cm.last_moab_validation).to be_a ActiveSupport::TimeWithZone
+        expect(new_cm.last_version_audit).to be_a ActiveSupport::TimeWithZone
       end
 
       it 'creates CompleteMoab with "invalid_moab" status in database even if caller ran CV' do
-        cm_args.merge!(
-          status: 'invalid_moab',
-          last_moab_validation: an_instance_of(ActiveSupport::TimeWithZone),
-          last_version_audit: an_instance_of(ActiveSupport::TimeWithZone),
-          last_checksum_validation: an_instance_of(ActiveSupport::TimeWithZone)
-        )
-
-        expect(CompleteMoab).to receive(:create!).with(cm_args).and_call_original
         po_handler.create_after_validation(true)
+        new_po = PreservedObject.find_by(druid: invalid_druid, current_version: incoming_version)
+        expect(new_po).not_to be_nil
+        new_cm = new_po.complete_moabs.find_by(moab_storage_root: ms_root, version: incoming_version)
+        expect(new_cm).not_to be_nil
+        expect(new_cm.status).to eq 'invalid_moab'
       end
 
       it 'includes invalid moab result' do
         results = po_handler.create_after_validation
-        code = AuditResults::INVALID_MOAB
-        expect(results).to include(a_hash_including(code => a_string_matching('Invalid Moab, validation errors:')))
+        expect(results).to include(a_hash_including(AuditResults::INVALID_MOAB => /Invalid Moab, validation errors:/))
       end
 
       context 'db update error' do
@@ -230,15 +196,12 @@ RSpec.describe PreservedObjectHandler do
     end
 
     context 'returns' do
-      let!(:result) { po_handler.create_after_validation }
+      let(:result) { po_handler.create_after_validation }
 
-      it '1 result' do
+      it '1 CREATED_NEW_OBJECT result' do
         expect(result).to be_an_instance_of Array
         expect(result.size).to eq 1
-      end
-      it 'CREATED_NEW_OBJECT result' do
-        code = AuditResults::CREATED_NEW_OBJECT
-        expect(result).to include(a_hash_including(code => exp_msg))
+        expect(result.first).to include(AuditResults::CREATED_NEW_OBJECT => exp_msg)
       end
     end
   end

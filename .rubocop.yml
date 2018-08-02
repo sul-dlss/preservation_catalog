@@ -47,8 +47,7 @@ Layout/SpaceAroundEqualsInParameterDefault:
 Lint/AmbiguousBlockAssociation:
   # doesn't play nicely with rspec change syntax, e.g. "expect { foo }.to change { bar.field }"
   Exclude:
-    - spec/services/preserved_object_handler_update_version_spec.rb
-    - spec/services/shared_examples_preserved_object_handler.rb
+    - spec/services/*.rb
 
 Lint/HandleExceptions:
   Exclude:

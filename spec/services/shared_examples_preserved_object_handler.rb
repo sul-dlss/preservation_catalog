@@ -45,11 +45,9 @@ end
 
 RSpec.shared_examples 'calls AuditResults.report_results' do |method_sym|
   it 'outputs results to Rails.logger and sends errors to WorkflowErrorReporter' do
-    mock_results = instance_double(AuditResults)
-    allow(mock_results).to receive(:add_result)
-    allow(mock_results).to receive(:check_name=)
+    mock_results = instance_double(AuditResults, add_result: nil, :check_name= => nil)
     expect(mock_results).to receive(:report_results)
-    expect(AuditResults).to receive(:new).and_return(mock_results)
+    allow(po_handler).to receive(:results).and_return(mock_results)
     po_handler.send(method_sym)
   end
 end
@@ -63,22 +61,18 @@ RSpec.shared_examples 'druid not in catalog' do |method_sym|
   end
 
   it 'DB_OBJ_DOES_NOT_EXIST error' do
-    code = AuditResults::DB_OBJ_DOES_NOT_EXIST
-    expect(results).to include(a_hash_including(code => a_string_matching(exp_msg)))
+    expect(results).to include(a_hash_including(AuditResults::DB_OBJ_DOES_NOT_EXIST => a_string_matching(exp_msg)))
   end
 end
 
 RSpec.shared_examples 'CompleteMoab does not exist' do |method_sym|
-  before do
-    PreservedObject.create!(druid: druid, current_version: 2, preservation_policy: default_prez_policy)
-  end
-
   let(:exp_msg) { "#<ActiveRecord::RecordNotFound: foo> db object does not exist" }
   let(:results) do
     allow(Rails.logger).to receive(:log)
-    po = create :preserved_object, current_version: 2
-    allow(PreservedObject).to receive(:find_by!).and_return(po)
-    allow(CompleteMoab).to receive(:find_by!).and_raise(ActiveRecord::RecordNotFound, 'foo')
+    allow(po_handler).to receive(:pres_object).and_return(create(:preserved_object))
+    allow(PreservedObject).to receive(:exists?).with(druid: po_handler.druid).and_return(true)
+    allow(po_handler.pres_object.complete_moabs).to receive(:find_by!)
+      .with(any_args).and_raise(ActiveRecord::RecordNotFound, 'foo')
     po_handler.send(method_sym)
   end
 
