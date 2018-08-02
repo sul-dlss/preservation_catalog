@@ -6,7 +6,7 @@ services:
   - postgresql
   - redis-server
 before_script:
-  - bundle exec rake travis_setup_postgres
+  - bundle exec rake travis_setup_postgres db:reset
 bundler_args: "--without 'production development deploy'"
 notifications:
   email: false
