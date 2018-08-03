@@ -31,6 +31,9 @@ class DruidVersionZip
       combined, status = Open3.capture2e(zip_command)
       raise "zipmaker failure #{combined}" unless status.success?
     end
+    part_keys.each do |part_key|
+      DruidVersionZipPart.new(self, part_key).write_md5
+    end
   end
 
   # Ensure the directory the zip will live in exists
@@ -82,7 +85,9 @@ class DruidVersionZip
   #  the last one will end .zip, so two parts is:  .z01, zip. (this agrees with zip utility)
   # @return [Array<Pathname>] Existing pathnames for zip parts based on glob (.zip, .z01, .z02, etc.)
   def part_paths
-    @part_paths ||= Pathname.glob(file_path.sub(/.zip\z/, '.z*'))
+    @part_paths ||= Pathname.glob(file_path.sub(/.zip\z/, '.z*')).reject do |path|
+      path.to_s =~ /.md5\z/
+    end
   end
 
   # @return [String] "v" with zero-padded 4-digit version, e.g., v0001

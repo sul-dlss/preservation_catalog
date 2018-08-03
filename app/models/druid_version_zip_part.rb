@@ -6,7 +6,7 @@
 class DruidVersionZipPart
   attr_reader :dvz, :part_filename
   delegate :base64digest, :hexdigest, to: :md5
-  delegate :druid, :part_paths, :hex_to_base64, :zip_command, :zip_version, to: :dvz
+  delegate :druid, :part_checksum_paths, :part_paths, :hex_to_base64, :zip_command, :zip_version, to: :dvz
 
   alias s3_key part_filename
 
@@ -53,5 +53,20 @@ class DruidVersionZipPart
   # @return [Integer] Zip file size
   def size
     @size ||= FileTest.size(file_path)
+  end
+
+  # @return [String] MD5 path 
+  def md5_path
+    file_path + ".md5"
+  end
+
+  # @return [String] "ab/123/cd/4567/ab123cd4567.v0001.z03.md5"
+  def write_md5
+    File.open(md5_path, "w") { |f| f.write md5 }
+  end
+
+  # @return [String] The MD5 "7d33a80cb92b081b76aee5feb8bc4569"
+  def read_md5
+    IO.read(md5_path)
   end
 end

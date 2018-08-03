@@ -32,6 +32,13 @@ describe DruidVersionZip do
         expect(File).to exist(zip_path)
       end
 
+      it 'produces the expected md5 file' do
+        md5_path = zip_path + ".md5"
+        expect(File).not_to exist(md5_path)
+        expect { dvz.create_zip! }.not_to raise_error
+        expect(File).to exist(md5_path)
+      end
+
       # we `list` a given filepath out of the zip, `unzip` exits w/ 0 only when found
       it 'produced zip has expected structure' do
         techmd = "bj102hs9687/v0003/data/metadata/technicalMetadata.xml"
@@ -40,6 +47,20 @@ describe DruidVersionZip do
         expect(status).to be_success
         _, status = Open3.capture2e("unzip -lq #{zip_path} bj/102/hs/9687/#{techmd}")
         expect(status).not_to be_success
+      end
+    end
+
+    context 'for every part' do
+      before { allow(dvz).to receive(:zip_split_size).and_return("1m") }
+
+      after { dvz.part_paths.each { |path| File.delete(path) } }
+
+      let(:version) { 1 }
+
+      it 'creates md5' do
+        dvz.part_paths.each { |path| expect(File).not_to exist(path) }
+        expect { dvz.create_zip! }.not_to raise_error
+        dvz.part_paths.each { |path| expect(File).to exist(path) }
       end
     end
 

@@ -5,6 +5,7 @@ describe DruidVersionZipPart do
   let(:part) { described_class.new(dvz, 'bj/102/hs/9687/bj102hs9687.v0001.z02') }
   let(:druid) { 'bj102hs9687' }
   let(:version) { 1 }
+  let(:md5_path) { "/tmp/bj/102/hs/9687/bj102hs9687.v0001.z02.md5" }
 
   describe '#s3_key' do
     it 'returns a tree path-based key' do
@@ -15,6 +16,27 @@ describe DruidVersionZipPart do
   describe '#file_path' do
     it 'returns a full path' do
       expect(part.file_path).to eq '/tmp/bj/102/hs/9687/bj102hs9687.v0001.z02'
+    end
+  end
+
+  describe '#md5_path' do
+    it 'returns the md5 path' do
+      expect(part.md5_path).to eq md5_path
+    end
+  end
+
+  describe '#write_md5' do
+    it 'writes the md5 to the md5_path' do
+      file = mock('md5_file')
+      expect(File).to receive(:open).with(md5_path, "w").and_yield(file)
+      expect(file).to receive(:write).with("blah")
+      part.write_md5
+    end
+  end
+
+  describe '#read_md5' do
+    it 'reads the md5' do
+      expect(IO).to receive(:read).with(md5_path)
     end
   end
 
