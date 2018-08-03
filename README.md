@@ -44,12 +44,15 @@ Using the `psql` utility, run these two setup scripts from the command line, lik
 ```sh
 psql -f db/scripts/pres_setup.sql postgres
 psql -f db/scripts/pres_test_setup.sql postgres
+bundle exec rails db:seed
+RAILS_ENV=test bundle exec rails db:seed
 ```
 
 These scripts do the following for you:
 * create the test and dev PostgreSQL users.
 * create the test and dev databases.
 * setup the needed ownership and permissions between the DBs and the users.
+* seed data into development and test environments
 
 For more info on postgres commands, see https://www.postgresql.org/docs/
 
@@ -321,12 +324,19 @@ Audit::Checksum.validate_status_root('validity_unknown', 'services-disk15')
 
 ## Development
 
+### Seed
+
+You should only need to do this once, or after nuking your test database:
+```
+RAILS_ENV=test bundle exec rails db:reset
+```
+
 ### Running Tests
 
 To run the tests:
 
 ```sh
-rake spec
+bundle exec rake spec
 ```
 
 ## Deploying
