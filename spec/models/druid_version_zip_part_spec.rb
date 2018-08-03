@@ -25,7 +25,7 @@ describe DruidVersionZipPart do
     end
   end
 
-  context 'MD5 checksums' do
+  context 'MD5 checksums and size' do
     let(:part) { described_class.new(dvz, 'bj/102/hs/9687/bj102hs9687.v0001.zip') }
 
     before do
@@ -51,5 +51,19 @@ describe DruidVersionZipPart do
         expect(part.hex_to_base64('d41d8cd98f00b204e9800998ecf8427e')).to eq '1B2M2Y8AsgTpgAmY7PhCfg=='
       end
     end
+
+    describe '#md5' do
+      it 'returns Digest::MD5 object' do
+        expect(part.md5.to_s).to eq '4f98f59e877ecb84ff75ef0fab45bac5'
+        expect(part.md5.to_s).to eq part.metadata[:checksum_md5]
+      end
+    end
+
+    describe '#size' do
+      it 'returns size in bytes' do
+        expect(part.size).to eq 3
+      end
+    end
+
   end
 end
