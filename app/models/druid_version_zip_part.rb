@@ -55,9 +55,9 @@ class DruidVersionZipPart
     @size ||= FileTest.size(file_path)
   end
 
-  # @return [String] MD5 path 
+  # @return [String] MD5 path
   def md5_path
-    file_path + ".md5"
+    "#{file_path}.md5"
   end
 
   # @return [String] "ab/123/cd/4567/ab123cd4567.v0001.z03.md5"

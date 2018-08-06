@@ -26,10 +26,18 @@ describe DruidVersionZipPart do
   end
 
   describe '#write_md5' do
+    let(:md5_path) { "some/file/path/md5" }
+    let(:md5) { "fakemd5" }
+
+    before do
+      allow(part).to receive(:md5).and_return(md5)
+      allow(part).to receive(:md5_path).and_return(md5_path)
+    end
+
     it 'writes the md5 to the md5_path' do
-      file = mock('md5_file')
+      file = instance_double("some_file")
       expect(File).to receive(:open).with(md5_path, "w").and_yield(file)
-      expect(file).to receive(:write).with("blah")
+      expect(file).to receive(:write).with(md5)
       part.write_md5
     end
   end
@@ -37,6 +45,7 @@ describe DruidVersionZipPart do
   describe '#read_md5' do
     it 'reads the md5' do
       expect(IO).to receive(:read).with(md5_path)
+      part.read_md5
     end
   end
 

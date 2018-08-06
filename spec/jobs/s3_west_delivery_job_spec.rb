@@ -35,7 +35,7 @@ describe S3WestDeliveryJob, type: :job do
   end
 
   context 'zip part is new to S3' do
-    it 'uploads_file to S3' do
+    it 'uploads_file to S3 and MD5 checksums match' do
       expect(object).to receive(:upload_file).with(
         dvz_part.file_path, metadata: a_hash_including(checksum_md5: md5)
       )
@@ -46,18 +46,13 @@ describe S3WestDeliveryJob, type: :job do
       described_class.perform_now(druid, version, part_s3_key, metadata)
     end
 
-    it 'MD5 checksums match' do
-      expect(object).to receive(:upload_file).with(
-        dvz_part.file_path, metadata: a_hash_including(checksum_md5: md5)
-      )
-      described_class.perform_now(druid, version, part_s3_key, metadata)
-    end
-
     it 'MD5 checksums do not match' do
       allow(IO).to receive(:read).with(dvz_part.md5_path).and_return(nil)
       expect(object).not_to receive(:upload_file)
       expect(ResultsRecorderJob).not_to receive(:perform_later)
-      described_class.perform_now(druid, version, part_s3_key, metadata) 
+      expect {
+        described_class.perform_now(druid, version, part_s3_key, metadata)
+      }.to raise_error("Zip Part MD5 checksum is invalid. Druid: bj102hs9687, Version: 1")
     end
   end
 end
