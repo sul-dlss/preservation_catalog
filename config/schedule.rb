@@ -26,3 +26,10 @@ every :sunday, at: '1am', roles: [:cv] do
   set :output, standard: nil, error: 'log/cv-err.log'
   rake "cv:all_roots"
 end
+
+every :hour, roles: [:cache_cleaner] do
+  set :output, standard: 'log/zip_cache_cleanup.log'
+  command <<-'END_OF_COMMAND'
+    find /sdr-transfers -mindepth 5 -type f -name "*.zip" -mtime +1 -exec bash -c 'TARGET="{}"; rm -v ${TARGET%ip}*' \;
+  END_OF_COMMAND
+end
