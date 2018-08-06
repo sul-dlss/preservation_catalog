@@ -70,7 +70,7 @@ brew services start redis
 
 - Note: If the rake task takes multiple arguments, DO NOT put a space in between the commas.
 
-- You can monitor the progress of most rake tasks by tailing `log/production.log`, or by querying the database from Rails console using ActiveRecord. The tasks for large storage_roots can take a while -- check [the repo wiki for stats](https://github.com/sul-dlss/preservation_catalog/wiki) on the timing of past runs (and some suggested overview queries). Profiling will add some overhead.
+- You can monitor the progress of most rake tasks by tailing `log/production.log` (or that job's specific log file), or by querying the database from Rails console using ActiveRecord. The tasks for large storage_roots can take a while -- check [the repo wiki for stats](https://github.com/sul-dlss/preservation_catalog/wiki) on the timing of past runs (and some suggested overview queries).
 
 - Rake tasks must be run from the root directory of the project, with whatever `RAILS_ENV` is appropriate. Because the task can take days when run over all storage roots, consider running it in a [screen session](http://thingsilearned.com/2009/05/26/gnu-screen-super-basic-tutorial/) so you don't need to keep your connection open but can still see the output.
 
@@ -212,7 +212,7 @@ WARNING! this will erase the catalog, and thus require re-seeding from scratch. 
 
 * Deploy the branch of the code with which you wish to seed, to the instance which you wish to seed (e.g. master to stage).
 * Reset the database for that instance.  E.g., on production or stage:  `RAILS_ENV=production bundle exec rake db:reset`
-  * note that if you do this in an env that sees itself as production (i.e. production or stage), you'll get a scary warning along the lines of:
+  * note that if you do this while `RAILS_ENV=production` (i.e. production or stage), you'll get a scary warning along the lines of:
   ```
   ActiveRecord::ProtectedEnvironmentError: You are attempting to run a destructive action against your 'production' database.
   If you are sure you want to continue, run the same command with the environment variable:
@@ -221,7 +221,8 @@ WARNING! this will erase the catalog, and thus require re-seeding from scratch. 
   Basically an especially inconvenient confirmation dialogue.  For safety's sake, the full command that skips that warning can be constructed by the user as needed, so as to prevent unintentional copy/paste dismissal when the user might be administering multiple deployment environments simultaneously.  Inadvertent database wipes are no fun.
   * `db:reset` will make sure db is migrated and seeded.  If you want to be extra sure: `RAILS_ENV=[environment] bundle exec rake db:migrate db:seed`
 
-### run `rake db:seed` in a deploy environment:
+### run `rake db:seed` on remote servers:
+These require the same credentials and setup as a regular Capistrano deploy.
 
 ```sh
 bundle exec cap stage db_seed # for the stage servers
@@ -235,7 +236,7 @@ bundle exec cap prod db_seed # for the prod servers
 
 ### Drop or Populate the catalog for a single storage root
 
-To run either of the rake tasks below, give the name of the moab storage_root (e.g. from settings/development.yml) as an argument.
+To run either of the rake tasks below, give the name of the moab storage_root (e.g. from `settings/development.yml`) as an argument.
 
 #### Drop all database entries:
 
@@ -282,7 +283,7 @@ Audit::MoabToCatalog.check_existence_for_all_storage_roots
 ```
 
 ### Catalog To Moab Audit Checks:
--  The (date/timestamp) argument is a threshold:  it will run the check on all catalog entries which last had a version check BEFORE the argument. It should be in the format '2018-01-22 22:54:48 UTC'.
+-  The (date/timestamp) argument is a threshold: it will run the check on all catalog entries which last had a version check BEFORE the argument. It should be in the format '2018-01-22 22:54:48 UTC'.
 
 - Note: Must enter date/timestamp argument as a string.
 #### Single Storage Root
@@ -336,21 +337,19 @@ RAILS_ENV=test bundle exec rails db:reset
 To run the tests:
 
 ```sh
-bundle exec rake spec
+bundle exec rspec
 ```
 
 ## Deploying
 
-Capistrano is used to deploy.
-
-### run `rake db:seed` in a deploy environment:
+Capistrano is used to deploy.  You will need SSH access to the targeted servers, via `kinit` and VPN.
 
 ```sh
-bundle exec cap stage db_seed # for the stage servers
+bundle exec cap stage deploy # for the stage servers
 ```
 
-or
+Or:
 
 ```sh
-bundle exec cap prod db_seed # for the prod servers
+bundle exec cap prod deploy # for the prod servers
 ```
