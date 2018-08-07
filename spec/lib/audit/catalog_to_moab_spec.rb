@@ -30,6 +30,12 @@ RSpec.describe Audit::CatalogToMoab do
     end
   end
 
+  describe '#logger' do
+    it 'returns a logger object' do
+      expect(c2m.logger).to be_a(Logger)
+    end
+  end
+
   context '#check_catalog_version' do
     let(:object_dir) { "#{storage_dir}/#{DruidTools::Druid.new(druid).tree.join('/')}" }
 
