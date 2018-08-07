@@ -7,7 +7,7 @@ RSpec.describe Audit::CatalogToMoab do
   let(:druid) { 'bj102hs9687' }
   let(:c2m) { described_class.new(comp_moab, storage_dir) }
   let(:mock_sov) { instance_double(Stanford::StorageObjectValidator) }
-  let(:po) { PreservedObject.find_by!(druid: druid) }
+  let(:po) { create(:preserved_object_fixture, druid: druid) }
   let(:comp_moab) do
     MoabStorageRoot.find_by!(storage_location: storage_dir).complete_moabs.find_by!(preserved_object: po)
   end
@@ -17,8 +17,6 @@ RSpec.describe Audit::CatalogToMoab do
     allow(Dor::WorkflowService).to receive(:update_workflow_error_status)
     allow(c2m).to receive(:logger).and_return(logger_double) # silence log output
   end
-
-  include_context 'fixture moabs in db'
 
   context '#initialize' do
     it 'sets attributes' do
