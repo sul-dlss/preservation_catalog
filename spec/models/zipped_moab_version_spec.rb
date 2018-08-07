@@ -47,15 +47,28 @@ RSpec.describe ZippedMoabVersion, type: :model do
   describe '#replicate!' do
     before { zmv.save! }
 
-    it 'if PC is unreplicatable, returns false, does not enqueue' do
+    it 'if CM is unreplicatable, returns false, does not enqueue' do
       expect(cm).to receive(:replicatable_status?).and_return(false)
       expect(ZipmakerJob).not_to receive(:perform_later)
       expect(zmv.replicate!).to be(nil)
     end
-    it 'if PC is replicatable, passes druid and version to Zipmaker' do
+    it 'if CM is replicatable, passes druid and version to Zipmaker' do
       expect(cm).to receive(:replicatable_status?).and_return(true)
       expect(ZipmakerJob).to receive(:perform_later).with(cm.preserved_object.druid, cm.version)
       zmv.replicate!
+    end
+  end
+
+  describe '.by_druid' do
+    before { zmv.save! }
+
+    let(:po) { build(:preserved_object, druid: "jj925bx9565") }
+    let(:cm_diff) { build(:complete_moab, preserved_object: po) }
+    let!(:zmv_diff_druid) { create(:zipped_moab_version, complete_moab: cm_diff, zip_endpoint: zip_endpoint) }
+
+    it "returns the ZMV's for the given druid" do
+      expect(ZippedMoabVersion.by_druid('jj925bx9565').sort).to include zmv_diff_druid
+      expect(ZippedMoabVersion.by_druid('jj925bx9565').sort).not_to include zmv
     end
   end
 end
