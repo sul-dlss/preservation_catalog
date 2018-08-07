@@ -15,7 +15,7 @@ RSpec.describe Audit::CatalogToMoab do
 
   before do
     allow(Dor::WorkflowService).to receive(:update_workflow_error_status)
-    allow(described_class).to receive(:logger).and_return(logger_double) # silence log output
+    allow(c2m).to receive(:logger).and_return(logger_double) # silence log output
   end
 
   include_context 'fixture moabs in db'
@@ -26,6 +26,12 @@ RSpec.describe Audit::CatalogToMoab do
       expect(c2m.storage_dir).to eq storage_dir
       expect(c2m.druid).to eq druid
       expect(c2m.results).to be_an_instance_of AuditResults
+    end
+  end
+
+  describe '#logger' do
+    it 'returns a logger object' do
+      expect(c2m.logger).to be_a(Logger)
     end
   end
 

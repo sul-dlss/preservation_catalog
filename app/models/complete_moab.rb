@@ -43,9 +43,6 @@ class CompleteMoab < ApplicationRecord
 
   scope :least_recent_version_audit, lambda { |last_checked_b4_date|
     where('last_version_audit IS NULL or last_version_audit < ?', normalize_date(last_checked_b4_date))
-
-    # possibly counter-intuitive: the .order sorts so that null values come first (because IS NOT NULL evaluates
-    # to 0 for nulls, which sorts before 1 for non-nulls, which are then sorted by last_version_audit)
   }
 
   scope :fixity_check_expired, lambda {
@@ -56,8 +53,6 @@ class CompleteMoab < ApplicationRecord
         ' AND (last_checksum_validation + (fixity_ttl * INTERVAL \'1 SECOND\')) < CURRENT_TIMESTAMP'\
         ' OR last_checksum_validation IS NULL'
       )
-    # possibly counter-intuitive: the .order sorts so that null values come first (because IS NOT NULL evaluates
-    # to 0 for nulls, which sorts before 1 for non-nulls, which are then sorted by last_checksum_validation)
   }
 
   # This is where we make sure we have ZMV rows for all needed ZipEndpoints and versions.

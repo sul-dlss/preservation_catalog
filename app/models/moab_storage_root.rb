@@ -14,6 +14,13 @@ class MoabStorageRoot < ApplicationRecord
     cms.find_each { |cm| ChecksumValidationJob.perform_later(cm) }
   end
 
+  # Use a queue to check all associated CompleteMoab objects for C2M
+  def c2m_check!(last_checked_b4_date = Time.current)
+    complete_moabs.least_recent_version_audit(last_checked_b4_date).find_each do |cm|
+      CatalogToMoabJob.new(cm, storage_location).perform_later
+    end
+  end
+
   # Iterates over the storage roots enumerated in settings, creating a MoabStorageRoot for
   #   each if it doesn't already exist.
   # @param preservation_policies [Enumerable<PreservationPolicy>] the list of preservation policies
