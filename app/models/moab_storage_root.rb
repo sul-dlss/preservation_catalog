@@ -17,7 +17,7 @@ class MoabStorageRoot < ApplicationRecord
   # Use a queue to check all associated CompleteMoab objects for C2M
   def c2m_check!(last_checked_b4_date = Time.current)
     complete_moabs.least_recent_version_audit(last_checked_b4_date).find_each do |cm|
-      CatalogToMoabJob.new(cm, storage_location).perform_later
+      CatalogToMoabJob.perform_later(cm, storage_location)
     end
   end
 
