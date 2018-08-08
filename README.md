@@ -66,58 +66,75 @@ brew services start redis
 
 # Usage Instructions
 
-## General Info About Running These Rake Tasks
+## General Info
 
-- Note: If the rake task takes multiple arguments, DO NOT put a space in between the commas.
+- Rake and console tasks must be run from the root directory of the project, with whatever `RAILS_ENV` is appropriate.
 
-- You can monitor the progress of most rake tasks by tailing `log/production.log` (or that job's specific log file), or by querying the database from Rails console using ActiveRecord. The tasks for large storage_roots can take a while -- check [the repo wiki for stats](https://github.com/sul-dlss/preservation_catalog/wiki) on the timing of past runs (and some suggested overview queries).
+- You can monitor the progress of most tasks by tailing `log/production.log` (or task specific log), checking the Resque dashboard or by querying the database. The tasks for large storage_roots can take a while -- check [the repo wiki for stats](https://github.com/sul-dlss/preservation_catalog/wiki) on the timing of past runs (and some suggested overview queries). Profiling will add some overhead.
 
-- Rake tasks must be run from the root directory of the project, with whatever `RAILS_ENV` is appropriate. Because the task can take days when run over all storage roots, consider running it in a [screen session](http://thingsilearned.com/2009/05/26/gnu-screen-super-basic-tutorial/) so you don't need to keep your connection open but can still see the output.
+- Tasks that use asynchronous workers will execute on any of the eligible worker pool systems for that job.  Therefore, do not expect all the results to show in the logs of the machine that enqueued the jobs!
+
+- Because large tasks can take days when run over all storage roots, consider running in a [screen session](http://thingsilearned.com/2009/05/26/gnu-screen-super-basic-tutorial/) so you don't need to keep your connection open but can still see the output.
 
 As an alternative to `screen`, you can also run tasks in the background using `nohup` so the invoked command is not killed when you exist your session. Output that would've gone to stdout is instead redirected to a file called `nohup.out`, or you can redirect the output explicitly.  For example:
 
 ```sh
-RAILS_ENV=production nohup bundle exec rake m2c:seed_all_roots >seed_all_roots_nohup-2017-12-12.txt &
+RAILS_ENV=production nohup bundle exec ...
+```
+
+### Rake Tasks
+
+- Note: If the rake task takes multiple arguments, DO NOT put a space in between the commas.
+
+- Rake tasks will have the form:
+
+```sh
+RAILS_ENV=production bundle exec rake ...
+```
+
+### Rails Console
+
+The application's most powerful functionality is available via `rails console`.  Open it (for the appropriate environment) like:
+
+```sh
+RAILS_ENV=production bundle exec rails console
 ```
 
 ## <a name="m2c"/>Moab to Catalog (M2C) existence/version check
 
-To run rake tasks below, give the name of the moab storage_root (e.g. from settings/development.yml) as an argument.
+In console, first locate a `MoabStorageRoot`, then call `m2c_check!` to enqueue M2C jobs for that root.
+The actual checks for `m2c_check!` are performed asynchronously by worker processes.
 
 ### Single Root
-- Without profiling
-```sh
-RAILS_ENV=production bundle exec rake m2c:one_root[fixture_sr1]
+```ruby
+msr = MoabStorageRoot.find_by!(storage_location: '/path/to/storage')
+msr.m2c_check!
 ```
-- With profiling:
-```sh
-
-RAILS_ENV=production bundle exec rake m2c:one_root[fixture_sr1,profile]
-```
-this will generate a log at, for example, `log/profiler_M2C_check_existence_for_dir2017-12-11T14:34:06-flat.txt`
 
 ### All Roots
-- Without profiling:
-```sh
-RAILS_ENV=production bundle exec rake m2c:all_roots
+```ruby
+MoabStorageRoot.find_each { |msr| msr.m2c_check! }
 ```
-- With profiling:
-```sh
-RAILS_ENV=production bundle exec rake m2c:all_roots[profile]
-```
-this will generate a log at, for example, `log/profile_M2C_check_existence_for_all_storage_roots2017-12-11T14:25:31-flat.txt`
 
 ### Single Druid
-```sh
-RAILS_ENV=production bundle exec rake m2c:druid['oo000oo0000']
+To M2C a single druid synchronously, in console:
+```ruby
+Audit::MoabToCatalog.check_existence_for_druid('jj925bx9565')
 ```
 
 ### Druid List
-- Give the file path of the csv as the parameter. The first column of the csv should contain druids, without the prefix, and contain no headers.
+For a predetermined list of druids, a convenience wrapper for the above command is `check_existence_for_druid_list`.
 
-```sh
-RAILS_ENV=production bundle exec rake m2c:druid_list[/file/path/to/your/csv/druid_list.csv]
+- The parameter is the file path of a CSV file listing the druids.
+  - The first column of the csv should contain druids, without prefix.
+  - File should not contain headers.
+
+```ruby
+Audit::MoabToCatalog.check_existence_for_druid_list('/file/path/to/your/csv/druid_list.csv')
 ```
+
+Note: it should not typically be necessary to serialize a list of druids to CSV.  Just iterate over them and use the "Single Druid" approach.
+
 ## <a name="c2m"/>Catalog to Moab (C2M) existence/version check
 
 Note: C2M uses the `Audit::CatalogToMoab` asynchronously via workers on the `:c2m` queue.
@@ -153,58 +170,59 @@ MoabStorageRoot.find_each { |msr| msr.c2m_check!(3.days.ago) }
 ```
 
 ## <a name="cv"/>Checksum Validation (CV)
-- Parse all manifestInventory.xml and most recent signatureCatalog.xml for stored checksums and verify against computed checksums.
-- To run rake tasks below, give the name of the storage root (e.g. from settings/development.yml)
+- Parse all `manifestInventory.xml` and most recent `signatureCatalog.xml` for stored checksums and verify against computed checksums.
+- To run the tasks below, give the name of the storage root (e.g. from `settings/development.yml`)
 
-Note: CV jobs that are asynchronous means that their execution happens in other processes.  Therefore there is no `profile` option,
-because the computational work that is valuable to profile happens elsewhere.
+Note: CV jobs that are asynchronous means that their execution happens in other processes (including on other systems).
 
 ### Single Root
-This queues objects for asynchronous CV:
-```sh
-RAILS_ENV=production bundle exec rake cv:one_root[fixture_sr3]
+From console, this queues objects on the named storage root for asynchronous CV:
+```ruby
+Audit::Checksum.validate_disk('fixture_sr3')
 ```
 ### All Roots
-This is also asynchronous:
-```sh
-RAILS_ENV=production bundle exec rake cv:all_roots
+This is also asynchronous, for all roots:
+```ruby
+Audit::Checksum.validate_disk_all_storage_roots
 ```
 
 ### Single Druid
-- Without profiling:
-```sh
-RAILS_ENV=production bundle exec rake cv:druid[bz514sm9647]
+Synchronously:
+```ruby
+Audit::Checksum.validate_druid(druid)
 ```
 
 ### Druid List
 - Give the file path of the csv as the parameter. The first column of the csv should contain druids, without the prefix, and contain no headers.
-- Without profiling:
-```sh
-RAILS_ENV=production bundle exec rake cv:druid_list[/file/path/to/your/csv/druid_list.csv]
+
+In console:
+```ruby
+Audit::Checksum.validate_list_of_druids('/file/path/to/your/csv/druid_list.csv')
 ```
 
 ### Druids with a particular status on a particular storage root
 
-For example, if you wish to run CV on all the "validity_unknown" druids on storage root 15:
+For example, if you wish to run CV on all the "validity_unknown" druids on storage root 15, from console:
 
-```sh
-bundle exec rails r -e production "Audit::Checksum.validate_status_root(:validity_unknown, :services-disk15)"
+```ruby
+Audit::Checksum.validate_status_root(:validity_unknown, :services-disk15)
 ```
 
 [Valid status strings](https://github.com/sul-dlss/preservation_catalog/blob/master/app/models/complete_moab.rb#L1-L10)
 
 ## Seed the catalog
 
-Seeding the catalog presumes an empty or nearly empty database -- otherwise running the seed task will throw `druid NOT expected to exist in catalog but was found` errors for each found object.
+Seeding the catalog presumes an empty or nearly empty database -- otherwise seeding will throw `druid NOT expected to exist in catalog but was found` errors for each found object.
+Seeding does more validation than regular M2C.
 
-Without profiling:
-```sh
-RAILS_ENV=production bundle exec rake m2c:seed_all_roots
+From console, without profiling:
+```ruby
+Audit::MoabToCatalog.seed_catalog_for_all_storage_roots
 ```
 
-With profiling:
-```sh
-RAILS_ENV=production bundle exec rake m2c:seed_all_roots[profile]
+From console, with profiling:
+```ruby
+Audit::MoabToCatalog.seed_catalog_for_all_storage_roots_profiled
 ```
 this will generate a log at, for example, `log/profile_seed_catalog_for_all_storage_roots2017-11-13T13:57:01-flat.txt`
 

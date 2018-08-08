@@ -1,5 +1,4 @@
 namespace :cv do
-
   desc "Run CV (checksum validation) on a single storage root"
   task :one_root, [:storage_root] => [:environment] do |_t, args|
     if args[:storage_root].nil?
