@@ -32,28 +32,6 @@ RSpec.describe Audit::MoabToCatalog do
     end
   end
 
-  describe ".check_existence_for_all_storage_roots" do
-    it 'calls check_existence_for_dir once per storage root' do
-      expect(described_class).to receive(:check_existence_for_dir).exactly(HostSettings.storage_roots.entries.count).times
-      described_class.check_existence_for_all_storage_roots
-    end
-
-    it 'calls check_existence_for_dir with the right arguments' do
-      HostSettings.storage_roots.to_h.each_value do |path|
-        expect(described_class).to receive(:check_existence_for_dir).with("#{path}/#{Settings.moab.storage_trunk}")
-      end
-      described_class.check_existence_for_all_storage_roots
-    end
-  end
-
-  describe ".check_existence_for_all_storage_roots_profiled" do
-    it "spins up a profiler, calling profiling and printing methods on it" do
-      expect(mock_profiler).to receive(:prof)
-      expect(mock_profiler).to receive(:print_results_flat).with('M2C_check_existence_for_all_storage_roots')
-      described_class.check_existence_for_all_storage_roots_profiled
-    end
-  end
-
   describe ".seed_catalog_for_all_storage_roots" do
     it 'calls seed_catalog_for_dir once per storage root' do
       expect(described_class).to receive(:seed_catalog_for_dir).exactly(HostSettings.storage_roots.entries.count).times
@@ -73,75 +51,6 @@ RSpec.describe Audit::MoabToCatalog do
       expect(mock_profiler).to receive(:prof)
       expect(mock_profiler).to receive(:print_results_flat).with('seed_catalog_for_all_storage_roots')
       described_class.seed_catalog_for_all_storage_roots_profiled
-    end
-  end
-
-  describe ".check_existence_for_dir" do
-    it "calls 'find_moab_paths' with appropriate argument" do
-      expect(Stanford::MoabStorageDirectory).to receive(:find_moab_paths).with(storage_dir)
-      described_class.check_existence_for_dir(storage_dir)
-    end
-
-    it 'gets moab size and current version from Moab::StorageObject' do
-      expect(moab).to receive(:current_version_id).at_least(:once)
-      expect(moab).to receive(:size).at_least(:once)
-      expect(Moab::StorageServices).not_to receive(:new)
-      described_class.check_existence_for_dir(storage_dir)
-    end
-
-    context "(calls check_existence)" do
-      let(:expected_argument_list) do
-        [
-          { druid: 'bj102hs9687', storage_root_current_version: 3 },
-          { druid: 'bz514sm9647', storage_root_current_version: 3 },
-          { druid: 'jj925bx9565', storage_root_current_version: 2 }
-        ]
-      end
-
-      before do
-        expected_argument_list.each do |arg_hash|
-          po_handler = instance_double('PreservedObjectHandler')
-          arg_hash[:po_handler] = po_handler
-          allow(PreservedObjectHandler).to receive(:new).with(
-            arg_hash[:druid],
-            arg_hash[:storage_root_current_version],
-            instance_of(Integer),
-            ms_root
-          ).and_return(po_handler)
-        end
-      end
-
-      it 'calls check_existence' do
-        fake_codes = %w[fake_code1 fake_code2]
-        expected_argument_list.each do |arg_hash|
-          expect(arg_hash[:po_handler]).to receive(:check_existence).and_return(fake_codes)
-        end
-        # * 3 will magically give us a flat, 6 element array
-        expect(described_class.check_existence_for_dir(storage_dir)).to eq(fake_codes * 3)
-      end
-    end
-
-    it "return correct number of results" do
-      expect(described_class.check_existence_for_dir(storage_dir).count).to eq 6
-    end
-    it "storage directory doesn't exist (misspelling, read write permissions)" do
-      allow(MoabStorageRoot).to receive(:find_by!).and_return(instance_double(MoabStorageRoot))
-      expect { described_class.check_existence_for_dir('spec/fixtures/moab_strge_root') }.to raise_error(
-        SystemCallError, /No such file or directory/
-      )
-    end
-    it "storage directory exists but it is empty" do
-      expect(described_class.check_existence_for_dir('spec/fixtures/empty/sdr2objects')).to eq []
-    end
-  end
-
-  describe ".check_existence_for_dir_profiled" do
-    let(:storage_dir) { "spec/fixtures/storage_root01/sdr2objects" }
-
-    it "spins up a profiler, calling profiling and printing methods on it" do
-      expect(mock_profiler).to receive(:prof)
-      expect(mock_profiler).to receive(:print_results_flat).with('M2C_check_existence_for_dir')
-      described_class.check_existence_for_dir_profiled(storage_dir)
     end
   end
 
@@ -240,15 +149,6 @@ RSpec.describe Audit::MoabToCatalog do
 
     it "return correct number of results" do
       expect(described_class.seed_catalog_for_dir(storage_dir).count).to eq 3
-    end
-    it "storage directory doesn't exist (misspelling, read write permissions)" do
-      allow(MoabStorageRoot).to receive(:find_by!).and_return(instance_double(MoabStorageRoot))
-      expect { described_class.check_existence_for_dir('spec/fixtures/moab_strge_root') }.to raise_error(
-        SystemCallError, /No such file or directory/
-      )
-    end
-    it "storage directory exists but it is empty" do
-      expect(described_class.check_existence_for_dir('spec/fixtures/empty/sdr2objects')).to eq []
     end
   end
 

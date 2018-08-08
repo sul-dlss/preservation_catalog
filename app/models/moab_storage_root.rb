@@ -21,6 +21,13 @@ class MoabStorageRoot < ApplicationRecord
     end
   end
 
+  # Use a queue to ensure each druid on this root's directory is in the catalog database
+  def m2c_check!
+    Stanford::MoabStorageDirectory.find_moab_paths(storage_location) do |druid, path, _match|
+      MoabToCatalogJob.perform_later(self, druid, path)
+    end
+  end
+
   # Iterates over the storage roots enumerated in settings, creating a MoabStorageRoot for
   #   each if it doesn't already exist.
   # @param preservation_policies [Enumerable<PreservationPolicy>] the list of preservation policies

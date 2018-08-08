@@ -1,5 +1,4 @@
 namespace :m2c do
-
   desc "Populate all storage roots' db data (does more validation than regular M2C)"
   task :seed_all_roots, [:profile] => [:environment] do |_t, args|
     unless args[:profile] == 'profile' || args[:profile].nil?
@@ -80,39 +79,21 @@ namespace :m2c do
     puts "#{Time.now.utc.iso8601} Moab to Catalog Existence Check on the list of druids from #{druid_list_file_path} is done"
   end
 
-  desc "Run M2C existence/version checks on a single storage root"
-  task :one_root, [:storage_root, :profile] => [:environment] do |_t, args|
-    unless args[:profile] == 'profile' || args[:profile].nil?
-      p "Usage: rake m2c:one_root[fixture_sr1] || rake m2c:one_root[fixture_sr1,profile]"
-      exit 1
-    end
+  desc "Enqueue M2C existence/version checks on a single storage root"
+  task :one_root, [:storage_root] => [:environment] do |_t, args|
     root = args[:storage_root].to_sym
     storage_dir = "#{HostSettings.storage_roots[root]}/#{Settings.moab.storage_trunk}"
-    puts "#{Time.now.utc.iso8601} Running Moab to Catalog Existence Check for #{storage_dir}"
-    $stdout.flush # sometimes above is not visible (flushed) until last puts (when run finishes)
-    if args[:profile] == 'profile'
-      puts "When done, check log/profile_check_existence_for_dir[TIMESTAMP].txt for profiling details"
-      $stdout.flush
-      Audit::MoabToCatalog.check_existence_for_dir_profiled(storage_dir)
-    elsif args[:profile].nil?
-      Audit::MoabToCatalog.check_existence_for_dir(storage_dir)
-    end
-    puts "#{Time.now.utc.iso8601} Moab to Catalog Existence Check for #{storage_dir} is done"
+    msr = MoabStorageRoot.find_by!(storage_location: storage_dir)
+    puts "Moab to Catalog Existence Checks for #{msr}"
+    msr.m2c_check!
+    puts "Moab to Catalog Existence Checks enqueued for #{msr}"
   end
 
-  desc "Run M2C existence/version checks on all storage roots"
-  task :all_roots, [:profile] => [:environment] do |_t, args|
-    unless args[:profile] == 'profile' || args[:profile].nil?
-      p "Usage: rake m2c:all_roots || rake m2c:all_roots[profile]"
-      exit 1
+  desc "Enqueue M2C existence/version checks on all storage roots"
+  task all_roots: [:environment] do
+    MoabStorageRoot.find_each do |msr|
+      puts "Moab to Catalog Existence Checks for #{msr}"
+      msr.m2c_check!
     end
-
-    if args[:profile] == 'profile'
-      puts "When done, check log/profile_check_existence_for_all_storage_roots[TIMESTAMP].txt for profiling details"
-      Audit::MoabToCatalog.check_existence_for_all_storage_roots_profiled
-    elsif args[:profile].nil?
-      Audit::MoabToCatalog.check_existence_for_all_storage_roots
-    end
-    puts "#{Time.now.utc.iso8601} Moab to Catalog Existence Check for all storage roots is done"
   end
 end
