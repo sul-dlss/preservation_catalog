@@ -5,9 +5,31 @@ describe DruidVersionZip do
   let(:druid) { 'bj102hs9687' }
   let(:version) { 1 }
 
+  describe '#base_key' do
+    it 'returns filename without ext' do
+      expect(dvz.base_key).to eq 'bj/102/hs/9687/bj102hs9687.v0001'
+    end
+  end
+
   describe '#s3_key' do
     it 'returns a tree path-based key' do
       expect(dvz.s3_key).to eq 'bj/102/hs/9687/bj102hs9687.v0001.zip'
+    end
+  end
+
+  describe '#ensure_zip_directory' do
+    it 'returns path if zip directory exists' do
+      expect(dvz.ensure_zip_directory!.to_s).to eq '/tmp/bj/102/hs/9687/bj102hs9687.v0001.zip'
+    end
+
+    context 'zip directory does not exist' do
+      before { FileUtils.rm_rf('/tmp/bj/102/hs/9687/') }
+
+      it 'returns path by creating zip directory if does not exist' do
+        expect(File).not_to exist('/tmp/bj/102/hs/9687/bj102hs9687.v0001.zip')
+        expect { dvz.ensure_zip_directory! }.not_to raise_error
+        expect(dvz.ensure_zip_directory!.to_s).to eq '/tmp/bj/102/hs/9687/bj102hs9687.v0001.zip'
+      end
     end
   end
 
@@ -150,6 +172,28 @@ describe DruidVersionZip do
     end
   end
 
+  describe '#v_version' do
+    let(:version) { 1 }
+
+    it 'returns 3 zero-padded string of the version' do
+      expect(dvz.v_version).to eq 'v0001'
+    end
+
+    context "two digit version" do
+      let(:version) { 34 }
+
+      it 'returns 2 zero-padded string of the version' do
+        expect(dvz.v_version).to eq 'v0034'
+      end
+    end
+  end
+
+  describe '#work_dir' do
+    it 'returns Pathname directory where the zip command is executed' do
+      expect(dvz.work_dir.to_s).to eq 'spec/fixtures/storage_root01/sdr2objects/bj/102/hs/9687'
+    end
+  end
+
   describe '#zip_command' do
     let(:zip_path) { '/tmp/bj/102/hs/9687/bj102hs9687.v0001.zip' }
 
@@ -178,6 +222,12 @@ describe DruidVersionZip do
   describe '#fetch_zip_version' do
     it 'gets version from the system zip' do
       expect(dvz.send(:fetch_zip_version)).to match(/^Zip \d+\.\d+/)
+    end
+  end
+
+  describe '#zip_storage' do
+    it 'returns Pathname to location where the zip file is to be created' do
+      expect(dvz.zip_storage.to_s).to eq '/tmp'
     end
   end
 end
