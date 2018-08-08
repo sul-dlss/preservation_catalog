@@ -12,8 +12,8 @@
 * <sub>The cross side of the connection between tables indictates a required foreign key relationship, or what ActiveRecord would call `belongs_to` (with a `null: false` constraint on the column definition and a corresponding `presence: true` on the ActiveRecord class definition).  In our current data model, none of our foreign key reference fields may be null.  Each such ActiveRecord object must point to exactly one instance of its foreign key referent.</sub>
   * <sub>E.g., a row in `complete_moabs` (retrievable as a `CompleteMoab` ActiveRecord object) must point to (`belong_to`) exactly one row in `preserved_objects` (a `PreservedObject`).</sub>
 * <sub>The fork side of the connection between tables indicates a one to zero or more relationship, or what ActiveRecord calls `has_many`.</sub>
-  * <sub> E.g., a row in `zip_parts` (a `ZipPart`) may have many corresponding rows in `zipped_moab_version` (retrievable as `ZippedMoabVersion` objects).
-* <sub>We have two thin "join tables", `moab_storage_roots_preservation_policies` and `preservation_policies_zip_endpoints`, which has no corresponding ActiveRecord class.  ActiveRecord is made aware of the mapping between the `moab_storage_roots` and `preservation_policies` tables by way of `has_and_belongs_to_many` relationship declarations o `moab_storage_root` (to `preservation_policies`) and `PreservationPolicy` (to `moab_storage_roots`).</sub>
+  * <sub> E.g., a row in `zipped_moab_versions` (a `ZippedMoabVersion`) may have many corresponding rows in `zip_parts` (retrievable as `ZipPart` objects).</sub>
+* <sub>We have two thin "join tables", `moab_storage_roots_preservation_policies` and `preservation_policies_zip_endpoints`.  They have no corresponding ActiveRecord classes.  ActiveRecord is made aware of the mapping between the `moab_storage_roots` and `preservation_policies` tables by way of `has_and_belongs_to_many` relationship declarations -- on `MoabStorageRoot` (to `preservation_policies`) and `PreservationPolicy` (to `moab_storage_roots`).  There are similar `has_and_belongs_to_many` declarations on `ZipEndpoint` and `PreservationPolicy` for that relationship.</sub>
   * <sub>Semantically, the idea is that a moab_storage_root may be used by more than one preservation policy, and a preservation policy may be implemented by multiple moab_storage_roots.  Typically, this sort of many-to-many relationship is expressed in a relational database schema by way of an intermediary table that maps related rows in the two tables.  This is more structured and easier to query/update than, e.g., a list field on a row in one table enumerating all the related row IDs in the other table.</sub>
 
 #### What do these table rows (ActiveRecord objects) represent in the "real" world?  (a list of the ActiveRecord subclasses, and a (non-exhaustive) list of their fields)
@@ -25,11 +25,12 @@
   * `size`: is approximate, and given in bytes.  It's intended to be used for things like allocating storage.  It should _not_ be treated as an exact value for fixity checking.
   * `status`: a high-level summary of the copy's current state.  This is just a reflection of what we last saw on disk, and does not capture history, nor does it necessarily enumerate all errors for a copy that needs remediation.
   * `version`: should be the same as `PreservedObject` current version. This is left over from when `complete_moab` and `zipped_moab_version` shared a table.
-* An `MoabStorageRoot` represents a physical storage location on which a `CompleteMoab` resides.  E.g., a single NFS-mounted storage root for `complete_moabs`, or a single bucket from a cloud service holding `zipped_moab_versions`.  The `MoabStorageRoot` fields include info about:
-  * `storage_location`: the path or bucket name or similar from which to read (e.g. "/services-disk03/sdr2objects", "sdr-bucket-01", etc).
+* A `MoabStorageRoot` represents a physical storage location on which a `CompleteMoab` resides, e.g., a single NFS-mounted storage root.  The `MoabStorageRoot` fields include info about:
+  * `storage_location`: the path from which to read (e.g. "/services-disk03/sdr2objects").
   * `preservation_policies`: the preservation policies for which governed objects are preserved (declared to ActiveRecord via `has_and_belongs_to_many :preservation_policies`).
 * A `PreservationPolicy` defines
-  * `moab_storage_roots`: the endpoints to which the objects governed by the policy should preserved (declared to ActiveRecord via `has_and_belongs_to_many :moab_storage_root`).
+  * `moab_storage_roots`: the storage roots that are eligible to house the objects governed by the (declared to ActiveRecord via `has_and_belongs_to_many :moab_storage_root`).  At present, a `CompleteMoab` should only live on one `MoabStorageRoot` at a time.
+  * `zip_endpoints`: the endpoints to which zipped versions of the Moab should be archived.  In contrast to the storage roots, the a `ZippedMoabVersion` should live on *all* `ZipEndpoints` that the policy maps to.
   * `archive_ttl`: the frequency with which the existence of the appropriate archive copies should be checked.
   * `fixity_ttl`: the frequency with which the online copies should be checked for fixity.
 * `ZipEndpoint` represents the endpoint where the `zipped_moab_version` will be replicated to.
@@ -39,10 +40,8 @@
   * `storage_location`: the bucket name (e.g. `sul-sdr-aws-us-east-1-test`)
 * `ZippedMoabVersion` corresponds to a Moab-Version on a `ZipEndpoint`.
   * `version`: the version from the Moab that was zipped.
-  * `last_existence_check` represents the last time the Moab-Version existed on a ZipEndpoint
   * `complete_moab_id`: references the parent complete moab on disk.
   * `zip_endpoint_id`: the endpoint on which the Moab-Version has been replicated
-  * `status`: represents whether `ZippedMoabVersion` has been replicated, needs to be replicated, or remediated.
 * `ZipParts`: We chunk archives of Moab versions into multiple files greater than 10GBs. This represents metadata for one such part.
   * `size` represents the size of the actual `zip_part`
   * `zipped_moab_version_id` references the parent Moab-Version on a `ZipEndpoint`. 99% of the time, we will have 1 `ZippedMoabVersion` to 1 `ZipPart`.
@@ -50,7 +49,9 @@
   * `create_info` is a hash containing the zip command and zip version.
   * `parts_count` displays how many total zip parts were created during replication.
   * `suffix` if there is 1 `ZipPart` suffix will always be `.zip` if there are more than 1 `ZipPart` the suffix will be `.z01` through `.z(n-1)` (e.g. 3 parts will be ['.z01', '.z02', '.zip'])
-  * `status`: displays whether the `ZipPart` has been replicated or not.
+  * `status`: displays whether the `ZipPart` has been replicated or not, whether there's an error with the cloud copy of the replicated part, etc.
+  * `last_existence_check`: the last time we confirmed whether the part was still on cloud storage.
+  * `last_checksum_validation`: the last time our stored checksum for the part was compared against the stored checksum on the cloud provider. Eventually we'd like this (or a separate but similar field) to denote an actual fixity check, where the copy is retrieved from the cloud and the checksum on the retrieved copy is compared to our stored checksum.
 
 #### other terminology
 * An "online" copy is an exploded moab folder structure, on which we can run structural verification or checksum verification for constituent files, and from which we can retrieve individual assets of the moab.
@@ -64,6 +65,7 @@
 The Rails API docs: http://api.rubyonrails.org/classes/ActiveRecord/Transactions/ClassMethods.html
 
 General advice:
+* If possible, avoid declaring a transaction explicitly, e.g. by updating a parent object and its children, declaring `autosave: true` on the parent for the child relationships, and calling `save` or `save!` on the parent object.  ActiveRecord will implicitly perform this multi-level save in a transaction.
 * Please use `ApplicationRecord.transaction` for clarity and consistency.
   * Functionally, it doesn't matter whether `.transaction` is called on a specific ActiveRecord class or object instance, because the transaction applies to the database connection, and all updates in a given thread of operation will be going over the same database connection (it is possible to configure ActiveRecord to do otherwise, but like most applications, we don't).  To reduce confusion, it seems best to just always invoke it via the super-class, so that it's clear that the transaction applies to all object types being grouped under it.
 * If two or more things should fail or succeed together atomically, they should be wrapped in a transaction.  E.g. if you're creating a PreservedObject so that there's a master record for the CompleteMoab that you'd like to create, those two things should probably be grouped as a transaction so that if the creation of the CompleteMoab fails, the creation of the PreservedObject gets rolled back, and we don't have a stray lying around.

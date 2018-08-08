@@ -25,16 +25,14 @@ class ResultsRecorderJob < ApplicationJob
   def perform(druid, version, s3_part_key, _delivery_class)
     part = zip_part!(s3_part_key)
     part.ok!
-    zmv.ok! if part.all_parts_replicated? # are all of the parts replicated for this zip_endpoint?
     # only publish result if all of the parts replicated for all zip_endpoints
-    return unless zmvs.reload.all?(&:ok?)
+    return unless zmvs.reload.all?(&:all_parts_replicated?)
     publish_result(message(druid, version).to_json)
   end
 
   private
 
   def zip_part!(s3_part_key)
-    raise "Status shifted underneath replication: #{zmv.inspect}" unless zmv.unreplicated?
     zmv.zip_parts.find_by!(
       suffix: File.extname(s3_part_key),
       status: 'unreplicated'

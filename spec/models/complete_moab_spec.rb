@@ -41,9 +41,7 @@ RSpec.describe CompleteMoab, type: :model do
       'invalid_checksum' => 2,
       'online_moab_not_found' => 3,
       'unexpected_version_on_storage' => 4,
-      'validity_unknown' => 6,
-      'unreplicated' => 7,
-      'replicated_copy_not_found' => 8
+      'validity_unknown' => 6
     )
   end
 
@@ -63,11 +61,11 @@ RSpec.describe CompleteMoab, type: :model do
   describe '#replicatable_status?' do
     it 'reponds true IFF status should allow replication' do
       # validity_unknown initial status implicitly tested (otherwise assignment wouldn't change the reponse)
-      expect { cm.status = 'ok'                        }.to change(cm, :replicatable_status?).to(true)
-      expect { cm.status = 'invalid_checksum'          }.to change(cm, :replicatable_status?).to(false)
-      expect { cm.status = 'replicated_copy_not_found' }.to change(cm, :replicatable_status?).to(true)
-      expect { cm.status = 'invalid_moab'              }.to change(cm, :replicatable_status?).to(false)
-      expect { cm.status = 'unreplicated'              }.to change(cm, :replicatable_status?).to(true)
+      expect { cm.status = 'ok'                            }.to change(cm, :replicatable_status?).to(true)
+      expect { cm.status = 'invalid_checksum'              }.to change(cm, :replicatable_status?).to(false)
+      expect { cm.status = 'invalid_moab'                  }.not_to change(cm, :replicatable_status?).from(false)
+      expect { cm.status = 'online_moab_not_found'         }.not_to change(cm, :replicatable_status?).from(false)
+      expect { cm.status = 'unexpected_version_on_storage' }.not_to change(cm, :replicatable_status?).from(false)
     end
   end
 
@@ -344,9 +342,10 @@ RSpec.describe CompleteMoab, type: :model do
       expect(zmvs_by_druid.pluck(:version).sort).to eq [1, 2, 3]
     end
 
-    it 'creates ZMVs so that they start with unreplicated status' do
-      expect(cm.create_zipped_moab_versions!.all?(&:unreplicated?)).to be true
-    end
+    # TODO: is there some test that should replace this now that ZMV#status is gone?
+    # it 'creates ZMVs so that they start with unreplicated status' do
+    #   expect(cm.create_zipped_moab_versions!.all?(&:unreplicated?)).to be true
+    # end
 
     it "creates ZMVs that don't yet exist for new endpoint, but should" do
       expect { cm.create_zipped_moab_versions! }.to change {

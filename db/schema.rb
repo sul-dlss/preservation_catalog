@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180725203750) do
+ActiveRecord::Schema.define(version: 20180802230025) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -99,20 +99,18 @@ ActiveRecord::Schema.define(version: 20180725203750) do
     t.integer "parts_count", null: false
     t.string "suffix", null: false
     t.integer "status", default: 1, null: false
+    t.datetime "last_existence_check"
+    t.datetime "last_checksum_validation"
     t.index ["zipped_moab_version_id"], name: "index_zip_parts_on_zipped_moab_version_id"
   end
 
   create_table "zipped_moab_versions", force: :cascade do |t|
     t.integer "version", null: false
-    t.datetime "last_existence_check"
     t.bigint "complete_moab_id", null: false
     t.bigint "zip_endpoint_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "status", null: false
     t.index ["complete_moab_id"], name: "index_zipped_moab_versions_on_complete_moab_id"
-    t.index ["last_existence_check"], name: "index_zipped_moab_versions_on_last_existence_check"
-    t.index ["status"], name: "index_zipped_moab_versions_on_status"
     t.index ["zip_endpoint_id"], name: "index_zipped_moab_versions_on_zip_endpoint_id"
   end
 

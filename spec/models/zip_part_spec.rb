@@ -7,7 +7,9 @@ RSpec.describe ZipPart, type: :model do
   it 'defines a status enum with the expected values' do
     is_expected.to define_enum_for(:status).with(
       'ok' => 0,
-      'unreplicated' => 1
+      'unreplicated' => 1,
+      'not_found' => 2,
+      'replicated_checksum_mismatch' => 3
     )
   end
 

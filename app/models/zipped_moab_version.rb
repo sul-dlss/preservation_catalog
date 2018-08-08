@@ -15,20 +15,28 @@ class ZippedMoabVersion < ApplicationRecord
   # but queue locking easily prevents duplicates (and the job is idempotent anyway).
   after_create :replicate!
 
-  # @note Hash values cannot be modified without migrating any associated persisted data.
-  # @see [enum docs] http://api.rubyonrails.org/classes/ActiveRecord/Enum.html
-  enum status: {
-    'ok' => 0,
-    'unreplicated' => 1,
-    'archive_not_found' => 2,
-    'invalid_checksum' => 3
-  }
-
-  validates :complete_moab, :status, :version, :zip_endpoint, presence: true
+  validates :complete_moab, :version, :zip_endpoint, presence: true
 
   scope :by_druid, lambda { |druid|
     joins(complete_moab: [:preserved_object]).where(preserved_objects: { druid: druid })
   }
+
+  # ideally, there should be only one distinct parts_count value among a set of sibling
+  # zip_parts.  if there's variation in the count, that implies the zip was remade, and that
+  # the part count differed between the zip invocations (which may imply a zip implementation
+  # change, bitrot in the online Moab being archived, or some other unknown cause of drift).
+  # hopefully this happens rarely or not at all, but an example scenario would be:
+  # 1) zips get lost from cloud provider, 2) druid is re-queued for replication, no cached
+  # zips available, 3) multi-part zip is remade, number of parts is fewer than prior zip/push,
+  # 4) metadata on some existing part rows is updated with new (smaller) count, zips are pushed,
+  # but old rows for prior push still exist with old (higher) count.
+  def child_parts_counts
+    zip_parts.group(:parts_count).pluck(:parts_count, 'count(zip_parts.id)')
+  end
+
+  def all_parts_replicated?
+    zip_parts.count > 0 && zip_parts.all?(&:ok?)
+  end
 
   # Send to asynchronous replication pipeline
   # @return [ZipmakerJob, nil] nil if unpersisted or parent PC has non-replicatable status

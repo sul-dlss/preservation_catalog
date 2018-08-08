@@ -13,10 +13,6 @@ describe ResultsRecorderJob, type: :job do
   end
 
   context 'when all parts for zip_endpoint are replicated' do
-    it 'sets the ZippedMoabVersion status to ok' do
-      described_class.perform_now(druid, zmv.version, 'fake.zip', zip_endpoint.delivery_class.to_s)
-      expect(zmv.reload).to be_ok
-    end
     it 'sets part status to ok' do
       expect {
         described_class.perform_now(druid, zmv.version, 'fake.zip', zip_endpoint.delivery_class.to_s)
@@ -38,7 +34,7 @@ describe ResultsRecorderJob, type: :job do
     let(:other_ep) { create(:zip_endpoint, delivery_class: 2) }
 
     before do
-      cm.zipped_moab_versions.create!(version: zmv.version, status: 'unreplicated', zip_endpoint: other_ep)
+      cm.zipped_moab_versions.create!(version: zmv.version, zip_endpoint: other_ep)
     end
 
     it 'does not send to replication.results queue' do
