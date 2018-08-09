@@ -75,8 +75,8 @@ RSpec.describe Audit::Checksum do
       end
 
       it 'creates an instance and calls #validate_checksums on everything in batches' do
-        cms_to_process = CompleteMoab.validity_unknown.by_moab_storage_root_name(root_name)
-        cv_list = cms_to_process.map { |cm| ChecksumValidator.new(cm) }
+        msr = MoabStorageRoot.find_by!(name: root_name)
+        cv_list = msr.complete_moabs.validity_unknown.map { |cm| ChecksumValidator.new(cm) }
         expect(cv_list.size).to eq 3
         cv_list.each do |cv|
           allow(ChecksumValidator).to receive(:new).with(cv.complete_moab).and_return(cv)
