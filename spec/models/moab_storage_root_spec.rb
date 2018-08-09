@@ -68,14 +68,28 @@ RSpec.describe MoabStorageRoot, type: :model do
     end
   end
 
-  describe '#validate_expired_checksums!' do
-    it 'calls ChecksumValidationJob for each eligible CompleteMoab' do
+  context 'job wrappers' do
+    let(:msr) { create(:moab_storage_root) }
+
+    before do
       allow(Rails.logger).to receive(:info)
-      ms_root = create(:moab_storage_root)
-      ms_root.complete_moabs = build_list(:complete_moab, 2)
-      expect(ChecksumValidationJob).to receive(:perform_later).with(ms_root.complete_moabs.first)
-      expect(ChecksumValidationJob).to receive(:perform_later).with(ms_root.complete_moabs.second)
-      ms_root.validate_expired_checksums!
+      msr.complete_moabs = build_list(:complete_moab, 2)
+    end
+
+    describe '#validate_expired_checksums!' do
+      it 'calls ChecksumValidationJob for each eligible CompleteMoab' do
+        expect(ChecksumValidationJob).to receive(:perform_later).with(msr.complete_moabs.first)
+        expect(ChecksumValidationJob).to receive(:perform_later).with(msr.complete_moabs.second)
+        msr.validate_expired_checksums!
+      end
+    end
+
+    describe '#c2m_check!' do
+      it 'calls CatalogToMoabJob for each eligible CompleteMoab' do
+        expect(CatalogToMoabJob).to receive(:perform_later).with(msr.complete_moabs.first, msr.storage_location)
+        expect(CatalogToMoabJob).to receive(:perform_later).with(msr.complete_moabs.second, msr.storage_location)
+        msr.c2m_check!
+      end
     end
   end
 end

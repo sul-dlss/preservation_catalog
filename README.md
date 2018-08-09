@@ -120,35 +120,37 @@ RAILS_ENV=production bundle exec rake m2c:druid_list[/file/path/to/your/csv/drui
 ```
 ## <a name="c2m"/>Catalog to Moab (C2M) existence/version check
 
+Note: C2M uses the `Audit::CatalogToMoab` asynchronously via workers on the `:c2m` queue.
+
 - Given a catalog entry for an online moab, ensure that the online moab exists and that the catalog version matches the online moab version.
 
-- To run rake tasks below, give a date and the name of the moab storage_root (e.g. from settings/development.yml) as arguments.
+- You will need to identify a moab storage_root (e.g. with path from settings/development.yml) and optionally provide a date threshold.
 
-- The (date/timestamp) argument is a threshold:  it will run the check on all catalog entries which last had a version check BEFORE the argument. It should be in the format '2018-01-22 22:54:48 UTC'.
+- The (date/timestamp) argument is a threshold: it will run the check on all catalog entries which last had a version check BEFORE the argument. You can use string format like '2018-01-22 22:54:48 UTC' or ActiveRecord Date/Time expressions like `1.week.ago`.  The default is anything not checked since **right now**.
 
-- Note: Must enter date/timestamp argument as a string.
+These C2M examples use a rails console, like: `RAILS_ENV=production bundle exec rails console`
 
 ### Single Root
-- Without profiling
-```sh
-RAILS_ENV=production bundle exec rake c2m:one_root['2018-01-22 22:54:48 UTC',fixture_sr1]
+
+This enqueues work for all the objects associated with the first `MoabStorageRoot` in the database, then the last:
+
+```ruby
+MoabStorageRoot.first.c2m_check!
+MoabStorageRoot.last.c2m_check!
 ```
-- With profiling
-```sh
-RAILS_ENV=production bundle exec rake c2m:one_root['2018-01-22 22:54:48 UTC',fixture_sr1,profile]
+
+This enqueues work from a given root not checked in the past 3 days.
+
+```ruby
+msr = MoabStorageRoot.find_by!(storage_location: '/path/to/storage')
+msr.c2m_check!(3.days.ago)
 ```
-this will generate a log at, for example, `log/profile_C2M_check_version_on_dir2018-01-01T14:25:31-flat.txt`
 
 ### All Roots
-- Without profiling:
-```sh
-RAILS_ENV=production bundle exec rake c2m:all_roots['2018-01-22 22:54:48 UTC']
+This enqueues work from **all** roots similarly.
+```ruby
+MoabStorageRoot.find_each { |msr| msr.c2m_check!(3.days.ago) }
 ```
-- With profiling:
-```sh
-RAILS_ENV=production bundle exec rake c2m:all_roots['2018-01-22 22:54:48 UTC',profile]
-```
-this will generate a log at, for example, `log/profile_C2M_check_version_all_dirs2018-01-01T14:25:31-flat.txt`
 
 ## <a name="cv"/>Checksum Validation (CV)
 - Parse all manifestInventory.xml and most recent signatureCatalog.xml for stored checksums and verify against computed checksums.

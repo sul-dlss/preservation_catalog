@@ -7,18 +7,19 @@ RSpec.describe Audit::CatalogToMoab do
   let(:druid) { 'bj102hs9687' }
   let(:c2m) { described_class.new(comp_moab, storage_dir) }
   let(:mock_sov) { instance_double(Stanford::StorageObjectValidator) }
-  let(:po) { PreservedObject.find_by!(druid: druid) }
+  let(:po) { create(:preserved_object_fixture, druid: druid) }
   let(:comp_moab) do
     MoabStorageRoot.find_by!(storage_location: storage_dir).complete_moabs.find_by!(preserved_object: po)
   end
   let(:logger_double) { instance_double(ActiveSupport::Logger, info: nil, error: nil, add: nil) }
+  let(:results_double) do
+    instance_double(AuditResults, add_result: nil, :actual_version= => nil, :check_name= => nil, report_results: nil)
+  end
 
   before do
     allow(Dor::WorkflowService).to receive(:update_workflow_error_status)
-    allow(described_class).to receive(:logger).and_return(logger_double) # silence log output
+    allow(c2m).to receive(:logger).and_return(logger_double) # silence log output
   end
-
-  include_context 'fixture moabs in db'
 
   context '#initialize' do
     it 'sets attributes' do
@@ -41,7 +42,7 @@ RSpec.describe Audit::CatalogToMoab do
 
     it 'gets the current version on disk from the Moab::StorageObject' do
       moab = instance_double(Moab::StorageObject, object_pathname: object_dir)
-      allow(Moab::StorageObject).to receive(:new).with(druid, instance_of(String)).and_return(moab)
+      allow(Moab::StorageObject).to receive(:new).with(druid, String).and_return(moab)
       expect(moab).to receive(:current_version_id).and_return(3)
       c2m.check_catalog_version
     end
@@ -57,9 +58,8 @@ RSpec.describe Audit::CatalogToMoab do
     end
 
     it 'calls AuditResults.report_results' do
-      results = instance_double(AuditResults, add_result: nil, :actual_version= => nil, :check_name= => nil)
-      allow(AuditResults).to receive(:new).and_return(results)
-      expect(results).to receive(:report_results)
+      c2m.instance_variable_set(:@results, results_double)
+      expect(c2m.results).to receive(:report_results)
       c2m.check_catalog_version
     end
 
@@ -69,23 +69,19 @@ RSpec.describe Audit::CatalogToMoab do
     end
 
     context 'moab is nil (exists in catalog but not online)' do
+      before { allow(Moab::StorageObject).to receive(:new).with(druid, String).and_return(nil) }
+
       it 'adds a MOAB_NOT_FOUND result' do
-        allow(Moab::StorageObject).to receive(:new).with(druid, instance_of(String)).and_return(nil)
-        results = instance_double(AuditResults, report_results: nil, :check_name= => nil)
-        allow(AuditResults).to receive(:new).and_return(results)
-        expect(results).to receive(:add_result).with(
+        c2m.instance_variable_set(:@results, results_double)
+        expect(c2m.results).to receive(:add_result).with(
           AuditResults::MOAB_NOT_FOUND, db_created_at: anything, db_updated_at: anything
         )
-        expect(results).to receive(:add_result).with(
+        expect(c2m.results).to receive(:add_result).with(
           AuditResults::CM_STATUS_CHANGED, old_status: "ok", new_status: "online_moab_not_found"
         )
         c2m.check_catalog_version
       end
       context 'updates status correctly' do
-        before do
-          allow(Moab::StorageObject).to receive(:new).with(druid, instance_of(String)).and_return(nil)
-        end
-
         [
           'validity_unknown',
           'ok',
@@ -103,15 +99,8 @@ RSpec.describe Audit::CatalogToMoab do
         end
       end
 
-      it 'stops processing .check_catalog_version' do
-        moab = instance_double(Moab::StorageObject)
-        allow(Moab::StorageObject).to receive(:new).with(druid, instance_of(String)).and_return(nil)
-        expect(moab).not_to receive(:current_version_id)
-        c2m.check_catalog_version
-      end
       context 'DB transaction handling' do
         it 'on transaction failure, completes without raising error, removes CM_STATUS_CHANGED result code' do
-          allow(Moab::StorageObject).to receive(:new).with(druid, instance_of(String)).and_return(nil)
           allow(comp_moab).to receive(:save!).and_raise(ActiveRecord::ConnectionTimeoutError)
           c2m.check_catalog_version
           expect(c2m.results.result_array).to include(a_hash_including(AuditResults::MOAB_NOT_FOUND))
@@ -122,33 +111,30 @@ RSpec.describe Audit::CatalogToMoab do
     end
 
     context 'complete_moab version != current_version of preserved_object' do
-      it 'adds a CM_PO_VERSION_MISMATCH result and finishes processing' do
+      before do
         comp_moab.version = 666
-        results = instance_double(AuditResults, report_results: nil, :check_name= => nil)
-        allow(AuditResults).to receive(:new).and_return(results)
-        expect(results).to receive(:add_result).with(
+        c2m.instance_variable_set(:@results, results_double)
+      end
+
+      it 'adds a CM_PO_VERSION_MISMATCH result and finishes processing' do
+        expect(c2m.results).to receive(:add_result).with(
           AuditResults::CM_PO_VERSION_MISMATCH,
           cm_version: comp_moab.version,
           po_version: comp_moab.preserved_object.current_version
         )
-        expect(Moab::StorageObject).not_to receive(:new).with(druid, a_string_matching(object_dir)).and_call_original
+        expect(Moab::StorageObject).not_to receive(:new).with(druid, a_string_matching(object_dir))
         c2m.check_catalog_version
       end
       it 'calls AuditResults.report_results' do
-        comp_moab.version = 666
-        results = instance_double(AuditResults, report_results: nil, :check_name= => nil)
-        allow(results).to receive(:add_result)
-        allow(AuditResults).to receive(:new).and_return(results)
-        expect(results).to receive(:report_results)
+        expect(c2m.results).to receive(:report_results)
         c2m.check_catalog_version
       end
     end
 
     context 'catalog version == moab version (happy path)' do
       it 'adds a VERSION_MATCHES result' do
-        results = instance_double(AuditResults, report_results: nil, :actual_version= => nil, :check_name= => nil)
-        allow(AuditResults).to receive(:new).and_return(results)
-        expect(results).to receive(:add_result).with(AuditResults::VERSION_MATCHES, 'CompleteMoab')
+        c2m.instance_variable_set(:@results, results_double)
+        expect(c2m.results).to receive(:add_result).with(AuditResults::VERSION_MATCHES, 'CompleteMoab')
         c2m.check_catalog_version
       end
 
@@ -311,12 +297,10 @@ RSpec.describe Audit::CatalogToMoab do
       end
 
       it 'adds an UNEXPECTED_VERSION result' do
-        results = instance_double(AuditResults, report_results: nil, :actual_version= => nil, :check_name= => nil)
-        expect(results).to receive(:add_result).with(
+        c2m.instance_variable_set(:@results, results_double)
+        expect(c2m.results).to receive(:add_result).with(
           AuditResults::UNEXPECTED_VERSION, db_obj_name: 'CompleteMoab', db_obj_version: comp_moab.version
         )
-        allow(results).to receive(:add_result).with(any_args)
-        allow(AuditResults).to receive(:new).and_return(results)
         c2m.check_catalog_version
       end
 
@@ -346,21 +330,17 @@ RSpec.describe Audit::CatalogToMoab do
           expect(new_status).to eq 'invalid_moab'
         end
         it 'adds an INVALID_MOAB result' do
-          results = instance_double(AuditResults, report_results: nil, :actual_version= => nil, :check_name= => nil)
-          expect(results).to receive(:add_result).with(AuditResults::INVALID_MOAB, anything)
-          allow(results).to receive(:add_result).with(any_args)
-          allow(AuditResults).to receive(:new).and_return(results)
+          c2m.instance_variable_set(:@results, results_double)
+          expect(c2m.results).to receive(:add_result).with(AuditResults::INVALID_MOAB, anything)
           c2m.check_catalog_version
         end
       end
 
       it 'adds a CM_STATUS_CHANGED result' do
-        results = instance_double(AuditResults, report_results: nil, :actual_version= => nil, :check_name= => nil)
-        expect(results).to receive(:add_result).with(
+        c2m.instance_variable_set(:@results, results_double)
+        expect(c2m.results).to receive(:add_result).with(
           AuditResults::CM_STATUS_CHANGED, a_hash_including(:old_status, :new_status)
         )
-        allow(results).to receive(:add_result).with(any_args)
-        allow(AuditResults).to receive(:new).and_return(results)
         c2m.check_catalog_version
       end
 

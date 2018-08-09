@@ -1,49 +1,7 @@
 module Audit
   # Catalog to Moab existence check code
   class CatalogToMoab
-
-    def self.logger
-      @logger ||= Logger.new(STDOUT)
-                        .extend(ActiveSupport::Logger.broadcast(Logger.new(Rails.root.join('log', 'c2m.log'))))
-    end
-
-    def self.check_version_on_dir(last_checked_b4_date, storage_dir, limit=Settings.c2m_sql_limit)
-      logger.info "#{Time.now.utc.iso8601} C2M check_version starting for #{storage_dir}"
-
-      # cms_to_audit_relation is an AR Relation; it could return a lot of results, so we want to process in batches.
-      # We can't use ActiveRecord's .find_each, because that'll disregard the order .least_recent_version_audit
-      # specified.  so we use our own batch processing method, which does respect Relation order.
-      cms_to_audit_relation =
-        CompleteMoab.least_recent_version_audit(last_checked_b4_date).by_storage_location(storage_dir)
-      ActiveRecordUtils.process_in_batches(cms_to_audit_relation, limit) do |cm|
-        c2m = CatalogToMoab.new(cm, storage_dir)
-        c2m.check_catalog_version
-      end
-    ensure
-      logger.info "#{Time.now.utc.iso8601} C2M check_version ended for #{storage_dir}"
-    end
-
-    def self.check_version_on_dir_profiled(last_checked_b4_date, storage_dir)
-      Profiler.print_profile('C2M_check_version_on_dir') { check_version_on_dir(last_checked_b4_date, storage_dir) }
-    end
-
-    def self.check_version_all_dirs(last_checked_b4_date)
-      logger.info "#{Time.now.utc.iso8601} C2M check_version_all_dirs starting"
-      HostSettings.storage_roots.to_h.each_value do |strg_root_location|
-        check_version_on_dir(last_checked_b4_date, "#{strg_root_location}/#{Settings.moab.storage_trunk}")
-      end
-    ensure
-      logger.info "#{Time.now.utc.iso8601} C2M check_version_all_dirs ended"
-    end
-
-    def self.check_version_all_dirs_profiled(last_checked_b4_date)
-      Profiler.print_profile('C2M_check_version_all_dirs') { check_version_all_dirs(last_checked_b4_date) }
-    end
-
-    # ----  INSTANCE code below this line ---------------------------
-
     include ::MoabValidationHandler
-
     attr_reader :complete_moab, :storage_dir, :druid, :results
 
     def initialize(complete_moab, storage_dir)
@@ -53,6 +11,10 @@ module Audit
       @results = AuditResults.new(druid, nil, complete_moab.moab_storage_root)
     end
 
+    def logger
+      @logger ||= Logger.new(Rails.root.join('log', 'c2m.log'))
+    end
+
     # shameless green implementation
     def check_catalog_version
       results.check_name = 'check_catalog_version'
@@ -60,7 +22,7 @@ module Audit
         results.add_result(AuditResults::CM_PO_VERSION_MISMATCH,
                            cm_version: complete_moab.version,
                            po_version: complete_moab.preserved_object.current_version)
-        return results.report_results(Audit::CatalogToMoab.logger)
+        return results.report_results(logger)
       end
 
       unless online_moab_found?
@@ -73,10 +35,10 @@ module Audit
         results.add_result(AuditResults::MOAB_NOT_FOUND,
                            db_created_at: complete_moab.created_at.iso8601,
                            db_updated_at: complete_moab.updated_at.iso8601)
-        return results.report_results(Audit::CatalogToMoab.logger)
+        return results.report_results(logger)
       end
 
-      return results.report_results(Audit::CatalogToMoab.logger) unless can_validate_current_comp_moab_status?
+      return results.report_results(logger) unless can_validate_current_comp_moab_status?
 
       compare_version_and_take_action
     end
@@ -100,7 +62,7 @@ module Audit
         if catalog_version == moab_version
           set_status_as_seen_on_disk(true) unless complete_moab.ok?
           results.add_result(AuditResults::VERSION_MATCHES, 'CompleteMoab')
-          results.report_results(Audit::CatalogToMoab.logger)
+          results.report_results(logger)
         elsif catalog_version < moab_version
           set_status_as_seen_on_disk(true)
           pohandler = PreservedObjectHandler.new(druid, moab_version, moab.size, complete_moab.moab_storage_root)
@@ -110,7 +72,7 @@ module Audit
           results.add_result(
             AuditResults::UNEXPECTED_VERSION, db_obj_name: 'CompleteMoab', db_obj_version: complete_moab.version
           )
-          results.report_results(Audit::CatalogToMoab.logger)
+          results.report_results(logger)
         end
 
         complete_moab.update_audit_timestamps(ran_moab_validation?, true)
