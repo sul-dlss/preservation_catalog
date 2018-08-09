@@ -1,10 +1,8 @@
 require 'rails_helper'
-require_relative '../../load_fixtures_helper.rb'
 
 RSpec.describe Audit::Checksum do
-  let(:ms_root_name) { 'fixture_sr1' }
-  let(:limit) { Settings.c2m_sql_limit }
-  let(:logger_double) { instance_double(ActiveSupport::Logger, info: nil, add: nil, debug: nil) }
+  let(:root_name) { 'fixture_sr1' }
+  let(:logger_double) { instance_double(ActiveSupport::Logger, info: nil, add: nil, debug: nil, warn: nil) }
 
   before do
     allow(Dor::WorkflowService).to receive(:update_workflow_error_status)
@@ -25,47 +23,16 @@ RSpec.describe Audit::Checksum do
     end
   end
 
-  describe '.validate_disk' do
-    include_context 'fixture moabs in db'
-
-    it 'enqueues matching PCs for CV check' do
-      expect(ChecksumValidationJob).to receive(:perform_later).with(CompleteMoab).exactly(3).times
-      described_class.validate_disk(ms_root_name)
-    end
-
-    context 'when there are no CompleteMoabs to check' do
-      it 'will not enqueue PCs' do
-        expect(ChecksumValidationJob).not_to receive(:perform_later)
-        CompleteMoab.all.update(last_checksum_validation: (Time.now.utc + 2.days))
-        described_class.validate_disk(ms_root_name)
-      end
-    end
-  end
-
-  describe ".validate_disk_all_storage_roots" do
-    it 'calls validate_disk once per storage root' do
-      expect(described_class).to receive(:validate_disk).exactly(HostSettings.storage_roots.entries.count).times
-      described_class.validate_disk_all_storage_roots
-    end
-
-    it 'calls validate_disk with the right arguments' do
-      HostSettings.storage_roots.to_h.each_key do |storage_name|
-        expect(described_class).to receive(:validate_disk).with(storage_name)
-      end
-      described_class.validate_disk_all_storage_roots
-    end
-  end
-
   describe ".validate_druid" do
-    include_context 'fixture moabs in db'
+    let!(:po) { create(:preserved_object_fixture, druid: 'bz514sm9647') }
+
     it 'creates an instance ancd calls #validate_checksums for every result' do
-      druid = 'bz514sm9647'
-      CompleteMoab.by_druid(druid).each do |cm|
+      po.complete_moabs.find_each do |cm|
         cv = ChecksumValidator.new(cm)
         allow(ChecksumValidator).to receive(:new).with(cv.complete_moab).and_return(cv)
         expect(cv).to receive(:validate_checksums).once.and_call_original
       end
-      described_class.validate_druid(druid)
+      described_class.validate_druid(po.druid)
     end
 
     it "logs a debug message" do
@@ -92,47 +59,46 @@ RSpec.describe Audit::Checksum do
   end
 
   describe '.validate_status_root' do
-    include_context 'fixture moabs in db'
-
     context 'when there are CompleteMoabs to check' do
       let(:cv_mock) { instance_double(ChecksumValidator) }
+
+      before do
+        create(:preserved_object_fixture, druid: 'bj102hs9687')
+        create(:preserved_object_fixture, druid: 'bz514sm9647')
+        create(:preserved_object_fixture, druid: 'jj925bx9565')
+      end
 
       it 'creates an instance and calls #validate_checksums for every result when results are in a single batch' do
         allow(ChecksumValidator).to receive(:new).and_return(cv_mock)
         expect(cv_mock).to receive(:validate_checksums).exactly(3).times
-        described_class.validate_status_root('validity_unknown', ms_root_name, limit)
+        described_class.validate_status_root('validity_unknown', root_name)
       end
 
       it 'creates an instance and calls #validate_checksums on everything in batches' do
-        cms_to_process = CompleteMoab.validity_unknown.by_moab_storage_root_name(ms_root_name)
+        cms_to_process = CompleteMoab.validity_unknown.by_moab_storage_root_name(root_name)
         cv_list = cms_to_process.map { |cm| ChecksumValidator.new(cm) }
         expect(cv_list.size).to eq 3
         cv_list.each do |cv|
           allow(ChecksumValidator).to receive(:new).with(cv.complete_moab).and_return(cv)
           expect(cv).to receive(:validate_checksums).once.and_call_original
         end
-        described_class.validate_status_root('validity_unknown', ms_root_name, 2)
+        described_class.validate_status_root('validity_unknown', root_name, 2)
       end
     end
 
     context 'when there are no CompleteMoabs to check' do
       it 'will not create an instance of ChecksumValidator' do
         expect(ChecksumValidator).not_to receive(:new)
-        described_class.validate_status_root('ok', ms_root_name, limit)
+        described_class.validate_status_root('ok', root_name)
       end
     end
 
-    context 'when status given is invalid' do
-      it 'raises a NoMethodError' do
-        expect { described_class.validate_status_root('foo', ms_root_name, limit) }.to raise_error(NoMethodError, /^undefined method `foo'.*/)
-      end
+    it 'with invalid status, raises StatementInvalid' do
+      expect { described_class.validate_status_root('foo', root_name) }.to raise_error(ActiveRecord::StatementInvalid)
     end
 
-    context 'when moab_storage_root given is invalid' do
-      it 'will not validate any objects' do
-        expect(ChecksumValidator).not_to receive(:new)
-        described_class.validate_status_root('validity_unknown', 'not_a_storage_root', limit)
-      end
+    it 'with invalid root_name, raises RecordNotFound' do
+      expect { described_class.validate_status_root('ok', 'bad_root') }.to raise_error(ActiveRecord::RecordNotFound)
     end
   end
 end
