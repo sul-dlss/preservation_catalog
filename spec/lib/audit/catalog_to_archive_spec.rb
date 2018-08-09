@@ -14,6 +14,10 @@ RSpec.describe Audit::CatalogToArchive do
       expect(logger).to receive(:error).with("#{zmv.inspect}: no zip_parts exist yet for this ZippedMoabVersion")
       described_class.check_child_zip_part_attributes(zmv)
     end
+
+    it 'returns false' do
+      expect(described_class.check_child_zip_part_attributes(zmv)).to be(false)
+    end
   end
 
   context 'different parts have different expected parts_count values' do
@@ -96,6 +100,10 @@ RSpec.describe Audit::CatalogToArchive do
         msg = "#{zmv.inspect}: all parts should be replicated, but at least one is not: #{unreplicated_parts.to_a}"
         expect(logger).to receive(:error).with(msg)
         described_class.check_child_zip_part_attributes(zmv)
+      end
+
+      it 'returns true' do
+        expect(described_class.check_child_zip_part_attributes(zmv)).to be(true)
       end
     end
   end

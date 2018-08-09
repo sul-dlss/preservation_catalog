@@ -6,7 +6,6 @@ module PreservationCatalog
     class Audit
       class << self
         delegate :bucket, :bucket_name, to: ::PreservationCatalog::S3
-        delegate :check_child_zip_part_attributes, to: ::Audit::CatalogToArchive
       end
 
       # TODO: should we be capturing/reporting via AuditResults instance instead of just logging?  would be
@@ -16,8 +15,6 @@ module PreservationCatalog
       end
 
       def self.check_aws_replicated_zipped_moab_version(zmv)
-        return unless check_child_zip_part_attributes(zmv)
-
         zmv.zip_parts.where.not(status: :unreplicated).each do |part|
           aws_s3_object = bucket.object(part.s3_key)
           if aws_s3_object.exists?
