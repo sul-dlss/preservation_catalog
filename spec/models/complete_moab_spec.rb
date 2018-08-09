@@ -366,6 +366,16 @@ RSpec.describe CompleteMoab, type: :model do
         zmvs_by_druid.where(version: cm_version).count
       }.from(1).to(2)
     end
+
+    it 'creates all versions for ZMV' do
+      expect(cm.version).to eq 3
+      expect { cm.create_zipped_moab_versions! }.to change(ZippedMoabVersion, :count).from(0).to(3)
+    end
+
+    it 'if ZMVs already exist, return an empty array' do
+      cm.create_zipped_moab_versions!
+      expect(cm.create_zipped_moab_versions!).to eq []
+    end
   end
 
   describe '.after_update callback' do
