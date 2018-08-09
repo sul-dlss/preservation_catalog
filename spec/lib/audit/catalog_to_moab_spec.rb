@@ -11,7 +11,7 @@ RSpec.describe Audit::CatalogToMoab do
   let(:comp_moab) do
     MoabStorageRoot.find_by!(storage_location: storage_dir).complete_moabs.find_by!(preserved_object: po)
   end
-  let(:logger_double) { instance_double(ActiveSupport::Logger, info: nil, error: nil, add: nil) }
+  let(:logger_double) { instance_double(Logger, info: nil, error: nil, add: nil) }
   let(:results_double) do
     instance_double(AuditResults, add_result: nil, :actual_version= => nil, :check_name= => nil, report_results: nil)
   end
@@ -32,6 +32,7 @@ RSpec.describe Audit::CatalogToMoab do
 
   describe '#logger' do
     it 'returns a logger object' do
+      allow(c2m).to receive(:logger).and_call_original # undo doubling
       expect(c2m.logger).to be_a(Logger)
     end
   end
