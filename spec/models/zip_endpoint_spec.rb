@@ -33,7 +33,7 @@ RSpec.describe ZipEndpoint, type: :model do
   it { is_expected.to validate_presence_of(:endpoint_name) }
   it { is_expected.to validate_presence_of(:delivery_class) }
 
-  describe '.seed_zip_endpoints_from_config' do
+  describe '.seed_from_config' do
     it 'creates an endpoints entry for each zip endpoint' do
       Settings.zip_endpoints.each do |endpoint_name, endpoint_config|
         zip_endpoint_attrs = {
@@ -48,7 +48,7 @@ RSpec.describe ZipEndpoint, type: :model do
 
     it 'does not re-create records that already exist' do
       # run it a second time
-      expect { described_class.seed_zip_endpoints_from_config(default_pres_policies) }
+      expect { described_class.seed_from_config(default_pres_policies) }
         .not_to change { described_class.pluck(:endpoint_name).sort }
         .from(%w[mock_archive1 zip-endpoint])
     end
@@ -65,7 +65,7 @@ RSpec.describe ZipEndpoint, type: :model do
       allow(Settings).to receive(:zip_endpoints).and_return(zip_endpoints_setting)
 
       # run it a second time
-      described_class.seed_zip_endpoints_from_config(default_pres_policies)
+      described_class.seed_from_config(default_pres_policies)
       expected_ep_names = %w[fixture_archiveTest mock_archive1 zip-endpoint]
       expect(described_class.pluck(:endpoint_name).sort).to eq expected_ep_names
     end

@@ -34,34 +34,23 @@ RSpec.describe MoabStorageRoot, type: :model do
   it { is_expected.to validate_presence_of(:name) }
   it { is_expected.to validate_presence_of(:storage_location) }
 
-  describe '.seed_moab_storage_roots_from_config' do
-    it 'creates a moab_storage_root for each storage root' do
-      HostSettings.storage_roots.each do |storage_root_name, storage_root_location|
-        storage_root_attrs = {
-          storage_location: File.join(storage_root_location, Settings.moab.storage_trunk),
-          preservation_policies: default_pres_policies
-        }
-        expect(MoabStorageRoot.find_by(name: storage_root_name)).to have_attributes(storage_root_attrs)
-      end
-    end
-
-    # run it a second time
+  describe '.seed_from_config' do
+    # assumes seeding already ran for the suite, we run it a again
     it 'does not re-create records that already exist' do
-      expect { MoabStorageRoot.seed_moab_storage_roots_from_config(default_pres_policies) }
+      expect { MoabStorageRoot.seed_from_config(default_pres_policies) }
         .not_to change { MoabStorageRoot.pluck(:name).sort }
         .from(%w[fixture_empty fixture_sr1 fixture_sr2 fixture_sr3 storage-root-01])
     end
 
-    it 'adds new records if there are additions to Settings since the last run' do
+    it 'adds new records from Settings (but does not delete)' do
       storage_roots_setting = Config::Options.new(
         fixture_sr1: 'spec/fixtures/storage_root01',
         fixture_sr2: 'spec/fixtures/storage_root02',
         fixture_srTest: 'spec/fixtures/storage_root_unit_test'
       )
-      allow(HostSettings).to receive(:storage_roots).and_return(storage_roots_setting)
+      allow(Settings.storage_root_map).to receive(:default).and_return(storage_roots_setting)
 
-      # run it a second time
-      expect { MoabStorageRoot.seed_moab_storage_roots_from_config(default_pres_policies) }
+      expect { MoabStorageRoot.seed_from_config(default_pres_policies) }
         .to change { MoabStorageRoot.pluck(:name).sort }
         .from(%w[fixture_empty fixture_sr1 fixture_sr2 fixture_sr3 storage-root-01])
         .to(%w[fixture_empty fixture_sr1 fixture_sr2 fixture_sr3 fixture_srTest storage-root-01])
