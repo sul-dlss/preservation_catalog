@@ -8,4 +8,4 @@ require_relative 'audit/checksum'
 require_relative 'audit/moab_to_catalog'
 
 # @example Usage
-#  Audit::Checksum.validate_disk(storage_root)
+#  Audit::Checksum.validate_druid(druid)

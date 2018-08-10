@@ -248,79 +248,10 @@ RSpec.describe CompleteMoab, type: :model do
   context 'with a persisted object' do
     before { cm.save! }
 
-    describe '.by_moab_storage_root_name' do
-      it 'returns the expected complete moabs' do
-        expect(described_class.by_moab_storage_root_name('fixture_sr1').length).to eq 1
-        expect(described_class.by_moab_storage_root_name('fixture_sr2')).to be_empty
-        expect(described_class.by_moab_storage_root_name('fixture_empty')).to be_empty
-      end
-    end
-
-    describe '.by_storage_location' do
-      it 'returns the expected complete moabs' do
-        expect(described_class.by_storage_location('spec/fixtures/storage_root01/sdr2objects').length).to eq 1
-        expect(described_class.by_storage_location('spec/fixtures/storage_root02/sdr2objects')).to be_empty
-        expect(described_class.by_storage_location('spec/fixtures/empty/sdr2objects')).to be_empty
-      end
-    end
-
     describe '.by_druid' do
       it 'returns the expected complete moabs' do
         expect(described_class.by_druid(druid).length).to eq 1
         expect(described_class.by_druid('bj102hs9687')).to be_empty
-      end
-    end
-  end
-
-  # this is not intended to exhaustively test all permutations, but to highlight/test likely useful combos
-  context 'chained scopes' do
-    describe '.fixity_check_expired' do
-      let(:ms_root2) { MoabStorageRoot.find_by(name: 'fixture_sr2') }
-      let!(:checked_before_threshold_cm1) do
-        create(:complete_moab, args.merge(version: 6, last_checksum_validation: now - 56.weeks))
-      end
-      let!(:checked_before_threshold_cm2) do
-        my_args = args.merge(version: 7, last_checksum_validation: now - 90.01.days, moab_storage_root: ms_root2)
-        create(:complete_moab, my_args)
-      end
-      let!(:recently_checked_cm1) do
-        create(:complete_moab, args.merge(version: 8, last_checksum_validation: now - 6.99.days))
-      end
-      let!(:recently_checked_cm2) do
-        my_args = args.merge(version: 9, last_checksum_validation: now - 1.day, moab_storage_root: ms_root2)
-        create(:complete_moab, my_args)
-      end
-
-      describe '.by_moab_storage_root_name' do
-        let(:cms_by_query1) { described_class.fixity_check_expired.by_moab_storage_root_name(ms_root.name) }
-        let(:cms_by_query2) { described_class.fixity_check_expired.by_moab_storage_root_name(ms_root2.name) }
-
-        it 'returns PreservedCopies < given date only for the chosen storage root(not ordered by last_version_audit)' do
-          expect(cms_by_query1.sort).to eq [cm, checked_before_threshold_cm1]
-          expect(cms_by_query2.sort).to eq [checked_before_threshold_cm2]
-        end
-        it 'returns no PreservedCopies with timestamps indicating fixity check in the last week' do
-          expect(cms_by_query1).not_to include recently_checked_cm1
-          expect(cms_by_query2).not_to include recently_checked_cm2
-        end
-      end
-
-      describe '.by_storage_location' do
-        let!(:cms_by_query1) do
-          described_class.fixity_check_expired.by_storage_location('spec/fixtures/storage_root01/sdr2objects')
-        end
-        let!(:cms_by_query2) do
-          described_class.fixity_check_expired.by_storage_location('spec/fixtures/storage_root02/sdr2objects')
-        end
-
-        it 'returns PreservedCopies < given date only for the chosen storage root(not ordered by last_version_audit)' do
-          expect(cms_by_query1.sort).to eq [cm, checked_before_threshold_cm1]
-          expect(cms_by_query2.sort).to eq [checked_before_threshold_cm2]
-        end
-        it 'returns no PreservedCopies with timestamps indicating fixity check in the last week' do
-          expect(cms_by_query1).not_to include recently_checked_cm1
-          expect(cms_by_query2).not_to include recently_checked_cm2
-        end
       end
     end
   end

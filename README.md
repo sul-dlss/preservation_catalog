@@ -16,7 +16,6 @@ Rails application to track, audit and replicate archival artifacts associated wi
     * [Catalog to Moab](#c2m) (C2M) existence/version check
     * [Checksum Validation](#cv) (CV)
     * [Seed the catalog](#seed-the-catalog)
-    * [Audit Checks via Console](#console)
 * [Development](#development)
 * [Deploying](#deploying)
 
@@ -178,12 +177,13 @@ Note: CV jobs that are asynchronous means that their execution happens in other 
 ### Single Root
 From console, this queues objects on the named storage root for asynchronous CV:
 ```ruby
-Audit::Checksum.validate_disk('fixture_sr3')
+msr = MoabStorageRoot.find_by!(name: 'fixture_sr3')
+msr.validate_expired_checksums!
 ```
 ### All Roots
 This is also asynchronous, for all roots:
 ```ruby
-Audit::Checksum.validate_disk_all_storage_roots
+MoabStorageRoot.find_each { |msr| msr.validate_expired_checksums! }
 ```
 
 ### Single Druid
@@ -269,79 +269,6 @@ RAILS_ENV=production bundle exec rake m2c:drop_root[fixture_sr1]
 ```sh
 RAILS_ENV=production bundle exec rake m2c:seed_root[fixture_sr1]
 ```
-
-## <a name="console"/>Audit Checks via Console
-To run audit checks via the console open up the rails console:
-```sh
-bundle exec rails console production
-```
-
-Next, require the audit module. This will load all of the required files needed to run the audit checks.
-```ruby
-require 'audit'
-```
-
-Here are the list of the Audit Checks.
-
-### Moab To Catalog Audit Checks:
-
-#### Single Druid
-```ruby
-Audit::MoabToCatalog.check_existence_for_druid('xx000xx0000')
-```
-#### List of Druids
-```ruby
-Audit::MoabToCatalog.check_existence_for_druid_list('/path/to/your/csv/druid_list.csv')
-```
-#### Single Storage Root
-```ruby
-Audit::MoabToCatalog.check_existence_for_dir('path/to/root/spec/fixtures/storage_root01/moab_storage_trunk')
-```
-#### All Storage Roots
-```ruby
-Audit::MoabToCatalog.check_existence_for_all_storage_roots
-```
-
-### Catalog To Moab Audit Checks:
--  The (date/timestamp) argument is a threshold: it will run the check on all catalog entries which last had a version check BEFORE the argument. It should be in the format '2018-01-22 22:54:48 UTC'.
-
-- Note: Must enter date/timestamp argument as a string.
-#### Single Storage Root
-
-```ruby
-Audit::CatalogToMoab.check_version_on_dir('2018-01-22 22:54:48 UTC', 'path/to/root/spec/fixtures/storage_root01/moab_storage_trunk')
-```
-#### All Storage Roots
-```ruby
-Audit::CatalogToMoab.check_version_all_dirs('2018-01-22 22:54:48 UTC')
-```
-
-### Checksum Audit Checks:
-
-#### Single Storage Root
-```ruby
-Audit::Checksum.validate_disk('fixture_sr3')
-```
-#### All Storage Roots
-```ruby
-Audit::Checksum.validate_disk_all_storage_roots
-```
-#### Single Druid
-```ruby
-Audit::Checksum.validate_druid('xx000xx0000')
-```
-
-#### List of Druids
-```ruby
-Audit::Checksum.validate_list_of_druids('/path/to/your/csv/druid_list.csv')
-```
-
-#### Druids with a particular status on a particular storage root
-```ruby
-Audit::Checksum.validate_status_root('validity_unknown', 'services-disk15')
-```
-
-[Valid status strings](https://github.com/sul-dlss/preservation_catalog/blob/master/app/models/complete_moab.rb#L1-L10)
 
 ## Development
 

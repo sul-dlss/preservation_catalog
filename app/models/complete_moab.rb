@@ -26,14 +26,6 @@ class CompleteMoab < ApplicationRecord
   # NOTE: size here is approximate and not used for fixity checking
   validates :size, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
 
-  scope :by_moab_storage_root_name, lambda { |name|
-    joins(:moab_storage_root).where(moab_storage_roots: { name: name })
-  }
-
-  scope :by_storage_location, lambda { |storage_dir|
-    joins(:moab_storage_root).where(moab_storage_roots: { storage_location: storage_dir })
-  }
-
   scope :by_druid, lambda { |druid|
     joins(:preserved_object).where(preserved_objects: { druid: druid })
   }

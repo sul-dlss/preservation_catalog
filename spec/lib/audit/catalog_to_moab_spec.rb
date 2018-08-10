@@ -1,5 +1,4 @@
 require 'rails_helper'
-require_relative '../../load_fixtures_helper.rb'
 
 RSpec.describe Audit::CatalogToMoab do
   let(:last_checked_version_b4_date) { (Time.now.utc - 1.day).iso8601 }
@@ -32,7 +31,7 @@ RSpec.describe Audit::CatalogToMoab do
 
   describe '#logger' do
     it 'returns a logger object' do
-      allow(c2m).to receive(:logger).and_call_original # undo doubling
+      allow(c2m).to receive(:logger).and_call_original # undo doubling for 1 test
       expect(c2m.logger).to be_a(Logger)
     end
   end
