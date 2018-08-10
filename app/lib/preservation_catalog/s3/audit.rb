@@ -6,12 +6,7 @@ module PreservationCatalog
     class Audit
       class << self
         delegate :bucket, :bucket_name, to: ::PreservationCatalog::S3
-      end
-
-      # TODO: should we be capturing/reporting via AuditResults instance instead of just logging?  would be
-      # consistent with other audit checks.
-      def self.logger
-        @logger ||= Logger.new(Rails.root.join('log', 'c2a.log'))
+        delegate :logger, to: ::Audit::CatalogToArchive
       end
 
       def self.check_aws_replicated_zipped_moab_version(zmv)
