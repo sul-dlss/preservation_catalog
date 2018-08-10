@@ -77,9 +77,6 @@ Metrics/AbcSize:
 Metrics/BlockLength:
   Exclude:
     - 'app/services/preserved_object_handler.rb' # check_existence shameless green
-    - 'lib/tasks/c2m_tasks.rake'
-    - 'lib/tasks/cv_tasks.rake'
-    - 'lib/tasks/m2c_tasks.rake'
     - 'lib/capistrano/tasks/capistrano-resque-pool.rake' # shameless green cribbing from capistrano-resque-pool
     - 'spec/**/*'
 
@@ -110,8 +107,6 @@ Metrics/LineLength:
     - 'app/services/preserved_object_handler.rb' # line 269 is 121
     - 'app/services/workflow_reporter.rb' # line 7 is 143
     - 'config/schedule.rb'
-    - 'lib/tasks/c2m_tasks.rake'
-    - 'lib/tasks/m2c_tasks.rake'
     - 'lib/capistrano/tasks/capistrano-resque-pool.rake' # lines 12-13
     - 'spec/controllers/catalog_controller_spec.rb'
     - 'spec/lib/audit/moab_to_catalog_spec.rb' # 1 line 126
@@ -238,9 +233,6 @@ Style/StringLiterals:
 Style/SymbolArray:
   Exclude:
     - 'Rakefile' # because [:spec, :rubocop] isn't a big deal
-    - 'lib/tasks/c2m_tasks.rake'
-    - 'lib/tasks/cv_tasks.rake'
-    - 'lib/tasks/m2c_tasks.rake'
     - 'config/deploy/*'
 
 Style/SymbolProc:
