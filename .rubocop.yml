@@ -1,7 +1,7 @@
-inherit_from: .rubocop_todo.yml
-
 # Turn on RSpec cops
 require: rubocop-rspec
+
+inherit_from: .rubocop_todo.yml
 
 AllCops:
   DisplayCopNames: true
@@ -11,13 +11,9 @@ AllCops:
     - '**/*.rb'
     - '**/*.rake'
   Exclude:
-    - 'Gemfile.lock'
-    - '**/*.md'
     - 'bin/**/*'
-    - 'config/**/*.yml'
     - 'config/environments/*.rb'
     - 'db/**/*'
-    - 'script/**/*'
     - 'vendor/**/*'
 
 # Turn on Rails cops
@@ -28,133 +24,32 @@ Bundler/OrderedGems:
   Exclude:
     - 'Gemfile'
 
-# --- Layout ---
-
-Layout/EmptyLinesAroundBlockBody:
-  Enabled: false
-
-Layout/EmptyLinesAroundClassBody:
-  Enabled: false
-
-Layout/EmptyLinesAroundModuleBody:
-  Enabled: false
-
-Layout/MultilineMethodCallIndentation:
-  Exclude:
-    - 'spec/lib/audit/catalog_to_archive_spec.rb' # allow readable multi-line `expect {...}.to change()` usage
-    - 'spec/lib/preservation_catalog/s3/audit_spec.rb' # allow readable multi-line `expect {...}.to change()` usage
-
-Layout/SpaceAroundEqualsInParameterDefault:
-  Enabled: false
-
-# --- Lint ---
-
-Lint/AmbiguousBlockAssociation:
-  # doesn't play nicely with rspec change syntax, e.g. "expect { foo }.to change { bar.field }"
-  Exclude:
-    - spec/services/*.rb
-
-Lint/HandleExceptions:
-  Exclude:
-    - 'spec/lib/audit/moab_to_catalog_spec.rb' # So method does not stop executing and can test the correct case
-
-# --- Metrics ---
-
-Metrics/AbcSize:
-  Exclude:
-    - 'app/jobs/replicated_file_check_job.rb' # [18.49/15] method still readable
-    - 'app/models/preserved_object.rb' # methods still readable
-    - 'app/services/checksum_validator.rb' # methods still readable; shameless green
-    - 'app/services/preserved_object_handler.rb' # methods still readable; shameless green
-    - 'app/services/audit_results.rb' # method still readable
-    - 'app/lib/audit/catalog_to_archive.rb'
-    - 'app/lib/audit/catalog_to_moab.rb' # .check_version_all_dirs is decidedly readable
-    - 'app/lib/audit/checksum.rb' # .validate_disk_all_dirs is decidedly readable
-    - 'app/lib/audit/moab_to_catalog.rb' # .xxx_for_all_storage_roots is decidedly readable
-    - 'app/lib/preservation_catalog/s3/audit.rb'
-    - 'app/controllers/catalog_controller.rb' # #create method is readable
-
 Metrics/BlockLength:
   Exclude:
-    - 'app/services/preserved_object_handler.rb' # check_existence shameless green
-    - 'lib/capistrano/tasks/capistrano-resque-pool.rake' # shameless green cribbing from capistrano-resque-pool
+    - 'app/services/preserved_object_handler.rb' # FIXME check_existence shameless green
+    - '**/*.rake'
     - 'spec/**/*'
-
-Metrics/BlockNesting:
-  Exclude:
-    - 'app/services/preserved_object_handler.rb' # check_existence shameless green
-
-Metrics/ClassLength:
-  Exclude:
-    - 'app/services/checksum_validator.rb'
-    - 'app/services/preserved_object_handler.rb'
-    - 'app/services/audit_results.rb'
-    - 'app/lib/audit/catalog_to_moab.rb'
-
-Metrics/CyclomaticComplexity:
-  Exclude:
-    - 'app/services/preserved_object_handler.rb' # update_online_version (shameless green)
-    - 'app/services/audit_results.rb' # logger_severity_level is simply a case statement
-    - 'app/lib/audit/catalog_to_moab.rb' # check_catalog_version (shameless green)
 
 # because this isn't 1994
 Metrics/LineLength:
-  Max: 120
+  Max: 150
   Exclude:
-    - 'app/jobs/replicated_file_check_job.rb' # line 28 is 129
-    - 'app/services/audit_results.rb' # line 35 is 121
-    - 'app/services/checksum_validator.rb' # line 151 is 121
-    - 'app/services/preserved_object_handler.rb' # line 269 is 121
-    - 'app/services/workflow_reporter.rb' # line 7 is 143
-    - 'config/schedule.rb'
-    - 'lib/capistrano/tasks/capistrano-resque-pool.rake' # lines 12-13
-    - 'spec/controllers/catalog_controller_spec.rb'
-    - 'spec/lib/audit/moab_to_catalog_spec.rb' # 1 line 126
-    - 'spec/lib/audit/checksum_spec.rb'
-    - 'spec/models/zip_endpoint_spec.rb' # tests about have/need scopes are easier to skim with all expectations being one line
-    - 'spec/services/audit_results_spec.rb'
-    - 'spec/services/checksum_validator_spec.rb'
-    - 'spec/services/preserved_object_handler_check_exist_spec.rb' # 17 lines, but who's counting, officer?
-    - 'spec/services/preserved_object_handler_confirm_version_spec.rb'
-    - 'spec/services/preserved_object_handler_create_spec.rb'
-    - 'spec/services/preserved_object_handler_spec.rb' # line 94 is 121
-    - 'spec/services/preserved_object_handler_update_version_spec.rb'
-    - 'spec/services/shared_examples_preserved_object_handler.rb'
-    - 'spec/services/workflow_reporter_spec.rb'
+    - 'app/services/checksum_validator.rb' # FIXME
+    - 'lib/capistrano/tasks/capistrano-resque-pool.rake'
+    - 'spec/controllers/catalog_controller_spec.rb' # FIXME
 
 Metrics/MethodLength:
   Max: 25
   Exclude:
-    - 'app/services/preserved_object_handler.rb' # check_existence shameless green
-    - 'app/lib/audit/catalog_to_moab.rb' # check_catalog_version shameless green
+    - 'app/services/preserved_object_handler.rb' # FIXME: refactor oversize methods
 
-Metrics/PerceivedComplexity:
-  Exclude:
-    - 'app/services/preserved_object_handler.rb' # update_online_version shameless green
-    - 'app/lib/audit/catalog_to_moab.rb' # check_catalog_version shameless green
-
-# --- Naming ---
-
-Naming/AccessorMethodName:
-  Exclude:
-    # rubocop doesn't like single param 'set_' methods, but this isn't an instace var setter
-    - 'app/services/moab_validation_handler.rb'
 Naming/FileName:
   Exclude:
     - 'Capfile'
     - 'Gemfile'
 
-# --- Rails ---
-
 Rails/HasAndBelongsToMany:
   Enabled: false
-
-# --- RSpec ---
-
-RSpec/BeforeAfterAll:
-  Exclude:
-    # we use after(:all) specifically to prevent state leakage
-    - 'spec/models/preservation_policy_spec.rb'
 
 RSpec/ContextWording:
   Enabled: false # too dogmatic
@@ -162,18 +57,12 @@ RSpec/ContextWording:
 RSpec/ExampleLength:
   Max: 25
 
-RSpec/InstanceVariable:
-  Exclude:
-    - 'spec/services/preserved_object_handler_update_version_spec.rb' # we can't use let instead of @
-
 # we like 'expect(x).to receive' better than 'have_received'
 RSpec/MessageSpies:
   Enabled: false
 
 RSpec/MultipleExpectations:
   Max: 5
-  Exclude:
-    - 'spec/models/zip_endpoint_spec.rb' # testing queries by adding records and scope results based on different input combos
 
 RSpec/NamedSubject:
   Enabled: false
@@ -184,47 +73,15 @@ RSpec/NestedGroups:
     - 'spec/lib/audit/catalog_to_moab_spec.rb'
     - 'spec/lib/audit/moab_to_catalog_spec.rb'
     - 'spec/services/checksum_validator_spec.rb'
-    - 'spec/services/preserved_object_handler_check_exist_spec.rb'
-    - 'spec/services/preserved_object_handler_confirm_version_spec.rb'
-    - 'spec/services/preserved_object_handler_create_spec.rb'
-    - 'spec/services/preserved_object_handler_update_version_spec.rb'
+    - 'spec/services/preserved_object_handler_*.rb'
 
-# --- Style ---
 Style/AccessModifierDeclarations:
   Exclude:
     - 'config/initializers/okcomputer.rb' # atypical multi-class file
 
-Style/BlockComments:
-  Exclude:
-    - 'spec/spec_helper.rb' # that's how rspec-rails generates it
-
 Style/BlockDelimiters:
   Exclude:
     - 'spec/*/*' # rspec expect statements look ugly with do-end instead of {}
-
-Style/BracesAroundHashParameters:
-  Exclude:
-    - app/services/preserved_object_handler.rb # #update_status is clearer with the braces
-    - lib/audit/catalog_to_moab.rb # #update_status is clearer with the braces
-
-Style/Documentation:
-  Exclude:
-    - 'app/controllers/application_controller.rb' # that's how Rails generates it
-    - 'app/helpers/application_helper.rb' # that's how Rails generates it
-    - 'app/models/application_record.rb' # that's how Rails generates it
-    - 'config/application.rb' # that's how Rails generates it
-
-Style/FormatStringToken:
-  EnforcedStyle: template # using interpolated strings in AuditResults
-
-Style/GuardClause:
-  Exclude:
-    - app/services/preserved_object_handler.rb # update_status method easy to read as is
-    - lib/audit/catalog_to_moab.rb # wrapping method on line 17 is more readable
-
-Style/RescueStandardError:
-  Exclude:
-    - 'spec/lib/audit/moab_to_catalog_spec.rb' # So method does not stop executing and can test the correct case
 
 # because ' vs " isn't a big deal for readability or maintainability or execution time
 Style/StringLiterals:
@@ -233,16 +90,12 @@ Style/StringLiterals:
 Style/SymbolArray:
   Exclude:
     - 'Rakefile' # because [:spec, :rubocop] isn't a big deal
+    - '**/*.rake'
     - 'config/deploy/*'
 
 Style/SymbolProc:
   Exclude:
     - app/jobs/plexer_job.rb # "Pass &:unreplicated! as an argument to find_or_create_by" - um, no.
 
-Style/TernaryParentheses:
-  Exclude:
-    - spec/lib/active_record_utils_spec.rb # reads better with parens
-    - 'spec/models/complete_moab_spec.rb'
-
 Style/WordArray:
-  Enabled: false # I hate this rule;  "precious" ruby syntax
+  Enabled: false # Naomi hates this rule;  "precious" ruby syntax
