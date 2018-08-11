@@ -45,29 +45,9 @@ module Audit
       logger.info "#{Time.now.utc.iso8601} Seeding ended for '#{storage_dir}'"
     end
 
-    # Shameless green. In order to run several seed "jobs" in parallel, we would have to refactor.
+    # TODO: If needing to run several seed jobs in parallel, convert seeding to queues.
     def self.seed_catalog_for_all_storage_roots
-      logger.info "#{Time.now.utc.iso8601} Seeding for all storage roots starting"
-      HostSettings.storage_roots.to_h.each_value do |strg_root_location|
-        seed_catalog_for_dir("#{strg_root_location}/#{Settings.moab.storage_trunk}")
-      end
-    ensure
-      logger.info "#{Time.now.utc.iso8601} Seeding for all storage roots ended'"
-    end
-
-    def self.seed_catalog_for_all_storage_roots_profiled
-      Profiler.print_profile('seed_catalog_for_all_storage_roots') { seed_catalog_for_all_storage_roots }
-    end
-
-    # @todo This method may not be useful anymore.  Every CM has 1..n ZMVs, so either this method must
-    # figure out how to specially delete them too, or we can loosen the restrictions from PC to ZMV
-    # @todo Move this method (and pouplate_m_s_r/seed_catalog_for_dir) onto the MoabStorageRoot model
-    def self.drop_moab_storage_root(name)
-      ms_root = MoabStorageRoot.find_by!(name: name.to_s)
-      ApplicationRecord.transaction do
-        ms_root.complete_moabs.destroy_all
-        PreservedObject.without_complete_moabs.destroy_all
-      end
+      MoabStorageRoot.pluck(:storage_location).each { |location| seed_catalog_for_dir(location) }
     end
 
     def self.populate_moab_storage_root(name)

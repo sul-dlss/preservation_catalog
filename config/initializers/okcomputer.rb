@@ -54,9 +54,8 @@ class DirectoryExistsCheck < OkComputer::Check
     end
   end
 end
-HostSettings.storage_roots.each do |storage_root_name_val|
-  OkComputer::Registry.register "feature-#{storage_root_name_val.first}",
-                                DirectoryExistsCheck.new(storage_root_name_val.last)
+Settings.storage_root_map.default.each do |name, location|
+  OkComputer::Registry.register "feature-#{name}", DirectoryExistsCheck.new(location)
 end
 
 OkComputer::Registry.register 'ruby_version', OkComputer::RubyVersionCheck.new

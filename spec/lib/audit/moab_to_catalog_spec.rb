@@ -33,24 +33,12 @@ RSpec.describe Audit::MoabToCatalog do
   end
 
   describe ".seed_catalog_for_all_storage_roots" do
-    it 'calls seed_catalog_for_dir once per storage root' do
-      expect(described_class).to receive(:seed_catalog_for_dir).exactly(HostSettings.storage_roots.entries.count).times
-      described_class.seed_catalog_for_all_storage_roots
-    end
-
-    it 'calls seed_catalog_for_dir with the right arguments' do
-      HostSettings.storage_roots.to_h.each_value do |path|
+    it 'calls seed_catalog_for_dir with the right argument once per root' do
+      expect(described_class).to receive(:seed_catalog_for_dir).exactly(MoabStorageRoot.count).times
+      MoabStorageRoot.pluck(:storage_location) do |path|
         expect(described_class).to receive(:seed_catalog_for_dir).with("#{path}/#{Settings.moab.storage_trunk}")
       end
       described_class.seed_catalog_for_all_storage_roots
-    end
-  end
-
-  describe ".seed_catalog_for_all_storage_roots_profiled" do
-    it "spins up a profiler, calling profiling and printing methods on it" do
-      expect(mock_profiler).to receive(:prof)
-      expect(mock_profiler).to receive(:print_results_flat).with('seed_catalog_for_all_storage_roots')
-      described_class.seed_catalog_for_all_storage_roots_profiled
     end
   end
 
@@ -152,26 +140,6 @@ RSpec.describe Audit::MoabToCatalog do
     end
   end
 
-  describe ".drop_moab_storage_root" do
-    before { described_class.seed_catalog_for_all_storage_roots }
-
-    it 'drops CompleteMoabs that correspond to the given moab storage root' do
-      ZippedMoabVersion.destroy_all
-      expect { described_class.drop_moab_storage_root('fixture_sr1') }.to change(CompleteMoab, :count).from(16).to(13)
-    end
-
-    it 'drops PreservedObjects that correspond to the given moab storage root' do
-      ZippedMoabVersion.destroy_all
-      expect { described_class.drop_moab_storage_root('fixture_sr1') }.to change(PreservedObject, :count).from(16).to(13)
-    end
-
-    it 'rolls back pres obj delete if PCs cannot be deleted' do
-      expect { described_class.drop_moab_storage_root('fixture_sr1') }.to raise_error(ActiveRecord::ActiveRecordError)
-      expect(CompleteMoab.count).to eq 16
-      expect(PreservedObject.count).to eq 16
-    end
-  end
-
   describe ".populate_moab_storage_root" do
     before { described_class.seed_catalog_for_all_storage_roots }
 
@@ -182,7 +150,8 @@ RSpec.describe Audit::MoabToCatalog do
 
     it 're-adds objects for a dropped MoabStorageRoot' do
       ZippedMoabVersion.destroy_all
-      described_class.drop_moab_storage_root('fixture_sr1')
+      ms_root.complete_moabs.destroy_all
+      PreservedObject.without_complete_moabs.destroy_all
       expect(PreservedObject.count).to eq 13
       expect { described_class.populate_moab_storage_root('fixture_sr1') }.to change(CompleteMoab, :count).from(13).to(16)
       expect(PreservedObject.count).to eq 16

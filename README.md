@@ -215,16 +215,10 @@ Audit::Checksum.validate_status_root(:validity_unknown, :services-disk15)
 Seeding the catalog presumes an empty or nearly empty database -- otherwise seeding will throw `druid NOT expected to exist in catalog but was found` errors for each found object.
 Seeding does more validation than regular M2C.
 
-From console, without profiling:
+From console:
 ```ruby
 Audit::MoabToCatalog.seed_catalog_for_all_storage_roots
 ```
-
-From console, with profiling:
-```ruby
-Audit::MoabToCatalog.seed_catalog_for_all_storage_roots_profiled
-```
-this will generate a log at, for example, `log/profile_seed_catalog_for_all_storage_roots2017-11-13T13:57:01-flat.txt`
 
 #### Reset the catalog for re-seeding
 
@@ -254,20 +248,18 @@ or
 bundle exec cap prod db_seed # for the prod servers
 ```
 
-### Drop or Populate the catalog for a single storage root
+### Populate the catalog
 
-To run either of the rake tasks below, give the name of the moab storage_root (e.g. from `settings/development.yml`) as an argument.
+In console, start by finding the storage root.
 
-#### Drop all database entries:
-
-```sh
-RAILS_ENV=production bundle exec rake m2c:drop_root[fixture_sr1]
+```ruby
+msr = MoabStorageRoot.find_by!(name: name)
+MoabToCatalog.seed_catalog_for_dir(msr.storage_location)
 ```
 
-#### Populate the catalog:
-
-```sh
-RAILS_ENV=production bundle exec rake m2c:seed_root[fixture_sr1]
+Or for all roots:
+```ruby
+MoabStorageRoot.find_each { |msr| MoabToCatalog.seed_catalog_for_dir(msr.storage_location) }
 ```
 
 ## Development

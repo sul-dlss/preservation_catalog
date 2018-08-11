@@ -43,7 +43,7 @@ class ZipEndpoint < ApplicationRecord
   #   entries, including any entries that may have been seeded already)
   # @note this adds new entries from the config, and leaves existing entries alone, but won't delete anything.
   # TODO: figure out deletion/update based on config?
-  def self.seed_zip_endpoints_from_config(preservation_policies)
+  def self.seed_from_config(preservation_policies)
     return unless Settings.zip_endpoints
     Settings.zip_endpoints.map do |endpoint_name, endpoint_config|
       find_or_create_by!(endpoint_name: endpoint_name.to_s) do |zip_endpoint|

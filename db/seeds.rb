@@ -9,8 +9,8 @@
 # https://www.postgresql.org/docs/current/static/transaction-iso.html
 ApplicationRecord.transaction(isolation: :serializable) do
   PreservationPolicy.seed_from_config
-  MoabStorageRoot.seed_moab_storage_roots_from_config([PreservationPolicy.default_policy])
-  ZipEndpoint.seed_zip_endpoints_from_config([PreservationPolicy.default_policy])
+  MoabStorageRoot.seed_from_config([PreservationPolicy.default_policy])
+  ZipEndpoint.seed_from_config([PreservationPolicy.default_policy])
 end
 
 puts "seeded database.  state of seeded object types after seeding:"
