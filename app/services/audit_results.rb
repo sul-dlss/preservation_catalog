@@ -96,6 +96,14 @@ class AuditResults
     ZIP_PARTS_NOT_ALL_REPLICATED
   ].freeze
 
+  HONEYBADGER_REPORT_CODES = [
+    ZIP_PART_NOT_FOUND,
+    ZIP_PART_CHECKSUM_MISMATCH,
+    ZIP_PARTS_COUNT_INCONSISTENCY,
+    ZIP_PARTS_COUNT_DIFFERS_FROM_ACTUAL,
+    ZIP_PARTS_NOT_ALL_REPLICATED
+  ].freeze
+
   DB_UPDATED_CODES = [
     CREATED_NEW_OBJECT,
     CM_STATUS_CHANGED
@@ -149,6 +157,7 @@ class AuditResults
       elsif WORKFLOW_REPORT_CODES.include?(r.keys.first)
         candidate_workflow_results << r
       end
+      send_honeybadger_notification(r) if HONEYBADGER_REPORT_CODES.include?(r.keys.first)
     end
     report_errors_to_workflows(candidate_workflow_results)
     result_array
@@ -181,6 +190,10 @@ class AuditResults
   def log_result(result, logger)
     severity = self.class.logger_severity_level(result.keys.first)
     logger.add(severity, "#{log_msg_prefix} #{result.values.first}")
+  end
+
+  def send_honeybadger_notification(result)
+    Honeybadger.notify("#{log_msg_prefix} #{result.values.first}")
   end
 
   def result_code_msg(code, addl=nil)

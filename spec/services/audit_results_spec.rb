@@ -242,6 +242,25 @@ RSpec.describe AuditResults do
         audit_results.report_results
       end
     end
+
+    context 'sends errors to Honeybadger' do
+      it "does not send results that aren't in HONEYBADGER_REPORT_CODES" do
+        code = AuditResults::MOAB_CHECKSUM_VALID
+        audit_results.add_result(code)
+        expect(Honeybadger).not_to receive(:notify)
+        audit_results.report_results
+      end
+      it 'sends results in HONEYBADGER_REPORT_CODES errors' do
+        code = AuditResults::ZIP_PART_NOT_FOUND
+        addl_hash = { endpoint_name: 'zip_ep', s3_key: "ab123cd4567.v0001.zip", bucket_name: 'bucket_name' }
+        audit_results.add_result(code, addl_hash)
+        prefix = '(ab123cd4567, fixture_sr1)'
+        expect(Honeybadger).to receive(:notify).with(
+          "#{prefix} replicated part not found on zip_ep: ab123cd4567.v0001.zip was not found on bucket_name"
+        )
+        audit_results.report_results
+      end
+    end
   end
 
   describe '#add_result' do
