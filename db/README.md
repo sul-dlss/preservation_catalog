@@ -1,7 +1,7 @@
 ### schema explanation (as of 2017-12-14)
 
 ##### Schema Entity-Relationship Diagram
-![Schema Entity-Relationship Diagram as of 2018-07-31](schema_ER_diagram.2018-07-31.png)
+![Schema Entity-Relationship Diagram as of 2018-07-31](schema_ER_diagram.2018-08-07.png)
 
 <sub>Diagram generated from lucidchart.com (File > Import Data > Entity Relationship > SQL Import > PostgreSQL; follow instructions for schema dump/import, arrange tables given on left-hand toolbar)</sub>
 
