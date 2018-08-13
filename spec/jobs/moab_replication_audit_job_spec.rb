@@ -3,25 +3,19 @@ require 'rails_helper'
 describe MoabReplicationAuditJob, type: :job do
   let!(:cm) { create(:complete_moab, version: 2) }
   let(:job) { described_class.new(cm) }
-  let(:logger) { instance_double(Logger, warn: true, error: true) }
   let(:results) { AuditResults.new(cm.preserved_object.druid, nil, cm.moab_storage_root, "CatalogToArchive") }
 
   before do
     allow(AuditResults).to receive(:new).and_return(results)
-    allow(Audit::CatalogToArchive).to receive(:logger).and_return(logger)
-
-    # TODO: can change this to allow #report_results on results and then test logging and WFS reporting in
-    # a specific test.
-    allow(logger).to receive(:add) # most test cases only care about a subset of the logged errors
-    allow(Dor::WorkflowService).to receive(:update_workflow_error_status)
+    allow(results).to receive(:report_results)
   end
 
   describe '#perform' do
     context 'there are no zipped moab versions to backfill' do
       # zipped moab versions are automatically created for cm
       it 'does not log a warning about uncreated ZMVs' do
-        expect(logger).not_to receive(:add).with(Logger::WARN, /backfilled the following ZippedMoabVersions/)
         job.perform(cm)
+        expect(results.result_array).not_to include(a_hash_including(AuditResults::ZMV_BACKFILL))
       end
     end
 
@@ -29,11 +23,15 @@ describe MoabReplicationAuditJob, type: :job do
       before { cm.zipped_moab_versions.destroy_all } # undo auto-spawned rows from callback
 
       it 'logs a warning about uncreated ZMVs' do
-        msg = "CatalogToArchive(#{cm.preserved_object.druid}, #{cm.moab_storage_root.name}) backfilled the following"\
-          " ZippedMoabVersions: 1 to mock_archive1; 2 to mock_archive1"
-        expect(logger).to receive(:add).with(Logger::WARN, msg)
         job.perform(cm)
+        msg = "backfilled the following ZippedMoabVersions: 1 to mock_archive1; 2 to mock_archive1"
+        expect(results.result_array).to include(a_hash_including(AuditResults::ZMV_BACKFILL => msg))
       end
+    end
+
+    it "calls report_results with the right logger" do
+      expect(results).to receive(:report_results).with(Audit::CatalogToArchive.logger)
+      job.perform(cm)
     end
 
     it 'checks all of the zipped_moab_versions that check_child_zip_part_attributes indicates are checkable' do

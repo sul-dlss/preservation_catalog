@@ -7,22 +7,14 @@ RSpec.describe PreservationCatalog::S3::Audit do
   let(:bucket_name) { "sul-sdr-us-west-bucket" }
   let(:matching_md5) { attributes_for(:zip_part)[:md5] }
   let(:non_matching_md5) { "asdfasdfb43t347l;x5px54xx6549;f4" }
-  let(:logger) { instance_double(Logger) }
   let(:results) { AuditResults.new(cm.preserved_object.druid, nil, cm.moab_storage_root, "CatalogToArchive") }
-  let(:result_prefix) { "CatalogToArchive(#{cm.preserved_object.druid}, #{cm.moab_storage_root.name})" }
   let(:endpoint_name) { zmv.zip_endpoint.endpoint_name }
 
   before do
     allow(AuditResults).to receive(:new).and_return(results)
     allow(PreservationCatalog::S3).to receive(:bucket).and_return(bucket)
     allow(PreservationCatalog::S3).to receive(:bucket_name).and_return(bucket_name)
-
-    # TODO: can get rid of this when you switch to testing at the result code level
-    allow(logger).to receive(:add) # most test cases only care about a subset of the logged errors
-    allow(Dor::WorkflowService).to receive(:update_workflow_error_status)
   end
-
-  after { results.report_results(logger) }
 
   context 'some parts are unreplicated' do
     before do
@@ -71,12 +63,13 @@ RSpec.describe PreservationCatalog::S3::Audit do
     end
 
     it 'logs the missing parts' do
-      zmv.zip_parts.each do |part|
-        msg = "#{result_prefix} replicated part not found on #{endpoint_name}:"\
-          " #{part.s3_key} was not found on #{bucket_name}"
-        expect(logger).to receive(:add).with(Logger::ERROR, msg)
-      end
       described_class.check_aws_replicated_zipped_moab_version(zmv, results)
+      zmv.zip_parts.each do |part|
+        msg = "replicated part not found on #{endpoint_name}: #{part.s3_key} was not found on #{bucket_name}"
+        expect(results.result_array).to include(
+          a_hash_including(AuditResults::ZIP_PART_NOT_FOUND => msg)
+        )
+      end
     end
   end
 
@@ -104,13 +97,13 @@ RSpec.describe PreservationCatalog::S3::Audit do
       end
 
       it "doesn't log checksum mismatches" do
-        expect(logger).not_to receive(:add).with(Logger::ERROR, /doesn't match the replicated md5/)
         described_class.check_aws_replicated_zipped_moab_version(zmv, results)
+        expect(results.result_array).not_to include(a_hash_including(AuditResults::ZIP_PART_CHECKSUM_MISMATCH))
       end
 
       it "doesn't log not found errors" do
-        expect(logger).not_to receive(:add).with(Logger::ERROR, /replicated part.*was not found on/)
         described_class.check_aws_replicated_zipped_moab_version(zmv, results)
+        expect(results.result_array).not_to include(a_hash_including(AuditResults::ZIP_PART_NOT_FOUND))
       end
 
       it 'updates existence check timestamps' do
@@ -134,13 +127,12 @@ RSpec.describe PreservationCatalog::S3::Audit do
       end
 
       it 'logs the mismatches' do
-        zmv.zip_parts.where(suffix: ['.zip', '.z01']).each do |part|
-          chksm_msmtch_pre = "#{result_prefix} replicated md5 mismatch on #{endpoint_name}:"
-          msg = "#{chksm_msmtch_pre} #{part.s3_key} catalog md5 (#{part.md5})"\
-            " doesn't match the replicated md5 (#{non_matching_md5}) on #{bucket_name}"
-          expect(logger).to receive(:add).with(Logger::ERROR, msg)
-        end
         described_class.check_aws_replicated_zipped_moab_version(zmv, results)
+        zmv.zip_parts.where(suffix: ['.zip', '.z01']).each do |part|
+          msg = "replicated md5 mismatch on #{endpoint_name}: #{part.s3_key} catalog md5 (#{part.md5})"\
+            " doesn't match the replicated md5 (#{non_matching_md5}) on #{bucket_name}"
+          expect(results.result_array).to include(a_hash_including(AuditResults::ZIP_PART_CHECKSUM_MISMATCH => msg))
+        end
       end
 
       it 'updates existence check timestamps' do
@@ -191,17 +183,16 @@ RSpec.describe PreservationCatalog::S3::Audit do
       end
 
       it 'logs the missing parts' do
-        [zmv.zip_parts.first, zmv.zip_parts.fourth].each do |part|
-          msg = "#{result_prefix} replicated part not found on #{endpoint_name}: "\
-            "#{part.s3_key} was not found on #{bucket_name}"
-          expect(logger).to receive(:add).with(Logger::ERROR, msg)
-        end
         described_class.check_aws_replicated_zipped_moab_version(zmv, results)
+        [zmv.zip_parts.first, zmv.zip_parts.fourth].each do |part|
+          msg = "replicated part not found on #{endpoint_name}: #{part.s3_key} was not found on #{bucket_name}"
+          expect(results.result_array).to include(a_hash_including(AuditResults::ZIP_PART_NOT_FOUND => msg))
+        end
       end
 
       it "doesn't log checksum mismatches" do
-        expect(logger).not_to receive(:add).with(Logger::ERROR, /doesn't match the replicated md5/)
         described_class.check_aws_replicated_zipped_moab_version(zmv, results)
+        expect(results.result_array).not_to include(a_hash_including(AuditResults::ZIP_PART_CHECKSUM_MISMATCH))
       end
     end
 
@@ -211,21 +202,19 @@ RSpec.describe PreservationCatalog::S3::Audit do
       end
 
       it 'logs the missing parts' do
-        [zmv.zip_parts.first, zmv.zip_parts.fourth].each do |part|
-          msg = "#{result_prefix} replicated part not found on #{endpoint_name}: "\
-            "#{part.s3_key} was not found on #{bucket_name}"
-          expect(logger).to receive(:add).with(Logger::ERROR, msg)
-        end
         described_class.check_aws_replicated_zipped_moab_version(zmv, results)
+        [zmv.zip_parts.first, zmv.zip_parts.fourth].each do |part|
+          msg = "replicated part not found on #{endpoint_name}: #{part.s3_key} was not found on #{bucket_name}"
+          expect(results.result_array).to include(a_hash_including(AuditResults::ZIP_PART_NOT_FOUND => msg))
+        end
       end
 
       it 'logs the checksum mismatches' do
         part = zmv.zip_parts.second
-        chksm_msmtch_pre = "#{result_prefix} replicated md5 mismatch on #{endpoint_name}:"
-        msg = "#{chksm_msmtch_pre} #{part.s3_key} catalog md5 (#{part.md5}) "\
+        msg = "replicated md5 mismatch on #{endpoint_name}: #{part.s3_key} catalog md5 (#{part.md5}) "\
           "doesn't match the replicated md5 (#{non_matching_md5}) on #{bucket_name}"
-        expect(logger).to receive(:add).with(Logger::ERROR, msg)
         described_class.check_aws_replicated_zipped_moab_version(zmv, results)
+        expect(results.result_array).to include(a_hash_including(AuditResults::ZIP_PART_CHECKSUM_MISMATCH => msg))
       end
     end
   end
