@@ -1,4 +1,4 @@
-### schema explanation (as of 2017-12-14)
+### schema explanation
 
 ##### Schema Entity-Relationship Diagram
 ![Schema Entity-Relationship Diagram as of 2018-07-31](schema_ER_diagram.2018-08-07.png)
