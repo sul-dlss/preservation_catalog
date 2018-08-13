@@ -8,4 +8,4 @@ set :deploy_to, '/opt/app/pres/preservation_catalog'
 append :linked_files, "config/newrelic.yml", "config/resque.yml"
 
 set :east_bucket_name, 'sul-sdr-aws-us-east-1-test'
-set :west_bukcet_name, 'sul-sdr-aws-us-west-2-test'
+set :west_bucket_name, 'sul-sdr-aws-us-west-2-test'
