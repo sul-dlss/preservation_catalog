@@ -3,7 +3,7 @@ require 'rails_helper'
 describe MoabReplicationAuditJob, type: :job do
   let!(:cm) { create(:complete_moab, version: 2) }
   let(:job) { described_class.new(cm) }
-  let(:results) { AuditResults.new(cm.preserved_object.druid, nil, cm.moab_storage_root, "CatalogToArchive") }
+  let(:results) { AuditResults.new(cm.preserved_object.druid, nil, cm.moab_storage_root, "MoabReplicationAuditJob") }
 
   before do
     allow(AuditResults).to receive(:new).and_return(results)

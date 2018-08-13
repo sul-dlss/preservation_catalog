@@ -7,7 +7,7 @@ RSpec.describe PreservationCatalog::S3::Audit do
   let(:bucket_name) { "sul-sdr-us-west-bucket" }
   let(:matching_md5) { attributes_for(:zip_part)[:md5] }
   let(:non_matching_md5) { "asdfasdfb43t347l;x5px54xx6549;f4" }
-  let(:results) { AuditResults.new(cm.preserved_object.druid, nil, cm.moab_storage_root, "CatalogToArchive") }
+  let(:results) { AuditResults.new(cm.preserved_object.druid, nil, cm.moab_storage_root, "S3AuditSpec") }
   let(:endpoint_name) { zmv.zip_endpoint.endpoint_name }
 
   before do

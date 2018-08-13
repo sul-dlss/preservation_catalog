@@ -3,8 +3,7 @@
 # ReplicatedFileCheck.set(queue: :endpoint_check_us_west_2).perform_later(cm)
 # ReplicatedFileCheck.set(queue: :endpoint_check_us_east_1).perform_later(cm)
 class MoabReplicationAuditJob < ApplicationJob
-  # This queue is never expected to be used.
-  queue_as :override_this_queue
+  queue_as :moab_replication_audit
   delegate :check_child_zip_part_attributes, to: Audit::CatalogToArchive
   delegate :check_aws_replicated_zipped_moab_version, to: PreservationCatalog::S3::Audit
   delegate :logger, to: Audit::CatalogToArchive
@@ -13,7 +12,7 @@ class MoabReplicationAuditJob < ApplicationJob
   def perform(complete_moab)
     druid = complete_moab.preserved_object.druid
 
-    results = AuditResults.new(druid, nil, complete_moab.moab_storage_root, "CatalogToArchive")
+    results = AuditResults.new(druid, nil, complete_moab.moab_storage_root, "MoabReplicationAuditJob")
     # TODO: will also need to create a CompleteMoab.archive_check_expired scope, use that
     # to queue jobs for this worker.
 
