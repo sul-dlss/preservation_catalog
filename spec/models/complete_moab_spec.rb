@@ -74,6 +74,7 @@ RSpec.describe CompleteMoab, type: :model do
   it { is_expected.to have_db_index(:last_version_audit) }
   it { is_expected.to have_db_index(:last_moab_validation) }
   it { is_expected.to have_db_index(:last_checksum_validation) }
+  it { is_expected.to have_db_index(:last_archive_audit) }
   it { is_expected.to have_db_index(:moab_storage_root_id) }
   it { is_expected.to have_db_index(:preserved_object_id) }
   it { is_expected.to validate_presence_of(:moab_storage_root) }
@@ -241,6 +242,31 @@ RSpec.describe CompleteMoab, type: :model do
       it 'returns no PreservedCopies with timestamps indicating still-valid fixity check' do
         expect(described_class.order_fixity_check_expired(fixity_check_expired))
           .not_to include(recently_checked_cm1, recently_checked_cm2)
+      end
+    end
+  end
+
+  describe '.archive_check_expired' do
+    let(:archive_ttl) { preserved_object.preservation_policy.archive_ttl }
+    let!(:old_check_cm1) do
+      create(:complete_moab, args.merge(version: 6, last_archive_audit: now - (archive_ttl * 2)))
+    end
+    let!(:old_check_cm2) do
+      create(:complete_moab, args.merge(version: 7, last_archive_audit: now - archive_ttl - 1.second))
+    end
+    let!(:recently_checked_cm1) do
+      create(:complete_moab, args.merge(version: 8, last_archive_audit: now - archive_ttl + 1.second))
+    end
+    let!(:recently_checked_cm2) do
+      create(:complete_moab, args.merge(version: 9, last_archive_audit: now - (archive_ttl * 0.1)))
+    end
+
+    describe '.archive_check_expired' do
+      it 'returns PreservedCopies that need fixity check' do
+        expect(described_class.archive_check_expired.to_a.sort).to eq [cm, old_check_cm1, old_check_cm2]
+      end
+      it 'returns no PreservedCopies with timestamps indicating still-valid fixity check' do
+        expect(described_class.archive_check_expired).not_to include(recently_checked_cm1, recently_checked_cm2)
       end
     end
   end

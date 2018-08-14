@@ -44,6 +44,16 @@ class CompleteMoab < ApplicationRecord
       )
   }
 
+  scope :archive_check_expired, lambda {
+    joins(:preserved_object)
+      .joins(
+        'INNER JOIN preservation_policies'\
+        ' ON preservation_policies.id = preserved_objects.preservation_policy_id'\
+        ' AND (last_archive_audit + (archive_ttl * INTERVAL \'1 SECOND\')) < CURRENT_TIMESTAMP'\
+        ' OR last_archive_audit IS NULL'
+      )
+  }
+
   # This is where we make sure we have ZMV rows for all needed ZipEndpoints and versions.
   # Endpoints may have been added, so we must check all dimensions.
   # For *this* and *previous* versions, create any ZippedMoabVersion records which don't yet exist for
