@@ -65,6 +65,8 @@ brew services start redis
 
 # Usage Instructions
 
+### Note: We are using the whenever gem for writing and deploying cron jobs. M2C, C2M, and CV are all scheduled using the whenever gem. You can view our schedule at [Schedule](config/schedule.rb)
+
 ## General Info
 
 - Rake and console tasks must be run from the root directory of the project, with whatever `RAILS_ENV` is appropriate.
