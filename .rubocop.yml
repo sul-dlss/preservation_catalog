@@ -34,14 +34,13 @@ Metrics/BlockLength:
 Metrics/LineLength:
   Max: 150
   Exclude:
+    - 'app/services/audit_results.rb' # long lines for result code messgaes
     - 'app/services/checksum_validator.rb' # FIXME
     - 'lib/capistrano/tasks/capistrano-resque-pool.rake'
     - 'spec/controllers/catalog_controller_spec.rb' # FIXME
 
 Metrics/MethodLength:
   Max: 25
-  Exclude:
-    - 'app/services/preserved_object_handler.rb' # FIXME: refactor oversize methods
 
 Naming/FileName:
   Exclude:

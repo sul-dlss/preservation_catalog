@@ -16,16 +16,4 @@ class PreservedObject < ApplicationRecord
   validates :preservation_policy, null: false
 
   scope :without_complete_moabs, -> { left_outer_joins(:complete_moabs).where(complete_moabs: { id: nil }) }
-
-  # Spawn asynchronous checks of each associated ZippedMoabVersion.
-  # This logic is similar to PlexerJob, for a different purpose.
-  # This should implement the start of the replication process if status is unreplicated for a ZippedMoabVersion.
-  # Compare last_existence_check (from ZippedMoabVersion) with archive TTL when checking the ZippedMoabVersion status
-  # Log an error message.
-  # Calls ReplicatedFileCheckJob
-  # This builds off of #917
-  def check_zip_endpoints!
-    # FIXME: STUB
-    # Ticket: 920
-  end
 end

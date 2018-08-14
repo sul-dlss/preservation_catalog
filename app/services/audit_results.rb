@@ -34,6 +34,13 @@ class AuditResults
   SIGNATURE_CATALOG_NOT_IN_MOAB = :signature_catalog_not_in_moab
   INVALID_MANIFEST = :invalid_manifest
   UNABLE_TO_CHECK_STATUS = :unable_to_check_status
+  ZMV_BACKFILL = :zmv_backfill
+  ZIP_PART_NOT_FOUND = :zip_part_not_found
+  ZIP_PART_CHECKSUM_MISMATCH = :zip_part_checksum_mismatch
+  ZIP_PARTS_NOT_CREATED = :zip_parts_not_created
+  ZIP_PARTS_COUNT_INCONSISTENCY = :zip_parts_count_inconsistency
+  ZIP_PARTS_COUNT_DIFFERS_FROM_ACTUAL = :zip_parts_count_differs_from_actual
+  ZIP_PARTS_NOT_ALL_REPLICATED = :zip_parts_not_all_replicated
 
   RESPONSE_CODE_TO_MESSAGES = {
     INVALID_ARGUMENTS => "encountered validation error(s): %{addl}",
@@ -57,7 +64,14 @@ class AuditResults
     MANIFEST_NOT_IN_MOAB => "%{manifest_file_path} not found in Moab",
     SIGNATURE_CATALOG_NOT_IN_MOAB => "%{signature_catalog_path} not found in Moab",
     INVALID_MANIFEST => "unable to parse %{manifest_file_path} in Moab",
-    UNABLE_TO_CHECK_STATUS => "unable to validate when CompleteMoab status is %{current_status}"
+    UNABLE_TO_CHECK_STATUS => "unable to validate when CompleteMoab status is %{current_status}",
+    ZMV_BACKFILL => "backfilled the following ZippedMoabVersions: %{version_endpoint_pairs}",
+    ZIP_PART_NOT_FOUND => "replicated part not found on %{endpoint_name}: %{s3_key} was not found on %{bucket_name}",
+    ZIP_PART_CHECKSUM_MISMATCH => "replicated md5 mismatch on %{endpoint_name}: %{s3_key} catalog md5 (%{md5}) doesn't match the replicated md5 (%{replicated_checksum}) on %{bucket_name}",
+    ZIP_PARTS_NOT_CREATED => "%{version} on %{endpoint_name}: no zip_parts exist yet for this ZippedMoabVersion",
+    ZIP_PARTS_COUNT_INCONSISTENCY => "%{version} on %{endpoint_name}: ZippedMoabVersion has variation in child parts_counts: %{child_parts_counts}",
+    ZIP_PARTS_COUNT_DIFFERS_FROM_ACTUAL => "%{version} on %{endpoint_name}: ZippedMoabVersion stated parts count (%{db_count}) doesn't match actual number of zip parts rows (%{actual_count})",
+    ZIP_PARTS_NOT_ALL_REPLICATED => "%{version} on %{endpoint_name}: not all ZippedMoabVersion parts are replicated yet: %{unreplicated_parts_list}"
   }.freeze
 
   WORKFLOW_REPORT_CODES = [
@@ -74,7 +88,20 @@ class AuditResults
     MANIFEST_NOT_IN_MOAB,
     SIGNATURE_CATALOG_NOT_IN_MOAB,
     INVALID_MANIFEST,
-    UNABLE_TO_CHECK_STATUS
+    UNABLE_TO_CHECK_STATUS,
+    ZIP_PART_NOT_FOUND,
+    ZIP_PART_CHECKSUM_MISMATCH,
+    ZIP_PARTS_COUNT_INCONSISTENCY,
+    ZIP_PARTS_COUNT_DIFFERS_FROM_ACTUAL,
+    ZIP_PARTS_NOT_ALL_REPLICATED
+  ].freeze
+
+  HONEYBADGER_REPORT_CODES = [
+    ZIP_PART_NOT_FOUND,
+    ZIP_PART_CHECKSUM_MISMATCH,
+    ZIP_PARTS_COUNT_INCONSISTENCY,
+    ZIP_PARTS_COUNT_DIFFERS_FROM_ACTUAL,
+    ZIP_PARTS_NOT_ALL_REPLICATED
   ].freeze
 
   DB_UPDATED_CODES = [
@@ -84,7 +111,7 @@ class AuditResults
 
   def self.logger_severity_level(result_code)
     case result_code
-    when DB_OBJ_DOES_NOT_EXIST
+    when DB_OBJ_DOES_NOT_EXIST, ZIP_PARTS_NOT_CREATED, ZIP_PARTS_NOT_ALL_REPLICATED, ZMV_BACKFILL
       Logger::WARN
     when VERSION_MATCHES, ACTUAL_VERS_GT_DB_OBJ, CREATED_NEW_OBJECT, CM_STATUS_CHANGED, MOAB_CHECKSUM_VALID
       Logger::INFO
@@ -130,6 +157,7 @@ class AuditResults
       elsif WORKFLOW_REPORT_CODES.include?(r.keys.first)
         candidate_workflow_results << r
       end
+      send_honeybadger_notification(r) if HONEYBADGER_REPORT_CODES.include?(r.keys.first)
     end
     report_errors_to_workflows(candidate_workflow_results)
     result_array
@@ -162,6 +190,10 @@ class AuditResults
   def log_result(result, logger)
     severity = self.class.logger_severity_level(result.keys.first)
     logger.add(severity, "#{log_msg_prefix} #{result.values.first}")
+  end
+
+  def send_honeybadger_notification(result)
+    Honeybadger.notify("#{log_msg_prefix} #{result.values.first}")
   end
 
   def result_code_msg(code, addl=nil)
