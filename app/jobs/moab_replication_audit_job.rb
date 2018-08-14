@@ -1,14 +1,14 @@
 # Confirms that a CompleteMoab is fully/properly replicated to all target zip endpoints.
 # Usage info:
-# ReplicatedFileCheck.set(queue: :endpoint_check_us_west_2).perform_later(cm)
-# ReplicatedFileCheck.set(queue: :endpoint_check_us_east_1).perform_later(cm)
+# MoabReplicationAuditJob.set(queue: :endpoint_check_us_west_2).perform_later(cm)
+# MoabReplicationAuditJob.set(queue: :endpoint_check_us_east_1).perform_later(cm)
 class MoabReplicationAuditJob < ApplicationJob
   queue_as :moab_replication_audit
   delegate :check_child_zip_part_attributes, to: Audit::CatalogToArchive
   delegate :check_aws_replicated_zipped_moab_version, to: PreservationCatalog::S3::Audit
   delegate :logger, to: Audit::CatalogToArchive
 
-  # @param [ZippedMoabVersion] verify that the zip exists on the endpoint
+  # @param [CompleteMoab] verify that the zip exists on the endpoint
   def perform(complete_moab)
     druid = complete_moab.preserved_object.druid
 
