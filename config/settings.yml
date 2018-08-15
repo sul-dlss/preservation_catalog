@@ -38,3 +38,12 @@ zip_storage: '/tmp' # override in #{RAILS_ENV}.yml
 resque_dashboard_hostnames: # tells the router where to mount the resque dashboard
   - 'worker-hostname-01.example.com'
   - 'worker-hostname-02.example.com'
+
+# When the backlog of unreplicated moabs is very large, e.g. when first spinning up
+# the catalog, or when adding a new ZipEndpoint after the catalog has been running, we
+# want to manually choose batches of moabs to replicate, so that we don't accidentally
+# overrun the zip creation temp space.
+# In normal steady state operation, this should be set to true, either here, or in the
+# instance specific configs.
+replication:
+  audit_should_backfill: false
