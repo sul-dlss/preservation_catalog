@@ -295,11 +295,6 @@ RSpec.describe CompleteMoab, type: :model do
       expect(zmvs_by_druid.pluck(:version).sort).to eq [1, 2, 3]
     end
 
-    # TODO: is there some test that should replace this now that ZMV#status is gone?
-    # it 'creates ZMVs so that they start with unreplicated status' do
-    #   expect(cm.create_zipped_moab_versions!.all?(&:unreplicated?)).to be true
-    # end
-
     it "creates ZMVs that don't yet exist for new endpoint, but should" do
       expect { cm.create_zipped_moab_versions! }.to change {
         ZipEndpoint.which_need_archive_copy(druid, cm_version).to_a

@@ -1,8 +1,6 @@
 module Audit
   # Catalog to cloud archive provider (what ZipEndpoint, ZippedMoabVersion etc represent) audit code
   class CatalogToArchive
-    # TODO: should we be capturing/reporting via AuditResults instance instead of just logging?  would be
-    # consistent with other audit checks.
     def self.logger
       @logger ||= Logger.new(Rails.root.join('log', 'c2a.log'))
     end

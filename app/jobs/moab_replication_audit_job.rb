@@ -20,8 +20,6 @@ class MoabReplicationAuditJob < ApplicationJob
       check_aws_replicated_zipped_moab_version(zmv, results)
     end
 
-    # TODO: will need to test call to this once no longer integration testing what gets logged, make
-    # sure report_results, gets expected logger instance (from C2A)
     results.report_results(logger)
   end
 
