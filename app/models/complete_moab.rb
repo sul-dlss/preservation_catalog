@@ -72,6 +72,12 @@ class CompleteMoab < ApplicationRecord
     ChecksumValidationJob.perform_later(self)
   end
 
+  # Queue a job that will check to see whether this CompleteMoab has been
+  # fully replicated to all target ZipEndpoints
+  def audit_moab_version_replication!
+    MoabReplicationAuditJob.perform_later(self)
+  end
+
   def druid_version_zip
     @druid_version_zip ||= DruidVersionZip.new(preserved_object.druid, version)
   end

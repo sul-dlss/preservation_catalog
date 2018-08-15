@@ -1,7 +1,6 @@
 # Confirms that a CompleteMoab is fully/properly replicated to all target zip endpoints.
 # Usage info:
-# MoabReplicationAuditJob.set(queue: :endpoint_check_us_west_2).perform_later(cm)
-# MoabReplicationAuditJob.set(queue: :endpoint_check_us_east_1).perform_later(cm)
+# MoabReplicationAuditJob.perform_later(cm)
 class MoabReplicationAuditJob < ApplicationJob
   queue_as :moab_replication_audit
   delegate :check_child_zip_part_attributes, to: Audit::CatalogToArchive

@@ -331,6 +331,13 @@ RSpec.describe CompleteMoab, type: :model do
     end
   end
 
+  describe '#audit_moab_version_replication!' do
+    it 'queues a replication audit job for its CompleteMoab' do
+      expect(MoabReplicationAuditJob).to receive(:perform_later).with(cm)
+      cm.audit_moab_version_replication!
+    end
+  end
+
   describe '.after_update callback' do
     it 'does not call create_zipped_moab_versions when version is unchanged' do
       cm.size = 234
