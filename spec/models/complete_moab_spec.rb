@@ -221,8 +221,6 @@ RSpec.describe CompleteMoab, type: :model do
       create(:complete_moab, args.merge(version: 9, last_checksum_validation: now - (fixity_ttl * 0.1)))
     end
 
-    before { cm.save! }
-
     describe '.fixity_check_expired' do
       it 'returns PreservedCopies that need fixity check' do
         expect(described_class.fixity_check_expired.to_a.sort).to eq [cm, old_check_cm1, old_check_cm2]
@@ -272,8 +270,6 @@ RSpec.describe CompleteMoab, type: :model do
   end
 
   context 'with a persisted object' do
-    before { cm.save! }
-
     describe '.by_druid' do
       it 'returns the expected complete moabs' do
         expect(described_class.by_druid(druid).length).to eq 1
