@@ -2,15 +2,19 @@
 # Learn more: http://github.com/javan/whenever
 
 # these append to existing logs
-every :tuesday, roles: [:m2c] do
+every :tuesday, roles: [:queue_populator] do
   set :output, standard: nil, error: 'log/m2c-err.log'
   runner 'MoabStorageRoot.find_each(&:m2c_check!)'
 end
-every :friday, roles: [:c2m] do
+every :wednesday, roles: [:queue_populator] do
+  set :output, standard: nil, error: 'log/c2a-err.log'
+  runner 'CompleteMoab.archive_check_expired.find_each(&:audit_moab_version_replication!)'
+end
+every :friday, roles: [:queue_populator] do
   set :output, standard: nil, error: 'log/c2m-err.log'
   runner 'MoabStorageRoot.find_each(&:c2m_check!)'
 end
-every :sunday, at: '1am', roles: [:cv] do
+every :sunday, at: '1am', roles: [:queue_populator] do
   set :output, standard: nil, error: 'log/cv-err.log'
   runner 'Audit::Checksum.validate_disk_all_storage_roots'
 end

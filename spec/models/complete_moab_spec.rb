@@ -74,6 +74,7 @@ RSpec.describe CompleteMoab, type: :model do
   it { is_expected.to have_db_index(:last_version_audit) }
   it { is_expected.to have_db_index(:last_moab_validation) }
   it { is_expected.to have_db_index(:last_checksum_validation) }
+  it { is_expected.to have_db_index(:last_archive_audit) }
   it { is_expected.to have_db_index(:moab_storage_root_id) }
   it { is_expected.to have_db_index(:preserved_object_id) }
   it { is_expected.to validate_presence_of(:moab_storage_root) }
@@ -220,8 +221,6 @@ RSpec.describe CompleteMoab, type: :model do
       create(:complete_moab, args.merge(version: 9, last_checksum_validation: now - (fixity_ttl * 0.1)))
     end
 
-    before { cm.save! }
-
     describe '.fixity_check_expired' do
       it 'returns PreservedCopies that need fixity check' do
         expect(described_class.fixity_check_expired.to_a.sort).to eq [cm, old_check_cm1, old_check_cm2]
@@ -245,9 +244,32 @@ RSpec.describe CompleteMoab, type: :model do
     end
   end
 
-  context 'with a persisted object' do
-    before { cm.save! }
+  describe '.archive_check_expired' do
+    let(:archive_ttl) { preserved_object.preservation_policy.archive_ttl }
+    let!(:old_check_cm1) do
+      create(:complete_moab, args.merge(version: 6, last_archive_audit: now - (archive_ttl * 2)))
+    end
+    let!(:old_check_cm2) do
+      create(:complete_moab, args.merge(version: 7, last_archive_audit: now - archive_ttl - 1.second))
+    end
+    let!(:recently_checked_cm1) do
+      create(:complete_moab, args.merge(version: 8, last_archive_audit: now - archive_ttl + 1.second))
+    end
+    let!(:recently_checked_cm2) do
+      create(:complete_moab, args.merge(version: 9, last_archive_audit: now - (archive_ttl * 0.1)))
+    end
 
+    describe '.archive_check_expired' do
+      it 'returns PreservedCopies that need fixity check' do
+        expect(described_class.archive_check_expired.to_a.sort).to eq [cm, old_check_cm1, old_check_cm2]
+      end
+      it 'returns no PreservedCopies with timestamps indicating still-valid fixity check' do
+        expect(described_class.archive_check_expired).not_to include(recently_checked_cm1, recently_checked_cm2)
+      end
+    end
+  end
+
+  context 'with a persisted object' do
     describe '.by_druid' do
       it 'returns the expected complete moabs' do
         expect(described_class.by_druid(druid).length).to eq 1
@@ -272,11 +294,6 @@ RSpec.describe CompleteMoab, type: :model do
 
       expect(zmvs_by_druid.pluck(:version).sort).to eq [1, 2, 3]
     end
-
-    # TODO: is there some test that should replace this now that ZMV#status is gone?
-    # it 'creates ZMVs so that they start with unreplicated status' do
-    #   expect(cm.create_zipped_moab_versions!.all?(&:unreplicated?)).to be true
-    # end
 
     it "creates ZMVs that don't yet exist for new endpoint, but should" do
       expect { cm.create_zipped_moab_versions! }.to change {
@@ -306,6 +323,13 @@ RSpec.describe CompleteMoab, type: :model do
     it 'if ZMVs already exist, return an empty array' do
       cm.create_zipped_moab_versions!
       expect(cm.create_zipped_moab_versions!).to eq []
+    end
+  end
+
+  describe '#audit_moab_version_replication!' do
+    it 'queues a replication audit job for its CompleteMoab' do
+      expect(MoabReplicationAuditJob).to receive(:perform_later).with(cm)
+      cm.audit_moab_version_replication!
     end
   end
 

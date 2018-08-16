@@ -44,6 +44,16 @@ class CompleteMoab < ApplicationRecord
       )
   }
 
+  scope :archive_check_expired, lambda {
+    joins(:preserved_object)
+      .joins(
+        'INNER JOIN preservation_policies'\
+        ' ON preservation_policies.id = preserved_objects.preservation_policy_id'\
+        ' AND (last_archive_audit + (archive_ttl * INTERVAL \'1 SECOND\')) < CURRENT_TIMESTAMP'\
+        ' OR last_archive_audit IS NULL'
+      )
+  }
+
   # This is where we make sure we have ZMV rows for all needed ZipEndpoints and versions.
   # Endpoints may have been added, so we must check all dimensions.
   # For *this* and *previous* versions, create any ZippedMoabVersion records which don't yet exist for
@@ -60,6 +70,12 @@ class CompleteMoab < ApplicationRecord
   # Send to asynchronous checksum validation pipeline
   def validate_checksums!
     ChecksumValidationJob.perform_later(self)
+  end
+
+  # Queue a job that will check to see whether this CompleteMoab has been
+  # fully replicated to all target ZipEndpoints
+  def audit_moab_version_replication!
+    MoabReplicationAuditJob.perform_later(self)
   end
 
   def druid_version_zip
@@ -94,11 +110,19 @@ class CompleteMoab < ApplicationRecord
     Time.parse(timestamp).utc
   end
 
+  # Sort the given relation by last_version_audit, nulls first.
   def self.order_last_version_audit(active_record_relation)
+    # possibly non-obvious: IS NOT NULL evaluates to 0 for nulls and 1 for non-nulls; thus, this
+    # sorts nulls (0) before non-nulls (1), and non-nulls are then sorted by last_version_audit.
+    # standard SQL doesn't have a NULLS FIRST sort built in.
     active_record_relation.order('last_version_audit IS NOT NULL, last_version_audit ASC')
   end
 
+  # Sort the given relation by last_checksum_validation, nulls first.
   def self.order_fixity_check_expired(active_record_relation)
+    # possibly non-obvious: IS NOT NULL evaluates to 0 for nulls and 1 for non-nulls; thus, this
+    # sorts nulls (0) before non-nulls (1), and non-nulls are then sorted by last_checksum_validation.
+    # standard SQL doesn't have a NULLS FIRST sort built in.
     active_record_relation.order('last_checksum_validation IS NOT NULL, last_checksum_validation ASC')
   end
 end
