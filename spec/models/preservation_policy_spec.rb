@@ -58,11 +58,6 @@ RSpec.describe PreservationPolicy, type: :model do
   end
 
   describe '.default_policy' do
-    # clear the cache before each test (and after all) to reset
-    before { described_class.default_policy = nil }
-
-    after(:all) { described_class.default_policy = nil }
-
     it 'returns the default preservation policy object' do
       # db already seeded
       expect(described_class.default_policy).to be_a_kind_of described_class
@@ -73,20 +68,6 @@ RSpec.describe PreservationPolicy, type: :model do
       # fail fast.  since db is already seeded, we just make it look up something that we know isn't there.
       expect(Settings.preservation_policies).to receive(:default_policy_name).and_return('nonexistent')
       expect { described_class.default_policy }.to raise_error(ActiveRecord::RecordNotFound)
-    end
-
-    it "doesn't re-run the query if a cached value is available" do
-      expect(described_class).to receive(:find_by!).once.and_call_original
-      described_class.default_policy
-      described_class.default_policy
-    end
-
-    it 'clears the cache and looks up fresh values after an event that might make cached values stale' do
-      described_class.default_policy # first lookup, gets cached
-      # pretend we added a new pres policy to settings and re-seeded and now it's the default
-      new_default = described_class.create!(preservation_policy_name: 'new_default', archive_ttl: 666, fixity_ttl: 666)
-      allow(Settings.preservation_policies).to receive(:default_policy_name).and_return('new_default')
-      expect(described_class.default_policy.id).to eq new_default.id
     end
   end
 end
