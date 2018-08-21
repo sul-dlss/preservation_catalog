@@ -72,7 +72,7 @@ end
 # check for failed resque jobs
 Resque::Failure.queues.each do |queue|
   OkComputer::Registry.register "feature-#{queue}-queue-threshold",
-                                OkComputer::SizeThresholdCheck.new(queue, 10) { Resque::Failure.count(queue) }
+                                OkComputer::SizeThresholdCheck.new(queue, 20) { Resque::Failure.count(queue) }
 end
 
 # ------------------------------------------------------------------------------
@@ -107,4 +107,4 @@ OkComputer::Registry.register "feature-version-audit-window-check", VersionAudit
 
 # TODO: do we want anything about s3 credentials here?
 
-OkComputer.make_optional %w[feature-version-audit-window-check external-workflow-services-url feature-zip_storage_dir]
+OkComputer.make_optional %w[feature-version-audit-window-check external-workflow-services-url feature-zip_storage_dir feature-resque-down]
