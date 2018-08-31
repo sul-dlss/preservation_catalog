@@ -42,7 +42,6 @@ describe MoabReplicationAuditJob, type: :job do
     end
 
     it "calls report_results with the right logger" do
-      skip "Temporarily turning off reporting to WF because long messages aren't accepted"
       expect(results).to receive(:report_results).with(Audit::CatalogToArchive.logger)
       job.perform(cm)
     end
