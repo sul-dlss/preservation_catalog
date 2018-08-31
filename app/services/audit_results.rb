@@ -97,6 +97,8 @@ class AuditResults
   ].freeze
 
   HONEYBADGER_REPORT_CODES = [
+    # temporary fix for Honeybadger throttling us
+    # due to too many MoabReplicationAudit errors
     # ZIP_PART_NOT_FOUND,
     # ZIP_PART_CHECKSUM_MISMATCH,
     # ZIP_PARTS_COUNT_INCONSISTENCY,

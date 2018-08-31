@@ -20,6 +20,8 @@ class MoabReplicationAuditJob < ApplicationJob
       check_aws_replicated_zipped_moab_version(zmv, results)
     end
 
+    # Temporary fix for workflow-service throwing exceptions
+    # because some error reports from MoabReplicationAudit are too long
     # results.report_results(logger)
   end
 
