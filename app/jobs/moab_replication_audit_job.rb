@@ -20,7 +20,7 @@ class MoabReplicationAuditJob < ApplicationJob
       check_aws_replicated_zipped_moab_version(zmv, results)
     end
 
-    results.report_results(logger)
+    # results.report_results(logger)
   end
 
   private
