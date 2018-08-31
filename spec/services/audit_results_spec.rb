@@ -251,7 +251,7 @@ RSpec.describe AuditResults do
         audit_results.report_results
       end
       it 'sends results in HONEYBADGER_REPORT_CODES errors' do
-        skip "Temporarily turning this off to ease honeybadger throttling"
+        skip "Temporarily turning this off to ease honeybadger throttling and worflow choking"
         code = AuditResults::ZIP_PART_NOT_FOUND
         addl_hash = { endpoint_name: 'zip_ep', s3_key: "ab123cd4567.v0001.zip", bucket_name: 'bucket_name' }
         audit_results.add_result(code, addl_hash)
