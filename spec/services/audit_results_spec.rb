@@ -251,13 +251,11 @@ RSpec.describe AuditResults do
         audit_results.report_results
       end
       it 'sends results in HONEYBADGER_REPORT_CODES errors' do
-        skip "Temporarily turning this off to ease honeybadger throttling and worflow choking"
-        code = AuditResults::ZIP_PART_NOT_FOUND
-        addl_hash = { endpoint_name: 'zip_ep', s3_key: "ab123cd4567.v0001.zip", bucket_name: 'bucket_name' }
+        code = AuditResults::MOAB_FILE_CHECKSUM_MISMATCH
+        addl_hash = { file_path: 'path/to/file', version: 1 }
         audit_results.add_result(code, addl_hash)
-        prefix = '(ab123cd4567, fixture_sr1)'
         expect(Honeybadger).to receive(:notify).with(
-          "#{prefix} replicated part not found on zip_ep: ab123cd4567.v0001.zip was not found on bucket_name"
+          "(ab123cd4567, fixture_sr1) checksums for path/to/file version 1 do not match."
         )
         audit_results.report_results
       end
