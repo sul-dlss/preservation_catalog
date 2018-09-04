@@ -88,7 +88,7 @@ class AuditResults
     MANIFEST_NOT_IN_MOAB,
     SIGNATURE_CATALOG_NOT_IN_MOAB,
     INVALID_MANIFEST,
-    UNABLE_TO_CHECK_STATUS,
+    UNABLE_TO_CHECK_STATUS
     # Temporary fix for workflow-service throwing exceptions
     # because some error reports from MoabReplicationAudit are too long
     # also see HONEYBADGER_REPORT_CODES
@@ -100,6 +100,7 @@ class AuditResults
   ].freeze
 
   HONEYBADGER_REPORT_CODES = [
+    MOAB_FILE_CHECKSUM_MISMATCH
     # temporary fix for Honeybadger throttling us
     # due to too many MoabReplicationAudit errors
     # also see WORKFLOW_REPORT_CODES
