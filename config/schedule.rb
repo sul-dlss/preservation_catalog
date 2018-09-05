@@ -20,14 +20,14 @@ every :sunday, at: '1am', roles: [:queue_populator] do
 end
 
 every :hour, roles: [:cache_cleaner] do
-  set :output, standard: 'log/zip_cache_cleanup.log'
+  set :output, standard: '/var/log/preservation_catalog/zip_cache_cleanup.log'
   command <<-'END_OF_COMMAND'
     find /sdr-transfers -mindepth 5 -type f -name "*.zip" -mtime +1 -exec bash -c 'TARGET="{}"; rm -v ${TARGET%ip}*' \;
   END_OF_COMMAND
 end
 
 every :day, at: '1:15am', roles: [:cache_cleaner] do
-  set :output, standard: 'log/zip_cache_cleanup.log'
+  set :output, standard: '/var/log/preservation_catalog/zip_cache_cleanup.log'
   command <<-'END_OF_COMMAND'
     find /sdr-transfers/ -not -path "*/\.*" -type d -empty -delete
   END_OF_COMMAND
