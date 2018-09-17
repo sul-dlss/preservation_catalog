@@ -41,6 +41,11 @@ describe MoabReplicationAuditJob, type: :job do
       end
     end
 
+    it "calls update on last_archive_audit timestamp" do
+      expect(cm).to receive(:update)
+      job.perform(cm)
+    end
+
     it "calls report_results with the right logger" do
       expect(results).to receive(:report_results).with(Audit::CatalogToArchive.logger)
       job.perform(cm)
