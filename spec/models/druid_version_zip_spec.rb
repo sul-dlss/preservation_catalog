@@ -15,6 +15,14 @@ describe DruidVersionZip do
     it 'returns a tree path-based key' do
       expect(dvz.s3_key).to eq 'bj/102/hs/9687/bj102hs9687.v0001.zip'
     end
+
+    context 'version is greater than 1' do
+      let(:version) { 2 }
+
+      it 'uses the right version in the path' do
+        expect(dvz.s3_key).to eq 'bj/102/hs/9687/bj102hs9687.v0002.zip'
+      end
+    end
   end
 
   describe '#ensure_zip_directory' do
