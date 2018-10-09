@@ -8,7 +8,6 @@ describe S3WestDeliveryJob, type: :job do
   let(:object) { instance_double(Aws::S3::Object, exists?: false, upload_file: true) }
   let(:bucket) { instance_double(Aws::S3::Bucket, object: object) }
   let(:md5) { '4f98f59e877ecb84ff75ef0fab45bac5' }
-  let(:stored_md5) { '4f98f59e877ecb84ff75ef0fab45bac5' }
   let(:base64) { dvz.hex_to_base64(md5) }
   let(:metadata) { dvz_part.metadata.merge(zip_version: 'Zip 3.0 (July 5th 2008)') }
   let(:part_s3_key) { dvz.s3_key('.zip') }
@@ -17,7 +16,7 @@ describe S3WestDeliveryJob, type: :job do
     allow(Settings).to receive(:zip_storage).and_return(Rails.root.join('spec', 'fixtures', 'zip_storage'))
     allow(PreservationCatalog::S3).to receive(:bucket).and_return(bucket)
     allow(ResultsRecorderJob).to receive(:perform_later).with(any_args)
-    allow(IO).to receive(:read).with(dvz_part.md5_path).and_return(stored_md5)
+    allow(IO).to receive(:read).with(dvz_part.md5_path).and_return(md5)
   end
 
   it 'descends from ZipPartJobBase' do
@@ -35,7 +34,7 @@ describe S3WestDeliveryJob, type: :job do
   end
 
   context 'zip part is new to S3' do
-    it 'uploads_file to S3 and MD5 checksums match' do
+    it 'uploads_file to S3 with confirmed MD5' do
       expect(object).to receive(:upload_file).with(
         dvz_part.file_path, metadata: a_hash_including(checksum_md5: md5)
       )
@@ -45,14 +44,14 @@ describe S3WestDeliveryJob, type: :job do
       expect(ResultsRecorderJob).to receive(:perform_later).with(druid, version, part_s3_key, described_class.to_s)
       described_class.perform_now(druid, version, part_s3_key, metadata)
     end
+  end
 
-    it 'MD5 checksums do not match' do
+  context 'when recomputed MD5 does not match' do
+    it 'raises error' do
       allow(IO).to receive(:read).with(dvz_part.md5_path).and_return(nil)
       expect(object).not_to receive(:upload_file)
       expect(ResultsRecorderJob).not_to receive(:perform_later)
-      expect {
-        described_class.perform_now(druid, version, part_s3_key, metadata)
-      }.to raise_error("Zip Part MD5 checksum is invalid. Druid: bj102hs9687, Version: 1")
+      expect { described_class.perform_now(druid, version, part_s3_key, metadata) }.to raise_error(/bj102hs9687.v0001.zip MD5 mismatch/)
     end
   end
 end
