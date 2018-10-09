@@ -205,7 +205,7 @@ GEM
       net-ssh (>= 2.6.5)
     net-ssh (5.0.2)
     nio4r (2.3.1)
-    nokogiri (1.8.4)
+    nokogiri (1.8.5)
       mini_portile2 (~> 2.3.0)
     nokogiri-happymapper (0.6.0)
       nokogiri (~> 1.5)
@@ -385,4 +385,4 @@ DEPENDENCIES
   whenever
 
 BUNDLED WITH
-   1.16.1
+   1.16.3
