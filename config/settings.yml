@@ -15,13 +15,6 @@ moab:
   path_method: druid_tree
   allow_content_subdirs: true
 
-preservation_policies:
-  default_policy_name: 'default'
-  policy_definitions:
-    default:
-      archive_ttl: 7_776_000 # 7,776,000 s == 90 days.
-      fixity_ttl: 7_776_000 # 7,776,000 s == 90 days.
-
 provlog:
   enable: false
 

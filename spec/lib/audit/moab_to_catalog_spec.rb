@@ -10,7 +10,6 @@ RSpec.describe Audit::MoabToCatalog do
   end
 
   before do
-    PreservationPolicy.seed_from_config
     allow(described_class.logger).to receive(:info) # silence STDOUT chatter
     allow(Dor::WorkflowService).to receive(:update_workflow_error_status)
   end

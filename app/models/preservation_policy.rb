@@ -10,21 +10,15 @@ class PreservationPolicy < ApplicationRecord
   validates :archive_ttl, presence: true, numericality: { only_integer: true, greater_than: 0 }
   validates :fixity_ttl, presence: true, numericality: { only_integer: true, greater_than: 0 }
 
-  # iterates over the preservation policies enumerated in the settings, creating any that don't already exist.
-  # @return [Array<PreservationPolicy>] the PreservationPolicy list for the preservation policies defined in the
-  #   config (all entries, including any entries that may have been seeded already).
-  # @note this adds new entries from the config, and leaves existing entries alone, but won't delete anything.
-  # TODO: figure out deletion/update based on config?
-  def self.seed_from_config
-    Settings.preservation_policies.policy_definitions.map do |policy_name, policy_config|
-      find_or_create_by!(preservation_policy_name: policy_name.to_s) do |preservation_policy|
-        preservation_policy.archive_ttl = policy_config.archive_ttl
-        preservation_policy.fixity_ttl = policy_config.fixity_ttl
-      end
+  # @return [PreservationPolicy] creates default record if necessary
+  def self.default_policy
+    find_or_create_by!(preservation_policy_name: default_name) do |preservation_policy|
+      preservation_policy.archive_ttl = 7_776_000 # 90 days
+      preservation_policy.fixity_ttl = 7_776_000 # 90 days
     end
   end
 
-  def self.default_policy
-    find_by!(preservation_policy_name: Settings.preservation_policies.default_policy_name)
+  def self.default_name
+    'default'
   end
 end
