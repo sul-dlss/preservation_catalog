@@ -1,14 +1,8 @@
 require 'rails_helper'
-require 'stringio'
 
 RSpec.describe Audit::MoabToCatalog do
   let(:storage_dir) { 'spec/fixtures/storage_root01/sdr2objects' }
   let(:ms_root) { MoabStorageRoot.find_by!(storage_location: storage_dir) }
-  let(:mock_profiler) do
-    prof = instance_double(Profiler, prof: nil)
-    allow(Profiler).to receive(:new).and_return(prof)
-    prof
-  end
   let(:moab) do
     m = instance_double(Moab::StorageObject, object_pathname: storage_dir, :storage_root= => nil)
     allow(Moab::StorageObject).to receive(:new).and_return(m)
@@ -155,14 +149,6 @@ RSpec.describe Audit::MoabToCatalog do
       expect(PreservedObject.count).to eq 13
       expect { described_class.populate_moab_storage_root('fixture_sr1') }.to change(CompleteMoab, :count).from(13).to(16)
       expect(PreservedObject.count).to eq 16
-    end
-  end
-
-  describe ".populate_moab_storage_root_profiled" do
-    it "spins up a profiler, calling profiling and printing methods on it" do
-      expect(mock_profiler).to receive(:prof)
-      expect(mock_profiler).to receive(:print_results_flat).with('populate_moab_storage_root')
-      described_class.populate_moab_storage_root_profiled('fixture_sr1')
     end
   end
 end
