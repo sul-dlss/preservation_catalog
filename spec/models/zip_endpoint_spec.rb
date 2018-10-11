@@ -91,15 +91,16 @@ RSpec.describe ZipEndpoint, type: :model do
   context 'ZippedMoabVersion presence on ZipEndpoint' do
     let(:version) { 3 }
     let(:other_druid) { 'zy098xw7654' }
-    let(:ep) { ZipEndpoint.find_by!(endpoint_name: 'mock_archive1') }
+    let(:cm_ze_ids) { cm.zipped_moab_versions.distinct(:zip_endpoint_id).where.not(zip_endpoint_id: zip_endpoint.id).pluck(:zip_endpoint_id) }
     let!(:cm) do
-      po = create(:preserved_object, current_version: version, druid: druid)
+      po = build(:preserved_object, current_version: version, druid: druid)
       create(:complete_moab, version: version, preserved_object: po)
     end
     let!(:cm2) do
-      po = create(:preserved_object, current_version: version, druid: other_druid)
+      po = build(:preserved_object, current_version: version, druid: other_druid)
       create(:complete_moab, version: version, preserved_object: po)
     end
+    let!(:ep) { ZipEndpoint.where(id: cm_ze_ids).first } # snag before ZMV destroy_all
 
     before { ZippedMoabVersion.destroy_all }
 
@@ -113,11 +114,11 @@ RSpec.describe ZipEndpoint, type: :model do
             ZipEndpoint.which_have_archive_copy(other_druid, version - 1).pluck(:endpoint_name)
           ]
         }.from([[], [], []])
-        expect(ZipEndpoint.which_have_archive_copy(druid, version).pluck(:endpoint_name)).to eq %w[mock_archive1]
+        expect(ZipEndpoint.which_have_archive_copy(druid, version).pluck(:endpoint_name)).to eq [ep.endpoint_name]
 
         expect { cm2.zipped_moab_versions.create!(version: version - 1, zip_endpoint: ep) }.to change {
           ZipEndpoint.which_have_archive_copy(other_druid, version - 1).pluck(:endpoint_name)
-        }.from([]).to(%w[mock_archive1])
+        }.from([]).to([ep.endpoint_name])
 
         expect { cm2.zipped_moab_versions.create!(version: version - 1, zip_endpoint: zip_endpoint) }.not_to change {
           [
@@ -125,29 +126,31 @@ RSpec.describe ZipEndpoint, type: :model do
             ZipEndpoint.which_have_archive_copy(druid, version - 1).pluck(:endpoint_name),
             ZipEndpoint.which_have_archive_copy(other_druid, version).pluck(:endpoint_name)
           ]
-        }.from([%w[mock_archive1], [], []])
-        expect(ZipEndpoint.which_have_archive_copy(other_druid, version - 1).pluck(:endpoint_name).sort).to eq %w[mock_archive1 zip-endpoint]
+        }.from([[ep.endpoint_name], [], []])
+        expect(ZipEndpoint.which_have_archive_copy(other_druid, version - 1).pluck(:endpoint_name).sort).to eq [ep.endpoint_name, 'zip-endpoint']
       end
     end
 
     describe '.which_need_archive_copy' do
+      let(:names) { [ep.endpoint_name, zip_endpoint.endpoint_name] }
+
       # rubocop:disable RSpec/MultipleExpectations
       it "returns the zip endpoints which should have a complete moab for the druid/version, but which don't yet" do
-        expect(ZipEndpoint.which_need_archive_copy(druid, version).pluck(:endpoint_name).sort).to eq %w[mock_archive1 zip-endpoint]
-        expect(ZipEndpoint.which_need_archive_copy(druid, version - 1).pluck(:endpoint_name).sort).to eq %w[mock_archive1 zip-endpoint]
-        expect(ZipEndpoint.which_need_archive_copy(other_druid, version).pluck(:endpoint_name).sort).to eq %w[mock_archive1 zip-endpoint]
-        expect(ZipEndpoint.which_need_archive_copy(other_druid, version - 1).pluck(:endpoint_name).sort).to eq %w[mock_archive1 zip-endpoint]
+        expect(ZipEndpoint.which_need_archive_copy(druid, version).pluck(:endpoint_name).sort).to eq names
+        expect(ZipEndpoint.which_need_archive_copy(druid, version - 1).pluck(:endpoint_name).sort).to eq names
+        expect(ZipEndpoint.which_need_archive_copy(other_druid, version).pluck(:endpoint_name).sort).to eq names
+        expect(ZipEndpoint.which_need_archive_copy(other_druid, version - 1).pluck(:endpoint_name).sort).to eq names
 
         cm.zipped_moab_versions.create!(version: version, zip_endpoint: ep)
         expect(ZipEndpoint.which_need_archive_copy(druid, version).pluck(:endpoint_name)).to eq %w[zip-endpoint]
-        expect(ZipEndpoint.which_need_archive_copy(druid, version - 1).pluck(:endpoint_name).sort).to eq %w[mock_archive1 zip-endpoint]
-        expect(ZipEndpoint.which_need_archive_copy(other_druid, version).pluck(:endpoint_name).sort).to eq %w[mock_archive1 zip-endpoint]
-        expect(ZipEndpoint.which_need_archive_copy(other_druid, version - 1).pluck(:endpoint_name).sort).to eq %w[mock_archive1 zip-endpoint]
+        expect(ZipEndpoint.which_need_archive_copy(druid, version - 1).pluck(:endpoint_name).sort).to eq names
+        expect(ZipEndpoint.which_need_archive_copy(other_druid, version).pluck(:endpoint_name).sort).to eq names
+        expect(ZipEndpoint.which_need_archive_copy(other_druid, version - 1).pluck(:endpoint_name).sort).to eq names
 
         cm2.zipped_moab_versions.create!(version: version - 1, zip_endpoint: ep)
         expect(ZipEndpoint.which_need_archive_copy(druid, version).pluck(:endpoint_name)).to eq %w[zip-endpoint]
-        expect(ZipEndpoint.which_need_archive_copy(druid, version - 1).pluck(:endpoint_name).sort).to eq %w[mock_archive1 zip-endpoint]
-        expect(ZipEndpoint.which_need_archive_copy(other_druid, version).pluck(:endpoint_name).sort).to eq %w[mock_archive1 zip-endpoint]
+        expect(ZipEndpoint.which_need_archive_copy(druid, version - 1).pluck(:endpoint_name).sort).to eq names
+        expect(ZipEndpoint.which_need_archive_copy(other_druid, version).pluck(:endpoint_name).sort).to eq names
         expect(ZipEndpoint.which_need_archive_copy(other_druid, version - 1).pluck(:endpoint_name)).to eq %w[zip-endpoint]
       end
       # rubocop:enable RSpec/MultipleExpectations
