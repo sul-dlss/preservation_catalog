@@ -91,7 +91,6 @@ class AuditResults
     UNABLE_TO_CHECK_STATUS
     # Temporary fix for workflow-service throwing exceptions
     # because some error reports from MoabReplicationAudit are too long
-    # also see HONEYBADGER_REPORT_CODES
     # ZIP_PART_NOT_FOUND,
     # ZIP_PART_CHECKSUM_MISMATCH,
     # ZIP_PARTS_COUNT_INCONSISTENCY,
@@ -100,15 +99,12 @@ class AuditResults
   ].freeze
 
   HONEYBADGER_REPORT_CODES = [
-    MOAB_FILE_CHECKSUM_MISMATCH
-    # temporary fix for Honeybadger throttling us
-    # due to too many MoabReplicationAudit errors
-    # also see WORKFLOW_REPORT_CODES
-    # ZIP_PART_NOT_FOUND,
-    # ZIP_PART_CHECKSUM_MISMATCH,
-    # ZIP_PARTS_COUNT_INCONSISTENCY,
-    # ZIP_PARTS_COUNT_DIFFERS_FROM_ACTUAL,
-    # ZIP_PARTS_NOT_ALL_REPLICATED
+    MOAB_FILE_CHECKSUM_MISMATCH,
+    ZIP_PART_NOT_FOUND,
+    ZIP_PART_CHECKSUM_MISMATCH,
+    ZIP_PARTS_COUNT_INCONSISTENCY,
+    ZIP_PARTS_COUNT_DIFFERS_FROM_ACTUAL,
+    ZIP_PARTS_NOT_ALL_REPLICATED
   ].freeze
 
   DB_UPDATED_CODES = [
