@@ -30,44 +30,14 @@ RSpec.describe PreservationPolicy, type: :model do
   it { is_expected.to validate_presence_of(:archive_ttl) }
   it { is_expected.to validate_presence_of(:fixity_ttl) }
 
-  describe '.seed_from_config' do
-    it 'creates the preservation policies listed in Settings' do
-      # db already seeded
-      Settings.preservation_policies.policy_definitions.each_key do |policy_name|
-        expect(
-          described_class.find_by(preservation_policy_name: policy_name.to_s)
-        ).to be_a_kind_of described_class
-      end
-    end
-
-    it 'does not re-create records that already exist' do
-      # db already seeded
-      described_class.seed_from_config
-      expect(described_class.pluck(:preservation_policy_name)).to eq %w[default]
-    end
-
-    it 'adds new records if there are additions to Settings since the last run' do
-      # db already seeded
-      archive_pres_policy_setting = Config::Options.new(
-        archive_policy: Config::Options.new(archive_ttl: 666, fixity_ttl: 666)
-      )
-      allow(Settings.preservation_policies).to receive(:policy_definitions).and_return(archive_pres_policy_setting)
-      described_class.seed_from_config
-      expect(described_class.find_by(preservation_policy_name: 'archive_policy')).to be_a_kind_of described_class
-    end
-  end
-
   describe '.default_policy' do
     it 'returns the default preservation policy object' do
-      # db already seeded
-      expect(described_class.default_policy).to be_a_kind_of described_class
+      expect(described_class.default_policy).to be_a(described_class)
+      expect(described_class.default_policy.preservation_policy_name).to eq 'default'
     end
-
-    it "raises RecordNotFound if the default policy doesn't exist in the db" do
-      # a bit contrived, but just want to test that lack of default PreservationPolicy causes lookup to
-      # fail fast.  since db is already seeded, we just make it look up something that we know isn't there.
-      expect(Settings.preservation_policies).to receive(:default_policy_name).and_return('nonexistent')
-      expect { described_class.default_policy }.to raise_error(ActiveRecord::RecordNotFound)
+    it 'creates record if needed' do
+      allow(described_class).to receive(:default_name).and_return('brandnew')
+      expect { described_class.default_policy }.to change(described_class, :count).by(1)
     end
   end
 end
