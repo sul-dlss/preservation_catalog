@@ -2,24 +2,14 @@ require 'rails_helper'
 
 RSpec.describe CompleteMoab, type: :model do
   let(:druid) { 'ab123cd4567' }
-  let(:ms_root) { MoabStorageRoot.find_by(name: 'fixture_sr1') }
-  let(:preserved_object) do
-    create(
-      :preserved_object,
-      druid: druid,
-      current_version: 1,
-      preservation_policy_id: PreservationPolicy.default_policy.id
-    )
-  end
+  let(:preserved_object) { create(:preserved_object, druid: druid) }
   let(:status) { 'validity_unknown' }
   let(:cm_version) { 1 }
   let(:args) do # default constructor params
     {
       preserved_object: preserved_object,
-      moab_storage_root: ms_root,
       version: cm_version,
-      status: status,
-      size: 1
+      status: status
     }
   end
 
@@ -31,7 +21,7 @@ RSpec.describe CompleteMoab, type: :model do
   it 'is not valid without all required valid attributes' do
     expect(described_class.new).not_to be_valid
     expect(described_class.new(preserved_object_id: preserved_object.id)).not_to be_valid
-    expect(described_class.new(args)).to be_valid
+    expect(described_class.new(args.merge(moab_storage_root_id: 1, size: 1))).to be_valid
   end
 
   it 'defines a status enum with the expected values' do
@@ -280,8 +270,8 @@ RSpec.describe CompleteMoab, type: :model do
 
   describe '#create_zipped_moab_versions!' do
     let(:cm_version) { 3 }
-    let(:zip_ep) { ZipEndpoint.find_by!(endpoint_name: 'mock_archive1') }
     let(:zmvs_by_druid) { ZippedMoabVersion.by_druid(druid) }
+    let!(:zip_ep) { cm.zipped_moab_versions.first.zip_endpoint } # snag the ZE before link deleted
 
     before { cm.zipped_moab_versions.destroy_all } # undo auto-spawned rows from callback
 
@@ -302,11 +292,7 @@ RSpec.describe CompleteMoab, type: :model do
         zmvs_by_druid.where(version: cm_version).count
       }.from(0).to(1)
 
-      new_zip_ep = create(
-        :zip_endpoint,
-        endpoint_name: 'mock_archive2',
-        preservation_policies: [PreservationPolicy.default_policy]
-      )
+      new_zip_ep = create(:zip_endpoint)
 
       expect { cm.create_zipped_moab_versions! }.to change {
         ZipEndpoint.which_need_archive_copy(druid, cm_version).to_a
