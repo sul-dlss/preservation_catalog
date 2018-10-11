@@ -24,6 +24,9 @@ Bundler/OrderedGems:
   Exclude:
     - 'Gemfile'
 
+Layout/EmptyLineAfterGuardClause:
+  Enabled: false
+
 Metrics/BlockLength:
   Exclude:
     - 'app/services/preserved_object_handler.rb' # FIXME check_existence shameless green
@@ -46,6 +49,7 @@ Naming/FileName:
   Exclude:
     - 'Capfile'
     - 'Gemfile'
+    - 'lib/capistrano/tasks/capistrano-resque-pool.rake'
 
 Rails/HasAndBelongsToMany:
   Enabled: false
@@ -55,6 +59,9 @@ RSpec/ContextWording:
 
 RSpec/ExampleLength:
   Max: 25
+
+RSpec/ImplicitSubject: # we use this for `define_enum_for`, `validate_presence_of`, etc.
+  Enabled: false
 
 # we like 'expect(x).to receive' better than 'have_received'
 RSpec/MessageSpies:

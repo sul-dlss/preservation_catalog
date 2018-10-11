@@ -27,6 +27,7 @@ class ResultsRecorderJob < ApplicationJob
     part.ok!
     # only publish result if all of the parts replicated for all zip_endpoints
     return unless zmvs.reload.all?(&:all_parts_replicated?)
+
     publish_result(message(druid, version).to_json)
   end
 

@@ -15,10 +15,13 @@ class TablesHaveDataCheck < OkComputer::Check
     mark_message msg
   end
 
+  private
+
   # @return [String] message
-  private def table_check(klass)
+  def table_check(klass)
     # has at least 1 record, using select(:id) to avoid returning all data
     return "#{klass.name} has data." if klass.select(:id).first!.present?
+
     mark_failure
     "#{klass.name} has no data."
   rescue ActiveRecord::RecordNotFound
