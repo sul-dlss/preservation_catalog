@@ -54,9 +54,5 @@ module Audit
       ms_root = MoabStorageRoot.find_by!(name: name)
       MoabToCatalog.seed_catalog_for_dir(ms_root.storage_location)
     end
-
-    def self.populate_moab_storage_root_profiled(name)
-      Profiler.print_profile('populate_moab_storage_root') { populate_moab_storage_root(name) }
-    end
   end
 end
