@@ -47,8 +47,8 @@ describe MoabReplicationAuditJob, type: :job do
     end
 
     it 'calls PartReplicationAuditJob once per related endpoint' do
-      new_ep = create(:zip_endpoint)
-      expect(PartReplicationAuditJob).to receive(:perform_later).with(cm, cm.zipped_moab_versions.first.zip_endpoint)
+      new_ep = create(:zip_endpoint) # before `cm` invoked, means default policy will include it when making cm
+      expect(PartReplicationAuditJob).to receive(:perform_later).with(cm, cm.zipped_moab_versions.where.not(zip_endpoint: new_ep).first.zip_endpoint)
       expect(PartReplicationAuditJob).to receive(:perform_later).with(cm, new_ep)
       job.perform(cm)
     end
