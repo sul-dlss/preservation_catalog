@@ -11,7 +11,7 @@ class MoabStorageRoot < ApplicationRecord
   def validate_expired_checksums!
     cms = complete_moabs.fixity_check_expired
     Rails.logger.info "MoabStorageRoot #{id} (#{name}), # of complete_moabs to be checksum validated: #{cms.count}"
-    cms.find_each { |cm| ChecksumValidationJob.perform_later(cm) }
+    cms.find_each(&:validate_checksums!)
   end
 
   # Use a queue to check all associated CompleteMoab objects for C2M

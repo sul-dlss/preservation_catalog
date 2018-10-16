@@ -16,7 +16,7 @@ every :friday, roles: [:queue_populator] do
 end
 every :sunday, at: '1am', roles: [:queue_populator] do
   set :output, standard: nil, error: 'log/cv-err.log'
-  runner 'Audit::Checksum.validate_disk_all_storage_roots'
+  runner 'MoabStorageRoot.find_each(&:validate_expired_checksums!)'
 end
 
 every :hour, roles: [:cache_cleaner] do
