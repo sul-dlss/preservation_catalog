@@ -34,7 +34,6 @@ class AuditResults
   SIGNATURE_CATALOG_NOT_IN_MOAB = :signature_catalog_not_in_moab
   INVALID_MANIFEST = :invalid_manifest
   UNABLE_TO_CHECK_STATUS = :unable_to_check_status
-  ZMV_BACKFILL = :zmv_backfill
   ZIP_PART_NOT_FOUND = :zip_part_not_found
   ZIP_PART_CHECKSUM_MISMATCH = :zip_part_checksum_mismatch
   ZIP_PARTS_NOT_CREATED = :zip_parts_not_created
@@ -65,7 +64,6 @@ class AuditResults
     SIGNATURE_CATALOG_NOT_IN_MOAB => "%{signature_catalog_path} not found in Moab",
     INVALID_MANIFEST => "unable to parse %{manifest_file_path} in Moab",
     UNABLE_TO_CHECK_STATUS => "unable to validate when CompleteMoab status is %{current_status}",
-    ZMV_BACKFILL => "backfilled the following ZippedMoabVersions: %{version_endpoint_pairs}",
     ZIP_PART_NOT_FOUND => "replicated part not found on %{endpoint_name}: %{s3_key} was not found on %{bucket_name}",
     ZIP_PART_CHECKSUM_MISMATCH => "replicated md5 mismatch on %{endpoint_name}: %{s3_key} catalog md5 (%{md5}) doesn't match the replicated md5 (%{replicated_checksum}) on %{bucket_name}",
     ZIP_PARTS_NOT_CREATED => "%{version} on %{endpoint_name}: no zip_parts exist yet for this ZippedMoabVersion",
@@ -114,7 +112,7 @@ class AuditResults
 
   def self.logger_severity_level(result_code)
     case result_code
-    when DB_OBJ_DOES_NOT_EXIST, ZIP_PARTS_NOT_CREATED, ZIP_PARTS_NOT_ALL_REPLICATED, ZMV_BACKFILL
+    when DB_OBJ_DOES_NOT_EXIST, ZIP_PARTS_NOT_CREATED, ZIP_PARTS_NOT_ALL_REPLICATED
       Logger::WARN
     when VERSION_MATCHES, ACTUAL_VERS_GT_DB_OBJ, CREATED_NEW_OBJECT, CM_STATUS_CHANGED, MOAB_CHECKSUM_VALID
       Logger::INFO
