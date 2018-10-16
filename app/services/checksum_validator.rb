@@ -11,7 +11,6 @@ class ChecksumValidator
   DATA = 'data'.freeze
   MANIFESTS = 'manifests'.freeze
   MANIFESTS_XML = 'manifestInventory.xml'.freeze
-  SIGNATURE_XML = 'signatureCatalog.xml'.freeze
   GROUP_DIFF = 'group_differences'.freeze
   SUBSETS = 'subsets'.freeze
   MODIFIED = 'modified'.freeze
@@ -81,13 +80,11 @@ class ChecksumValidator
   # @param [Moab::StorageObjectVersion] moab_version
   def validate_manifest_inventory(moab_version)
     manifest_file_path = "#{moab_version.version_pathname}/#{MANIFESTS}/#{MANIFESTS_XML}"
-    begin
-      parse_verification_subentities(moab_version.verify_manifest_inventory)
-    rescue Nokogiri::XML::SyntaxError
-      results.add_result(AuditResults::INVALID_MANIFEST, manifest_file_path: manifest_file_path)
-    rescue Errno::ENOENT
-      results.add_result(AuditResults::MANIFEST_NOT_IN_MOAB, manifest_file_path: manifest_file_path)
-    end
+    parse_verification_subentities(moab_version.verify_manifest_inventory)
+  rescue Nokogiri::XML::SyntaxError
+    results.add_result(AuditResults::INVALID_MANIFEST, manifest_file_path: manifest_file_path)
+  rescue Errno::ENOENT
+    results.add_result(AuditResults::MANIFEST_NOT_IN_MOAB, manifest_file_path: manifest_file_path)
   end
 
   # @param [Moab::VerificationResult] manifest_inventory_verification_result
@@ -154,25 +151,14 @@ class ChecksumValidator
 
   # @return [String]
   def latest_signature_catalog_path
-    @latest_signature_catalog_path ||= latest_moab_version.version_pathname.join(MANIFESTS, SIGNATURE_XML).to_s
+    @latest_signature_catalog_path ||= latest_moab_version.version_pathname.join(MANIFESTS, 'signatureCatalog.xml').to_s
   end
 
-  # shameless green implementation
+  # @return [Array<SignatureCatalogEntry>]
   def latest_signature_catalog_entries
-    @latest_signature_catalog_entries ||= begin
-      if latest_moab_version.signature_catalog
-        latest_moab_version.signature_catalog.entries
-      else
-        absent_from_moab_data = { signature_catalog_path: latest_moab_version.signature_catalog }
-        results.add_result(AuditResults::SIGNATURE_CATALOG_NOT_IN_MOAB, absent_from_moab_data)
-        []
-      end
-    end
-  # we get here when latest_moab_version.signature_catalog is nil (signatureCatalog.xml does not exist)
-  rescue Errno::ENOENT, NoMethodError
-    sigcat_path = "#{latest_moab_version.version_pathname}/#{MANIFESTS}/#{SIGNATURE_XML}"
-    absent_from_moab_data = { signature_catalog_path: sigcat_path }
-    results.add_result(AuditResults::SIGNATURE_CATALOG_NOT_IN_MOAB, absent_from_moab_data)
+    @latest_signature_catalog_entries ||= latest_moab_version.signature_catalog.entries
+  rescue Errno::ENOENT, NoMethodError # e.g. latest_moab_version.signature_catalog is nil (signatureCatalog.xml does not exist)
+    results.add_result(AuditResults::SIGNATURE_CATALOG_NOT_IN_MOAB, signature_catalog_path: latest_signature_catalog_path)
     []
   end
 
