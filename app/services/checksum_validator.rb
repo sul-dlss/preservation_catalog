@@ -77,7 +77,8 @@ class ChecksumValidator
     data_files.each { |file| validate_against_signature_catalog(file) }
   end
 
-  # This method adds to the AuditResults object for any errors in checksum validation it encounters.
+  # Adds to the AuditResults object for any errors in checksum validation it encounters.
+  # @param [Moab::StorageObjectVersion] moab_version
   def validate_manifest_inventory(moab_version)
     manifest_file_path = "#{moab_version.version_pathname}/#{MANIFESTS}/#{MANIFESTS_XML}"
     begin
@@ -89,6 +90,7 @@ class ChecksumValidator
     end
   end
 
+  # @param [Moab::VerificationResult] manifest_inventory_verification_result
   def parse_verification_subentities(manifest_inventory_verification_result)
     return if manifest_inventory_verification_result.verified
     manifest_inventory_verification_result.subentities.each do |subentity|
@@ -96,6 +98,7 @@ class ChecksumValidator
     end
   end
 
+  # @param [Moab::VerificationResult] subentity
   def parse_verification_subentity(subentity)
     add_cv_result_for_modified_xml(subentity) if subentity.details.dig(GROUP_DIFF, MANIFESTS, SUBSETS, MODIFIED)
     add_cv_result_for_additions_in_xml(subentity) if subentity.details.dig(GROUP_DIFF, MANIFESTS, SUBSETS, ADDED)
@@ -143,11 +146,13 @@ class ChecksumValidator
     results.add_result(AuditResults::FILE_NOT_IN_MOAB, absent_from_moab_data)
   end
 
+  # @return [String]
   def signature_catalog_entry_path(entry)
     @signature_catalog_entry_paths ||= {}
     @signature_catalog_entry_paths[entry] ||= "#{object_dir}/#{entry.storage_path}"
   end
 
+  # @return [String]
   def latest_signature_catalog_path
     @latest_signature_catalog_path ||= latest_moab_version.version_pathname.join(MANIFESTS, SIGNATURE_XML).to_s
   end
@@ -175,6 +180,7 @@ class ChecksumValidator
     @paths_from_signature_catalog ||= latest_signature_catalog_entries.map { |entry| signature_catalog_entry_path(entry) }
   end
 
+  # @return [Moab::StorageObjectVersion]
   def latest_moab_version
     @latest_moab_version ||= moab.version_list.last
   end
