@@ -16,9 +16,11 @@ class S3WestDeliveryJob < ZipPartJobBase
   def perform(druid, version, part_s3_key, metadata)
     s3_part = bucket.object(part_s3_key) # Aws::S3::Object
     return if s3_part.exists?
+
     fresh_md5 = dvz_part.read_md5
     given_md5 = metadata[:checksum_md5]
     raise "#{part_s3_key} MD5 mismatch: passed #{given_md5}, computed #{fresh_md5}" unless fresh_md5 == given_md5
+
     s3_part.upload_file(dvz_part.file_path, metadata: stringify_values(metadata))
     ResultsRecorderJob.perform_later(druid, version, part_s3_key, self.class.to_s)
   end

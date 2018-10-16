@@ -24,6 +24,7 @@ module PreservationCatalog
           aws_s3_object = bucket.object(part.s3_key)
           next unless check_existence(aws_s3_object, part)
           next unless compare_checksum_metadata(aws_s3_object, part)
+
           part.ok!
         end
       end

@@ -42,6 +42,7 @@ class ApplicationJob < ActiveJob::Base
   # @option metadata [String] :zip_version
   def zip_info_check!(metadata)
     raise ArgumentError, 'metadata Hash not found' if metadata.blank?
+
     %i[checksum_md5 size zip_cmd zip_version].each do |key|
       raise ArgumentError, "Required metadata[:#{key}] not found" if metadata[key].blank?
     end

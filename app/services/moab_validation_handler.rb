@@ -53,6 +53,7 @@ module MoabValidationHandler
   def update_status(new_status)
     complete_moab.status = new_status
     return unless complete_moab.status_changed?
+
     results.add_result(
       AuditResults::CM_STATUS_CHANGED, old_status: complete_moab.status_was, new_status: complete_moab.status
     )
