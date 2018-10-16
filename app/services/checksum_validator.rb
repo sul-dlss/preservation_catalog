@@ -8,11 +8,8 @@ class ChecksumValidator
   delegate :moab_storage_root, to: :complete_moab
   delegate :storage_location, to: :moab_storage_root
 
-  DATA = 'data'.freeze
   MANIFESTS = 'manifests'.freeze
   MANIFESTS_XML = 'manifestInventory.xml'.freeze
-  GROUP_DIFF = 'group_differences'.freeze
-  SUBSETS = 'subsets'.freeze
   MODIFIED = 'modified'.freeze
   ADDED = 'added'.freeze
   DELETED = 'deleted'.freeze
@@ -97,38 +94,38 @@ class ChecksumValidator
 
   # @param [Moab::VerificationResult] subentity
   def parse_verification_subentity(subentity)
-    add_cv_result_for_modified_xml(subentity) if subentity.details.dig(GROUP_DIFF, MANIFESTS, SUBSETS, MODIFIED)
-    add_cv_result_for_additions_in_xml(subentity) if subentity.details.dig(GROUP_DIFF, MANIFESTS, SUBSETS, ADDED)
-    add_cv_result_for_deletions_in_xml(subentity) if subentity.details.dig(GROUP_DIFF, MANIFESTS, SUBSETS, DELETED)
+    add_cv_result_for_modified_xml(subentity) if subentity.subsets[MODIFIED]
+    add_cv_result_for_additions_in_xml(subentity) if subentity.subsets[ADDED]
+    add_cv_result_for_deletions_in_xml(subentity) if subentity.subsets[DELETED]
   end
 
   def add_cv_result_for_modified_xml(subentity)
-    subentity.details.dig(GROUP_DIFF, MANIFESTS, SUBSETS, MODIFIED, FILES).each_value do |details|
-      mismatch_error_data = {
+    subentity.subsets.dig(MODIFIED, FILES).each_value do |details|
+      results.add_result(
+        AuditResults::MOAB_FILE_CHECKSUM_MISMATCH,
         file_path: "#{subentity.details['other']}/#{details['basis_path']}",
         version: subentity.details['basis']
-      }
-      results.add_result(AuditResults::MOAB_FILE_CHECKSUM_MISMATCH, mismatch_error_data)
+      )
     end
   end
 
   def add_cv_result_for_additions_in_xml(subentity)
-    subentity.details.dig(GROUP_DIFF, MANIFESTS, SUBSETS, ADDED, FILES).each_value do |details|
-      absent_from_manifest_data = {
+    subentity.subsets.dig(ADDED, FILES).each_value do |details|
+      results.add_result(
+        AuditResults::FILE_NOT_IN_MANIFEST,
         file_path: "#{subentity.details['other']}/#{details['other_path']}",
         manifest_file_path: "#{subentity.details['other']}/#{MANIFESTS_XML}"
-      }
-      results.add_result(AuditResults::FILE_NOT_IN_MANIFEST, absent_from_manifest_data)
+      )
     end
   end
 
   def add_cv_result_for_deletions_in_xml(subentity)
-    subentity.details.dig(GROUP_DIFF, MANIFESTS, SUBSETS, DELETED, FILES).each_value do |details|
-      absent_from_moab_data = {
-        manifest_file_path: "#{subentity.details['other']}/#{MANIFESTS_XML}",
-        file_path: "#{subentity.details['other']}/#{details['basis_path']}"
-      }
-      results.add_result(AuditResults::FILE_NOT_IN_MOAB, absent_from_moab_data)
+    subentity.subsets.dig(DELETED, FILES).each_value do |details|
+      results.add_result(
+        AuditResults::FILE_NOT_IN_MOAB,
+        file_path: "#{subentity.details['other']}/#{details['basis_path']}",
+        manifest_file_path: "#{subentity.details['other']}/#{MANIFESTS_XML}"
+      )
     end
   end
 
