@@ -4,7 +4,7 @@
 # represent a specific stored instance on a specific node, but aggregates
 # those instances.
 class PreservedObject < ApplicationRecord
-  PREFIX_RE = /druid:/i
+  PREFIX_RE = /druid:/i.freeze
   belongs_to :preservation_policy
   has_many :complete_moabs, dependent: :restrict_with_exception, autosave: true
   validates :druid,
