@@ -8,12 +8,8 @@ class ChecksumValidator
   delegate :moab_storage_root, to: :complete_moab
   delegate :storage_location, to: :moab_storage_root
 
-  DATA = 'data'.freeze
   MANIFESTS = 'manifests'.freeze
   MANIFESTS_XML = 'manifestInventory.xml'.freeze
-  SIGNATURE_XML = 'signatureCatalog.xml'.freeze
-  GROUP_DIFF = 'group_differences'.freeze
-  SUBSETS = 'subsets'.freeze
   MODIFIED = 'modified'.freeze
   ADDED = 'added'.freeze
   DELETED = 'deleted'.freeze
@@ -77,18 +73,18 @@ class ChecksumValidator
     data_files.each { |file| validate_against_signature_catalog(file) }
   end
 
-  # This method adds to the AuditResults object for any errors in checksum validation it encounters.
+  # Adds to the AuditResults object for any errors in checksum validation it encounters.
+  # @param [Moab::StorageObjectVersion] moab_version
   def validate_manifest_inventory(moab_version)
     manifest_file_path = "#{moab_version.version_pathname}/#{MANIFESTS}/#{MANIFESTS_XML}"
-    begin
-      parse_verification_subentities(moab_version.verify_manifest_inventory)
-    rescue Nokogiri::XML::SyntaxError
-      results.add_result(AuditResults::INVALID_MANIFEST, manifest_file_path: manifest_file_path)
-    rescue Errno::ENOENT
-      results.add_result(AuditResults::MANIFEST_NOT_IN_MOAB, manifest_file_path: manifest_file_path)
-    end
+    parse_verification_subentities(moab_version.verify_manifest_inventory)
+  rescue Nokogiri::XML::SyntaxError
+    results.add_result(AuditResults::INVALID_MANIFEST, manifest_file_path: manifest_file_path)
+  rescue Errno::ENOENT
+    results.add_result(AuditResults::MANIFEST_NOT_IN_MOAB, manifest_file_path: manifest_file_path)
   end
 
+  # @param [Moab::VerificationResult] manifest_inventory_verification_result
   def parse_verification_subentities(manifest_inventory_verification_result)
     return if manifest_inventory_verification_result.verified
     manifest_inventory_verification_result.subentities.each do |subentity|
@@ -96,39 +92,40 @@ class ChecksumValidator
     end
   end
 
+  # @param [Moab::VerificationResult] subentity
   def parse_verification_subentity(subentity)
-    add_cv_result_for_modified_xml(subentity) if subentity.details.dig(GROUP_DIFF, MANIFESTS, SUBSETS, MODIFIED)
-    add_cv_result_for_additions_in_xml(subentity) if subentity.details.dig(GROUP_DIFF, MANIFESTS, SUBSETS, ADDED)
-    add_cv_result_for_deletions_in_xml(subentity) if subentity.details.dig(GROUP_DIFF, MANIFESTS, SUBSETS, DELETED)
+    add_cv_result_for_modified_xml(subentity) if subentity.subsets[MODIFIED]
+    add_cv_result_for_additions_in_xml(subentity) if subentity.subsets[ADDED]
+    add_cv_result_for_deletions_in_xml(subentity) if subentity.subsets[DELETED]
   end
 
   def add_cv_result_for_modified_xml(subentity)
-    subentity.details.dig(GROUP_DIFF, MANIFESTS, SUBSETS, MODIFIED, FILES).each_value do |details|
-      mismatch_error_data = {
+    subentity.subsets.dig(MODIFIED, FILES).each_value do |details|
+      results.add_result(
+        AuditResults::MOAB_FILE_CHECKSUM_MISMATCH,
         file_path: "#{subentity.details['other']}/#{details['basis_path']}",
         version: subentity.details['basis']
-      }
-      results.add_result(AuditResults::MOAB_FILE_CHECKSUM_MISMATCH, mismatch_error_data)
+      )
     end
   end
 
   def add_cv_result_for_additions_in_xml(subentity)
-    subentity.details.dig(GROUP_DIFF, MANIFESTS, SUBSETS, ADDED, FILES).each_value do |details|
-      absent_from_manifest_data = {
+    subentity.subsets.dig(ADDED, FILES).each_value do |details|
+      results.add_result(
+        AuditResults::FILE_NOT_IN_MANIFEST,
         file_path: "#{subentity.details['other']}/#{details['other_path']}",
         manifest_file_path: "#{subentity.details['other']}/#{MANIFESTS_XML}"
-      }
-      results.add_result(AuditResults::FILE_NOT_IN_MANIFEST, absent_from_manifest_data)
+      )
     end
   end
 
   def add_cv_result_for_deletions_in_xml(subentity)
-    subentity.details.dig(GROUP_DIFF, MANIFESTS, SUBSETS, DELETED, FILES).each_value do |details|
-      absent_from_moab_data = {
-        manifest_file_path: "#{subentity.details['other']}/#{MANIFESTS_XML}",
-        file_path: "#{subentity.details['other']}/#{details['basis_path']}"
-      }
-      results.add_result(AuditResults::FILE_NOT_IN_MOAB, absent_from_moab_data)
+    subentity.subsets.dig(DELETED, FILES).each_value do |details|
+      results.add_result(
+        AuditResults::FILE_NOT_IN_MOAB,
+        file_path: "#{subentity.details['other']}/#{details['basis_path']}",
+        manifest_file_path: "#{subentity.details['other']}/#{MANIFESTS_XML}"
+      )
     end
   end
 
@@ -143,31 +140,22 @@ class ChecksumValidator
     results.add_result(AuditResults::FILE_NOT_IN_MOAB, absent_from_moab_data)
   end
 
+  # @return [String]
   def signature_catalog_entry_path(entry)
     @signature_catalog_entry_paths ||= {}
     @signature_catalog_entry_paths[entry] ||= "#{object_dir}/#{entry.storage_path}"
   end
 
+  # @return [String]
   def latest_signature_catalog_path
-    @latest_signature_catalog_path ||= latest_moab_version.version_pathname.join(MANIFESTS, SIGNATURE_XML).to_s
+    @latest_signature_catalog_path ||= latest_moab_version.version_pathname.join(MANIFESTS, 'signatureCatalog.xml').to_s
   end
 
-  # shameless green implementation
+  # @return [Array<SignatureCatalogEntry>]
   def latest_signature_catalog_entries
-    @latest_signature_catalog_entries ||= begin
-      if latest_moab_version.signature_catalog
-        latest_moab_version.signature_catalog.entries
-      else
-        absent_from_moab_data = { signature_catalog_path: latest_moab_version.signature_catalog }
-        results.add_result(AuditResults::SIGNATURE_CATALOG_NOT_IN_MOAB, absent_from_moab_data)
-        []
-      end
-    end
-  # we get here when latest_moab_version.signature_catalog is nil (signatureCatalog.xml does not exist)
-  rescue Errno::ENOENT, NoMethodError
-    sigcat_path = "#{latest_moab_version.version_pathname}/#{MANIFESTS}/#{SIGNATURE_XML}"
-    absent_from_moab_data = { signature_catalog_path: sigcat_path }
-    results.add_result(AuditResults::SIGNATURE_CATALOG_NOT_IN_MOAB, absent_from_moab_data)
+    @latest_signature_catalog_entries ||= latest_moab_version.signature_catalog.entries
+  rescue Errno::ENOENT, NoMethodError # e.g. latest_moab_version.signature_catalog is nil (signatureCatalog.xml does not exist)
+    results.add_result(AuditResults::SIGNATURE_CATALOG_NOT_IN_MOAB, signature_catalog_path: latest_signature_catalog_path)
     []
   end
 
@@ -175,6 +163,7 @@ class ChecksumValidator
     @paths_from_signature_catalog ||= latest_signature_catalog_entries.map { |entry| signature_catalog_entry_path(entry) }
   end
 
+  # @return [Moab::StorageObjectVersion]
   def latest_moab_version
     @latest_moab_version ||= moab.version_list.last
   end
