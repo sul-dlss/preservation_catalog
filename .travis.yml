@@ -1,6 +1,6 @@
 language: ruby
 rvm:
-  - 2.5.1 # make sure this matches our VMs
+  - 2.5.3 # make sure this matches our VMs
 cache: bundler
 services:
   - postgresql
