@@ -43,7 +43,7 @@ before 'deploy:migrate', 'shared_configs:update'
 
 after 'deploy:migrate', 'db_seed'
 
-before 'deploy:migrate', 'resque:pool:stop'
+before 'deploy:starting', 'resque:pool:stop'
 after 'deploy:restart', 'resque:pool:start'
 
 desc 'Run rake db:seed'
