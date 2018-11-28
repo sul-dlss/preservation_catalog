@@ -22,7 +22,7 @@ module PreservationCatalog
           # Non-Amazon S3 use endpoints to override Amazon's REGION endpoint logic.
           Aws::S3::Resource.new(endpoint: ENV['AWS_ENDPOINT'])
         else
-          # If AWS_ENDPOINT is not set we're using actual Amazon S3. 
+          # If AWS_ENDPOINT is not set we're using actual Amazon S3.
           Aws::S3::Resource.new
         end
       end
