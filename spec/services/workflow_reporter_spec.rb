@@ -8,7 +8,7 @@ RSpec.describe WorkflowReporter do
       full_url = 'https://workflows.example.org/workflow/dor/objects/druid:jj925bx9565/workflows/preservationAuditWF/moab-valid'
       result = 'Invalid moab, validation error...ential version directories.'
       body = "<?xml version=\"1.0\"?>\n<process name=\"moab-valid\" status=\"error\" errorMessage=\"#{result}\"/>\n"
-      headers = { 'User-Agent' => 'Faraday v0.15.3' }
+      headers = { 'User-Agent' => 'Faraday v0.15.4' }
       druid = 'jj925bx9565'
       process_name = 'moab-valid'
 
@@ -26,7 +26,7 @@ RSpec.describe WorkflowReporter do
     it 'returns true' do
       full_url = 'https://workflows.example.org/workflow/dor/objects/druid:jj925bx9565/workflows/preservationAuditWF/preservation-audit'
       body = "<?xml version=\"1.0\"?>\n<process name=\"preservation-audit\" status=\"completed\" elapsed=\"0\"/>\n"
-      headers = { 'User-Agent' => 'Faraday v0.15.3' }
+      headers = { 'User-Agent' => 'Faraday v0.15.4' }
       druid = 'jj925bx9565'
       process_name = 'preservation-audit'
 
