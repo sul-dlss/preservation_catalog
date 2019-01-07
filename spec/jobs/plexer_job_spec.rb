@@ -52,7 +52,7 @@ describe PlexerJob, type: :job do
     end
 
     it 'adds ZipPart to each related ZMV' do
-      expect(cm.zipped_moab_versions.count).to eq 2
+      expect(cm.zipped_moab_versions.count).to eq 3
       job.perform(druid, version, s3_key, metadata)
       expect(parts1.map(&:md5)).to eq [md5]
       expect(parts2.map(&:md5)).to eq [md5]

@@ -29,7 +29,7 @@ describe MoabReplicationAuditJob, type: :job do
 
       it 'creates missing ZMVs and logs a warning' do
         expect(cm).to receive(:create_zipped_moab_versions!).and_call_original
-        expect(logger).to receive(:warn).with(/backfilled 2 ZippedMoabVersions: 1 to mock_archive1; 2 to mock_archive1/)
+        expect(logger).to receive(:warn).with(/backfilled 4 ZippedMoabVersions: 1 to ibm_us_south; 1 to mock_archive1; 2 to ibm_us_south; 2 to mock_archive1/)
         job.send(:backfill_missing_zmvs, cm)
       end
     end
@@ -47,9 +47,12 @@ describe MoabReplicationAuditJob, type: :job do
     end
 
     it 'calls PartReplicationAuditJob once per related endpoint' do
-      new_ep = create(:zip_endpoint) # before `cm` invoked, means default policy will include it when making cm
-      expect(PartReplicationAuditJob).to receive(:perform_later).with(cm, cm.zipped_moab_versions.where.not(zip_endpoint: new_ep).first.zip_endpoint)
-      expect(PartReplicationAuditJob).to receive(:perform_later).with(cm, new_ep)
+      new_endpoint = create(:zip_endpoint) # before `cm` invoked, means default policy will include it when making cm
+      # make sure our new_endpoint is included, even though the association isn't the audit's responsibility
+      expect(cm.zipped_moab_versions.pluck(:zip_endpoint_id)).to include(new_endpoint.id)
+      ZipEndpoint.includes(:zipped_moab_versions).where(zipped_moab_versions: { complete_moab: cm }).each do |endpoint|
+        expect(PartReplicationAuditJob).to receive(:perform_later).with(cm, endpoint)
+      end
       job.perform(cm)
     end
   end
