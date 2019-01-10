@@ -25,8 +25,8 @@ describe PartReplicationAuditJob, type: :job do
   end
 
   describe '#perform' do
-    let(:zmv1) { cm.zipped_moab_versions.first }
-    let(:zmv2) { cm.zipped_moab_versions.second }
+    let(:zmv1) { cm.zipped_moab_versions.where(zip_endpoint: endpoint).first }
+    let(:zmv2) { cm.zipped_moab_versions.where(zip_endpoint: endpoint).second }
     let(:results) { job.send(:new_results, cm) }
 
     it 'only checks parts for one endpoint' do

@@ -18,3 +18,7 @@ zip_endpoints:
     endpoint_node: 'localhost'
     storage_location: 'bucket_name'
     delivery_class: 'S3WestDeliveryJob'
+  ibm_us_south:
+    endpoint_node: 'https://ibm.endpoint.biz'
+    storage_location: 'storage_location'
+    delivery_class: 'IbmSouthDeliveryJob'
