@@ -13,7 +13,7 @@ module PreservationCatalog
       # ENV vars, and the bucket must match those, we check for AWS_BUCKET_NAME first.
       # @return [String]
       def bucket_name
-        ENV['AWS_BUCKET_NAME'] || Settings.aws.bucket_name
+        ENV['AWS_BUCKET_NAME'] || Settings.ibm.bucket_name
       end
 
       # @return [Aws::S3::Resource]
