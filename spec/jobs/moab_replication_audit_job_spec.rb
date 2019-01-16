@@ -29,7 +29,7 @@ describe MoabReplicationAuditJob, type: :job do
 
       it 'creates missing ZMVs and logs a warning' do
         expect(cm).to receive(:create_zipped_moab_versions!).and_call_original
-        expect(logger).to receive(:warn).with(/backfilled 2 ZippedMoabVersions: 1 to mock_archive1; 2 to mock_archive1/)
+        expect(logger).to receive(:warn).with(/backfilled 4 ZippedMoabVersions: 1 to ibm_us_south; 1 to mock_archive1; 2 to ibm_us_south; 2 to mock_archive1/)
         job.send(:backfill_missing_zmvs, cm)
       end
     end

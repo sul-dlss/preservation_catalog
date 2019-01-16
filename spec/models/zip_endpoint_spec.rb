@@ -50,7 +50,7 @@ RSpec.describe ZipEndpoint, type: :model do
       # run it a second time
       expect { described_class.seed_from_config(default_pres_policies) }
         .not_to change { described_class.pluck(:endpoint_name).sort }
-        .from(%w[mock_archive1 zip-endpoint])
+        .from(%w[ibm_us_south mock_archive1 zip-endpoint])
     end
 
     it 'adds new records if there are additions to Settings since the last run' do
@@ -66,7 +66,7 @@ RSpec.describe ZipEndpoint, type: :model do
 
       # run it a second time
       described_class.seed_from_config(default_pres_policies)
-      expected_ep_names = %w[fixture_archiveTest mock_archive1 zip-endpoint]
+      expected_ep_names = %w[fixture_archiveTest ibm_us_south mock_archive1 zip-endpoint]
       expect(described_class.pluck(:endpoint_name).sort).to eq expected_ep_names
     end
   end
@@ -82,9 +82,9 @@ RSpec.describe ZipEndpoint, type: :model do
 
     it "returns the zip endpoints which implement the PO's pres policy" do
       zip_endpoint.preservation_policies = [PreservationPolicy.default_policy, alternate_pres_policy]
-      expect(ZipEndpoint.targets(druid).pluck(:endpoint_name).sort).to eq %w[mock_archive1 zip-endpoint]
+      expect(ZipEndpoint.targets(druid).pluck(:endpoint_name).sort).to eq %w[ibm_us_south mock_archive1 zip-endpoint]
       zip_endpoint.preservation_policies = [alternate_pres_policy]
-      expect(ZipEndpoint.targets(druid).pluck(:endpoint_name)).to eq %w[mock_archive1]
+      expect(ZipEndpoint.targets(druid).pluck(:endpoint_name)).to eq %w[ibm_us_south mock_archive1]
     end
   end
 
@@ -100,7 +100,9 @@ RSpec.describe ZipEndpoint, type: :model do
       po = build(:preserved_object, current_version: version, druid: other_druid)
       create(:complete_moab, version: version, preserved_object: po)
     end
-    let!(:ep) { ZipEndpoint.where(id: cm_ze_ids).first } # snag before ZMV destroy_all
+    let!(:eps) { ZipEndpoint.where(id: cm_ze_ids) }
+    let!(:ep) { eps.first } # snag before ZMV destroy_all
+    let!(:ep2) { eps.second }
 
     before { ZippedMoabVersion.destroy_all }
 
@@ -132,7 +134,7 @@ RSpec.describe ZipEndpoint, type: :model do
     end
 
     describe '.which_need_archive_copy' do
-      let(:names) { [ep.endpoint_name, zip_endpoint.endpoint_name] }
+      let(:names) { [ep2.endpoint_name, ep.endpoint_name, zip_endpoint.endpoint_name] }
 
       # rubocop:disable RSpec/MultipleExpectations
       it "returns the zip endpoints which should have a complete moab for the druid/version, but which don't yet" do

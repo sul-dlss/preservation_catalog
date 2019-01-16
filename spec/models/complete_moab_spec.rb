@@ -303,7 +303,7 @@ RSpec.describe CompleteMoab, type: :model do
 
     it 'creates all versions for ZMV' do
       expect(cm.version).to eq 3
-      expect { cm.create_zipped_moab_versions! }.to change(ZippedMoabVersion, :count).from(0).to(3)
+      expect { cm.create_zipped_moab_versions! }.to change(ZippedMoabVersion, :count).from(0).to(6)
     end
 
     it 'if ZMVs already exist, return an empty array' do
