@@ -40,7 +40,7 @@ RSpec.describe ZipEndpoint, type: :model do
           endpoint_node: endpoint_config.endpoint_node,
           storage_location: endpoint_config.storage_location,
           preservation_policies: default_pres_policies,
-          delivery_class: S3WestDeliveryJob
+          delivery_class: endpoint_config.delivery_class.constantize
         }
         expect(described_class.find_by(endpoint_name: endpoint_name)).to have_attributes(zip_endpoint_attrs)
       end
