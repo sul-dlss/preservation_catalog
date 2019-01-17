@@ -288,10 +288,10 @@ RSpec.describe CompleteMoab, type: :model do
 
     it "creates ZMVs that don't yet exist for new endpoint, but should" do
       expect { cm.create_zipped_moab_versions! }.to change {
-        ZipEndpoint.which_need_archive_copy(druid, cm_version).to_a
-      }.from([zip_ep]).to([]).and change {
+        ZipEndpoint.which_need_archive_copy(druid, cm_version).order(:endpoint_name).to_a
+      }.from([ibm_zip_ep, zip_ep]).to([]).and change {
         zmvs_by_druid.where(version: cm_version).count
-      }.from(0).to(1)
+      }.from(0).to(2)
 
       new_zip_ep = create(:zip_endpoint)
 
@@ -299,7 +299,7 @@ RSpec.describe CompleteMoab, type: :model do
         ZipEndpoint.which_need_archive_copy(druid, cm_version).to_a
       }.from([new_zip_ep]).to([]).and change {
         zmvs_by_druid.where(version: cm_version).count
-      }.from(1).to(2)
+      }.from(2).to(3)
     end
 
     it 'creates all versions for ZMV' do
