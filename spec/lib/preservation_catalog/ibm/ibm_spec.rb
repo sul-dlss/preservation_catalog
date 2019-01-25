@@ -54,5 +54,52 @@ describe PreservationCatalog::Ibm do
         expect(config.credentials.access_key_id).to eq 'some_key'
       end
     end
+
+    context 'pointing the client to shared credentials' do
+      let(:config) { described_class.client.config }
+      let(:shared_credentials) do
+        Aws::SharedCredentials.new(path: Rails.root.join('spec', 'fixtures', 'aws_credentials'))
+      end
+
+      after do
+        Aws.config = {}
+      end
+
+      context 'profile us_west_2' do
+        let(:envs) { Hash['AWS_PROFILE' => 'us_west_2'] }
+
+        around do |example|
+          old_vals = envs.keys.zip(ENV.values_at(*envs.keys)).to_h
+          envs.each { |k, v| ENV[k] = v }
+          example.run
+          old_vals.each { |k, v| ENV[k] = v }
+        end
+
+        it 'pulls the one profile from a config file' do
+          Aws.config.update(region: 'us-west-2', credentials: shared_credentials)
+          expect(config.region).to eq 'us-west-2'
+          expect(config.credentials.credentials.access_key_id).to eq 'foo'
+          expect(config.credentials.credentials.secret_access_key).to eq 'bar'
+        end
+      end
+
+      context 'profile us_east_1' do
+        let(:envs) { Hash['AWS_PROFILE' => 'us_east_1'] }
+
+        around do |example|
+          old_vals = envs.keys.zip(ENV.values_at(*envs.keys)).to_h
+          envs.each { |k, v| ENV[k] = v }
+          example.run
+          old_vals.each { |k, v| ENV[k] = v }
+        end
+
+        it 'pulls the other profile from a config file' do
+          Aws.config.update(region: 'us-east-1', credentials: shared_credentials)
+          expect(config.region).to eq 'us-east-1'
+          expect(config.credentials.credentials.access_key_id).to eq 'baz'
+          expect(config.credentials.credentials.secret_access_key).to eq 'quux'
+        end
+      end
+    end
   end
 end
