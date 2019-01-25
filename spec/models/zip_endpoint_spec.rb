@@ -150,7 +150,7 @@ RSpec.describe ZipEndpoint, type: :model do
         expect(ZipEndpoint.which_need_archive_copy(other_druid, version - 1).pluck(:endpoint_name).sort).to eq names
 
         cm2.zipped_moab_versions.create!(version: version - 1, zip_endpoint: ep)
-        expect(ZipEndpoint.which_need_archive_copy(druid, version).pluck(:endpoint_name)).to eq %w[mock_archive1 zip-endpoint]
+        expect(ZipEndpoint.which_need_archive_copy(druid, version).pluck(:endpoint_name).sort).to eq %w[mock_archive1 zip-endpoint]
         expect(ZipEndpoint.which_need_archive_copy(druid, version - 1).pluck(:endpoint_name).sort).to eq names
         expect(ZipEndpoint.which_need_archive_copy(other_druid, version).pluck(:endpoint_name).sort).to eq names
         expect(ZipEndpoint.which_need_archive_copy(other_druid, version - 1).pluck(:endpoint_name)).to eq %w[mock_archive1 zip-endpoint]
