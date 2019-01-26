@@ -3,15 +3,14 @@ require 'rails_helper'
 describe ResultsRecorderJob, type: :job do
   let(:cm) { create(:complete_moab) }
   let(:zmv) { cm.zipped_moab_versions.first }
-  let(:ibm_zmv) { cm.zipped_moab_versions.second }
-  let(:druid) { zmv.preserved_object.druid }
-  let(:ibm_druid) { ibm_zmv.preserved_object.druid }
+  let(:zmv2) { cm.zipped_moab_versions.second }
+  let(:druid) { cm.preserved_object.druid }
   let(:zip_endpoint) { zmv.zip_endpoint }
-  let(:ibm_zip_endpoint) { ibm_zmv.zip_endpoint }
+  let(:zip_endpoint2) { zmv2.zip_endpoint }
 
   before do
     zmv.zip_parts.create(attributes_for(:zip_part))
-    ibm_zmv.zip_parts.create(attributes_for(:zip_part))
+    zmv2.zip_parts.create(attributes_for(:zip_part))
   end
 
   it 'descends from ApplicationJob' do
@@ -30,10 +29,10 @@ describe ResultsRecorderJob, type: :job do
 
   context 'when all zip_endpoints are fulfilled' do
     it 'posts a message to replication.results queue' do
-      hash = { druid: druid, version: zmv.version, zip_endpoints: [ibm_zip_endpoint.endpoint_name, zip_endpoint.endpoint_name] }
+      hash = { druid: druid, version: zmv.version, zip_endpoints: [zip_endpoint.endpoint_name, zip_endpoint2.endpoint_name].sort }
       expect(Resque.redis.redis).to receive(:lpush).with('replication.results', hash.to_json)
       described_class.perform_now(druid, zmv.version, 'fake.zip', zip_endpoint.delivery_class.to_s)
-      described_class.perform_now(ibm_druid, ibm_zmv.version, 'fake.zip', 'IbmSouthDeliveryJob')
+      described_class.perform_now(druid, zmv2.version, 'fake.zip', zip_endpoint2.delivery_class.to_s)
     end
   end
 
