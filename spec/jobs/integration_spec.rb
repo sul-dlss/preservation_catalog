@@ -3,13 +3,15 @@ require 'rails_helper'
 describe 'the whole replication pipeline', type: :job do # rubocop:disable RSpec/DescribeClass
   let(:s3_object) { instance_double(Aws::S3::Object, exists?: false, upload_file: true) }
   let(:bucket) { instance_double(Aws::S3::Bucket, object: s3_object) }
-  let(:zmv) { create(:complete_moab).zipped_moab_versions.first! }
+  let(:cm) { create(:complete_moab) }
+  let(:zmv) { cm.zipped_moab_versions.first! }
+  let(:zmv2) { cm.zipped_moab_versions.second! }
   let(:druid) { zmv.preserved_object.druid }
   let(:version) { zmv.version }
   let(:deliverer) { zmv.zip_endpoint.delivery_class.to_s }
-  let(:ibm_deliverer) { 'IbmSouthDeliveryJob' }
+  let(:deliverer2) { zmv2.zip_endpoint.delivery_class.to_s }
   let(:hash) do
-    { druid: druid, version: version, zip_endpoints: ['ibm_us_south', zmv.zip_endpoint.endpoint_name] }
+    { druid: druid, version: version, zip_endpoints: [zmv.zip_endpoint.endpoint_name, zmv2.zip_endpoint.endpoint_name].sort }
   end
   let(:s3_key) { 'bj/102/hs/9687/bj102hs9687.v0001.zip' }
 
@@ -33,7 +35,7 @@ describe 'the whole replication pipeline', type: :job do # rubocop:disable RSpec
     expect(IbmSouthDeliveryJob).to receive(:perform_later).with(druid, version, s3_key, Hash).and_call_original
     # other endpoints as added...
     expect(ResultsRecorderJob).to receive(:perform_later).with(druid, version, s3_key, deliverer).and_call_original
-    expect(ResultsRecorderJob).to receive(:perform_later).with(druid, version, s3_key, ibm_deliverer).and_call_original
+    expect(ResultsRecorderJob).to receive(:perform_later).with(druid, version, s3_key, deliverer2).and_call_original
     expect(Resque.redis.redis).to receive(:lpush).with('replication.results', hash.to_json)
     ZipmakerJob.perform_now(druid, version)
   end
