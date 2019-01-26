@@ -272,14 +272,14 @@ RSpec.describe CompleteMoab, type: :model do
     let(:cm_version) { 3 }
     let(:zmvs_by_druid) { ZippedMoabVersion.by_druid(druid) }
     let!(:zip_ep) { cm.zipped_moab_versions.first.zip_endpoint } # snag the ZE before link deleted
-    let!(:ibm_zip_ep) { cm.zipped_moab_versions.second.zip_endpoint }
+    let!(:zip_ep2) { cm.zipped_moab_versions.second.zip_endpoint }
 
     before { cm.zipped_moab_versions.destroy_all } # undo auto-spawned rows from callback
 
     it "creates ZMVs that don't yet exist for expected versions, but should" do
       expect { cm.create_zipped_moab_versions! }.to change {
-        ZipEndpoint.which_need_archive_copy(druid, cm_version).to_a
-      }.from([zip_ep, ibm_zip_ep]).to([]).and change {
+        ZipEndpoint.which_need_archive_copy(druid, cm_version).to_a.to_set
+      }.from([zip_ep, zip_ep2].to_set).to([].to_set).and change {
         zmvs_by_druid.where(version: cm_version).count
       }.from(0).to(2)
 
@@ -288,8 +288,8 @@ RSpec.describe CompleteMoab, type: :model do
 
     it "creates ZMVs that don't yet exist for new endpoint, but should" do
       expect { cm.create_zipped_moab_versions! }.to change {
-        ZipEndpoint.which_need_archive_copy(druid, cm_version).order(:endpoint_name).to_a
-      }.from([ibm_zip_ep, zip_ep]).to([]).and change {
+        ZipEndpoint.which_need_archive_copy(druid, cm_version).to_a.to_set
+      }.from([zip_ep, zip_ep2].to_set).to([].to_set).and change {
         zmvs_by_druid.where(version: cm_version).count
       }.from(0).to(2)
 
