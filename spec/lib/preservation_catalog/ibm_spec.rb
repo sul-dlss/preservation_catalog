@@ -11,7 +11,7 @@ describe PreservationCatalog::Ibm do
   describe '.bucket_name' do
     context 'without ENV variable' do
       it 'returns value from Settings' do
-        expect(described_class.bucket_name).to eq 'sul-sdr-ibm-us-south-1-ia'
+        expect(described_class.bucket_name).to eq 'sul-sdr-ibm-us-south-1-test'
       end
     end
 
