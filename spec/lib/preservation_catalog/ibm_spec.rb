@@ -103,7 +103,7 @@ describe PreservationCatalog::Ibm do
     end
   end
 
-  context 'Live S3 bucket', live_s3: true do
+  context 'Live S3 bucket', live_ibm: true do
     subject(:bucket) { described_class.bucket }
 
     it { is_expected.to exist }
