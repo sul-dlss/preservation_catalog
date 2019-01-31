@@ -1,6 +1,6 @@
 module PreservationCatalog
   module Ibm
-    # Methods for auditing checking the state of a ZippedMoabVersion on an S3 endpoint.  Requires AWS credentials are
+    # Methods for auditing checking the state of a ZippedMoabVersion on an IBM S3 compatible endpoint.  Requires AWS credentials are
     # available in the environment.  At the time of this comment, ONLY running queue workers will have proper creds loaded.
     class Audit
       delegate :bucket, :bucket_name, to: ::PreservationCatalog::Ibm
@@ -15,15 +15,15 @@ module PreservationCatalog
       end
 
       # convenience method for instantiating the audit class and running the check in one call
-      def self.check_aws_replicated_zipped_moab_version(zmv, results)
-        new(zmv, results).check_aws_replicated_zipped_moab_version
+      def self.check_ibm_replicated_zipped_moab_version(zmv, results)
+        new(zmv, results).check_ibm_replicated_zipped_moab_version
       end
 
-      def check_aws_replicated_zipped_moab_version
+      def check_ibm_replicated_zipped_moab_version
         zmv.zip_parts.where.not(status: :unreplicated).each do |part|
-          aws_s3_object = bucket.object(part.s3_key)
-          next unless check_existence(aws_s3_object, part)
-          next unless compare_checksum_metadata(aws_s3_object, part)
+          ibm_s3_object = bucket.object(part.s3_key)
+          next unless check_existence(ibm_s3_object, part)
+          next unless compare_checksum_metadata(ibm_s3_object, part)
 
           part.ok!
         end
@@ -36,8 +36,8 @@ module PreservationCatalog
       # we're here, and it's a cheap check to do, and it'd be weird if they differed, so why not?
       # TODO: in a later work cycle, we'd like to spot check some cloud archives: that is, pull the zip down,
       # re-compute the checksum for the retrieved zip, and make sure it matches what we stored.
-      def compare_checksum_metadata(aws_s3_object, part)
-        replicated_checksum = aws_s3_object.metadata["checksum_md5"]
+      def compare_checksum_metadata(ibm_s3_object, part)
+        replicated_checksum = ibm_s3_object.metadata["checksum_md5"]
         if part.md5 == replicated_checksum
           part.update(last_checksum_validation: Time.zone.now)
           true
@@ -55,8 +55,8 @@ module PreservationCatalog
         end
       end
 
-      def check_existence(aws_s3_object, part)
-        if aws_s3_object.exists?
+      def check_existence(ibm_s3_object, part)
+        if ibm_s3_object.exists?
           part.update(last_existence_check: Time.zone.now)
           true
         else

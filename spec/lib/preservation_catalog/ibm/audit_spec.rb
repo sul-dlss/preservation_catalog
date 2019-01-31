@@ -39,7 +39,7 @@ RSpec.describe PreservationCatalog::Ibm::Audit do
 
       expect(bucket).to receive(:object).with(ok_part.s3_key).and_return(s3_obj)
       expect(s3_obj).to receive(:metadata).and_return('checksum_md5' => ok_part.md5)
-      expect { described_class.check_aws_replicated_zipped_moab_version(zmv, results) }
+      expect { described_class.check_ibm_replicated_zipped_moab_version(zmv, results) }
         .to change { ok_part.reload.last_existence_check }
         .from(nil)
         .and change { ok_part.reload.last_checksum_validation }
@@ -65,7 +65,7 @@ RSpec.describe PreservationCatalog::Ibm::Audit do
     end
 
     it 'logs the missing parts' do
-      described_class.check_aws_replicated_zipped_moab_version(zmv, results)
+      described_class.check_ibm_replicated_zipped_moab_version(zmv, results)
       zmv.zip_parts.each do |part|
         msg = "replicated part not found on #{endpoint_name}: #{part.s3_key} was not found on #{bucket_name}"
         expect(results.result_array).to include(
@@ -99,17 +99,17 @@ RSpec.describe PreservationCatalog::Ibm::Audit do
       end
 
       it "doesn't log checksum mismatches" do
-        described_class.check_aws_replicated_zipped_moab_version(zmv, results)
+        described_class.check_ibm_replicated_zipped_moab_version(zmv, results)
         expect(results.result_array).not_to include(a_hash_including(AuditResults::ZIP_PART_CHECKSUM_MISMATCH))
       end
 
       it "doesn't log not found errors" do
-        described_class.check_aws_replicated_zipped_moab_version(zmv, results)
+        described_class.check_ibm_replicated_zipped_moab_version(zmv, results)
         expect(results.result_array).not_to include(a_hash_including(AuditResults::ZIP_PART_NOT_FOUND))
       end
 
       it 'updates existence check timestamps' do
-        expect { described_class.check_aws_replicated_zipped_moab_version(zmv, results) }
+        expect { described_class.check_ibm_replicated_zipped_moab_version(zmv, results) }
           .to change { zmv.zip_parts.first.reload.last_existence_check }
           .from(nil)
           .and change { zmv.zip_parts.second.reload.last_existence_check }
@@ -119,7 +119,7 @@ RSpec.describe PreservationCatalog::Ibm::Audit do
       end
 
       it 'updates checksum validation timestamps' do
-        expect { described_class.check_aws_replicated_zipped_moab_version(zmv, results) }
+        expect { described_class.check_ibm_replicated_zipped_moab_version(zmv, results) }
           .to change { zmv.zip_parts.first.reload.last_checksum_validation }
           .from(nil)
           .and change { zmv.zip_parts.second.reload.last_checksum_validation }
@@ -135,7 +135,7 @@ RSpec.describe PreservationCatalog::Ibm::Audit do
       end
 
       it 'logs the mismatches' do
-        described_class.check_aws_replicated_zipped_moab_version(zmv, results)
+        described_class.check_ibm_replicated_zipped_moab_version(zmv, results)
         zmv.zip_parts.where(suffix: ['.zip', '.z01']).each do |part|
           msg = "replicated md5 mismatch on #{endpoint_name}: #{part.s3_key} catalog md5 (#{part.md5})"\
             " doesn't match the replicated md5 (#{non_matching_md5}) on #{bucket_name}"
@@ -144,7 +144,7 @@ RSpec.describe PreservationCatalog::Ibm::Audit do
       end
 
       it 'updates existence check timestamps' do
-        expect { described_class.check_aws_replicated_zipped_moab_version(zmv, results) }
+        expect { described_class.check_ibm_replicated_zipped_moab_version(zmv, results) }
           .to change { zmv.zip_parts.first.reload.last_existence_check }
           .from(nil)
           .and change { zmv.zip_parts.second.reload.last_existence_check }
@@ -154,7 +154,7 @@ RSpec.describe PreservationCatalog::Ibm::Audit do
       end
 
       it 'updates validation timestamps' do
-        expect { described_class.check_aws_replicated_zipped_moab_version(zmv, results) }
+        expect { described_class.check_ibm_replicated_zipped_moab_version(zmv, results) }
           .to change { zmv.zip_parts.first.reload.last_checksum_validation }
           .from(nil)
           .and change { zmv.zip_parts.second.reload.last_checksum_validation }
@@ -197,7 +197,7 @@ RSpec.describe PreservationCatalog::Ibm::Audit do
       end
 
       it 'logs the missing parts' do
-        described_class.check_aws_replicated_zipped_moab_version(zmv, results)
+        described_class.check_ibm_replicated_zipped_moab_version(zmv, results)
         [zmv.zip_parts.first, zmv.zip_parts.fourth].each do |part|
           msg = "replicated part not found on #{endpoint_name}: #{part.s3_key} was not found on #{bucket_name}"
           expect(results.result_array).to include(a_hash_including(AuditResults::ZIP_PART_NOT_FOUND => msg))
@@ -205,7 +205,7 @@ RSpec.describe PreservationCatalog::Ibm::Audit do
       end
 
       it "doesn't log checksum mismatches" do
-        described_class.check_aws_replicated_zipped_moab_version(zmv, results)
+        described_class.check_ibm_replicated_zipped_moab_version(zmv, results)
         expect(results.result_array).not_to include(a_hash_including(AuditResults::ZIP_PART_CHECKSUM_MISMATCH))
       end
     end
@@ -216,7 +216,7 @@ RSpec.describe PreservationCatalog::Ibm::Audit do
       end
 
       it 'logs the missing parts' do
-        described_class.check_aws_replicated_zipped_moab_version(zmv, results)
+        described_class.check_ibm_replicated_zipped_moab_version(zmv, results)
         [zmv.zip_parts.first, zmv.zip_parts.fourth].each do |part|
           msg = "replicated part not found on #{endpoint_name}: #{part.s3_key} was not found on #{bucket_name}"
           expect(results.result_array).to include(a_hash_including(AuditResults::ZIP_PART_NOT_FOUND => msg))
@@ -227,7 +227,7 @@ RSpec.describe PreservationCatalog::Ibm::Audit do
         part = zmv.zip_parts.second
         msg = "replicated md5 mismatch on #{endpoint_name}: #{part.s3_key} catalog md5 (#{part.md5}) "\
           "doesn't match the replicated md5 (#{non_matching_md5}) on #{bucket_name}"
-        described_class.check_aws_replicated_zipped_moab_version(zmv, results)
+        described_class.check_ibm_replicated_zipped_moab_version(zmv, results)
         expect(results.result_array).to include(a_hash_including(AuditResults::ZIP_PART_CHECKSUM_MISMATCH => msg))
       end
     end
