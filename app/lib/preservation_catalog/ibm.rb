@@ -1,5 +1,5 @@
 module PreservationCatalog
-  # The Application's configured interface to S3.
+  # The Application's configured interface to IBM's S3 compatible service.
   module Ibm
     class << self
       delegate :client, to: :bucket
