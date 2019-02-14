@@ -1,8 +1,10 @@
 require 'rails_helper'
 
 describe 'the whole replication pipeline', type: :job do # rubocop:disable RSpec/DescribeClass
-  let(:s3_object) { instance_double(Aws::S3::Object, exists?: false, upload_file: true) }
-  let(:bucket) { instance_double(Aws::S3::Bucket, object: s3_object) }
+  let(:aws_s3_object) { instance_double(Aws::S3::Object, exists?: false, upload_file: true) }
+  let(:ibm_s3_object) { instance_double(Aws::S3::Object, exists?: false, upload_file: true) }
+  let(:aws_bucket) { instance_double(Aws::S3::Bucket, object: aws_s3_object) }
+  let(:ibm_bucket) { instance_double(Aws::S3::Bucket, object: ibm_s3_object) }
   let(:cm) { create(:complete_moab) }
   let(:zmv) { cm.zipped_moab_versions.first! }
   let(:zmv2) { cm.zipped_moab_versions.second! }
@@ -25,8 +27,8 @@ describe 'the whole replication pipeline', type: :job do # rubocop:disable RSpec
   before do
     FactoryBot.reload # we need the "first" PO, bj102hs9687, for PC to line up w/ fixture
     allow(Settings).to receive(:zip_storage).and_return(Rails.root.join('spec', 'fixtures', 'zip_storage'))
-    allow(PreservationCatalog::S3).to receive(:bucket).and_return(bucket)
-    allow(PreservationCatalog::Ibm).to receive(:bucket).and_return(bucket)
+    allow(PreservationCatalog::S3).to receive(:bucket).and_return(aws_bucket)
+    allow(PreservationCatalog::Ibm).to receive(:bucket).and_return(ibm_bucket)
   end
 
   it 'gets from zipmaker queue to replication result message' do
