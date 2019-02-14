@@ -3,7 +3,7 @@ require 'rails_helper'
 describe PreservationCatalog::Ibm do
   describe '.resource' do
     it 'builds a client with an http/s endpoint setting' do
-      expect(Aws::S3::Resource).to receive(:new).with(hash_including(endpoint: 'https://s3.us-south.cloud-object-storage.appdomain.cloud'))
+      expect(Aws::S3::Resource).to receive(:new).with(endpoint: 'https://s3.us-south.cloud-object-storage.appdomain.cloud')
       described_class.resource
     end
   end
