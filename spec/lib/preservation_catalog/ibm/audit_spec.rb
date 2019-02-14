@@ -64,13 +64,14 @@ RSpec.describe PreservationCatalog::Ibm::Audit do
       )
     end
 
-    it 'logs the missing parts' do
+    it 'logs the missing parts and sets status to not_found' do
       described_class.check_ibm_replicated_zipped_moab_version(zmv, results)
       zmv.zip_parts.each do |part|
         msg = "replicated part not found on #{endpoint_name}: #{part.s3_key} was not found on #{bucket_name}"
         expect(results.result_array).to include(
           a_hash_including(AuditResults::ZIP_PART_NOT_FOUND => msg)
         )
+        expect(part.status).to eq('not_found')
       end
     end
   end
@@ -161,6 +162,16 @@ RSpec.describe PreservationCatalog::Ibm::Audit do
           .from(nil)
           .and change { zmv.zip_parts.third.reload.last_checksum_validation }
           .from(nil)
+      end
+
+      it 'updates status to replicated_checksum_mismatch' do
+        expect { described_class.check_ibm_replicated_zipped_moab_version(zmv, results) }
+          .to change { zmv.zip_parts.first.reload.status }
+          .to('replicated_checksum_mismatch')
+          .and change { zmv.zip_parts.second.reload.status }
+          .to('replicated_checksum_mismatch')
+          .and change { zmv.zip_parts.second.reload.status }
+          .to('replicated_checksum_mismatch')
       end
     end
   end
