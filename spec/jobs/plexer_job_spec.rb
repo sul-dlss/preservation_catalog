@@ -32,17 +32,20 @@ describe PlexerJob, type: :job do
 
   describe '#perform' do
     let!(:cm) do
-      create(:zip_endpoint, delivery_class: 2) # 2nd endpoint ensures cm has 2 ZMVs
+      create(:zip_endpoint, delivery_class: 2) # new 3rd endpoint ensures cm has 3 ZMVs
       create(:complete_moab, preserved_object: po)
     end
     let(:parts1) { cm.zipped_moab_versions.first!.zip_parts }
     let(:parts2) { cm.zipped_moab_versions.second!.zip_parts }
+    let(:parts3) { cm.zipped_moab_versions.third!.zip_parts }
     let(:s3_key) { job.zip.s3_key(metadata[:suffix]) }
 
     it 'splits the message out to endpoints' do
       expect(S3WestDeliveryJob).to receive(:perform_later)
         .with(druid, version, s3_key, a_hash_including(:checksum_md5, :size, :zip_cmd, :zip_version))
       expect(S3EastDeliveryJob).to receive(:perform_later)
+        .with(druid, version, s3_key, a_hash_including(:checksum_md5, :size, :zip_cmd, :zip_version))
+      expect(IbmSouthDeliveryJob).to receive(:perform_later)
         .with(druid, version, s3_key, a_hash_including(:checksum_md5, :size, :zip_cmd, :zip_version))
       job.perform(druid, version, s3_key, metadata)
     end
@@ -56,6 +59,7 @@ describe PlexerJob, type: :job do
       job.perform(druid, version, s3_key, metadata)
       expect(parts1.map(&:md5)).to eq [md5]
       expect(parts2.map(&:md5)).to eq [md5]
+      expect(parts3.map(&:md5)).to eq [md5]
       expect(parts1.first!.create_info).to eq metadata.slice(:zip_cmd, :zip_version).to_s
     end
   end
