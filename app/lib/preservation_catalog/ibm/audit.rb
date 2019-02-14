@@ -31,8 +31,8 @@ module PreservationCatalog
 
       private
 
-      # NOTE: no checksum computation is happening here (neither on our side, nor on AWS's).  we're just comparing
-      # the checksum we have stored with the checksum we asked AWS to store.  we really don't expect any drift, but
+      # NOTE: no checksum computation is happening here (neither on our side, nor on IBM's).  we're just comparing
+      # the checksum we have stored with the checksum we asked IBM to store.  we really don't expect any drift, but
       # we're here, and it's a cheap check to do, and it'd be weird if they differed, so why not?
       # TODO: in a later work cycle, we'd like to spot check some cloud archives: that is, pull the zip down,
       # re-compute the checksum for the retrieved zip, and make sure it matches what we stored.
