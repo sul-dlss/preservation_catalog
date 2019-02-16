@@ -19,7 +19,8 @@ set :deploy_to, "/opt/app/pres/#{fetch(:application)}"
 
 # Default value for :linked_files is []
 append :linked_files, "config/database.yml", "config/resque.yml",
-       "config/resque-pool.yml", "config/resque-pool-west.yml"
+       "config/resque-pool.yml", "config/resque-pool-west.yml",
+       "config/resque-pool-south.yml"
 
 # Default value for linked_dirs is []
 append :linked_dirs, "log", "config/settings" # , "tmp/pids", "tmp/cache", "tmp/sockets", "public/system"

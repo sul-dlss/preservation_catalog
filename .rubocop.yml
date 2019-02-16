@@ -41,6 +41,7 @@ Metrics/LineLength:
     - 'app/services/checksum_validator.rb' # FIXME
     - 'lib/capistrano/tasks/capistrano-resque-pool.rake'
     - 'spec/controllers/catalog_controller_spec.rb' # FIXME
+    - 'spec/jobs/moab_replication_audit_job_spec.rb' # line 32 regex is longer due to zmvs on an additional endpoint
 
 Metrics/MethodLength:
   Max: 25
@@ -69,6 +70,8 @@ RSpec/MessageSpies:
 
 RSpec/MultipleExpectations:
   Max: 5
+  Exclude:
+    - 'spec/jobs/integration_spec.rb' # line 30 testing additional zip_endpoint needs more expectations
 
 RSpec/NamedSubject:
   Enabled: false

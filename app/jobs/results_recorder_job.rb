@@ -45,7 +45,7 @@ class ResultsRecorderJob < ApplicationJob
     {
       druid: druid,
       version: version,
-      zip_endpoints: zmvs.pluck(:endpoint_name)
+      zip_endpoints: zmvs.pluck(:endpoint_name).sort
     }
   end
 

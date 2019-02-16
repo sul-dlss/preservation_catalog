@@ -9,7 +9,8 @@ class ZipEndpoint < ApplicationRecord
   # TODO: switch this to use plain strings representing the class name
   enum delivery_class: {
     S3WestDeliveryJob => 1,
-    S3EastDeliveryJob => 2
+    S3EastDeliveryJob => 2,
+    IbmSouthDeliveryJob => 3
   }
 
   validates :endpoint_name, presence: true, uniqueness: true
