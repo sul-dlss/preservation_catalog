@@ -22,7 +22,7 @@ end
 every :hour, roles: [:cache_cleaner] do
   set :output, standard: '/var/log/preservation_catalog/zip_cache_cleanup.log'
   command <<-'END_OF_COMMAND'
-    find /sdr-transfers -mindepth 5 -type f -name "*.zip" -mtime +1 -exec bash -c 'TARGET="{}"; rm -v ${TARGET%ip}*' \;
+    find /sdr-transfers -mindepth 5 -type f -name "*.md5" -mtime +1 -exec bash -c 'TARGET="{}"; rm -v ${TARGET%md5}*' \;
   END_OF_COMMAND
 end
 
