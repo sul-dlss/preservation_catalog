@@ -8,15 +8,12 @@ RSpec.describe WorkflowReporter do
       full_url = 'https://workflows.example.org/workflow/dor/objects/druid:jj925bx9565/workflows/preservationAuditWF/moab-valid'
       result = 'Invalid moab, validation error...ential version directories.'
       body = "<?xml version=\"1.0\"?>\n<process name=\"moab-valid\" status=\"error\" errorMessage=\"#{result}\"/>\n"
-      headers = { 'User-Agent' => 'Faraday v0.15.4' }
       druid = 'jj925bx9565'
       process_name = 'moab-valid'
 
       stub_request(:put, full_url)
-        .with(
-          body: body,
-          headers: headers
-        ).to_return(status: 200, body: "", headers: {})
+        .with(body: body)
+        .to_return(status: 200, body: "", headers: {})
 
       expect(described_class.report_error(druid, process_name, result)).to be true
     end
@@ -26,15 +23,12 @@ RSpec.describe WorkflowReporter do
     it 'returns true' do
       full_url = 'https://workflows.example.org/workflow/dor/objects/druid:jj925bx9565/workflows/preservationAuditWF/preservation-audit'
       body = "<?xml version=\"1.0\"?>\n<process name=\"preservation-audit\" status=\"completed\" elapsed=\"0\"/>\n"
-      headers = { 'User-Agent' => 'Faraday v0.15.4' }
       druid = 'jj925bx9565'
       process_name = 'preservation-audit'
 
       stub_request(:put, full_url)
-        .with(
-          body: body,
-          headers: headers
-        ).to_return(status: 200, body: "", headers: {})
+        .with(body: body)
+        .to_return(status: 200, body: "", headers: {})
 
       expect(described_class.report_completed(druid, process_name)).to be true
     end
