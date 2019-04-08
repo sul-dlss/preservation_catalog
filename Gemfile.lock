@@ -53,7 +53,7 @@ GEM
     arel (8.0.0)
     ast (2.4.0)
     aws-eventstream (1.0.2)
-    aws-partitions (1.148.0)
+    aws-partitions (1.149.0)
     aws-sdk-core (3.48.3)
       aws-eventstream (~> 1.0, >= 1.0.2)
       aws-partitions (~> 1.0)
@@ -115,13 +115,13 @@ GEM
     deprecation (1.0.0)
       activesupport
     diff-lcs (1.3)
-    dlss-capistrano (3.4.1)
+    dlss-capistrano (3.5.0)
       capistrano (~> 3.0)
       capistrano-bundle_audit (>= 0.1.0)
       capistrano-one_time_key
       capistrano-shared_configs
     docile (1.3.1)
-    dor-workflow-service (2.10.1)
+    dor-workflow-service (2.12.0)
       activesupport (>= 3.2.1, < 6)
       confstruct (>= 0.2.7, < 2)
       deprecation
@@ -140,8 +140,8 @@ GEM
       concurrent-ruby (~> 1.0)
     dry-equalizer (0.2.2)
     dry-inflector (0.1.2)
-    dry-logic (0.5.0)
-      dry-container (~> 0.2, >= 0.2.6)
+    dry-logic (0.6.0)
+      concurrent-ruby (~> 1.0)
       dry-core (~> 0.2)
       dry-equalizer (~> 0.2)
     dry-types (0.14.1)
@@ -216,7 +216,7 @@ GEM
       nokogiri (~> 1.5)
     okcomputer (1.17.4)
     parallel (1.17.0)
-    parser (2.6.2.0)
+    parser (2.6.2.1)
       ast (~> 2.4.0)
     pg (1.1.4)
     powerpack (0.1.2)
@@ -230,7 +230,7 @@ GEM
       pry (>= 0.10.4)
     public_suffix (3.0.3)
     puma (3.12.1)
-    rack (2.0.6)
+    rack (2.0.7)
     rack-protection (2.0.5)
       rack
     rack-test (1.1.0)
