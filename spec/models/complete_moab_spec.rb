@@ -21,7 +21,7 @@ RSpec.describe CompleteMoab, type: :model do
   it 'is not valid without all required valid attributes' do
     expect(described_class.new).not_to be_valid
     expect(described_class.new(preserved_object_id: preserved_object.id)).not_to be_valid
-    expect(described_class.new(args.merge(moab_storage_root_id: 1, size: 1))).to be_valid
+    expect(described_class.new(args.merge(moab_storage_root_id: MoabStorageRoot.first.id, size: 1))).to be_valid
   end
 
   it 'defines a status enum with the expected values' do
