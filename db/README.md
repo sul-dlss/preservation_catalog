@@ -3,6 +3,8 @@
 ##### Schema Entity-Relationship Diagram
 ![Schema Entity-Relationship Diagram as of 2018-07-31](schema_ER_diagram.2018-08-07.png)
 
+_Please keep this up to date as the schema changes!_
+
 <sub>Diagram generated from lucidchart.com (File > Import Data > Entity Relationship > SQL Import > PostgreSQL; follow instructions for schema dump/import, arrange tables given on left-hand toolbar)</sub>
 
 ###### Key:
@@ -148,7 +150,9 @@ ORDER BY complete_moabs.status asc, moab_storage_roots.storage_location asc
 ```
 
 #### view the druids on a given endpoint
-- will return tons of results on prod
+
+_Warning: will return tons of results on prod_
+
 ```ruby
 input> CompleteMoab.joins(:preserved_object, :moab_storage_root).where(moab_storage_roots: {name: :fixture_sr1}).pluck('preserved_objects.druid')
 ```

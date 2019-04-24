@@ -212,7 +212,9 @@ Audit::Checksum.validate_status_root(:validity_unknown, :services-disk15)
 
 [Valid status strings](https://github.com/sul-dlss/preservation_catalog/blob/master/app/models/complete_moab.rb#L1-L10)
 
-## Seed the catalog
+## Seed the catalog (with data about the Moabs on the storage roots the catalog tracks -- presumes rake db:seed already performed)
+
+_<sub>Note: "seed" might be slightly confusing terminology here, see https://github.com/sul-dlss/preservation_catalog/issues/1154</sub>_
 
 Seeding the catalog presumes an empty or nearly empty database -- otherwise seeding will throw `druid NOT expected to exist in catalog but was found` errors for each found object.
 Seeding does more validation than regular M2C.
@@ -268,10 +270,25 @@ MoabStorageRoot.find_each { |msr| MoabToCatalog.seed_catalog_for_dir(msr.storage
 
 ### Seed
 
-You should only need to do this once, or after nuking your test database:
+You should only need to do this:
+* when you first start developing on Preservation Catalog
+* after nuking your test database
+* when adding storage roots or zip endpoints:
 ```
 RAILS_ENV=test bundle exec rails db:reset
 ```
+
+The above populates the database with PreservationPolicy, MoabStorageRoot, and ZipEndpoint objects
+as defined in the configuration files.
+
+If you are new to developing on this project, you should read [the database README](db/README.md).  It
+has a detailed explanation of the data model, some sample queries, and an ER diagram illustrating the
+DB table relationships.  For those less familiar with ActiveRecord, there is also some guidance about
+how this project uses it.
+
+_Please keep the database README up to date as the schema changes!_
+
+You may also wish to glance at the (much shorter) [Replication README](app/jobs/README.md).
 
 ### Running Tests
 
