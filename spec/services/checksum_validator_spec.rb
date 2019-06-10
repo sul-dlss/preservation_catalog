@@ -14,8 +14,8 @@ RSpec.describe ChecksumValidator do
 
   before do
     allow(Audit::Checksum).to receive(:logger).and_return(logger_double) # silence log output
-    allow(Dor::WorkflowService).to receive(:update_workflow_error_status)
-    allow(Dor::WorkflowService).to receive(:update_workflow_status)
+    allow(WorkflowReporter).to receive(:report_error)
+    allow(WorkflowReporter).to receive(:report_completed)
   end
 
   describe '#initialize' do

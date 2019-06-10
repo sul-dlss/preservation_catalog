@@ -3,7 +3,7 @@ require 'services/shared_examples_preserved_object_handler'
 
 RSpec.describe PreservedObjectHandler do
   before do
-    allow(Dor::WorkflowService).to receive(:update_workflow_error_status)
+    allow(WorkflowReporter).to receive(:report_error)
   end
 
   let(:druid) { 'ab123cd4567' }

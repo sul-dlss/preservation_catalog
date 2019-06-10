@@ -16,7 +16,7 @@ RSpec.describe Audit::CatalogToMoab do
   end
 
   before do
-    allow(Dor::WorkflowService).to receive(:update_workflow_error_status)
+    allow(WorkflowReporter).to receive(:report_error)
     allow(c2m).to receive(:logger).and_return(logger_double) # silence log output
   end
 

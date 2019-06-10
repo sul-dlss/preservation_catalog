@@ -2,8 +2,8 @@ require 'rails_helper'
 
 RSpec.describe AuditResults do
   before do
-    allow(Dor::WorkflowService).to receive(:update_workflow_error_status)
-    allow(Dor::WorkflowService).to receive(:update_workflow_status)
+    allow(WorkflowReporter).to receive(:report_error)
+    allow(WorkflowReporter).to receive(:report_completed)
   end
 
   let(:druid) { 'ab123cd4567' }

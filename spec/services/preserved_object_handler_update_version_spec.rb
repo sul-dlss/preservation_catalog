@@ -3,8 +3,8 @@ require 'services/shared_examples_preserved_object_handler'
 
 RSpec.describe PreservedObjectHandler do
   before do
-    allow(Dor::WorkflowService).to receive(:update_workflow_error_status)
-    allow(Dor::WorkflowService).to receive(:update_workflow_status)
+    allow(WorkflowReporter).to receive(:report_error)
+    allow(WorkflowReporter).to receive(:report_completed)
   end
 
   let(:db_update_failed_prefix) { "db update failed" }
