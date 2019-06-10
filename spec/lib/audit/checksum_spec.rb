@@ -5,8 +5,8 @@ RSpec.describe Audit::Checksum do
   let(:logger_double) { instance_double(ActiveSupport::Logger, info: nil, add: nil, debug: nil, warn: nil) }
 
   before do
-    allow(Dor::WorkflowService).to receive(:update_workflow_error_status)
-    allow(Dor::WorkflowService).to receive(:update_workflow_status)
+    allow(WorkflowReporter).to receive(:report_error)
+    allow(WorkflowReporter).to receive(:report_completed)
     allow(described_class).to receive(:logger).and_return(logger_double) # silence log output
   end
 

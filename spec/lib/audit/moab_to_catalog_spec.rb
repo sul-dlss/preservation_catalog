@@ -11,7 +11,7 @@ RSpec.describe Audit::MoabToCatalog do
 
   before do
     allow(described_class.logger).to receive(:info) # silence STDOUT chatter
-    allow(Dor::WorkflowService).to receive(:update_workflow_error_status)
+    allow(WorkflowReporter).to receive(:report_error)
   end
 
   describe '.logger' do

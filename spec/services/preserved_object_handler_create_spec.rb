@@ -10,7 +10,7 @@ RSpec.describe PreservedObjectHandler do
   let(:po_handler) { described_class.new(druid, incoming_version, incoming_size, ms_root) }
   let(:exp_msg) { "added object to db as it did not exist" }
 
-  before { allow(Dor::WorkflowService).to receive(:update_workflow_error_status) }
+  before { allow(WorkflowReporter).to receive(:report_error) }
 
   describe '#create' do
     it 'creates PreservedObject and CompleteMoab in database' do

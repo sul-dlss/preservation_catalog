@@ -1,7 +1,7 @@
 require 'rails_helper'
 RSpec.describe CatalogController, type: :controller do
   before do
-    allow(Dor::WorkflowService).to receive(:update_workflow_error_status)
+    allow(WorkflowReporter).to receive(:report_error)
   end
 
   let(:size) { 2342 }
