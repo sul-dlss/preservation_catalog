@@ -51,15 +51,15 @@ class CatalogController < ApplicationController
   end
 
   def bare_druid
-    poh_params[:druid].split(':', 2).last if poh_params[:druid]
+    poh_params[:druid]&.split(':', 2)&.last
   end
 
   def incoming_version
-    poh_params[:incoming_version].to_i if poh_params[:incoming_version]
+    poh_params[:incoming_version]&.to_i
   end
 
   def incoming_size
-    poh_params[:incoming_size].to_i if poh_params[:incoming_size]
+    poh_params[:incoming_size]&.to_i
   end
 
   def moab_storage_root

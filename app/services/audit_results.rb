@@ -208,7 +208,7 @@ class AuditResults
   end
 
   def log_msg_prefix
-    @log_msg_prefix ||= "#{check_name}(#{druid}, #{moab_storage_root.name if moab_storage_root})"
+    @log_msg_prefix ||= "#{check_name}(#{druid}, #{moab_storage_root&.name})"
   end
 
   def workflows_msg_prefix
