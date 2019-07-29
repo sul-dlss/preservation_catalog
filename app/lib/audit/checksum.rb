@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Audit
   # Checksum validator code
   class Checksum

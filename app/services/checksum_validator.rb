@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # code for validating Moab checksums
 class ChecksumValidator
   include ::MoabValidationHandler
@@ -8,12 +10,12 @@ class ChecksumValidator
   delegate :moab_storage_root, to: :complete_moab
   delegate :storage_location, to: :moab_storage_root
 
-  MANIFESTS = 'manifests'.freeze
-  MANIFESTS_XML = 'manifestInventory.xml'.freeze
-  MODIFIED = 'modified'.freeze
-  ADDED = 'added'.freeze
-  DELETED = 'deleted'.freeze
-  FILES = 'files'.freeze
+  MANIFESTS = 'manifests'
+  MANIFESTS_XML = 'manifestInventory.xml'
+  MODIFIED = 'modified'
+  ADDED = 'added'
+  DELETED = 'deleted'
+  FILES = 'files'
 
   def initialize(complete_moab)
     @complete_moab = complete_moab

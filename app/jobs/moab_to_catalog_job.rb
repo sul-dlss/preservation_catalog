@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Check catalog based on filesystem, updating database
 # @see PreservedObjectHandler#check_existence
 class MoabToCatalogJob < ApplicationJob

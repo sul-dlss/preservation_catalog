@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # AuditResults allows the correct granularity of information to be reported in various contexts.
 #   By collecting all the result information in this class, we keep the audit check code cleaner, and
 #   enable an easy way to provide:

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Audit
   # Catalog to Moab existence check code
   class CatalogToMoab

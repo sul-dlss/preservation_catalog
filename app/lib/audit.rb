@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'active_record_utils'
 require 'druid-tools'
 require 'profiler'

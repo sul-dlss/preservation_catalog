@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 ##
 # CatalogController allows consumers to interact with the Preservation Catalog, e.g.
 # to add an existing moab object to the catalog, or to update an entry for a moab object

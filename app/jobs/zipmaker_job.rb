@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Responsibilities:
 # If needed, zip files to zip storage and calculate checksum(s).
 # Otherwise, touch the existing main ".zip" file to freshen it in cache.

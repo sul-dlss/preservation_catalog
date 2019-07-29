@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Corresponds to a Moab-Version on a ZipEndpoint.
 #   There will be individual parts (at least one) - see ZipPart.
 # For a fully consistent system, given a CompleteMoab, the number of associated

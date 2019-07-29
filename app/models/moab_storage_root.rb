@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 ##
 # Metadata about a Moab storage root (a POSIX file system which contains Moab objects).
 class MoabStorageRoot < ApplicationRecord

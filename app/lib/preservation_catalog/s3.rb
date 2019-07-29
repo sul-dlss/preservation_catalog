@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module PreservationCatalog
   # The Application's configured interface to AWS S3.
   module S3

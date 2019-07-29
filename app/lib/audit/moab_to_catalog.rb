@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Audit
   # finds Moab objects on a single Moab storage_dir and interacts with Catalog (db)
   #   according to method called

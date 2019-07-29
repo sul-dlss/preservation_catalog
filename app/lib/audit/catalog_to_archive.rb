@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Audit
   # Catalog to cloud archive provider (what ZipEndpoint, ZippedMoabVersion etc represent) audit code
   class CatalogToArchive

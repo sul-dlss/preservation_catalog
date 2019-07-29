@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # We chunk archives of Moab versions into multiple files, so we don't get
 # completely unwieldy file sizes.  This represents metadata for one such part.
 # This model's data is populated by PlexerJob.

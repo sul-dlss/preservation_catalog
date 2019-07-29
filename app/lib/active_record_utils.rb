@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # some useful re-usable ActiveRecord patterns
 module ActiveRecordUtils
   # Executes the given block in an ActiveRecord transaction.  Traps common ActiveRecord exceptions.

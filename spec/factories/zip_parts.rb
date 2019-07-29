@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 FactoryBot.define do
   factory :zip_part do
     md5 { "00236a2ae558018ed13b5222ef1bd977" }

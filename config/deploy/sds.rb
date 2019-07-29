@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 server 'preservation-catalog-sds-01.stanford.edu', user: 'pres', roles: %w[app db web]
 server 'preservation-catalog-sds-02.stanford.edu', user: 'pres', roles: %w[app resque queue_populator]
 server 'preservation-catalog-sds-03.stanford.edu', user: 'pres', roles: %w[app resque]
