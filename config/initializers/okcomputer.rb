@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'okcomputer'
 require Rails.root.join('config', 'initializers', 'resque.rb').to_s
 

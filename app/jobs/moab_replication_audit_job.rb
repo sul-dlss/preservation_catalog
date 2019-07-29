@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Confirms a CompleteMoab has all versions/parts replicated for each of its target endpoints.
 # @note Enqueues a check per endpoint
 # @example usage

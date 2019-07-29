@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # A common base for jobs based around druid and version (with locking).
 # Prepopulates the `zip` with a DruidVersionZip object
 class ZipPartJobBase < DruidVersionJobBase

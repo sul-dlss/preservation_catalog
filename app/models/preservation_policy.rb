@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 ##
 # defines some characteristics about how an object should be preserved, or how an endpoint preserves objects
 class PreservationPolicy < ApplicationRecord

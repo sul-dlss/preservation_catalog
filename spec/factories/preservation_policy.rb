@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 FactoryBot.define do
   factory :preservation_policy do
     preservation_policy_name { 'default' }

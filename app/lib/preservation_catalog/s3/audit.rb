@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module PreservationCatalog
   module S3
     # Methods for auditing checking the state of a ZippedMoabVersion on an S3 endpoint.  Requires AWS credentials are

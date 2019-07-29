@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'resque/plugins/lock'
 
 # Base job for this Application

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Taken from okcomputer's own tests
 # https://github.com/sportngin/okcomputer/blob/master/spec/support/check_matcher.rb
 

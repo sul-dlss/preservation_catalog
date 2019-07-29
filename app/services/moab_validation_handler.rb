@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 ##
 # mixin with methods for running StorageObjectValidator
 module MoabValidationHandler

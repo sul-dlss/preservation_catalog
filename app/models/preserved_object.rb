@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 ##
 # PreservedObject represents a master record tying together all
 # concrete copies of an object that is being preserved.  It does not

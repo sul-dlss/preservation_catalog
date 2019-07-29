@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Precondition(s):
 #  All needed CompleteMoab and ZippedMoabVersion rows are already made.
 # @see CompleteMoab#create_zipped_moab_versions!

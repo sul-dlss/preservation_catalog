@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Confirms that a CompleteMoab is fully/properly replicated to ONE target endpoint.
 # The endpoint is used to build the queue name which much be serviced by a worker with
 # corresponding (AWS) credentials.

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Metadata about a zip endpoint which stores zipped archives of version directories from Moab
 # objects.
 class ZipEndpoint < ApplicationRecord

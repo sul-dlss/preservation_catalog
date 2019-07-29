@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 RSpec.configure do |config|
   config.before do
     next unless RSpec.current_example.metadata[:type] == :job

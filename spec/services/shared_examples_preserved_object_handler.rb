@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 RSpec.shared_examples "attributes validated" do |method_sym|
   let(:bad_druid) { '666' }
   let(:bad_version) { 'vv666' }
