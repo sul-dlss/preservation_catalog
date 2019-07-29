@@ -15,7 +15,7 @@ describe ChecksumValidationJob, type: :job do
   end
 
   describe 'before_enqueue' do
-    before { allow(ChecksumValidationJob).to receive(:perform_later).and_call_original } # undo rails_helper block
+    before { allow(described_class).to receive(:perform_later).and_call_original } # undo rails_helper block
 
     it 'raises on bad param' do
       expect { described_class.perform_later(3) }.to raise_error(ArgumentError)
@@ -31,11 +31,11 @@ describe ChecksumValidationJob, type: :job do
       described_class.queue_adapter = old_adapter
     end
 
-    before { allow(ChecksumValidationJob).to receive(:perform_later).and_call_original } # undo rails_helper block
+    before { allow(described_class).to receive(:perform_later).and_call_original } # undo rails_helper block
 
     it 'does not add duplicate messages' do
-      ChecksumValidationJob.perform_later(cm)
-      expect { ChecksumValidationJob.perform_later(cm) }
+      described_class.perform_later(cm)
+      expect { described_class.perform_later(cm) }
         .not_to change { Resque.info[:pending] }.from(1)
     end
   end

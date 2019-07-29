@@ -12,14 +12,14 @@ RSpec.describe MoabStorageRoot, type: :model do
   end
 
   it 'is not valid unless it has all required attributes' do
-    expect(MoabStorageRoot.new).not_to be_valid
-    expect(MoabStorageRoot.new(name: 'aws')).not_to be_valid
+    expect(described_class.new).not_to be_valid
+    expect(described_class.new(name: 'aws')).not_to be_valid
     expect(moab_storage_root).to be_valid
   end
 
   it 'enforces unique constraint on name (model level)' do
     expect do
-      MoabStorageRoot.create!(moab_storage_root.attributes.slice('name', 'storage_location'))
+      described_class.create!(moab_storage_root.attributes.slice('name', 'storage_location'))
     end.to raise_error(ActiveRecord::RecordInvalid)
   end
 
@@ -37,8 +37,8 @@ RSpec.describe MoabStorageRoot, type: :model do
   describe '.seed_from_config' do
     # assumes seeding already ran for the suite, we run it a again
     it 'does not re-create records that already exist' do
-      expect { MoabStorageRoot.seed_from_config(default_pres_policies) }
-        .not_to change { MoabStorageRoot.pluck(:name).sort }
+      expect { described_class.seed_from_config(default_pres_policies) }
+        .not_to change { described_class.pluck(:name).sort }
         .from(%w[fixture_empty fixture_sr1 fixture_sr2 fixture_sr3 storage-root-01])
     end
 
@@ -50,8 +50,8 @@ RSpec.describe MoabStorageRoot, type: :model do
       )
       allow(Settings.storage_root_map).to receive(:default).and_return(storage_roots_setting)
 
-      expect { MoabStorageRoot.seed_from_config(default_pres_policies) }
-        .to change { MoabStorageRoot.pluck(:name).sort }
+      expect { described_class.seed_from_config(default_pres_policies) }
+        .to change { described_class.pluck(:name).sort }
         .from(%w[fixture_empty fixture_sr1 fixture_sr2 fixture_sr3 storage-root-01])
         .to(%w[fixture_empty fixture_sr1 fixture_sr2 fixture_sr3 fixture_srTest storage-root-01])
     end
