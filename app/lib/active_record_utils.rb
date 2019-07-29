@@ -31,7 +31,7 @@ module ActiveRecordUtils
     # first obtained.  As the above link reminds us, "By its nature, batch processing is subject to race conditions
     # if other processes are modifying the database."
     num_to_process = relation.count
-    while num_to_process > 0
+    while num_to_process.positive?
       relation.limit(batch_size).each do |row|
         yield row
       end

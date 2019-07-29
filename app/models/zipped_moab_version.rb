@@ -35,7 +35,7 @@ class ZippedMoabVersion < ApplicationRecord
   end
 
   def all_parts_replicated?
-    zip_parts.count > 0 && zip_parts.all?(&:ok?)
+    zip_parts.count.positive? && zip_parts.all?(&:ok?)
   end
 
   # Send to asynchronous replication pipeline

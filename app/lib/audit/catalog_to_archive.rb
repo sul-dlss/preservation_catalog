@@ -8,7 +8,7 @@ module Audit
     # @return [Boolean] true if we have a list of child parts to check in the cloud, false otherwise
     def self.check_child_zip_part_attributes(zmv, results)
       base_hash = { version: zmv.version, endpoint_name: zmv.zip_endpoint.endpoint_name }
-      unless zmv.zip_parts.count > 0
+      unless zmv.zip_parts.count.positive?
         results.add_result(AuditResults::ZIP_PARTS_NOT_CREATED, base_hash)
         return false # everything else relies on checking parts, nothing left to do
       end
@@ -27,7 +27,7 @@ module Audit
       end
 
       unreplicated_parts = zmv.zip_parts.where(status: :unreplicated)
-      if unreplicated_parts.count > 0
+      if unreplicated_parts.count.positive?
         results.add_result(
           AuditResults::ZIP_PARTS_NOT_ALL_REPLICATED,
           base_hash.merge(unreplicated_parts_list: unreplicated_parts.to_a)
