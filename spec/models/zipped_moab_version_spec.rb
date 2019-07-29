@@ -44,8 +44,8 @@ RSpec.describe ZippedMoabVersion, type: :model do
     let!(:zmv_diff_druid) { create(:zipped_moab_version, complete_moab: cm_diff) }
 
     it "returns the ZMV's for the given druid" do
-      expect(ZippedMoabVersion.by_druid('jj925bx9565').sort).to include zmv_diff_druid
-      expect(ZippedMoabVersion.by_druid('jj925bx9565').sort).not_to include zmv
+      expect(described_class.by_druid('jj925bx9565').sort).to include zmv_diff_druid
+      expect(described_class.by_druid('jj925bx9565').sort).not_to include zmv
     end
   end
 
