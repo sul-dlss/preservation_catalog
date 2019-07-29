@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'rails_helper'
 
 describe 'OkComputer custom checks' do # rubocop:disable RSpec/DescribeClass

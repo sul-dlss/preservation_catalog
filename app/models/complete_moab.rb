@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 ##
 # CompleteMoab represents a concrete instance of a PreservedObject across ALL versions, in physical storage.
 class CompleteMoab < ApplicationRecord

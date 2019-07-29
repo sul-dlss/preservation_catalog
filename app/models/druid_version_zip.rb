@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'open3'
 
 # For replication purposes, we may have to chunk archival objects (zips) of Moab versions into multiple files to avoid

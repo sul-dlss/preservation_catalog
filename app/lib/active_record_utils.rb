@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # some useful re-usable ActiveRecord patterns
 module ActiveRecordUtils
   # Executes the given block in an ActiveRecord transaction.  Traps common ActiveRecord exceptions.
@@ -31,7 +33,7 @@ module ActiveRecordUtils
     # first obtained.  As the above link reminds us, "By its nature, batch processing is subject to race conditions
     # if other processes are modifying the database."
     num_to_process = relation.count
-    while num_to_process > 0
+    while num_to_process.positive?
       relation.limit(batch_size).each do |row|
         yield row
       end

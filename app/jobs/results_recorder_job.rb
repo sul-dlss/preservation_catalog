@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Preconditions:
 # PlexerJob has made a matching ZipPart row
 #

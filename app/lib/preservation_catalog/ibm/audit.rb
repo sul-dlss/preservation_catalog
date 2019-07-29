@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module PreservationCatalog
   module Ibm
     # Methods for auditing checking the state of a ZippedMoabVersion on an IBM S3 compatible endpoint.  Requires AWS credentials are

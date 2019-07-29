@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Posts zips to S3, if needed.
 # Notify ResultsRecorderJob, if posted.
 # @see PreservationCatalog::S3 for how S3 credentials and bucket are configured

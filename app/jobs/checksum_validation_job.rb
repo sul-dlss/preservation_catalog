@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Confirm checksum for one (online) CompleteMoab, updating database
 # @see ChecksumValidator
 class ChecksumValidationJob < ApplicationJob

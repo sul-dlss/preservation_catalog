@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 namespace :resque do
   namespace :pool do
     def rails_env

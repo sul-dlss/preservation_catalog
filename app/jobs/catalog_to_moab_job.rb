@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Check filesystem based on catalog, updating database
 # @see Audit::CatalogToMoab
 class CatalogToMoabJob < ApplicationJob

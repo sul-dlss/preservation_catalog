@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # AuditResults allows the correct granularity of information to be reported in various contexts.
 #   By collecting all the result information in this class, we keep the audit check code cleaner, and
 #   enable an easy way to provide:
@@ -172,7 +174,7 @@ class AuditResults
     /to ok$/.match(result[AuditResults::CM_STATUS_CHANGED]) != nil
   end
 
-  def to_json
+  def to_json(*_args)
     { druid: druid, result_array: result_array }.to_json
   end
 
@@ -208,7 +210,7 @@ class AuditResults
   end
 
   def log_msg_prefix
-    @log_msg_prefix ||= "#{check_name}(#{druid}, #{moab_storage_root.name if moab_storage_root})"
+    @log_msg_prefix ||= "#{check_name}(#{druid}, #{moab_storage_root&.name})"
   end
 
   def workflows_msg_prefix

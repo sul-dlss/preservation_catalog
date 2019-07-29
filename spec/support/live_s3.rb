@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 RSpec.configure do |config|
   config.around do |example|
     if RSpec.current_example.metadata[:live_aws] || RSpec.current_example.metadata[:live_ibm]

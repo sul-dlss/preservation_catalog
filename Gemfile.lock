@@ -217,7 +217,6 @@ GEM
     parser (2.6.3.0)
       ast (~> 2.4.0)
     pg (1.1.4)
-    powerpack (0.1.2)
     pry (0.12.2)
       coderay (~> 1.1.0)
       method_source (~> 0.9.0)
@@ -295,14 +294,13 @@ GEM
       rspec-mocks (~> 3.8.0)
       rspec-support (~> 3.8.0)
     rspec-support (3.8.2)
-    rubocop (0.60.0)
+    rubocop (0.73.0)
       jaro_winkler (~> 1.5.1)
       parallel (~> 1.10)
-      parser (>= 2.5, != 2.5.1.1)
-      powerpack (~> 0.1)
+      parser (>= 2.6)
       rainbow (>= 2.2.2, < 4.0)
       ruby-progressbar (~> 1.7)
-      unicode-display_width (~> 1.4.0)
+      unicode-display_width (>= 1.4.0, < 1.7)
     rubocop-rspec (1.33.0)
       rubocop (>= 0.60.0)
     ruby-prof (0.18.0)
@@ -337,7 +335,7 @@ GEM
     tins (1.21.1)
     tzinfo (1.2.5)
       thread_safe (~> 0.1)
-    unicode-display_width (1.4.1)
+    unicode-display_width (1.6.0)
     vegas (0.1.11)
       rack (>= 1.0.0)
     webmock (3.6.0)
@@ -379,7 +377,7 @@ DEPENDENCIES
   resque-lock
   resque-pool
   rspec-rails (~> 3.6)
-  rubocop (~> 0.60.0)
+  rubocop (~> 0.73.0)
   rubocop-rspec
   ruby-prof
   shoulda-matchers!

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'resque/failure/redis_multi_queue'
 
 # load environment specific configuration

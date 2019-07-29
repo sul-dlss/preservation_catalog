@@ -52,9 +52,6 @@ Naming/FileName:
     - 'Gemfile'
     - 'lib/capistrano/tasks/capistrano-resque-pool.rake'
 
-Rails/HasAndBelongsToMany:
-  Enabled: false
-
 RSpec/ContextWording:
   Enabled: false # too dogmatic
 
