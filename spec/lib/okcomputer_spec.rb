@@ -25,14 +25,14 @@ describe 'OkComputer custom checks' do # rubocop:disable RSpec/DescribeClass
 
   describe DirectoryExistsCheck do
     it 'successful for existing directory' do
-      expect(DirectoryExistsCheck.new(Settings.zip_storage)).to be_successful
+      expect(described_class.new(Settings.zip_storage)).to be_successful
     end
     it 'fails for a file' do
       zip_path = 'spec/fixtures/zip_storage/bj/102/hs/9687/bj102hs9687.v0001.zip'
-      expect(DirectoryExistsCheck.new(zip_path)).not_to be_successful
+      expect(described_class.new(zip_path)).not_to be_successful
     end
     it 'fails for non-existent directory' do
-      expect(DirectoryExistsCheck.new('i-do-not-exist')).not_to be_successful
+      expect(described_class.new('i-do-not-exist')).not_to be_successful
     end
   end
 
