@@ -9,8 +9,6 @@ Rails application to track, audit and replicate archival artifacts associated wi
 ## Table of Contents
 
 * [Getting Started](#getting-started)
-    * [PostgreSQL](#postgresql)
-    * [Redis](#redis)
 * [Usage Instructions](#usage-instructions)
     * [Moab to Catalog](#m2c) (M2C) existence/version check
     * [Catalog to Moab](#c2m) (C2M) existence/version check
@@ -21,46 +19,19 @@ Rails application to track, audit and replicate archival artifacts associated wi
 
 ## Getting Started
 
-### PostgreSQL
+### Installing dependencies
 
-#### Installing Postgres
-
-If you use homebrew you can install PostgreSQL with:
+Use the docker-compose to start the dependencies (PostgreSQL and Redis)
 ```sh
-brew install postgresql
+docker-compose up
 ```
 
-Make sure Postgres starts every time your computer starts up.
+### Configuring The database
+
+Run this script:
 ```sh
-brew services start postgresql
-```
-
-Check to see if Postgres is installed with `postgres -V` and that it's accepting connections with `pg_isready`.
-
-#### Configuring Postgres
-
-Using the `psql` utility, run these two setup scripts from the command line, like so:
-```sh
-psql -f db/scripts/pres_setup.sql postgres
-psql -f db/scripts/pres_test_setup.sql postgres
-bundle exec rails db:seed
-RAILS_ENV=test bundle exec rails db:seed
-```
-
-These scripts do the following for you:
-* create the test and dev PostgreSQL users.
-* create the test and dev databases.
-* setup the needed ownership and permissions between the DBs and the users.
-* seed data into development and test environments
-
-For more info on postgres commands, see https://www.postgresql.org/docs/
-
-### Redis
-
-Install and run `redis`.  For example, using `homebrew`:
-```sh
-brew install redis
-brew services start redis
+./bin/rails db:reset
+RAILS_ENV=test ./bin/rails db:seed
 ```
 
 # Usage Instructions

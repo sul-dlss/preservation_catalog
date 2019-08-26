@@ -8,7 +8,3 @@ require 'rubocop/rake_task'
 RuboCop::RakeTask.new
 
 task default: [:spec, :rubocop]
-
-task :travis_setup_postgres do
-  sh("psql -U postgres -f db/scripts/pres_test_setup.sql")
-end
