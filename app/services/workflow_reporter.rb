@@ -1,8 +1,5 @@
 # frozen_string_literal: true
 
-# Workaround for https://github.com/sul-dlss/dor-workflow-client/issues/109
-require 'dor/workflow/client/version'
-
 # send errors to preservationAuditWF workflow for an object via ReST calls.
 class WorkflowReporter
   DOR = 'dor'
