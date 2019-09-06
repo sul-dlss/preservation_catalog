@@ -5,6 +5,15 @@ require 'resque/server'
 Rails.application.routes.draw do
   resources :catalog, param: :druid, only: %i[create update]
 
+  resources :objects, only: %i[show] do
+    member do
+      get 'checksum'
+    end
+    collection do
+      get 'checksums'
+    end
+  end
+
   mount Resque::Server.new, at: '/resque',
                             constraints: ->(req) { Settings.resque_dashboard_hostnames.include?(req.host) }
 

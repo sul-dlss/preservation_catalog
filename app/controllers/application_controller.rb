@@ -1,6 +1,11 @@
 # frozen_string_literal: true
 
-class ApplicationController < ActionController::Base
-  protect_from_forgery with: :exception
-  skip_before_action :verify_authenticity_token
+class ApplicationController < ActionController::API
+  include ActionController::MimeResponds
+
+  protected
+
+  def strip_druid(id)
+    id&.split(':', 2)&.last
+  end
 end

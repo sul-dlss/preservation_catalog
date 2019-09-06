@@ -53,7 +53,7 @@ class CatalogController < ApplicationController
   end
 
   def bare_druid
-    poh_params[:druid]&.split(':', 2)&.last
+    strip_druid(poh_params[:druid])
   end
 
   def incoming_version
