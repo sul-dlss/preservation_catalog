@@ -53,8 +53,8 @@ GEM
     arel (8.0.0)
     ast (2.4.0)
     aws-eventstream (1.0.3)
-    aws-partitions (1.207.0)
-    aws-sdk-core (3.65.1)
+    aws-partitions (1.210.0)
+    aws-sdk-core (3.66.0)
       aws-eventstream (~> 1.0, >= 1.0.2)
       aws-partitions (~> 1.0)
       aws-sigv4 (~> 1.1)
@@ -340,7 +340,7 @@ GEM
     unicode-display_width (1.6.0)
     vegas (0.1.11)
       rack (>= 1.0.0)
-    webmock (3.7.1)
+    webmock (3.7.2)
       addressable (>= 2.3.6)
       crack (>= 0.3.2)
       hashdiff (>= 0.4.0, < 2.0.0)
@@ -349,7 +349,7 @@ GEM
     websocket-extensions (0.1.4)
     whenever (1.0.0)
       chronic (>= 0.6.3)
-    zeitwerk (2.1.9)
+    zeitwerk (2.1.10)
 
 PLATFORMS
   ruby
