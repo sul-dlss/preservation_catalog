@@ -53,9 +53,9 @@ RSpec.describe ObjectsController, type: :request do
     end
 
     context 'when bad parameter passed in' do
-      it 'returns a 500 response code' do
+      it 'returns a 400 response code' do
         get checksum_object_url 'not a druid', format: :json
-        expect(response).to have_http_status(:internal_server_error)
+        expect(response).to have_http_status(:bad_request)
       end
     end
   end
@@ -110,9 +110,9 @@ RSpec.describe ObjectsController, type: :request do
     end
 
     context 'when bad parameter passed in' do
-      it 'returns a 500 response code with a bad druid passed in' do
+      it 'returns a 400 response code with a bad druid passed in' do
         get checksums_objects_url, params: { druids: [prefixed_druid, 'not a druid'], format: :json }
-        expect(response).to have_http_status(:internal_server_error)
+        expect(response).to have_http_status(:bad_request)
       end
 
       it 'returns a 406 response code when an unsupported response format is provided' do

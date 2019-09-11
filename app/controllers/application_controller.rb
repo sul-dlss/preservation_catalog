@@ -5,7 +5,7 @@ class ApplicationController < ActionController::API
 
   rescue_from ActiveRecord::RecordNotFound, with: :not_found
   rescue_from Moab::ObjectNotFoundException, with: :not_found
-  rescue_from InvalidSuriSyntax, with: :internal_server_error
+  rescue_from InvalidSuriSyntax, with: :bad_request
 
   protected
 
@@ -13,12 +13,12 @@ class ApplicationController < ActionController::API
     id&.split(':', 2)&.last
   end
 
-  def not_found
-    render plain: '404 Not Found', status: :not_found
+  def bad_request
+    render plain: '400 bad request', status: :bad_request
   end
 
-  def internal_server_error
-    render plain: '500 Internal Server Error', status: :internal_server_error
+  def not_found
+    render plain: '404 Not Found', status: :not_found
   end
 
   def refine_invalid_druid_error!(err)
