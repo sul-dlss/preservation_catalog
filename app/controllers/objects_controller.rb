@@ -29,24 +29,30 @@ class ObjectsController < ApplicationController
 
     respond_to do |format|
       format.json do
-        results = druids.map { |druid| { "#{druid}": checksum_for_object(druid) } }
-        render json: results.to_json
+        render json: json_checksum_list
       end
       format.csv do
-        results = CSV.generate do |csv|
-          druids.each do |druid|
-            checksum_for_object(druid).each do |checksum|
-              csv << [druid, checksum[:filename], checksum[:md5], checksum[:sha1], checksum[:sha256], checksum[:filesize]]
-            end
-          end
-        end
-        render plain: results
+        render plain: csv_checksum_list
       end
       format.any  { render status: :not_acceptable, plain: 'Format not acceptable' }
     end
   end
 
   private
+
+  def json_checksum_list
+    druids.map { |druid| { "#{druid}": checksum_for_object(druid) } }.to_json
+  end
+
+  def csv_checksum_list
+    CSV.generate do |csv|
+      druids.each do |druid|
+        checksum_for_object(druid).each do |checksum|
+          csv << [druid, checksum[:filename], checksum[:md5], checksum[:sha1], checksum[:sha256], checksum[:filesize]]
+        end
+      end
+    end
+  end
 
   def druids
     params[:druids]
