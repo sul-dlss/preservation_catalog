@@ -22,7 +22,11 @@ class ObjectsController < ApplicationController
   # return the checksums and filesize for a list of druid (supplied with druid: prefix)
   # GET /objects/checksums?druids=druida,druidb,druidc
   def checksums
-    druids = params[:druids]
+    unless druids.present?
+      render(plain: '400 bad request', status: :bad_request)
+      return
+    end
+
     respond_to do |format|
       format.json do
         results = druids.map { |druid| { "#{druid}": checksum_for_object(druid) } }
@@ -40,11 +44,13 @@ class ObjectsController < ApplicationController
       end
       format.any  { render status: 406, plain: 'Format not acceptable' }
     end
-  rescue NoMethodError => e
-    render status: 500, json: e.message
   end
 
   private
+
+  def druids
+    params[:druids]
+  end
 
   def checksum_for_object(druid)
     content_group = retrieve_file_group(druid)

@@ -120,9 +120,9 @@ RSpec.describe ObjectsController, type: :request do
         expect(response).to have_http_status(:not_acceptable)
       end
 
-      it 'returns a 500 response code with no druid parameters passed in' do
+      it 'returns a 400 response code with no druid parameters passed in' do
         get checksums_objects_url, params: { format: :json }
-        expect(response).to have_http_status(:internal_server_error)
+        expect(response).to have_http_status(:bad_request)
       end
     end
   end
