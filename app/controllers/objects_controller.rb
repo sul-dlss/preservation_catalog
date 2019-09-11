@@ -42,7 +42,7 @@ class ObjectsController < ApplicationController
         end
         render plain: results
       end
-      format.any  { render status: 406, plain: 'Format not acceptable' }
+      format.any  { render status: :not_acceptable, plain: 'Format not acceptable' }
     end
   end
 
