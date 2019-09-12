@@ -55,7 +55,8 @@ class ObjectsController < ApplicationController
   end
 
   def druids
-    params[:druids]
+    return [] unless params[:druids].present?
+    params[:druids].map { |druid| strip_druid(druid) }.sort.uniq # normalize, then sort, then de-dupe
   end
 
   def checksum_for_object(druid)
