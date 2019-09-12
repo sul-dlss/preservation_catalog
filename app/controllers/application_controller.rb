@@ -21,6 +21,7 @@ class ApplicationController < ActionController::API
     render plain: '404 Not Found', status: :not_found
   end
 
+  # TODO: get rid of this once https://github.com/sul-dlss/moab-versioning/issues/159 is implemented
   def refine_invalid_druid_error!(err)
     # make a specific moab-versioning StandardError into something more easily manageable by ApplicationController...
     raise InvalidSuriSyntax, err.message if err.message.include?('Identifier has invalid suri syntax')
