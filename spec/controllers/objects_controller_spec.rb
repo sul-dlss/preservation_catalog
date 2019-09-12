@@ -100,7 +100,7 @@ RSpec.describe ObjectsController, type: :request do
                 md5: '42e9d4c0a766f837e5a2f5610d9f258e',
                 sha1: '5bfc6052b0e458e0aa703a0a6853bb9c112e0695',
                 sha256: '1530df24086afefd71bf7e5b7e85bb350b6972c838bf6c87ddd5c556b800c802',
-                filesize: 167_784 }] },
+                filesize: 167_784 }] }
         ]
         expect(response).to have_http_status(:ok)
         expect(response.body).to eq(expected_response.to_json)

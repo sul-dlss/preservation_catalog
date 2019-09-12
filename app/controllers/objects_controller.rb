@@ -9,14 +9,14 @@ class ObjectsController < ApplicationController
   # return the PreservedObject model for the druid (supplied with druid: prefix)
   # GET /objects/:druid
   def show
-    object = PreservedObject.find_by!(druid: strip_druid(params[:id]))
+    object = PreservedObject.find_by!(druid: druid)
     render json: object.to_json
   end
 
   # return the checksums and filesize for a single druid (supplied with druid: prefix)
   # GET /objects/:druid/checksum
   def checksum
-    render json: checksum_for_object(params[:id]).to_json
+    render json: checksum_for_object(druid).to_json
   end
 
   # return the checksums and filesize for a list of druid (supplied with druid: prefix)
@@ -40,6 +40,15 @@ class ObjectsController < ApplicationController
 
   private
 
+  def druid
+    strip_druid(params[:id])
+  end
+
+  def druids
+    return [] unless params[:druids].present?
+    params[:druids].map { |druid| strip_druid(druid) }.sort.uniq # normalize, then sort, then de-dupe
+  end
+
   def json_checksum_list
     druids.map { |druid| { "#{druid}": checksum_for_object(druid) } }.to_json
   end
@@ -52,11 +61,6 @@ class ObjectsController < ApplicationController
         end
       end
     end
-  end
-
-  def druids
-    return [] unless params[:druids].present?
-    params[:druids].map { |druid| strip_druid(druid) }.sort.uniq # normalize, then sort, then de-dupe
   end
 
   def checksum_for_object(druid)
