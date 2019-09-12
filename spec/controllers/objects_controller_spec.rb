@@ -125,6 +125,47 @@ RSpec.describe ObjectsController, type: :request do
         expect(response).to have_http_status(:ok)
         expect(response.body).to eq(expected_response)
       end
+
+      context 'when the caller asks for bare druids in the response' do
+        it 'json response contains one checksum for each unique, normalized druid (in alpha order by druid)' do
+          get checksums_objects_url, params: { druids: [prefixed_druid, prefixed_druid2, bare_druid], format: :json, return_bare_druids: true }
+          expected_response = [
+            { "#{bare_druid}":
+              [{ filename: 'eric-smith-dissertation.pdf',
+                 md5: 'aead2f6f734355c59af2d5b2689e4fb3',
+                 sha1: '22dc6464e25dc9a7d600b1de6e3848bf63970595',
+                 sha256: 'e49957d53fb2a46e3652f4d399bd14d019600cf496b98d11ebcdf2d10a8ffd2f',
+                 filesize: 1_000_217 },
+               { filename: 'eric-smith-dissertation-augmented.pdf',
+                 md5: '93802f1a639bc9215c6336ff5575ee22',
+                 sha1: '32f7129a81830004f0360424525f066972865221',
+                 sha256: 'a67276820853ddd839ba614133f1acd7330ece13f1082315d40219bed10009de',
+                 filesize: 905_566 }] },
+            { "#{bare_druid2}":
+              [{  filename: 'SC1258_FUR_032a.jpg',
+                  md5: '42e9d4c0a766f837e5a2f5610d9f258e',
+                  sha1: '5bfc6052b0e458e0aa703a0a6853bb9c112e0695',
+                  sha256: '1530df24086afefd71bf7e5b7e85bb350b6972c838bf6c87ddd5c556b800c802',
+                  filesize: 167_784 }] }
+          ]
+          expect(response).to have_http_status(:ok)
+          expect(response.body).to eq(expected_response.to_json)
+        end
+
+        it 'csv response contains multiple object checksums, but still normalizes and de-dupes druids, and alpha sorts by druid' do
+          get checksums_objects_url, params: { druids: [prefixed_druid, prefixed_druid2], format: :csv, return_bare_druids: true }
+          expected_response = CSV.generate do |csv|
+            csv << [bare_druid, 'eric-smith-dissertation.pdf', 'aead2f6f734355c59af2d5b2689e4fb3',
+                    '22dc6464e25dc9a7d600b1de6e3848bf63970595', 'e49957d53fb2a46e3652f4d399bd14d019600cf496b98d11ebcdf2d10a8ffd2f', '1000217']
+            csv << [bare_druid, 'eric-smith-dissertation-augmented.pdf', '93802f1a639bc9215c6336ff5575ee22',
+                    '32f7129a81830004f0360424525f066972865221', 'a67276820853ddd839ba614133f1acd7330ece13f1082315d40219bed10009de', '905566']
+            csv << [bare_druid2, 'SC1258_FUR_032a.jpg', '42e9d4c0a766f837e5a2f5610d9f258e',
+                    '5bfc6052b0e458e0aa703a0a6853bb9c112e0695', '1530df24086afefd71bf7e5b7e85bb350b6972c838bf6c87ddd5c556b800c802', '167784']
+          end
+          expect(response).to have_http_status(:ok)
+          expect(response.body).to eq(expected_response)
+        end
+      end
     end
 
     context 'when object not found' do
