@@ -10,8 +10,14 @@ RSpec.describe ObjectsController, type: :request do
 
   describe 'GET #show' do
     context 'when object found' do
-      it 'response contains the object' do
+      it 'response contains the object when given prefixed druid' do
         get object_url "druid:#{pres_obj.druid}", format: :json
+        expect(response.body).to include(pres_obj.to_json)
+        expect(response).to have_http_status(:ok)
+      end
+
+      it 'response contains the object when given bare druid' do
+        get object_url pres_obj.druid, format: :json
         expect(response.body).to include(pres_obj.to_json)
         expect(response).to have_http_status(:ok)
       end

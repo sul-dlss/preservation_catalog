@@ -9,8 +9,7 @@ class ObjectsController < ApplicationController
   # return the PreservedObject model for the druid (supplied with druid: prefix)
   # GET /objects/:druid
   def show
-    object = PreservedObject.find_by!(druid: druid)
-    render json: object.to_json
+    render json: PreservedObject.find_by!(druid: druid).to_json
   end
 
   # return the checksums and filesize for a single druid (supplied with druid: prefix)
