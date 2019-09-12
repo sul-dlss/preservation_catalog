@@ -48,15 +48,23 @@ class ObjectsController < ApplicationController
     params[:druids].map { |druid| strip_druid(druid) }.sort.uniq # normalize, then sort, then de-dupe
   end
 
+  def return_bare_druids?
+    params[:return_bare_druids] == 'true'
+  end
+
+  def returned_druid(druid)
+    return_bare_druids? ? druid.to_s : "druid:#{druid}"
+  end
+
   def json_checksum_list
-    druids.map { |druid| { "#{druid}": checksum_for_object(druid) } }.to_json
+    druids.map { |druid| { returned_druid(druid) => checksum_for_object(druid) } }.to_json
   end
 
   def csv_checksum_list
     CSV.generate do |csv|
       druids.each do |druid|
         checksum_for_object(druid).each do |checksum|
-          csv << [druid, checksum[:filename], checksum[:md5], checksum[:sha1], checksum[:sha256], checksum[:filesize]]
+          csv << [returned_druid(druid), checksum[:filename], checksum[:md5], checksum[:sha1], checksum[:sha256], checksum[:filesize]]
         end
       end
     end
