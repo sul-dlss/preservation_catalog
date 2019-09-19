@@ -19,7 +19,8 @@ class ObjectsController < ApplicationController
   end
 
   # return the checksums and filesize for a list of druid (supplied with druid: prefix)
-  # GET /objects/checksums?druids=druida,druidb,druidc
+  # note: this is deliberately allowed to be a POST to allow for a large number of druids to be passed in
+  # GET OR POST /objects/checksums?druids[]=druida&druids[]=druidb&druids[]=druidc
   def checksums
     unless druids.present?
       render(plain: '400 bad request', status: :bad_request)
