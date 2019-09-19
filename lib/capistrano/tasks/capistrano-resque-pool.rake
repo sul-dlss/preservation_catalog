@@ -36,6 +36,7 @@ namespace :resque do
             execute :kill, "-s QUIT #{pid}"
           else
             info "Process #{pid} from #{east_pid_path} is not running, cleaning up stale PID file"
+            execute :rm, east_pid_path
           end
         end
         if west_pid_file_exists?
