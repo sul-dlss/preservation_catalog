@@ -10,7 +10,7 @@ Rails.application.routes.draw do
       get 'checksum'
     end
     collection do
-      get 'checksums'
+      match 'checksums', via: %i[get post]
     end
   end
 
