@@ -18,7 +18,9 @@ zip_endpoints:
     endpoint_node: 'localhost'
     storage_location: 'bucket_name'
     delivery_class: 'S3WestDeliveryJob'
+    audit_class: 'PreservationCatalog::S3::Audit'
   ibm_us_south:
     endpoint_node: 'https://s3.us-south.cloud-object-storage.appdomain.cloud'
     storage_location: 'storage_location'
     delivery_class: 'IbmSouthDeliveryJob'
+    audit_class: 'PreservationCatalog::Ibm::Audit'

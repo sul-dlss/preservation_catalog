@@ -9,19 +9,20 @@ RSpec.describe ZipEndpoint, type: :model do
 
   it 'is not valid unless it has all required attributes' do
     expect(described_class.new(delivery_class: 1)).not_to be_valid
+    expect(described_class.new(audit_class: 1)).not_to be_valid
     expect(described_class.new(endpoint_name: 'aws')).not_to be_valid
     expect(zip_endpoint).to be_valid
   end
 
   it 'enforces unique constraint on endpoint_name (model level)' do
     expect do
-      described_class.create!(endpoint_name: 'zip-endpoint', delivery_class: S3EastDeliveryJob)
+      described_class.create!(endpoint_name: 'zip-endpoint', delivery_class: S3EastDeliveryJob, audit_class: PreservationCatalog::S3::Audit)
     end.to raise_error(ActiveRecord::RecordInvalid)
   end
 
   it 'enforces unique constraint on endpoint_name (db level)' do
     expect do
-      described_class.new(endpoint_name: 'zip-endpoint', delivery_class: 1).save(validate: false)
+      described_class.new(endpoint_name: 'zip-endpoint', delivery_class: 1, audit_class: 1).save(validate: false)
     end.to raise_error(ActiveRecord::RecordNotUnique)
   end
 
@@ -34,6 +35,7 @@ RSpec.describe ZipEndpoint, type: :model do
   it { is_expected.to have_and_belong_to_many(:preservation_policies) }
   it { is_expected.to validate_presence_of(:endpoint_name) }
   it { is_expected.to validate_presence_of(:delivery_class) }
+  it { is_expected.to validate_presence_of(:audit_class) }
 
   describe '.seed_from_config' do
     it 'creates an endpoints entry for each zip endpoint' do
@@ -42,7 +44,8 @@ RSpec.describe ZipEndpoint, type: :model do
           endpoint_node: endpoint_config.endpoint_node,
           storage_location: endpoint_config.storage_location,
           preservation_policies: default_pres_policies,
-          delivery_class: endpoint_config.delivery_class.constantize
+          delivery_class: endpoint_config.delivery_class.constantize,
+          audit_class: endpoint_config.audit_class.constantize
         }
         expect(described_class.find_by(endpoint_name: endpoint_name)).to have_attributes(zip_endpoint_attrs)
       end
@@ -61,7 +64,8 @@ RSpec.describe ZipEndpoint, type: :model do
           Config::Options.new(
             endpoint_node: 'endpoint_node',
             storage_location: 'storage_location',
-            delivery_class: 'S3WestDeliveryJob'
+            delivery_class: 'S3WestDeliveryJob',
+            audit_class: 'PreservationCatalog::S3::Audit'
           )
       )
       allow(Settings).to receive(:zip_endpoints).and_return(zip_endpoints_setting)

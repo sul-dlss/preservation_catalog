@@ -6,6 +6,7 @@ FactoryBot.define do
     sequence(:endpoint_node) { |n| "us-west-#{format('%02d', n)}" }
     storage_location { 'bucket_name' }
     delivery_class { 1 }
+    audit_class { 1 }
     preservation_policies { [PreservationPolicy.default_policy] }
   end
 end

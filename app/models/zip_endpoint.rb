@@ -14,10 +14,15 @@ class ZipEndpoint < ApplicationRecord
     S3EastDeliveryJob => 2,
     IbmSouthDeliveryJob => 3
   }
+  enum audit_class: {
+    PreservationCatalog::S3::Audit => 1,
+    PreservationCatalog::Ibm::Audit => 2
+  }
 
   validates :endpoint_name, presence: true, uniqueness: true
   # TODO: after switching to string, validate that input resolves to class which #is_a class of the right type?
   validates :delivery_class, presence: true
+  validates :audit_class, presence: true
 
   # for the given druid, which zip endpoints should have archive copies, as per the preservation_policy?
   scope :targets, lambda { |druid|
@@ -54,6 +59,7 @@ class ZipEndpoint < ApplicationRecord
         zip_endpoint.storage_location = endpoint_config.storage_location
         zip_endpoint.preservation_policies = preservation_policies
         zip_endpoint.delivery_class = delivery_classes[endpoint_config.delivery_class.constantize]
+        zip_endpoint.audit_class = audit_classes[endpoint_config.audit_class.constantize]
       end
     end
   end
