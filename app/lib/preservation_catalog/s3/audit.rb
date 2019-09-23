@@ -17,7 +17,7 @@ module PreservationCatalog
       end
 
       # convenience method for instantiating the audit class and running the check in one call
-      def self.check_aws_replicated_zipped_moab_version(zmv, results)
+      def self.check_replicated_zipped_moab_version(zmv, results)
         new(zmv, results).check_aws_replicated_zipped_moab_version
       end
 
