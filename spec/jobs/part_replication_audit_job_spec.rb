@@ -44,8 +44,8 @@ describe PartReplicationAuditJob, type: :job do
       allow(job).to receive(:new_results).with(cm).and_return(results)
       allow(job).to receive(:check_child_zip_part_attributes).with(zmv2, AuditResults)
       expect(job).to receive(:check_child_zip_part_attributes).with(zmv1, AuditResults).and_return(true)
-      expect(PreservationCatalog::S3::Audit).to receive(:check_aws_replicated_zipped_moab_version).with(zmv1, AuditResults)
-      expect(PreservationCatalog::S3::Audit).not_to receive(:check_aws_replicated_zipped_moab_version).with(zmv2, AuditResults)
+      expect(PreservationCatalog::S3::Audit).to receive(:check_replicated_zipped_moab_version).with(zmv1, AuditResults)
+      expect(PreservationCatalog::S3::Audit).not_to receive(:check_replicated_zipped_moab_version).with(zmv2, AuditResults)
       expect(results).to receive(:report_results)
       job.perform(cm, endpoint)
     end
