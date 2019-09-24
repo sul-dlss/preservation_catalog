@@ -15,7 +15,7 @@ class PartReplicationAuditJob < ApplicationJob
     results = new_results(complete_moab)
     complete_moab.zipped_moab_versions.where(zip_endpoint: zip_endpoint).each do |zmv|
       next unless check_child_zip_part_attributes(zmv, results)
-      PreservationCatalog::S3::Audit.check_replicated_zipped_moab_version(zmv, results)
+      zip_endpoint.audit_class.check_replicated_zipped_moab_version(zmv, results)
     end
     results.report_results(logger)
   end
