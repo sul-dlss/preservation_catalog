@@ -35,6 +35,34 @@ RSpec.describe ZipEndpoint, type: :model do
   it { is_expected.to validate_presence_of(:endpoint_name) }
   it { is_expected.to validate_presence_of(:delivery_class) }
 
+  describe '#audit_class' do
+    it 'returns the right audit class when one is configured' do
+      expect(described_class.find_by(endpoint_name: 'mock_archive1').audit_class).to be(PreservationCatalog::S3::Audit)
+      expect(described_class.find_by(endpoint_name: 'ibm_us_south').audit_class).to be(PreservationCatalog::Ibm::Audit)
+    end
+
+    it 'raises a helpful error when no audit class is configured' do
+      expect { zip_endpoint.audit_class }.to raise_error("No audit class configured for #{zip_endpoint.endpoint_name}")
+    end
+
+    it 'raises a helpful error when a non-existent audit class is configured' do
+      ep_name = zip_endpoint.endpoint_name
+      zip_endpoints_setting = Config::Options.new(
+        "#{ep_name}":
+          Config::Options.new(
+            endpoint_node: 'endpoint_node',
+            storage_location: 'storage_location',
+            delivery_class: 'S3WestDeliveryJob',
+            audit_class: 'PreservationCatalog::Hal::Audit'
+          )
+      )
+
+      allow(Settings).to receive(:zip_endpoints).and_return(zip_endpoints_setting)
+      msg = "Failed to return audit class based on setting for #{ep_name}.  Check setting string for accuracy."
+      expect { zip_endpoint.audit_class }.to raise_error(msg)
+    end
+  end
+
   describe '.seed_from_config' do
     it 'creates an endpoints entry for each zip endpoint' do
       Settings.zip_endpoints.each do |endpoint_name, endpoint_config|

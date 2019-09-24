@@ -57,4 +57,17 @@ class ZipEndpoint < ApplicationRecord
       end
     end
   end
+
+  def audit_class
+    raise "No audit class configured for #{endpoint_name}" unless audit_class_setting
+    audit_class_setting.constantize
+  rescue NameError
+    raise "Failed to return audit class based on setting for #{endpoint_name}.  Check setting string for accuracy."
+  end
+
+  private
+
+  def audit_class_setting
+    @audit_class_setting ||= Settings.zip_endpoints[endpoint_name]&.audit_class
+  end
 end
