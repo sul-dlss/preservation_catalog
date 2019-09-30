@@ -28,6 +28,7 @@ RSpec.describe CatalogController, type: :controller do
         expect(po).to be_an_instance_of PreservedObject
         expect(cm).to be_an_instance_of CompleteMoab
       end
+
       it 'CompleteMoab and PreservedObject have correct attributes' do
         expect(comp_moab.moab_storage_root.storage_location).to eq storage_location
         expect(comp_moab.version).to eq ver
@@ -105,6 +106,7 @@ RSpec.describe CatalogController, type: :controller do
       post :create, params: { druid: prefixed_druid, incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
       expect(response.body).to include(bare_druid)
     end
+
     context "can take druid with or without 'druid:' prefix " do
       let(:bare_druid) { 'jj925bx9565' }
       let(:prefixed_druid) { "druid:#{bare_druid}" }
@@ -115,6 +117,7 @@ RSpec.describe CatalogController, type: :controller do
         expect(response.body).not_to include(prefixed_druid)
         expect(response).to have_http_status(:created)
       end
+
       it 'bare druid' do
         post :create, params: { druid: bare_druid, incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
         expect(response.body).to include(bare_druid)
@@ -249,6 +252,7 @@ RSpec.describe CatalogController, type: :controller do
       post :update, params: { druid: prefixed_druid, incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
       expect(response.body).to include(bare_druid)
     end
+
     context "can take druid with or without 'druid:' prefix " do
       before do
         post :create, params: { druid: prefixed_druid, incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
@@ -263,6 +267,7 @@ RSpec.describe CatalogController, type: :controller do
         expect(response.body).not_to include(prefixed_druid)
         expect(response).to have_http_status(:ok)
       end
+
       it 'bare druid' do
         patch :update, params: { druid: bare_druid, incoming_version: 5, incoming_size: size, storage_location: storage_location_param }
         expect(response.body).to include(bare_druid)
@@ -287,6 +292,7 @@ RSpec.describe CatalogController, type: :controller do
         expect(poh).to receive(:create).with(false)
         post :create, params: { druid: bare_druid, incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
       end
+
       ['true', 'True', 'TRUE'].each do |t_val|
         it "#{t_val} evaluates to true" do
           expect(poh).to receive(:create).with(true)
@@ -307,6 +313,7 @@ RSpec.describe CatalogController, type: :controller do
         expect(response).to have_http_status(:not_acceptable)
         expect(response.body).to match(/encountered validation error\(s\)\:.*Incoming size is not a number/)
       end
+
       it 'incoming size present - no errors' do
         patch :create, params: { druid: bare_druid, incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
         expect(response).to have_http_status(:created)

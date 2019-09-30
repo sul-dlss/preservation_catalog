@@ -16,6 +16,7 @@ RSpec.describe ActiveRecordUtils do
       end
       expect(tx_result).to eq true
     end
+
     it 'adds DB_OBJ_DOES_NOT_EXIST result and returns false when the transaction raises RecordNotFound' do
       expect(audit_results).to receive(:add_result).with(
         AuditResults::DB_OBJ_DOES_NOT_EXIST, a_string_matching("Couldn't find MoabStorageRoot")
@@ -25,6 +26,7 @@ RSpec.describe ActiveRecordUtils do
       end
       expect(tx_result).to eq false
     end
+
     it 'adds DB_UPDATE_FAILED result and returns false when the transaction raises ActiveRecordError' do
       expect(audit_results).to receive(:add_result).with(
         AuditResults::DB_UPDATE_FAILED, a_string_matching('ActiveRecord::InvalidForeignKey')
@@ -34,6 +36,7 @@ RSpec.describe ActiveRecordUtils do
       end
       expect(tx_result).to eq false
     end
+
     it 'lets an unexpected error bubble up' do
       expect do
         described_class.with_transaction_and_rescue(audit_results) do

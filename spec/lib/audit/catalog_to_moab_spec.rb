@@ -22,7 +22,7 @@ RSpec.describe Audit::CatalogToMoab do
     allow(c2m).to receive(:logger).and_return(logger_double) # silence log output
   end
 
-  context '#initialize' do
+  describe '#initialize' do
     it 'sets attributes' do
       expect(c2m.complete_moab).to eq comp_moab
       expect(c2m.storage_dir).to eq storage_dir
@@ -38,7 +38,7 @@ RSpec.describe Audit::CatalogToMoab do
     end
   end
 
-  context '#check_catalog_version' do
+  describe '#check_catalog_version' do
     let(:object_dir) { "#{storage_dir}/#{DruidTools::Druid.new(druid).tree.join('/')}" }
 
     before { comp_moab.ok! }
@@ -89,6 +89,7 @@ RSpec.describe Audit::CatalogToMoab do
         )
         c2m.check_catalog_version
       end
+
       context 'updates status correctly' do
         [
           'validity_unknown',
@@ -133,6 +134,7 @@ RSpec.describe Audit::CatalogToMoab do
         expect(Moab::StorageObject).not_to receive(:new).with(druid, a_string_matching(object_dir))
         c2m.check_catalog_version
       end
+
       it 'calls AuditResults.report_results' do
         expect(c2m.results).to receive(:report_results)
         c2m.check_catalog_version
@@ -259,6 +261,7 @@ RSpec.describe Audit::CatalogToMoab do
               expect(comp_moab.reload.status).to eq 'invalid_moab'
             end
           end
+
           it "invalid_moab changes to validity_unknown (due to newer version not checksum validated)" do
             comp_moab.invalid_moab!
             allow(mock_sov).to receive(:validation_errors).and_return(
@@ -317,6 +320,7 @@ RSpec.describe Audit::CatalogToMoab do
         allow(Stanford::StorageObjectValidator).to receive(:new).and_return(mock_sov)
         c2m.check_catalog_version
       end
+
       it 'valid moab sets status to UNEXPECTED_VERSION_ON_STORAGE_STATUS' do
         orig = comp_moab.status
         c2m.check_catalog_version
@@ -324,6 +328,7 @@ RSpec.describe Audit::CatalogToMoab do
         expect(new_status).not_to eq orig
         expect(new_status).to eq 'unexpected_version_on_storage'
       end
+
       context 'invalid moab' do
         before do
           allow(mock_sov).to receive(:validation_errors).and_return([foo: 'error message'])
@@ -337,6 +342,7 @@ RSpec.describe Audit::CatalogToMoab do
           expect(new_status).not_to eq orig
           expect(new_status).to eq 'invalid_moab'
         end
+
         it 'adds an INVALID_MOAB result' do
           c2m.instance_variable_set(:@results, results_double)
           expect(c2m.results).to receive(:add_result).with(AuditResults::INVALID_MOAB, anything)

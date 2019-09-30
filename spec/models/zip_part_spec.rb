@@ -27,6 +27,7 @@ RSpec.describe ZipPart, type: :model do
       expect(described_class.new(args.merge(md5: "00236a2ae5580"))).not_to be_valid
       expect(described_class.new(args.merge(md5: "00236a2ae558018ed13b5222ef1bd977"))).to be_valid
     end
+
     it "enforces content contains only a-f and 0-9 characters" do
       expect(described_class.new(args.merge(md5: "ghijklmnopqrstuvwxyz123456789101"))).not_to be_valid
       expect(described_class.new(args.merge(md5: "abcdeabcdefabcdefabcdefabcdeff21"))).to be_valid
@@ -39,6 +40,7 @@ RSpec.describe ZipPart, type: :model do
     it "returns false if status is 'unreplicated'" do
       expect(zp.all_parts_replicated?).to be false
     end
+
     it "returns true if status is 'ok'" do
       zp.ok!
       expect(zp.all_parts_replicated?).to be true

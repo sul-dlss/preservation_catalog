@@ -42,6 +42,7 @@ describe S3WestDeliveryJob, type: :job do
       )
       described_class.perform_now(druid, version, part_s3_key, metadata)
     end
+
     it 'invokes ResultsRecorderJob' do
       expect(ResultsRecorderJob).to receive(:perform_later).with(druid, version, part_s3_key, described_class.to_s)
       described_class.perform_now(druid, version, part_s3_key, metadata)

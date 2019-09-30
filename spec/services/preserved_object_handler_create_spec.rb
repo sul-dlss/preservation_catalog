@@ -55,6 +55,7 @@ RSpec.describe PreservedObjectHandler do
         it 'DB_UPDATE_FAILED result' do
           expect(po_handler.create).to include(a_hash_including(AuditResults::DB_UPDATE_FAILED))
         end
+
         it 'does NOT get CREATED_NEW_OBJECT result' do
           expect(po_handler.create).not_to include(hash_including(AuditResults::CREATED_NEW_OBJECT))
         end
@@ -99,6 +100,7 @@ RSpec.describe PreservedObjectHandler do
       it "sets last_moab_validation with current time" do
         expect(cm_db_obj.last_moab_validation).to be_within(10).of(t)
       end
+
       it "sets last_version_audit with current time" do
         expect(cm_db_obj.last_version_audit).to be_within(10).of(t)
       end
@@ -183,6 +185,7 @@ RSpec.describe PreservedObjectHandler do
           it 'DB_UPDATE_FAILED result' do
             expect(results).to include(a_hash_including(AuditResults::DB_UPDATE_FAILED))
           end
+
           it 'does NOT get CREATED_NEW_OBJECT result' do
             expect(results).not_to include(hash_including(AuditResults::CREATED_NEW_OBJECT))
           end

@@ -48,10 +48,12 @@ RSpec.describe Audit::MoabToCatalog do
       expect(Stanford::StorageServices).to receive(:find_storage_object).with(druid).and_call_original
       described_class.check_existence_for_druid(druid)
     end
+
     it 'finds the correct MoabStorageRoot' do
       expect(MoabStorageRoot).to receive(:find_by!).with(storage_location: storage_dir)
       described_class.check_existence_for_druid(druid)
     end
+
     it 'calls pohandler.check_existence' do
       po_handler = instance_double('PreservedObjectHandler')
       expect(PreservedObjectHandler).to receive(:new).with(
@@ -64,9 +66,11 @@ RSpec.describe Audit::MoabToCatalog do
       expect(po_handler).to receive(:check_existence)
       described_class.check_existence_for_druid(druid)
     end
+
     it 'returns results' do
       expect(described_class.check_existence_for_druid(druid)).to eq results
     end
+
     context 'given a druid that does not exist' do
       let(:druid) { 'db102hs2345' }
 
