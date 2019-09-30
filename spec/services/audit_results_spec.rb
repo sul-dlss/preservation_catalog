@@ -17,12 +17,15 @@ RSpec.describe AuditResults do
     it 'CM_PO_VERSION_MISMATCH is an ERROR' do
       expect(described_class.logger_severity_level(AuditResults::CM_PO_VERSION_MISMATCH)).to eq Logger::ERROR
     end
+
     it 'DB_OBJ_DOES_NOT_EXIST is WARN' do
       expect(described_class.logger_severity_level(AuditResults::DB_OBJ_DOES_NOT_EXIST)).to eq Logger::WARN
     end
+
     it 'CREATED_NEW_OBJECT is INFO' do
       expect(described_class.logger_severity_level(AuditResults::CREATED_NEW_OBJECT)).to eq Logger::INFO
     end
+
     it 'default for unrecognized value is ERROR' do
       expect(described_class.logger_severity_level(:whatever)).to eq Logger::ERROR
     end
@@ -32,9 +35,11 @@ RSpec.describe AuditResults do
     it 'sets result_array attr to []' do
       expect(audit_results.result_array).to eq []
     end
+
     it 'sets druid attr to arg' do
       expect(audit_results.druid).to eq druid
     end
+
     it 'sets actual_version attr to arg' do
       expect(audit_results.actual_version).to eq actual_version
     end
@@ -58,23 +63,28 @@ RSpec.describe AuditResults do
         expect(Rails.logger).to receive(:add).with(Logger::ERROR, a_string_matching(Regexp.escape(expected)))
         audit_results.report_results
       end
+
       it 'with check name' do
         expect(Rails.logger).to receive(:add).with(Logger::ERROR, a_string_matching(check_name))
         audit_results.report_results
       end
+
       it 'with druid' do
         expect(Rails.logger).to receive(:add).with(Logger::ERROR, a_string_matching(druid))
         audit_results.report_results
       end
+
       it 'with moab_storage_root name' do
         expect(Rails.logger).to receive(:add).with(Logger::ERROR, a_string_matching(ms_root.name))
         audit_results.report_results
       end
+
       it 'with severity assigned by .logger_severity_level' do
         expect(described_class).to receive(:logger_severity_level).with(result_code).and_return(Logger::FATAL)
         expect(Rails.logger).to receive(:add).with(Logger::FATAL, a_string_matching(version_not_matched_str))
         audit_results.report_results
       end
+
       it 'for every result' do
         result_code2 = AuditResults::CM_STATUS_CHANGED
         status_details = { old_status: 'invalid_moab', new_status: 'ok' }
@@ -86,6 +96,7 @@ RSpec.describe AuditResults do
         expect(Rails.logger).to receive(:add).with(severity_level, a_string_matching(status_changed_str))
         audit_results.report_results
       end
+
       it 'actual_version number is in log message when set after initialization' do
         my_results = described_class.new(druid, nil, ms_root)
         result_code = AuditResults::VERSION_MATCHES
@@ -117,10 +128,12 @@ RSpec.describe AuditResults do
           expect(WorkflowReporter).to receive(:report_error).with(druid, 'moab-valid', a_string_matching(Regexp.escape(err_details)))
           im_audit_results.report_results
         end
+
         it 'check name' do
           expect(WorkflowReporter).to receive(:report_error).with(druid, 'moab-valid', a_string_matching(check_name))
           im_audit_results.report_results
         end
+
         it 'ms_root name' do
           expected = Regexp.escape("actual location: #{ms_root.name}")
           expect(WorkflowReporter).to receive(:report_error).with(druid, 'moab-valid', a_string_matching(expected))
@@ -134,6 +147,7 @@ RSpec.describe AuditResults do
         expect(WorkflowReporter).not_to receive(:report_error)
         audit_results.report_results
       end
+
       it 'sends results in WORKFLOW_REPORT_CODES errors' do
         code = AuditResults::CM_PO_VERSION_MISMATCH
         addl_hash = { cm_version: 1, po_version: 2 }
@@ -144,6 +158,7 @@ RSpec.describe AuditResults do
         )
         audit_results.report_results
       end
+
       it 'multiple errors are concatenated together with || separator' do
         code1 = AuditResults::CM_PO_VERSION_MISMATCH
         result_msg_args1 = { cm_version: 1, po_version: 2 }
@@ -167,6 +182,7 @@ RSpec.describe AuditResults do
           druid, 'preservation-audit', a_string_matching(result_msg2)
         )
       end
+
       it 'message sent includes moab_storage_root information' do
         code = AuditResults::DB_UPDATE_FAILED
         audit_results.add_result(code)
@@ -176,6 +192,7 @@ RSpec.describe AuditResults do
         )
         audit_results.report_results
       end
+
       it 'does NOT send moab_storage_root information if there is none' do
         audit_results = described_class.new(druid, actual_version, nil)
         code = AuditResults::DB_UPDATE_FAILED
@@ -187,6 +204,7 @@ RSpec.describe AuditResults do
         expect(WorkflowReporter).to receive(:report_error).with(druid, 'preservation-audit', anything)
         audit_results.report_results
       end
+
       it 'message sent includes actual version of object' do
         code = AuditResults::DB_UPDATE_FAILED
         audit_results.add_result(code)
@@ -196,6 +214,7 @@ RSpec.describe AuditResults do
         )
         audit_results.report_results
       end
+
       it 'does NOT send actual version if there is none' do
         audit_results = described_class.new(druid, nil, ms_root)
         code = AuditResults::DB_UPDATE_FAILED
@@ -207,6 +226,7 @@ RSpec.describe AuditResults do
         expect(WorkflowReporter).to receive(:report_error).with(druid, 'preservation-audit', anything)
         audit_results.report_results
       end
+
       context 'MOAB_NOT_FOUND result' do
         let(:result_code) { AuditResults::MOAB_NOT_FOUND }
         let(:create_date) { (Time.current - 5.days).utc.iso8601 }
@@ -225,6 +245,7 @@ RSpec.describe AuditResults do
           )
           my_audit_results.report_results
         end
+
         it 'message sent includes CompleteMoab updated date' do
           expected = "db CompleteMoab .* last updated #{update_date}"
           expect(WorkflowReporter).to receive(:report_error).with(
@@ -252,6 +273,7 @@ RSpec.describe AuditResults do
         expect(Honeybadger).not_to receive(:notify)
         audit_results.report_results
       end
+
       it 'sends results in HONEYBADGER_REPORT_CODES errors' do
         code = AuditResults::MOAB_FILE_CHECKSUM_MISMATCH
         addl_hash = { file_path: 'path/to/file', version: 1 }
@@ -274,9 +296,11 @@ RSpec.describe AuditResults do
       exp_msg = AuditResults::RESPONSE_CODE_TO_MESSAGES[code] % addl_hash
       expect(audit_results.result_array.first).to eq code => exp_msg
     end
+
     it 'can take a single result code argument' do
       # see above
     end
+
     it 'can take a second msg_args argument' do
       code = AuditResults::VERSION_MATCHES
       audit_results.add_result(code, 'foo')
@@ -309,6 +333,7 @@ RSpec.describe AuditResults do
       expect(audit_results.result_array).not_to include(a_hash_including(AuditResults::CREATED_NEW_OBJECT))
       expect(audit_results.result_array).not_to include(a_hash_including(AuditResults::CM_STATUS_CHANGED))
     end
+
     it 'keeps results not matching DB_UPDATED_CODES' do
       audit_results.remove_db_updated_results
       expect(audit_results.result_array).to include(a_hash_including(AuditResults::CM_PO_VERSION_MISMATCH))
@@ -333,6 +358,7 @@ RSpec.describe AuditResults do
       audit_results.add_result(added_code, old_status: 'invalid_checksum', new_status: 'ok')
       expect(audit_results.status_changed_to_ok?(audit_results.result_array.first)).to eq true
     end
+
     it 'returns false if the new status is not ok' do
       added_code = AuditResults::CM_STATUS_CHANGED
       audit_results.add_result(added_code, old_status: 'invalid_checksum', new_status: 'invalid_moab')

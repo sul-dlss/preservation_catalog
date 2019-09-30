@@ -22,6 +22,7 @@ RSpec.describe PreservedObjectHandler do
       po_handler = described_class.new(druid, incoming_version, nil, ms_root)
       expect(po_handler.druid).to eq druid
     end
+
     context 'sets incoming_version' do
       { # passed value => expected parsed value
         6 => 6,
@@ -66,6 +67,7 @@ RSpec.describe PreservedObjectHandler do
       po_handler = described_class.new(druid, incoming_version, nil, ms_root)
       expect(po_handler.storage_location).to eq ms_root.storage_location
     end
+
     it 'sets MoabStorageRoot' do
       po_handler = described_class.new(druid, incoming_version, nil, ms_root)
       expect(po_handler.moab_storage_root).to eq ms_root
@@ -100,6 +102,7 @@ RSpec.describe PreservedObjectHandler do
       it 'specific exception raised' do
         expect(results).to include(a_hash_including(result_code => a_string_matching('ActiveRecord::ActiveRecordError')))
       end
+
       it "exception's message" do
         expect(results).to include(a_hash_including(result_code => a_string_matching('specific_err_msg')))
       end

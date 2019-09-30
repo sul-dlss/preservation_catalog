@@ -11,6 +11,7 @@ RSpec.describe ZippedMoabVersion, type: :model do
     expect(described_class.new(complete_moab: cm)).not_to be_valid
     expect(zmv).to be_valid
   end
+
   it { is_expected.to validate_presence_of(:zip_endpoint) }
   it { is_expected.to validate_presence_of(:complete_moab) }
   it { is_expected.to validate_presence_of(:version) }
@@ -29,6 +30,7 @@ RSpec.describe ZippedMoabVersion, type: :model do
       expect(ZipmakerJob).not_to receive(:perform_later)
       expect(zmv.replicate!).to be(nil)
     end
+
     it 'if CM is replicatable, passes druid and version to Zipmaker' do
       expect(cm).to receive(:replicatable_status?).and_return(true)
       expect(ZipmakerJob).to receive(:perform_later).with(cm.preserved_object.druid, cm.version)

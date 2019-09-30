@@ -129,6 +129,7 @@ describe DruidVersionZip do
     it 'raises for invalid integer' do
       expect { dvz.expected_part_keys(0) }.to raise_error ArgumentError
     end
+
     it 'lists the files expected' do
       expect(dvz.expected_part_keys(1)).to eq ['bj/102/hs/9687/bj102hs9687.v0001.zip']
       expect(dvz.expected_part_keys(2)).to eq [

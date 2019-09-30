@@ -55,6 +55,7 @@ RSpec.describe PreservedObjectHandler do
             it 'last_version_audit' do
               expect { po_handler.confirm_version }.to change { po_handler.complete_moab.last_version_audit }
             end
+
             it 'updated_at' do
               expect { po_handler.confirm_version }.to change { po_handler.complete_moab.reload.updated_at }
             end
@@ -64,12 +65,15 @@ RSpec.describe PreservedObjectHandler do
             it 'status' do
               expect { po_handler.confirm_version }.not_to change { po_handler.complete_moab.status }
             end
+
             it 'version' do
               expect { po_handler.confirm_version }.not_to change { po_handler.complete_moab.version }
             end
+
             it 'size' do
               expect { po_handler.confirm_version }.not_to change { po_handler.complete_moab.size }
             end
+
             it 'last_moab_validation' do
               expect { po_handler.confirm_version }.not_to change { po_handler.complete_moab.last_moab_validation }
             end
@@ -81,6 +85,7 @@ RSpec.describe PreservedObjectHandler do
           po_handler.confirm_version
           expect(po.reload.updated_at).to eq orig_timestamp
         end
+
         it_behaves_like 'calls AuditResults.report_results', :confirm_version
         context 'returns' do
           let(:results) { po_handler.confirm_version }
@@ -108,6 +113,7 @@ RSpec.describe PreservedObjectHandler do
             po_handler.confirm_version
             expect(cm.reload.status).to eq 'unexpected_version_on_storage'
           end
+
           it 'had INVALID_MOAB_STATUS, structure seems to be remediated, but is now UNEXPECTED_VERSION_ON_STORAGE_STATUS' do
             cm.invalid_moab!
             allow(po_handler).to receive(:moab_validation_errors).and_return([])
@@ -134,6 +140,7 @@ RSpec.describe PreservedObjectHandler do
                 po_handler.confirm_version
                 expect(cm.reload.status).to eq 'unexpected_version_on_storage'
               end
+
               it 'last_version_audit' do
                 orig = Time.current
                 cm.last_version_audit = orig
@@ -141,6 +148,7 @@ RSpec.describe PreservedObjectHandler do
                 po_handler.confirm_version
                 expect(cm.reload.last_version_audit).to be > orig
               end
+
               it 'updated_at' do
                 orig = cm.updated_at
                 po_handler.confirm_version
@@ -154,11 +162,13 @@ RSpec.describe PreservedObjectHandler do
                 po_handler.confirm_version
                 expect(cm.reload.version).to eq orig
               end
+
               it 'size' do
                 orig = cm.size
                 po_handler.confirm_version
                 expect(cm.reload.size).to eq orig
               end
+
               it 'last_moab_validation' do
                 orig = cm.last_moab_validation
                 po_handler.confirm_version
@@ -180,11 +190,13 @@ RSpec.describe PreservedObjectHandler do
               expect(results).to be_an_instance_of Array
               expect(results.size).to eq 2
             end
+
             it 'UNEXPECTED_VERSION CompleteMoab result' do
               code = AuditResults::UNEXPECTED_VERSION
               unexpected_version_cm_msg = "actual version (1) has unexpected relationship to CompleteMoab db version (2); ERROR!"
               expect(results).to include(a_hash_including(code => unexpected_version_cm_msg))
             end
+
             it "CM_STATUS_CHANGED CompleteMoab result" do
               code = AuditResults::CM_STATUS_CHANGED
               updated_cm_db_status_msg = "CompleteMoab status changed from ok to unexpected_version_on_storage"
@@ -233,6 +245,7 @@ RSpec.describe PreservedObjectHandler do
           expect(po).not_to receive(:save!)
           po_handler.confirm_version
         end
+
         it 'calls CompleteMoab.save! (but not PreservedObject.save!) if the existing record is NOT altered' do
           po_handler = described_class.new(druid, 1, 1, ms_root)
           allow(po_handler).to receive(:moab_validation_errors).and_return([]) # different po_handler now

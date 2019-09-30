@@ -277,7 +277,7 @@ RSpec.describe ChecksumValidator do
           end
         end
 
-        context '#moab_validation_errors indicates there are structural errors' do
+        context 'moab_validation_errors indicates there are structural errors' do
           before do
             allow(cv).to receive(:moab_validation_errors).and_return([{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }])
           end
@@ -359,7 +359,7 @@ RSpec.describe ChecksumValidator do
           end
         end
 
-        context '#moab_validation_errors indicates there are structural errors' do
+        context 'moab_validation_errors indicates there are structural errors' do
           before do
             allow(cv).to receive(:moab_validation_errors).and_return([{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }])
           end

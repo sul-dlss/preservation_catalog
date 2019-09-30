@@ -97,12 +97,15 @@ RSpec.describe CompleteMoab, type: :model do
     it 'updates last_moab_validation time if moab_validated is true' do
       expect { cm.update_audit_timestamps(true, false) }.to change(cm, :last_moab_validation).from(nil)
     end
+
     it 'does not update last_moab_validation time if moab_validated is false' do
       expect { cm.update_audit_timestamps(false, false) }.not_to change(cm, :last_moab_validation).from(nil)
     end
+
     it 'updates last_version_audit time if version_audited is true' do
       expect { cm.update_audit_timestamps(false, true) }.to change(cm, :last_version_audit).from(nil)
     end
+
     it 'does not update last_version_audit time if version_audited is false' do
       expect { cm.update_audit_timestamps(false, false) }.not_to change(cm, :last_version_audit).from(nil)
     end
@@ -112,9 +115,11 @@ RSpec.describe CompleteMoab, type: :model do
     it 'updates version' do
       expect { cm.upd_audstamps_version_size(false, 3, nil) }.to change(cm, :version).to(3)
     end
+
     it 'updates size if size is not nil' do
       expect { cm.upd_audstamps_version_size(false, 0, 123) }.to change(cm, :size).to(123)
     end
+
     it 'does not update size if size is nil' do
       expect { cm.upd_audstamps_version_size(false, 0, nil) }.not_to change(cm, :size)
     end
@@ -155,6 +160,7 @@ RSpec.describe CompleteMoab, type: :model do
       it 'returns PreservedCopies with nils and PreservedCopies < given date (not orded by last_version_audit)' do
         expect(described_class.least_recent_version_audit(now).sort).to eq [cm, newer_timestamp_cm, older_timestamp_cm]
       end
+
       it 'returns no PreservedCopies with future timestamps' do
         expect(described_class.least_recent_version_audit(now)).not_to include future_timestamp_cm
       end
@@ -167,6 +173,7 @@ RSpec.describe CompleteMoab, type: :model do
         expect(described_class.order_last_version_audit(least_recent_version))
           .to eq [cm, older_timestamp_cm, newer_timestamp_cm]
       end
+
       it 'returns no PreservedCopies with future timestamps' do
         expect(described_class.order_last_version_audit(least_recent_version))
           .not_to include future_timestamp_cm
@@ -178,21 +185,27 @@ RSpec.describe CompleteMoab, type: :model do
     it 'given a String timestamp, returns a Time object' do
       expect(described_class.send(:normalize_date, '2018-01-22T18:54:48')).to be_a(Time)
     end
+
     it 'given a Time Object, returns equivalent Time object' do
       expect(described_class.send(:normalize_date, now)).to eq(now)
     end
+
     it 'given nil, raises TypeError' do
       expect { described_class.send(:normalize_date, nil) }.to raise_error(TypeError, /no implicit conversion/)
     end
+
     it 'given an unparseable date, raises ArgumentError' do
       expect { described_class.send(:normalize_date, 'an 6') }.to raise_error(ArgumentError, /no time information/)
     end
+
     it 'given day only returns a Time object' do
       expect(described_class.send(:normalize_date, '2018-02-02')).to be_a(Time)
     end
+
     it 'given a month only returns Time object' do
       expect(described_class.send(:normalize_date, 'April')).to be_a(Time)
     end
+
     it 'given a year only, raises ArgumentError' do
       expect { described_class.send(:normalize_date, '2014') }.to raise_error(ArgumentError, /argument out of range/)
     end
@@ -217,6 +230,7 @@ RSpec.describe CompleteMoab, type: :model do
       it 'returns PreservedCopies that need fixity check' do
         expect(described_class.fixity_check_expired.to_a.sort).to eq [cm, old_check_cm1, old_check_cm2]
       end
+
       it 'returns no PreservedCopies with timestamps indicating still-valid fixity check' do
         expect(described_class.fixity_check_expired).not_to include(recently_checked_cm1, recently_checked_cm2)
       end
@@ -229,6 +243,7 @@ RSpec.describe CompleteMoab, type: :model do
         expect(described_class.order_fixity_check_expired(fixity_check_expired).to_a)
           .to eq [cm, old_check_cm1, old_check_cm2]
       end
+
       it 'returns no PreservedCopies with timestamps indicating still-valid fixity check' do
         expect(described_class.order_fixity_check_expired(fixity_check_expired))
           .not_to include(recently_checked_cm1, recently_checked_cm2)
@@ -255,6 +270,7 @@ RSpec.describe CompleteMoab, type: :model do
       it 'returns PreservedCopies that need fixity check' do
         expect(described_class.archive_check_expired.to_a.sort).to eq [cm, old_check_cm1, old_check_cm2]
       end
+
       it 'returns no PreservedCopies with timestamps indicating still-valid fixity check' do
         expect(described_class.archive_check_expired).not_to include(recently_checked_cm1, recently_checked_cm2)
       end
@@ -328,6 +344,7 @@ RSpec.describe CompleteMoab, type: :model do
       expect(cm).not_to receive(:create_zipped_moab_versions!)
       cm.save!
     end
+
     it 'calls create_zipped_moab_versions when version was changed' do
       cm.version = 55
       expect(cm).to receive(:create_zipped_moab_versions!)

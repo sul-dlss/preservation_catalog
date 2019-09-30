@@ -37,6 +37,7 @@ RSpec.describe PreservationPolicy, type: :model do
       expect(described_class.default_policy).to be_a(described_class)
       expect(described_class.default_policy.preservation_policy_name).to eq 'default'
     end
+
     it 'creates record if needed' do
       allow(described_class).to receive(:default_name).and_return('brandnew')
       expect { described_class.default_policy }.to change(described_class, :count).by(1)

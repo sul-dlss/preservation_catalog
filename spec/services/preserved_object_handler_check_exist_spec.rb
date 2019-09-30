@@ -44,6 +44,7 @@ RSpec.describe PreservedObjectHandler do
               po_handler.check_existence
               expect(cm.reload.last_version_audit).to be > orig
             end
+
             it 'updated_at' do
               orig = cm.updated_at
               po_handler.check_existence
@@ -57,16 +58,19 @@ RSpec.describe PreservedObjectHandler do
               po_handler.check_existence
               expect(cm.reload.status).to eq orig
             end
+
             it 'version' do
               orig = cm.version
               po_handler.check_existence
               expect(cm.reload.version).to eq orig
             end
+
             it 'size' do
               orig = cm.size
               po_handler.check_existence
               expect(cm.reload.size).to eq orig
             end
+
             it 'last_moab_validation' do
               orig = cm.last_moab_validation
               po_handler.check_existence
@@ -80,11 +84,13 @@ RSpec.describe PreservedObjectHandler do
           po_handler.check_existence
           expect(po.reload.updated_at).to eq orig
         end
+
         it_behaves_like 'calls AuditResults.report_results', :check_existence
         it 'does not validate moab' do
           expect(po_handler).not_to receive(:moab_validation_errors)
           po_handler.check_existence
         end
+
         context 'returns' do
           let(:results) { po_handler.check_existence }
 
@@ -119,24 +125,29 @@ RSpec.describe PreservedObjectHandler do
                 expect(cm.reload.version).to be > orig
                 expect(cm.reload.version).to eq incoming_version
               end
+
               it 'size if supplied' do
                 expect { po_handler.check_existence }.to change { po_handler.comp_moab.size }.to(incoming_size)
               end
+
               it 'last_moab_validation' do
                 po_handler.comp_moab.last_moab_validation = Time.current
                 po_handler.comp_moab.save!
                 expect { po_handler.check_existence }.to change { po_handler.comp_moab.last_moab_validation }
               end
+
               it 'last_version_audit' do
                 po_handler.comp_moab.last_version_audit = Time.current
                 po_handler.comp_moab.save!
                 expect { po_handler.check_existence }.to change { po_handler.comp_moab.last_version_audit }
               end
+
               it 'updated_at' do
                 orig = cm.updated_at
                 po_handler.check_existence
                 expect(cm.reload.updated_at).to be > orig
               end
+
               it 'status becomes "ok" if it was invalid_moab (b/c after validation)' do
                 cm.invalid_moab!
                 po_handler.check_existence
@@ -149,6 +160,7 @@ RSpec.describe PreservedObjectHandler do
                 po_handler.comp_moab.ok!
                 expect { po_handler.check_existence }.not_to change { po_handler.comp_moab.status }.from('ok')
               end
+
               it 'size if incoming size is nil' do
                 orig = cm.size
                 po_handler = described_class.new(druid, incoming_version, nil, ms_root)
@@ -163,6 +175,7 @@ RSpec.describe PreservedObjectHandler do
               expect { po_handler.check_existence }.to change { po_handler.pres_object.current_version }
                 .to(incoming_version)
             end
+
             it 'dependent CompleteMoab also updated' do
               expect { po_handler.check_existence }.to change { po_handler.comp_moab.updated_at }
             end
@@ -216,21 +229,25 @@ RSpec.describe PreservedObjectHandler do
                 invalid_po_handler.check_existence
                 expect(invalid_cm.reload.last_version_audit).to be > orig
               end
+
               it 'last_moab_validation' do
                 orig = invalid_cm.last_moab_validation
                 invalid_po_handler.check_existence
                 expect(invalid_cm.reload.last_moab_validation).to be > orig
               end
+
               it 'updated_at' do
                 orig = invalid_cm.updated_at
                 invalid_po_handler.check_existence
                 expect(invalid_cm.reload.updated_at).to be > orig
               end
+
               it 'ensures status becomes invalid_moab from ok' do
                 invalid_cm.ok!
                 invalid_po_handler.check_existence
                 expect(invalid_cm.reload.status).to eq 'invalid_moab'
               end
+
               it 'ensures status becomes invalid_moab from unexpected_version_on_storage' do
                 invalid_cm.unexpected_version_on_storage!
                 invalid_po_handler.check_existence
@@ -244,6 +261,7 @@ RSpec.describe PreservedObjectHandler do
                 invalid_po_handler.check_existence
                 expect(invalid_cm.reload.version).to eq orig
               end
+
               it 'size' do
                 orig = invalid_cm.size
                 invalid_po_handler.check_existence
@@ -267,10 +285,12 @@ RSpec.describe PreservedObjectHandler do
               expect(results).to be_an_instance_of Array
               expect(results.size).to eq 3
             end
+
             it 'ACTUAL_VERS_GT_DB_OBJ results' do
               code = AuditResults::ACTUAL_VERS_GT_DB_OBJ
               expect(results).to include(a_hash_including(code => version_gt_cm_msg))
             end
+
             it 'INVALID_MOAB result' do
               expect(results).to include(a_hash_including(AuditResults::INVALID_MOAB))
             end
@@ -300,11 +320,13 @@ RSpec.describe PreservedObjectHandler do
             po_handler.check_existence
             expect(cm.reload.status).to eq 'ok'
           end
+
           it 'had INVALID_MOAB_STATUS, was remediated, should now have VALIDITY_UNKNOWN_STATUS' do
             cm.invalid_moab!
             po_handler.check_existence
             expect(cm.reload.status).to eq 'validity_unknown'
           end
+
           it 'had UNEXPECTED_VERSION_ON_STORAGE_STATUS, seems to have an acceptable version now' do
             cm.unexpected_version_on_storage!
             po_handler.check_existence
@@ -336,6 +358,7 @@ RSpec.describe PreservedObjectHandler do
             it 'CompleteMoab is not updated' do
               expect { po_handler.check_existence }.not_to change { po_handler.comp_moab.updated_at }
             end
+
             it 'PreservedObject is not updated' do
               expect { po_handler.check_existence }.not_to change { po_handler.pres_object.updated_at }
             end
@@ -364,6 +387,7 @@ RSpec.describe PreservedObjectHandler do
         expect(po).not_to receive(:save!)
         described_class.new(druid, 1, 1, ms_root).check_existence
       end
+
       it 'logs a debug message' do
         allow(Rails.logger).to receive(:debug)
         allow(po_handler).to receive(:moab_validation_errors).and_return([])
@@ -413,6 +437,7 @@ RSpec.describe PreservedObjectHandler do
             expect(PreservedObject).to receive(:create!).with(po_args).and_call_original
             po_handler.check_existence
           end
+
           it 'CompleteMoab created' do
             po_handler.check_existence
             new_cm = CompleteMoab.find_by(version: incoming_version, size: incoming_size, moab_storage_root: ms_root)
