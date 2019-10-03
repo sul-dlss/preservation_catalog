@@ -80,6 +80,20 @@ Resque::Failure.queues.each do |queue|
                                 OkComputer::SizeThresholdCheck.new(queue, 20) { Resque::Failure.count(queue) }
 end
 
+# check for the right number of workers
+class WorkerCountCheck < OkComputer::Check
+  def check
+    count = Settings.total_worker_count
+    if Resque.workers.count == count
+      mark_message "#{count} workers are up."
+    else
+      mark_failure
+      mark_message "Not all #{count} workers are up!"
+    end
+  end
+  OkComputer::Registry.register 'feature-worker-count', WorkerCountCheck.new
+end
+
 # ------------------------------------------------------------------------------
 
 # NON-CRUCIAL (Optional) checks, avail at /status/<name-of-check>
