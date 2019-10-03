@@ -83,18 +83,12 @@ end
 # check for the right number of workers
 class WorkerCountCheck < OkComputer::Check
   def check
-    if Resque.workers.first.to_s.include?('stage')
-      if Resque.workers.count == 117
-        mark_message '117 workers are up.'
-      else
-        mark_failure
-        mark_message 'Not all 117 workers are up!'
-      end
-    elsif Resque.workers.count == 180
-      mark_message '180 workers are up.'
+    count = Settings.total_worker_count
+    if Resque.workers.count == count
+      mark_message "#{count} workers are up."
     else
       mark_failure
-      mark_message 'Not all 180 workers are up!'
+      mark_message "Not all #{count} workers are up!"
     end
   end
   OkComputer::Registry.register 'feature-worker-count', WorkerCountCheck.new

@@ -43,3 +43,5 @@ resque_dashboard_hostnames: # tells the router where to mount the resque dashboa
 # instance specific configs.
 replication:
   audit_should_backfill: false
+
+total_worker_count: 117 # for okcomputer endpoint
