@@ -53,8 +53,8 @@ GEM
     arel (8.0.0)
     ast (2.4.0)
     aws-eventstream (1.0.3)
-    aws-partitions (1.223.0)
-    aws-sdk-core (3.68.1)
+    aws-partitions (1.226.0)
+    aws-sdk-core (3.69.1)
       aws-eventstream (~> 1.0, >= 1.0.2)
       aws-partitions (~> 1.0)
       aws-sigv4 (~> 1.1)
@@ -62,7 +62,7 @@ GEM
     aws-sdk-kms (1.24.0)
       aws-sdk-core (~> 3, >= 3.61.1)
       aws-sigv4 (~> 1.1)
-    aws-sdk-s3 (1.49.0)
+    aws-sdk-s3 (1.50.0)
       aws-sdk-core (~> 3, >= 3.61.1)
       aws-sdk-kms (~> 1)
       aws-sigv4 (~> 1.1)
@@ -109,7 +109,7 @@ GEM
       tins (~> 1.6)
     crack (0.4.3)
       safe_yaml (~> 1.0.0)
-    crass (1.0.4)
+    crass (1.0.5)
     deep_merge (1.2.1)
     deprecation (1.0.0)
       activesupport
@@ -203,7 +203,7 @@ GEM
       nokogiri
       nokogiri-happymapper
     mono_logger (1.1.0)
-    multi_json (1.14.0)
+    multi_json (1.14.1)
     multipart-post (2.1.1)
     mustermann (1.0.3)
     net-scp (2.0.0)
