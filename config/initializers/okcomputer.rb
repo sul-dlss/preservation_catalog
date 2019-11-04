@@ -126,4 +126,4 @@ OkComputer::Registry.register "feature-version-audit-window-check", VersionAudit
 
 # TODO: do we want anything about s3 credentials here?
 
-OkComputer.make_optional %w[feature-version-audit-window-check external-workflow-services-url feature-zip_storage_dir feature-resque-down]
+OkComputer.make_optional %w[feature-version-audit-window-check external-workflow-services-url feature-zip_storage_dir]
