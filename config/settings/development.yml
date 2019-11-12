@@ -17,6 +17,7 @@ zip_endpoints:
     endpoint_node: 'localhost'
     storage_location: 'bucket_name'
     delivery_class: 'S3WestDeliveryJob'
+    audit_class: 'PreservationCatalog::S3::Audit'
 workflow_services_url: 'https://sul-lyberservices-test.stanford.edu/workflow/'
 resque_dashboard_hostnames:
   - 'localhost'
