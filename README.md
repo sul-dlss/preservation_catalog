@@ -282,3 +282,7 @@ Or:
 ```sh
 bundle exec cap prod deploy # for the prod servers
 ```
+
+### Resque Pool
+The Resque Pool admin interface is available at `<hostname>/resque/overview`.
+
