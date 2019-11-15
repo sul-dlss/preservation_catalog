@@ -28,6 +28,11 @@ RSpec.describe ObjectsController, type: :request do
         get object_url 'druid:garbage', format: :json
         expect(response).to have_http_status(:not_found)
       end
+
+      it 'returns useful info in the body' do
+        get object_url 'druid:garbage', format: :json
+        expect(response.body).to eq "404 Not Found: Couldn't find PreservedObject"
+      end
     end
   end
 end
