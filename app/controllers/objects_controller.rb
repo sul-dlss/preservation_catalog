@@ -72,13 +72,9 @@ class ObjectsController < ApplicationController
   end
 
   def checksum_for_object(druid)
-    content_group = retrieve_file_group(druid)
+    content_group = MoabStorageService.retrieve_content_file_group(druid)
     content_group.path_hash.map do |file, signature|
       { filename: file, md5: signature.md5, sha1: signature.sha1, sha256: signature.sha256, filesize: signature.size }
     end
-  end
-
-  def retrieve_file_group(druid)
-    Moab::StorageServices.retrieve_file_group('content', druid)
   end
 end
