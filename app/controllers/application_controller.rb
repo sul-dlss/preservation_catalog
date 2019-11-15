@@ -5,7 +5,7 @@ class ApplicationController < ActionController::API
 
   rescue_from ActiveRecord::RecordNotFound, with: :not_found
   rescue_from Moab::ObjectNotFoundException, with: :not_found
-  rescue_from InvalidSuriSyntax, with: :bad_request
+  rescue_from Moab::InvalidSuriSyntaxError, with: :bad_request
 
   protected
 
@@ -23,12 +23,5 @@ class ApplicationController < ActionController::API
     msg = '404 Not Found'
     msg = "#{msg}: #{exception.message}" if exception
     render plain: msg, status: :not_found
-  end
-
-  # TODO: get rid of this once https://github.com/sul-dlss/moab-versioning/issues/159 is implemented
-  def refine_invalid_druid_error!(err)
-    # make a specific moab-versioning StandardError into something more easily manageable by ApplicationController...
-    raise InvalidSuriSyntax, err.message if err.message.include?('Identifier has invalid suri syntax')
-    raise err # re-raise what we got if it was something else
   end
 end

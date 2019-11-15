@@ -80,7 +80,5 @@ class ObjectsController < ApplicationController
 
   def retrieve_file_group(druid)
     Moab::StorageServices.retrieve_file_group('content', druid)
-  rescue StandardError => e
-    refine_invalid_druid_error!(e)
   end
 end
