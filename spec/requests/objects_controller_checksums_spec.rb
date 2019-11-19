@@ -168,8 +168,8 @@ RSpec.describe ObjectsController, type: :request do
       end
     end
 
-    context 'when no druids param provided' do
-      context 'when druids param is empty' do
+    context 'when no druids param' do
+      context 'when param is empty' do
         it 'body has additional information from the exception if available' do
           post checksums_objects_url, params: { druids: [], format: :json }
           expect(response).to have_http_status(:bad_request)
@@ -177,7 +177,7 @@ RSpec.describe ObjectsController, type: :request do
         end
       end
 
-      context "when no druids param" do
+      context "when no param" do
         it 'body has additional information from the exception if available' do
           post checksums_objects_url, params: { format: :json }
           expect(response).to have_http_status(:bad_request)
@@ -186,21 +186,18 @@ RSpec.describe ObjectsController, type: :request do
       end
     end
 
-    context 'when bad parameter passed in' do
-      it 'returns a 400 response code with a bad druid passed in' do
+    context 'when druid invalid' do
+      it 'returns 400 response code' do
         post checksums_objects_url, params: { druids: [prefixed_druid, 'foobar'], format: :json }
         expect(response).to have_http_status(:bad_request)
         expect(response.body).to eq '400 bad request: Identifier has invalid suri syntax: foobar'
       end
+    end
 
-      it 'returns a 406 response code when an unsupported response format is provided' do
+    context 'when unsupported response format' do
+      it 'returns 406 response code' do
         post checksums_objects_url, params: { druids: [prefixed_druid], format: :xml }
         expect(response).to have_http_status(:not_acceptable)
-      end
-
-      it 'returns a 400 response code with no druid parameters passed in' do
-        post checksums_objects_url, params: { format: :json }
-        expect(response).to have_http_status(:bad_request)
       end
     end
   end
