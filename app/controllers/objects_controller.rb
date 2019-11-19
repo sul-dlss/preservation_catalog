@@ -15,7 +15,7 @@ class ObjectsController < ApplicationController
   # return the checksums and filesize for a single druid (supplied with druid: prefix)
   # GET /objects/:druid/checksum
   def checksum
-    render json: checksum_for_object(druid).to_json
+    render json: content_files_checksums(druid).to_json
   end
 
   # return the checksums and filesize for a list of druid (supplied with druid: prefix)
@@ -58,20 +58,20 @@ class ObjectsController < ApplicationController
   end
 
   def json_checksum_list
-    druids.map { |druid| { returned_druid(druid) => checksum_for_object(druid) } }.to_json
+    druids.map { |druid| { returned_druid(druid) => content_files_checksums(druid) } }.to_json
   end
 
   def csv_checksum_list
     CSV.generate do |csv|
       druids.each do |druid|
-        checksum_for_object(druid).each do |checksum|
+        content_files_checksums(druid).each do |checksum|
           csv << [returned_druid(druid), checksum[:filename], checksum[:md5], checksum[:sha1], checksum[:sha256], checksum[:filesize]]
         end
       end
     end
   end
 
-  def checksum_for_object(druid)
+  def content_files_checksums(druid)
     content_group = MoabStorageService.retrieve_content_file_group(druid)
     content_group.path_hash.map do |file, signature|
       { filename: file, md5: signature.md5, sha1: signature.sha1, sha256: signature.sha256, filesize: signature.size }
