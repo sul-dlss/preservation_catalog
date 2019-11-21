@@ -2,7 +2,6 @@
 
 # send errors to preservationAuditWF workflow for an object via ReST calls.
 class WorkflowReporter
-  DOR = 'dor'
   PRESERVATIONAUDITWF = 'preservationAuditWF'
   NO_WORKFLOW_HOOKUP = 'no workflow hookup - assume you are in test or dev environment'
   COMPLETED = 'completed'
@@ -11,7 +10,7 @@ class WorkflowReporter
   # see issue sul-dlss/dor-workflow-service#50 for more context
   def self.report_error(druid, process_name, error_message)
     if Settings.workflow_services_url.present?
-      workflow_client.update_workflow_error_status(DOR, "druid:#{druid}", PRESERVATIONAUDITWF, process_name, error_message)
+      workflow_client.update_error_status("druid:#{druid}", PRESERVATIONAUDITWF, process_name, error_message)
     else
       Rails.logger.warn(NO_WORKFLOW_HOOKUP)
     end
@@ -19,7 +18,7 @@ class WorkflowReporter
 
   def self.report_completed(druid, process_name)
     if Settings.workflow_services_url.present?
-      workflow_client.update_workflow_status(DOR, "druid:#{druid}", PRESERVATIONAUDITWF, process_name, COMPLETED)
+      workflow_client.update_status("druid:#{druid}", PRESERVATIONAUDITWF, process_name, COMPLETED)
     else
       Rails.logger.warn(NO_WORKFLOW_HOOKUP)
     end
