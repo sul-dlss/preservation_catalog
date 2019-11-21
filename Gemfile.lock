@@ -361,7 +361,7 @@ DEPENDENCIES
   config
   coveralls
   dlss-capistrano
-  dor-workflow-client (~> 3.3)
+  dor-workflow-client (~> 3.8)
   druid-tools
   factory_bot_rails (~> 4.0)
   hirb
