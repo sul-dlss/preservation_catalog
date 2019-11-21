@@ -12,13 +12,46 @@ class ObjectsController < ApplicationController
     render json: PreservedObject.find_by!(druid: druid).to_json
   end
 
+  def manifest
+    params[:type] = 'manifest'
+    params[:filepath] ||= 'signatureCatalog.xml'
+    file_content = MoabStorageService.retrieve_file(druid, 'manifest', params[:filepath], params[:version])
+    render xml: file_content, status: :ok
+  end
+
+  def metadata
+    file_content = MoabStorageService.retrieve_file(druid, params[:metadata], params[:filepath], params[:version])
+    render xml: file_content, status: :ok
+  end
+
+  def content
+    file_content = MoabStorageService.retrieve_file(druid, 'content', params[:filepath], params[:version])
+    # plain? body? file?
+    render body: file_content, status: :ok
+  end
+
+  # return a specific file from the Moab
+  # GET /objects/:druid/file?type=manifest&filepath=signatureCatalog.xml
+  def file
+    err_msgs = file_params_errors(params)
+    if err_msgs.present?
+      render(plain: "400 Bad Request: #{err_msgs.join('; ')}", status: :bad_request)
+      return
+    end
+
+    file_content = MoabStorageService.retrieve_file(druid, params[:type], params[:filepath], params[:version])
+    render plain: file_content, status: :ok
+  rescue Moab::MoabRuntimeError => e
+    render(plain: "404 Not Found: #{e}", status: :not_found)
+  end
+
   # return the checksums and filesize for a single druid (supplied with druid: prefix)
   # GET /objects/:druid/checksum
   def checksum
     render json: content_files_checksums(druid).to_json
   end
 
-  # return the checksums and filesize for a list of druid (supplied with druid: prefix)
+  # return the checksums and filesize for a list of druids (supplied with druid: prefix)
   # note: this is deliberately allowed to be a POST to allow for a large number of druids to be passed in
   # GET OR POST /objects/checksums?druids[]=druid1&druids[]=druid2&druids[]=druid3
   def checksums
@@ -34,7 +67,7 @@ class ObjectsController < ApplicationController
       format.csv do
         render plain: csv_checksum_list
       end
-      format.any  { render status: :not_acceptable, plain: 'Format not acceptable' }
+      format.any { render status: :not_acceptable, plain: 'Format not acceptable' }
     end
   end
 
@@ -47,6 +80,21 @@ class ObjectsController < ApplicationController
   def druids
     return [] unless params[:druids].present?
     params[:druids].map { |druid| strip_druid(druid) }.sort.uniq # normalize, then sort, then de-dupe
+  end
+
+  def file_params_errors(params)
+    err_msgs = []
+    err_msgs << 'type param must be one of manifest, metadata, content' unless ['manifest', 'metadata', 'content'].include?(params[:type])
+    err_msgs << 'filepath param must be populated' if params[:filepath].blank?
+
+    if params[:version]
+      if params[:version].match?(/^[1-9]\d*$/)
+        params[:version] = params[:version].to_i
+      else
+        err_msgs << 'version param must be a positive integer'
+      end
+    end
+    err_msgs
   end
 
   def return_bare_druids?
