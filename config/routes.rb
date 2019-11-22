@@ -8,9 +8,6 @@ Rails.application.routes.draw do
   resources :objects, only: %i[show] do
     member do
       get 'checksum'
-      get 'manifest', format: false
-      get 'metadata', format: false
-      get 'content', format: false
       get 'file', format: false
     end
     collection do

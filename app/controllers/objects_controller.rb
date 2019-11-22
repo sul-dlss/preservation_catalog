@@ -12,24 +12,6 @@ class ObjectsController < ApplicationController
     render json: PreservedObject.find_by!(druid: druid).to_json
   end
 
-  def manifest
-    params[:type] = 'manifest'
-    params[:filepath] ||= 'signatureCatalog.xml'
-    file_content = MoabStorageService.retrieve_file(druid, 'manifest', params[:filepath], params[:version])
-    render xml: file_content, status: :ok
-  end
-
-  def metadata
-    file_content = MoabStorageService.retrieve_file(druid, params[:metadata], params[:filepath], params[:version])
-    render xml: file_content, status: :ok
-  end
-
-  def content
-    file_content = MoabStorageService.retrieve_file(druid, 'content', params[:filepath], params[:version])
-    # plain? body? file?
-    render body: file_content, status: :ok
-  end
-
   # return a specific file from the Moab
   # GET /objects/:druid/file?type=manifest&filepath=signatureCatalog.xml
   def file
