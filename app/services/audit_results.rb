@@ -154,9 +154,9 @@ class AuditResults
       log_result(r, logger)
       if r.key?(INVALID_MOAB)
         msg = "#{workflows_msg_prefix} || #{r.values.first}"
-        WorkflowReporter.report_error(druid, 'moab-valid', msg)
+        WorkflowReporter.report_error(druid, actual_version, 'moab-valid', msg)
       elsif status_changed_to_ok?(r)
-        WorkflowReporter.report_completed(druid, 'preservation-audit')
+        WorkflowReporter.report_completed(druid, actual_version, 'preservation-audit')
       elsif WORKFLOW_REPORT_CODES.include?(r.keys.first)
         candidate_workflow_results << r
       end
@@ -187,7 +187,7 @@ class AuditResults
   def report_errors_to_workflows(candidate_workflow_results)
     return if candidate_workflow_results.empty?
     msg = "#{workflows_msg_prefix} #{candidate_workflow_results.map(&:values).flatten.join(' && ')}"
-    WorkflowReporter.report_error(druid, 'preservation-audit', msg)
+    WorkflowReporter.report_error(druid, actual_version, 'preservation-audit', msg)
   end
 
   def log_result(result, logger)

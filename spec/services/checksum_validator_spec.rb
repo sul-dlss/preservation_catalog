@@ -525,13 +525,13 @@ RSpec.describe ChecksumValidator do
 
     it 'has status changed to OK_STATUS and completes workflow' do
       comp_moab.invalid_moab!
-      expect(WorkflowReporter).to receive(:report_completed).with(druid, 'preservation-audit')
+      expect(WorkflowReporter).to receive(:report_completed).with(druid, nil, 'preservation-audit')
       cv.validate_checksums
     end
 
     it 'has status that does not change and does not complete workflow' do
       comp_moab.ok!
-      expect(WorkflowReporter).not_to receive(:report_completed).with(druid, 'preservation-audit')
+      expect(WorkflowReporter).not_to receive(:report_completed).with(druid, nil, 'preservation-audit')
       cv.validate_checksums
     end
 
@@ -543,7 +543,7 @@ RSpec.describe ChecksumValidator do
 
       it "does not complete workflow" do
         comp_moab.ok!
-        expect(WorkflowReporter).not_to receive(:report_completed).with(druid, 'preservation-audit')
+        expect(WorkflowReporter).not_to receive(:report_completed).with(druid, nil, 'preservation-audit')
         cv.validate_checksums
       end
     end
@@ -558,7 +558,7 @@ RSpec.describe ChecksumValidator do
       end
 
       it 'does not complete workflow' do
-        expect(WorkflowReporter).not_to receive(:report_completed).with(druid, 'preservation-audit')
+        expect(WorkflowReporter).not_to receive(:report_completed).with(druid, nil, 'preservation-audit')
         cv.validate_checksums
       end
     end

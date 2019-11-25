@@ -125,18 +125,18 @@ RSpec.describe AuditResults do
 
         it 'details about the failures' do
           err_details = im_audit_results.send(:result_code_msg, result_code, moab_valid_errs)
-          expect(WorkflowReporter).to receive(:report_error).with(druid, 'moab-valid', a_string_matching(Regexp.escape(err_details)))
+          expect(WorkflowReporter).to receive(:report_error).with(druid, actual_version, 'moab-valid', a_string_matching(Regexp.escape(err_details)))
           im_audit_results.report_results
         end
 
         it 'check name' do
-          expect(WorkflowReporter).to receive(:report_error).with(druid, 'moab-valid', a_string_matching(check_name))
+          expect(WorkflowReporter).to receive(:report_error).with(druid, actual_version, 'moab-valid', a_string_matching(check_name))
           im_audit_results.report_results
         end
 
         it 'ms_root name' do
           expected = Regexp.escape("actual location: #{ms_root.name}")
-          expect(WorkflowReporter).to receive(:report_error).with(druid, 'moab-valid', a_string_matching(expected))
+          expect(WorkflowReporter).to receive(:report_error).with(druid, actual_version, 'moab-valid', a_string_matching(expected))
           im_audit_results.report_results
         end
       end
@@ -154,7 +154,7 @@ RSpec.describe AuditResults do
         audit_results.add_result(code, addl_hash)
         wf_err_msg = audit_results.send(:result_code_msg, code, addl_hash)
         expect(WorkflowReporter).to receive(:report_error).with(
-          druid, 'preservation-audit', a_string_matching(wf_err_msg)
+          druid, actual_version, 'preservation-audit', a_string_matching(wf_err_msg)
         )
         audit_results.report_results
       end
@@ -169,17 +169,17 @@ RSpec.describe AuditResults do
         audit_results.add_result(code2, result_msg_args2)
         result_msg2 = audit_results.send(:result_code_msg, code2, result_msg_args2)
         allow(WorkflowReporter).to receive(:report_error).with(
-          druid, 'preservation-audit', instance_of(String)
+          druid, actual_version, 'preservation-audit', instance_of(String)
         )
         audit_results.report_results
         expect(WorkflowReporter).to have_received(:report_error).with(
-          druid, 'preservation-audit', a_string_matching(result_msg1)
+          druid, actual_version, 'preservation-audit', a_string_matching(result_msg1)
         )
         expect(WorkflowReporter).to have_received(:report_error).with(
-          druid, 'preservation-audit', a_string_matching(/ \&\& /)
+          druid, actual_version, 'preservation-audit', a_string_matching(/ \&\& /)
         )
         expect(WorkflowReporter).to have_received(:report_error).with(
-          druid, 'preservation-audit', a_string_matching(result_msg2)
+          druid, actual_version, 'preservation-audit', a_string_matching(result_msg2)
         )
       end
 
@@ -188,7 +188,7 @@ RSpec.describe AuditResults do
         audit_results.add_result(code)
         expected = Regexp.escape("actual location: #{ms_root.name}")
         expect(WorkflowReporter).to receive(:report_error).with(
-          druid, 'preservation-audit', a_string_matching(expected)
+          druid, actual_version, 'preservation-audit', a_string_matching(expected)
         )
         audit_results.report_results
       end
@@ -199,9 +199,9 @@ RSpec.describe AuditResults do
         audit_results.add_result(code)
         unexpected = Regexp.escape("actual location: ")
         expect(WorkflowReporter).not_to receive(:report_error).with(
-          druid, 'preservation-audit', a_string_matching(unexpected)
+          druid, actual_version, 'preservation-audit', a_string_matching(unexpected)
         )
-        expect(WorkflowReporter).to receive(:report_error).with(druid, 'preservation-audit', anything)
+        expect(WorkflowReporter).to receive(:report_error).with(druid, actual_version, 'preservation-audit', anything)
         audit_results.report_results
       end
 
@@ -210,7 +210,7 @@ RSpec.describe AuditResults do
         audit_results.add_result(code)
         expected = "actual version: #{actual_version}"
         expect(WorkflowReporter).to receive(:report_error).with(
-          druid, 'preservation-audit', a_string_matching(expected)
+          druid, actual_version, 'preservation-audit', a_string_matching(expected)
         )
         audit_results.report_results
       end
@@ -221,9 +221,9 @@ RSpec.describe AuditResults do
         audit_results.add_result(code)
         unexpected = Regexp.escape("actual version: ")
         expect(WorkflowReporter).not_to receive(:report_error).with(
-          druid, 'preservation-audit', a_string_matching(unexpected)
+          druid, nil, 'preservation-audit', a_string_matching(unexpected)
         )
-        expect(WorkflowReporter).to receive(:report_error).with(druid, 'preservation-audit', anything)
+        expect(WorkflowReporter).to receive(:report_error).with(druid, nil, 'preservation-audit', anything)
         audit_results.report_results
       end
 
@@ -241,7 +241,7 @@ RSpec.describe AuditResults do
         it 'message sent includes CompleteMoab create date' do
           expected = Regexp.escape("db CompleteMoab (created #{create_date}")
           expect(WorkflowReporter).to receive(:report_error).with(
-            druid, 'preservation-audit', a_string_matching(expected)
+            druid, actual_version, 'preservation-audit', a_string_matching(expected)
           )
           my_audit_results.report_results
         end
@@ -249,7 +249,7 @@ RSpec.describe AuditResults do
         it 'message sent includes CompleteMoab updated date' do
           expected = "db CompleteMoab .* last updated #{update_date}"
           expect(WorkflowReporter).to receive(:report_error).with(
-            druid, 'preservation-audit', a_string_matching(expected)
+            druid, actual_version, 'preservation-audit', a_string_matching(expected)
           )
           my_audit_results.report_results
         end
@@ -261,7 +261,7 @@ RSpec.describe AuditResults do
         result_code = AuditResults::CM_STATUS_CHANGED
         addl_hash = { old_status: 'invalid_checksum', new_status: 'ok' }
         audit_results.add_result(result_code, addl_hash)
-        expect(WorkflowReporter).to receive(:report_completed).with(druid, 'preservation-audit')
+        expect(WorkflowReporter).to receive(:report_completed).with(druid, actual_version, 'preservation-audit')
         audit_results.report_results
       end
     end
