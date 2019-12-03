@@ -13,16 +13,22 @@ class ObjectsController < ApplicationController
   end
 
   # return a specific file from the Moab
-  # GET /objects/:druid/file?type=manifest&filepath=signatureCatalog.xml
+  # GET /objects/:druid/file?category=manifest&filepath=signatureCatalog.xml
   def file
-    err_msgs = file_params_errors(params)
-    if err_msgs.present?
-      render(plain: "400 Bad Request: #{err_msgs.join('; ')}", status: :bad_request)
+    if params[:version] && !params[:version].match?(/^[1-9]\d*$/)
+      render(plain: "400 Bad Request: version parameter must be positive integer", status: :bad_request)
       return
     end
 
-    file_content = MoabStorageService.retrieve_file(druid, params[:type], params[:filepath], params[:version])
-    render plain: file_content, status: :ok
+    obj_version = params[:version].to_i if params[:version]&.match?(/^[1-9]\d*$/)
+    location = MoabStorageService.filepath(druid, params[:category], params[:filepath], obj_version)
+    if location
+      send_file location
+    else
+      render(plain: "404 File Not Found: #{druid}, #{params[:category]}, #{params[:filepath]}, #{params[:version]}", status: :not_found)
+    end
+  rescue ArgumentError => e
+    render(plain: "400 Bad Request: #{e}", status: :bad_request)
   rescue Moab::MoabRuntimeError => e
     render(plain: "404 Not Found: #{e}", status: :not_found)
   end
@@ -62,21 +68,6 @@ class ObjectsController < ApplicationController
   def druids
     return [] unless params[:druids].present?
     params[:druids].map { |druid| strip_druid(druid) }.sort.uniq # normalize, then sort, then de-dupe
-  end
-
-  def file_params_errors(params)
-    err_msgs = []
-    err_msgs << 'type param must be one of manifest, metadata, content' unless ['manifest', 'metadata', 'content'].include?(params[:type])
-    err_msgs << 'filepath param must be populated' if params[:filepath].blank?
-
-    if params[:version]
-      if params[:version].match?(/^[1-9]\d*$/)
-        params[:version] = params[:version].to_i
-      else
-        err_msgs << 'version param must be a positive integer'
-      end
-    end
-    err_msgs
   end
 
   def return_bare_druids?
