@@ -8,6 +8,7 @@ Rails.application.routes.draw do
   resources :objects, only: %i[show] do
     member do
       get 'checksum'
+      get 'file', format: false # no need to add extension to url
     end
     collection do
       match 'checksums', via: %i[get post]

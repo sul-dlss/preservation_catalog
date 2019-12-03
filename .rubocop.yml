@@ -27,6 +27,9 @@ Bundler/OrderedGems:
 Layout/EmptyLineAfterGuardClause:
   Enabled: false
 
+Layout/SpaceAroundEqualsInParameterDefault:
+  Enabled: false
+
 Metrics/BlockLength:
   Exclude:
     - 'app/services/preserved_object_handler.rb' # FIXME check_existence shameless green
@@ -45,6 +48,8 @@ Metrics/LineLength:
 
 Metrics/MethodLength:
   Max: 25
+  Exclude:
+    - 'app/services/preserved_object_handler.rb'
 
 Naming/FileName:
   Exclude:
@@ -78,6 +83,7 @@ RSpec/NestedGroups:
   Exclude:
     - 'spec/lib/audit/catalog_to_moab_spec.rb'
     - 'spec/lib/audit/moab_to_catalog_spec.rb'
+    - 'spec/requests/objects_controller_file_spec.rb'
     - 'spec/services/checksum_validator_spec.rb'
     - 'spec/services/preserved_object_handler_*.rb'
 
