@@ -14,6 +14,10 @@ class ObjectsController < ApplicationController
 
   # return a specific file from the Moab
   # GET /objects/:druid/file?category=manifest&filepath=signatureCatalog.xml
+  # useful params:
+  # - category (content|manifest|metadata)
+  # - filepath path of file, relative to category directory
+  # - version (positive integer (as a string)) version of Moab
   def file
     if params[:version] && !params[:version].match?(/^[1-9]\d*$/)
       render(plain: "400 Bad Request: version parameter must be positive integer", status: :bad_request)
@@ -57,6 +61,19 @@ class ObjectsController < ApplicationController
       end
       format.any { render status: :not_acceptable, plain: 'Format not acceptable' }
     end
+  end
+
+  # Retrieves an XML file representing [Moab::FileInventoryDifference]
+  #   from comparison of passed contentMetadata.xml with latest (or specified) version in Moab,
+  #   for all files (default) or a specified subset (shelve|preserve|publish)
+  #
+  # body of request: contentMetadata.xml we wish to compare against a version already in the Moab
+  # useful params:
+  # - subset (default: 'all') which subset of files to compare (all|shelve|preserve|publish)
+  # - version (positive integer (as a string)) version of Moab to be compared against (defaults to latest version)
+  def content_diff
+    #(current_content_md:, subset: 'all', version: nil)
+    # code
   end
 
   private
