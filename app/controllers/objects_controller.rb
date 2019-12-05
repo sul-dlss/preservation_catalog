@@ -47,7 +47,7 @@ class ObjectsController < ApplicationController
   # note: this is deliberately allowed to be a POST to allow for a large number of druids to be passed in
   # GET OR POST /objects/checksums?druids[]=druid1&druids[]=druid2&druids[]=druid3
   def checksums
-    unless druids.present?
+    unless normalized_druids.present?
       render(plain: "400 bad request - druids param must be populated", status: :bad_request)
       return
     end
@@ -91,7 +91,7 @@ class ObjectsController < ApplicationController
     strip_druid(params[:id])
   end
 
-  def druids
+  def normalized_druids
     return [] unless params[:druids].present?
     params[:druids].map { |druid| strip_druid(druid) }.sort.uniq # normalize, then sort, then de-dupe
   end
@@ -105,12 +105,12 @@ class ObjectsController < ApplicationController
   end
 
   def json_checksum_list
-    druids.map { |druid| { returned_druid(druid) => content_files_checksums(druid) } }.to_json
+    normalized_druids.map { |druid| { returned_druid(druid) => content_files_checksums(druid) } }.to_json
   end
 
   def csv_checksum_list
     CSV.generate do |csv|
-      druids.each do |druid|
+      normalized_druids.each do |druid|
         content_files_checksums(druid).each do |checksum|
           csv << [returned_druid(druid), checksum[:filename], checksum[:md5], checksum[:sha1], checksum[:sha256], checksum[:filesize]]
         end
