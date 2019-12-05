@@ -63,17 +63,26 @@ class ObjectsController < ApplicationController
     end
   end
 
-  # Retrieves an XML file representing [Moab::FileInventoryDifference]
-  #   from comparison of passed contentMetadata.xml with latest (or specified) version in Moab,
-  #   for all files (default) or a specified subset (shelve|preserve|publish)
+  # Retrieves [Moab::FileInventoryDifference] from comparison of passed contentMetadata.xml
+  #   with latest (or specified) version in Moab for all files (default) or a specified subset (shelve|preserve|publish)
+  # Moab::FileInventoryDifference is returned as a JSON response
   #
-  # body of request: contentMetadata.xml we wish to compare against a version already in the Moab
   # useful params:
+  # - content_metadata  contentMetadata.xml to be compared against a version already in the Moab
   # - subset (default: 'all') which subset of files to compare (all|shelve|preserve|publish)
   # - version (positive integer (as a string)) version of Moab to be compared against (defaults to latest version)
   def content_diff
-    #(current_content_md:, subset: 'all', version: nil)
-    # code
+    if params[:version] && !params[:version].match?(/^[1-9]\d*$/)
+      render(plain: "400 Bad Request: version parameter must be positive integer", status: :bad_request)
+      return
+    end
+    obj_version = params[:version].to_i if params[:version]&.match?(/^[1-9]\d*$/)
+    subset = params[:subset] ||= 'all'
+    render(xml: MoabStorageService.content_diff(druid, params[:content_metadata], subset, obj_version).to_xml)
+  rescue ArgumentError => e
+    render(plain: "400 Bad Request: #{e}", status: :bad_request)
+  rescue Moab::MoabRuntimeError => e
+    render(plain: "500 Unable to get content diff: #{e}", status: :internal_server_error)
   end
 
   private
