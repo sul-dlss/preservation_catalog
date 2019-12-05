@@ -65,7 +65,7 @@ class ObjectsController < ApplicationController
 
   # Retrieves [Moab::FileInventoryDifference] from comparison of passed contentMetadata.xml
   #   with latest (or specified) version in Moab for all files (default) or a specified subset (shelve|preserve|publish)
-  # Moab::FileInventoryDifference is returned as a JSON response
+  # Moab::FileInventoryDifference is returned as an XML response
   #
   # useful params:
   # - content_metadata  contentMetadata.xml to be compared against a version already in the Moab
