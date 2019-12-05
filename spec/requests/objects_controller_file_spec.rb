@@ -5,7 +5,6 @@ require 'rails_helper'
 RSpec.describe ObjectsController, type: :request do
   let(:prefixed_druid) { 'druid:bj102hs9687' }
   let(:bare_druid) { 'bj102hs9687' }
-  let(:pres_obj) { create(:preserved_object) }
 
   describe 'GET #file' do
     context 'when object exists' do
