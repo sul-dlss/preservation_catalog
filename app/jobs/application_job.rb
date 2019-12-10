@@ -11,17 +11,24 @@ require 'resque/plugins/lock'
 # @see [resque-lock] https://github.com/defunkt/resque-lock/blob/master/lib/resque/plugins/lock.rb
 # @see [redis setnx] http://redis.io/commands/setnx
 class ApplicationJob < ActiveJob::Base
-  extend Resque::Plugins::Lock
+  include Resque::Plugins::Lock
 
   before_perform do |_job|
     ActiveRecord::Base.clear_active_connections!
   end
 
   before_enqueue do |job|
-    throw(:abort) unless job.class.before_enqueue_lock(*job.arguments)
+    throw(:abort) unless before_enqueue_lock(*job.arguments)
   end
+
   around_perform do |job, block|
-    job.class.around_perform_lock(*job.arguments, &block)
+    around_perform_lock(*job.arguments, &block)
+  end
+
+  # Overriding so that changes in ActiveModel object don't result in new lock (which they do when just calling to_s).
+  def lock(*args)
+    new_args = args.map { |arg| arg.class.method_defined?(:to_global_id) ? arg.to_global_id.to_s : arg }
+    "lock:#{self.class.name}-#{new_args}"
   end
 
   # Override in subclass to tune per queue.

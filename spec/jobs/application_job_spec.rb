@@ -15,21 +15,27 @@ describe ApplicationJob, type: :job do
   end
 
   context 'a subclass with message(s) queued' do
+    let(:cm) { create :complete_moab }
+
     before do
-      allow(ZipmakerJob).to receive(:perform_later).and_call_original # undo rails_helper block
-      ZipmakerJob.perform_later('1234abc', 1)
+      allow(CatalogToMoabJob).to receive(:perform_later).and_call_original # undo rails_helper block
+      CatalogToMoabJob.perform_later(cm, 'foo')
     end
 
     it 'does not add duplicate messages' do
-      expect { ZipmakerJob.perform_later('1234abc', 1) }
+      expect { CatalogToMoabJob.perform_later(cm, 'foo') }
+        .not_to change { Resque.info[:pending] }.from(1)
+
+      # Change complete_moab
+      cm.size = 1000
+
+      expect { CatalogToMoabJob.perform_later(cm, 'foo') }
         .not_to change { Resque.info[:pending] }.from(1)
     end
 
     it 'but adds novel messages' do
-      expect { ZipmakerJob.perform_later('7890xyz', 1) } # different druid
+      expect { CatalogToMoabJob.perform_later(cm, 'bar') }
         .to change { Resque.info[:pending] }.from(1).to(2)
-      expect { ZipmakerJob.perform_later('1234abc', 2) } # same druid, different version
-        .to change { Resque.info[:pending] }.from(2).to(3)
     end
   end
 end
