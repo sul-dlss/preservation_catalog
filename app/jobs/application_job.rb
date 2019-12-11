@@ -20,8 +20,11 @@ class ApplicationJob < ActiveJob::Base
   before_enqueue do |job|
     throw(:abort) unless job.class.before_enqueue_lock(*job.arguments)
   end
-  around_perform do |job, block|
-    job.class.around_perform_lock(*job.arguments, &block)
+
+  # Overriding so that changes in ActiveModel object don't result in new lock (which they do when just calling to_s).
+  def self.lock(*args)
+    new_args = args.map { |arg| arg.class.method_defined?(:to_global_id) ? arg.to_global_id.to_s : arg }
+    "lock:#{self.class.name}-#{new_args}"
   end
 
   # Override in subclass to tune per queue.

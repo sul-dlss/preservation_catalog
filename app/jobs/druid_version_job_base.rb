@@ -10,7 +10,7 @@ class DruidVersionJobBase < ApplicationJob
   end
 
   # Does queue locking on ONLY druid and version (as first and second parameters)
-  def lock(*args)
+  def self.lock(*args)
     "lock:#{name}-#{args.slice(0..1)}"
   end
 
