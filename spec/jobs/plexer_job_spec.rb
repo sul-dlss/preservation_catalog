@@ -25,9 +25,12 @@ describe PlexerJob, type: :job do
     expect(job).to be_an(ZipPartJobBase)
   end
 
-  it 'raises without enqueueing if metadata is incomplete' do
+  it 'raises without enqueueing if size metadata is incomplete' do
     expect { described_class.perform_later(druid, version, 'part_key', metadata.merge(size: nil)) }
       .to raise_error(ArgumentError, /size/)
+  end
+
+  it 'raises without enqueueing if zip_cmd metadata is incomplete' do
     expect { described_class.perform_later(druid, version, 'part_key', metadata.reject { |x| x == :zip_cmd }) }
       .to raise_error(ArgumentError, /zip_cmd/)
   end
