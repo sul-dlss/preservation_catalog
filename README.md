@@ -229,12 +229,12 @@ In console, start by finding the storage root.
 
 ```ruby
 msr = MoabStorageRoot.find_by!(name: name)
-MoabToCatalog.seed_catalog_for_dir(msr.storage_location)
+Audit::MoabToCatalog.seed_catalog_for_dir(msr.storage_location)
 ```
 
 Or for all roots:
 ```ruby
-MoabStorageRoot.find_each { |msr| MoabToCatalog.seed_catalog_for_dir(msr.storage_location) }
+MoabStorageRoot.find_each { |msr| Audit::MoabToCatalog.seed_catalog_for_dir(msr.storage_location) }
 ```
 
 ## Development
@@ -285,4 +285,3 @@ bundle exec cap prod deploy # for the prod servers
 
 ### Resque Pool
 The Resque Pool admin interface is available at `<hostname>/resque/overview`.
-
