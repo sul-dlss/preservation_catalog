@@ -40,7 +40,7 @@ RSpec.describe WorkflowReporter do
         call_count = 0
         allow(stub_wf_client).to receive(:update_error_status) do
           call_count += 1
-          call_count == 1 ? raise(Dor::WorkflowException, err_msg) : nil
+          call_count == 1 ? raise(Dor::MissingWorkflowException, err_msg) : nil
         end
       end
 
@@ -80,7 +80,7 @@ RSpec.describe WorkflowReporter do
         call_count = 0
         allow(stub_wf_client).to receive(:update_status) do
           call_count += 1
-          call_count == 1 ? raise(Dor::WorkflowException, err_msg) : nil
+          call_count == 1 ? raise(Dor::MissingWorkflowException, err_msg) : nil
         end
       end
 
