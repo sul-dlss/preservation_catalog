@@ -5,7 +5,6 @@ class WorkflowReporter
   PRESERVATIONAUDITWF = 'preservationAuditWF'
   NO_WORKFLOW_HOOKUP = 'no workflow hookup - assume you are in test or dev environment'
   COMPLETED = 'completed'
-  MISSING_WF_REGEX = /Failed .*#{Settings.workflow_services_url}.*preservationAuditWF.* \(HTTP status 404\)/.freeze
 
   # this method will always return true because of the dor-workflow-service gem
   # see issue sul-dlss/dor-workflow-service#50 for more context
@@ -18,9 +17,7 @@ class WorkflowReporter
     else
       Rails.logger.warn(NO_WORKFLOW_HOOKUP)
     end
-  rescue Dor::WorkflowException => e
-    raise unless e.message.match?(MISSING_WF_REGEX)
-
+  rescue Dor::MissingWorkflowException
     create_wf(druid, version)
     report_error(druid, version, process_name, error_message)
   end
@@ -34,9 +31,7 @@ class WorkflowReporter
     else
       Rails.logger.warn(NO_WORKFLOW_HOOKUP)
     end
-  rescue Dor::WorkflowException => e
-    raise unless e.message.match?(MISSING_WF_REGEX)
-
+  rescue Dor::MissingWorkflowException
     create_wf(druid, version)
     report_completed(druid, version, process_name)
   end
