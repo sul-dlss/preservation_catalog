@@ -32,15 +32,23 @@ RSpec.describe WorkflowReporter do
     context 'when workflow does not exist' do
       let(:stub_wf_client) { instance_double(Dor::Workflow::Client) }
 
+      before do
+        allow(described_class).to receive(:create_wf)
+        allow(described_class).to receive(:report_error).and_call_original
+        # AFAICT, this is how one gets RSpec to vary behavior on subsequent
+        # calls that raise and return
+        call_count = 0
+        allow(stub_wf_client).to receive(:update_error_status) do
+          call_count += 1
+          call_count == 1 ? raise(Dor::WorkflowException, err_msg) : nil
+        end
+      end
+
       it 'creates workflow and calls report_error again' do
-        # NOTE: funky way to let code raise an error and handle it without rspec failing
-        expect do
-          allow(stub_wf_client).to receive(:update_error_status).and_raise(Dor::WorkflowException, err_msg)
-          allow(described_class).to receive(:create_wf)
-          described_class.report_error(druid, version, process_name, audit_result)
-          expect(described_class).to have_received(:create_wf)
-          expect(described_class).to receive(:report_error).twice
-        end.to raise_error(Dor::WorkflowException, err_msg)
+        described_class.report_error(druid, version, process_name, audit_result)
+
+        expect(described_class).to have_received(:create_wf).once
+        expect(described_class).to have_received(:report_error).twice
       end
     end
   end
@@ -64,15 +72,23 @@ RSpec.describe WorkflowReporter do
     context 'when workflow does not exist' do
       let(:stub_wf_client) { instance_double(Dor::Workflow::Client) }
 
+      before do
+        allow(described_class).to receive(:create_wf)
+        allow(described_class).to receive(:report_completed).and_call_original
+        # AFAICT, this is how one gets RSpec to vary behavior on subsequent
+        # calls that raise and return
+        call_count = 0
+        allow(stub_wf_client).to receive(:update_status) do
+          call_count += 1
+          call_count == 1 ? raise(Dor::WorkflowException, err_msg) : nil
+        end
+      end
+
       it 'creates workflow and calls report_completed again' do
-        # NOTE: funky way to let code raise an error and handle it without rspec failing
-        expect do
-          allow(stub_wf_client).to receive(:update_status).and_raise(Dor::WorkflowException, err_msg)
-          allow(described_class).to receive(:create_wf)
-          described_class.report_completed(druid, version, process_name)
-          expect(described_class).to have_received(:create_wf)
-          expect(described_class).to receive(:report_completed).twice
-        end.to raise_error(Dor::WorkflowException, err_msg)
+        described_class.report_completed(druid, version, process_name)
+
+        expect(described_class).to have_received(:create_wf).once
+        expect(described_class).to have_received(:report_completed).twice
       end
     end
   end
