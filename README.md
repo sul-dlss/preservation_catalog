@@ -288,11 +288,14 @@ bundle exec cap prod deploy # for the prod servers
 The Resque Pool admin interface is available at `<hostname>/resque/overview`.
 
 ## API
-### `GET /objects/:druid`
+
+### V1
+
+#### `GET /v1/objects/:druid`
 Return the PreservedObject model for the object.
 
 ```
-curl https://preservation-catalog-prod-01.stanford.edu/objects/druid:bb000kg4251
+curl https://preservation-catalog-prod-01.stanford.edu/v1/objects/druid:bb000kg4251
 {
   "id": 1786188,
   "druid": "bb000kg4251",
@@ -301,9 +304,9 @@ curl https://preservation-catalog-prod-01.stanford.edu/objects/druid:bb000kg4251
   "updated_at": "2019-06-26T18:38:03.077Z",
   "preservation_policy_id": 1
 }
-``` 
+```
 
-### `GET /objects/:druid/file?category=:category&filepath=:filepath&version=:version`
+#### `GET /v1/objects/:druid/file?category=:category&filepath=:filepath&version=:version`
 Returns a content, metadata, or manifest file for the object.
 
 Parameters:
@@ -312,7 +315,7 @@ Parameters:
 * version (optional, default: latest): version of Moab
 
 ```
-curl "https://preservation-catalog-prod-01.stanford.edu/objects/druid:bb000kg4251/file?category=manifest&filepath=signatureCatalog.xml&version=1"
+curl "https://preservation-catalog-prod-01.stanford.edu/v1/objects/druid:bb000kg4251/file?category=manifest&filepath=signatureCatalog.xml&version=1"
 <?xml version="1.0" encoding="UTF-8"?>
 <signatureCatalog objectId="druid:bb000kg4251" versionId="1" catalogDatetime="2019-06-26T18:38:02Z" fileCount="10" byteCount="1364250" blockCount="1337">
   <entry originalVersion="1" groupId="content" storagePath="bb000kg4251.jpg">
@@ -322,11 +325,11 @@ curl "https://preservation-catalog-prod-01.stanford.edu/objects/druid:bb000kg425
 </signatureCatalog>
 ```
 
-### `GET /objects/:druid/checksum`
+#### `GET /v1/objects/:druid/checksum`
 Return the checksums and filesize for a single object.
 
 ```
-curl https://preservation-catalog-prod-01.stanford.edu/objects/druid:bb000kg4251/checksum
+curl https://preservation-catalog-prod-01.stanford.edu/v1/objects/druid:bb000kg4251/checksum
 [
   {
     "filename": "bb000kg4251.jpg",
@@ -338,14 +341,14 @@ curl https://preservation-catalog-prod-01.stanford.edu/objects/druid:bb000kg4251
 ]
 ```
 
-### `GET|POST /objects/checksums?druids[]=:druid`
+#### `GET|POST /objects/checksums?druids[]=:druid`
 Return the checksums and filesize for multiple objects.
 
 Parameters:
 * druid[] (repeatable): druid for the object
 
 ```
-curl "https://preservation-catalog-prod-01.stanford.edu/objects/checksums?druids[]=druid:bb000kg4251&druids[]=druid:bb000kq3835"
+curl "https://preservation-catalog-prod-01.stanford.edu/v1/objects/checksums?druids[]=druid:bb000kg4251&druids[]=druid:bb000kq3835"
 [
   {
     "druid:bb000kg4251": [
@@ -372,7 +375,7 @@ curl "https://preservation-catalog-prod-01.stanford.edu/objects/checksums?druids
 ]
 ```
 
-### `POST /objects/:druid/content_diff`
+#### `POST /v1/objects/:druid/content_diff`
 Retrieves FileInventoryDifference model from comparison of passed contentMetadata.xml with latest (or specified) version in Moab for all files (default) or a specified subset.
 
 Parameters:
@@ -381,7 +384,7 @@ Parameters:
 * version (optional, default: latest): version of Moab
 
 ```
-curl -F 'content_metadata= 
+curl -F 'content_metadata=
 <?xml version="1.0"?>
 <contentMetadata objectId="bb000kg4251" type="image">
   <resource id="bb000kg4251_1" sequence="1" type="image">
@@ -397,7 +400,7 @@ curl -F 'content_metadata=
       <imageData width="3184" height="2205"/>
     </file>
   </resource>
-</contentMetadata>' https://preservation-catalog-prod-01.stanford.edu/objects/druid:bb000kg4251/content_diff
+</contentMetadata>' https://preservation-catalog-prod-01.stanford.edu/v1/objects/druid:bb000kg4251/content_diff
 
 <?xml version="1.0"?>
 <fileInventoryDifference objectId="bb000kg4251" differenceCount="0" basis="v1-contentMetadata-all" other="new-contentMetadata-all" reportDatetime="2019-12-12T20:20:30Z">
@@ -420,7 +423,7 @@ curl -F 'content_metadata=
 </fileInventoryDifference>
 ```
 
-### `POST /catalog`
+#### `POST /v1/catalog`
 Add an existing moab object to the catalog.
 
 Parameters:
@@ -437,7 +440,7 @@ Response codes:
 * 500: some other problem.
 
 ```
-curl -F 'druid=druid:bj102hs9688' -F 'incoming_version=3' -F 'incoming_size=2070039' -F 'storage_location=spec/fixtures/storage_root01' -F 'checksums_validated=true' https://preservation-catalog-stage-01.stanford.edu/catalog
+curl -F 'druid=druid:bj102hs9688' -F 'incoming_version=3' -F 'incoming_size=2070039' -F 'storage_location=spec/fixtures/storage_root01' -F 'checksums_validated=true' https://preservation-catalog-stage-01.stanford.edu/catalog/v1
 
 {
 	"druid": "bj102hs9688",
@@ -447,7 +450,7 @@ curl -F 'druid=druid:bj102hs9688' -F 'incoming_version=3' -F 'incoming_size=2070
 }
 ```
 
-### `PUT/PATCH /catalog/:druid`
+#### `PUT/PATCH /v1/catalog/:druid`
 Updating an existing record for a moab object in the catalog for a new version.
 
 Parameters:
@@ -464,7 +467,7 @@ Response codes:
 * 500: some other problem.
 
 ```
-curl -X PUT -F 'incoming_version=4' -F 'incoming_size=2136079' -F 'storage_location=spec/fixtures/storage_root01' -F 'checksums_validated=true' https://preservation-catalog-stage-01.stanford.edu/catalog/druid:bj102hs9688
+curl -X PUT -F 'incoming_version=4' -F 'incoming_size=2136079' -F 'storage_location=spec/fixtures/storage_root01' -F 'checksums_validated=true' https://preservation-catalog-stage-01.stanford.edu/v1/catalog/druid:bj102hs9688
 
 {
 	"druid": "bj102hs9688",
