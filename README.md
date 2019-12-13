@@ -16,6 +16,7 @@ Rails application to track, audit and replicate archival artifacts associated wi
     * [Seed the catalog](#seed-the-catalog)
 * [Development](#development)
 * [Deploying](#deploying)
+* [API](#api)
 
 ## Getting Started
 
@@ -285,3 +286,190 @@ bundle exec cap prod deploy # for the prod servers
 
 ### Resque Pool
 The Resque Pool admin interface is available at `<hostname>/resque/overview`.
+
+## API
+### `GET /objects/:druid`
+Return the PreservedObject model for the object.
+
+```
+curl https://preservation-catalog-prod-01.stanford.edu/objects/druid:bb000kg4251
+{
+  "id": 1786188,
+  "druid": "bb000kg4251",
+  "current_version": 1,
+  "created_at": "2019-06-26T18:38:03.077Z",
+  "updated_at": "2019-06-26T18:38:03.077Z",
+  "preservation_policy_id": 1
+}
+``` 
+
+### `GET /objects/:druid/file?category=:category&filepath=:filepath&version=:version`
+Returns a content, metadata, or manifest file for the object.
+
+Parameters:
+* category (values: content|manifest|metadata): category of file
+* filepath: path of file, relative to category directory
+* version (optional, default: latest): version of Moab
+
+```
+curl "https://preservation-catalog-prod-01.stanford.edu/objects/druid:bb000kg4251/file?category=manifest&filepath=signatureCatalog.xml&version=1"
+<?xml version="1.0" encoding="UTF-8"?>
+<signatureCatalog objectId="druid:bb000kg4251" versionId="1" catalogDatetime="2019-06-26T18:38:02Z" fileCount="10" byteCount="1364250" blockCount="1337">
+  <entry originalVersion="1" groupId="content" storagePath="bb000kg4251.jpg">
+    <fileSignature size="1347965" md5="abf0fd6d318bab3a5daf1b3e545ca8ac" sha1="eb68cd8ece6be6570e14358ecae66f3ac3026d21" sha256="4d38d804d050bf3bdc41150869f2d09f156043cc1ec215fd65dafbeb8243187f"/>
+  </entry>
+  ...
+</signatureCatalog>
+```
+
+### `GET /objects/:druid/checksum`
+Return the checksums and filesize for a single object.
+
+```
+curl https://preservation-catalog-prod-01.stanford.edu/objects/druid:bb000kg4251/checksum
+[
+  {
+    "filename": "bb000kg4251.jpg",
+    "md5": "abf0fd6d318bab3a5daf1b3e545ca8ac",
+    "sha1": "eb68cd8ece6be6570e14358ecae66f3ac3026d21",
+    "sha256": "4d38d804d050bf3bdc41150869f2d09f156043cc1ec215fd65dafbeb8243187f",
+    "filesize": 1347965
+  }
+]
+```
+
+### `GET|POST /objects/checksums?druids[]=:druid`
+Return the checksums and filesize for multiple objects.
+
+Parameters:
+* druid[] (repeatable): druid for the object
+
+```
+curl "https://preservation-catalog-prod-01.stanford.edu/objects/checksums?druids[]=druid:bb000kg4251&druids[]=druid:bb000kq3835"
+[
+  {
+    "druid:bb000kg4251": [
+      {
+        "filename": "bb000kg4251.jpg",
+        "md5": "abf0fd6d318bab3a5daf1b3e545ca8ac",
+        "sha1": "eb68cd8ece6be6570e14358ecae66f3ac3026d21",
+        "sha256": "4d38d804d050bf3bdc41150869f2d09f156043cc1ec215fd65dafbeb8243187f",
+        "filesize": 1347965
+      }
+    ]
+  },
+  {
+    "druid:bb000kq3835": [
+      {
+        "filename": "2011-023MAIL-1951-b4_22.1_0014.tif",
+        "md5": "6c3501fd2a9449f280a483254d4ab84e",
+        "sha1": "f15119aed799103f00a08aea6daafaf72e0b7fe4",
+        "sha256": "89e211f48f1fb84ceeaee3405daa0755e131d122173c9ed2a8bfc5eee18d77ad",
+        "filesize": 11127448
+      }
+    ]
+  }
+]
+```
+
+### `POST /objects/:druid/content_diff`
+Retrieves FileInventoryDifference model from comparison of passed contentMetadata.xml with latest (or specified) version in Moab for all files (default) or a specified subset.
+
+Parameters:
+* content_metadata: contentMetadata.xml to compare.
+* subset (optional; default: all; values: all|shelve|preserve|publish): subset of files to compare.
+* version (optional, default: latest): version of Moab
+
+```
+curl -F 'content_metadata= 
+<?xml version="1.0"?>
+<contentMetadata objectId="bb000kg4251" type="image">
+  <resource id="bb000kg4251_1" sequence="1" type="image">
+    <label>Image 1</label>
+    <file id="bb000kg4251.jpg" mimetype="image/jpeg" size="1347965" preserve="yes" publish="no" shelve="no">
+      <checksum type="md5">abf0fd6d318bab3a5daf1b3e545ca8ac</checksum>
+      <checksum type="sha1">eb68cd8ece6be6570e14358ecae66f3ac3026d21</checksum>
+      <imageData width="3184" height="2205"/>
+    </file>
+    <file id="bb000kg4251.jp2" mimetype="image/jp2" size="1333879" preserve="no" publish="yes" shelve="yes">
+      <checksum type="md5">7f682a6acaecb00ec23dc5b15e61ee87</checksum>
+      <checksum type="sha1">8356f16250042158e8d91ef4f86646a7d58aae0b</checksum>
+      <imageData width="3184" height="2205"/>
+    </file>
+  </resource>
+</contentMetadata>' https://preservation-catalog-prod-01.stanford.edu/objects/druid:bb000kg4251/content_diff
+
+<?xml version="1.0"?>
+<fileInventoryDifference objectId="bb000kg4251" differenceCount="0" basis="v1-contentMetadata-all" other="new-contentMetadata-all" reportDatetime="2019-12-12T20:20:30Z">
+  <fileGroupDifference groupId="content" differenceCount="0" identical="2" copyadded="0" copydeleted="0" renamed="0" modified="0" added="0" deleted="0">
+    <subset change="identical" count="2">
+      <file change="identical" basisPath="bb000kg4251.jpg" otherPath="same">
+        <fileSignature size="1347965" md5="abf0fd6d318bab3a5daf1b3e545ca8ac" sha1="eb68cd8ece6be6570e14358ecae66f3ac3026d21" sha256=""/>
+      </file>
+      <file change="identical" basisPath="bb000kg4251.jp2" otherPath="same">
+        <fileSignature size="1333879" md5="7f682a6acaecb00ec23dc5b15e61ee87" sha1="8356f16250042158e8d91ef4f86646a7d58aae0b" sha256=""/>
+      </file>
+    </subset>
+    <subset change="copyadded" count="0"/>
+    <subset change="copydeleted" count="0"/>
+    <subset change="renamed" count="0"/>
+    <subset change="modified" count="0"/>
+    <subset change="added" count="0"/>
+    <subset change="deleted" count="0"/>
+  </fileGroupDifference>
+</fileInventoryDifference>
+```
+
+### `POST /catalog`
+Add an existing moab object to the catalog.
+
+Parameters:
+* druid: druid of the object to add.
+* incoming_version: version of the object to add.
+* incoming_size: size in bytes of the object on disk.
+* storage_location: Storage root where the moab object is located.
+* checksums_validated: whether the checksums for the moab object have previously been validated by caller.
+
+Response codes:
+* 201: new object created.
+* 409: object already exists.
+* 406: error with provided parameters or missing parameters.
+* 500: some other problem.
+
+```
+curl -F 'druid=druid:bj102hs9688' -F 'incoming_version=3' -F 'incoming_size=2070039' -F 'storage_location=spec/fixtures/storage_root01' -F 'checksums_validated=true' https://preservation-catalog-stage-01.stanford.edu/catalog
+
+{
+	"druid": "bj102hs9688",
+	"result_array": [{
+		"created_new_object": "added object to db as it did not exist"
+	}]
+}
+```
+
+### `PUT/PATCH /catalog/:druid`
+Updating an existing record for a moab object in the catalog for a new version.
+
+Parameters:
+* incoming_version: version of the object to add.
+* incoming_size: size in bytes of the object on disk.
+* storage_location: Storage root where the moab object is located.
+* checksums_validated: whether the checksums for the moab object have previously been validated by caller.
+
+Response codes:
+* 200: update successful.
+* 400: version is less than the current recorded version for the moab object.
+* 404: object not found.
+* 406: error with provided parameters or missing parameters.
+* 500: some other problem.
+
+```
+curl -X PUT -F 'incoming_version=4' -F 'incoming_size=2136079' -F 'storage_location=spec/fixtures/storage_root01' -F 'checksums_validated=true' https://preservation-catalog-stage-01.stanford.edu/catalog/druid:bj102hs9688
+
+{
+	"druid": "bj102hs9688",
+	"result_array": [{
+		"actual_vers_gt_db_obj": "actual version (4) greater than CompleteMoab db version (3)"
+	}]
+}
+```
