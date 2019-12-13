@@ -46,10 +46,6 @@ module Audit
 
     private
 
-    def storage_location
-      complete_moab.moab_storage_root.storage_location
-    end
-
     def online_moab_found?
       return true if moab
       false
