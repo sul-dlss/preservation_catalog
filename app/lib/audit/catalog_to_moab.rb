@@ -4,11 +4,10 @@ module Audit
   # Catalog to Moab existence check code
   class CatalogToMoab
     include ::MoabValidationHandler
-    attr_reader :complete_moab, :storage_dir, :druid, :results
+    attr_reader :complete_moab, :druid, :results
 
-    def initialize(complete_moab, storage_dir)
+    def initialize(complete_moab)
       @complete_moab = complete_moab
-      @storage_dir = storage_dir
       @druid = complete_moab.preserved_object.druid
       @results = AuditResults.new(druid, nil, complete_moab.moab_storage_root)
     end
@@ -45,9 +44,11 @@ module Audit
       compare_version_and_take_action
     end
 
-    alias storage_location storage_dir
-
     private
+
+    def storage_location
+      complete_moab.moab_storage_root.storage_location
+    end
 
     def online_moab_found?
       return true if moab

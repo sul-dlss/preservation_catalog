@@ -77,8 +77,8 @@ RSpec.describe MoabStorageRoot, type: :model do
 
     describe '#c2m_check!' do
       it 'calls CatalogToMoabJob for each eligible CompleteMoab' do
-        expect(CatalogToMoabJob).to receive(:perform_later).with(msr.complete_moabs.first, msr.storage_location)
-        expect(CatalogToMoabJob).to receive(:perform_later).with(msr.complete_moabs.second, msr.storage_location)
+        expect(CatalogToMoabJob).to receive(:perform_later).with(msr.complete_moabs.first)
+        expect(CatalogToMoabJob).to receive(:perform_later).with(msr.complete_moabs.second)
         msr.c2m_check!
       end
     end

@@ -4,13 +4,13 @@ require 'rails_helper'
 
 RSpec.describe Audit::CatalogToMoab do
   let(:last_checked_version_b4_date) { (Time.now.utc - 1.day).iso8601 }
-  let(:storage_dir) { 'spec/fixtures/storage_root01/sdr2objects' }
+  let(:storage_location) { 'spec/fixtures/storage_root01/sdr2objects' }
   let(:druid) { 'bj102hs9687' }
-  let(:c2m) { described_class.new(comp_moab, storage_dir) }
+  let(:c2m) { described_class.new(comp_moab) }
   let(:mock_sov) { instance_double(Stanford::StorageObjectValidator) }
   let(:po) { create(:preserved_object_fixture, druid: druid) }
   let(:comp_moab) do
-    MoabStorageRoot.find_by!(storage_location: storage_dir).complete_moabs.find_by!(preserved_object: po)
+    MoabStorageRoot.find_by!(storage_location: storage_location).complete_moabs.find_by!(preserved_object: po)
   end
   let(:logger_double) { instance_double(Logger, info: nil, error: nil, add: nil) }
   let(:results_double) do
@@ -25,7 +25,6 @@ RSpec.describe Audit::CatalogToMoab do
   describe '#initialize' do
     it 'sets attributes' do
       expect(c2m.complete_moab).to eq comp_moab
-      expect(c2m.storage_dir).to eq storage_dir
       expect(c2m.druid).to eq druid
       expect(c2m.results).to be_an_instance_of AuditResults
     end
@@ -39,11 +38,11 @@ RSpec.describe Audit::CatalogToMoab do
   end
 
   describe '#check_catalog_version' do
-    let(:object_dir) { "#{storage_dir}/#{DruidTools::Druid.new(druid).tree.join('/')}" }
+    let(:object_dir) { "#{storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}" }
 
     before { comp_moab.ok! }
 
-    it 'instantiates Moab::StorageObject from druid and storage_dir' do
+    it 'instantiates Moab::StorageObject from druid and storage_location' do
       expect(Moab::StorageObject).to receive(:new).with(druid, a_string_matching(object_dir)).and_call_original
       c2m.check_catalog_version
     end
@@ -71,7 +70,7 @@ RSpec.describe Audit::CatalogToMoab do
       c2m.check_catalog_version
     end
 
-    it 'calls online_moab_found?(druid, storage_dir)' do
+    it 'calls online_moab_found?' do
       expect(c2m).to receive(:online_moab_found?)
       c2m.check_catalog_version
     end
