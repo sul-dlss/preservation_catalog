@@ -329,6 +329,27 @@ RSpec.describe Audit::CatalogToMoab do
         expect(new_status).to eq 'unexpected_version_on_storage'
       end
 
+      context 'moab not found' do
+        before do
+          allow(mock_sov).to receive(:validation_errors).and_raise(Errno::ENOENT)
+          allow(Stanford::StorageObjectValidator).to receive(:new).and_return(mock_sov)
+        end
+
+        it 'sets status to online_moab_not_found' do
+          orig = comp_moab.status
+          c2m.check_catalog_version
+          new_status = comp_moab.reload.status
+          expect(new_status).not_to eq orig
+          expect(new_status).to eq 'online_moab_not_found'
+        end
+
+        it 'adds a MOAB_NOT_FOUND result' do
+          c2m.instance_variable_set(:@results, results_double)
+          expect(c2m.results).to receive(:add_result).with(AuditResults::MOAB_NOT_FOUND, anything)
+          c2m.check_catalog_version
+        end
+      end
+
       context 'invalid moab' do
         before do
           allow(mock_sov).to receive(:validation_errors).and_return([foo: 'error message'])

@@ -36,7 +36,7 @@ module MoabValidationHandler
         if moab_errors.any?
           moab_error_msgs = []
           moab_errors.each do |error_hash|
-            error_hash.each_value { |msg| moab_error_msgs << msg }
+            moab_error_msgs += error_hash.values
           end
           results.add_result(AuditResults::INVALID_MOAB, moab_error_msgs)
         end
@@ -68,7 +68,15 @@ module MoabValidationHandler
   # @param [Boolean] found_expected_version
   # @return [void]
   def set_status_as_seen_on_disk(found_expected_version)
-    return update_status('invalid_moab') if moab_validation_errors.any?
+    begin
+      return update_status('invalid_moab') if moab_validation_errors.any?
+    rescue Errno::ENOENT
+      results.add_result(AuditResults::MOAB_NOT_FOUND,
+                         db_created_at: complete_moab.created_at.iso8601,
+                         db_updated_at: complete_moab.updated_at.iso8601)
+      return update_status('online_moab_not_found')
+    end
+
     return update_status('unexpected_version_on_storage') unless found_expected_version
 
     # NOTE: subclasses which override this method should NOT perform checksum validation inside of this method!
