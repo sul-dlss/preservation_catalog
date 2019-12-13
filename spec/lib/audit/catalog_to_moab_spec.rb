@@ -70,7 +70,7 @@ RSpec.describe Audit::CatalogToMoab do
       c2m.check_catalog_version
     end
 
-    it 'calls online_moab_found?(druid, storage_location)' do
+    it 'calls online_moab_found?' do
       expect(c2m).to receive(:online_moab_found?)
       c2m.check_catalog_version
     end
