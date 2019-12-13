@@ -7,13 +7,13 @@ require 'csv'
 #  (Note: methods will eventually be ported from sdr-services-app)
 class ObjectsController < ApplicationController
   # return the PreservedObject model for the druid (supplied with druid: prefix)
-  # GET /objects/:druid
+  # GET /v1/objects/:druid
   def show
     render json: PreservedObject.find_by!(druid: druid).to_json
   end
 
   # return a specific file from the Moab
-  # GET /objects/:druid/file?category=manifest&filepath=signatureCatalog.xml
+  # GET /v1/objects/:druid/file?category=manifest&filepath=signatureCatalog.xml
   # useful params:
   # - category (content|manifest|metadata)
   # - filepath path of file, relative to category directory
@@ -38,14 +38,14 @@ class ObjectsController < ApplicationController
   end
 
   # return the checksums and filesize for a single druid (supplied with druid: prefix)
-  # GET /objects/:druid/checksum
+  # GET /v1/objects/:druid/checksum
   def checksum
     render json: content_files_checksums(druid).to_json
   end
 
   # return the checksums and filesize for a list of druids (supplied with druid: prefix)
   # note: this is deliberately allowed to be a POST to allow for a large number of druids to be passed in
-  # GET OR POST /objects/checksums?druids[]=druid1&druids[]=druid2&druids[]=druid3
+  # GET OR POST /v1/objects/checksums?druids[]=druid1&druids[]=druid2&druids[]=druid3
   def checksums
     unless normalized_druids.present?
       render(plain: "400 bad request - druids param must be populated", status: :bad_request)
