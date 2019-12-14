@@ -8,7 +8,7 @@ class CatalogController < ApplicationController
 
   attr_accessor :poh
 
-  # POST /catalog
+  # POST /v1/catalog
   def create
     @poh = PreservedObjectHandler.new(bare_druid, incoming_version, incoming_size, moab_storage_root)
     poh.create(checksums_validated)
@@ -25,7 +25,7 @@ class CatalogController < ApplicationController
     render status: status_code, json: poh.results.to_json
   end
 
-  # PATCH /catalog/:id
+  # PATCH /v1/catalog/:id
   # User can only update a partial record (application controls what can be updated)
   def update
     @poh = PreservedObjectHandler.new(bare_druid, incoming_version, incoming_size, moab_storage_root)

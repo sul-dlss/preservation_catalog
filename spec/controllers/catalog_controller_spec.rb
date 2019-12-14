@@ -321,11 +321,4 @@ RSpec.describe CatalogController, type: :controller do
       end
     end
   end
-
-  describe 'Routing' do
-    let(:druid) { "xx000xx0000" }
-
-    it { is_expected.to route(:post, '/catalog').to(controller: :catalog, action: :create) }
-    it { is_expected.to route(:patch, "/catalog/#{druid}").to(controller: :catalog, action: :update, druid: druid) }
-  end
 end
