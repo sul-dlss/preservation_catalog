@@ -107,7 +107,7 @@ class CompleteMoab < ApplicationRecord
     version == preserved_object.current_version
   end
 
-  private_class_method def self.normalize_date(timestamp)
+  def self.normalize_date(timestamp)
     return timestamp if timestamp.is_a?(Time) || timestamp.is_a?(ActiveSupport::TimeWithZone)
     Time.parse(timestamp).utc
   end
