@@ -343,7 +343,7 @@ curl https://preservation-catalog-prod-01.stanford.edu/v1/objects/druid:bb000kg4
 ]
 ```
 
-#### `GET|POST /objects/checksums?druids[]=:druid`
+#### `GET|POST /v1/objects/checksums?druids[]=:druid`
 Return the checksums and filesize for multiple objects.
 
 Parameters:
@@ -442,7 +442,7 @@ Response codes:
 * 500: some other problem.
 
 ```
-curl -F 'druid=druid:bj102hs9688' -F 'incoming_version=3' -F 'incoming_size=2070039' -F 'storage_location=spec/fixtures/storage_root01' -F 'checksums_validated=true' https://preservation-catalog-stage-01.stanford.edu/catalog/v1
+curl -F 'druid=druid:bj102hs9688' -F 'incoming_version=3' -F 'incoming_size=2070039' -F 'storage_location=spec/fixtures/storage_root01' -F 'checksums_validated=true' https://preservation-catalog-stage-01.stanford.edu/v1/catalog
 
 {
 	"druid": "bj102hs9688",
