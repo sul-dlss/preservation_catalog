@@ -117,7 +117,7 @@ class CompleteMoab < ApplicationRecord
     # possibly non-obvious: IS NOT NULL evaluates to 0 for nulls and 1 for non-nulls; thus, this
     # sorts nulls (0) before non-nulls (1), and non-nulls are then sorted by last_version_audit.
     # standard SQL doesn't have a NULLS FIRST sort built in.
-    active_record_relation.order('last_version_audit IS NOT NULL, last_version_audit ASC')
+    active_record_relation.order(Arel.sql('last_version_audit IS NOT NULL, last_version_audit ASC'))
   end
 
   # Sort the given relation by last_checksum_validation, nulls first.
@@ -125,6 +125,6 @@ class CompleteMoab < ApplicationRecord
     # possibly non-obvious: IS NOT NULL evaluates to 0 for nulls and 1 for non-nulls; thus, this
     # sorts nulls (0) before non-nulls (1), and non-nulls are then sorted by last_checksum_validation.
     # standard SQL doesn't have a NULLS FIRST sort built in.
-    active_record_relation.order('last_checksum_validation IS NOT NULL, last_checksum_validation ASC')
+    active_record_relation.order(Arel.sql('last_checksum_validation IS NOT NULL, last_checksum_validation ASC'))
   end
 end
