@@ -37,7 +37,8 @@ class WorkflowReporter
   end
 
   def self.create_wf(druid, version)
-    workflow_client.create_workflow_by_name(druid, PRESERVATIONAUDITWF, version: version)
+    namespaced_druid = druid.start_with?('druid:') ? druid : "druid:#{druid}"
+    workflow_client.create_workflow_by_name(namespaced_druid, PRESERVATIONAUDITWF, version: version)
   end
   private_class_method :create_wf
 
