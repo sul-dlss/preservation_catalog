@@ -11,8 +11,9 @@ class MoabToCatalogJob < ApplicationJob
 
   # @param [MoabStorageRoot] root mount containing the Moab
   # @param [String] druid
-  # @param [String] path
-  def perform(root, druid, path)
+  # @param [String] optional path
+  def perform(root, druid, path=nil)
+    path = "#{root.storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}" if path.nil?
     moab = Moab::StorageObject.new(druid, path)
     PreservedObjectHandler.new(druid, moab.current_version_id, moab.size, root).check_existence
   end
