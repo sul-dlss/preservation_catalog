@@ -33,7 +33,7 @@ class ZippedMoabVersion < ApplicationRecord
   # 4) metadata on some existing part rows is updated with new (smaller) count, zips are pushed,
   # but old rows for prior push still exist with old (higher) count.
   def child_parts_counts
-    zip_parts.group(:parts_count).pluck(:parts_count, 'count(zip_parts.id)')
+    zip_parts.group(:parts_count).pluck(:parts_count, Arel.sql('count(zip_parts.id)'))
   end
 
   def all_parts_replicated?
