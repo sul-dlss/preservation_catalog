@@ -3,9 +3,17 @@
 require 'rails_helper'
 
 describe PreservationCatalog::Ibm do
+  before do
+    described_class.configure(
+      region: 'us-south',
+      access_key_id: 'some_key',
+      secret_access_key: 'secret'
+    )
+  end
+
   describe '.resource' do
     it 'builds a client with an http/s endpoint setting' do
-      expect(Aws::S3::Resource).to receive(:new).with(endpoint: 'https://s3.us-south.cloud-object-storage.appdomain.cloud')
+      expect(Aws::S3::Resource).to receive(:new).with(hash_including(endpoint: 'https://s3.us-south.cloud-object-storage.appdomain.cloud'))
       described_class.resource
     end
   end
@@ -31,64 +39,27 @@ describe PreservationCatalog::Ibm do
     end
   end
 
-  describe 'config' do
-    context 'with access key and region env vars' do
-      let(:config) { described_class.client.config }
-      let(:envs) do
-        {
-          'AWS_SECRET_ACCESS_KEY' => 'secret',
-          'AWS_ACCESS_KEY_ID' => 'some_key',
-          'AWS_REGION' => 'us-south'
-        }
-      end
+  describe '.configure' do
+    let(:config) { described_class.client.config }
 
-      around do |example|
-        old_vals = envs.keys.zip(ENV.values_at(*envs.keys)).to_h
-        envs.each { |k, v| ENV[k] = v }
-        example.run
-        old_vals.each { |k, v| ENV[k] = v }
-      end
-
-      it 'pulls from ENV vars' do
-        expect(config.region).to eq 'us-south'
-        expect(config.credentials).to be_an(Aws::Credentials)
-        expect(config.credentials).to be_set
-        expect(config.credentials.access_key_id).to eq 'some_key'
-      end
-    end
-
-    context 'pointing the client to shared credentials' do
-      let(:config) { described_class.client.config }
-      let(:shared_credentials) do
-        Aws::SharedCredentials.new(path: Rails.root.join('spec', 'fixtures', 'aws_credentials'))
-      end
-
-      after do
-        Aws.config = {}
-      end
-
-      context 'profile us_south' do
-        let(:envs) { Hash['AWS_PROFILE' => 'us_south'] }
-
-        around do |example|
-          old_vals = envs.keys.zip(ENV.values_at(*envs.keys)).to_h
-          envs.each { |k, v| ENV[k] = v }
-          example.run
-          old_vals.each { |k, v| ENV[k] = v }
-        end
-
-        it 'pulls the one profile from a config file' do
-          Aws.config.update(region: 'us-south', credentials: shared_credentials)
-          expect(config.region).to eq 'us-south'
-          expect(config.credentials.credentials.access_key_id).to eq 'corge'
-          expect(config.credentials.credentials.secret_access_key).to eq 'grault'
-        end
-      end
+    it 'injects client configuration' do
+      expect(config.region).to eq 'us-south'
+      expect(config.credentials).to be_an(Aws::Credentials)
+      expect(config.credentials).to be_set
+      expect(config.credentials.access_key_id).to eq 'some_key'
     end
   end
 
   context 'Live S3 bucket', live_ibm: true do
     subject(:bucket) { described_class.bucket }
+
+    before do
+      described_class.configure(
+        region: Settings.zip_endpoints.ibm_us_south.region,
+        access_key_id: Settings.zip_endpoints.ibm_us_south.access_key_id,
+        secret_access_key: Settings.zip_endpoints.ibm_us_south.secret_access_key
+      )
+    end
 
     it { is_expected.to exist }
 

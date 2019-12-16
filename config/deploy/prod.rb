@@ -10,7 +10,3 @@ set :rails_env, 'production'
 set :bundle_without, 'deploy test'
 set :deploy_to, '/opt/app/pres/preservation_catalog'
 set :whenever_roles, [:queue_populator, :cache_cleaner]
-
-set :east_bucket_name, 'sul-sdr-aws-us-east-1-archive'
-set :west_bucket_name, 'sul-sdr-aws-us-west-2-archive'
-set :south_bucket_name, 'sul-sdr-ibm-us-south-1-prod'
