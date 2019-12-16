@@ -18,7 +18,7 @@ class PreservedObjectHandler
     record.errors.add(attr, 'must be an actual MoabStorageRoot') unless value.is_a?(MoabStorageRoot)
   end
 
-  attr_reader :druid, :incoming_version, :incoming_size, :moab_storage_root, :results
+  attr_reader :druid, :incoming_version, :incoming_size, :moab_storage_root, :results, :validator, :real_validator
   attr_writer :logger
 
   delegate :storage_location, to: :moab_storage_root
@@ -30,6 +30,10 @@ class PreservedObjectHandler
     @moab_storage_root = moab_storage_root
     @results = AuditResults.new(druid, incoming_version, moab_storage_root)
     @logger = PreservationCatalog::Application.logger
+    @real_validator = MoabValidator.new(druid: @druid,
+                                        complete_moab: comp_moab,
+                                        audit_results: @results)
+    @validator = self
   end
 
   # checksums_validated may be set to true if the caller takes responsibility for having validated the checksums
@@ -39,7 +43,7 @@ class PreservedObjectHandler
       results.add_result(AuditResults::INVALID_ARGUMENTS, errors.full_messages)
     elsif PreservedObject.exists?(druid: druid)
       results.add_result(AuditResults::DB_OBJ_ALREADY_EXISTS, 'PreservedObject')
-    elsif moab_validation_errors.empty?
+    elsif validator.moab_validation_errors.empty?
       creation_status = (checksums_validated ? 'ok' : 'validity_unknown')
       create_db_objects(creation_status, checksums_validated)
     else
@@ -58,7 +62,7 @@ class PreservedObjectHandler
       results.add_result(AuditResults::DB_OBJ_ALREADY_EXISTS, 'PreservedObject')
     else
       creation_status = (checksums_validated ? 'ok' : 'validity_unknown')
-      ran_moab_validation! if checksums_validated # ensure validation timestamps updated
+      validator.ran_moab_validation! if checksums_validated # ensure validation timestamps updated
       create_db_objects(creation_status, checksums_validated)
     end
 
@@ -76,7 +80,7 @@ class PreservedObjectHandler
       transaction_ok = with_active_record_transaction_and_rescue do
         raise_rollback_if_cm_po_version_mismatch
 
-        return results.report_results unless can_validate_current_comp_moab_status?
+        return results.report_results unless validator.can_validate_current_comp_moab_status?
 
         if incoming_version == comp_moab.version
           set_status_as_seen_on_disk(true) unless comp_moab.status == 'ok'
@@ -84,24 +88,24 @@ class PreservedObjectHandler
         elsif incoming_version > comp_moab.version
           set_status_as_seen_on_disk(true) unless comp_moab.status == 'ok'
           results.add_result(AuditResults::ACTUAL_VERS_GT_DB_OBJ, db_obj_name: 'CompleteMoab', db_obj_version: comp_moab.version)
-          if moab_validation_errors.empty?
-            comp_moab.upd_audstamps_version_size(ran_moab_validation?, incoming_version, incoming_size)
+          if validator.moab_validation_errors.empty?
+            comp_moab.upd_audstamps_version_size(validator.ran_moab_validation?, incoming_version, incoming_size)
             pres_object.current_version = incoming_version
             pres_object.save!
           else
-            update_status('invalid_moab')
+            validator.update_status('invalid_moab')
           end
         else # incoming_version < comp_moab.version
           set_status_as_seen_on_disk(false)
           results.add_result(AuditResults::ACTUAL_VERS_LT_DB_OBJ, db_obj_name: 'CompleteMoab', db_obj_version: comp_moab.version)
         end
-        comp_moab.update_audit_timestamps(ran_moab_validation?, true)
+        comp_moab.update_audit_timestamps(validator.ran_moab_validation?, true)
         comp_moab.save!
       end
       results.remove_db_updated_results unless transaction_ok
     else
       results.add_result(AuditResults::DB_OBJ_DOES_NOT_EXIST, 'PreservedObject')
-      if moab_validation_errors.empty?
+      if validator.moab_validation_errors.empty?
         create_db_objects('validity_unknown')
       else
         create_db_objects('invalid_moab')
@@ -130,7 +134,7 @@ class PreservedObjectHandler
       results.add_result(AuditResults::INVALID_ARGUMENTS, errors.full_messages)
     elsif PreservedObject.exists?(druid: druid)
       Rails.logger.debug "update_version_after_validation #{druid} called"
-      if moab_validation_errors.empty?
+      if validator.moab_validation_errors.empty?
         # NOTE: we deal with active record transactions in update_online_version, not here
         new_status = (checksums_validated ? 'ok' : 'validity_unknown')
         update_online_version(new_status, false, checksums_validated)
@@ -148,7 +152,7 @@ class PreservedObjectHandler
       end
     else
       results.add_result(AuditResults::DB_OBJ_DOES_NOT_EXIST, 'PreservedObject')
-      if moab_validation_errors.empty?
+      if validator.moab_validation_errors.empty?
         create_db_objects('validity_unknown')
       else
         create_db_objects('invalid_moab')
@@ -195,7 +199,7 @@ class PreservedObjectHandler
       status: status
     }
     t = Time.current
-    if ran_moab_validation?
+    if validator.ran_moab_validation?
       cm_attrs[:last_version_audit] = t
       cm_attrs[:last_moab_validation] = t
     end
@@ -223,9 +227,9 @@ class PreservedObjectHandler
         code = AuditResults::ACTUAL_VERS_GT_DB_OBJ
         results.add_result(code, db_obj_name: 'CompleteMoab', db_obj_version: comp_moab.version)
 
-        comp_moab.upd_audstamps_version_size(ran_moab_validation?, incoming_version, incoming_size)
+        comp_moab.upd_audstamps_version_size(validator.ran_moab_validation?, incoming_version, incoming_size)
         comp_moab.last_checksum_validation = Time.current if checksums_validated && comp_moab.last_checksum_validation
-        update_status(status) if status
+        validator.update_status(status) if status
         comp_moab.save!
         pres_object.current_version = incoming_version
         pres_object.save!
@@ -250,8 +254,8 @@ class PreservedObjectHandler
 
   def update_cm_invalid_moab
     transaction_ok = with_active_record_transaction_and_rescue do
-      update_status('invalid_moab')
-      comp_moab.update_audit_timestamps(ran_moab_validation?, false)
+      validator.update_status('invalid_moab')
+      comp_moab.update_audit_timestamps(validator.ran_moab_validation?, false)
       comp_moab.save!
     end
     results.remove_db_updated_results unless transaction_ok
@@ -259,8 +263,8 @@ class PreservedObjectHandler
 
   def update_cm_validity_unknown
     transaction_ok = with_active_record_transaction_and_rescue do
-      update_status('validity_unknown')
-      comp_moab.update_audit_timestamps(ran_moab_validation?, false)
+      validator.update_status('validity_unknown')
+      comp_moab.update_audit_timestamps(validator.ran_moab_validation?, false)
       comp_moab.save!
     end
     results.remove_db_updated_results unless transaction_ok
@@ -270,8 +274,8 @@ class PreservedObjectHandler
     results.add_result(AuditResults::UNEXPECTED_VERSION, db_obj_name: 'CompleteMoab', db_obj_version: comp_moab.version)
     version_comparison_results
 
-    update_status(new_status) if new_status
-    comp_moab.update_audit_timestamps(ran_moab_validation?, true)
+    validator.update_status(new_status) if new_status
+    comp_moab.update_audit_timestamps(validator.ran_moab_validation?, true)
     comp_moab.save!
   end
 
@@ -280,7 +284,7 @@ class PreservedObjectHandler
     transaction_ok = with_active_record_transaction_and_rescue do
       raise_rollback_if_cm_po_version_mismatch
 
-      return results.report_results unless can_validate_current_comp_moab_status?
+      return results.report_results unless validator.can_validate_current_comp_moab_status?
 
       if incoming_version == comp_moab.version
         set_status_as_seen_on_disk(true) unless comp_moab.status == 'ok'
@@ -289,7 +293,7 @@ class PreservedObjectHandler
         set_status_as_seen_on_disk(false)
         results.add_result(AuditResults::UNEXPECTED_VERSION, db_obj_name: 'CompleteMoab', db_obj_version: comp_moab.version)
       end
-      comp_moab.update_audit_timestamps(ran_moab_validation?, true)
+      comp_moab.update_audit_timestamps(validator.ran_moab_validation?, true)
       comp_moab.save!
     end
     results.remove_db_updated_results unless transaction_ok
