@@ -156,14 +156,14 @@ RSpec.describe ObjectsController, type: :request do
     end
 
     context 'when object not found' do
-      it 'returns a 404 response code' do
+      it 'returns a 409 response code' do
         post checksums_objects_url, params: { druids: [prefixed_druid, 'druid:xx123yy9999'], format: :json }
-        expect(response).to have_http_status(:not_found)
+        expect(response).to have_http_status(:conflict)
       end
 
       it 'body has additional information from the exception if available' do
         post checksums_objects_url, params: { druids: [prefixed_druid, 'druid:xx123yy9999'], format: :json }
-        expect(response.body).to eq '404 Not Found: No storage object found for xx123yy9999'
+        expect(response.body).to eq '409 conflict - storage object(s) not found for xx123yy9999'
       end
     end
 

@@ -52,12 +52,19 @@ class ObjectsController < ApplicationController
       return
     end
 
+    checksum_list, missing_druids = generate_checksum_list
+
+    if missing_druids.any?
+      render(plain: "409 conflict - storage object(s) not found for #{missing_druids.join(', ')}", status: :conflict)
+      return
+    end
+
     respond_to do |format|
       format.json do
-        render json: json_checksum_list
+        render json: checksum_list.to_json
       end
       format.csv do
-        render plain: csv_checksum_list
+        render plain: to_csv_checksum_list(checksum_list)
       end
       format.any { render status: :not_acceptable, plain: 'Format not acceptable' }
     end
@@ -104,15 +111,26 @@ class ObjectsController < ApplicationController
     return_bare_druids? ? druid.to_s : "druid:#{druid}"
   end
 
-  def json_checksum_list
-    normalized_druids.map { |druid| { returned_druid(druid) => content_files_checksums(druid) } }.to_json
+  def generate_checksum_list
+    checksum_list = []
+    missing_druids = []
+    normalized_druids.each do |druid|
+      begin
+        checksum_list << { returned_druid(druid) => content_files_checksums(druid) }
+      rescue Moab::ObjectNotFoundException
+        missing_druids << druid
+      end
+    end
+    [checksum_list, missing_druids]
   end
 
-  def csv_checksum_list
+  def to_csv_checksum_list(checksum_list)
     CSV.generate do |csv|
-      normalized_druids.each do |druid|
-        content_files_checksums(druid).each do |checksum|
-          csv << [returned_druid(druid), checksum[:filename], checksum[:md5], checksum[:sha1], checksum[:sha256], checksum[:filesize]]
+      checksum_list.each do |druid_checksum|
+        druid_checksum.each do |druid, checksums|
+          checksums.each do |checksum|
+            csv << [druid, checksum[:filename], checksum[:md5], checksum[:sha1], checksum[:sha256], checksum[:filesize]]
+          end
         end
       end
     end
