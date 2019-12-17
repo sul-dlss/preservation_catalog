@@ -27,6 +27,8 @@ module Audit
       end
 
       unless online_moab_found?
+        # TODO: If there are more than one complete moabs for this preserved object and at least one of those other
+        # instances exists, is the correct version, and is valid then can delete this complete moab.
         handle_missing_moab
 
         # Check if it moved to another location

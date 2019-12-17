@@ -208,7 +208,6 @@ class PreservedObjectHandler
   end
 
   def comp_moab
-    # FIXME: what if there is more than one associated comp_moab?
     @comp_moab ||= pres_object.complete_moabs.find_by!(moab_storage_root: moab_storage_root)
   end
 
