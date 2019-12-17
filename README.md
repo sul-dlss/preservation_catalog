@@ -13,7 +13,7 @@ Rails application to track, audit and replicate archival artifacts associated wi
     * [Moab to Catalog](#m2c) (M2C) existence/version check
     * [Catalog to Moab](#c2m) (C2M) existence/version check
     * [Checksum Validation](#cv) (CV)
-    * [Seed the catalog](#seed-the-catalog)
+    * [Seed the catalog](#seed-the-catalog-with-data-about-the-moabs-on-the-storage-roots-the-catalog-tracks----presumes-rake-dbseed-already-performed)
 * [Development](#development)
 * [Deploying](#deploying)
 * [API](#api)
