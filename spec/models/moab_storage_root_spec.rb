@@ -87,11 +87,11 @@ RSpec.describe MoabStorageRoot, type: :model do
       it 'calls MoabToCatalogJob for each eligible on-disk Moab' do
         msr.storage_location = 'spec/fixtures/storage_root01/sdr2objects' # using enumerated fixtures
         expect(MoabToCatalogJob).to receive(:perform_later)
-          .with(msr, 'bj102hs9687', "#{msr.storage_location}/bj/102/hs/9687/bj102hs9687")
+          .with(msr, 'bj102hs9687')
         expect(MoabToCatalogJob).to receive(:perform_later)
-          .with(msr, 'bz514sm9647', "#{msr.storage_location}/bz/514/sm/9647/bz514sm9647")
+          .with(msr, 'bz514sm9647')
         expect(MoabToCatalogJob).to receive(:perform_later)
-          .with(msr, 'jj925bx9565', "#{msr.storage_location}/jj/925/bx/9565/jj925bx9565")
+          .with(msr, 'jj925bx9565')
         msr.m2c_check!
       end
     end
