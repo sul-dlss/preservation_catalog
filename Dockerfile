@@ -4,10 +4,18 @@ FROM ruby:2.5.3-alpine
 RUN apk --no-cache add \
   postgresql-dev \
   postgresql-client \
-  tzdata
+  tzdata \
+  libxml2-dev \
+  libxslt-dev
+
+LABEL maintainer="Aaron Collier <aaron.collier@stanford.edu>"
 
 RUN mkdir /app
 WORKDIR /app
+
+RUN gem update --system && \
+  gem install bundler && \
+  bundle config build.nokogiri --use-system-libraries
 
 COPY Gemfile Gemfile.lock ./
 
@@ -17,8 +25,6 @@ RUN apk --no-cache add --virtual build-dependencies \
   && apk del build-dependencies
 
 COPY . .
-
-LABEL maintainer="Aaron Collier <aaron.collier@stanford.edu>"
 
 ENV RAILS_ENV=production
 
