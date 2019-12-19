@@ -1,2 +1,1 @@
 development: localhost:6379
-production: redis:6379

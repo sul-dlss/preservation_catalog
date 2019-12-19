@@ -12,6 +12,7 @@ services:
       - RAILS_ENV=development
     volumes:
       - .:/app
+      - ./docker/resque.yml:/app/config/resque.yml
     ports:
       - "3000:3000"
     depends_on:
