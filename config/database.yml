@@ -8,6 +8,10 @@ default: &default
   user: <%= ENV.fetch("PGUSER", 'postgres') %>
   password: <%= ENV.fetch("PGPASSWORD", 'sekret') %>
 
+production:
+  <<: *default
+  database: production
+  
 development:
   <<: *default
   database: development
