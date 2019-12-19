@@ -4,10 +4,12 @@ services:
   app:
     build:
       context: ./
-      dockerfile: dockerfile
+      dockerfile: Dockerfile
     environment:
       - RAILS_LOG_TO_STDOUT=true
       - POSTGRES_HOST=db
+      - SETTINGS__REDIS__HOSTNAME=redis
+      - RAILS_ENV=production
     volumes:
       - .:/app
     ports:
@@ -15,6 +17,7 @@ services:
     depends_on:
       - db
       - redis
+    image: 'suldlss/preservation_catalog:latest'
   db:
     image: postgres
     ports:
