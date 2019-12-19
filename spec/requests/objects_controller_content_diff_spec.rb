@@ -7,6 +7,10 @@ RSpec.describe ObjectsController, type: :request do
   let(:bare_druid) { 'bj102hs9687' }
   let(:content_md) { '<contentMetadata>yer stuff here</contentMetadata>' }
 
+  before do
+    allow(Honeybadger).to receive(:notify)
+  end
+
   describe 'POST #content_diff' do
     context 'when object exists' do
       context 'when druid is prefixed' do
@@ -65,7 +69,7 @@ RSpec.describe ObjectsController, type: :request do
       end
 
       context 'when MoabRuntimeError from MoabStorageService' do
-        it 'returns 500 response code; body has additional information' do
+        it 'returns 500 response code; body has additional information; notifies Honeybadger' do
           emsg = 'my error'
           allow(Stanford::StorageServices).to receive(:compare_cm_to_version)
             .with(content_md, bare_druid, 'all', nil)
@@ -73,6 +77,7 @@ RSpec.describe ObjectsController, type: :request do
           post content_diff_object_url(id: bare_druid), params: { content_metadata: content_md }
           expect(response).to have_http_status(:internal_server_error)
           expect(response.body).to eq '500 Unable to get content diff: my error'
+          expect(Honeybadger).to have_received(:notify).with(Moab::MoabRuntimeError)
         end
       end
     end

@@ -90,6 +90,7 @@ class ObjectsController < ApplicationController
     render(plain: "400 Bad Request: #{e}", status: :bad_request)
   rescue Moab::MoabRuntimeError => e
     render(plain: "500 Unable to get content diff: #{e}", status: :internal_server_error)
+    Honeybadger.notify(e)
   end
 
   private
