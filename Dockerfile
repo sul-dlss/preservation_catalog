@@ -13,6 +13,10 @@ LABEL maintainer="Aaron Collier <aaron.collier@stanford.edu>"
 RUN mkdir /app
 WORKDIR /app
 
+# Using argument for conditional setup in conf file  
+ARG RAILS_ENV
+ENV RAILS_ENV $RAILS_ENV
+
 RUN gem update --system && \
   gem install bundler && \
   bundle config build.nokogiri --use-system-libraries
@@ -26,6 +30,6 @@ RUN apk --no-cache add --virtual build-dependencies \
 
 COPY . .
 
-ENV RAILS_ENV=production
+EXPOSE 3000
 
-CMD ["./docker/invoke.sh"]
+CMD ["bundle", "exec", "puma", "-C", "config/puma.rb"]
