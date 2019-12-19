@@ -25,7 +25,7 @@ COPY Gemfile Gemfile.lock ./
 
 RUN apk --no-cache add --virtual build-dependencies \
   build-base \
-  && bundle install --without development test\
+  && bundle install --without test\
   && apk del build-dependencies
 
 COPY . .

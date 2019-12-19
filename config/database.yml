@@ -7,10 +7,6 @@ default: &default
   host: <%= ENV.fetch("POSTGRES_HOST", 'localhost') %>
   user: <%= ENV.fetch("PGUSER", 'postgres') %>
   password: <%= ENV.fetch("PGPASSWORD", 'sekret') %>
-
-production:
-  <<: *default
-  database: production
   
 development:
   <<: *default
