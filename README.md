@@ -15,6 +15,7 @@ Rails application to track, audit and replicate archival artifacts associated wi
     * [Checksum Validation](#cv) (CV)
     * [Seed the catalog](#seed-the-catalog-with-data-about-the-moabs-on-the-storage-roots-the-catalog-tracks----presumes-rake-dbseed-already-performed)
 * [Development](#development)
+    * [Dockerized Development](#docker)
 * [Deploying](#deploying)
 * [API](#api)
 
@@ -24,7 +25,7 @@ Rails application to track, audit and replicate archival artifacts associated wi
 
 Use the docker-compose to start the dependencies (PostgreSQL and Redis)
 ```sh
-docker-compose up
+docker-compose up -d postgres redis
 ```
 
 ### Configuring The database
@@ -268,6 +269,46 @@ To run the tests:
 
 ```sh
 bundle exec rspec
+```
+
+### Docker
+
+A Dockerfile is provided in order to interact with the application in development.
+
+Build the docker image:
+
+```sh
+docker-compose build app
+```
+
+Bring up the docker container and its dependencies:
+
+```sh
+docker-compose up -d
+```
+
+Initialize the database:
+
+```sh
+docker-compose run app bundle exec rails db:reset db:seed
+```
+
+Interact with the application via localhost:
+```sh
+curl -F 'druid=druid:bj102hs9688' -F 'incoming_version=3' -F 'incoming_size=2070039' -F 'storage_location=spec/fixtures/storage_root01' -F 'checksums_validated=true' http://localhost:3000/v1/catalog
+```
+
+```sh
+curl http://localhost:3000/v1/objects/druid:bj102hs9688
+
+{
+  "id":1,
+  "druid":"bj102hs9688",
+  "current_version":3,
+  "created_at":"2019-12-20T15:04:56.854Z",
+  "updated_at":"2019-12-20T15:04:56.854Z",
+  "preservation_policy_id":1
+}
 ```
 
 ## Deploying

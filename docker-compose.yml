@@ -1,6 +1,24 @@
 version: '3.6'
 
 services:
+  app:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    environment:
+      - RAILS_LOG_TO_STDOUT=true
+      - POSTGRES_HOST=db
+      - REDIS_URL=redis:6379
+      - RAILS_ENV=development
+    volumes:
+      - .:/app
+      - ./tmp/pids:/app/tmp/pids
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+      - redis
+    image: 'suldlss/preservation_catalog:latest'
   db:
     image: postgres
     ports:
