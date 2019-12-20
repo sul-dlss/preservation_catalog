@@ -47,31 +47,26 @@ class CatalogController < ApplicationController
 
   private
 
-  # strong params / whitelist params
-  def poh_params
-    params.permit(:druid, :incoming_version, :incoming_size, :storage_location, :checksums_validated)
-  end
-
   def bare_druid
-    strip_druid(poh_params[:druid])
+    strip_druid(params[:druid])
   end
 
   def incoming_version
-    poh_params[:incoming_version]&.to_i
+    params[:incoming_version]&.to_i
   end
 
   def incoming_size
-    poh_params[:incoming_size]&.to_i
+    params[:incoming_size]&.to_i
   end
 
   def moab_storage_root
-    return unless poh_params[:storage_location]
-    MoabStorageRoot.find_by(storage_location: "#{poh_params[:storage_location]}/#{Moab::Config.storage_trunk}")
+    return unless params[:storage_location]
+    MoabStorageRoot.find_by(storage_location: "#{params[:storage_location]}/#{Moab::Config.storage_trunk}")
   end
 
   # @return boolean
   def checksums_validated
-    return poh_params[:checksums_validated].casecmp('true').zero? if poh_params[:checksums_validated]
+    return params[:checksums_validated].casecmp('true').zero? if params[:checksums_validated]
     false
   end
 end
