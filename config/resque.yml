@@ -1,1 +1,1 @@
-development: localhost:6379
+development: <%= ENV.fetch('REDIS_URL', 'localhost:6739') %>
