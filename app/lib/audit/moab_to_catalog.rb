@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 module Audit
+  #  NOTE:  this class is used by Julian as a CLI tool; it is not called anywhere else
+  #
   # finds Moab objects on a single Moab storage_dir and interacts with Catalog (db)
   #   according to method called
   class MoabToCatalog
