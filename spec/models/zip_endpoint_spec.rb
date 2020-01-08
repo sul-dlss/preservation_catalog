@@ -37,7 +37,7 @@ RSpec.describe ZipEndpoint, type: :model do
 
   describe '#audit_class' do
     it 'returns the right audit class when one is configured' do
-      expect(described_class.find_by(endpoint_name: 'mock_archive1').audit_class).to be(PreservationCatalog::S3::Audit)
+      expect(described_class.find_by(endpoint_name: 'aws_s3_west_2').audit_class).to be(PreservationCatalog::S3::Audit)
       expect(described_class.find_by(endpoint_name: 'ibm_us_south').audit_class).to be(PreservationCatalog::Ibm::Audit)
     end
 
@@ -80,7 +80,7 @@ RSpec.describe ZipEndpoint, type: :model do
       # run it a second time
       expect { described_class.seed_from_config(default_pres_policies) }
         .not_to change { described_class.pluck(:endpoint_name).sort }
-        .from(%w[ibm_us_south mock_archive1 zip-endpoint])
+        .from(%w[aws_s3_west_2 ibm_us_south zip-endpoint])
     end
 
     it 'adds new records if there are additions to Settings since the last run' do
@@ -96,7 +96,7 @@ RSpec.describe ZipEndpoint, type: :model do
 
       # run it a second time
       described_class.seed_from_config(default_pres_policies)
-      expected_ep_names = %w[fixture_archiveTest ibm_us_south mock_archive1 zip-endpoint]
+      expected_ep_names = %w[aws_s3_west_2 fixture_archiveTest ibm_us_south zip-endpoint]
       expect(described_class.pluck(:endpoint_name).sort).to eq expected_ep_names
     end
   end
@@ -112,9 +112,9 @@ RSpec.describe ZipEndpoint, type: :model do
 
     it "returns the zip endpoints which implement the PO's pres policy" do
       zip_endpoint.preservation_policies = [PreservationPolicy.default_policy, alternate_pres_policy]
-      expect(described_class.targets(druid).pluck(:endpoint_name).sort).to eq %w[ibm_us_south mock_archive1 zip-endpoint]
+      expect(described_class.targets(druid).pluck(:endpoint_name).sort).to eq %w[aws_s3_west_2 ibm_us_south zip-endpoint]
       zip_endpoint.preservation_policies = [alternate_pres_policy]
-      expect(described_class.targets(druid).pluck(:endpoint_name).sort).to eq %w[ibm_us_south mock_archive1]
+      expect(described_class.targets(druid).pluck(:endpoint_name).sort).to eq %w[aws_s3_west_2 ibm_us_south]
     end
   end
 
@@ -175,16 +175,16 @@ RSpec.describe ZipEndpoint, type: :model do
         expect(described_class.which_need_archive_copy(other_druid, version - 1).pluck(:endpoint_name).sort).to eq names
 
         cm.zipped_moab_versions.create!(version: version, zip_endpoint: other_ep1)
-        expect(described_class.which_need_archive_copy(druid, version).pluck(:endpoint_name).sort).to eq %w[mock_archive1 zip-endpoint]
+        expect(described_class.which_need_archive_copy(druid, version).pluck(:endpoint_name).sort).to eq %w[ibm_us_south zip-endpoint]
         expect(described_class.which_need_archive_copy(druid, version - 1).pluck(:endpoint_name).sort).to eq names
         expect(described_class.which_need_archive_copy(other_druid, version).pluck(:endpoint_name).sort).to eq names
         expect(described_class.which_need_archive_copy(other_druid, version - 1).pluck(:endpoint_name).sort).to eq names
 
         cm2.zipped_moab_versions.create!(version: version - 1, zip_endpoint: other_ep1)
-        expect(described_class.which_need_archive_copy(druid, version).pluck(:endpoint_name).sort).to eq %w[mock_archive1 zip-endpoint]
+        expect(described_class.which_need_archive_copy(druid, version).pluck(:endpoint_name).sort).to eq %w[ibm_us_south zip-endpoint]
         expect(described_class.which_need_archive_copy(druid, version - 1).pluck(:endpoint_name).sort).to eq names
         expect(described_class.which_need_archive_copy(other_druid, version).pluck(:endpoint_name).sort).to eq names
-        expect(described_class.which_need_archive_copy(other_druid, version - 1).pluck(:endpoint_name).sort).to eq %w[mock_archive1 zip-endpoint]
+        expect(described_class.which_need_archive_copy(other_druid, version - 1).pluck(:endpoint_name).sort).to eq %w[ibm_us_south zip-endpoint]
       end
       # rubocop:enable RSpec/MultipleExpectations
     end

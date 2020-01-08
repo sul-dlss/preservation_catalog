@@ -7,8 +7,7 @@ require 'webmock/rspec'
 Coveralls.wear!('rails')
 
 RSpec.configure do |config|
-  config.filter_run_excluding(:live_aws) unless ENV['CLOUD_PROVIDER'] == 'aws' # default exclude unless on CI
-  config.filter_run_excluding(:live_ibm) unless ENV['CLOUD_PROVIDER'] == 'ibm'
+  config.filter_run_excluding(:live_aws, :live_ibm) unless ENV['CI'] == 'true' # default exclude unless on CI
   # rspec-expectations config goes here. You can use an alternate
   # assertion/expectation library such as wrong or the stdlib/minitest
   # assertions if you prefer.

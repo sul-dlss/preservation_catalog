@@ -15,7 +15,14 @@ describe 'the whole replication pipeline', type: :job do # rubocop:disable RSpec
   let(:deliverer) { zmv.zip_endpoint.delivery_class.to_s }
   let(:deliverer2) { zmv2.zip_endpoint.delivery_class.to_s }
   let(:hash) do
-    { druid: druid, version: version, zip_endpoints: [zmv.zip_endpoint.endpoint_name, zmv2.zip_endpoint.endpoint_name].sort }
+    {
+      druid: druid,
+      version: version,
+      zip_endpoints: [
+        zmv.zip_endpoint.endpoint_name,
+        zmv2.zip_endpoint.endpoint_name
+      ].sort
+    }
   end
   let(:s3_key) { 'bj/102/hs/9687/bj102hs9687.v0001.zip' }
 

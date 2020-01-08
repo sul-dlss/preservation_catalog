@@ -5,7 +5,6 @@
 # @see PreservationCatalog::S3 for how S3 credentials and bucket are configured
 class S3WestDeliveryJob < ZipPartJobBase
   queue_as :s3_us_west_2_delivery
-  delegate :bucket, to: PreservationCatalog::S3
   # note: base class gives us `zip`, `dvz_part`
 
   before_enqueue { |job| job.zip_info_check!(job.arguments.fourth) }
@@ -25,6 +24,15 @@ class S3WestDeliveryJob < ZipPartJobBase
 
     s3_part.upload_file(dvz_part.file_path, metadata: stringify_values(metadata))
     ResultsRecorderJob.perform_later(druid, version, part_s3_key, self.class.to_s)
+  end
+
+  def bucket
+    PreservationCatalog::S3.configure(
+      region: Settings.zip_endpoints.aws_s3_west_2.region,
+      access_key_id: Settings.zip_endpoints.aws_s3_west_2.access_key_id,
+      secret_access_key: Settings.zip_endpoints.aws_s3_west_2.secret_access_key
+    )
+    PreservationCatalog::S3.bucket
   end
 
   # coerce size int to string (all values must be strings)
