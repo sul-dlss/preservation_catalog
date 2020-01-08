@@ -3,6 +3,14 @@
 require 'rails_helper'
 
 describe PreservationCatalog::S3 do
+  before do
+    described_class.configure(
+      region: 'us-west-2',
+      access_key_id: 'some_key',
+      secret_access_key: 'secret'
+    )
+  end
+
   describe '.bucket_name' do
     context 'without ENV variable' do
       it 'returns value from Settings' do
@@ -25,18 +33,10 @@ describe PreservationCatalog::S3 do
   end
 
   describe '.configure' do
-    before do
-      described_class.configure(
-        region: 'us-east-1',
-        access_key_id: 'some_key',
-        secret_access_key: 'secret'
-      )
-    end
-
     let(:config) { described_class.client.config }
 
     it 'injects client configuration' do
-      expect(config.region).to eq 'us-east-1'
+      expect(config.region).to eq 'us-west-2'
       expect(config.credentials).to be_an(Aws::Credentials)
       expect(config.credentials).to be_set
       expect(config.credentials.access_key_id).to eq 'some_key'

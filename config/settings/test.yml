@@ -23,8 +23,9 @@ zip_endpoints:
     access_key_id: 'overridden-by-env-var-in-ci'
     secret_access_key: 'overridden-by-env-var-in-ci'
   ibm_us_south:
+    region: 'us-south'
     endpoint_node: 'https://s3.us-south.cloud-object-storage.appdomain.cloud'
-    storage_location: 'storage_location'
+    storage_location: 'sul-sdr-ibm-us-south-1-test'
     delivery_class: 'IbmSouthDeliveryJob'
     audit_class: 'PreservationCatalog::Ibm::Audit'
     access_key_id: 'overridden-by-env-var-in-ci'
