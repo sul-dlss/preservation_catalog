@@ -409,7 +409,7 @@ Parameters:
 * druid[] (repeatable): druid for the object
 
 ```
-curl -H 'Authorization: Bearer eyJhbGcxxxxx.eyJzdWIxxxxx.lWMJ66Wxx-xx' "https://preservation-catalog-prod-01.stanford.edu/v1/objects/checksums?druids[]=druid:bb000kg4251&druids[]=druid:bb000kq3835"
+curl -H 'Authorization: Bearer eyJhbGcxxxxx.eyJzdWIxxxxx.lWMJ66Wxx-xx' "https://preservation-catalog-prod-01.stanford.edu/v1/objects/checksums?druids\[\]=druid:bb000kg4251&druids\[\]=druid:bb000kq3835"
 [
   {
     "druid:bb000kg4251": [
