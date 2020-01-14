@@ -25,7 +25,7 @@ Rails application to track, audit and replicate archival artifacts associated wi
 
 Use the docker-compose to start the dependencies (PostgreSQL and Redis)
 ```sh
-docker-compose up -d postgres redis
+docker-compose up -d db redis
 ```
 
 ### Configuring The database
