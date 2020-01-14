@@ -2,10 +2,6 @@
 
 require 'rails_helper'
 RSpec.describe ObjectsController, type: :request do
-  let(:prefixed_druid) { 'druid:bj102hs9687' }
-  let(:prefixed_druid2) { 'druid:bz514sm9647' }
-  let(:bare_druid) { 'bj102hs9687' }
-  let(:bare_druid2) { 'bz514sm9647' }
   let(:pres_obj) { create(:preserved_object) }
 
   describe 'GET #show' do
