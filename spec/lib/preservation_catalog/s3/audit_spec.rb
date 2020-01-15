@@ -3,7 +3,12 @@
 require 'rails_helper'
 
 RSpec.describe PreservationCatalog::S3::Audit do
-  let(:zmv) { create(:zipped_moab_version) }
+  let(:zip_endpoint) do
+    ZipEndpoint.find_by(endpoint_name: 'aws_s3_west_2')
+  end
+  let(:zmv) do
+    create(:zipped_moab_version, zip_endpoint: zip_endpoint)
+  end
   let(:cm) { zmv.complete_moab }
   let(:bucket) { instance_double(Aws::S3::Bucket) }
   let(:bucket_name) { "sul-sdr-us-west-bucket" }
@@ -16,6 +21,7 @@ RSpec.describe PreservationCatalog::S3::Audit do
     allow(AuditResults).to receive(:new).and_return(results)
     allow(PreservationCatalog::S3).to receive(:bucket).and_return(bucket)
     allow(PreservationCatalog::S3).to receive(:bucket_name).and_return(bucket_name)
+    allow(PreservationCatalog::S3).to receive(:configure)
   end
 
   context 'some parts are unreplicated' do
@@ -44,6 +50,14 @@ RSpec.describe PreservationCatalog::S3::Audit do
       expect { described_class.check_replicated_zipped_moab_version(zmv, results) }
         .to change { ok_part.reload.last_existence_check }.from(nil)
         .and change { ok_part.reload.last_checksum_validation }.from(nil)
+    end
+
+    it 'configures S3' do
+      described_class.check_replicated_zipped_moab_version(zmv, results)
+      # Note that access_key_id and secret_access_key are provided by env variable in CI.
+      expect(PreservationCatalog::S3).to have_received(:configure).with(region: 'us-west-2',
+                                                                        access_key_id: Settings.zip_endpoints['aws_s3_west_2'].access_key_id,
+                                                                        secret_access_key: Settings.zip_endpoints['aws_s3_west_2'].secret_access_key)
     end
   end
 

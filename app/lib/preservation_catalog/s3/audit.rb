@@ -5,7 +5,7 @@ module PreservationCatalog
     # Methods for auditing checking the state of a ZippedMoabVersion on an S3 endpoint.  Requires AWS credentials are
     # available in the environment.  At the time of this comment, ONLY running queue workers will have proper creds loaded.
     class Audit
-      delegate :bucket, :bucket_name, to: ::PreservationCatalog::S3
+      delegate :bucket_name, to: ::PreservationCatalog::S3
 
       attr_reader :zmv, :results
 
@@ -71,6 +71,14 @@ module PreservationCatalog
           part.update(status: 'not_found', last_existence_check: Time.zone.now)
           false
         end
+      end
+
+      def bucket
+        endpoint = zmv.zip_endpoint.endpoint_name
+        ::PreservationCatalog::S3.configure(region: Settings.zip_endpoints[endpoint].region,
+                                            access_key_id: Settings.zip_endpoints[endpoint].access_key_id,
+                                            secret_access_key: Settings.zip_endpoints[endpoint].secret_access_key)
+        ::PreservationCatalog::S3.bucket
       end
     end
   end
