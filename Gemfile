@@ -19,6 +19,7 @@ gem "factory_bot_rails", "~> 4.0"
 gem 'pry-byebug' # call 'binding.pry' anywhere in the code to stop execution and get a pry-byebug console
 gem 'pry-rails' # use pry as the rails console shell instead of IRB
 gem 'puma', '~> 3.12' # app server
+gem 'rack', '~> 2.0.8' # pending https://github.com/sportngin/okcomputer/pull/161
 gem 'rails', '~> 6.0.2'
 gem 'resque', '~> 1.27'
 gem 'resque-lock' # deduplication of worker queue jobs
