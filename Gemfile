@@ -11,6 +11,7 @@ gem 'config' # Settings to manage configs on different instances
 gem 'dor-workflow-client', '~> 3.8' # audit errors are reported to the workflow service
 gem 'honeybadger' # for error reporting / tracking / notifications
 gem 'jbuilder', '~> 2.5' # Build JSON APIs with ease.
+gem 'jwt' # for gating programmatic access to the application
 gem 'okcomputer' # ReST endpoint with upness status
 gem 'pg' # postgres database
 gem "factory_bot_rails", "~> 4.0"
