@@ -45,3 +45,6 @@ replication:
   audit_should_backfill: false
 
 total_worker_count: 117 # for okcomputer endpoint
+
+api_jwt:
+  hmac_secret: 'my$ecretK3y'
