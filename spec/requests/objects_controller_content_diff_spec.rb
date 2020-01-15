@@ -15,7 +15,7 @@ RSpec.describe ObjectsController, type: :request do
     context 'when object exists' do
       context 'when druid is prefixed' do
         it 'returns the Moab::FileInventoryDifference as xml' do
-          post content_diff_object_url(id: prefixed_druid), params: { content_metadata: content_md }
+          post content_diff_object_url(id: prefixed_druid), params: { content_metadata: content_md }, headers: valid_auth_header
           expect(response).to have_http_status(:ok)
           result = HappyMapper.parse(response.body) # HappyMapper used in moab-versioning for parsing xml
           expect(result.object_id).to eq 'bj102hs9687'
@@ -25,7 +25,7 @@ RSpec.describe ObjectsController, type: :request do
 
       context 'when druid is bare' do
         it 'returns the Moab::FileInventoryDifference as xml' do
-          post content_diff_object_url(id: bare_druid), params: { content_metadata: content_md }
+          post content_diff_object_url(id: bare_druid), params: { content_metadata: content_md }, headers: valid_auth_header
           expect(response).to have_http_status(:ok)
           result = HappyMapper.parse(response.body) # HappyMapper used in moab-versioning for parsing xml
           expect(result.object_id).to eq 'bj102hs9687'
@@ -35,7 +35,7 @@ RSpec.describe ObjectsController, type: :request do
 
       context 'when version specified' do
         it 'returns correct Moab::FileInventoryDifference data' do
-          post content_diff_object_url(id: prefixed_druid), params: { content_metadata: content_md, version: '1' }
+          post content_diff_object_url(id: prefixed_druid), params: { content_metadata: content_md, version: '1' }, headers: valid_auth_header
           expect(response).to have_http_status(:ok)
           result = HappyMapper.parse(response.body) # HappyMapper used in moab-versioning for parsing xml
           expect(result.object_id).to eq 'bj102hs9687'
@@ -44,7 +44,7 @@ RSpec.describe ObjectsController, type: :request do
 
         context 'when version is too high' do
           it 'returns 500 response code with details' do
-            post content_diff_object_url(id: prefixed_druid), params: { content_metadata: content_md, version: '666' }
+            post content_diff_object_url(id: prefixed_druid), params: { content_metadata: content_md, version: '666' }, headers: valid_auth_header
             expect(response).to have_http_status(:internal_server_error)
             expect(response.body).to eq '500 Unable to get content diff: Version ID 666 does not exist'
           end
@@ -52,7 +52,7 @@ RSpec.describe ObjectsController, type: :request do
 
         context 'when version param is not digits only' do
           it 'returns 400 response code with details' do
-            post content_diff_object_url(id: prefixed_druid), params: { content_metadata: content_md, version: 'v3' }
+            post content_diff_object_url(id: prefixed_druid), params: { content_metadata: content_md, version: 'v3' }, headers: valid_auth_header
             expect(response).to have_http_status(:bad_request)
             expect(response.body).to eq '400 Bad Request: version parameter must be positive integer'
           end
@@ -61,7 +61,8 @@ RSpec.describe ObjectsController, type: :request do
 
       context 'when ArgumentError from MoabStorageService' do
         it 'returns 400 response code with details' do
-          post content_diff_object_url(id: prefixed_druid), params: { content_metadata: content_md, subset: 'unrecognized' }
+          params = { content_metadata: content_md, subset: 'unrecognized' }
+          post content_diff_object_url(id: prefixed_druid), params: params, headers: valid_auth_header
           expect(response).to have_http_status(:bad_request)
           m = "400 Bad Request: subset arg must be 'all', 'shelve', 'preserve', or 'publish' (MoabStorageService.content_diff for druid bj102hs9687)"
           expect(response.body).to eq m
@@ -74,7 +75,7 @@ RSpec.describe ObjectsController, type: :request do
           allow(Stanford::StorageServices).to receive(:compare_cm_to_version)
             .with(content_md, bare_druid, 'all', nil)
             .and_raise(Moab::MoabRuntimeError, emsg)
-          post content_diff_object_url(id: bare_druid), params: { content_metadata: content_md }
+          post content_diff_object_url(id: bare_druid), params: { content_metadata: content_md }, headers: valid_auth_header
           expect(response).to have_http_status(:internal_server_error)
           expect(response.body).to eq '500 Unable to get content diff: my error'
           expect(Honeybadger).to have_received(:notify).with(Moab::MoabRuntimeError)
@@ -84,7 +85,7 @@ RSpec.describe ObjectsController, type: :request do
 
     context 'when object does not exist' do
       it 'returns an empty Moab::FileInventoryDifference as xml' do
-        post content_diff_object_url(id: 'druid:xx123yy9999'), params: { content_metadata: content_md }
+        post content_diff_object_url(id: 'druid:xx123yy9999'), params: { content_metadata: content_md }, headers: valid_auth_header
         expect(response).to have_http_status(:ok)
         result = HappyMapper.parse(response.body) # HappyMapper used in moab-versioning for parsing xml
         expect(result.object_id).to eq 'xx123yy9999'
@@ -96,7 +97,7 @@ RSpec.describe ObjectsController, type: :request do
       context 'when id param is empty' do
         it "will raise RoutingError" do
           expect do
-            post content_diff_object_url(id: '')
+            post content_diff_object_url(id: ''), headers: valid_auth_header
           end.to raise_error(ActionController::RoutingError)
         end
       end
@@ -104,7 +105,7 @@ RSpec.describe ObjectsController, type: :request do
       context "when id param missing" do
         it 'Rails will raise error and do the right thing' do
           expect do
-            post content_diff_object_url({})
+            post content_diff_object_url({}), headers: valid_auth_header
           end.to raise_error(ActionController::UrlGenerationError)
         end
       end
@@ -112,7 +113,7 @@ RSpec.describe ObjectsController, type: :request do
 
     context 'when druid invalid' do
       it 'returns 500 response code with "Identifier has invalid suri syntax"' do
-        post content_diff_object_url(id: 'foobar'), params: { content_metadata: content_md, subset: 'all' }
+        post content_diff_object_url(id: 'foobar'), params: { content_metadata: content_md, subset: 'all' }, headers: valid_auth_header
         expect(response).to have_http_status(:internal_server_error)
         expect(response.body).to eq '500 Unable to get content diff: Identifier has invalid suri syntax: foobar'
       end

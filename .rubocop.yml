@@ -60,6 +60,10 @@ Naming/FileName:
 RSpec/ContextWording:
   Enabled: false # too dogmatic
 
+RSpec/DescribeClass:
+    Exclude:
+      - 'spec/requests/auth_spec.rb' # technically testing ApplicationController, but rubocop complains even if you provide that
+
 RSpec/ExampleLength:
   Max: 25
 
