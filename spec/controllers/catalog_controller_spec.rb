@@ -4,6 +4,7 @@ require 'rails_helper'
 RSpec.describe CatalogController, type: :controller do
   before do
     allow(WorkflowReporter).to receive(:report_error)
+    allow(controller).to receive(:check_auth_token!) # gating on valid token tested in request specs and auth spec
   end
 
   let(:size) { 2342 }

@@ -295,11 +295,11 @@ docker-compose run app bundle exec rails db:reset db:seed
 
 Interact with the application via localhost:
 ```sh
-curl -F 'druid=druid:bj102hs9688' -F 'incoming_version=3' -F 'incoming_size=2070039' -F 'storage_location=spec/fixtures/storage_root01' -F 'checksums_validated=true' http://localhost:3000/v1/catalog
+curl -H 'Authorization: Bearer eyJhbGcxxxxx.eyJzdWIxxxxx.lWMJ66Wxx-xx' -F 'druid=druid:bj102hs9688' -F 'incoming_version=3' -F 'incoming_size=2070039' -F 'storage_location=spec/fixtures/storage_root01' -F 'checksums_validated=true' http://localhost:3000/v1/catalog
 ```
 
 ```sh
-curl http://localhost:3000/v1/objects/druid:bj102hs9688
+curl -H 'Authorization: Bearer eyJhbGcxxxxx.eyJzdWIxxxxx.lWMJ66Wxx-xx' http://localhost:3000/v1/objects/druid:bj102hs9688
 
 {
   "id":1,
@@ -332,7 +332,7 @@ The Resque Pool admin interface is available at `<hostname>/resque/overview`.
 
 Note that the API is now versioned. Until all clients have been modified to use the V1 routes, requests to URIs without explicit versions -- *i.e.*, hitting /catalog instead of /v1/catalog -- will automatically be redirected to their V1 equivalents. After that point, only requests to explicitly versioned endpoints will be serviced.
 
-## AuthN _WIP - we can mint tokens for services now, access will be restricted to clients with tokens shortly_
+### AuthN
 
 Authentication/authorization is handled by JWT.  Preservation Catalog mints JWTs for individual client services, and the client services each provide their respective JWT when making HTTP API calls to PresCat.
 
@@ -350,11 +350,13 @@ At present, all tokens grant the same (full) access to the read/update API.
 
 ### V1
 
+##### NOTE: The first token in the first `curl` example below is a full valid token generated from the public (bad, low entropy) example HMAC secret.  For readability, all other token values are abbreviated (and so those example tokens will be invalid).
+
 #### `GET /v1/objects/:druid`
 Return the PreservedObject model for the object.
 
 ```
-curl https://preservation-catalog-prod-01.stanford.edu/v1/objects/druid:bb000kg4251
+curl -H 'Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJwcmVzLXRlc3RfMjAyMC0wMS0xMyJ9.lWMJ66Wjfl2lY5MdikDpjjhpyD_uBX4DMZC5mlgq2T2-bSmrYcbcxfyNfQKXWrUzBc1xOuwYZWxkYL6EejzHvQ' https://preservation-catalog-prod-01.stanford.edu/v1/objects/druid:bb000kg4251
 {
   "id": 1786188,
   "druid": "bb000kg4251",
@@ -374,7 +376,7 @@ Parameters:
 * version (optional, default: latest): version of Moab
 
 ```
-curl "https://preservation-catalog-prod-01.stanford.edu/v1/objects/druid:bb000kg4251/file?category=manifest&filepath=signatureCatalog.xml&version=1"
+curl -H 'Authorization: Bearer eyJhbGcxxxxx.eyJzdWIxxxxx.lWMJ66Wxx-xx' "https://preservation-catalog-prod-01.stanford.edu/v1/objects/druid:bb000kg4251/file?category=manifest&filepath=signatureCatalog.xml&version=1"
 <?xml version="1.0" encoding="UTF-8"?>
 <signatureCatalog objectId="druid:bb000kg4251" versionId="1" catalogDatetime="2019-06-26T18:38:02Z" fileCount="10" byteCount="1364250" blockCount="1337">
   <entry originalVersion="1" groupId="content" storagePath="bb000kg4251.jpg">
@@ -388,7 +390,7 @@ curl "https://preservation-catalog-prod-01.stanford.edu/v1/objects/druid:bb000kg
 Return the checksums and filesize for a single object.
 
 ```
-curl https://preservation-catalog-prod-01.stanford.edu/v1/objects/druid:bb000kg4251/checksum
+curl -H 'Authorization: Bearer eyJhbGcxxxxx.eyJzdWIxxxxx.lWMJ66Wxx-xx' https://preservation-catalog-prod-01.stanford.edu/v1/objects/druid:bb000kg4251/checksum
 [
   {
     "filename": "bb000kg4251.jpg",
@@ -407,7 +409,7 @@ Parameters:
 * druid[] (repeatable): druid for the object
 
 ```
-curl "https://preservation-catalog-prod-01.stanford.edu/v1/objects/checksums?druids[]=druid:bb000kg4251&druids[]=druid:bb000kq3835"
+curl -H 'Authorization: Bearer eyJhbGcxxxxx.eyJzdWIxxxxx.lWMJ66Wxx-xx' "https://preservation-catalog-prod-01.stanford.edu/v1/objects/checksums?druids[]=druid:bb000kg4251&druids[]=druid:bb000kq3835"
 [
   {
     "druid:bb000kg4251": [
@@ -443,7 +445,7 @@ Parameters:
 * version (optional, default: latest): version of Moab
 
 ```
-curl -F 'content_metadata=
+curl -H 'Authorization: Bearer eyJhbGcxxxxx.eyJzdWIxxxxx.lWMJ66Wxx-xx' -F 'content_metadata=
 <?xml version="1.0"?>
 <contentMetadata objectId="bb000kg4251" type="image">
   <resource id="bb000kg4251_1" sequence="1" type="image">
@@ -499,7 +501,7 @@ Response codes:
 * 500: some other problem.
 
 ```
-curl -F 'druid=druid:bj102hs9688' -F 'incoming_version=3' -F 'incoming_size=2070039' -F 'storage_location=spec/fixtures/storage_root01' -F 'checksums_validated=true' https://preservation-catalog-stage-01.stanford.edu/v1/catalog
+curl -H 'Authorization: Bearer eyJhbGcxxxxx.eyJzdWIxxxxx.lWMJ66Wxx-xx' -F 'druid=druid:bj102hs9688' -F 'incoming_version=3' -F 'incoming_size=2070039' -F 'storage_location=spec/fixtures/storage_root01' -F 'checksums_validated=true' https://preservation-catalog-stage-01.stanford.edu/v1/catalog
 
 {
 	"druid": "bj102hs9688",
@@ -526,7 +528,7 @@ Response codes:
 * 500: some other problem.
 
 ```
-curl -X PUT -F 'incoming_version=4' -F 'incoming_size=2136079' -F 'storage_location=spec/fixtures/storage_root01' -F 'checksums_validated=true' https://preservation-catalog-stage-01.stanford.edu/v1/catalog/druid:bj102hs9688
+curl -H 'Authorization: Bearer eyJhbGcxxxxx.eyJzdWIxxxxx.lWMJ66Wxx-xx' -X PUT -F 'incoming_version=4' -F 'incoming_size=2136079' -F 'storage_location=spec/fixtures/storage_root01' -F 'checksums_validated=true' https://preservation-catalog-stage-01.stanford.edu/v1/catalog/druid:bj102hs9688
 
 {
 	"druid": "bj102hs9688",

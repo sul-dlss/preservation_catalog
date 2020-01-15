@@ -57,4 +57,6 @@ RSpec.configure do |config|
     allow(ZipmakerJob).to receive(:perform_later).with(any_args) # by default, block callback replication
     allow(ChecksumValidationJob).to receive(:perform_later).with(any_args) # by default, block callback CV
   end
+
+  config.include AuthHelper
 end
