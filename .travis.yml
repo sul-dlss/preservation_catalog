@@ -1,6 +1,8 @@
 language: ruby
 rvm:
   - 2.5.3
+addons:
+  postgresql: "9.6"
 before_install:
   - yes | gem update --system
 cache: bundler
