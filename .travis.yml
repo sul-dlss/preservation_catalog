@@ -2,15 +2,13 @@ language: ruby
 rvm:
   - 2.5.3
 addons:
-  postgresql: "9.6"
+  postgresql: 9.6
 before_install:
   - yes | gem update --system
 cache: bundler
 services:
   - postgresql
   - redis-server
-before_script:
-  - bundle exec rake db:reset
 bundler_args: "--without 'production development deploy'"
 notifications:
   email: false
@@ -23,3 +21,13 @@ env:
   global:
     - secure: rZb3zAUeXbRIHktUKo/kC9LDm0rtuWEVOSlRmDd0XexcXejJYRsQSv8uYbNtp75eXo7XNwfxDHMguNMWJR5iVO8n/7nCrLz7QkAqCzgZnUrwk9SXnOQuTlEILbqCNNdxts4Z9MASn8CuEf/2SH7U8NvKdiPA1tUpNDzpAJNLZxgk2X7aqUWVgPwsG+uGj2TQv3Ts2bpTHBWAh3RELicC9RGSSKtBXBjDe2oxBhADln6zHXE3ELtuHiH2Ez4pcHZ9ogw15o50140ew1RL1qM7pLsUyNKDhMuXwvXhD7ynRn/CGun+a5NN+WeopmaQwiC44RWBQGp+WSbtXRyf11XnshXzpwLEmkayCISm1X/4EZ/45KBNQhJMLbwykq566aR1PlOQ3lmTDKceBsBEDC2grLVVg6O5x1WSDQGIVQVpIExnlHkQIhLHxyyzNuFZ0CSZMQxzdDrXYBVXeGrp+6VfCaNj3z3a+v8U0lI/jd4ntC1QrmqF0/8rQvdVGn1pqXMYL/HQwuHe3v1a8HxuNmhVVGlNSRQHN3PwHkkJPk9YUeTOB+vpvHpLlTHtTSg96UnMV+V1O3ECYzvh6naLpUOhI7SxQl6SFVynzmA00v/AlLwcLgQ2njBgJiVJFj0xE2nCCTIIjW2Aw3ioFtSNYcbmOtOaU6yIwKjnzfwuhXSdT+A=
     - secure: uXJY4jiz1kQfRQRJ8SvXEucaMN6eUVteDZLkTJgbB3C7Kh91YSU3x3taF4355yvdgzGo2roIaR4kFXulWKz0/ADAgU7Lxmexk50I2Uk1Uam7TaNegyaCaIfKXwY7a4+bBdS7ckKMA94IQMmjsTbrOLoTrAErgr4sLWV/p1ZDvbjIz42yqHRyzptJAQlDsWvbJHbNvYdM/v8zIxUwOTNFzJYetFjT9lSohgh3ruCCB0koQl+ywkCmeCgD1XYm+h35vjwDVK1WlJzdc40tmNhOQeBU2bT6zEk4TirqSIO4xiGTOezip6EJKaOvOaxCOXiW5sei1tE4zUvFX5xVkOxs8yow2/u8ilJxE2SiBLhIAzqRMFTuJCQB1G7yGPtek+SBIUSqlENGg9LTcYt5XYXUeZDGRQmebJ7layCud5UdV9cetK52BCfC7/uOHADFxtlsF1CRUa2kbBoeda/dC3N7pBWEqROexoICi9OBRNsd7FJPRBnlbfjdFCvfVmreooO3MJFrkv9shKcG5/RHH1bJFbF/ibsTx7pqVGVggFWXjcgptR5m+9q//712wYT3vqRw2sdxOYM5vIaSN9jhXthtUHwx57Bs595vDdn9rrlJ70Xv0MTLkpbz8FW4NKTzszwStf99PKgMxKIL2WJmHhYoZ2hFmaBbfcQmneeVrabfrYM=
+dist: trusty
+addons:
+  sonarcloud:
+    organization: "saravshah"
+    token:
+      secure: siqSiebM7RB8SMGl8hQpzprwqHCnN0QxrsSYpDBGAGupVSWKCgbyRLTTmN8b9ylALrEzzFfqeEHQCzeTjOQkPjUMbYc4xzRRv9gQXH9DmlckNbFDU7q9PHadHMjMKIOm9u9Q6cQqBgiJX7ZqRZJljFxAMRkPUpLdjXjUPoidO3n2ktWawZCEyfAI48JFhg5pvk3E6WKAsCgiqWro8ZCGmTD2fxXpsoTpSmC0D1nTkyYY0wtuZ12h7Hzgc/QuvT10IZX1YKqJhDWQK0FqvDaa63yCor92SHyYFEZhBt5nn+iap5LO5X0xj4rODkw0gFXBHW9D0F8rvqJDinWxNmmQRPr6Mc0qXl9cM8yYWkpQu9AYL74+wlhi9SwBeUmfGx9u6YDdYJsLxOTpxIrrohEV7CvJtKSL0aTUkX3lFwdaKUuwcH66J7NkzbTcPTCOKM5jEe01narND1SH3b7Lj2fEiHuiBpRv6jJ+KnxAjh+mbabKHnmXaKohtEAJO7Kmej2Y/fxPhHTmoD+dZlTV6GcSgqmUJ6yFAPHVItE7IZfZL4VZZKbMlUfisR0NEO42LKMuvKCxON8SczQgHcDjCmTMvCfzQuQ/pxVWdVLMtDWF1P66j7zMA7RkFA+ubGXlU6GsyfQhnhNUxrkOy5KZaeFmCw8AxxmGICeFKFQm/XQlZjQ=
+
+script:
+  # the following command line builds the project, runs the tests with coverage and then execute the SonarCloud analysis
+  - sonar-scanner
