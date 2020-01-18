@@ -2,8 +2,7 @@
 
 module PreservationCatalog
   module Ibm
-    # Methods for auditing checking the state of a ZippedMoabVersion on an IBM S3 compatible endpoint.  Requires IBM credentials are
-    # available in the environment.  At the time of this comment, ONLY running queue workers will have proper creds loaded.
+    # Methods for auditing the state of a ZippedMoabVersion on an IBM S3 compatible endpoint.
     class Audit
       delegate :bucket, :bucket_name, to: ::PreservationCatalog::Ibm
 

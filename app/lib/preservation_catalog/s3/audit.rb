@@ -2,8 +2,7 @@
 
 module PreservationCatalog
   module S3
-    # Methods for auditing checking the state of a ZippedMoabVersion on an S3 endpoint.  Requires AWS credentials are
-    # available in the environment.  At the time of this comment, ONLY running queue workers will have proper creds loaded.
+    # Methods for auditing the state of a ZippedMoabVersion on an AWS S3 endpoint.
     class Audit
       delegate :bucket_name, to: ::PreservationCatalog::S3
 

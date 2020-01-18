@@ -167,3 +167,26 @@ input> CompleteMoab.joins(:preserved_object, :moab_storage_root).where(moab_stor
 # example result
 ["bp628nk4868", "dc048cw1328", "yy000yy0000"]
 ```
+
+#### view the zip parts for a given druid
+
+```ruby
+input> druid = 'by718ks4879'
+input> ZipPart.joins(zipped_moab_version: [{ complete_moab: [:preserved_object] }, :zip_endpoint]).where(preserved_objects: { druid: druid }).pluck(:druid, 'current_version AS highest_version', 'zipped_moab_versions.version AS zip_version', :endpoint_name, :status)
+```
+```sql
+-- example sql produced by above AR query
+SELECT druid, current_version AS highest_version, zipped_moab_versions.version AS zip_version, endpoint_name, zip_parts.status
+FROM zip_parts
+INNER JOIN zipped_moab_versions ON zipped_moab_versions.id = zip_parts.zipped_moab_version_id
+  INNER JOIN complete_moabs ON complete_moabs.id = zipped_moab_versions.complete_moab_id
+    INNER JOIN preserved_objects ON preserved_objects.id = complete_moabs.preserved_object_id
+  INNER JOIN zip_endpoints ON zip_endpoints.id = zipped_moab_versions.zip_endpoint_id
+WHERE preserved_objects.druid = 'by718ks4879'
+```
+```ruby
+# example result
+[["by718ks4879", 1, 1, "ibm_us_south", "ok"],
+ ["by718ks4879", 1, 1, "aws_s3_east_1", "ok"],
+ ["by718ks4879", 1, 1, "aws_s3_west_2", "ok"]]
+```

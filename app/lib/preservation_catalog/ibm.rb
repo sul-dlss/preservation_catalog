@@ -21,8 +21,6 @@ module PreservationCatalog
         resource.bucket(bucket_name)
       end
 
-      # Because AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, and AWS_REGION will be managed via
-      # ENV vars, and the bucket must match those, we check for AWS_BUCKET_NAME first.
       # @return [String]
       def bucket_name
         ENV['AWS_BUCKET_NAME'] || Settings.zip_endpoints.ibm_us_south.storage_location || Settings.ibm.bucket_name
