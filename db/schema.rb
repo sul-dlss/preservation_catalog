@@ -2,15 +2,15 @@
 # of editing this file, please use the migrations feature of Active Record to
 # incrementally modify your database, and then regenerate this schema definition.
 #
-# Note that this schema.rb definition is the authoritative source for your
-# database schema. If you need to create the application database on another
-# system, you should be using db:schema:load, not running all the migrations
-# from scratch. The latter is a flawed and unsustainable approach (the more migrations
-# you'll amass, the slower it'll run and the greater likelihood for issues).
+# This file is the source Rails uses to define your schema when running `rails
+# db:schema:load`. When creating a new database, `rails db:schema:load` tends to
+# be faster and is potentially less error prone than running all of your
+# migrations from scratch. Old migrations may fail to apply correctly if those
+# migrations use external dependencies or application code.
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2018_10_10_203927) do
+ActiveRecord::Schema.define(version: 2020_01_22_001712) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -27,6 +27,7 @@ ActiveRecord::Schema.define(version: 2018_10_10_203927) do
     t.integer "status", null: false
     t.datetime "last_version_audit"
     t.datetime "last_archive_audit"
+    t.string "status_details"
     t.index ["created_at"], name: "index_complete_moabs_on_created_at"
     t.index ["last_archive_audit"], name: "index_complete_moabs_on_last_archive_audit"
     t.index ["last_checksum_validation"], name: "index_complete_moabs_on_last_checksum_validation"
