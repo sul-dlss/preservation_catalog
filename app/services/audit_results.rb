@@ -83,6 +83,7 @@ class AuditResults
     FILE_NOT_IN_MOAB,
     FILE_NOT_IN_SIGNATURE_CATALOG,
     INVALID_MANIFEST,
+    INVALID_MOAB,
     MANIFEST_NOT_IN_MOAB,
     MOAB_FILE_CHECKSUM_MISMATCH,
     MOAB_NOT_FOUND,
@@ -153,6 +154,8 @@ class AuditResults
     result_array.each do |r|
       log_result(r, logger)
       if r.key?(INVALID_MOAB)
+        # Temporary fix for workflow-service throwing exceptions
+        # because some error reports from MoabReplicationAudit are too long
         msg = "#{workflows_msg_prefix} || #{r.values.first}"
         WorkflowReporter.report_error(druid, actual_version, 'moab-valid', msg)
       elsif status_changed_to_ok?(r)
