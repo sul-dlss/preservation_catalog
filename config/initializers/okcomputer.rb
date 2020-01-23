@@ -101,7 +101,7 @@ end
 #   - in /status/all, these checks will display their result text, but will not affect HTTP response code
 
 # Audit Checks (only) report errors to workflow service so they appear in Argo
-workflows_url = "#{Settings.workflow_services_url}sdr/objects/druid:oo000oo0000/workflows"
+workflows_url = "#{Settings.workflow_services_url}/objects/druid:oo000oo0000/workflows"
 OkComputer::Registry.register "external-workflow-services-url", OkComputer::HttpCheck.new(workflows_url)
 
 # Replication (only) uses zip_storage directory to build the zips to send to zip endpoints
