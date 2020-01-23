@@ -150,22 +150,22 @@ class AuditResults
   #   result1 = {response_code => msg}
   #   result2 = {response_code => msg}
   def report_results(logger=Rails.logger)
-    candidate_workflow_results = []
+    workflow_results = []
     result_array.each do |r|
       log_result(r, logger)
       if r.key?(INVALID_MOAB)
-        # Temporary fix for workflow-service throwing exceptions
-        # because some error reports from MoabReplicationAudit are too long
-        msg = "#{workflows_msg_prefix} || #{r.values.first}"
+        # This error goes to diff workflow ('moab-valid') than 'preservation-audit'
+        # also note that we shorten it because workflow service doesn't like really long strings
+        msg = "#{string_prefix} || #{r.values.first}"
         WorkflowReporter.report_error(druid, actual_version, 'moab-valid', msg)
       elsif status_changed_to_ok?(r)
         WorkflowReporter.report_completed(druid, actual_version, 'preservation-audit')
       elsif WORKFLOW_REPORT_CODES.include?(r.keys.first)
-        candidate_workflow_results << r
+        workflow_results << r
       end
       send_honeybadger_notification(r) if HONEYBADGER_REPORT_CODES.include?(r.keys.first)
     end
-    report_errors_to_workflows(candidate_workflow_results)
+    report_errors_to_workflows(workflow_results)
     result_array
   end
 
@@ -187,10 +187,9 @@ class AuditResults
     { code => result_code_msg(code, msg_args) }
   end
 
-  def report_errors_to_workflows(candidate_workflow_results)
-    return if candidate_workflow_results.empty?
-    msg = "#{workflows_msg_prefix} #{candidate_workflow_results.map(&:values).flatten.join(' && ')}"
-    WorkflowReporter.report_error(druid, actual_version, 'preservation-audit', msg)
+  def report_errors_to_workflows(error_results)
+    return if error_results.empty?
+    WorkflowReporter.report_error(druid, actual_version, 'preservation-audit', results_as_string(error_results))
   end
 
   def log_result(result, logger)
@@ -216,8 +215,12 @@ class AuditResults
     @log_msg_prefix ||= "#{check_name}(#{druid}, #{moab_storage_root&.name})"
   end
 
-  def workflows_msg_prefix
-    @workflows_msg_prefix ||= begin
+  def results_as_string(error_results)
+    "#{string_prefix} #{error_results.map(&:values).flatten.join(' && ')}"
+  end
+
+  def string_prefix
+    @string_prefix ||= begin
       location_info = "actual location: #{moab_storage_root.name}" if moab_storage_root
       actual_version_info = "actual version: #{actual_version}" if actual_version
       "#{check_name} (#{location_info}; #{actual_version_info})"
