@@ -116,11 +116,9 @@ class ObjectsController < ApplicationController
     checksum_list = []
     missing_druids = []
     normalized_druids.each do |druid|
-      begin
-        checksum_list << { returned_druid(druid) => content_files_checksums(druid) }
-      rescue Moab::ObjectNotFoundException
-        missing_druids << druid
-      end
+      checksum_list << { returned_druid(druid) => content_files_checksums(druid) }
+    rescue Moab::ObjectNotFoundException
+      missing_druids << druid
     end
     [checksum_list, missing_druids]
   end

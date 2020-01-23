@@ -7,7 +7,7 @@ RSpec.describe CatalogController, type: :request do
 
   describe 'POST /catalog' do
     it 'redirects to /v1/catalog' do
-      post '/catalog'
+      post '/catalog', headers: valid_auth_header
       expect(response).to have_http_status(:moved_permanently)
       expect(response).to redirect_to(catalog_index_url)
     end
@@ -15,7 +15,7 @@ RSpec.describe CatalogController, type: :request do
 
   describe 'PUT /catalog/:druid' do
     it 'redirects to /v1/catalog/:druid' do
-      put "/catalog/#{druid}"
+      put "/catalog/#{druid}", headers: valid_auth_header
       expect(response).to have_http_status(:moved_permanently)
       expect(response).to redirect_to(catalog_url(druid))
     end
@@ -23,7 +23,7 @@ RSpec.describe CatalogController, type: :request do
 
   describe 'PATCH /catalog/:druid' do
     it 'redirects to /v1/catalog/:druid' do
-      patch "/catalog/#{druid}"
+      patch "/catalog/#{druid}", headers: valid_auth_header
       expect(response).to have_http_status(:moved_permanently)
       expect(response).to redirect_to(catalog_url(druid))
     end
