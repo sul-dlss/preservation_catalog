@@ -16,6 +16,7 @@ class ApplicationController < ActionController::API
   # IMPORTANT!  all non-API routes must be protected by shibboleth and restricted to an
   # appropritaly small workgroup.
   def non_api_route?
+    # no need to list /status (okcomputer) URLs here, because those aren't handled by ApplicationController
     request.fullpath.match(%r{^/resque(/.*)?$})
   end
 
