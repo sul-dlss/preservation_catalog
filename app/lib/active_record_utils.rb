@@ -12,8 +12,9 @@ module ActiveRecordUtils
     rescue ActiveRecord::RecordNotFound => e
       audit_results.add_result(AuditResults::DB_OBJ_DOES_NOT_EXIST, e.inspect)
     rescue ActiveRecord::ActiveRecordError => e
+      Rails.logger.error("db update error; more context to follow: #{e.inspect}: #{e.backtrace.inspect}")
       audit_results.add_result(
-        AuditResults::DB_UPDATE_FAILED, "#{e.inspect} #{e.message} #{e.backtrace.inspect}"
+        AuditResults::DB_UPDATE_FAILED, e.inspect
       )
     end
     false
