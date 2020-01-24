@@ -24,14 +24,14 @@ class ApplicationController < ActionController::API
     return if non_api_route?
 
     unless bearer_token
-      Honeybadger.notify("no #{TOKEN_HEADER} token was provided by #{request.remote_ip}")
+      log_and_notify("no #{TOKEN_HEADER} token was provided by #{request.remote_ip}")
       return render json: { error: 'Not Authorized' }, status: 401
     end
 
     decoded_jwt = decode_bearer_token!
     Honeybadger.context(invoked_by: decoded_jwt[:sub])
   rescue StandardError => e
-    Honeybadger.notify("error validating bearer token #{bearer_token} provided by #{request.remote_ip}: #{e}")
+    log_and_notify("error validating bearer token #{bearer_token} provided by #{request.remote_ip}: #{e}")
     render json: { error: 'Not Authorized' }, status: 401
   end
 
@@ -61,5 +61,10 @@ class ApplicationController < ActionController::API
     msg = '404 Not Found'
     msg = "#{msg}: #{exception.message}" if exception
     render plain: msg, status: :not_found
+  end
+
+  def log_and_notify(msg)
+    Rails.logger.warn(msg)
+    Honeybadger.notify(msg)
   end
 end
