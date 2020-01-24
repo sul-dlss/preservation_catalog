@@ -8,6 +8,7 @@ RSpec.describe 'auth' do
   before do
     allow(Honeybadger).to receive(:notify)
     allow(Honeybadger).to receive(:context)
+    allow(Rails.logger).to receive(:warn)
   end
 
   context 'without a bearer token' do
@@ -21,6 +22,11 @@ RSpec.describe 'auth' do
       get "/v1/objects/#{pres_obj.druid}", headers: {}
       expect(Honeybadger).to have_received(:notify).with("no Authorization token was provided by 127.0.0.1")
     end
+
+    it 'logs a warning' do
+      get "/v1/objects/#{pres_obj.druid}", headers: {}
+      expect(Rails.logger).to have_received(:warn).with("no Authorization token was provided by 127.0.0.1")
+    end
   end
 
   context 'with an invalid bearer token' do
@@ -33,6 +39,13 @@ RSpec.describe 'auth' do
     it 'notifies Honeybadger' do
       get "/v1/objects/#{pres_obj.druid}", headers: invalid_auth_header
       expect(Honeybadger).to have_received(:notify).with(
+        "error validating bearer token #{invalid_jwt_value} provided by 127.0.0.1: Signature verification raised"
+      )
+    end
+
+    it 'logs a warning' do
+      get "/v1/objects/#{pres_obj.druid}", headers: invalid_auth_header
+      expect(Rails.logger).to have_received(:warn).with(
         "error validating bearer token #{invalid_jwt_value} provided by 127.0.0.1: Signature verification raised"
       )
     end
