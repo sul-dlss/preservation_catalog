@@ -58,6 +58,10 @@ Naming/FileName:
     - 'Gemfile'
     - 'lib/capistrano/tasks/capistrano-resque-pool.rake'
 
+RSpec/BeforeAfterAll:
+  Exclude:
+    - 'spec/services/reporter_spec.rb' # allows inter-example state leak, & after(:all) won't auto-rollback fixtures it creates, but used here for file cleanup
+
 RSpec/ContextWording:
   Enabled: false # too dogmatic
 
@@ -70,6 +74,10 @@ RSpec/ExampleLength:
 
 RSpec/ImplicitSubject: # we use this for `define_enum_for`, `validate_presence_of`, etc.
   Enabled: false
+
+RSpec/LeakyConstantDeclaration:
+  Exclude:
+    - 'spec/services/reporter_spec.rb' # rubocop doesn't like constants in specs because they leak between examples, but this one helps cleanup
 
 # we like 'expect(x).to receive' better than 'have_received'
 RSpec/MessageSpies:

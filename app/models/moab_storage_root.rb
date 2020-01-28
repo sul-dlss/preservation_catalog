@@ -4,10 +4,24 @@
 # Metadata about a Moab storage root (a POSIX file system which contains Moab objects).
 class MoabStorageRoot < ApplicationRecord
   has_many :complete_moabs, dependent: :restrict_with_exception
+  has_many :preserved_objects, through: :complete_moabs
   has_and_belongs_to_many :preservation_policies
 
   validates :name, presence: true, uniqueness: true
   validates :storage_location, presence: true
+
+  scope :preserved_objects, lambda {
+    joins(complete_moabs: [:preserved_object])
+  }
+
+  # not a scope because it doesn't return a chainable relation.
+  # this could be a little expensive: use it judiciously.
+  # this completed in seconds on prod for root16, which had the most druids at the time of this writing (314162).  so it's not that bad.
+  def druid_list_sorted
+    preserved_objects
+      .pluck(:druid) # `#pluck` instead of e.g. `#select` keeps us from instantiating a whole AR obj when we just want this string
+      .sort # the list could be large (potentially > 500K; prefer load on app server to load on DB server)
+  end
 
   # Use a queue to validate CompleteMoab objects
   def validate_expired_checksums!
