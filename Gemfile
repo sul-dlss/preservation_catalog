@@ -15,6 +15,7 @@ gem 'jwt' # for gating programmatic access to the application
 gem 'okcomputer' # ReST endpoint with upness status
 gem 'pg' # postgres database
 gem "factory_bot_rails", "~> 4.0"
+gem 'postgresql_cursor' # for paging over large result sets efficiently
 # pry is useful for debugging, even in prod
 gem 'pry-byebug' # call 'binding.pry' anywhere in the code to stop execution and get a pry-byebug console
 gem 'pry-rails' # use pry as the rails console shell instead of IRB

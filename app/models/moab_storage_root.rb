@@ -4,10 +4,15 @@
 # Metadata about a Moab storage root (a POSIX file system which contains Moab objects).
 class MoabStorageRoot < ApplicationRecord
   has_many :complete_moabs, dependent: :restrict_with_exception
+  has_many :preserved_objects, through: :complete_moabs
   has_and_belongs_to_many :preservation_policies
 
   validates :name, presence: true, uniqueness: true
   validates :storage_location, presence: true
+
+  scope :preserved_objects, lambda {
+    joins(complete_moabs: [:preserved_object])
+  }
 
   # Use a queue to validate CompleteMoab objects
   def validate_expired_checksums!

@@ -246,6 +246,8 @@ GEM
     parser (2.7.0.2)
       ast (~> 2.4.0)
     pg (1.2.2)
+    postgresql_cursor (0.6.4)
+      activerecord (>= 3.1.0)
     pry (0.12.2)
       coderay (~> 1.1.0)
       method_source (~> 0.9.0)
@@ -406,6 +408,7 @@ DEPENDENCIES
   moab-versioning
   okcomputer
   pg
+  postgresql_cursor
   pry-byebug
   pry-rails
   puma (~> 3.12)

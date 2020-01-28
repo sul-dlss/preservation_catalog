@@ -12,4 +12,12 @@ namespace :prescat do
     migration_service = StorageRootMigrationService.new(args[:from], args[:to])
     migration_service.migrate.each { |druid| puts druid }
   end
+
+  namespace :reports do
+    desc 'query for druids on storage root & dump to CSV (2nd arg optional)'
+    task :msr_druids, [:storage_root_name, :csv_filename] => [:environment] do |_task, args|
+      csv_loc = Reporter.moab_storage_root_druid_list_to_csv(storage_root_name: args[:storage_root_name], csv_filename: args[:csv_filename])
+      puts "druids for #{args[:storage_root_name]} written to #{csv_loc}"
+    end
+  end
 end
