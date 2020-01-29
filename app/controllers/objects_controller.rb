@@ -48,11 +48,16 @@ class ObjectsController < ApplicationController
   # GET OR POST /v1/objects/checksums?druids[]=druid1&druids[]=druid2&druids[]=druid3
   def checksums
     unless normalized_druids.present?
-      render(plain: "400 bad request - druids param must be populated", status: :bad_request)
+      render(plain: "400 bad request - druids param must be populated with valid druids", status: :bad_request)
       return
     end
 
-    checksum_list, missing_druids = generate_checksum_list
+    checksum_list, missing_druids, errored_druids = generate_checksum_list
+
+    if errored_druids.any?
+      render(plain: "409 conflict - problems generating checksums for #{errored_druids.join(', ')}", status: :conflict)
+      return
+    end
 
     if missing_druids.any?
       render(plain: "409 conflict - storage object(s) not found for #{missing_druids.join(', ')}", status: :conflict)
@@ -115,12 +120,18 @@ class ObjectsController < ApplicationController
   def generate_checksum_list
     checksum_list = []
     missing_druids = []
+    errored_druids = []
     normalized_druids.each do |druid|
       checksum_list << { returned_druid(druid) => content_files_checksums(druid) }
     rescue Moab::ObjectNotFoundException
       missing_druids << druid
+    rescue Moab::InvalidSuriSyntaxError => e
+      # this error has useful messages
+      raise e
+    rescue StandardError
+      errored_druids << druid
     end
-    [checksum_list, missing_druids]
+    [checksum_list, missing_druids, errored_druids]
   end
 
   def to_csv_checksum_list(checksum_list)

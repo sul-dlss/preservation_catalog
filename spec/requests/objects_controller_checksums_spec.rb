@@ -169,6 +169,22 @@ RSpec.describe ObjectsController, type: :request do
       end
     end
 
+    context 'when object throws any StandardError during processing' do
+      before do
+        allow(MoabStorageService).to receive(:retrieve_content_file_group).with(bare_druid).and_call_original
+        allow(MoabStorageService).to receive(:retrieve_content_file_group).with(bare_druid2).and_raise(NoMethodError, 'I had a nil result')
+        post checksums_objects_url, params: { druids: [bare_druid, bare_druid2], format: :json }, headers: valid_auth_header
+      end
+
+      it 'returns a 409 response code' do
+        expect(response).to have_http_status(:conflict)
+      end
+
+      it 'body has additional information from the exception if available' do
+        expect(response.body).to eq "409 conflict - problems generating checksums for #{bare_druid2}"
+      end
+    end
+
     context 'when no druids param' do
       context 'when param is empty' do
         it 'body has additional information from the exception if available' do
@@ -182,7 +198,7 @@ RSpec.describe ObjectsController, type: :request do
         it 'body has additional information from the exception if available' do
           post checksums_objects_url, params: { format: :json }, headers: valid_auth_header
           expect(response).to have_http_status(:bad_request)
-          expect(response.body).to eq '400 bad request - druids param must be populated'
+          expect(response.body).to eq '400 bad request - druids param must be populated with valid druids'
         end
       end
     end
