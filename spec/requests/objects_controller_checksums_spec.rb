@@ -165,7 +165,7 @@ RSpec.describe ObjectsController, type: :request do
 
       it 'body has additional information from the exception if available' do
         post checksums_objects_url, params: { druids: [prefixed_druid, 'druid:xx123yy9999'], format: :json }, headers: valid_auth_header
-        expect(response.body).to eq '409 conflict - storage object(s) not found for xx123yy9999'
+        expect(response.body).to eq "409 Conflict - \nStorage object(s) not found for xx123yy9999"
       end
     end
 
@@ -181,7 +181,18 @@ RSpec.describe ObjectsController, type: :request do
       end
 
       it 'body has additional information from the exception if available' do
-        expect(response.body).to eq "409 conflict - problems generating checksums for #{bare_druid2}"
+        expect(response.body).to eq "409 Conflict - \nProblems generating checksums for #{bare_druid2} (#<NoMethodError: I had a nil result>)"
+      end
+
+      it 'body has information about both missing and errored druids if available' do
+        allow(MoabStorageService).to receive(:retrieve_content_file_group).with('xx123yy9999').and_call_original
+        allow(MoabStorageService).to receive(:retrieve_content_file_group).with(bare_druid).and_raise(StandardError, 'I had a stderr')
+        allow(MoabStorageService).to receive(:retrieve_content_file_group).with(bare_druid2).and_raise(NoMethodError, 'I had a nil result')
+        post checksums_objects_url, params: { druids: ['xx123yy9999', bare_druid, bare_druid2], format: :json }, headers: valid_auth_header
+        expect(response.body).to match "409 Conflict -"
+        expect(response.body).to include "\nStorage object(s) not found for xx123yy9999"
+        expect(response.body).to include "\nProblems generating checksums for #{bare_druid} (#<StandardError: I had a stderr>)"
+        expect(response.body).to include ", #{bare_druid2} (#<NoMethodError: I had a nil result>)"
       end
     end
 
@@ -190,7 +201,7 @@ RSpec.describe ObjectsController, type: :request do
         it 'body has additional information from the exception if available' do
           post checksums_objects_url, params: { druids: [], format: :json }, headers: valid_auth_header
           expect(response).to have_http_status(:bad_request)
-          expect(response.body).to eq '400 bad request: Identifier has invalid suri syntax:  nil or empty'
+          expect(response.body).to eq '400 Bad Request: Identifier has invalid suri syntax:  nil or empty'
         end
       end
 
@@ -198,7 +209,7 @@ RSpec.describe ObjectsController, type: :request do
         it 'body has additional information from the exception if available' do
           post checksums_objects_url, params: { format: :json }, headers: valid_auth_header
           expect(response).to have_http_status(:bad_request)
-          expect(response.body).to eq '400 bad request - druids param must be populated with valid druids'
+          expect(response.body).to eq '400 Bad Request - druids param must be populated with valid druids'
         end
       end
     end
@@ -207,7 +218,7 @@ RSpec.describe ObjectsController, type: :request do
       it 'returns 400 response code' do
         post checksums_objects_url, params: { druids: [prefixed_druid, 'foobar'], format: :json }, headers: valid_auth_header
         expect(response).to have_http_status(:bad_request)
-        expect(response.body).to eq '400 bad request: Identifier has invalid suri syntax: foobar'
+        expect(response.body).to eq '400 Bad Request: Identifier has invalid suri syntax: foobar'
       end
     end
 

@@ -48,19 +48,16 @@ class ObjectsController < ApplicationController
   # GET OR POST /v1/objects/checksums?druids[]=druid1&druids[]=druid2&druids[]=druid3
   def checksums
     unless normalized_druids.present?
-      render(plain: "400 bad request - druids param must be populated with valid druids", status: :bad_request)
+      render(plain: "400 Bad Request - druids param must be populated with valid druids", status: :bad_request)
       return
     end
 
     checksum_list, missing_druids, errored_druids = generate_checksum_list
 
-    if errored_druids.any?
-      render(plain: "409 conflict - problems generating checksums for #{errored_druids.join(', ')}", status: :conflict)
-      return
-    end
-
-    if missing_druids.any?
-      render(plain: "409 conflict - storage object(s) not found for #{missing_druids.join(', ')}", status: :conflict)
+    bad_recs_msg = "\nStorage object(s) not found for #{missing_druids.join(', ')}" if missing_druids.any?
+    bad_recs_msg = (bad_recs_msg || '') + "\nProblems generating checksums for #{errored_druids.join(', ')}" if errored_druids.any?
+    if bad_recs_msg.present?
+      render(plain: "409 Conflict - #{bad_recs_msg}", status: :conflict)
       return
     end
 
@@ -73,6 +70,8 @@ class ObjectsController < ApplicationController
       end
       format.any { render status: :not_acceptable, plain: 'Format not acceptable' }
     end
+  rescue Moab::InvalidSuriSyntaxError => e
+    render(plain: "400 Bad Request: #{e}", status: :bad_request)
   end
 
   # Retrieves [Moab::FileInventoryDifference] from comparison of passed contentMetadata.xml
@@ -126,10 +125,10 @@ class ObjectsController < ApplicationController
     rescue Moab::ObjectNotFoundException
       missing_druids << druid
     rescue Moab::InvalidSuriSyntaxError => e
-      # this error has useful messages
+      # this needs to raise 400 error
       raise e
-    rescue StandardError
-      errored_druids << druid
+    rescue StandardError => e
+      errored_druids << "#{druid} (#{e.inspect})"
     end
     [checksum_list, missing_druids, errored_druids]
   end
