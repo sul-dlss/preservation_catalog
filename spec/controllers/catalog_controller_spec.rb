@@ -49,6 +49,7 @@ RSpec.describe CatalogController, type: :controller do
 
     context 'with invalid params' do
       before do
+        allow_any_instance_of(PreservedObjectHandler).to receive(:comp_moab)
         post :create, params: { druid: nil, incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
       end
 
@@ -88,6 +89,7 @@ RSpec.describe CatalogController, type: :controller do
 
     context 'db update failed' do
       before do
+        allow_any_instance_of(PreservedObjectHandler).to receive(:comp_moab)
         allow(PreservedObject).to receive(:create!).with(hash_including(druid: bare_druid))
                                                    .and_raise(ActiveRecord::ActiveRecordError, 'foo')
         post :create, params: { druid: prefixed_druid, incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
@@ -162,6 +164,7 @@ RSpec.describe CatalogController, type: :controller do
 
     context 'with invalid params' do
       before do
+        allow_any_instance_of(PreservedObjectHandler).to receive(:comp_moab)
         patch :update, params: { druid: prefixed_druid, incoming_version: ver, incoming_size: size, storage_location: nil }
       end
 
@@ -182,9 +185,8 @@ RSpec.describe CatalogController, type: :controller do
       end
 
       it 'response contains error message' do
-        error = "#<ActiveRecord::RecordNotFound: Couldn't find PreservedObject>"
-        exp_msg = [{ AuditResults::DB_OBJ_DOES_NOT_EXIST => "#{error} db object does not exist" }]
-        expect(response.body).to include(exp_msg.to_json)
+        exp_result_msg = "ActiveRecord::RecordNotFound: Couldn't find PreservedObject\\u003e db object does not exist"
+        expect(response.body).to include(exp_result_msg)
       end
 
       it 'returns a not found error' do
@@ -233,18 +235,17 @@ RSpec.describe CatalogController, type: :controller do
 
     context 'db update failed' do
       before do
-        allow(PreservedObject).to receive(:find_by!).with(druid: bare_druid)
-                                                    .and_raise(ActiveRecord::ActiveRecordError, 'foo')
+        allow(pres_obj).to receive(:save!).and_raise(ActiveRecord::ActiveRecordError, 'save borked')
+        allow(PreservedObject).to receive(:find_by!).and_return(pres_obj)
+        patch :update, params: { druid: prefixed_druid, incoming_version: ver+1, incoming_size: size, storage_location: storage_location_param }
       end
 
       it 'response contains error message' do
-        patch :update, params: { druid: prefixed_druid, incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
         code = AuditResults::DB_UPDATE_FAILED.to_json
         expect(response.body).to include(code)
       end
 
       it 'returns an internal server error response code' do
-        patch :update, params: { druid: prefixed_druid, incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
         expect(response).to have_http_status(:internal_server_error)
       end
     end

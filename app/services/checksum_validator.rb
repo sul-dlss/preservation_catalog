@@ -44,7 +44,7 @@ class ChecksumValidator
     end
     results.remove_db_updated_results unless transaction_ok
 
-    results.report_results(Audit::Checksum.logger)
+    results.report_results(Audit::Checksum.logger, complete_moab)
   end
 
   def validate_manifest_inventories

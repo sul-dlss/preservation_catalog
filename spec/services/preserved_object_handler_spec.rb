@@ -96,6 +96,7 @@ RSpec.describe PreservedObjectHandler do
       let(:results) do
         allow(PreservedObject).to receive(:create!).with(hash_including(druid: druid))
                                                    .and_raise(ActiveRecord::ActiveRecordError, 'specific_err_msg')
+        allow(po_handler).to receive(:comp_moab)
         po_handler.create
       end
 

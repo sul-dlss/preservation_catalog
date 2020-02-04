@@ -107,6 +107,124 @@ RSpec.describe AuditResults do
       end
     end
 
+    context 'updates CompleteMoab status_details' do
+      let(:storage_location) { 'spec/fixtures/storage_root01/sdr2objects' }
+      let(:druid) { 'bj102hs9687' }
+      let(:po) { create(:preserved_object_fixture, druid: druid) }
+      let(:comp_moab) do
+        MoabStorageRoot.find_by!(storage_location: storage_location).complete_moabs.find_by!(preserved_object: po)
+      end
+      let(:object_dir) { "#{storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}" }
+      let(:logger_double) { instance_double(Logger, info: nil, error: nil, add: nil) }
+      let(:audit_results) { described_class.new(druid, actual_version, ms_root, check_name) }
+
+      before do
+        comp_moab.ok!
+        allow(WorkflowReporter).to receive(:report_error)
+      end
+
+      it 'includes info for any WORKFLOW_REPORT_CODES' do
+        all_possible_args = {
+          db_obj_name: 'db_obj_name',
+          db_obj_version: 3,
+          cm_version: 1,
+          po_version: 1,
+          addl: 'addl',
+          file_path: 'file_path',
+          manifest_file_path: 'manifest_path',
+          signature_catalog_path: 'sig_cat_path',
+          version: 8,
+          db_created_at: 'now',
+          db_updated_at: 'now',
+          current_status: 'invalid_moab'
+        }
+        AuditResults::WORKFLOW_REPORT_CODES.each { |code| audit_results.add_result(code, all_possible_args) }
+        audit_results.report_results(logger_double, comp_moab)
+        db_result = comp_moab.status_details
+        AuditResults::WORKFLOW_REPORT_CODES.each do |code|
+          exp_msg = audit_results.send(:result_code_msg, code, all_possible_args)
+          expect(db_result).to include(exp_msg)
+        end
+        expect(db_result).to match(' && ') # results are joined by &&
+      end
+      it 'includes info for INVALID_MOAB' do
+        code = AuditResults::INVALID_MOAB
+        err_msg_arg = 'foo'
+        audit_results.add_result(code, err_msg_arg)
+        audit_results.report_results(logger_double, comp_moab)
+        db_result = comp_moab.status_details
+        exp_msg = audit_results.send(:result_code_msg, code, err_msg_arg)
+        expect(db_result).to match(exp_msg)
+      end
+      it 'does NOT change if there are no error results' do
+        before_val = comp_moab.status_details
+        code = AuditResults::VERSION_MATCHES
+        msg_args = { actual_version: 1, addl: 2 }
+        audit_results.add_result(code, msg_args)
+        audit_results.report_results(logger_double, comp_moab)
+        db_result = comp_moab.status_details
+        err_msg = audit_results.send(:result_code_msg, code, msg_args)
+        expect(db_result).not_to match(err_msg)
+        expect(db_result).to match(before_val)
+      end
+      it 'includes check name' do
+        code = AuditResults::INVALID_MOAB
+        err_msg_arg = 'foo'
+        audit_results.add_result(code, err_msg_arg)
+        audit_results.report_results(logger_double, comp_moab)
+        db_result = comp_moab.status_details
+        expect(db_result).to match(check_name)
+      end
+      it 'does not update status_details if complete_moab arg is nil' do
+        before_val = comp_moab.status_details
+        code = AuditResults::INVALID_MOAB
+        err_msg_arg = 'foo'
+        audit_results.add_result(code, err_msg_arg)
+        audit_results.report_results(logger_double, nil)
+        db_result = comp_moab.status_details
+        err_msg = audit_results.send(:result_code_msg, code, err_msg_arg)
+        expect(db_result).not_to match(err_msg)
+        expect(db_result).to match(before_val)
+      end
+      it 'status_details includes moab_storage_root information' do
+        code = AuditResults::DB_UPDATE_FAILED
+        audit_results.add_result(code)
+        audit_results.report_results(logger_double, comp_moab)
+        db_result = comp_moab.status_details
+        expected = Regexp.escape("actual location: #{ms_root.name}")
+        expect(db_result).to match(expected)
+      end
+
+      it 'status_details does NOT have moab_storage_root information if there is none' do
+        audit_results = described_class.new(druid, actual_version, nil)
+        code = AuditResults::DB_UPDATE_FAILED
+        audit_results.add_result(code)
+        audit_results.report_results(logger_double, comp_moab)
+        db_result = comp_moab.status_details
+        unexpected = Regexp.escape("actual location: ")
+        expect(db_result).not_to match(unexpected)
+      end
+
+      it 'status_details includes actual version of object' do
+        code = AuditResults::DB_UPDATE_FAILED
+        audit_results.add_result(code)
+        audit_results.report_results(logger_double, comp_moab)
+        db_result = comp_moab.status_details
+        expected = "actual version: #{actual_version}"
+        expect(db_result).to match(expected)
+      end
+
+      it 'status_details does NOT have actual version if there is none' do
+        audit_results = described_class.new(druid, nil, ms_root)
+        code = AuditResults::DB_UPDATE_FAILED
+        audit_results.add_result(code)
+        audit_results.report_results(logger_double, comp_moab)
+        db_result = comp_moab.status_details
+        unexpected = Regexp.escape("actual version: ")
+        expect(db_result).not_to match(unexpected)
+      end
+    end
+
     context 'sends errors to workflows' do
       context 'for INVALID_MOAB with' do
         let(:result_code) { AuditResults::INVALID_MOAB }
@@ -159,7 +277,7 @@ RSpec.describe AuditResults do
         audit_results.report_results
       end
 
-      it 'multiple errors are concatenated together with || separator' do
+      it 'multiple errors are concatenated together with && separator' do
         code1 = AuditResults::CM_PO_VERSION_MISMATCH
         result_msg_args1 = { cm_version: 1, po_version: 2 }
         audit_results.add_result(code1, result_msg_args1)
@@ -256,7 +374,7 @@ RSpec.describe AuditResults do
       end
     end
 
-    context 'resets workflow error' do
+    context 'resets error in workflow service' do
       it 'has AuditResult:CM_STATUS_CHANGED and PreseredCopy::OK_STATUS' do
         result_code = AuditResults::CM_STATUS_CHANGED
         addl_hash = { old_status: 'invalid_checksum', new_status: 'ok' }

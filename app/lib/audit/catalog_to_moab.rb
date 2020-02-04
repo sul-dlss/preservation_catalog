@@ -23,7 +23,7 @@ module Audit
         results.add_result(AuditResults::CM_PO_VERSION_MISMATCH,
                            cm_version: complete_moab.version,
                            po_version: complete_moab.preserved_object.current_version)
-        return results.report_results(logger)
+        return results.report_results(logger, complete_moab)
       end
 
       unless online_moab_found?
@@ -36,10 +36,10 @@ module Audit
         results.add_result(AuditResults::MOAB_NOT_FOUND,
                            db_created_at: complete_moab.created_at.iso8601,
                            db_updated_at: complete_moab.updated_at.iso8601)
-        return results.report_results(logger)
+        return results.report_results(logger, complete_moab)
       end
 
-      return results.report_results(logger) unless can_validate_current_comp_moab_status?
+      return results.report_results(logger, complete_moab) unless can_validate_current_comp_moab_status?
 
       compare_version_and_take_action
     end
@@ -65,7 +65,7 @@ module Audit
         if catalog_version == moab_version
           set_status_as_seen_on_disk(true) unless complete_moab.ok?
           results.add_result(AuditResults::VERSION_MATCHES, 'CompleteMoab')
-          results.report_results(logger)
+          results.report_results(logger, complete_moab)
         elsif catalog_version < moab_version
           set_status_as_seen_on_disk(true)
           pohandler = PreservedObjectHandler.new(druid, moab_version, moab.size, complete_moab.moab_storage_root)
@@ -75,7 +75,7 @@ module Audit
           results.add_result(
             AuditResults::UNEXPECTED_VERSION, db_obj_name: 'CompleteMoab', db_obj_version: complete_moab.version
           )
-          results.report_results(logger)
+          results.report_results(logger, complete_moab)
         end
 
         complete_moab.update_audit_timestamps(ran_moab_validation?, true)

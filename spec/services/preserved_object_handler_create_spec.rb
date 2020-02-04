@@ -48,6 +48,7 @@ RSpec.describe PreservedObjectHandler do
     context 'db update error' do
       context 'ActiveRecordError' do
         before do
+          allow(po_handler).to receive(:comp_moab)
           allow(PreservedObject).to receive(:create!).with(hash_including(druid: druid))
                                                      .and_raise(ActiveRecord::ActiveRecordError, 'foo')
         end
@@ -64,6 +65,7 @@ RSpec.describe PreservedObjectHandler do
       it "rolls back PreservedObject creation if the CompleteMoab can't be created (e.g. due to DB constraint violation)" do
         po = instance_double(PreservedObject, complete_moabs: instance_double(ActiveRecord::Relation))
         allow(PreservedObject).to receive(:create!).with(hash_including(druid: druid)).and_return(po)
+        allow(po_handler).to receive(:comp_moab)
         allow(po.complete_moabs).to receive(:create!).and_raise(ActiveRecord::RecordInvalid)
         po_handler.create
         expect(PreservedObject.find_by(druid: druid)).to be_nil
@@ -179,6 +181,7 @@ RSpec.describe PreservedObjectHandler do
             allow(PreservedObject).to receive(:create!).with(hash_including(druid: invalid_druid))
                                                        .and_raise(ActiveRecord::ActiveRecordError, 'foo')
             po_handler = described_class.new(invalid_druid, incoming_version, incoming_size, ms_root)
+            allow(po_handler).to receive(:comp_moab)
             po_handler.create_after_validation
           end
 

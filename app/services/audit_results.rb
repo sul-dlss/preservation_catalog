@@ -149,7 +149,7 @@ class AuditResults
   #   results = [result1, result2]
   #   result1 = {response_code => msg}
   #   result2 = {response_code => msg}
-  def report_results(logger=Rails.logger)
+  def report_results(logger=Rails.logger, complete_moab=nil)
     workflow_results = []
     result_array.each do |r|
       log_result(r, logger)
@@ -165,8 +165,21 @@ class AuditResults
       end
       send_honeybadger_notification(r) if HONEYBADGER_REPORT_CODES.include?(r.keys.first)
     end
+    update_moab_status_details(complete_moab) if complete_moab
     report_errors_to_workflows(workflow_results)
     result_array
+  end
+
+  # expects complete_moab to not be nil
+  def update_moab_status_details(complete_moab)
+    moab_error_codes = WORKFLOW_REPORT_CODES + [INVALID_MOAB]
+    moab_error_results = result_array.select { |r| moab_error_codes.include?(r.keys.first) }
+
+    # transaction_ok = ActiveRecordUtils.with_transaction_and_rescue(moab_error_results) do
+    complete_moab.status_details = results_as_string(moab_error_results) if complete_moab && moab_error_results.any?
+    #   complete_moab.save!
+    # end
+    # moab_error_results.remove_db_updated_results unless transaction_ok
   end
 
   def contains_result_code?(code)

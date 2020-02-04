@@ -13,7 +13,7 @@ class CatalogController < ApplicationController
     @poh = PreservedObjectHandler.new(bare_druid, incoming_version, incoming_size, moab_storage_root)
     poh.create(checksums_validated)
     status_code =
-      if poh.results.contains_result_code?(:created_new_object)
+      if poh.results.contains_result_code?(:created_new_object) && !poh.results.contains_result_code?(:db_update_failed)
         :created # 201
       elsif poh.results.contains_result_code?(:db_obj_already_exists)
         :conflict # 409
@@ -31,7 +31,7 @@ class CatalogController < ApplicationController
     @poh = PreservedObjectHandler.new(bare_druid, incoming_version, incoming_size, moab_storage_root)
     poh.update_version(checksums_validated)
     status_code =
-      if poh.results.contains_result_code?(:actual_vers_gt_db_obj)
+      if poh.results.contains_result_code?(:actual_vers_gt_db_obj) && !poh.results.contains_result_code?(:db_update_failed)
         :ok # 200
       elsif poh.results.contains_result_code?(:db_obj_does_not_exist)
         :not_found # 404

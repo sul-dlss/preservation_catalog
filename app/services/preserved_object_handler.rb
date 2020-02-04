@@ -46,7 +46,7 @@ class PreservedObjectHandler
       create_db_objects('invalid_moab', checksums_validated)
     end
 
-    results.report_results
+    results.report_results(@logger, comp_moab)
   end
 
   # checksums_validated may be set to true if the caller takes responsibility for having validated the checksums
@@ -62,7 +62,7 @@ class PreservedObjectHandler
       create_db_objects(creation_status, checksums_validated)
     end
 
-    results.report_results
+    results.report_results(@logger, comp_moab)
   end
 
   # this is a long, complex method (shameless green); if it is refactored, revisit the exceptions in rubocop.yml
@@ -76,7 +76,7 @@ class PreservedObjectHandler
       transaction_ok = with_active_record_transaction_and_rescue do
         raise_rollback_if_cm_po_version_mismatch
 
-        return results.report_results unless can_validate_current_comp_moab_status?
+        return results.report_results(@logger, comp_moab) unless can_validate_current_comp_moab_status?
 
         if incoming_version == comp_moab.version
           set_status_as_seen_on_disk(true) unless comp_moab.status == 'ok'
@@ -107,7 +107,7 @@ class PreservedObjectHandler
         create_db_objects('invalid_moab')
       end
     end
-    results.report_results
+    results.report_results(@logger, comp_moab)
   end
 
   def confirm_version
@@ -120,7 +120,7 @@ class PreservedObjectHandler
       confirm_online_version
     end
 
-    results.report_results
+    results.report_results(@logger, comp_moab)
   end
 
   # checksums_validated may be set to true if the caller takes responsibility for having validated the checksums
@@ -155,7 +155,7 @@ class PreservedObjectHandler
       end
     end
 
-    results.report_results
+    results.report_results(@logger, comp_moab)
   end
 
   # checksums_validated may be set to true if the caller takes responsibility for having validated the checksums
@@ -171,16 +171,22 @@ class PreservedObjectHandler
       update_online_version(new_status, true, checksums_validated)
     end
 
-    results.report_results
+    results.report_results(@logger, comp_moab)
   end
 
   def pres_object
     @pres_object ||= PreservedObject.find_by!(druid: druid)
+  rescue ActiveRecord::RecordNotFound => e
+    results.add_result(AuditResults::DB_OBJ_DOES_NOT_EXIST, e.inspect)
+    nil
   end
 
   def comp_moab
     # FIXME: what if there is more than one associated comp_moab?
-    @comp_moab ||= pres_object.complete_moabs.find_by!(moab_storage_root: moab_storage_root)
+    @comp_moab ||= pres_object&.complete_moabs&.find_by!(moab_storage_root: moab_storage_root)
+  rescue ActiveRecord::RecordNotFound => e
+    results.add_result(AuditResults::DB_OBJ_DOES_NOT_EXIST, e.inspect)
+    nil
   end
 
   alias complete_moab comp_moab
@@ -234,14 +240,15 @@ class PreservedObjectHandler
         update_cm_unexpected_version(status)
       end
     end
-
     results.remove_db_updated_results unless transaction_ok
+  rescue ActiveRecord::RecordNotFound => e
+    results.add_result(AuditResults::DB_OBJ_DOES_NOT_EXIST, e.inspect)
   end
 
   def raise_rollback_if_cm_po_version_mismatch
-    unless comp_moab.matches_po_current_version?
-      cm_version = comp_moab.version
-      po_version = comp_moab.preserved_object.current_version
+    unless comp_moab&.matches_po_current_version?
+      cm_version = comp_moab&.version
+      po_version = comp_moab&.preserved_object&.current_version
       res_code = AuditResults::CM_PO_VERSION_MISMATCH
       results.add_result(res_code, { cm_version: cm_version, po_version: po_version })
       raise ActiveRecord::Rollback, "CompleteMoab version #{cm_version} != PreservedObject current_version #{po_version}"
@@ -280,7 +287,7 @@ class PreservedObjectHandler
     transaction_ok = with_active_record_transaction_and_rescue do
       raise_rollback_if_cm_po_version_mismatch
 
-      return results.report_results unless can_validate_current_comp_moab_status?
+      return results.report_results(@logger, comp_moab) unless can_validate_current_comp_moab_status?
 
       if incoming_version == comp_moab.version
         set_status_as_seen_on_disk(true) unless comp_moab.status == 'ok'

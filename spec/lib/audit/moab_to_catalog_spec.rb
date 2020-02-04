@@ -50,6 +50,7 @@ RSpec.describe Audit::MoabToCatalog do
     end
 
     it 'finds the correct MoabStorageRoot' do
+      allow_any_instance_of(PreservedObjectHandler).to receive(:comp_moab)
       expect(MoabStorageRoot).to receive(:find_by!).with(storage_location: storage_dir)
       described_class.check_existence_for_druid(druid)
     end
@@ -98,6 +99,7 @@ RSpec.describe Audit::MoabToCatalog do
     end
 
     it 'gets moab size and current version from Moab::StorageObject' do
+      allow_any_instance_of(PreservedObjectHandler).to receive(:comp_moab)
       expect(moab).to receive(:size).at_least(:once)
       expect(moab).to receive(:current_version_id).at_least(:once)
       expect(Moab::StorageServices).not_to receive(:new)
@@ -140,7 +142,10 @@ RSpec.describe Audit::MoabToCatalog do
   end
 
   describe ".populate_moab_storage_root" do
-    before { described_class.seed_catalog_for_all_storage_roots }
+    before do
+      allow_any_instance_of(PreservedObjectHandler).to receive(:comp_moab)
+      described_class.seed_catalog_for_all_storage_roots
+    end
 
     it "won't change objects in a fully seeded db" do
       expect { described_class.populate_moab_storage_root('fixture_sr1') }.not_to change(CompleteMoab, :count).from(16)
@@ -152,6 +157,7 @@ RSpec.describe Audit::MoabToCatalog do
       ms_root.complete_moabs.destroy_all
       PreservedObject.without_complete_moabs.destroy_all
       expect(PreservedObject.count).to eq 13
+      allow_any_instance_of(PreservedObjectHandler).to receive(:comp_moab)
       expect { described_class.populate_moab_storage_root('fixture_sr1') }.to change(CompleteMoab, :count).from(13).to(16)
       expect(PreservedObject.count).to eq 16
     end

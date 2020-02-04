@@ -464,6 +464,7 @@ RSpec.describe PreservedObjectHandler do
               po = instance_double(PreservedObject, complete_moabs: instance_double(ActiveRecord::Relation))
               allow(po.complete_moabs).to receive(:create!).and_raise(ActiveRecord::ActiveRecordError, 'foo')
               allow(PreservedObject).to receive(:create!).with(hash_including(druid: valid_druid)).and_return(po)
+              allow(po_handler).to receive(:comp_moab)
               po_handler.check_existence
             end
 
@@ -526,6 +527,7 @@ RSpec.describe PreservedObjectHandler do
               po = instance_double(PreservedObject, complete_moabs: instance_double(ActiveRecord::Relation))
               allow(po.complete_moabs).to receive(:create!).and_raise(ActiveRecord::ActiveRecordError, 'foo')
               allow(PreservedObject).to receive(:create!).with(hash_including(druid: invalid_druid)).and_return(po)
+              allow(po_handler).to receive(:comp_moab)
               po_handler.check_existence
             end
 

@@ -9,10 +9,24 @@ RSpec.shared_examples "attributes validated" do |method_sym|
   let(:bad_version_msg) { 'Incoming version is not a number' }
   let(:bad_size_msg) { 'Incoming size must be greater than 0' }
   let(:bad_storage_root_msg) { "Moab storage root must be an actual MoabStorageRoot" }
+  let(:default_prez_policy) { PreservationPolicy.default_policy }
 
   context 'returns' do
     let!(:result) do
       po_handler = described_class.new(bad_druid, bad_version, bad_size, bad_storage_root)
+      po = PreservedObject.create!(druid: 'fc000ky0000', current_version: 2, preservation_policy: default_prez_policy)
+      root = MoabStorageRoot.create!(
+        name: 'groot',
+        storage_location: 'blah'
+      )
+      CompleteMoab.create!(
+        preserved_object: po,
+        moab_storage_root: root,
+        version: 2,
+        status: 'validity_unknown'
+      )
+      allow(po.complete_moabs).to receive(:find_by!)
+      allow(po_handler).to receive(:pres_object).and_return(po)
       po_handler.send(method_sym)
     end
 
@@ -77,10 +91,14 @@ RSpec.shared_examples 'CompleteMoab does not exist' do |method_sym|
   let(:exp_msg) { "#<ActiveRecord::RecordNotFound: foo> db object does not exist" }
   let(:results) do
     allow(Rails.logger).to receive(:log)
-    allow(po_handler).to receive(:pres_object).and_return(create(:preserved_object))
+    po = create(:preserved_object)
+    allow(po_handler).to receive(:pres_object).and_return(po)
     allow(PreservedObject).to receive(:exists?).with(druid: po_handler.druid).and_return(true)
-    allow(po_handler.pres_object.complete_moabs).to receive(:find_by!)
-      .with(any_args).and_raise(ActiveRecord::RecordNotFound, 'foo')
+    response_values = [:raise, nil]
+    allow(po_handler.pres_object.complete_moabs).to receive(:find_by!).with(any_args) do
+      a = response_values.shift
+      a == :raise ? raise(ActiveRecord::RecordNotFound, 'foo') : nil
+    end
     po_handler.send(method_sym)
   end
 
