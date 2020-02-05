@@ -177,6 +177,10 @@ class AuditResults
     /to ok$/.match(result[AuditResults::CM_STATUS_CHANGED]) != nil
   end
 
+  def results_as_string(error_results)
+    "#{string_prefix} #{error_results.map(&:values).flatten.join(' && ')}"
+  end
+
   def to_json(*_args)
     { druid: druid, result_array: result_array }.to_json
   end
@@ -213,10 +217,6 @@ class AuditResults
 
   def log_msg_prefix
     @log_msg_prefix ||= "#{check_name}(#{druid}, #{moab_storage_root&.name})"
-  end
-
-  def results_as_string(error_results)
-    "#{string_prefix} #{error_results.map(&:values).flatten.join(' && ')}"
   end
 
   def string_prefix

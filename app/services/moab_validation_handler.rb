@@ -54,11 +54,14 @@ module MoabValidationHandler
 
   def update_status(new_status)
     complete_moab.status = new_status
-    return unless complete_moab.status_changed?
 
-    results.add_result(
-      AuditResults::CM_STATUS_CHANGED, old_status: complete_moab.status_was, new_status: complete_moab.status
-    )
+    if complete_moab.status_changed?
+      results.add_result(
+        AuditResults::CM_STATUS_CHANGED, old_status: complete_moab.status_was, new_status: complete_moab.status
+      )
+    end
+
+    complete_moab.status_details = results.results_as_string(results.result_array)
   end
 
   # found_expected_version is a boolean indicating whether the latest version of the moab
