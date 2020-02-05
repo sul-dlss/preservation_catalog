@@ -147,6 +147,7 @@ RSpec.describe AuditResults do
         end
         expect(db_result).to match(' && ') # results are joined by &&
       end
+
       it 'includes info for INVALID_MOAB' do
         code = AuditResults::INVALID_MOAB
         err_msg_arg = 'foo'
@@ -156,6 +157,7 @@ RSpec.describe AuditResults do
         exp_msg = audit_results.send(:result_code_msg, code, err_msg_arg)
         expect(db_result).to match(exp_msg)
       end
+
       it 'does NOT change if there are no error results' do
         before_val = comp_moab.status_details
         code = AuditResults::VERSION_MATCHES
@@ -167,6 +169,7 @@ RSpec.describe AuditResults do
         expect(db_result).not_to match(err_msg)
         expect(db_result).to match(before_val)
       end
+
       it 'includes check name' do
         code = AuditResults::INVALID_MOAB
         err_msg_arg = 'foo'
@@ -175,6 +178,7 @@ RSpec.describe AuditResults do
         db_result = comp_moab.status_details
         expect(db_result).to match(check_name)
       end
+
       it 'does not update status_details if complete_moab arg is nil' do
         before_val = comp_moab.status_details
         code = AuditResults::INVALID_MOAB
@@ -186,6 +190,7 @@ RSpec.describe AuditResults do
         expect(db_result).not_to match(err_msg)
         expect(db_result).to match(before_val)
       end
+
       it 'status_details includes moab_storage_root information' do
         code = AuditResults::DB_UPDATE_FAILED
         audit_results.add_result(code)

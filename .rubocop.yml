@@ -58,6 +58,11 @@ Naming/FileName:
     - 'Gemfile'
     - 'lib/capistrano/tasks/capistrano-resque-pool.rake'
 
+RSpec/AnyInstance:
+  Exclude:
+    - spec/controllers/catalog_controller_spec.rb
+    - spec/lib/audit/moab_to_catalog_spec.rb
+
 RSpec/ContextWording:
   Enabled: false # too dogmatic
 

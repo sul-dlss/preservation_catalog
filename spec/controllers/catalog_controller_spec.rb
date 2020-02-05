@@ -237,7 +237,7 @@ RSpec.describe CatalogController, type: :controller do
       before do
         allow(pres_obj).to receive(:save!).and_raise(ActiveRecord::ActiveRecordError, 'save borked')
         allow(PreservedObject).to receive(:find_by!).and_return(pres_obj)
-        patch :update, params: { druid: prefixed_druid, incoming_version: ver+1, incoming_size: size, storage_location: storage_location_param }
+        patch :update, params: { druid: prefixed_druid, incoming_version: ver + 1, incoming_size: size, storage_location: storage_location_param }
       end
 
       it 'response contains error message' do
