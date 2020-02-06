@@ -30,7 +30,9 @@ RSpec.describe StorageRootMigrationService do
     complete_moab2.reload
 
     expect(complete_moab1.moab_storage_root).to eq(to_storage_root)
+    expect(complete_moab1.from_moab_storage_root).to eq(from_storage_root)
     expect(complete_moab2.moab_storage_root).to eq(to_storage_root)
+    expect(complete_moab2.from_moab_storage_root).to eq(from_storage_root)
   end
 
   it 'resets field values' do
@@ -53,5 +55,6 @@ RSpec.describe StorageRootMigrationService do
     complete_moab3.reload
 
     expect(complete_moab3.moab_storage_root).to eq(orig_complete_moab3_storage_root)
+    expect(complete_moab3.from_moab_storage_root).to be_nil
   end
 end
