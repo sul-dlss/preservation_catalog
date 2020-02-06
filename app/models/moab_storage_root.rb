@@ -4,6 +4,7 @@
 # Metadata about a Moab storage root (a POSIX file system which contains Moab objects).
 class MoabStorageRoot < ApplicationRecord
   has_many :complete_moabs, dependent: :restrict_with_exception
+  has_many :migrated_moabs, class_name: 'CompleteMoab', foreign_key: :from_moab_storage_root_id
   has_many :preserved_objects, through: :complete_moabs
   has_and_belongs_to_many :preservation_policies
 
