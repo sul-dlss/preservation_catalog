@@ -39,6 +39,7 @@ RSpec.describe StorageRootMigrationService do
     complete_moab1.reload
 
     expect(complete_moab1.status).to eq('validity_unknown')
+    expect(complete_moab1.status_details).to be_nil
     expect(complete_moab1.last_moab_validation).to be_nil
     expect(complete_moab1.last_checksum_validation).to be_nil
     expect(complete_moab1.last_archive_audit).not_to be_nil

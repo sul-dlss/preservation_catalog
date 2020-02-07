@@ -30,7 +30,7 @@ class StorageRootMigrationService
   def migrate_moab(moab)
     moab.moab_storage_root = to_root
     moab.status = 'validity_unknown' # This will queue a CV.
-    # Fate of this to be determined by https://github.com/sul-dlss/preservation_catalog/issues/1329
+    moab.status_details = nil
     moab.last_moab_validation = nil
     moab.last_checksum_validation = nil
     moab.save!
