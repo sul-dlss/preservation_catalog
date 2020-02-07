@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_01_22_001712) do
+ActiveRecord::Schema.define(version: 2020_02_06_163659) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -28,7 +28,9 @@ ActiveRecord::Schema.define(version: 2020_01_22_001712) do
     t.datetime "last_version_audit"
     t.datetime "last_archive_audit"
     t.string "status_details"
+    t.bigint "from_moab_storage_root_id"
     t.index ["created_at"], name: "index_complete_moabs_on_created_at"
+    t.index ["from_moab_storage_root_id"], name: "index_complete_moabs_on_from_moab_storage_root_id"
     t.index ["last_archive_audit"], name: "index_complete_moabs_on_last_archive_audit"
     t.index ["last_checksum_validation"], name: "index_complete_moabs_on_last_checksum_validation"
     t.index ["last_moab_validation"], name: "index_complete_moabs_on_last_moab_validation"
@@ -118,6 +120,7 @@ ActiveRecord::Schema.define(version: 2020_01_22_001712) do
   end
 
   add_foreign_key "complete_moabs", "moab_storage_roots"
+  add_foreign_key "complete_moabs", "moab_storage_roots", column: "from_moab_storage_root_id"
   add_foreign_key "complete_moabs", "preserved_objects"
   add_foreign_key "moab_storage_roots_preservation_policies", "moab_storage_roots"
   add_foreign_key "moab_storage_roots_preservation_policies", "preservation_policies"

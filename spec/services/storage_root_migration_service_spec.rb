@@ -18,6 +18,7 @@ RSpec.describe StorageRootMigrationService do
 
   let(:complete_moab3) { create(:complete_moab) }
 
+  # rubocop:disable RSpec/MultipleExpectations
   it 'migrates the storage root' do
     # Before migration
     expect(complete_moab1.moab_storage_root).to eq(complete_moab2.moab_storage_root)
@@ -30,8 +31,11 @@ RSpec.describe StorageRootMigrationService do
     complete_moab2.reload
 
     expect(complete_moab1.moab_storage_root).to eq(to_storage_root)
+    expect(complete_moab1.from_moab_storage_root).to eq(from_storage_root)
     expect(complete_moab2.moab_storage_root).to eq(to_storage_root)
+    expect(complete_moab2.from_moab_storage_root).to eq(from_storage_root)
   end
+  # rubocop:enable RSpec/MultipleExpectations
 
   it 'resets field values' do
     described_class.new(from_storage_root.name, to_storage_root.name).migrate
@@ -54,5 +58,6 @@ RSpec.describe StorageRootMigrationService do
     complete_moab3.reload
 
     expect(complete_moab3.moab_storage_root).to eq(orig_complete_moab3_storage_root)
+    expect(complete_moab3.from_moab_storage_root).to be_nil
   end
 end

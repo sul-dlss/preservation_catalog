@@ -20,6 +20,8 @@ class CompleteMoab < ApplicationRecord
 
   belongs_to :preserved_object, inverse_of: :complete_moabs
   belongs_to :moab_storage_root, inverse_of: :complete_moabs
+  belongs_to :from_moab_storage_root, class_name: 'MoabStorageRoot', required: false
+
   has_many :zipped_moab_versions, dependent: :restrict_with_exception, inverse_of: :complete_moab
 
   delegate :s3_key, to: :druid_version_zip
