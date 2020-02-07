@@ -118,8 +118,8 @@ ActiveRecord::Schema.define(version: 2020_02_06_163659) do
     t.index ["zip_endpoint_id"], name: "index_zipped_moab_versions_on_zip_endpoint_id"
   end
 
-  add_foreign_key "complete_moabs", "complete_moabs", column: "from_moab_storage_root_id"
   add_foreign_key "complete_moabs", "moab_storage_roots"
+  add_foreign_key "complete_moabs", "moab_storage_roots", column: "from_moab_storage_root_id"
   add_foreign_key "complete_moabs", "preserved_objects"
   add_foreign_key "moab_storage_roots_preservation_policies", "moab_storage_roots"
   add_foreign_key "moab_storage_roots_preservation_policies", "preservation_policies"
