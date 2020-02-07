@@ -30,6 +30,7 @@ ActiveRecord::Schema.define(version: 2020_02_06_163659) do
     t.string "status_details"
     t.bigint "from_moab_storage_root_id"
     t.index ["created_at"], name: "index_complete_moabs_on_created_at"
+    t.index ["from_moab_storage_root_id"], name: "index_complete_moabs_on_from_moab_storage_root_id"
     t.index ["last_archive_audit"], name: "index_complete_moabs_on_last_archive_audit"
     t.index ["last_checksum_validation"], name: "index_complete_moabs_on_last_checksum_validation"
     t.index ["last_moab_validation"], name: "index_complete_moabs_on_last_moab_validation"
