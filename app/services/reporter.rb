@@ -6,53 +6,56 @@ require 'csv'
 # run queries and produce reports from the results, for consumption
 # by preservation catalog maintainers
 class Reporter
+  attr_reader :storage_root
+
+  # @param [String] the name of the storage root to initialize for reporter
+  # @return [Reporter] the reporter
+  def initialize(params)
+    @storage_root = MoabStorageRoot.find_by!(name: params[:storage_root_name])
+  end
+
+  def output_file
+    default_filename(filename_prefix: "MoabStorageRoot_#{storage_root.name}_druids", filename_suffix: 'csv')
+    # raise "#{output_file} already exists, aborting!" if FileTest.exist?(output_file)
+  end
+
   # @param [String] the name of the storage root for which druids should be listed
   # @return [String] the name of the CSV file to which the list was written
-  def self.moab_storage_root_druid_list_to_csv(storage_root_name:, csv_filename: nil)
-    msr = MoabStorageRoot.find_by!(name: storage_root_name) # fail fast if given a bad storage root name
-
-    csv_filename ||= default_filename(filename_prefix: "MoabStorageRoot_#{storage_root_name}_druids", filename_suffix: 'csv')
-    raise "#{csv_filename} already exists, aborting!" if FileTest.exist?(csv_filename)
-
-    ensure_containing_dir(csv_filename)
-    CSV.open(csv_filename, 'w') do |csv|
-      PreservedObject
-        .joins(:complete_moabs)
-        .where(complete_moabs: { moab_storage_root: msr })
-        .select(:druid)
-        .order(:druid)
-        .each_row do |po_hash| # #each_row is from postgresql_cursor gem
-          byebug
-          csv << [po_hash['druid']]
-        end
+  def moab_storage_root_druid_list_to_csv
+    CSV.open(output_file, 'w') do |csv|
+      storage_root.complete_moabs.each do |cm|
+        csv << [cm.preserved_object.druid]
+      end
     end
 
-    csv_filename
+    output_file
   end
 
-  def self.moab_storage_root_druid_details_to_csv(storage_root_name:, csv_filename: nil)
-    msr = MoabStorageRoot.find_by!(name: storage_root_name)
-    msr.complete_moabs.each do |cm|
-      puts "#{cm.preserved_object.druid},#{cm.status},#{cm.moab_storage_root.name},#{cm.from_moab_storage_root&.name}"
+  def moab_storage_root_druid_details_to_csv
+    CSV.open(output_file, 'w') do |csv|
+      storage_root.complete_moabs.each do |cm|
+        csv << [cm.preserved_object.druid, cm.status, cm.moab_storage_root.name, cm.from_moab_storage_root&.name]
+      end
     end
 
-    csv_filename
+    output_file
   end
 
-  def self.moab_storage_root_audit_errors_to_csv(storage_root_name:, csv_filename: nil)
-    msr = MoabStorageRoot.find_by!(name: storage_root_name)
-    msr.complete_moabs.where.not(status: 'ok').each do |cm|
-      puts "#{cm.preserved_object.druid},#{cm.status},#{cm.moab_storage_root.name},#{cm.from_moab_storage_root&.name}"
+  def moab_storage_root_audit_errors_to_csv
+    CSV.open(output_file, 'w') do |csv|
+      msr.complete_moabs.where.not(status: 'ok').each do |cm|
+        csv << [cm.preserved_object.druid, cm.status, cm.moab_storage_root.name, cm.from_moab_storage_root&.name]
+      end
     end
 
-    csv_filename
+    output_file
   end
 
-  def self.default_filename(filename_prefix:, filename_suffix:)
+  def default_filename(filename_prefix:, filename_suffix:)
     File.join(default_filepath, "#{filename_prefix}_#{DateTime.now.utc.iso8601}.#{filename_suffix}")
   end
 
-  def self.default_filepath
+  def default_filepath
     File.join(Rails.root, 'log', 'reports')
   end
 
