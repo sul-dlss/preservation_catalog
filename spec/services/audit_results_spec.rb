@@ -159,7 +159,7 @@ RSpec.describe AuditResults do
         audit_results.report_results
       end
 
-      it 'multiple errors are concatenated together with || separator' do
+      it 'multiple errors are concatenated together with && separator' do
         code1 = AuditResults::CM_PO_VERSION_MISMATCH
         result_msg_args1 = { cm_version: 1, po_version: 2 }
         audit_results.add_result(code1, result_msg_args1)
@@ -256,7 +256,7 @@ RSpec.describe AuditResults do
       end
     end
 
-    context 'resets workflow error' do
+    context 'resets error in workflow service' do
       it 'has AuditResult:CM_STATUS_CHANGED and PreseredCopy::OK_STATUS' do
         result_code = AuditResults::CM_STATUS_CHANGED
         addl_hash = { old_status: 'invalid_checksum', new_status: 'ok' }
