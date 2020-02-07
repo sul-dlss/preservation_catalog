@@ -22,8 +22,27 @@ class Reporter
         .select(:druid)
         .order(:druid)
         .each_row do |po_hash| # #each_row is from postgresql_cursor gem
+          byebug
           csv << [po_hash['druid']]
         end
+    end
+
+    csv_filename
+  end
+
+  def self.moab_storage_root_druid_details_to_csv(storage_root_name:, csv_filename: nil)
+    msr = MoabStorageRoot.find_by!(name: storage_root_name)
+    msr.complete_moabs.each do |cm|
+      puts "#{cm.preserved_object.druid},#{cm.status},#{cm.moab_storage_root.name},#{cm.from_moab_storage_root&.name}"
+    end
+
+    csv_filename
+  end
+
+  def self.moab_storage_root_audit_errors_to_csv(storage_root_name:, csv_filename: nil)
+    msr = MoabStorageRoot.find_by!(name: storage_root_name)
+    msr.complete_moabs.where.not(status: 'ok').each do |cm|
+      puts "#{cm.preserved_object.druid},#{cm.status},#{cm.moab_storage_root.name},#{cm.from_moab_storage_root&.name}"
     end
 
     csv_filename
