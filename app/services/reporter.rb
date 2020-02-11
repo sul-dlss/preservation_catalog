@@ -13,6 +13,7 @@ class Reporter
   def initialize(params)
     @storage_root = MoabStorageRoot.find_by!(name: params[:storage_root_name])
     @druids = []
+    moab_storage_root_druid_list
   end
 
   # @return [Array] an array of druids on the storage root
@@ -51,7 +52,7 @@ class Reporter
   # @param [Array] values to output on each line of the csv
   # @param [String] optional filename
   # @return [String] the name of the CSV file to which the list was written
-  def write_to_csv(data, filename)
+  def write_to_csv(data, filename: nil)
     filename ||= default_filename(filename_prefix: "MoabStorageRoot_#{storage_root.name}_druids", filename_suffix: 'csv')
     raise "#{filename} already exists, aborting!" if FileTest.exist?(filename)
 
