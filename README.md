@@ -330,7 +330,7 @@ The Resque Pool admin interface is available at `<hostname>/resque/overview`.
 
 ## API
 
-Note that the API is now versioned. Until all clients have been modified to use the V1 routes, requests to URIs without explicit versions -- *i.e.*, hitting /catalog instead of /v1/catalog -- will automatically be redirected to their V1 equivalents. After that point, only requests to explicitly versioned endpoints will be serviced.
+The API is versioned; only requests to explicitly versioned endpoints will be serviced.
 
 ### AuthN
 
