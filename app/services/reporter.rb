@@ -8,32 +8,33 @@ require 'csv'
 class Reporter
   attr_reader :storage_root, :druids
 
-  # @param [String] the name of the storage root to initialize for reporter
+  # @params [Hash] params used to initialize the Reporter service
   # @return [Reporter] the reporter
   def initialize(params)
     @storage_root = MoabStorageRoot.find_by!(name: params[:storage_root_name])
-    @druids = []
-    moab_storage_root_druid_list
+    @druids = moab_storage_root_druid_list
   end
 
   # @return [Array] an array of druids on the storage root
   def moab_storage_root_druid_list
+    druid_array = []
     PreservedObject
       .joins(:complete_moabs)
       .where(complete_moabs: { moab_storage_root: storage_root })
-      .select(:druid, :status)
+      .select(:druid)
       .order(:druid)
       .each_row do |po_hash|
-        @druids << po_hash['druid']
+        druid_array << po_hash['druid']
       end
+    druid_array
   end
 
-  # @param [Array] druids to output details for
-  # @param [Boolean] optionally only output lines with audit errors
+  # @param [Array] druids - list of druids to output details for
+  # @param [Boolean] errors_only (default: false) - optionally only output lines with audit errors
   # @return [Array] an array of hashes with details for each druid provided
-  def moab_detail_for(data, errors_only: false)
+  def moab_detail_for(druids, errors_only: false)
     detail_array = []
-    data.each do |druid|
+    druids.each do |druid|
       preserved_object = PreservedObject.find_by(druid: druid)
       preserved_object.complete_moabs.each do |cm|
         next if errors_only && cm.status == 'ok'
@@ -49,16 +50,16 @@ class Reporter
     detail_array
   end
 
-  # @param [Array] values to output on each line of the csv
-  # @param [String] optional filename
+  # @param [Array] lines - values to output on each line of the csv
+  # @param [String] filename - optional filename to override the default
   # @return [String] the name of the CSV file to which the list was written
-  def write_to_csv(data, filename: nil)
+  def write_to_csv(lines, filename: nil)
     filename ||= default_filename(filename_prefix: "MoabStorageRoot_#{storage_root.name}_druids", filename_suffix: 'csv')
     raise "#{filename} already exists, aborting!" if FileTest.exist?(filename)
 
     ensure_containing_dir(filename)
     CSV.open(filename, 'w') do |csv|
-      data.each do |line|
+      lines.each do |line|
         line = line.values if line.is_a? Hash
         csv << line
       end
