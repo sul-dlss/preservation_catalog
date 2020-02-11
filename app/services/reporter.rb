@@ -6,38 +6,77 @@ require 'csv'
 # run queries and produce reports from the results, for consumption
 # by preservation catalog maintainers
 class Reporter
-  # @param [String] the name of the storage root for which druids should be listed
-  # @return [String] the name of the CSV file to which the list was written
-  def self.moab_storage_root_druid_list_to_csv(storage_root_name:, csv_filename: nil)
-    msr = MoabStorageRoot.find_by!(name: storage_root_name) # fail fast if given a bad storage root name
+  attr_reader :storage_root, :druids
 
-    csv_filename ||= default_filename(filename_prefix: "MoabStorageRoot_#{storage_root_name}_druids", filename_suffix: 'csv')
-    raise "#{csv_filename} already exists, aborting!" if FileTest.exist?(csv_filename)
-
-    ensure_containing_dir(csv_filename)
-    CSV.open(csv_filename, 'w') do |csv|
-      PreservedObject
-        .joins(:complete_moabs)
-        .where(complete_moabs: { moab_storage_root: msr })
-        .select(:druid)
-        .order(:druid)
-        .each_row do |po_hash| # #each_row is from postgresql_cursor gem
-          csv << [po_hash['druid']]
-        end
-    end
-
-    csv_filename
+  # @params [Hash] params used to initialize the Reporter service
+  # @return [Reporter] the reporter
+  def initialize(params)
+    @storage_root = MoabStorageRoot.find_by!(name: params[:storage_root_name])
+    @druids = moab_storage_root_druid_list
   end
 
-  def self.default_filename(filename_prefix:, filename_suffix:)
+  # @return [Array] an array of druids on the storage root
+  def moab_storage_root_druid_list
+    druid_array = []
+    PreservedObject
+      .joins(:complete_moabs)
+      .where(complete_moabs: { moab_storage_root: storage_root })
+      .select(:druid)
+      .order(:druid)
+      .each_row do |po_hash|
+        druid_array << po_hash['druid']
+      end
+    druid_array
+  end
+
+  # @param [Array] druids - list of druids to output details for
+  # @param [Boolean] errors_only (default: false) - optionally only output lines with audit errors
+  # @return [Array] an array of hashes with details for each druid provided
+  def moab_detail_for(druids, errors_only: false)
+    detail_array = []
+    druids.each do |druid|
+      preserved_object = PreservedObject.find_by(druid: druid)
+      preserved_object.complete_moabs.each do |cm|
+        next if errors_only && cm.status == 'ok'
+        detail_array << { druid: druid,
+                          status: cm.status,
+                          status_details: cm.status_details,
+                          last_moab_validation: cm.last_moab_validation,
+                          last_checksum_validation: cm.last_checksum_validation,
+                          storage_root: cm.moab_storage_root.name,
+                          from_storage_root: cm.from_moab_storage_root&.name }
+      end
+    end
+    detail_array
+  end
+
+  # @param [Array] lines - values to output on each line of the csv
+  # @param [String] filename - optional filename to override the default
+  # @return [String] the name of the CSV file to which the list was written
+  def write_to_csv(lines, filename: nil)
+    filename ||= default_filename(filename_prefix: "MoabStorageRoot_#{storage_root.name}_druids", filename_suffix: 'csv')
+    raise "#{filename} already exists, aborting!" if FileTest.exist?(filename)
+
+    ensure_containing_dir(filename)
+    CSV.open(filename, 'w') do |csv|
+      lines.each do |line|
+        line = line.values if line.is_a? Hash
+        csv << line
+      end
+    end
+
+    filename
+  end
+
+  def default_filename(filename_prefix:, filename_suffix:)
     File.join(default_filepath, "#{filename_prefix}_#{DateTime.now.utc.iso8601}.#{filename_suffix}")
   end
 
-  def self.default_filepath
+  def default_filepath
     File.join(Rails.root, 'log', 'reports')
   end
 
-  def self.ensure_containing_dir(filename)
+  def ensure_containing_dir(filename)
     basename_len = File.basename(filename).length
     filepath_str = filename[0..-(basename_len + 1)] # add 1 to basename_len because ending at -1 gets the whole string
     FileUtils.mkdir_p(filepath_str) unless FileTest.exist?(filepath_str)
