@@ -27,7 +27,9 @@ RSpec.describe Reporter do
 
   describe '#moab_detail_csv_list' do
     let(:moab_detail_csv_list) do
-      header_row = [['druid', 'from_storage_root', 'storage_root', 'last_checksum_validation', 'last_moab_validation', 'status', 'status_details']]
+      header_row = [
+        ['druid', 'previous storage root', 'current storage root', 'last checksum validation', 'last moab validation', 'status', 'status details']
+      ]
       data_rows = [complete_moab_1, complete_moab_2, complete_moab_3].map do |cm|
         [cm.preserved_object.druid, nil, cm.moab_storage_root.name, nil, nil, 'ok', nil]
       end
