@@ -23,7 +23,7 @@ class Reporter
 
   # @return [Array] an array of druids on the storage root
   def druid_csv_list
-    druid_array = []
+    druid_array = [['druid']]
     moab_storage_root_list_preserved_objects_relation
       .select(:druid)
       .each_row do |po_hash|
@@ -35,7 +35,7 @@ class Reporter
   # @param [Boolean] errors_only (default: false) - optionally only output lines with audit errors
   # @return [Array] an array of hashes with details for each druid provided
   def moab_detail_csv_list(errors_only: false)
-    detail_array = []
+    detail_array = [['druid', 'from_storage_root', 'storage_root', 'last_checksum_validation', 'last_moab_validation', 'status', 'status_details']]
     moab_storage_root_list_preserved_objects_relation.each_instance do |preserved_object|
       preserved_object.complete_moabs.each do |cm|
         next if errors_only && cm.status == 'ok'

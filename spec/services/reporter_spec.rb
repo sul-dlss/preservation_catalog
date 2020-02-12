@@ -14,7 +14,8 @@ RSpec.describe Reporter do
 
   describe '#druid_csv_list' do
     let(:druid_csv_list) {
-      [[complete_moab_1.preserved_object.druid],
+      [['druid'],
+       [complete_moab_1.preserved_object.druid],
        [complete_moab_2.preserved_object.druid],
        [complete_moab_3.preserved_object.druid]]
     }
@@ -25,11 +26,13 @@ RSpec.describe Reporter do
   end
 
   describe '#moab_detail_csv_list' do
-    let(:moab_detail_csv_list) {
-      [complete_moab_1, complete_moab_2, complete_moab_3].map do |cm|
+    let(:moab_detail_csv_list) do
+      header_row = [['druid', 'from_storage_root', 'storage_root', 'last_checksum_validation', 'last_moab_validation', 'status', 'status_details']]
+      data_rows = [complete_moab_1, complete_moab_2, complete_moab_3].map do |cm|
         [cm.preserved_object.druid, nil, cm.moab_storage_root.name, nil, nil, 'ok', nil]
       end
-    }
+      header_row + data_rows
+    end
 
     it 'returns a hash of values for the given moab' do
       expect(reporter.moab_detail_csv_list).to eq(moab_detail_csv_list)
@@ -37,8 +40,11 @@ RSpec.describe Reporter do
   end
 
   describe '#write_to_csv' do
-    let(:moab_detail) {
-      [['test_val1', 'test_val2', nil, nil, 'ok', nil, 'another value']]
+    let(:csv_lines) {
+      [
+        ['header1', 'header2', 'header3', 'header4', 'headers', 'are_really_just_like', 'other rows'],
+        ['test_val1', 'test_val2', nil, nil, 'ok', nil, 'another value']
+      ]
     }
 
     after do
@@ -49,9 +55,9 @@ RSpec.describe Reporter do
       end
     end
 
-    it 'creates a default file containing a list of druids from the given storage root' do
-      csv_filename = reporter.write_to_csv(moab_detail, report_type: 'test')
-      expect(CSV.read(csv_filename)).to eq([['test_val1', 'test_val2', nil, nil, 'ok', nil, 'another value']])
+    it 'creates a default file containing the lines given to it' do
+      csv_filename = reporter.write_to_csv(csv_lines, report_type: 'test')
+      expect(CSV.read(csv_filename)).to eq(csv_lines)
       expect(csv_filename).to match(%r{^#{reporter.default_filepath}\/MoabStorageRoot_#{msr_a.name}_test_.*\.csv$})
       timestamp_str = /MoabStorageRoot_#{msr_a.name}_test_(.*)\.csv$/.match(csv_filename).captures[0]
       expect(DateTime.parse(timestamp_str)).to be >= test_start_time
@@ -59,9 +65,9 @@ RSpec.describe Reporter do
 
     it 'allows the caller to specify an alternate filename, including full path' do
       alternate_filename = '/tmp/my_cool_druid_export.csv'
-      csv_filename = reporter.write_to_csv(moab_detail, filename: alternate_filename)
+      csv_filename = reporter.write_to_csv(csv_lines, filename: alternate_filename)
       expect(csv_filename).to eq(alternate_filename)
-      expect(CSV.read(csv_filename)).to eq([['test_val1', 'test_val2', nil, nil, 'ok', nil, 'another value']])
+      expect(CSV.read(csv_filename)).to eq(csv_lines)
     ensure
       File.unlink(alternate_filename) if FileTest.exist?(alternate_filename)
     end
@@ -72,9 +78,9 @@ RSpec.describe Reporter do
 
     it 'raises an error if the intended file name is already in use' do
       duplicated_filename = File.join(reporter.default_filepath, 'my_duplicated_filename.csv')
-      reporter.write_to_csv(moab_detail, filename: duplicated_filename)
+      reporter.write_to_csv(csv_lines, filename: duplicated_filename)
       expect {
-        reporter.write_to_csv(moab_detail, filename: duplicated_filename)
+        reporter.write_to_csv(csv_lines, filename: duplicated_filename)
       }.to raise_error(StandardError, "#{duplicated_filename} already exists, aborting!")
     end
 
