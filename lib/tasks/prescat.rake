@@ -17,26 +17,23 @@ namespace :prescat do
     desc 'query for druids on storage root & dump to CSV (2nd arg optional)'
     task :msr_druids, [:storage_root_name, :csv_filename] => [:environment] do |_task, args|
       reporter = Reporter.new(storage_root_name: args[:storage_root_name])
-      reporter.moab_storage_root_druid_list
-      csv_loc = reporter.write_to_csv(reporter.druids, args[:csv_filename])
+      csv_loc = reporter.write_to_csv(reporter.druid_csv_list, report_type: 'druids', filename: args[:csv_filename])
       puts "druids for #{args[:storage_root_name]} written to #{csv_loc}"
     end
 
     desc 'query for druids on storage root & dump details to CSV (2nd arg optional)'
     task :msr_druid_detail, [:storage_root_name, :csv_filename] => [:environment] do |_task, args|
       reporter = Reporter.new(storage_root_name: args[:storage_root_name])
-      reporter.moab_storage_root_druid_list
-      data = reporter.moab_detail_for(reporter.druids)
-      csv_loc = reporter.write_to_csv(data, args[:csv_filename])
+      data = reporter.moab_detail_csv_list
+      csv_loc = reporter.write_to_csv(data, report_type: 'druid_detail', filename: args[:csv_filename])
       puts "druid details for #{args[:storage_root_name]} written to #{csv_loc}"
     end
 
     desc 'query for druids on storage root & dump audit error details to CSV (2nd arg optional)'
     task :msr_audit_errors, [:storage_root_name, :csv_filename] => [:environment] do |_task, args|
       reporter = Reporter.new(storage_root_name: args[:storage_root_name])
-      reporter.moab_storage_root_druid_list
-      data = reporter.moab_detail_for(reporter.druids, errors_only: true)
-      csv_loc = reporter.write_to_csv(data, args[:csv_filename])
+      data = reporter.moab_detail_csv_list(errors_only: true)
+      csv_loc = reporter.write_to_csv(data, report_type: 'audit_errors', filename: args[:csv_filename])
       puts "druids with errors details for #{args[:storage_root_name]} written to #{csv_loc}"
     end
   end
