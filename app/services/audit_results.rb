@@ -156,6 +156,9 @@ class AuditResults
       if r.key?(INVALID_MOAB)
         # This error goes to diff workflow ('moab-valid') than 'preservation-audit'
         # also note that we shorten it because workflow service doesn't like really long strings
+        # NOTE: this approach allows online Moab audit errors to block further accessioning (which is desired)
+        #   - any WF error blocks further accessioning (i.e. can't open a new version)
+        #   - we currently only send WF errors from audits of online moabs (replication audit problems don't show up in WF)
         msg = "#{string_prefix} || #{r.values.first}"
         WorkflowReporter.report_error(druid, actual_version, 'moab-valid', msg)
       elsif status_changed_to_ok?(r)
@@ -191,6 +194,9 @@ class AuditResults
     { code => result_code_msg(code, msg_args) }
   end
 
+  # NOTE: this approach allows online Moab audit errors to block further accessioning (which is desired)
+  #   - any WF error blocks further accessioning (i.e. can't open a new version)
+  #   - we currently only send WF errors from audits of online moabs (replication audit problems don't show up in WF)
   def report_errors_to_workflows(error_results)
     return if error_results.empty?
     WorkflowReporter.report_error(druid, actual_version, 'preservation-audit', results_as_string(error_results))

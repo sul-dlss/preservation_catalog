@@ -1,6 +1,9 @@
 # frozen_string_literal: true
 
 # send errors to preservationAuditWF workflow for an object via ReST calls.
+# NOTE: this approach allows online Moab audit errors to block further accessioning (which is desired)
+#   - any WF error blocks further accessioning (i.e. can't open a new version)
+#   - we currently only send WF errors from audits of online moabs (replication audit problems don't show up in WF)
 class WorkflowReporter
   PRESERVATIONAUDITWF = 'preservationAuditWF'
   NO_WORKFLOW_HOOKUP = 'no workflow hookup - assume you are in test or dev environment'
