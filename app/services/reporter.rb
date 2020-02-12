@@ -35,10 +35,15 @@ class Reporter
   # @param [Boolean] errors_only (default: false) - optionally only output lines with audit errors
   # @return [Array] an array of hashes with details for each druid provided
   def moab_detail_csv_list(errors_only: false)
+    query = if errors_only
+      moab_storage_root_list_preserved_objects_relation.where.not(complete_moabs: { status: 'ok' })
+    else
+      moab_storage_root_list_preserved_objects_relation
+    end
+
     detail_array = [['druid', 'from_storage_root', 'storage_root', 'last_checksum_validation', 'last_moab_validation', 'status', 'status_details']]
-    moab_storage_root_list_preserved_objects_relation.each_instance do |preserved_object|
+    query.each_instance do |preserved_object|
       preserved_object.complete_moabs.each do |cm|
-        next if errors_only && cm.status == 'ok'
         detail_array << [
           preserved_object.druid, cm.from_moab_storage_root&.name, cm.moab_storage_root.name,
           cm.last_checksum_validation, cm.last_moab_validation, cm.status, cm.status_details
