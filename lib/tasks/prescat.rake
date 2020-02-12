@@ -37,4 +37,12 @@ namespace :prescat do
       puts "druids with errors details for #{args[:storage_root_name]} written to #{csv_loc}"
     end
   end
+
+  namespace :audit do
+    desc "run M2C (moab to catalog) validation on a storage root"
+    task :m2c, [:storage_root_name] => [:environment] do |_task, args|
+      msr = MoabStorageRoot.find_by!(name: args[:storage_root_name])
+      msr.m2c_check!
+    end
+  end
 end
