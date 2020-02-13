@@ -5,11 +5,11 @@ require 'csv'
 ##
 # run queries and produce reports from the results, for consumption
 # by preservation catalog maintainers
-class Reporter
+class MoabStorageRootReporter
   attr_reader :storage_root
 
-  # @params [Hash] params used to initialize the Reporter service
-  # @return [Reporter] the reporter
+  # @params [Hash] params used to initialize the MoabStorageRootReporter service
+  # @return [MoabStorageRootReporter] the reporter
   def initialize(params)
     @storage_root = MoabStorageRoot.find_by!(name: params[:storage_root_name])
     @msr_names = {}
@@ -36,21 +36,26 @@ class Reporter
         complete_moabs_and_preserved_objects_in_storage_root
       end
 
-    header_row = [
-      ['druid', 'previous storage root', 'current storage root', 'last checksum validation', 'last moab validation', 'status', 'status details']
-    ]
+    header_row = ['druid',
+                  'previous storage root',
+                  'current storage root',
+                  'last checksum validation',
+                  'last moab validation',
+                  'status',
+                  'status details']
 
-    # cols doesn't include storage_root name (available via storage_root ivar).  also we're not instantiating AR objects, so we have to translate
-    # the underlying status enum
+    # cols doesn't include storage_root name (available via storage_root ivar)
     cols = ['druid', 'from_moab_storage_root_id', 'last_checksum_validation', 'last_moab_validation', 'status AS status_code', 'status_details']
     data_rows = query.select(cols).each_row.map do |po_cm_hash|
-      [
-        po_cm_hash['druid'], moab_storage_root_name(po_cm_hash['from_moab_storage_root_id']), storage_root.name,
-        po_cm_hash['last_checksum_validation'], po_cm_hash['last_moab_validation'], status_text_from_code(po_cm_hash['status_code']),
-        po_cm_hash['status_details']
-      ]
+      [po_cm_hash['druid'],
+       moab_storage_root_name(po_cm_hash['from_moab_storage_root_id']),
+       storage_root.name,
+       po_cm_hash['last_checksum_validation'],
+       po_cm_hash['last_moab_validation'],
+       status_text_from_code(po_cm_hash['status_code']), # must translate underlying status enum value since we're not instantiating AR objects
+       po_cm_hash['status_details']]
     end
-    header_row + data_rows
+    [header_row] + data_rows # wrap header_row in a list to combine with data_rows list
   end
 
   # @param [Array<Array>] lines - lines to output to a .csv file.  CSV library expects each line it appends to be Array of cols, hence Array<Array>.
@@ -59,10 +64,10 @@ class Reporter
   # @return [String] the name of the CSV file to which the list was written
   # @raise [ArgumentError] if neither report_type nor filename is provided
   # @raise [RuntimeError] if the file to be written to already exists
-  def write_to_csv(lines, report_type: nil, filename: nil)
+  def write_to_csv(lines, report_type: nil, report_tag: nil, filename: nil)
     raise ArgumentError, 'Must specify at least one of report_type or filename' if report_type.blank? && filename.blank?
 
-    filename ||= default_filename(filename_prefix: "MoabStorageRoot_#{storage_root.name}_#{report_type}", filename_suffix: 'csv')
+    filename ||= default_filename(filename_prefix: "storage_#{storage_root.name}_#{report_type}", report_tag: report_tag)
     raise "#{filename} already exists, aborting!" if FileTest.exist?(filename)
 
     ensure_containing_dir(filename)
@@ -75,11 +80,11 @@ class Reporter
     filename
   end
 
+  private
+
   def default_filepath
     File.join(Rails.root, 'log', 'reports')
   end
-
-  private
 
   def moab_storage_root_name(msr_id)
     return nil if msr_id.blank?
@@ -99,8 +104,10 @@ class Reporter
       .order(:druid)
   end
 
-  def default_filename(filename_prefix:, filename_suffix:)
-    File.join(default_filepath, "#{filename_prefix}_#{DateTime.now.utc.iso8601}.#{filename_suffix}")
+  def default_filename(filename_prefix:, report_tag: nil)
+    report_tag_str = report_tag.blank? ? nil : "_#{report_tag}"
+    timestamp_str = DateTime.now.utc.iso8601.gsub(':', '') # colons are a pain to deal with on CLI, so just remove them
+    File.join(default_filepath, "#{filename_prefix}#{report_tag_str}_#{timestamp_str}.csv")
   end
 
   def ensure_containing_dir(filename)
