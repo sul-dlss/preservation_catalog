@@ -44,5 +44,11 @@ namespace :prescat do
       msr = MoabStorageRoot.find_by!(name: args[:storage_root_name])
       msr.m2c_check!
     end
+
+    desc "run C2M (catalog to moab) validation on a storage root"
+    task :c2m, [:storage_root_name] => [:environment] do |_task, args|
+      msr = MoabStorageRoot.find_by!(name: args[:storage_root_name])
+      msr.c2m_check!
+    end
   end
 end
