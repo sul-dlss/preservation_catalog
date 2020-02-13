@@ -41,6 +41,12 @@ RSpec.describe MoabStorageRootReporter do
     end
   end
 
+  describe '#initialize' do
+    it 'lets the DB error bubble up if the given storage root does not exist' do
+      expect { described_class.new(storage_root_name: 'nonexistent') }.to raise_error(ActiveRecord::RecordNotFound)
+    end
+  end
+
   describe '#write_to_csv' do
     let(:csv_lines) do
       [
@@ -76,10 +82,6 @@ RSpec.describe MoabStorageRootReporter do
       expect(CSV.read(csv_filename)).to eq(csv_lines)
     ensure
       File.unlink(alternate_filename) if FileTest.exist?(alternate_filename)
-    end
-
-    it 'lets the DB error bubble up if the given storage root does not exist' do
-      expect { described_class.new(storage_root_name: 'nonexistent') }.to raise_error(ActiveRecord::RecordNotFound)
     end
 
     it 'raises an error if the intended file name is already in use' do
