@@ -50,5 +50,10 @@ namespace :prescat do
       msr = MoabStorageRoot.find_by!(name: args[:storage_root_name])
       msr.c2m_check!
     end
+
+    desc "run CV (checksum validation) for all druids on a storage root"
+    task :cv, [:storage_root_name] => [:environment] do |_task, args|
+      MoabStorageRoot.find_by!(name: args[:storage_root_name]).complete_moabs.find_each(&:validate_checksums!)
+    end
   end
 end
