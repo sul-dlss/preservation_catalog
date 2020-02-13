@@ -75,6 +75,13 @@ RSpec.describe MoabStorageRootReporter do
       expect(timestamp_str).to be >= test_start_time.to_s.gsub(':', '')
     end
 
+    it 'allows the caller to specify a tag string, to more easily differentiate report runs' do
+      report_tag = 'after_cv'
+      csv_filename = reporter.write_to_csv(csv_lines, report_type: 'test', report_tag: report_tag)
+      expect(csv_filename).to match(%r{^#{default_filepath}\/MoabStorageRoot_#{msr_a.name}_test_after_cv.*\.csv$})
+      expect(CSV.read(csv_filename)).to eq(csv_lines)
+    end
+
     it 'allows the caller to specify an alternate filename, including full path' do
       alternate_filename = '/tmp/my_cool_druid_export.csv'
       csv_filename = reporter.write_to_csv(csv_lines, filename: alternate_filename)

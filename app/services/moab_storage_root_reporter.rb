@@ -64,10 +64,10 @@ class MoabStorageRootReporter
   # @return [String] the name of the CSV file to which the list was written
   # @raise [ArgumentError] if neither report_type nor filename is provided
   # @raise [RuntimeError] if the file to be written to already exists
-  def write_to_csv(lines, report_type: nil, filename: nil)
+  def write_to_csv(lines, report_type: nil, report_tag: nil, filename: nil)
     raise ArgumentError, 'Must specify at least one of report_type or filename' if report_type.blank? && filename.blank?
 
-    filename ||= default_filename(filename_prefix: "MoabStorageRoot_#{storage_root.name}_#{report_type}")
+    filename ||= default_filename(filename_prefix: "MoabStorageRoot_#{storage_root.name}_#{report_type}", report_tag: report_tag)
     raise "#{filename} already exists, aborting!" if FileTest.exist?(filename)
 
     ensure_containing_dir(filename)
@@ -104,8 +104,10 @@ class MoabStorageRootReporter
       .order(:druid)
   end
 
-  def default_filename(filename_prefix:)
-    File.join(default_filepath, "#{filename_prefix}_#{DateTime.now.utc.iso8601.gsub(':', '')}.csv") # colons are a pain to deal with on CLI
+  def default_filename(filename_prefix:, report_tag: nil)
+    report_tag_str = report_tag.blank? ? nil : "_#{report_tag}"
+    timestamp_str = DateTime.now.utc.iso8601.gsub(':', '') # colons are a pain to deal with on CLI, so just remove them
+    File.join(default_filepath, "#{filename_prefix}#{report_tag_str}_#{timestamp_str}.csv")
   end
 
   def ensure_containing_dir(filename)
