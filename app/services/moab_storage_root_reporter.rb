@@ -44,7 +44,6 @@ class MoabStorageRootReporter
                   'status',
                   'status details']
 
-    # cols doesn't include storage_root name (available via storage_root ivar)
     cols = ['druid', 'from_moab_storage_root_id', 'last_checksum_validation', 'last_moab_validation', 'status AS status_code', 'status_details']
     data_rows = query.select(cols).each_row.map do |po_cm_hash|
       [po_cm_hash['druid'],
@@ -59,6 +58,7 @@ class MoabStorageRootReporter
   end
 
   # @param [Array<Array>] lines - lines to output to a .csv file.  CSV library expects each line it appends to be Array of cols, hence Array<Array>.
+  # @param [String] report_tag - optional user specified text to insert into generated file name, for easier visual skimming of runs in a dir listing
   # @param [String] report_type - optional report type to use when constructing default filename.  ignored if filename param is provided.
   # @param [String] filename - optional filename to override the default.
   # @return [String] the name of the CSV file to which the list was written
