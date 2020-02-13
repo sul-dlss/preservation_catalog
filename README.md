@@ -38,9 +38,11 @@ RAILS_ENV=test ./bin/rails db:seed
 
 # Usage Instructions
 
-### Note: We are using the whenever gem for writing and deploying cron jobs. M2C, C2M, and CV are all scheduled using the whenever gem. You can view our schedule at [Schedule](config/schedule.rb)
+**We use the whenever gem for writing and deploying cron jobs. M2C, C2M, and CV are all scheduled using the whenever gem. See config/schedule.rb**
 
 ## General Info
+
+- We strongly prefer to run large numbers of validations using ActiveJob approach so they can be run in parallel.
 
 - Rake and console tasks must be run from the root directory of the project, with whatever `RAILS_ENV` is appropriate.
 
@@ -68,7 +70,15 @@ RAILS_ENV=production bundle exec rake ...
 
 ### Rails Console
 
-The application's most powerful functionality is available via `rails console`.  Open it (for the appropriate environment) like:
+The application's most powerful functionality is available via `rails console`.  To open it (for the appropriate environment):
+
+```sh
+bundle exec rails c -e p
+```
+
+(-e is the environment flag, p is for production)
+
+OR
 
 ```sh
 RAILS_ENV=production bundle exec rails console
@@ -76,27 +86,40 @@ RAILS_ENV=production bundle exec rails console
 
 ## <a name="m2c"/>Moab to Catalog (M2C) existence/version check
 
-In console, first locate a `MoabStorageRoot`, then call `m2c_check!` to enqueue M2C jobs for that root.
-The actual checks for `m2c_check!` are performed asynchronously by worker processes.
+See [Validations-for-Moabs wiki](http://github.com/sul-dlss/preservation_catalog/wiki/Validations-for-Moabs) for basic info about M2C validation.
 
-### Single Root
+### Rake task for Single Root
+
+- You need to know the MoabStorageRoot name, available from settings.yml (shared_configs for deployments)
+- You do NOT need quotes for the root name
+- Checks will be run asynchronously via MoabToCatalogJob
+
+```sh
+RAILS_ENV=production bundle exec rake prescat:audit:m2c[root_name]
+```
+
+### Via Rails Console
+
+In console, first locate a `MoabStorageRoot`, then call `m2c_check!` to enqueue asynchronous executions via MoabToCatalogJob. Storage root information is available from settings.yml (shared_configs for deployments).
+
+#### Single Root
 ```ruby
 msr = MoabStorageRoot.find_by!(storage_location: '/path/to/storage')
 msr.m2c_check!
 ```
 
-### All Roots
+#### All Roots
 ```ruby
 MoabStorageRoot.find_each { |msr| msr.m2c_check! }
 ```
 
-### Single Druid
+#### Single Druid
 To M2C a single druid synchronously, in console:
 ```ruby
 Audit::MoabToCatalog.check_existence_for_druid('jj925bx9565')
 ```
 
-### Druid List
+#### Druid List
 For a predetermined list of druids, a convenience wrapper for the above command is `check_existence_for_druid_list`.
 
 - The parameter is the file path of a CSV file listing the druids.
@@ -111,17 +134,27 @@ Note: it should not typically be necessary to serialize a list of druids to CSV.
 
 ## <a name="c2m"/>Catalog to Moab (C2M) existence/version check
 
-Note: C2M uses the `Audit::CatalogToMoab` asynchronously via workers on the `:c2m` queue.
+See [Validations-for-Moabs wiki](http://github.com/sul-dlss/preservation_catalog/wiki/Validations-for-Moabs) for basic info about C2M validation.
 
-- Given a catalog entry for an online moab, ensure that the online moab exists and that the catalog version matches the online moab version.
+### Rake task for Single Root
 
-- You will need to identify a moab storage_root (e.g. with path from settings/development.yml) and optionally provide a date threshold.
+- You need to know the MoabStorageRoot name, available from settings.yml (shared_configs for deployments)
+- You do NOT need quotes for the root name.
+- You cannot provide a date threshold:  it will perform the validation for every CompleteMoab prescat has for the root.
+- Checks will be run asynchronously via CatalogToMoabJob
+
+```sh
+RAILS_ENV=production bundle exec rake prescat:audit:c2m[root_name]
+```
+
+### Via Rails Console
+
+In console, first locate a `MoabStorageRoot`, then call `c2m_check!` to enqueue asynchronous executions for the CompleteMoabs associated with that root via CatalogToMoabJob. Storage root information is available from settings.yml (shared_configs for deployments).
 
 - The (date/timestamp) argument is a threshold: it will run the check on all catalog entries which last had a version check BEFORE the argument. You can use string format like '2018-01-22 22:54:48 UTC' or ActiveRecord Date/Time expressions like `1.week.ago`.  The default is anything not checked since **right now**.
 
-These C2M examples use a rails console, like: `RAILS_ENV=production bundle exec rails console`
 
-### Single Root
+#### Single Root
 
 This enqueues work for all the objects associated with the first `MoabStorageRoot` in the database, then the last:
 
@@ -137,48 +170,63 @@ msr = MoabStorageRoot.find_by!(storage_location: '/path/to/storage')
 msr.c2m_check!(3.days.ago)
 ```
 
-### All Roots
-This enqueues work from **all** roots similarly.
+#### All Roots
+This enqueues the checks from **all** roots similarly.
 ```ruby
 MoabStorageRoot.find_each { |msr| msr.c2m_check!(3.days.ago) }
 ```
 
 ## <a name="cv"/>Checksum Validation (CV)
-- Parse all `manifestInventory.xml` and most recent `signatureCatalog.xml` for stored checksums and verify against computed checksums.
-- To run the tasks below, give the name of the storage root (e.g. from `settings/development.yml`)
 
-Note: CV jobs that are asynchronous means that their execution happens in other processes (including on other systems).
+See [Validations-for-Moabs wiki](http://github.com/sul-dlss/preservation_catalog/wiki/Validations-for-Moabs) for basic info about CV validation.
 
-### Single Root
+### Rake task for Single Root
+
+- You need to know the MoabStorageRoot name, available from settings.yml (shared_configs for deployments)
+- You do NOT need quotes for the root name.
+- It will perform checksum validation for *every* CompleteMoab prescat has for the root, ignoring the "only older than fixity_ttl threshold" (which is currently 90 days)
+- Checks will be run asynchronously via ChecksumValidationJob
+
+```sh
+RAILS_ENV=production bundle exec rake prescat:audit:cv[root_name]
+```
+
+### Via Rails Console
+
+In console, first locate a `MoabStorageRoot`, then call `validate_expired_checksums!` to enqueue asynchronous executions for the CompleteMoabs associated with that root via ChecksumValidationJob.  Storage root information is available from settings.yml (shared_configs for deployments).
+
+#### Single Root
 From console, this queues objects on the named storage root for asynchronous CV:
 ```ruby
 msr = MoabStorageRoot.find_by!(name: 'fixture_sr3')
 msr.validate_expired_checksums!
 ```
-### All Roots
+
+#### All Roots
 This is also asynchronous, for all roots:
 ```ruby
 MoabStorageRoot.find_each { |msr| msr.validate_expired_checksums! }
 ```
 
-### Single Druid
-Synchronously:
+#### Single Druid
+Synchronously, from Rails console:
 ```ruby
 Audit::Checksum.validate_druid(druid)
 ```
 
-### Druid List
+#### Druid List
 - Give the file path of the csv as the parameter. The first column of the csv should contain druids, without the prefix, and contain no headers.
 
-In console:
+Synchronously, from Rails console:
 ```ruby
 Audit::Checksum.validate_list_of_druids('/file/path/to/your/csv/druid_list.csv')
 ```
 
-### Druids with a particular status on a particular storage root
+#### Druids with a particular status on a particular storage root
 
 For example, if you wish to run CV on all the "validity_unknown" druids on storage root 15, from console:
 
+Synchronously, from Rails console:
 ```ruby
 Audit::Checksum.validate_status_root(:validity_unknown, :services-disk15)
 ```
