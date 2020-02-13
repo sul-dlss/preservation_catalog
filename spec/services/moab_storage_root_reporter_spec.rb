@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe Reporter do
+RSpec.describe MoabStorageRootReporter do
   let!(:test_start_time) { DateTime.now.utc.iso8601 } # useful for both output cleanup and CSV filename testing
 
   let!(:msr_a) { create(:moab_storage_root) }
@@ -42,17 +42,19 @@ RSpec.describe Reporter do
   end
 
   describe '#write_to_csv' do
-    let(:csv_lines) {
+    let(:csv_lines) do
       [
         ['header1', 'header2', 'header3', 'header4', 'headers', 'are_really_just_like', 'other rows'],
         ['test_val1', 'test_val2', nil, nil, 'ok', nil, 'another value']
       ]
-    }
+    end
+
+    let(:default_filepath) { File.join(Rails.root, 'log', 'reports') }
 
     after do
-      next unless FileTest.exist?(reporter.default_filepath)
-      Dir.each_child(reporter.default_filepath) do |filename|
-        fullpath_filename = File.join(reporter.default_filepath, filename)
+      next unless FileTest.exist?(default_filepath)
+      Dir.each_child(default_filepath) do |filename|
+        fullpath_filename = File.join(default_filepath, filename)
         File.unlink(fullpath_filename) if File.stat(fullpath_filename).mtime > test_start_time
       end
     end
@@ -60,7 +62,7 @@ RSpec.describe Reporter do
     it 'creates a default file containing the lines given to it' do
       csv_filename = reporter.write_to_csv(csv_lines, report_type: 'test')
       expect(CSV.read(csv_filename)).to eq(csv_lines)
-      expect(csv_filename).to match(%r{^#{reporter.default_filepath}\/MoabStorageRoot_#{msr_a.name}_test_.*\.csv$})
+      expect(csv_filename).to match(%r{^#{default_filepath}\/MoabStorageRoot_#{msr_a.name}_test_.*\.csv$})
       timestamp_str = /MoabStorageRoot_#{msr_a.name}_test_(.*)\.csv$/.match(csv_filename).captures[0]
       expect(DateTime.parse(timestamp_str)).to be >= test_start_time
     end
@@ -79,7 +81,7 @@ RSpec.describe Reporter do
     end
 
     it 'raises an error if the intended file name is already in use' do
-      duplicated_filename = File.join(reporter.default_filepath, 'my_duplicated_filename.csv')
+      duplicated_filename = File.join(default_filepath, 'my_duplicated_filename.csv')
       reporter.write_to_csv(csv_lines, filename: duplicated_filename)
       expect {
         reporter.write_to_csv(csv_lines, filename: duplicated_filename)
