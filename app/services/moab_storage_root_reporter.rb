@@ -67,7 +67,7 @@ class MoabStorageRootReporter
   def write_to_csv(lines, report_type: nil, report_tag: nil, filename: nil)
     raise ArgumentError, 'Must specify at least one of report_type or filename' if report_type.blank? && filename.blank?
 
-    filename ||= default_filename(filename_prefix: "MoabStorageRoot_#{storage_root.name}_#{report_type}", report_tag: report_tag)
+    filename ||= default_filename(filename_prefix: "storage_#{storage_root.name}_#{report_type}", report_tag: report_tag)
     raise "#{filename} already exists, aborting!" if FileTest.exist?(filename)
 
     ensure_containing_dir(filename)

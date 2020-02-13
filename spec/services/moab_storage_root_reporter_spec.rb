@@ -68,8 +68,8 @@ RSpec.describe MoabStorageRootReporter do
     it 'creates a default file containing the lines given to it' do
       csv_filename = reporter.write_to_csv(csv_lines, report_type: 'test')
       expect(CSV.read(csv_filename)).to eq(csv_lines)
-      expect(csv_filename).to match(%r{^#{default_filepath}\/MoabStorageRoot_#{msr_a.name}_test_.*\.csv$})
-      timestamp_str = /MoabStorageRoot_#{msr_a.name}_test_(.*)\.csv$/.match(csv_filename).captures[0]
+      expect(csv_filename).to match(%r{^#{default_filepath}\/storage_#{msr_a.name}_test_.*\.csv$})
+      timestamp_str = /storage_#{msr_a.name}_test_(.*)\.csv$/.match(csv_filename).captures[0]
       # yes this lexically compares date strings, sorry. but they're very regular (always
       # the same length), and dropped colons makes DateTime parsing painful.
       expect(timestamp_str).to be >= test_start_time.to_s.gsub(':', '')
@@ -78,7 +78,7 @@ RSpec.describe MoabStorageRootReporter do
     it 'allows the caller to specify a tag string, to more easily differentiate report runs' do
       report_tag = 'after_cv'
       csv_filename = reporter.write_to_csv(csv_lines, report_type: 'test', report_tag: report_tag)
-      expect(csv_filename).to match(%r{^#{default_filepath}\/MoabStorageRoot_#{msr_a.name}_test_after_cv.*\.csv$})
+      expect(csv_filename).to match(%r{^#{default_filepath}\/storage_#{msr_a.name}_test_after_cv.*\.csv$})
       expect(CSV.read(csv_filename)).to eq(csv_lines)
     end
 
