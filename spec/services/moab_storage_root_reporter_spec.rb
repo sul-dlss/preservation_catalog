@@ -64,7 +64,9 @@ RSpec.describe MoabStorageRootReporter do
       expect(CSV.read(csv_filename)).to eq(csv_lines)
       expect(csv_filename).to match(%r{^#{default_filepath}\/MoabStorageRoot_#{msr_a.name}_test_.*\.csv$})
       timestamp_str = /MoabStorageRoot_#{msr_a.name}_test_(.*)\.csv$/.match(csv_filename).captures[0]
-      expect(DateTime.parse(timestamp_str)).to be >= test_start_time
+      # yes this lexically compares date strings, sorry. but they're very regular (always
+      # the same length), and dropped colons makes DateTime parsing painful.
+      expect(timestamp_str).to be >= test_start_time.to_s.gsub(':', '')
     end
 
     it 'allows the caller to specify an alternate filename, including full path' do

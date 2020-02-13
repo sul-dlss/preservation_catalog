@@ -105,7 +105,7 @@ class MoabStorageRootReporter
   end
 
   def default_filename(filename_prefix:)
-    File.join(default_filepath, "#{filename_prefix}_#{DateTime.now.utc.iso8601}.csv")
+    File.join(default_filepath, "#{filename_prefix}_#{DateTime.now.utc.iso8601.gsub(':', '')}.csv") # colons are a pain to deal with on CLI
   end
 
   def ensure_containing_dir(filename)
