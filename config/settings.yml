@@ -1,3 +1,7 @@
+dor_services:
+  url: 'https://dor-services-app.example.edu'
+  token: 'not-a-real-token'
+
 aws:
   bucket_name: 'sul-sdr-aws-us-west-2-test' # override in prod
 
