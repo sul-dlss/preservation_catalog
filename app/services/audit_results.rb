@@ -13,7 +13,6 @@
 #   result1 = {response_code => msg}
 #   result2 = {response_code => msg}
 class AuditResults
-
   ACTUAL_VERS_GT_DB_OBJ = :actual_vers_gt_db_obj
   ACTUAL_VERS_LT_DB_OBJ = :actual_vers_lt_db_obj
   CM_PO_VERSION_MISMATCH = :cm_po_version_mismatch
@@ -160,9 +159,9 @@ class AuditResults
         #   - any WF error blocks further accessioning (i.e. can't open a new version)
         #   - we currently only send WF errors from audits of online moabs (replication audit problems don't show up in WF)
         msg = "#{string_prefix} || #{r.values.first}"
-        WorkflowReporter.report_error(druid, actual_version, 'moab-valid', msg)
+        WorkflowReporter.report_error(druid, actual_version, 'moab-valid', moab_storage_root, msg)
       elsif status_changed_to_ok?(r)
-        WorkflowReporter.report_completed(druid, actual_version, 'preservation-audit')
+        WorkflowReporter.report_completed(druid, actual_version, 'preservation-audit', moab_storage_root)
       elsif WORKFLOW_REPORT_CODES.include?(r.keys.first)
         workflow_results << r
       end
@@ -199,7 +198,7 @@ class AuditResults
   #   - we currently only send WF errors from audits of online moabs (replication audit problems don't show up in WF)
   def report_errors_to_workflows(error_results)
     return if error_results.empty?
-    WorkflowReporter.report_error(druid, actual_version, 'preservation-audit', results_as_string(error_results))
+    WorkflowReporter.report_error(druid, actual_version, 'preservation-audit', moab_storage_root, results_as_string(error_results))
   end
 
   def log_result(result, logger)
@@ -209,6 +208,21 @@ class AuditResults
 
   def send_honeybadger_notification(result)
     Honeybadger.notify("#{log_msg_prefix} #{result.values.first}")
+    events_client.create(
+      type: 'preservation_audit_failure',
+      data: {
+        host: Socket.gethostname,
+        invoked_by: 'preservation-catalog',
+        storage_root: moab_storage_root&.name,
+        actual_version: actual_version,
+        check_name: check_name,
+        error_result: result
+      }
+    )
+  end
+
+  def events_client
+    Dor::Services::Client.object(druid).events
   end
 
   def result_code_msg(code, addl=nil)
