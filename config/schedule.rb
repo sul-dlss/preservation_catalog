@@ -14,22 +14,22 @@ every :wednesday, roles: [:queue_populator] do
   runner 'PreservedObject.archive_check_expired.find_each(&:audit_moab_version_replication!)'
 end
 
-every :friday, roles: [:queue_populator] do
-  set :output, standard: nil, error: 'log/c2m-err.log'
-  runner 'MoabStorageRoot.find_each(&:c2m_check!)'
-end
+# every :friday, roles: [:queue_populator] do
+#   set :output, standard: nil, error: 'log/c2m-err.log'
+#   runner 'MoabStorageRoot.find_each(&:c2m_check!)'
+# end
 
-every :sunday, at: '1am', roles: [:queue_populator] do
-  set :output, standard: nil, error: 'log/cv-err.log'
-  runner 'MoabStorageRoot.find_each(&:validate_expired_checksums!)'
-end
+# every :sunday, at: '1am', roles: [:queue_populator] do
+#   set :output, standard: nil, error: 'log/cv-err.log'
+#   runner 'MoabStorageRoot.find_each(&:validate_expired_checksums!)'
+# end
 
-every :hour, roles: [:cache_cleaner] do
-  set :output, standard: '/var/log/preservation_catalog/zip_cache_cleanup.log'
-  rake 'prescat:cache_cleaner:stale_files'
-end
+# every :hour, roles: [:cache_cleaner] do
+#   set :output, standard: '/var/log/preservation_catalog/zip_cache_cleanup.log'
+#   rake 'prescat:cache_cleaner:stale_files'
+# end
 
-every :day, at: '1:15am', roles: [:cache_cleaner] do
-  set :output, standard: '/var/log/preservation_catalog/zip_cache_cleanup.log'
-  rake 'prescat:cache_cleaner:empty_directories'
-end
+# every :day, at: '1:15am', roles: [:cache_cleaner] do
+#   set :output, standard: '/var/log/preservation_catalog/zip_cache_cleanup.log'
+#   rake 'prescat:cache_cleaner:empty_directories'
+# end
