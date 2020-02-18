@@ -8,7 +8,7 @@ Rails.application.routes.draw do
         constraints: ->(req) { Settings.resque_dashboard_hostnames.include?(req.host) }
 
   scope 'v1' do
-    resources :catalog, param: :druid, only: %i[create update]
+    # resources :catalog, param: :druid, only: %i[create update]
 
     resources :objects, only: %i[show] do
       member do
