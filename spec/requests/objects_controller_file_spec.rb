@@ -65,14 +65,6 @@ RSpec.describe ObjectsController, type: :request do
           expect(response.body).to eq '400 Bad Request: No filename provided to MoabStorageService.filepath for druid bj102hs9687'
         end
       end
-
-      context 'when MoabRuntimeError from MoabStorageService' do
-        it 'returns 404 response code; body has additional information' do
-          get file_object_url(id: prefixed_druid), params: { category: 'manifest', filepath: 'foobar' }, headers: valid_auth_header
-          expect(response).to have_http_status(:not_found)
-          expect(response.body).to eq '404 Not Found: manifest file foobar not found for bj102hs9687 - 3'
-        end
-      end
     end
 
     context 'when object does not exist' do
