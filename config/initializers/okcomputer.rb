@@ -5,9 +5,6 @@ require Rails.root.join('config', 'initializers', 'resque.rb').to_s
 
 OkComputer.mount_at = 'status' # use /status or /status/all or /status/<name-of-check>
 OkComputer.check_in_parallel = true
-Rails.configuration.to_prepare do
-  OkComputer::OkComputerController.logger = ActiveSupport::Logger.new(File.join('log', 'ok_computer_controller.log'))
-end
 
 # check models to see if at least they have some data
 class TablesHaveDataCheck < OkComputer::Check
