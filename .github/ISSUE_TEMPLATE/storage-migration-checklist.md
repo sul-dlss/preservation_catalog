@@ -1,7 +1,7 @@
 ---
 name: Storage Migration Checklist
 about: Checklist for Migrating Single Storage Root to New Storage Brick
-title: 'Old Storage Root **??** to New Storage Root **??**'
+title: 'Old storage root *??* to New storage root *??*'
 labels: 'storage migration checklist'
 assignees: ''
 
