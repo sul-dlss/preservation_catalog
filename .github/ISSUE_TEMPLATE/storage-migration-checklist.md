@@ -201,8 +201,8 @@ Ops will now perform such tasks as the following:
     # from your laptop:
     $ bundle exec cap prod ssh
 
-    # on the server:
-    RAILS_ENV=production rake prescat:migrate_storage_root[from,to]
+    # on the server, from 'current' directory:
+    RAILS_ENV=production bundle exec rake prescat:migrate_storage_root[from,to]
     ```
 
 #### CV after migration
