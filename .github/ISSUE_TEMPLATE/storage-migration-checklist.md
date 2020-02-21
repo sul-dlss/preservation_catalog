@@ -1,13 +1,13 @@
 ---
 name: Storage Migration Checklist
 about: Checklist for Migrating Single Storage Root to New Storage Brick
-title: ''
+title: 'Old Storage Root **??** to New Storage Root **??**'
 labels: 'storage migration checklist'
 assignees: ''
 
 ---
 
-# Old Storage Root **??** to New Storage Root **??**
+**Goal: Migrate This Storage Root Without Introducing New Errors**
 
 - Use this template for a single storage root.
 - If multiple roots will be migrated in one weekend, create a separate github issue from this template for each root being migrated.
@@ -23,34 +23,34 @@ Run all validation checks on Moabs and generate reports.  Note that error detail
 
 #### M2C
 - [ ] run on storage root: ```RAILS_ENV=production bundle exec rake prescat:audit:m2c[stor_root_name]```
-  - [ ] restart failed workers / ensure no workers failed via resque GUI https://preservation-catalog-prod-01.stanford.edu/resque/overview
+  - [ ] requeue failed jobs / ensure no jobs failed via resque GUI https://preservation-catalog-prod-01.stanford.edu/resque/overview
 - [ ] after M2C finishes, generate report for objects with error status ```RAILS_ENV=production bundle exec rake prescat:reports:msr_audit_errors[stor_root_name,m2c_b4]```
 - [ ] examine each existing M2C error (from report in /opt/app/pres/preservation_catalog/current/log/reports)
   - [ ] if fixable ... fix it
     - [ ] re-run M2C on any fixed objects to ensure object is now valid
-  - [ ] can it be ignored until after migration
+  - [ ] can it be ignored until after migration?
   - [ ] other?
 - [ ] generate new report for objects with error status if any errors were fixed
 
 #### C2M
 - [ ] run on storage root ```RAILS_ENV=production bundle exec rake prescat:audit:c2m[stor_root_name]```
-  - [ ] restart failed workers / ensure no workers failed via resque GUI https://preservation-catalog-prod-01.stanford.edu/resque/overview
+  - [ ] requeue failed jobs / ensure no jobs failed via resque GUI https://preservation-catalog-prod-01.stanford.edu/resque/overview
 - [ ] after C2M finishes, generate report for objects with error status ```RAILS_ENV=production bundle exec rake prescat:reports:msr_audit_errors[stor_root_name,c2m_b4]```
 - [ ] examine each existing C2M error (from report in /opt/app/pres/preservation_catalog/current/log/reports)
   - [ ] if fixable ... fix it
     - [ ] re-run C2M on any fixed objects to ensure object is now valid
-  - [ ] can it be ignored until after migration
+  - [ ] can it be ignored until after migration?
   - [ ] other?
 - [ ] generate new report for objects with error status if any errors were fixed
 
 #### CV
 - [ ] run on storage root ```RAILS_ENV=production bundle exec rake prescat:audit:cv[stor_root_name]```
-  - [ ] restart failed workers / ensure no workers failed via resque GUI https://preservation-catalog-prod-01.stanford.edu/resque/overview
+  - [ ] requeue failed jobs / ensure no jobs failed via resque GUI https://preservation-catalog-prod-01.stanford.edu/resque/overview
 - [ ] after CV finishes, generate report for objects with error status ```RAILS_ENV=production bundle exec rake prescat:reports:msr_audit_errors[stor_root_name,cv_b4]```
 - [ ] examine each existing CV error (from report in /opt/app/pres/preservation_catalog/current/log/reports)
   - [ ] if fixable ... fix it
     - [ ] re-run CV on any fixed objects to ensure object is now valid
-  - [ ] can it be ignored until after migration
+  - [ ] can it be ignored until after migration?
   - [ ] other?
 - [ ] generate new report for objects with error status if any errors were fixed
 
@@ -184,7 +184,7 @@ Ops will now perform such tasks as the following:
 - [ ] if you added a new storage root (the first time migrating data to a particular new storage brick), you will need to add the root to the prescat db (run this from your laptop):
 
     ```sh
-    bundle exec cap prod db_seed
+    bundle exec cap prod db:seed
     ```
 
 #### Update Affected Moabs In PresCat
@@ -205,16 +205,21 @@ Ops will now perform such tasks as the following:
 
     If you're not confident that CV can finish by Sunday evening, give it more resque workers via shared_configs PR https://github.com/sul-dlss/shared_configs/blob/preservation-catalog-stage/config/resque-pool.yml
 
-    NOTE:  we may want to run druid lists rather than an entire new storage brick when there are more than a handful of old roots migrated to a single new storage brick.
+    NOTE: if we have to trigger CV audits manually, we may want to run it for a list of druids rather than an entire new storage brick when there are more than a handful of old roots migrated to a single new storage brick.
 
-  - [ ] restart failed workers / ensure no workers failed via resque GUI https://preservation-catalog-prod-01.stanford.edu/resque/overview
+  - [ ] requeue failed jobs / ensure no jobs failed via resque GUI https://preservation-catalog-prod-01.stanford.edu/resque/overview
   - [ ] after CV finishes, generate report for objects with error status ```RAILS_ENV=production bundle exec rake prescat:reports:msr_audit_errors[stor_root_name,cv_after]```
   - [ ] examine each existing CV error (from report in /opt/app/pres/preservation_catalog/current/log/reports)
     - [ ] is it a NEW error, or was this object having the same error before migration?  (check the appropriate cv_b4 error report)
       - [ ] if NEW and fixable ... fix it
         - [ ] re-run CV on any fixed objects to ensure object is now valid
-        Did moab validation run?  if not: manual check at os level to compare files on new and old?  run MV manually?
-    - [ ] can it be ignored until after migration
+    - [ ] Did moab validation run?  If not: manual check at os level to compare files on new and old.
+
+      Make sure the files contained in the source moab directories are the same as the files contained in the target moab directories (e.g. the list of enumerated files is the same, and the file contents on both sides produce the same respective md5 values)
+
+      If not: work with Ops to perhaps do a manual re-copy of any Moabs on the target storage with new errors, compared to the source storage.
+
+    - [ ] can it be ignored until after migration?
     - [ ] other?
 
   - [ ] generate new report for objects with error status if any errors were fixed
@@ -233,7 +238,7 @@ After CV has finished,
 
 NOTE:  we may want to run druid lists rather than an entire new storage brick when there are more than a handful of old roots migrated to a single new storage brick.
 
-  - [ ] restart failed workers / ensure no workers failed via resque GUI https://preservation-catalog-prod-01.stanford.edu/resque/overview
+  - [ ] requeue failed jobs / ensure no jobs failed via resque GUI https://preservation-catalog-prod-01.stanford.edu/resque/overview
 
 M2C can keep running after cutover (since we know we have all druids from storage root in the catalog).  
 
@@ -244,7 +249,7 @@ Do **CHECK FOR M2C ERRORS while it's running** (run audit report) to see if anyt
     - [ ] is it a NEW error, or was this object having the same error before migration?  (check the appropriate m2c_b4 error report)
     - [ ] if NEW and fixable ... fix it
       - [ ] re-run M2C on any fixed objects to ensure object is now valid
-    - [ ] can it be ignored until after migration
+    - [ ] can it be ignored until after migration?
     - [ ] other?
     - [ ] generate new report for objects with error status if any errors were fixed
 
@@ -320,7 +325,7 @@ Do **CHECK FOR M2C ERRORS while it's running** (run audit report) to see if anyt
     bundle exec cap prod deploy
     ```
 
-  - [ ] ensure there are preservation robots workers available via the resque GUI:  https://robot-console-prod.stanford.edu/workers
+  - [ ] confirm there are preservation robots workers available via the resque GUI:  https://robot-console-prod.stanford.edu/workers
 
 - [ ] (Ops) turn on nagios alerts for preservation_robots prod boxes
 
