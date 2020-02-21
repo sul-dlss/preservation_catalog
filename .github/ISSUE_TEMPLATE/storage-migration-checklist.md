@@ -188,8 +188,10 @@ Ops will now perform such tasks as the following:
 - [ ] if you added a new storage root (the first time migrating data to a particular new storage brick), you will need to add the root to the prescat db (run this from your laptop):
 
     ```sh
-    bundle exec cap prod db:seed
+    bundle exec cap prod db_seed
     ```
+
+    (yes, it's `db_seed` via capistrano)
 
 #### Update Affected Moabs In PresCat
 
