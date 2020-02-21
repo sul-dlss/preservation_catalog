@@ -36,7 +36,7 @@ class WorkflowReporter
 
   def report_error
     if Settings.workflow_services_url.present?
-      workflow_result = workflow_client.update_error_status(druid: "druid:#{druid}",
+      workflow_result = workflow_client.update_error_status(druid: namespaced_druid,
                                                             workflow: PRESERVATIONAUDITWF,
                                                             process: process_name,
                                                             error_msg: error_message)
@@ -52,7 +52,7 @@ class WorkflowReporter
 
   def report_completed
     if Settings.workflow_services_url.present?
-      workflow_result = workflow_client.update_status(druid: "druid:#{druid}",
+      workflow_result = workflow_client.update_status(druid: namespaced_druid,
                                                       workflow: PRESERVATIONAUDITWF,
                                                       process: process_name,
                                                       status: COMPLETED)
@@ -98,12 +98,15 @@ class WorkflowReporter
   end
 
   def events_client
-    Dor::Services::Client.object(druid).events
+    Dor::Services::Client.object(namespaced_druid).events
   end
 
   def create_workflow
-    namespaced_druid = druid.start_with?('druid:') ? druid : "druid:#{druid}"
     workflow_client.create_workflow_by_name(namespaced_druid, PRESERVATIONAUDITWF, version: version)
+  end
+
+  def namespaced_druid
+    druid.start_with?('druid:') ? druid : "druid:#{druid}"
   end
 
   def workflow_client
