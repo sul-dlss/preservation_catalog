@@ -334,6 +334,8 @@ Do check for honeybadger errors while audit validations are running
     bundle exec cap prod deploy
     ```
 
+  - [ ] confirm your capistrano logs show the shared_configs being updated
+
   - [ ] confirm there are preservation robots workers available via the resque GUI:  https://robot-console-prod.stanford.edu/workers
 
 - [ ] (Ops) turn on nagios alerts for preservation_robots prod boxes
