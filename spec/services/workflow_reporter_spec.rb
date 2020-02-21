@@ -3,58 +3,109 @@
 require 'rails_helper'
 
 RSpec.describe WorkflowReporter do
+  subject(:reporter) do
+    described_class.new(
+      druid: druid,
+      version: version,
+      process_name: process_name,
+      moab_storage_root: storage_root,
+      error_message: error_message
+    )
+  end
+
   let(:druid) { 'jj925bx9565' }
-  let(:namespaced_druid) { "druid:#{druid}" }
+  let(:error_message) { "Failed to retrieve response #{Settings.workflow_services_url}/preservationAuditWF/something (HTTP status 404)" }
+  let(:events_client) { reporter.send(:events_client) }
+  let(:process_name) { 'preservation-audit' }
+  let(:storage_root) { MoabStorageRoot.first }
+  let(:stub_wf_client) { instance_double(Dor::Workflow::Client, create_workflow_by_name: nil) }
   let(:version) { '1' }
-  let(:err_msg) { "Failed to retrieve response #{Settings.workflow_services_url}/preservationAuditWF/something (HTTP status 404)" }
   let(:wf_server_response_json) { { some: 'json response from wf server' } }
 
   before do
     allow(Dor::Workflow::Client).to receive(:new).and_return(stub_wf_client)
+    allow(Socket).to receive(:gethostname).and_return('fakehost')
+    allow(events_client).to receive(:create)
   end
 
-  describe '.create_wf' do
-    let(:stub_wf_client) { instance_double(Dor::Workflow::Client) }
-
+  # rubocop:disable RSpec/SubjectStub
+  describe '.report_completed' do
     before do
-      allow(stub_wf_client).to receive(:create_workflow_by_name)
+      allow(described_class).to receive(:new)
+        .with(druid: druid, version: version, process_name: process_name, moab_storage_root: storage_root)
+        .and_return(reporter)
+      allow(reporter).to receive(:report_completed)
     end
 
+    it 'invokes #report_completed on a new instance' do
+      described_class.report_completed(druid, version, process_name, storage_root)
+      expect(reporter).to have_received(:report_completed).once
+    end
+  end
+
+  describe '.report_error' do
+    before do
+      allow(described_class).to receive(:new)
+        .with(druid: druid, version: version, process_name: process_name, moab_storage_root: storage_root, error_message: 'uh oh, something broke')
+        .and_return(reporter)
+      allow(reporter).to receive(:report_error)
+    end
+
+    it 'invokes #report_error on a new instance' do
+      described_class.report_error(druid, version, process_name, storage_root, 'uh oh, something broke')
+      expect(reporter).to have_received(:report_error).once
+    end
+  end
+
+  describe '#create_workflow' do
     context 'when passed a namespaced druid' do
+      let(:druid) { "druid:jj925bx9565" }
+
       it 'passes the supplied druid along to the workflow client' do
-        described_class.send(:create_wf, namespaced_druid, version)
+        reporter.send(:create_workflow)
 
         expect(stub_wf_client).to have_received(:create_workflow_by_name)
           .once
-          .with(namespaced_druid, described_class::PRESERVATIONAUDITWF, version: version)
+          .with(druid, described_class::PRESERVATIONAUDITWF, version: version)
       end
     end
 
     context 'when passed a bare druid' do
       it 'adds a namespace to the druid and sends it to the workflow client' do
-        described_class.send(:create_wf, druid, version)
+        reporter.send(:create_workflow)
 
         expect(stub_wf_client).to have_received(:create_workflow_by_name)
           .once
-          .with(namespaced_druid, described_class::PRESERVATIONAUDITWF, version: version)
+          .with("druid:#{druid}", described_class::PRESERVATIONAUDITWF, version: version)
       end
     end
   end
 
-  describe '.report_error' do
+  describe '#report_error' do
     let(:process_name) { 'moab-valid' }
-    let(:audit_result) { 'Invalid moab, validation error...ential version directories.' }
+    let(:error_message) { 'Invalid moab, validation error...ential version directories.' }
 
     context 'when workflow already exists' do
       let(:stub_wf_client) { instance_double(Dor::Workflow::Client, update_error_status: wf_server_response_json) }
 
       it 'returns json response from wf server (mocked here)' do
-        expect(described_class.report_error(druid, version, process_name, audit_result)).to eq wf_server_response_json
+        expect(reporter.report_error).to eq wf_server_response_json
         expect(stub_wf_client).to have_received(:update_error_status)
           .with(druid: "druid:#{druid}",
                 workflow: 'preservationAuditWF',
                 process: process_name,
-                error_msg: audit_result)
+                error_msg: error_message)
+        expect(events_client).to have_received(:create).once.with(
+          type: 'preservation_audit_failure',
+          data: {
+            host: 'fakehost',
+            invoked_by: 'preservation-catalog',
+            storage_root: storage_root.name,
+            actual_version: version,
+            check_name: process_name,
+            error: error_message
+          }
+        )
       end
     end
 
@@ -62,39 +113,48 @@ RSpec.describe WorkflowReporter do
       let(:stub_wf_client) { instance_double(Dor::Workflow::Client) }
 
       before do
-        allow(described_class).to receive(:create_wf)
-        allow(described_class).to receive(:report_error).and_call_original
+        allow(reporter).to receive(:create_workflow)
+        allow(reporter).to receive(:report_error).and_call_original
         # AFAICT, this is how one gets RSpec to vary behavior on subsequent
         # calls that raise and return
         call_count = 0
         allow(stub_wf_client).to receive(:update_error_status) do
           call_count += 1
-          call_count == 1 ? raise(Dor::MissingWorkflowException, err_msg) : nil
+          call_count == 1 ? raise(Dor::MissingWorkflowException, error_message) : nil
         end
       end
 
       it 'creates workflow and calls report_error again' do
-        described_class.report_error(druid, version, process_name, audit_result)
+        reporter.report_error
 
-        expect(described_class).to have_received(:create_wf).once
-        expect(described_class).to have_received(:report_error).twice
+        expect(reporter).to have_received(:create_workflow).once
+        expect(events_client).to have_received(:create).once
+        expect(reporter).to have_received(:report_error).twice
       end
     end
   end
 
-  describe '.report_completed' do
-    let(:process_name) { 'preservation-audit' }
-
+  describe '#report_completed' do
     context 'when workflow exists' do
       let(:stub_wf_client) { instance_double(Dor::Workflow::Client, update_status: wf_server_response_json) }
 
       it 'returns json response from wf server (mocked here)' do
-        expect(described_class.report_completed(druid, version, process_name)).to eq wf_server_response_json
+        expect(reporter.report_completed).to eq wf_server_response_json
         expect(stub_wf_client).to have_received(:update_status)
           .with(druid: "druid:#{druid}",
                 workflow: 'preservationAuditWF',
                 process: process_name,
                 status: 'completed')
+        expect(events_client).to have_received(:create).once.with(
+          type: 'preservation_audit_success',
+          data: {
+            host: 'fakehost',
+            invoked_by: 'preservation-catalog',
+            storage_root: storage_root.name,
+            actual_version: version,
+            check_name: process_name
+          }
+        )
       end
     end
 
@@ -102,23 +162,25 @@ RSpec.describe WorkflowReporter do
       let(:stub_wf_client) { instance_double(Dor::Workflow::Client) }
 
       before do
-        allow(described_class).to receive(:create_wf)
-        allow(described_class).to receive(:report_completed).and_call_original
+        allow(reporter).to receive(:create_workflow)
+        allow(reporter).to receive(:report_completed).and_call_original
         # AFAICT, this is how one gets RSpec to vary behavior on subsequent
         # calls that raise and return
         call_count = 0
         allow(stub_wf_client).to receive(:update_status) do
           call_count += 1
-          call_count == 1 ? raise(Dor::MissingWorkflowException, err_msg) : nil
+          call_count == 1 ? raise(Dor::MissingWorkflowException, error_message) : nil
         end
       end
 
       it 'creates workflow and calls report_completed again' do
-        described_class.report_completed(druid, version, process_name)
+        reporter.report_completed
 
-        expect(described_class).to have_received(:create_wf).once
-        expect(described_class).to have_received(:report_completed).twice
+        expect(reporter).to have_received(:create_workflow).once
+        expect(events_client).to have_received(:create).once
+        expect(reporter).to have_received(:report_completed).twice
       end
     end
   end
+  # rubocop:enable RSpec/SubjectStub
 end

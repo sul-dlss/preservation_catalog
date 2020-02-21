@@ -6,12 +6,14 @@ RSpec.describe AuditResults do
   before do
     allow(WorkflowReporter).to receive(:report_error)
     allow(WorkflowReporter).to receive(:report_completed)
+    allow(Socket).to receive(:gethostname).and_return('fakehost')
   end
 
-  let(:druid) { 'ab123cd4567' }
   let(:actual_version) { 6 }
-  let(:ms_root) { MoabStorageRoot.find_by(storage_location: 'spec/fixtures/storage_root01/sdr2objects') }
   let(:audit_results) { described_class.new(druid, actual_version, ms_root) }
+  let(:druid) { 'ab123cd4567' }
+  let(:events_client) { audit_results.send(:events_client) }
+  let(:ms_root) { MoabStorageRoot.find_by(storage_location: 'spec/fixtures/storage_root01/sdr2objects') }
 
   describe '.logger_severity_level' do
     it 'CM_PO_VERSION_MISMATCH is an ERROR' do
@@ -125,18 +127,19 @@ RSpec.describe AuditResults do
 
         it 'details about the failures' do
           err_details = im_audit_results.send(:result_code_msg, result_code, moab_valid_errs)
-          expect(WorkflowReporter).to receive(:report_error).with(druid, actual_version, 'moab-valid', a_string_matching(Regexp.escape(err_details)))
+          expect(WorkflowReporter).to receive(:report_error)
+            .with(druid, actual_version, 'moab-valid', ms_root, a_string_matching(Regexp.escape(err_details)))
           im_audit_results.report_results
         end
 
         it 'check name' do
-          expect(WorkflowReporter).to receive(:report_error).with(druid, actual_version, 'moab-valid', a_string_matching(check_name))
+          expect(WorkflowReporter).to receive(:report_error).with(druid, actual_version, 'moab-valid', ms_root, a_string_matching(check_name))
           im_audit_results.report_results
         end
 
         it 'ms_root name' do
           expected = Regexp.escape("actual location: #{ms_root.name}")
-          expect(WorkflowReporter).to receive(:report_error).with(druid, actual_version, 'moab-valid', a_string_matching(expected))
+          expect(WorkflowReporter).to receive(:report_error).with(druid, actual_version, 'moab-valid', ms_root, a_string_matching(expected))
           im_audit_results.report_results
         end
       end
@@ -154,7 +157,7 @@ RSpec.describe AuditResults do
         audit_results.add_result(code, addl_hash)
         wf_err_msg = audit_results.send(:result_code_msg, code, addl_hash)
         expect(WorkflowReporter).to receive(:report_error).with(
-          druid, actual_version, 'preservation-audit', a_string_matching(wf_err_msg)
+          druid, actual_version, 'preservation-audit', ms_root, a_string_matching(wf_err_msg)
         )
         audit_results.report_results
       end
@@ -169,17 +172,17 @@ RSpec.describe AuditResults do
         audit_results.add_result(code2, result_msg_args2)
         result_msg2 = audit_results.send(:result_code_msg, code2, result_msg_args2)
         allow(WorkflowReporter).to receive(:report_error).with(
-          druid, actual_version, 'preservation-audit', instance_of(String)
+          druid, actual_version, 'preservation-audit', ms_root, instance_of(String)
         )
         audit_results.report_results
         expect(WorkflowReporter).to have_received(:report_error).with(
-          druid, actual_version, 'preservation-audit', a_string_matching(result_msg1)
+          druid, actual_version, 'preservation-audit', ms_root, a_string_matching(result_msg1)
         )
         expect(WorkflowReporter).to have_received(:report_error).with(
-          druid, actual_version, 'preservation-audit', a_string_matching(/ \&\& /)
+          druid, actual_version, 'preservation-audit', ms_root, a_string_matching(/ \&\& /)
         )
         expect(WorkflowReporter).to have_received(:report_error).with(
-          druid, actual_version, 'preservation-audit', a_string_matching(result_msg2)
+          druid, actual_version, 'preservation-audit', ms_root, a_string_matching(result_msg2)
         )
       end
 
@@ -188,7 +191,7 @@ RSpec.describe AuditResults do
         audit_results.add_result(code)
         expected = Regexp.escape("actual location: #{ms_root.name}")
         expect(WorkflowReporter).to receive(:report_error).with(
-          druid, actual_version, 'preservation-audit', a_string_matching(expected)
+          druid, actual_version, 'preservation-audit', ms_root, a_string_matching(expected)
         )
         audit_results.report_results
       end
@@ -199,9 +202,9 @@ RSpec.describe AuditResults do
         audit_results.add_result(code)
         unexpected = Regexp.escape("actual location: ")
         expect(WorkflowReporter).not_to receive(:report_error).with(
-          druid, actual_version, 'preservation-audit', a_string_matching(unexpected)
+          druid, actual_version, 'preservation-audit', nil, a_string_matching(unexpected)
         )
-        expect(WorkflowReporter).to receive(:report_error).with(druid, actual_version, 'preservation-audit', anything)
+        expect(WorkflowReporter).to receive(:report_error).with(druid, actual_version, 'preservation-audit', nil, anything)
         audit_results.report_results
       end
 
@@ -210,7 +213,7 @@ RSpec.describe AuditResults do
         audit_results.add_result(code)
         expected = "actual version: #{actual_version}"
         expect(WorkflowReporter).to receive(:report_error).with(
-          druid, actual_version, 'preservation-audit', a_string_matching(expected)
+          druid, actual_version, 'preservation-audit', ms_root, a_string_matching(expected)
         )
         audit_results.report_results
       end
@@ -221,9 +224,9 @@ RSpec.describe AuditResults do
         audit_results.add_result(code)
         unexpected = Regexp.escape("actual version: ")
         expect(WorkflowReporter).not_to receive(:report_error).with(
-          druid, nil, 'preservation-audit', a_string_matching(unexpected)
+          druid, nil, 'preservation-audit', ms_root, a_string_matching(unexpected)
         )
-        expect(WorkflowReporter).to receive(:report_error).with(druid, nil, 'preservation-audit', anything)
+        expect(WorkflowReporter).to receive(:report_error).with(druid, nil, 'preservation-audit', ms_root, anything)
         audit_results.report_results
       end
 
@@ -241,7 +244,7 @@ RSpec.describe AuditResults do
         it 'message sent includes CompleteMoab create date' do
           expected = Regexp.escape("db CompleteMoab (created #{create_date}")
           expect(WorkflowReporter).to receive(:report_error).with(
-            druid, actual_version, 'preservation-audit', a_string_matching(expected)
+            druid, actual_version, 'preservation-audit', ms_root, a_string_matching(expected)
           )
           my_audit_results.report_results
         end
@@ -249,7 +252,7 @@ RSpec.describe AuditResults do
         it 'message sent includes CompleteMoab updated date' do
           expected = "db CompleteMoab .* last updated #{update_date}"
           expect(WorkflowReporter).to receive(:report_error).with(
-            druid, actual_version, 'preservation-audit', a_string_matching(expected)
+            druid, actual_version, 'preservation-audit', ms_root, a_string_matching(expected)
           )
           my_audit_results.report_results
         end
@@ -261,7 +264,7 @@ RSpec.describe AuditResults do
         result_code = AuditResults::CM_STATUS_CHANGED
         addl_hash = { old_status: 'invalid_checksum', new_status: 'ok' }
         audit_results.add_result(result_code, addl_hash)
-        expect(WorkflowReporter).to receive(:report_completed).with(druid, actual_version, 'preservation-audit')
+        expect(WorkflowReporter).to receive(:report_completed).with(druid, actual_version, 'preservation-audit', ms_root)
         audit_results.report_results
       end
     end
@@ -280,6 +283,17 @@ RSpec.describe AuditResults do
         audit_results.add_result(code, addl_hash)
         expect(Honeybadger).to receive(:notify).with(
           "(ab123cd4567, fixture_sr1) checksums for path/to/file version 1 do not match."
+        )
+        expect(events_client).to receive(:create).once.with(
+          type: 'preservation_audit_failure',
+          data: {
+            host: 'fakehost',
+            invoked_by: 'preservation-catalog',
+            storage_root: ms_root.name,
+            actual_version: actual_version,
+            check_name: nil,
+            error_result: { moab_file_checksum_mismatch: 'checksums for path/to/file version 1 do not match.' }
+          }
         )
         audit_results.report_results
       end
