@@ -129,7 +129,7 @@ Run all validation checks on Moabs and generate reports.  Note that error detail
       ```
 
   - [ ] confirm there are no archival workers running via the resque GUI: https://preservation-catalog-prod-01.stanford.edu/resque/workers
-  - [ ] confirm the ReST routes are not available (e.g. go to https://preservation-catalog-prod-01.stanford.edu/objects/wr934ny6689)
+  - [ ] confirm the ReST routes are not available (e.g. go to https://preservation-catalog-prod-01.stanford.edu/v1/objects/wr934ny6689)
   - [ ] confirm there are no weekend cron jobs, especially CV
 
       Note that cron jobs are deployed on preservation-catalog-prod-02.
@@ -286,7 +286,7 @@ Do **CHECK FOR M2C ERRORS while it's running** (run audit report) to see if anyt
     ```
 
   - [ ] confirm there are archival workers running via the resque GUI: https://preservation-catalog-prod-01.stanford.edu/resque/overview
-  - [ ] confirm the ReST routes are available (e.g. go to https://preservation-catalog-prod-01.stanford.edu/objects/wr934ny6689)
+  - [ ] confirm the ReST routes are available (e.g. go to https://preservation-catalog-prod-01.stanford.edu/v1/objects/wr934ny6689)
   - [ ] confirm there are weekend cron jobs, especially CV
 
       Note that cron jobs are deployed on preservation-catalog-prod-02.
