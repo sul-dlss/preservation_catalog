@@ -59,6 +59,10 @@ Run all validation checks on Moabs and generate reports.  Note that error detail
 
 - [ ] generate final pre-cutover report for objects with error status ```RAILS_ENV=production bundle exec rake prescat:reports:msr_moab_audit_errors[stor_root_name,b4_cutover]```
 
+- Keep an eye out for Honeybadger errors from preservation_catalog and from preservation_robots.
+  - preservation-catalog: https://app.honeybadger.io/projects/54415/faults?q=-is%3Aresolved+-is%3Aignored
+  - preservation_robots: https://app.honeybadger.io/projects/55564/faults?q=-is%3Aresolved+-is%3Aignored
+
 ### Negotiate with Andrew/Julian as to how early on Friday you can do the Following:
 
 - [ ] get list of druids on storage root ```RAILS_ENV=production bundle exec rake prescat:reports:msr_druids[storage_root_name,druids_b4]```
@@ -208,6 +212,7 @@ Ops will now perform such tasks as the following:
     NOTE: if we have to trigger CV audits manually, we may want to run it for a list of druids rather than an entire new storage brick when there are more than a handful of old roots migrated to a single new storage brick.
 
   - [ ] requeue failed jobs / ensure no jobs failed via resque GUI https://preservation-catalog-prod-01.stanford.edu/resque/overview
+  - [ ] watch for errors in Honeybadger
   - [ ] after CV finishes, generate report for objects with error status ```RAILS_ENV=production bundle exec rake prescat:reports:msr_moab_audit_errors[stor_root_name,cv_after]```
   - [ ] examine each existing CV error (from report in /opt/app/pres/preservation_catalog/current/log/reports)
     - [ ] is it a NEW error, or was this object having the same error before migration?  (check the appropriate cv_b4 error report)
@@ -243,6 +248,8 @@ NOTE:  we may want to run druid lists rather than an entire new storage brick wh
 M2C can keep running after cutover (since we know we have all druids from storage root in the catalog).  
 
 Do **CHECK FOR M2C ERRORS while it's running** (run audit report) to see if anything surfaces (we hope not!)
+
+Do check for honeybadger errors while audit validations are running
 
   - [ ] after M2C finishes, generate report for objects with error status ```RAILS_ENV=production bundle exec rake prescat:reports:msr_moab_audit_errors[stor_root_name,m2c_after]```
   - [ ] examine each existing M2C error (from report in /opt/app/pres/preservation_catalog/current/log/reports)
