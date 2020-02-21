@@ -7,13 +7,13 @@ require 'csv'
 #  (Note: methods will eventually be ported from sdr-services-app)
 class ObjectsController < ApplicationController
   # return the PreservedObject model for the druid (supplied *without* `druid:` prefix)
-  # GET /v1/objects/:druid
+  # GET /v1/objects/:id.json
   def show
     render json: PreservedObject.find_by!(druid: druid).to_json
   end
 
   # return a specific file from the Moab
-  # GET /v1/objects/:druid/file?category=manifest&filepath=signatureCatalog.xml
+  # GET /v1/objects/:id/file?category=manifest&filepath=signatureCatalog.xml
   # useful params:
   # - category (content|manifest|metadata)
   # - filepath path of file, relative to category directory
@@ -31,14 +31,12 @@ class ObjectsController < ApplicationController
     else
       render(plain: "404 File Not Found: #{druid}, #{params[:category]}, #{params[:filepath]}, #{params[:version]}", status: :not_found)
     end
-  rescue ArgumentError => e
-    render(plain: "400 Bad Request: #{e}", status: :bad_request)
   rescue Moab::MoabRuntimeError => e
     render(plain: "404 Not Found: #{e}", status: :not_found)
   end
 
   # return the checksums and filesize for a single druid (supplied with druid: prefix)
-  # GET /v1/objects/:druid/checksum
+  # GET /v1/objects/:id/checksum
   def checksum
     render json: content_files_checksums(druid).to_json
   end
@@ -47,11 +45,6 @@ class ObjectsController < ApplicationController
   # note: this is deliberately allowed to be a POST to allow for a large number of druids to be passed in
   # GET OR POST /v1/objects/checksums?druids[]=druid1&druids[]=druid2&druids[]=druid3
   def checksums
-    unless normalized_druids.present?
-      render(plain: "400 Bad Request - druids param must be populated with valid druids", status: :bad_request)
-      return
-    end
-
     checksum_list, missing_druids, errored_druids = generate_checksum_list
 
     bad_recs_msg = "\nStorage object(s) not found for #{missing_druids.join(', ')}" if missing_druids.any?
@@ -70,8 +63,6 @@ class ObjectsController < ApplicationController
       end
       format.any { render status: :not_acceptable, plain: 'Format not acceptable' }
     end
-  rescue Moab::InvalidSuriSyntaxError => e
-    render(plain: "400 Bad Request: #{e}", status: :bad_request)
   end
 
   # Retrieves [Moab::FileInventoryDifference] from comparison of passed contentMetadata.xml
@@ -90,8 +81,6 @@ class ObjectsController < ApplicationController
     obj_version = params[:version].to_i if params[:version]&.match?(/^[1-9]\d*$/)
     subset = params[:subset] ||= 'all'
     render(xml: MoabStorageService.content_diff(druid, params[:content_metadata], subset, obj_version).to_xml)
-  rescue ArgumentError => e
-    render(plain: "400 Bad Request: #{e}", status: :bad_request)
   rescue Moab::MoabRuntimeError => e
     render(plain: "500 Unable to get content diff: #{e}", status: :internal_server_error)
     Honeybadger.notify(e)
@@ -124,9 +113,6 @@ class ObjectsController < ApplicationController
       checksum_list << { returned_druid(druid) => content_files_checksums(druid) }
     rescue Moab::ObjectNotFoundException
       missing_druids << druid
-    rescue Moab::InvalidSuriSyntaxError => e
-      # this needs to raise 400 error
-      raise e
     rescue StandardError => e
       errored_druids << "#{druid} (#{e.inspect})"
     end

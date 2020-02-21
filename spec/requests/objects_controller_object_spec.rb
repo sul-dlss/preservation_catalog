@@ -20,13 +20,9 @@ RSpec.describe ObjectsController, type: :request do
     end
 
     context 'when object not found' do
-      it 'returns a 404 response code' do
-        get object_url('druid:garbage', format: :json), headers: valid_auth_header
+      it 'returns a 404 response code and informative body' do
+        get object_url('druid:bc123df4567', format: :json), headers: valid_auth_header
         expect(response).to have_http_status(:not_found)
-      end
-
-      it 'returns useful info in the body' do
-        get object_url('druid:garbage', format: :json), headers: valid_auth_header
         expect(response.body).to eq "404 Not Found: Couldn't find PreservedObject"
       end
     end

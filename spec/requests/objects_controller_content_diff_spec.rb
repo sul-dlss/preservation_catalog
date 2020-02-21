@@ -64,8 +64,9 @@ RSpec.describe ObjectsController, type: :request do
           params = { content_metadata: content_md, subset: 'unrecognized' }
           post content_diff_object_url(id: prefixed_druid), params: params, headers: valid_auth_header
           expect(response).to have_http_status(:bad_request)
-          m = "400 Bad Request: subset arg must be 'all', 'shelve', 'preserve', or 'publish' (MoabStorageService.content_diff for druid bj102hs9687)"
-          expect(response.body).to eq m
+          error_response = JSON.parse(response.body)['errors'].first
+          expect(error_response['status']).to eq('bad_request')
+          expect(error_response['detail']).to include('unrecognized isn\'t include enum') # sic
         end
       end
 
@@ -94,14 +95,6 @@ RSpec.describe ObjectsController, type: :request do
     end
 
     context 'when no id param' do
-      context 'when id param is empty' do
-        it "will raise RoutingError" do
-          expect do
-            post content_diff_object_url(id: ''), headers: valid_auth_header
-          end.to raise_error(ActionController::RoutingError)
-        end
-      end
-
       context "when id param missing" do
         it 'Rails will raise error and do the right thing' do
           expect do
@@ -112,10 +105,22 @@ RSpec.describe ObjectsController, type: :request do
     end
 
     context 'when druid invalid' do
-      it 'returns 500 response code with "Identifier has invalid suri syntax"' do
+      it 'returns 400 response' do
         post content_diff_object_url(id: 'foobar'), params: { content_metadata: content_md, subset: 'all' }, headers: valid_auth_header
-        expect(response).to have_http_status(:internal_server_error)
-        expect(response.body).to eq '500 Unable to get content diff: Identifier has invalid suri syntax: foobar'
+        expect(response).to have_http_status(:bad_request)
+        error_response = JSON.parse(response.body)['errors'].first
+        expect(error_response['status']).to eq('bad_request')
+        expect(error_response['detail']).to include('does not match value: foobar, example: druid:bc123df4567')
+      end
+    end
+
+    context 'when druid empty' do
+      it 'returns 400 response' do
+        post content_diff_object_url(id: ''), params: { content_metadata: content_md, subset: 'all' }, headers: valid_auth_header
+        expect(response).to have_http_status(:bad_request)
+        error_response = JSON.parse(response.body)['errors'].first
+        expect(error_response['status']).to eq('bad_request')
+        expect(error_response['detail']).to include('does not match value: , example: druid:bc123df4567')
       end
     end
   end

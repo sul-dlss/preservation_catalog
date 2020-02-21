@@ -201,7 +201,8 @@ RSpec.describe ObjectsController, type: :request do
         it 'body has additional information from the exception if available' do
           post checksums_objects_url, params: { druids: [], format: :json }, headers: valid_auth_header
           expect(response).to have_http_status(:bad_request)
-          expect(response.body).to eq '400 Bad Request: Identifier has invalid suri syntax:  nil or empty'
+          error_response = JSON.parse(response.body)['errors'].first
+          expect(error_response['detail']).to include('does not match value: , example: druid:bc123df4567')
         end
       end
 
@@ -209,7 +210,8 @@ RSpec.describe ObjectsController, type: :request do
         it 'body has additional information from the exception if available' do
           post checksums_objects_url, params: { format: :json }, headers: valid_auth_header
           expect(response).to have_http_status(:bad_request)
-          expect(response.body).to eq '400 Bad Request - druids param must be populated with valid druids'
+          error_response = JSON.parse(response.body)['errors'].first
+          expect(error_response['detail']).to include('schema missing required parameters: druids')
         end
       end
     end
@@ -218,7 +220,8 @@ RSpec.describe ObjectsController, type: :request do
       it 'returns 400 response code' do
         post checksums_objects_url, params: { druids: [prefixed_druid, 'foobar'], format: :json }, headers: valid_auth_header
         expect(response).to have_http_status(:bad_request)
-        expect(response.body).to eq '400 Bad Request: Identifier has invalid suri syntax: foobar'
+        error_response = JSON.parse(response.body)['errors'].first
+        expect(error_response['detail']).to include('does not match value: foobar, example: druid:bc123df4567')
       end
     end
 
