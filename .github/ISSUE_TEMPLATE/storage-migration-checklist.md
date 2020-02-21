@@ -24,7 +24,7 @@ Run all validation checks on Moabs and generate reports.  Note that error detail
 #### M2C
 - [ ] run on storage root: ```RAILS_ENV=production bundle exec rake prescat:audit:m2c[stor_root_name]```
   - [ ] requeue failed jobs / ensure no jobs failed via resque GUI https://preservation-catalog-prod-01.stanford.edu/resque/overview
-- [ ] after M2C finishes, generate report for objects with error status ```RAILS_ENV=production bundle exec rake prescat:reports:msr_audit_errors[stor_root_name,m2c_b4]```
+- [ ] after M2C finishes, generate report for objects with error status ```RAILS_ENV=production bundle exec rake prescat:reports:msr_moab_audit_errors[stor_root_name,m2c_b4]```
 - [ ] examine each existing M2C error (from report in /opt/app/pres/preservation_catalog/current/log/reports)
   - [ ] if fixable ... fix it
     - [ ] re-run M2C on any fixed objects to ensure object is now valid
@@ -35,7 +35,7 @@ Run all validation checks on Moabs and generate reports.  Note that error detail
 #### C2M
 - [ ] run on storage root ```RAILS_ENV=production bundle exec rake prescat:audit:c2m[stor_root_name]```
   - [ ] requeue failed jobs / ensure no jobs failed via resque GUI https://preservation-catalog-prod-01.stanford.edu/resque/overview
-- [ ] after C2M finishes, generate report for objects with error status ```RAILS_ENV=production bundle exec rake prescat:reports:msr_audit_errors[stor_root_name,c2m_b4]```
+- [ ] after C2M finishes, generate report for objects with error status ```RAILS_ENV=production bundle exec rake prescat:reports:msr_moab_audit_errors[stor_root_name,c2m_b4]```
 - [ ] examine each existing C2M error (from report in /opt/app/pres/preservation_catalog/current/log/reports)
   - [ ] if fixable ... fix it
     - [ ] re-run C2M on any fixed objects to ensure object is now valid
@@ -46,7 +46,7 @@ Run all validation checks on Moabs and generate reports.  Note that error detail
 #### CV
 - [ ] run on storage root ```RAILS_ENV=production bundle exec rake prescat:audit:cv[stor_root_name]```
   - [ ] requeue failed jobs / ensure no jobs failed via resque GUI https://preservation-catalog-prod-01.stanford.edu/resque/overview
-- [ ] after CV finishes, generate report for objects with error status ```RAILS_ENV=production bundle exec rake prescat:reports:msr_audit_errors[stor_root_name,cv_b4]```
+- [ ] after CV finishes, generate report for objects with error status ```RAILS_ENV=production bundle exec rake prescat:reports:msr_moab_audit_errors[stor_root_name,cv_b4]```
 - [ ] examine each existing CV error (from report in /opt/app/pres/preservation_catalog/current/log/reports)
   - [ ] if fixable ... fix it
     - [ ] re-run CV on any fixed objects to ensure object is now valid
@@ -57,7 +57,7 @@ Run all validation checks on Moabs and generate reports.  Note that error detail
 
 ##  During Cutover Weekend
 
-- [ ] generate final pre-cutover report for objects with error status ```RAILS_ENV=production bundle exec rake prescat:reports:msr_audit_errors[stor_root_name,b4_cutover]```
+- [ ] generate final pre-cutover report for objects with error status ```RAILS_ENV=production bundle exec rake prescat:reports:msr_moab_audit_errors[stor_root_name,b4_cutover]```
 
 ### Negotiate with Andrew/Julian as to how early on Friday you can do the Following:
 
@@ -208,7 +208,7 @@ Ops will now perform such tasks as the following:
     NOTE: if we have to trigger CV audits manually, we may want to run it for a list of druids rather than an entire new storage brick when there are more than a handful of old roots migrated to a single new storage brick.
 
   - [ ] requeue failed jobs / ensure no jobs failed via resque GUI https://preservation-catalog-prod-01.stanford.edu/resque/overview
-  - [ ] after CV finishes, generate report for objects with error status ```RAILS_ENV=production bundle exec rake prescat:reports:msr_audit_errors[stor_root_name,cv_after]```
+  - [ ] after CV finishes, generate report for objects with error status ```RAILS_ENV=production bundle exec rake prescat:reports:msr_moab_audit_errors[stor_root_name,cv_after]```
   - [ ] examine each existing CV error (from report in /opt/app/pres/preservation_catalog/current/log/reports)
     - [ ] is it a NEW error, or was this object having the same error before migration?  (check the appropriate cv_b4 error report)
       - [ ] if NEW and fixable ... fix it
@@ -244,7 +244,7 @@ M2C can keep running after cutover (since we know we have all druids from storag
 
 Do **CHECK FOR M2C ERRORS while it's running** (run audit report) to see if anything surfaces (we hope not!)
 
-  - [ ] after M2C finishes, generate report for objects with error status ```RAILS_ENV=production bundle exec rake prescat:reports:msr_audit_errors[stor_root_name,m2c_after]```
+  - [ ] after M2C finishes, generate report for objects with error status ```RAILS_ENV=production bundle exec rake prescat:reports:msr_moab_audit_errors[stor_root_name,m2c_after]```
   - [ ] examine each existing M2C error (from report in /opt/app/pres/preservation_catalog/current/log/reports)
     - [ ] is it a NEW error, or was this object having the same error before migration?  (check the appropriate m2c_b4 error report)
     - [ ] if NEW and fixable ... fix it
