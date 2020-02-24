@@ -25,34 +25,22 @@ Run all validation checks on Moabs and generate reports.  Note that error detail
 - [ ] run on storage root: ```RAILS_ENV=production bundle exec rake prescat:audit:m2c[stor_root_name]```
   - [ ] requeue failed jobs / ensure no jobs failed via resque GUI https://preservation-catalog-prod-01.stanford.edu/resque/overview
 - [ ] after M2C finishes, generate report for objects with error status ```RAILS_ENV=production bundle exec rake prescat:reports:msr_moab_audit_errors[stor_root_name,m2c_b4]```
-- [ ] examine each existing M2C error (from report in /opt/app/pres/preservation_catalog/current/log/reports)
-  - [ ] if fixable ... fix it
-    - [ ] re-run M2C on any fixed objects to ensure object is now valid
-  - [ ] can it be ignored until after migration?
-  - [ ] other?
-- [ ] generate new report for objects with error status if any errors were fixed
+- [ ] note druids for each existing M2C error (from report in /opt/app/pres/preservation_catalog/current/log/reports)
+  - [ ] Ensure there is a github issue for the error/object in preservation_catalog
 
 #### C2M
 - [ ] run on storage root ```RAILS_ENV=production bundle exec rake prescat:audit:c2m[stor_root_name]```
   - [ ] requeue failed jobs / ensure no jobs failed via resque GUI https://preservation-catalog-prod-01.stanford.edu/resque/overview
 - [ ] after C2M finishes, generate report for objects with error status ```RAILS_ENV=production bundle exec rake prescat:reports:msr_moab_audit_errors[stor_root_name,c2m_b4]```
-- [ ] examine each existing C2M error (from report in /opt/app/pres/preservation_catalog/current/log/reports)
-  - [ ] if fixable ... fix it
-    - [ ] re-run C2M on any fixed objects to ensure object is now valid
-  - [ ] can it be ignored until after migration?
-  - [ ] other?
-- [ ] generate new report for objects with error status if any errors were fixed
+- [ ] note druids for each existing C2M error (from report in /opt/app/pres/preservation_catalog/current/log/reports)
+  - [ ] Ensure there is a github issue for the error/object in preservation_catalog
 
 #### CV
 - [ ] run on storage root ```RAILS_ENV=production bundle exec rake prescat:audit:cv[stor_root_name]```
   - [ ] requeue failed jobs / ensure no jobs failed via resque GUI https://preservation-catalog-prod-01.stanford.edu/resque/overview
 - [ ] after CV finishes, generate report for objects with error status ```RAILS_ENV=production bundle exec rake prescat:reports:msr_moab_audit_errors[stor_root_name,cv_b4]```
-- [ ] examine each existing CV error (from report in /opt/app/pres/preservation_catalog/current/log/reports)
-  - [ ] if fixable ... fix it
-    - [ ] re-run CV on any fixed objects to ensure object is now valid
-  - [ ] can it be ignored until after migration?
-  - [ ] other?
-- [ ] generate new report for objects with error status if any errors were fixed
+- [ ] note druids for each existing CV error (from report in /opt/app/pres/preservation_catalog/current/log/reports)
+  - [ ] Ensure there is a github issue for the error/object in preservation_catalog
 
 
 ##  During Cutover Weekend
@@ -110,7 +98,7 @@ Run all validation checks on Moabs and generate reports.  Note that error detail
     # zips_made: 6
     ```
 
-    If you're not confident that CV and M2C will finish by Sunday evening, give them more resque workers.  Note that CV does require RAM to generate checksums, so upping those workers could peg out the worker VMs.
+    If you're not confident that CV and M2C will finish by Sunday evening, give them more resque workers.  Note that CV requires CPU to generate checksums, so upping those workers could peg out the worker VMs.
 
   - [ ] have someone merge shared_configs PR
 
@@ -157,7 +145,7 @@ Ops will now perform such tasks as the following:
 - more ops-y things
 - notify us the data is now available in its new home.
 
-### Back to the Devs After Ops Notification
+### Back to the Devs After Ops Says Data Available
 
 #### Tell PresCat About New Storage Root
 
@@ -211,28 +199,31 @@ Ops will now perform such tasks as the following:
 
     If you're not confident that CV can finish by Sunday evening, give it more resque workers via shared_configs PR https://github.com/sul-dlss/shared_configs/blob/preservation-catalog-stage/config/resque-pool.yml
 
-    NOTE: if we have to trigger CV audits manually, we may want to run it for a list of druids rather than an entire new storage brick when there are more than a handful of old roots migrated to a single new storage brick.
+    NOTE: if we have to trigger CV audits manually (i.e. the above doesn't automatically kick off workers), we will need to run CV for the list of druids on the new root, NOT the entire new storage brick (when there is more tan one old root migrated to a single new storage brick.)  The list of druids is the 'druids_b4' report for the old storage root in /opt/app/pres/preservation_catalog/current/log/reports.
 
   - [ ] requeue failed jobs / ensure no jobs failed via resque GUI https://preservation-catalog-prod-01.stanford.edu/resque/overview
   - [ ] watch for errors in Honeybadger
   - [ ] after CV finishes, generate report for objects with error status ```RAILS_ENV=production bundle exec rake prescat:reports:msr_moab_audit_errors[stor_root_name,cv_after]```
-  - [ ] examine each existing CV error (from report in /opt/app/pres/preservation_catalog/current/log/reports)
-    - [ ] is it a NEW error, or was this object having the same error before migration?  (check the appropriate cv_b4 error report)
-      - [ ] if NEW and fixable ... fix it
-        - [ ] re-run CV on any fixed objects to ensure object is now valid
-    - [ ] Did moab validation run?  If not: manual check at os level to compare files on new and old.
+  - [ ] diff cv_b4 report with cv_after report before content migrated - the druids and statuses should match.
+  - [ ] examine each existing CV_after error (from report in /opt/app/pres/preservation_catalog/current/log/reports)
+    - [ ] is it an EXISTING error (did this object have the same error before migration?  Check the appropriate cv_b4 error report)
+      - [ ] Did moab validation run?  If not: manual check at os level to compare files on new and old.
 
-      Make sure the files contained in the source moab directories are the same as the files contained in the target moab directories (e.g. the list of enumerated files is the same, and the file contents on both sides produce the same respective md5 values)
+        Make sure the files contained in the source moab directories are the same as the files contained in the target moab directories (e.g. the list of enumerated files is the same, and the file contents on both sides produce the same respective md5 values)
 
-      If not: work with Ops to perhaps do a manual re-copy of any Moabs on the target storage with new errors, compared to the source storage.
+        If not: work with Ops to perhaps do a manual re-copy of any Moabs on the target storage with new errors, compared to the source storage.
 
-    - [ ] can it be ignored until after migration?
-    - [ ] other?
+      - [ ] if files are "the same" in the old and new location, then this error can be ignored until after migration.
+        - [ ] Ensure there is a github issue for the error/object in preservation_catalog (there should be, from previous step!)
+      - [ ] if files are NOT "the same" in the old and new location
+        - [ ] Work with Ops to perhaps do a manual re-copy of the Moab's files from the source to the target storage
+        - [ ] Re-run CV on this object (see README) to see if status changes to match cv_b4 report.
+          - [ ] If not, PANIC.  (don't know what to do with these yet)
 
-  - [ ] generate new report for objects with error status if any errors were fixed
-
-  - [ ] diff report after move vs. report before content migrated
-    - [ ] ensure we don't have new errors that weren't on old storage
+    - [ ] is it a NEW error?  (the object did NOT have the same error before migration)
+      - [ ] Work with Ops to perhaps do a manual re-copy of the Moab's files from the source to the target storage
+      - [ ] Re-run CV on this object (see README) to see if status changes to 'ok'.
+        - [ ] If not, PANIC.  (don't know what to do with these yet)
 
   **IS ANYTHING TOO SCARY TO CONTINUE WITH MIGRATION?**  (e.g. lots of new errors)
 
@@ -255,12 +246,20 @@ Do check for honeybadger errors while audit validations are running
 
   - [ ] after M2C finishes, generate report for objects with error status ```RAILS_ENV=production bundle exec rake prescat:reports:msr_moab_audit_errors[stor_root_name,m2c_after]```
   - [ ] examine each existing M2C error (from report in /opt/app/pres/preservation_catalog/current/log/reports)
-    - [ ] is it a NEW error, or was this object having the same error before migration?  (check the appropriate m2c_b4 error report)
-    - [ ] if NEW and fixable ... fix it
-      - [ ] re-run M2C on any fixed objects to ensure object is now valid
-    - [ ] can it be ignored until after migration?
-    - [ ] other?
-    - [ ] generate new report for objects with error status if any errors were fixed
+    - [ ] is it a NEW error?  (check the appropriate m2c_b4 error report)
+      - [ ] Work with Ops to perhaps do a manual re-copy of the Moab's files from the source to the target storage
+      - [ ] Re-run M2C on this object (see README) to see if status changes to 'ok'.
+        - [ ] If not, PANIC.  (don't know what to do with these yet)
+
+    - [ ] is it an EXISTING error (did this object have the same error before migration?  Check the appropriate m2c_b4 error report)
+        Make sure the files contained in the source moab directories are the same as the files contained in the target moab directories (e.g. the list of enumerated files is the same, and the file contents on both sides produce the same respective md5 values)
+
+      - [ ] if files are "the same" in the old and new location, then this error can be ignored until after migration.
+        - [ ] Ensure there is a github issue for the error/object in preservation_catalog (there should be, from previous step!)
+      - [ ] if files are NOT "the same" in the old and new location
+        - [ ] Work with Ops to perhaps do a manual re-copy of the Moab's files from the source to the target storage
+        - [ ] Re-run M2C on this object (see README) to see if status changes to match cv_b4 report.
+          - [ ] If not, PANIC.  (don't know what to do with these yet)
 
 ### After Migration Success
 
