@@ -218,12 +218,12 @@ Ops will now perform such tasks as the following:
       - [ ] if files are NOT "the same" in the old and new location
         - [ ] Work with Ops to perhaps do a manual re-copy of the Moab's files from the source to the target storage
         - [ ] Re-run CV on this object (see README) to see if status changes to match cv_b4 report.
-          - [ ] If not, PANIC.  (don't know what to do with these yet)
+          - [ ] If not, PANIC.  (don't know what to do with these yet - will update this doc soon.)
 
     - [ ] is it a NEW error?  (the object did NOT have the same error before migration)
       - [ ] Work with Ops to perhaps do a manual re-copy of the Moab's files from the source to the target storage
       - [ ] Re-run CV on this object (see README) to see if status changes to 'ok'.
-        - [ ] If not, PANIC.  (don't know what to do with these yet)
+        - [ ] If not, PANIC.  (don't know what to do with these yet - will update this doc soon.)
 
   **IS ANYTHING TOO SCARY TO CONTINUE WITH MIGRATION?**  (e.g. lots of new errors)
 
@@ -249,7 +249,7 @@ Do check for honeybadger errors while audit validations are running
     - [ ] is it a NEW error?  (check the appropriate m2c_b4 error report)
       - [ ] Work with Ops to perhaps do a manual re-copy of the Moab's files from the source to the target storage
       - [ ] Re-run M2C on this object (see README) to see if status changes to 'ok'.
-        - [ ] If not, PANIC.  (don't know what to do with these yet)
+        - [ ] If not, PANIC.  (don't know what to do with these yet - will update this doc soon.)
 
     - [ ] is it an EXISTING error (did this object have the same error before migration?  Check the appropriate m2c_b4 error report)
         Make sure the files contained in the source moab directories are the same as the files contained in the target moab directories (e.g. the list of enumerated files is the same, and the file contents on both sides produce the same respective md5 values)
@@ -259,7 +259,7 @@ Do check for honeybadger errors while audit validations are running
       - [ ] if files are NOT "the same" in the old and new location
         - [ ] Work with Ops to perhaps do a manual re-copy of the Moab's files from the source to the target storage
         - [ ] Re-run M2C on this object (see README) to see if status changes to match cv_b4 report.
-          - [ ] If not, PANIC.  (don't know what to do with these yet)
+          - [ ] If not, PANIC.  (don't know what to do with these yet - will update this doc soon.)
 
 ### After Migration Success
 
