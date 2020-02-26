@@ -245,6 +245,7 @@ Do **CHECK FOR M2C ERRORS while it's running** (run audit report) to see if anyt
 Do check for honeybadger errors while audit validations are running
 
   - [ ] after M2C finishes, generate report for objects with error status ```RAILS_ENV=production bundle exec rake prescat:reports:msr_moab_audit_errors[stor_root_name,m2c_after]```
+  - [ ] diff m2c_b4 report with m2c_after report - the druids and statuses should match.
   - [ ] examine each existing M2C error (from report in /opt/app/pres/preservation_catalog/current/log/reports)
     - [ ] is it a NEW error?  (check the appropriate m2c_b4 error report)
       - [ ] Work with Ops to perhaps do a manual re-copy of the Moab's files from the source to the target storage
