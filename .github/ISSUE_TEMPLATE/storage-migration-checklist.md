@@ -199,7 +199,7 @@ Ops will now perform such tasks as the following:
 
     If you're not confident that CV can finish by Sunday evening, give it more resque workers via shared_configs PR https://github.com/sul-dlss/shared_configs/blob/preservation-catalog-stage/config/resque-pool.yml
 
-    NOTE: if we have to trigger CV audits manually (i.e. the above doesn't automatically kick off workers), we will need to run CV for the list of druids on the new root, NOT the entire new storage brick (when there is more tan one old root migrated to a single new storage brick.)  The list of druids is the 'druids_b4' report for the old storage root in /opt/app/pres/preservation_catalog/current/log/reports.  Running CV for a list of druids is documented in the prescat README.
+    NOTE: if we have to trigger CV audits manually (i.e. the above doesn't automatically kick off workers), we will need to run CV for the list of druids on the new root, NOT the entire new storage brick (when there is more than one old root migrated to a single new storage brick.)  The list of druids is the 'druids_b4' report for the old storage root in /opt/app/pres/preservation_catalog/current/log/reports.  Running CV for a list of druids is documented in the prescat README.
 
   - [ ] requeue failed jobs / ensure no jobs failed via resque GUI https://preservation-catalog-prod-01.stanford.edu/resque/overview
   - [ ] watch for errors in Honeybadger
