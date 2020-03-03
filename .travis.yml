@@ -12,7 +12,7 @@ services:
 before_script:
   - bundle exec rake db:reset
 script:
-  - ./scripts/validate-openapi.bash
+  - ./scripts/validate-openapi.bash || travis_terminate 1
   - bundle exec rake
 bundler_args: "--without 'production development deploy'"
 notifications:
