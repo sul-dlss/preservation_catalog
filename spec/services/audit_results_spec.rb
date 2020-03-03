@@ -7,12 +7,15 @@ RSpec.describe AuditResults do
     allow(WorkflowReporter).to receive(:report_error)
     allow(WorkflowReporter).to receive(:report_completed)
     allow(Socket).to receive(:gethostname).and_return('fakehost')
+    allow(Dor::Services::Client).to receive(:object).with("druid:#{druid}").and_return(
+      instance_double(Dor::Services::Client::Object, events: events_client)
+    )
   end
 
   let(:actual_version) { 6 }
   let(:audit_results) { described_class.new(druid, actual_version, ms_root) }
   let(:druid) { 'ab123cd4567' }
-  let(:events_client) { audit_results.send(:events_client) }
+  let(:events_client) { instance_double(Dor::Services::Client::Events) }
   let(:ms_root) { MoabStorageRoot.find_by(storage_location: 'spec/fixtures/storage_root01/sdr2objects') }
 
   describe '.logger_severity_level' do
@@ -269,12 +272,13 @@ RSpec.describe AuditResults do
       end
     end
 
-    context 'sends errors to Honeybadger' do
+    context 'sends errors to Honeybadger and the event service' do
       it "does not send results that aren't in HONEYBADGER_REPORT_CODES" do
         code = AuditResults::MOAB_CHECKSUM_VALID
         audit_results.add_result(code)
         expect(Honeybadger).not_to receive(:notify)
         audit_results.report_results
+        expect(Dor::Services::Client).not_to have_received(:object).with("druid:#{druid}")
       end
 
       it 'sends results in HONEYBADGER_REPORT_CODES errors' do
@@ -296,6 +300,7 @@ RSpec.describe AuditResults do
           }
         )
         audit_results.report_results
+        expect(Dor::Services::Client).to have_received(:object).with("druid:#{druid}").once
       end
     end
   end

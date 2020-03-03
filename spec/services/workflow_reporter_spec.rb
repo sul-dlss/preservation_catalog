@@ -15,7 +15,7 @@ RSpec.describe WorkflowReporter do
 
   let(:druid) { 'jj925bx9565' }
   let(:error_message) { "Failed to retrieve response #{Settings.workflow_services_url}/preservationAuditWF/something (HTTP status 404)" }
-  let(:events_client) { reporter.send(:events_client) }
+  let(:events_client) { instance_double(Dor::Services::Client::Events, create: nil) }
   let(:process_name) { 'preservation-audit' }
   let(:storage_root) { MoabStorageRoot.first }
   let(:stub_wf_client) { instance_double(Dor::Workflow::Client, create_workflow_by_name: nil) }
@@ -25,7 +25,9 @@ RSpec.describe WorkflowReporter do
   before do
     allow(Dor::Workflow::Client).to receive(:new).and_return(stub_wf_client)
     allow(Socket).to receive(:gethostname).and_return('fakehost')
-    allow(events_client).to receive(:create)
+    allow(Dor::Services::Client).to receive(:object).with("druid:#{druid}").and_return(
+      instance_double(Dor::Services::Client::Object, events: events_client)
+    )
   end
 
   # rubocop:disable RSpec/SubjectStub
@@ -95,6 +97,7 @@ RSpec.describe WorkflowReporter do
                 workflow: 'preservationAuditWF',
                 process: process_name,
                 error_msg: error_message)
+        expect(Dor::Services::Client).to have_received(:object).with("druid:#{druid}").once
         expect(events_client).to have_received(:create).once.with(
           type: 'preservation_audit_failure',
           data: {
@@ -128,6 +131,7 @@ RSpec.describe WorkflowReporter do
         reporter.report_error
 
         expect(reporter).to have_received(:create_workflow).once
+        expect(Dor::Services::Client).to have_received(:object).with("druid:#{druid}").once
         expect(events_client).to have_received(:create).once
         expect(reporter).to have_received(:report_error).twice
       end
@@ -145,6 +149,7 @@ RSpec.describe WorkflowReporter do
                 workflow: 'preservationAuditWF',
                 process: process_name,
                 status: 'completed')
+        expect(Dor::Services::Client).to have_received(:object).with("druid:#{druid}").once
         expect(events_client).to have_received(:create).once.with(
           type: 'preservation_audit_success',
           data: {
@@ -177,6 +182,7 @@ RSpec.describe WorkflowReporter do
         reporter.report_completed
 
         expect(reporter).to have_received(:create_workflow).once
+        expect(Dor::Services::Client).to have_received(:object).with("druid:#{druid}").once
         expect(events_client).to have_received(:create).once
         expect(reporter).to have_received(:report_completed).twice
       end
