@@ -3,12 +3,17 @@ rvm:
   - 2.5.3
 before_install:
   - yes | gem update --system
+  - nvm install node
+  - npm install -g openapi-enforcer-cli
 cache: bundler
 services:
   - postgresql
   - redis-server
 before_script:
   - bundle exec rake db:reset
+script:
+  - ./scripts/validate-openapi.bash || travis_terminate 1
+  - bundle exec rake
 bundler_args: "--without 'production development deploy'"
 notifications:
   email: false

@@ -51,12 +51,6 @@ class ApplicationController < ActionController::API
     id&.split(':', 2)&.last
   end
 
-  def bad_request(exception)
-    msg = '400 bad request'
-    msg = "#{msg}: #{exception.message}" if exception
-    render plain: msg, status: :bad_request
-  end
-
   def not_found(exception)
     msg = '404 Not Found'
     msg = "#{msg}: #{exception.message}" if exception

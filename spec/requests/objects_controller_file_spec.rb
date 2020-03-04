@@ -62,7 +62,8 @@ RSpec.describe ObjectsController, type: :request do
         it 'returns 400 response code with details' do
           get file_object_url(id: prefixed_druid), params: { category: 'metadata' }, headers: valid_auth_header
           expect(response).to have_http_status(:bad_request)
-          expect(response.body).to eq '400 Bad Request: No filename provided to MoabStorageService.filepath for druid bj102hs9687'
+          error_response = JSON.parse(response.body)['errors'].first
+          expect(error_response['detail']).to include('missing required parameters: filepath')
         end
       end
     end
@@ -77,10 +78,11 @@ RSpec.describe ObjectsController, type: :request do
 
     context 'when no id param' do
       context 'when id param is empty' do
-        it "returns 404 with 'Couldn't find PreservedObject'" do
+        it "returns 400 error" do
           get file_object_url(id: ''), params: { category: 'manifest', filepath: 'manifestInventory.xml' }, headers: valid_auth_header
-          expect(response).to have_http_status(:not_found)
-          expect(response.body).to eq "404 Not Found: Couldn't find PreservedObject"
+          expect(response).to have_http_status(:bad_request)
+          error_response = JSON.parse(response.body)['errors'].first
+          expect(error_response['detail']).to include('does not match value: , example: druid:bc123df4567')
         end
       end
 
@@ -94,10 +96,11 @@ RSpec.describe ObjectsController, type: :request do
     end
 
     context 'when druid invalid' do
-      it 'returns 404 response code with "Identifier has invalid suri syntax"' do
+      it 'returns 400 error' do
         get file_object_url(id: 'foobar'), params: { category: 'manifest', filepath: 'manifestInventory.xml' }, headers: valid_auth_header
-        expect(response).to have_http_status(:not_found)
-        expect(response.body).to eq '404 Not Found: Identifier has invalid suri syntax: foobar'
+        expect(response).to have_http_status(:bad_request)
+        error_response = JSON.parse(response.body)['errors'].first
+        expect(error_response['detail']).to include('does not match value: foobar, example: druid:bc123df4567')
       end
     end
   end

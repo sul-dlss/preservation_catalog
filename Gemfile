@@ -7,6 +7,7 @@ end
 
 # general Ruby/Rails gems
 gem 'aws-sdk-s3', '~> 1.17'
+gem 'committee' # Validates HTTP requests/responses per OpenAPI specification
 gem 'config' # Settings to manage configs on different instances
 gem 'dor-services-client', '~> 4.13'
 gem 'dor-workflow-client', '~> 3.8' # audit errors are reported to the workflow service

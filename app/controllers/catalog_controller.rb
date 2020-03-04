@@ -25,7 +25,7 @@ class CatalogController < ApplicationController
     render status: status_code, json: poh.results.to_json
   end
 
-  # PATCH /v1/catalog/:id
+  # PUT/PATCH /v1/catalog/:id
   # User can only update a partial record (application controls what can be updated)
   def update
     @poh = PreservedObjectHandler.new(bare_druid, incoming_version, incoming_size, moab_storage_root)
