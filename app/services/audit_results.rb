@@ -222,11 +222,7 @@ class AuditResults
   end
 
   def events_client
-    Dor::Services::Client.object(namespaced_druid).events
-  end
-
-  def namespaced_druid
-    druid.start_with?('druid:') ? druid : "druid:#{druid}"
+    Dor::Services::Client.object("druid:#{druid}").events # dor-services-app wants the namespaced druid
   end
 
   def result_code_msg(code, addl=nil)

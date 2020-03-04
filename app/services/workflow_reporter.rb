@@ -105,8 +105,10 @@ class WorkflowReporter
     workflow_client.create_workflow_by_name(namespaced_druid, PRESERVATIONAUDITWF, version: version)
   end
 
+  # prefixes the bare druid with the namespace, since dor-services-app and workflow server both
+  # want the namespaced version
   def namespaced_druid
-    druid.start_with?('druid:') ? druid : "druid:#{druid}"
+    "druid:#{druid}"
   end
 
   def workflow_client

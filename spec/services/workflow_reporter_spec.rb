@@ -60,18 +60,6 @@ RSpec.describe WorkflowReporter do
   end
 
   describe '#create_workflow' do
-    context 'when passed a namespaced druid' do
-      let(:druid) { "druid:jj925bx9565" }
-
-      it 'passes the supplied druid along to the workflow client' do
-        reporter.send(:create_workflow)
-
-        expect(stub_wf_client).to have_received(:create_workflow_by_name)
-          .once
-          .with(druid, described_class::PRESERVATIONAUDITWF, version: version)
-      end
-    end
-
     context 'when passed a bare druid' do
       it 'adds a namespace to the druid and sends it to the workflow client' do
         reporter.send(:create_workflow)
