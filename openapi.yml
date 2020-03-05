@@ -285,6 +285,7 @@ paths:
           example: '9'
           schema:
             type: string
+            nullable: true
   /v1/objects/{id}/content_diff:
     post:
       tags:
