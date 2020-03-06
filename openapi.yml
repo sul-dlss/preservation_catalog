@@ -322,10 +322,12 @@ paths:
                 version:
                   example: '9'
                   type: string
+                  nullable: true
                 subset:
                   example: 'publish'
                   description: "subset of files to diff (default: 'all')"
                   type: string
+                  nullable: true
                   enum:
                     - all
                     - shelve
