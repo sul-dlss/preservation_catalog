@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/sul-dlss/preservation_catalog.svg?branch=master)](https://travis-ci.org/sul-dlss/preservation_catalog)
+[![CircleCI](https://circleci.com/gh/sul-dlss/preservation_catalog.svg?style=svg)](https://circleci.com/gh/sul-dlss/preservation_catalog)
 [![Coverage Status](https://coveralls.io/repos/github/sul-dlss/preservation_catalog/badge.svg?branch=master)](https://coveralls.io/github/sul-dlss/preservation_catalog?branch=master)
 [![GitHub version](https://badge.fury.io/gh/sul-dlss%2Fpreservation_catalog.svg)](https://badge.fury.io/gh/sul-dlss%2Fpreservation_catalog)
 [![Docker image](https://images.microbadger.com/badges/image/suldlss/preservation_catalog.svg)](https://microbadger.com/images/suldlss/preservation_catalog "Get your own image badge on microbadger.com")
