@@ -2,9 +2,12 @@
 
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 
-require 'coveralls'
+require 'simplecov'
 require 'webmock/rspec'
-Coveralls.wear!('rails')
+SimpleCov.start :rails do
+  add_filter '/spec/'
+  add_filter '/vendor/'
+end
 
 RSpec.configure do |config|
   config.filter_run_excluding(:live_aws, :live_ibm) unless ENV['CI'] == 'true' # default exclude unless on CI

@@ -27,50 +27,44 @@ jobs:
     steps:
     - checkout
 
-    # Upgrade bundler
     - run:
-        name: Install Bundler
+        name: Install/Upgrade Bundler
         command: gem install bundler
-
-    # Which version of bundler?
     - run:
         name: Which bundler?
         command: bundle -v
-
-    # Restore bundle cache
     - restore_cache:
         keys:
         - preservation-catalog-bundle-v2-{{ checksum "Gemfile.lock" }}
         - preservation-catalog-bundle-v2-
-
     - run:
         name: Bundle Install
         command: bundle check || bundle install
-
-    # Store bundle cache
     - save_cache:
         key: preservation-catalog-bundle-v2-{{ checksum "Gemfile.lock" }}
         paths:
         - vendor/bundle
-
-    - run:
-        name: Wait for DB
-        command: dockerize -wait tcp://localhost:5432 -timeout 1m
-
-    - run:
-        name: Test prepare
-        command: bin/rails db:reset
-
     - run:
         name: Check styles using rubocop
         command: bundle exec rubocop
-
-    # Run rspec in parallel
     - run:
-        name: Run rspec in parallel
+        name: Wait for DB
+        command: dockerize -wait tcp://localhost:5432 -timeout 1m
+    - run:
+        name: Prepare DB for tests
+        command: bin/rails db:reset
+    - run:
+        name: Setup Code Climate test-reporter
         command: |
-          bundle exec rspec
-
+          curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+          chmod +x ./cc-test-reporter
+          ./cc-test-reporter before-build
+    - run:
+        name: Run rspec
+        command: bundle exec rspec
+    - run:
+        name: upload test coverage report to Code Climate
+        command: ./cc-test-reporter after-build --coverage-input-type simplecov --exit-code $?
     - run:
         name: Validate API specification
         command: |
@@ -83,9 +77,6 @@ jobs:
           echo $result
           exit 1
           }
-    # Save test results for timing analysis
-    - store_test_results:
-        path: test_results
 
   build-image:
     executor: docker-publisher

@@ -37,10 +37,11 @@ gem 'druid-tools' # for druid validation and druid-tree parsing
 group :development, :test do
   gem 'rspec-rails', '~> 3.6'
   gem 'rails-controller-testing'
-  gem 'coveralls'
   # Ruby static code analyzer http://rubocop.readthedocs.io/en/latest/
   gem 'rubocop', '~> 0.73.0'
   gem 'rubocop-rspec'
+  # Codeclimate is not compatible with 0.18+. See https://github.com/codeclimate/test-reporter/issues/413
+  gem 'simplecov', '~> 0.17.1'
   gem 'webmock'
 end
 
