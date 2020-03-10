@@ -6,6 +6,7 @@ RSpec.describe ObjectsController, type: :request do
   let(:prefixed_druid2) { 'druid:bz514sm9647' }
   let(:bare_druid) { 'bj102hs9687' }
   let(:bare_druid2) { 'bz514sm9647' }
+  let(:post_headers) { valid_auth_header.merge('Content-Type' => 'application/json') }
 
   describe 'GET #checksum' do
     context 'when object found' do
@@ -61,7 +62,7 @@ RSpec.describe ObjectsController, type: :request do
     end
   end
 
-  describe 'POST #checksums' do
+  describe 'GET/POST #checksums' do
     context 'when objects found' do
       context 'get or post allowed for multiple druids' do
         let(:expected_response) {
@@ -93,14 +94,14 @@ RSpec.describe ObjectsController, type: :request do
         end
 
         it 'POST json response contains one checksum for each unique, normalized druid (in alpha order by druid)' do
-          post checksums_objects_url, params: { druids: [prefixed_druid, prefixed_druid2, bare_druid], format: :json }, headers: valid_auth_header
+          post checksums_objects_url, params: { druids: [prefixed_druid, prefixed_druid2, bare_druid], format: :json }.to_json, headers: post_headers
           expect(response).to have_http_status(:ok)
           expect(response.body).to eq(expected_response.to_json)
         end
       end
 
       it 'csv response contains multiple object checksums, but still normalizes and de-dupes druids, and alpha sorts by druid' do
-        post checksums_objects_url, params: { druids: [prefixed_druid, prefixed_druid2], format: :csv }, headers: valid_auth_header
+        post checksums_objects_url, params: { druids: [prefixed_druid, prefixed_druid2], format: :csv }.to_json, headers: post_headers
         expected_response = CSV.generate do |csv|
           csv << [prefixed_druid, 'eric-smith-dissertation.pdf', 'aead2f6f734355c59af2d5b2689e4fb3',
                   '22dc6464e25dc9a7d600b1de6e3848bf63970595', 'e49957d53fb2a46e3652f4d399bd14d019600cf496b98d11ebcdf2d10a8ffd2f', '1000217']
@@ -115,8 +116,9 @@ RSpec.describe ObjectsController, type: :request do
 
       context 'when the caller asks for bare druids in the response' do
         it 'json response contains one checksum for each unique, normalized druid (in alpha order by druid)' do
-          params = { druids: [prefixed_druid, prefixed_druid2, bare_druid], format: :json, return_bare_druids: true }
-          post checksums_objects_url, params: params, headers: valid_auth_header
+          params = { druids: [prefixed_druid, prefixed_druid2, bare_druid], format: :json, return_bare_druids: 'true' }
+          post checksums_objects_url, params: params.to_json, headers: post_headers
+
           expected_response = [
             { "#{bare_druid}":
               [{ filename: 'eric-smith-dissertation.pdf',
@@ -141,8 +143,8 @@ RSpec.describe ObjectsController, type: :request do
         end
 
         it 'csv response contains multiple object checksums, but still normalizes and de-dupes druids, and alpha sorts by druid' do
-          params = { druids: [prefixed_druid, prefixed_druid2], format: :csv, return_bare_druids: true }
-          post checksums_objects_url, params: params, headers: valid_auth_header
+          params = { druids: [prefixed_druid, prefixed_druid2], format: :csv, return_bare_druids: 'true' }
+          post checksums_objects_url, params: params.to_json, headers: post_headers
           expected_response = CSV.generate do |csv|
             csv << [bare_druid, 'eric-smith-dissertation.pdf', 'aead2f6f734355c59af2d5b2689e4fb3',
                     '22dc6464e25dc9a7d600b1de6e3848bf63970595', 'e49957d53fb2a46e3652f4d399bd14d019600cf496b98d11ebcdf2d10a8ffd2f', '1000217']
@@ -159,12 +161,12 @@ RSpec.describe ObjectsController, type: :request do
 
     context 'when object not found' do
       it 'returns a 409 response code' do
-        post checksums_objects_url, params: { druids: [prefixed_druid, 'druid:xx123yy9999'], format: :json }, headers: valid_auth_header
+        post checksums_objects_url, params: { druids: [prefixed_druid, 'druid:xx123yy9999'], format: :json }.to_json, headers: post_headers
         expect(response).to have_http_status(:conflict)
       end
 
       it 'body has additional information from the exception if available' do
-        post checksums_objects_url, params: { druids: [prefixed_druid, 'druid:xx123yy9999'], format: :json }, headers: valid_auth_header
+        post checksums_objects_url, params: { druids: [prefixed_druid, 'druid:xx123yy9999'], format: :json }.to_json, headers: post_headers
         expect(response.body).to eq "409 Conflict - \nStorage object(s) not found for xx123yy9999"
       end
     end
@@ -173,7 +175,7 @@ RSpec.describe ObjectsController, type: :request do
       before do
         allow(MoabStorageService).to receive(:retrieve_content_file_group).with(bare_druid).and_call_original
         allow(MoabStorageService).to receive(:retrieve_content_file_group).with(bare_druid2).and_raise(NoMethodError, 'I had a nil result')
-        post checksums_objects_url, params: { druids: [bare_druid, bare_druid2], format: :json }, headers: valid_auth_header
+        post checksums_objects_url, params: { druids: [bare_druid, bare_druid2], format: :json }.to_json, headers: post_headers
       end
 
       it 'returns a 409 response code' do
@@ -188,7 +190,7 @@ RSpec.describe ObjectsController, type: :request do
         allow(MoabStorageService).to receive(:retrieve_content_file_group).with('xx123yy9999').and_call_original
         allow(MoabStorageService).to receive(:retrieve_content_file_group).with(bare_druid).and_raise(StandardError, 'I had a stderr')
         allow(MoabStorageService).to receive(:retrieve_content_file_group).with(bare_druid2).and_raise(NoMethodError, 'I had a nil result')
-        post checksums_objects_url, params: { druids: ['xx123yy9999', bare_druid, bare_druid2], format: :json }, headers: valid_auth_header
+        post checksums_objects_url, params: { druids: ['xx123yy9999', bare_druid, bare_druid2], format: :json }.to_json, headers: post_headers
         expect(response.body).to match "409 Conflict -"
         expect(response.body).to include "\nStorage object(s) not found for xx123yy9999"
         expect(response.body).to include "\nProblems generating checksums for #{bare_druid} (#<StandardError: I had a stderr>)"
@@ -199,16 +201,16 @@ RSpec.describe ObjectsController, type: :request do
     context 'when no druids param' do
       context 'when param is empty' do
         it 'body has additional information from the exception if available' do
-          post checksums_objects_url, params: { druids: [], format: :json }, headers: valid_auth_header
+          post checksums_objects_url, params: { druids: [], format: :json }.to_json, headers: post_headers
           expect(response).to have_http_status(:bad_request)
           error_response = JSON.parse(response.body)['errors'].first
-          expect(error_response['detail']).to include('does not match value: , example: druid:bc123df4567')
+          expect(error_response['detail']).to include('druids [] contains fewer than min items')
         end
       end
 
       context "when no param" do
         it 'body has additional information from the exception if available' do
-          post checksums_objects_url, params: { format: :json }, headers: valid_auth_header
+          post checksums_objects_url, params: { format: :json }.to_json, headers: post_headers
           expect(response).to have_http_status(:bad_request)
           error_response = JSON.parse(response.body)['errors'].first
           expect(error_response['detail']).to include('schema missing required parameters: druids')
@@ -218,7 +220,7 @@ RSpec.describe ObjectsController, type: :request do
 
     context 'when druid invalid' do
       it 'returns 400 response code' do
-        post checksums_objects_url, params: { druids: [prefixed_druid, 'foobar'], format: :json }, headers: valid_auth_header
+        post checksums_objects_url, params: { druids: [prefixed_druid, 'foobar'], format: :json }.to_json, headers: post_headers
         expect(response).to have_http_status(:bad_request)
         error_response = JSON.parse(response.body)['errors'].first
         expect(error_response['detail']).to include('does not match value: foobar, example: druid:bc123df4567')
@@ -227,7 +229,7 @@ RSpec.describe ObjectsController, type: :request do
 
     context 'when unsupported response format' do
       it 'returns 406 response code' do
-        post checksums_objects_url, params: { druids: [prefixed_druid], format: :xml }, headers: valid_auth_header
+        post checksums_objects_url, params: { druids: [prefixed_druid], format: :xml }.to_json, headers: post_headers
         expect(response).to have_http_status(:not_acceptable)
       end
     end
