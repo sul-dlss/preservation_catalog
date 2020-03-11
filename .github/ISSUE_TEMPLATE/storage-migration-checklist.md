@@ -16,6 +16,10 @@ assignees: ''
 Note that many old storage roots will migrate to each of the new storage bricks, so not all weekend migrations will be introducing a new storage brick into the ecosystem.
 
 
+## Note about shared_configs PRs
+
+The instructions below recommend PRs for shared_configs changes.  It would be great to get those PRs reviewed before merging via the usual process, but if no one is available to review them, _use your judgment_.  If you find yourself in a situation where you have to merge your own shared_configs PR for the migration not to stall waiting for review, that's fine, just see if you can cross check your work thoroughly yourself.  E.g., try copying and pasting the path for a new storage root entry from the shared_configs PR, and then `ls`ing it from a pres cat VM to make sure it doesn't contain typos.
+
 ## Notes & advice for running validation and reporting commands
 
 * Reporting and validation rake tasks should be run from a production preservation catalog VM.  It may be easiest to always use `preservation-catalog-prod-01` for consistency.
@@ -121,7 +125,7 @@ Run all validation checks on Moabs and generate reports.  Note that error detail
 
     If you're not confident that CV and M2C will finish by Sunday evening, giving them more resque workers may help up to a point.  Note that CV requires CPU to generate checksums, so upping those workers could peg out the worker VMs.  Additionally, file reads require network bandwidth (because storage roots are mounted via NFS), and so may eventually hit IO limits.  Discuss with ops if this is a concern.
 
-  - [ ] have someone merge shared_configs PR
+  - [ ] have someone merge shared_configs PR (if possible, see note at top)
 
   - [ ] for preservation-catalog repo, rebase `migration-weekend` branch on top of the latest `master`
 
@@ -194,7 +198,7 @@ The migrated moabs should no longer be visible in the old location (e.g., if mig
           <snip>
           services-disk22: '/services-disk22'
       ```
-  - [ ] have someone merge shared_configs PR
+  - [ ] have someone merge shared_configs PR (if possible, see note at top)
 
 - [ ] use capistrano to make prescat aware of new shared_configs
 
@@ -317,7 +321,7 @@ Do check for honeybadger errors while audit validations are running
     zips_made: 6
     ```
 
-  - [ ] have someone merge shared_configs PR
+  - [ ] have someone merge shared_configs PR (if possible, see note at top)
 
   - [ ] deploy `master` branch of preservation_catalog to prod
 
@@ -357,7 +361,7 @@ Do check for honeybadger errors while audit validations are running
           <snip>
           - '/services-disk22'
       ```
-  - [ ] have someone merge shared_configs PR
+  - [ ] have someone merge shared_configs PR (if possible, see note at top)
 
 - [ ] deploy `master` branch of preservation_robots to use the new shared_configs and to turn the workers back on
 
