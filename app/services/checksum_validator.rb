@@ -27,6 +27,9 @@ class ChecksumValidator
     validate_manifest_inventories
     validate_signature_catalog
 
+    # This is to deal with db connection timeouts.
+    ActiveRecord::Base.clear_active_connections!
+
     transaction_ok = ActiveRecordUtils.with_transaction_and_rescue(results) do
       complete_moab.last_checksum_validation = Time.current
       if results.result_array.empty?
