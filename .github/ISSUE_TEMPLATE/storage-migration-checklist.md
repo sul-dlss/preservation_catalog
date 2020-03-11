@@ -218,7 +218,7 @@ The migrated moabs should no longer be visible in the old location (e.g., if mig
 #### Update Affected Moabs In PresCat
 
 - [ ] run rake migration task to tell prescat that Moabs have moved (as with the reporting and auditing `rake` tasks, provide the storage root names, _not_ their full paths)
-  - **NOTE** You may want to run this task in screen, as it can take a couple minutes, and will output a list of all druids migrated (which will be quite long).
+  - **NOTE** You should run this task in screen, as it can take a couple minutes, and you don't want to interrupt it in the middle.
 
     ```sh
     # from your laptop:
