@@ -105,7 +105,7 @@ Run all validation checks on Moabs and generate reports.  Note that error detail
 - **Shut Down Preservation Catalog Archival Workers, ReST API and weekend crons**
   - [ ] create a shared_configs PR (***to base branch `preservation-catalog-prod`***) that comments out all archive copy related workers (which create, deliver, and audit archival zips of moab version directories).
 
-    `shared_configs/config/resque-pool.yml` should look like this:
+    `config/resque-pool.yml` should look like this:
     ```yml
     c2m: 6
     checksum_validation: 6
@@ -187,7 +187,7 @@ The migrated moabs should no longer be visible in the old location (e.g., if mig
 
   - [ ] create a shared_configs PR (***to base branch `preservation-catalog-prod`***) that adjusts storage root information.
 
-    `storage_root_map.default` in `shared_configs/config/settings/production.yml` should have the target storage location on the new brick named and added, and the old storage root entry removed
+    `storage_root_map.default` in `config/settings/production.yml` should have the target storage location on the new brick named and added, and the old storage root entry removed
 
       ```yml
       storage_root_map:
@@ -303,7 +303,7 @@ Do check for honeybadger errors while audit validations are running
 
   - [ ] create a shared_configs PR (***to base branch `preservation-catalog-prod`***) that reverts the worker changes made above, and keeps the new storage root config.
 
-    `shared_configs/config/resque-pool.yml` should look like this:
+    `config/resque-pool.yml` should look like this:
     ```yml
     c2m: 6
     checksum_validation: 6
@@ -377,7 +377,21 @@ Do check for honeybadger errors while audit validations are running
 
 #### Update shared_configs for technical-metadata-service
 
-- [ ] update shared_configs for branch 'dor-techmd-prod' with the new storage root information
+- [ ] update shared_configs for technical-metadata-service with the new storage root information
+
+  - [ ] create a shared_configs PR (***to base branch `dor-techmd-prod`***) that adjusts storage root information.
+
+    `storage_root_map.default` in `config/settings/production.yml` should have the target storage location on the new brick named and added, and the old storage root entry removed
+
+      ```yml
+      storage_root_map:
+        default:
+          # services-disk02: '/services-disk02' # lines to be removed, left here for illustrative purposes
+          # services-disk03: '/services-disk03'
+          services-disk04: '/services-disk04'
+          <snip>
+          services-disk22: '/services-disk22'
+      ```
 
   - [ ] deploy `master` branch of technical-metadata-service to use the new shared_configs
 
