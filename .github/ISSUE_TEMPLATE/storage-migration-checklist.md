@@ -66,13 +66,13 @@ Run all validation checks on Moabs and generate reports.  Note that error detail
   - preservation-catalog: https://app.honeybadger.io/projects/54415/faults?q=-is%3Aresolved+-is%3Aignored
   - preservation_robots: https://app.honeybadger.io/projects/55564/faults?q=-is%3Aresolved+-is%3Aignored
 
-### Negotiate with Andrew/Julian as to how early on Friday you can do the Following:
+### Negotiate with Andrew/Julian as to how early on (Friday) you can do the Following:
 
 - [ ] get list of druids on storage root ```RAILS_ENV=production bundle exec rake prescat:reports:msr_druids[storage_root_name,druids_b4]```
 
 - [ ] (Ops) turn off nagios alerts for preservation_robots prod boxes
 
-- Shut Down Preservation Robots Workers
+- **Shut Down Preservation Robots Workers**
   - [ ] look for running preservation robots workers in the resque GUI:  https://robot-console-prod.stanford.edu/workers
   - [ ] shut off the workers manually by killing (only) the `resque-pool-master` process (`hotswap` interferes with other cap resque commands)
 
@@ -90,9 +90,15 @@ Run all validation checks on Moabs and generate reports.  Note that error detail
     ```
   - [ ] ensure there are no running preservation robots workers in the resque GUI:  https://robot-console-prod.stanford.edu/workers
 
+- [ ] (Ops) turn off nagios alerts for accessioning workers
+
+- **Shut Down Accessioning Robots Worker**
+  - [ ] @suntzu or some other not-naomi person should document how to do this.
+  - [ ] affected:  versioning of objects, creating contentMetadata, creating technicalMetadata, ...
+
 - [ ] (Ops) turn off nagios alerts for preservation_catalog prod boxes
 
-- Shut Down Preservation Catalog Archival Workers, ReST API and weekend crons
+- **Shut Down Preservation Catalog Archival Workers, ReST API and weekend crons**
   - [ ] create a shared_configs PR (***to base branch `preservation-catalog-prod`***) that comments out all archive copy related workers (which create, deliver, and audit archival zips of moab version directories).
 
     `shared_configs/config/resque-pool.yml` should look like this:
@@ -364,6 +370,19 @@ Do check for honeybadger errors while audit validations are running
   - [ ] confirm there are preservation robots workers available via the resque GUI:  https://robot-console-prod.stanford.edu/workers
 
 - [ ] (Ops) turn on nagios alerts for preservation_robots prod boxes
+
+#### Update shared_configs for technical-metadata-service
+
+- [ ] update shared_configs for branch 'dor-techmd-prod' with the new storage root information
+
+  - [ ] deploy `master` branch of technical-metadata-service to use the new shared_configs
+
+    ```sh
+    bundle exec cap prod deploy
+    ```
+
+  - [ ] confirm your capistrano logs show the shared_configs being updated
+
 
 ## After Cutover Weekend
 
