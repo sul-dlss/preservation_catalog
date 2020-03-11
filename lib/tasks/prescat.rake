@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'csv'
+
 namespace :prescat do
   desc 'Migrate storage root, returning druids of all migrated moabs'
   task :migrate_storage_root, [:from, :to] => :environment do |_task, args|
@@ -10,7 +12,17 @@ namespace :prescat do
     next unless input == 'YES'
 
     migration_service = StorageRootMigrationService.new(args[:from], args[:to])
-    migration_service.migrate.each { |druid| puts druid }
+    timestamp_str = DateTime.now.utc.iso8601.gsub(':', '') # colons are a pain to deal with on CLI, so just remove them
+    filename = File.join(Rails.root, 'log', "migrate_moabs_from_#{args[:from]}_to_#{args[:to]}_#{timestamp_str}.csv")
+    count = 0
+    CSV.open(filename, 'w') do |csv|
+      csv << ['druid']
+      migration_service.migrate.each do |druid|
+        csv << [druid]
+        count += 1
+      end
+    end
+    puts "migrated #{count} CompleteMoab records from #{args[:from]} to #{args[:to]}, druid list available at #{filename}"
   end
 
   namespace :reports do
