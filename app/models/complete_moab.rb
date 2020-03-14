@@ -109,6 +109,28 @@ class CompleteMoab < ApplicationRecord
     version == preserved_object.current_version
   end
 
+  # This method can be used to update the CompleteMoab record in Preservation Catalog when the
+  # corresponding Moab directory on the file system has moved from its old storage root to a new
+  # one (e.g. when migrating off of old storage hardware in bulk, or when manually moving a Moab
+  # that's growing to a storage root with more space).
+  #
+  # Sets status to 'validity_unknown' and clears validation details, under the assumption that
+  # the moab moved across file systems, resulting in newly written bits and a need for revalidation.
+  #
+  # Like other update methods in this class, it leaves saving to the caller.
+  #
+  # @param [MoabStorageRoot] to_root the storage root to which the Moab's been moved on the file system
+  # @return [CompleteMoab] the instance on which the method was called
+  def migrate_moab(to_root)
+    self.from_moab_storage_root = moab_storage_root
+    self.moab_storage_root = to_root
+    self.status = 'validity_unknown' # an after_save hook watches for this status and queues CV
+    self.status_details = nil
+    self.last_moab_validation = nil
+    self.last_checksum_validation = nil
+    self
+  end
+
   def self.normalize_date(timestamp)
     return timestamp if timestamp.is_a?(Time) || timestamp.is_a?(ActiveSupport::TimeWithZone)
     Time.parse(timestamp).utc

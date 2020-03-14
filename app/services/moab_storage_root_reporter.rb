@@ -91,6 +91,7 @@ class MoabStorageRootReporter
     @msr_names[msr_id] ||= MoabStorageRoot.find(msr_id).name
   end
 
+  # TODO: make methods like this and #write_csv that don't leverage internal state into class methods
   def status_text_from_code(status_code)
     CompleteMoab.statuses.key(status_code)
   end
