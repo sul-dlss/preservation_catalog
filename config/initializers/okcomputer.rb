@@ -82,12 +82,19 @@ end
 # check for the right number of workers
 class WorkerCountCheck < OkComputer::Check
   def check
-    count = Settings.total_worker_count
-    if Resque.workers.count == count
-      mark_message "#{count} workers are up."
+    expected_count = Settings.total_worker_count
+    actual_count = Resque.workers.count
+    message = "#{actual_count} out of #{expected_count} expected workers are up."
+    if actual_count == expected_count
+      mark_message message
+    elsif actual_count > expected_count
+      # this can happen briefly with hot_swap when deploying,
+      #   but if it persists, there is likely a problem (or a big file being uploaded to cloud)
+      mark_failure
+      mark_message "TOO MANY WORKERS: #{message}"
     else
       mark_failure
-      mark_message "Not all #{count} workers are up!"
+      mark_message "TOO FEW WORKERS: #{message}"
     end
   end
   OkComputer::Registry.register 'feature-worker-count', WorkerCountCheck.new
