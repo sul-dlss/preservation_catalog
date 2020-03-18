@@ -17,6 +17,7 @@ Rails application to track, audit and replicate archival artifacts associated wi
     * [Catalog to Moab](#c2m) (C2M) existence/version check
     * [Checksum Validation](#cv) (CV)
     * [Seed the catalog](#seed-the-catalog-with-data-about-the-moabs-on-the-storage-roots-the-catalog-tracks----presumes-rake-dbseed-already-performed)
+    * [Update the Catalog Because a Moab Moved](#migrate_moab_manually)
 * [Development](#development)
     * [Dockerized Development](#docker)
 * [Deploying](#deploying)
@@ -289,6 +290,26 @@ Or for all roots:
 ```ruby
 MoabStorageRoot.find_each { |msr| Audit::MoabToCatalog.seed_catalog_for_dir(msr.storage_location) }
 ```
+
+## <a name="migrate_moab_manually"> Update the catalog when moving a Moab to a different storage root
+
+Sometimes it's necessary to move Moabs from one storage root to another, either in bulk as part of a storage hardware migration, or manually for a small number, as when an existing Moab might get too much additional content for the storage root it's currently on.
+
+There are rake tasks and documentation to support the bulk migration scenario.  See the [migration issue template](.github/ISSUE_TEMPLATE/storage-migration-checklist.md).
+
+When the need for moving a single Moab arises, the repository manager or a developer should:
+1. [on the file system] Move the Moab to a storage root with enough space
+1. [from pres cat VM rails console] Update prescat with the new location
+1. Accession the additional content to be preserved
+
+Updating Preservation Catalog to reflect the Moab's new location can be done using Rails console, like so:
+```ruby
+target_storage_root = MoabStorageRoot.find_by!(name: '/services-disk-with-lots-of-free-space')
+cm = CompleteMoab.by_druid('ab123cd4567')
+cm.migrate_moab(target_storage_root).save! # save! is important.  migrate_moab doesn't save automatically, to allow building larger transactions.
+```
+
+Under the assumption that the contents of the Moab were written anew in the target location, `#migrate_moab` will clear all audit timestamps related to the state of the Moab on our disks, along with `status_details`.  `status` will similarly be re-set to `validity_unknown`, and a checksum validation job will automatically be queued for the Moab.
 
 ## Development
 
