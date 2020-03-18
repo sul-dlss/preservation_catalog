@@ -144,6 +144,50 @@ RSpec.describe CompleteMoab, type: :model do
     end
   end
 
+  describe '#migrate_moab' do
+    let(:target_storage_root) { create(:moab_storage_root) }
+    let(:yesterday) { now - 1.day }
+    let(:cm) do
+      # pretend we're moving a nice recently validated moab
+      create(
+        :complete_moab,
+        args.merge(
+          status: 'ok',
+          status_details: 'status now ok',
+          last_moab_validation: yesterday,
+          last_checksum_validation: yesterday,
+          last_version_audit: yesterday,
+          last_archive_audit: yesterday
+        )
+      )
+    end
+
+    # rubocop:disable RSpec/MultipleExpectations
+    it 'updates the current storage root, records the old one, and clears audit info' do
+      expect(cm.from_moab_storage_root).to be_nil
+      orig_storage_root = cm.moab_storage_root
+
+      cm.migrate_moab(target_storage_root).save!
+      cm.reload
+
+      expect(cm.moab_storage_root).to eq(target_storage_root)
+      expect(cm.from_moab_storage_root).to eq(orig_storage_root)
+      expect(cm.status).to eq('validity_unknown')
+      expect(cm.status_details).to be_nil
+      expect(cm.last_moab_validation).to be_nil
+      expect(cm.last_checksum_validation).to be_nil
+      expect(cm.last_version_audit).to be_nil
+      expect(cm.last_archive_audit).to be <= now - 1.day # we didn't touch the cloud archived copies
+    end
+    # rubocop:enable RSpec/MultipleExpectations
+
+    it 'queues a checksum validation job' do
+      allow(ChecksumValidationJob).to receive(:perform_later).with(cm)
+      cm.migrate_moab(target_storage_root).save!
+      expect(ChecksumValidationJob).to have_received(:perform_later).with(cm)
+    end
+  end
+
   context 'ordered (by last version_audited) and unordered least_recent_version_audit' do
     let!(:newer_timestamp_cm) do
       create(:complete_moab, args.merge(version: 6, last_version_audit: (now - 1.day)))

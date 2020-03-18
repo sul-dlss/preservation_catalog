@@ -128,6 +128,7 @@ class CompleteMoab < ApplicationRecord
     self.status_details = nil
     self.last_moab_validation = nil
     self.last_checksum_validation = nil
+    self.last_version_audit = nil
     self
   end
 
