@@ -11,7 +11,7 @@ class StorageRootMigrationService
   def migrate
     druids = []
     from_root.complete_moabs.find_each do |complete_moab|
-      migrate_moab(complete_moab)
+      complete_moab.migrate_moab(to_root).save!
       druids << complete_moab.preserved_object.druid
     end
     druids
@@ -25,15 +25,5 @@ class StorageRootMigrationService
 
   def to_root
     @to_root ||= MoabStorageRoot.find_by!(name: @to_name)
-  end
-
-  def migrate_moab(moab)
-    moab.from_moab_storage_root = from_root
-    moab.moab_storage_root = to_root
-    moab.status = 'validity_unknown' # This will queue a CV.
-    moab.status_details = nil
-    moab.last_moab_validation = nil
-    moab.last_checksum_validation = nil
-    moab.save!
   end
 end
