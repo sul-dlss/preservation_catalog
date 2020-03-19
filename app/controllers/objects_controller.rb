@@ -63,7 +63,7 @@ class ObjectsController < ApplicationController
       format.csv do
         render plain: to_csv_checksum_list(checksum_list)
       end
-      format.any { render status: :not_acceptable, plain: 'Format not acceptable' }
+      format.any { render build_error('406 - Format not acceptable', :not_acceptable) }
     end
   end
 

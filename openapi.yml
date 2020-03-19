@@ -210,7 +210,7 @@ paths:
         '400':
           description: Bad request (e.g., malformed druid(s))
         '406':
-          description: Unsupported response format
+          $ref: '#/components/responses/Unsupported' # description: Unsupported response format
         '409':
           $ref: '#/components/responses/Conflict'
       requestBody:
@@ -373,6 +373,12 @@ components:
             $ref: '#/components/schemas/Error'
     Conflict:
       description: Conflict - one or more missing or error-state objects
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unsupported:
+      description: Unsupported response format
       content:
         application/json:
           schema:
