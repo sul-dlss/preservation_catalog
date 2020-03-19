@@ -44,7 +44,7 @@ module PreservationCatalog
     #       valid responses. Currently, uncommenting this line causes 24 spec
     #       failures. See https://github.com/sul-dlss/preservation_catalog/issues/1407
     #
-    # config.middleware.use Committee::Middleware::ResponseValidation, schema_path: 'openapi.yml'
+    config.middleware.use Committee::Middleware::ResponseValidation, schema_path: 'openapi.yml'
 
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration should go into files in config/initializers
