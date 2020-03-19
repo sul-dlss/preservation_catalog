@@ -138,8 +138,8 @@ paths:
                 $ref: '#/components/schemas/ChecksumsForObject'
         '400':
           description: Bad request (e.g., malformed druid)
-        '404':
-          description: Object not found
+        '404':          
+          $ref: '#/components/responses/NotFound'
       parameters:
         - name: id
           in: path
@@ -212,7 +212,7 @@ paths:
         '406':
           description: Unsupported response format
         '409':
-          description: Conflict - one or more missing or error-state objects
+          $ref: '#/components/responses/Conflict'
       requestBody:
         required: true
         content:
@@ -358,6 +358,25 @@ components:
                     $ref: '#/components/schemas/Druid'
                 required:
                   - druid
+  responses:
+    OK:
+      description: A generic HTTP OK response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/OK'
+    NotFound:
+      description: The specified object was not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Conflict:
+      description: Conflict - one or more missing or error-state objects
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
   schemas:
     Druid:
       description: Digital Repository Unique Identifier (bare or prefixed)
@@ -512,6 +531,22 @@ components:
           - sha1
           - sha256
           - filesize
+    ChecksumsForObjects:
+      description: A representation of all files and checksums for a list of objects
+      type: array
+      minItems: 1
+      items:
+        type: object
+        additionalProperties:
+          type: object
+          properties:
+            druid:
+              $ref: '#/components/schemas/Druid'
+            checksums:
+              $ref: '#/components/schemas/ChecksumsForObject'
+    CSVForObjects:
+      description: A csv representation of all files and checksums for a list of objects
+      type: string
     PreservedObject:
       description: A preserved object instance
       type: object
@@ -558,6 +593,26 @@ components:
       required:
         - druid
         - result_array
+    OK:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+      required:
+        - code
+        - message
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+      required:
+        - code
+        - message
   securitySchemes:
     bearerAuth:
       type: http
