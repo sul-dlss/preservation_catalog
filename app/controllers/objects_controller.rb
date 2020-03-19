@@ -39,6 +39,8 @@ class ObjectsController < ApplicationController
   # GET /v1/objects/:id/checksum
   def checksum
     render json: content_files_checksums(druid).to_json
+  rescue Moab::ObjectNotFoundException => e
+    render build_error('Object not found in moab', :not_found, e.message)
   end
 
   # return the checksums and filesize for a list of druids (supplied with druid: prefix)
@@ -50,7 +52,7 @@ class ObjectsController < ApplicationController
     bad_recs_msg = "\nStorage object(s) not found for #{missing_druids.join(', ')}" if missing_druids.any?
     bad_recs_msg = (bad_recs_msg || '') + "\nProblems generating checksums for #{errored_druids.join(', ')}" if errored_druids.any?
     if bad_recs_msg.present?
-      render(plain: "409 Conflict - #{bad_recs_msg}", status: :conflict)
+      render build_error('409 Conflict', :conflict, bad_recs_msg)
       return
     end
 
@@ -136,5 +138,38 @@ class ObjectsController < ApplicationController
     content_group.path_hash.map do |file, signature|
       { filename: file, md5: signature.md5, sha1: signature.sha1, sha256: signature.sha256, filesize: signature.size }
     end
+  end
+
+  # JSON-API response
+  def build_response(code, body)
+    {
+      json: {
+        data: [
+          {
+            "status": code,
+            "detail": body
+          }
+        ]
+      },
+      content_type: 'application/vnd.api+json',
+      status: code
+    }
+  end
+
+  # JSON-API error response. See https://jsonapi.org/.
+  def build_error(msg, code, detail = nil)
+    {
+      json: {
+        errors: [
+          {
+            "status": code,
+            "title": msg,
+            "detail": detail
+          }
+        ]
+      },
+      content_type: 'application/vnd.api+json',
+      status: code
+    }
   end
 end

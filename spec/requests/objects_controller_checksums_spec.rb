@@ -183,7 +183,8 @@ RSpec.describe ObjectsController, type: :request do
       end
 
       it 'body has additional information from the exception if available' do
-        expect(response.body).to eq "409 Conflict - \nProblems generating checksums for #{bare_druid2} (#<NoMethodError: I had a nil result>)"
+        expect(response.body).to include '409 Conflict'
+        expect(response.body).to include "Problems generating checksums for #{bare_druid2}"
       end
 
       it 'body has information about both missing and errored druids if available' do
@@ -191,9 +192,9 @@ RSpec.describe ObjectsController, type: :request do
         allow(MoabStorageService).to receive(:retrieve_content_file_group).with(bare_druid).and_raise(StandardError, 'I had a stderr')
         allow(MoabStorageService).to receive(:retrieve_content_file_group).with(bare_druid2).and_raise(NoMethodError, 'I had a nil result')
         post checksums_objects_url, params: { druids: ['xx123yy9999', bare_druid, bare_druid2], format: :json }.to_json, headers: post_headers
-        expect(response.body).to match "409 Conflict -"
-        expect(response.body).to include "\nStorage object(s) not found for xx123yy9999"
-        expect(response.body).to include "\nProblems generating checksums for #{bare_druid} (#<StandardError: I had a stderr>)"
+        expect(response.body).to match "409 Conflict"
+        expect(response.body).to include "Storage object(s) not found for xx123yy9999"
+        expect(response.body).to include "Problems generating checksums for #{bare_druid} (#<StandardError: I had a stderr>)"
         expect(response.body).to include ", #{bare_druid2} (#<NoMethodError: I had a nil result>)"
       end
     end
