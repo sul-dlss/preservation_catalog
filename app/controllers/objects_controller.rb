@@ -22,7 +22,7 @@ class ObjectsController < ApplicationController
   # - version (positive integer (as a string)) version of Moab
   def file
     if params[:version] && !params[:version].match?(/^[1-9]\d*$/)
-      render(plain: "400 Bad Request: version parameter must be positive integer", status: :bad_request)
+      render build_error("400 Bad Request: version parameter must be positive integer", :bad_request)
       return
     end
 

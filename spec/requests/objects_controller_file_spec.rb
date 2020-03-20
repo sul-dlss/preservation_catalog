@@ -55,7 +55,7 @@ RSpec.describe ObjectsController, type: :request do
             params = { category: 'manifest', filepath: 'manifestInventory.xml', version: 'v3' }
             get file_object_url(id: prefixed_druid), params: params, headers: valid_auth_header
             expect(response).to have_http_status(:bad_request)
-            expect(response.body).to eq '400 Bad Request: version parameter must be positive integer'
+            expect(response.body).to include '400 Bad Request: version parameter must be positive integer'
           end
         end
       end
