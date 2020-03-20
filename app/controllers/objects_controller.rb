@@ -10,6 +10,8 @@ class ObjectsController < ApplicationController
   # GET /v1/objects/:id.json
   def show
     render json: PreservedObject.find_by!(druid: druid).to_json
+  rescue ActiveRecord::RecordNotFound => e
+    render build_error('404 Object Not Found', :not_found, e.message)
   end
 
   # return a specific file from the Moab

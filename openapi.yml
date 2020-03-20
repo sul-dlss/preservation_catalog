@@ -116,7 +116,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/PreservedObject'
         '404':
-          description: Preserved object not found
+          $ref: '#/components/responses/NotFound' # description: Preserved object not found
       parameters:
         - name: id
           in: path
