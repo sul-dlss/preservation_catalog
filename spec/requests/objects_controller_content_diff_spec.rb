@@ -54,7 +54,8 @@ RSpec.describe ObjectsController, type: :request do
                  params: { content_metadata: content_md, version: '666' }.to_json,
                  headers: valid_auth_header.merge('Content-Type' => 'application/json')
             expect(response).to have_http_status(:internal_server_error)
-            expect(response.body).to eq '500 Unable to get content diff: Version ID 666 does not exist'
+            expect(response.body).to include '500 Unable to get content diff'
+            expect(response.body).to include 'Version ID 666 does not exist'
           end
         end
 
@@ -64,7 +65,8 @@ RSpec.describe ObjectsController, type: :request do
                  params: { content_metadata: content_md, version: 'v3' }.to_json,
                  headers: valid_auth_header.merge('Content-Type' => 'application/json')
             expect(response).to have_http_status(:bad_request)
-            expect(response.body).to eq '400 Bad Request: version parameter must be positive integer'
+            expect(response.body).to include '400 Bad Request'
+            expect(response.body).to include 'version parameter must be positive integer'
           end
         end
       end
@@ -92,7 +94,8 @@ RSpec.describe ObjectsController, type: :request do
                params: { content_metadata: content_md }.to_json,
                headers: valid_auth_header.merge('Content-Type' => 'application/json')
           expect(response).to have_http_status(:internal_server_error)
-          expect(response.body).to eq '500 Unable to get content diff: my error'
+          expect(response.body).to include '500 Unable to get content diff'
+          expect(response.body).to include 'my error'
           expect(Honeybadger).to have_received(:notify).with(Moab::MoabRuntimeError)
         end
       end

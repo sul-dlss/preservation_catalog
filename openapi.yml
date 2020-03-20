@@ -299,9 +299,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ContentDiff'
         '400':
-          description: Version parameter not a positive integer or parameter error raised
+          $ref: '#/components/responses/BadRequest' # description: Version parameter not a positive integer or parameter error raised
         '500':
-          description: Unable to get content diff
+          $ref: '#/components/responses/InternalServer' # description: Unable to get content diff
       parameters:
         - name: id
           in: path
@@ -365,6 +365,18 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/OK'
+    BadRequest:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    InternalServer:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
     NotFound:
       description: The specified object was not found
       content:

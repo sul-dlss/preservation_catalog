@@ -80,14 +80,14 @@ class ObjectsController < ApplicationController
   # - version (positive integer (as a string)) version of Moab to be compared against (defaults to latest version)
   def content_diff
     if params[:version] && !params[:version].match?(/^[1-9]\d*$/)
-      render(plain: "400 Bad Request: version parameter must be positive integer", status: :bad_request)
+      render build_error("400 Bad Request: version parameter must be positive integer", :bad_request)
       return
     end
     obj_version = params[:version].to_i if params[:version]&.match?(/^[1-9]\d*$/)
     subset = params[:subset] ||= 'all'
     render(xml: MoabStorageService.content_diff(druid, params[:content_metadata], subset, obj_version).to_xml)
   rescue Moab::MoabRuntimeError => e
-    render(plain: "500 Unable to get content diff: #{e}", status: :internal_server_error)
+    render build_error("500 Unable to get content diff", :internal_server_error, e.message)
     Honeybadger.notify(e)
   end
 
