@@ -254,7 +254,7 @@ paths:
         '400':
           description: Version parameter not positive integer or other problem with request params
         '404':
-          description: Object or file or version not found
+          $ref: '#/components/responses/NotFound' # description: Object or file or version not found
       parameters:
         - name: id
           in: path

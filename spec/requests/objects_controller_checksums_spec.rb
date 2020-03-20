@@ -167,7 +167,8 @@ RSpec.describe ObjectsController, type: :request do
 
       it 'body has additional information from the exception if available' do
         post checksums_objects_url, params: { druids: [prefixed_druid, 'druid:xx123yy9999'], format: :json }.to_json, headers: post_headers
-        expect(response.body).to eq "409 Conflict - \nStorage object(s) not found for xx123yy9999"
+        expect(response.body).to include "409 Conflict"
+        expect(response.body).to include "Storage object(s) not found for xx123yy9999"
       end
     end
 

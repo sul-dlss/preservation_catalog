@@ -29,10 +29,11 @@ class ObjectsController < ApplicationController
     if location
       send_file location
     else
-      render(plain: "404 File Not Found: #{druid}, #{params[:category]}, #{params[:filepath]}, #{params[:version]}", status: :not_found)
+      # render(plain: "404 File Not Found: #{druid}, #{params[:category]}, #{params[:filepath]}, #{params[:version]}", status: :not_found)
+      render build_error("404 File Not Found", :not_found)
     end
   rescue Moab::MoabRuntimeError => e
-    render(plain: "404 Not Found: #{e}", status: :not_found)
+    render build_error("404 File Not Found", :not_found, e.message)
   end
 
   # return the checksums and filesize for a single druid (supplied with druid: prefix)
