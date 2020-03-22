@@ -19,7 +19,7 @@ RSpec.describe ObjectsController, type: :request do
                params: { content_metadata: content_md }.to_json,
                headers: valid_auth_header.merge('Content-Type' => 'application/json')
           expect(response).to have_http_status(:ok)
-          result = HappyMapper.parse(response.body) # HappyMapper used in moab-versioning for parsing xml
+          result = HappyMapper.parse(JSON.parse(response.body)['data'].first['detail']) # HappyMapper used in moab-versioning for parsing xml
           expect(result.object_id).to eq 'bj102hs9687'
           expect(result.basis).to eq 'v3-contentMetadata-all'
         end
@@ -31,7 +31,7 @@ RSpec.describe ObjectsController, type: :request do
                params: { content_metadata: content_md }.to_json,
                headers: valid_auth_header.merge('Content-Type' => 'application/json')
           expect(response).to have_http_status(:ok)
-          result = HappyMapper.parse(response.body) # HappyMapper used in moab-versioning for parsing xml
+          result = HappyMapper.parse(JSON.parse(response.body)['data'].first['detail']) # HappyMapper used in moab-versioning for parsing xml
           expect(result.object_id).to eq 'bj102hs9687'
           expect(result.basis).to eq 'v3-contentMetadata-all'
         end
@@ -43,7 +43,7 @@ RSpec.describe ObjectsController, type: :request do
                params: { content_metadata: content_md, version: '1' }.to_json,
                headers: valid_auth_header.merge('Content-Type' => 'application/json')
           expect(response).to have_http_status(:ok)
-          result = HappyMapper.parse(response.body) # HappyMapper used in moab-versioning for parsing xml
+          result = HappyMapper.parse(JSON.parse(response.body)['data'].first['detail']) # HappyMapper used in moab-versioning for parsing xml
           expect(result.object_id).to eq 'bj102hs9687'
           expect(result.basis).to eq 'v1-contentMetadata-all'
         end
@@ -107,7 +107,7 @@ RSpec.describe ObjectsController, type: :request do
              params: { content_metadata: content_md }.to_json,
              headers: valid_auth_header.merge('Content-Type' => 'application/json')
         expect(response).to have_http_status(:ok)
-        result = HappyMapper.parse(response.body) # HappyMapper used in moab-versioning for parsing xml
+        result = HappyMapper.parse(JSON.parse(response.body)['data'].first['detail']) # HappyMapper used in moab-versioning for parsing xml
         expect(result.object_id).to eq 'xx123yy9999'
         expect(result.difference_count).to eq '0'
       end

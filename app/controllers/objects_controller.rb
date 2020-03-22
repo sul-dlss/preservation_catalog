@@ -85,7 +85,7 @@ class ObjectsController < ApplicationController
     end
     obj_version = params[:version].to_i if params[:version]&.match?(/^[1-9]\d*$/)
     subset = params[:subset] ||= 'all'
-    render(xml: MoabStorageService.content_diff(druid, params[:content_metadata], subset, obj_version).to_xml)
+    render build_response(:ok, MoabStorageService.content_diff(druid, params[:content_metadata], subset, obj_version).to_xml)
   rescue Moab::MoabRuntimeError => e
     render build_error("500 Unable to get content diff", :internal_server_error, e.message)
     Honeybadger.notify(e)
