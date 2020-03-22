@@ -116,7 +116,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/PreservedObject'
         '404':
-          $ref: '#/components/responses/NotFound' # description: Preserved object not found
+          $ref: '#/components/responses/NotFound'
       parameters:
         - name: id
           in: path
@@ -132,11 +132,6 @@ paths:
       responses:
         '200':
           $ref: '#/components/responses/ChecksumsOK'
-          # description: Object found
-          # content:
-          #   application/json:
-          #     schema:
-          #       $ref: '#/components/schemas/ChecksumsForObject'
         '400':
           description: Bad request (e.g., malformed druid)
         '404':          
@@ -211,7 +206,7 @@ paths:
         '400':
           description: Bad request (e.g., malformed druid(s))
         '406':
-          $ref: '#/components/responses/Unsupported' # description: Unsupported response format
+          $ref: '#/components/responses/Unsupported'
         '409':
           $ref: '#/components/responses/Conflict'
       requestBody:
@@ -252,7 +247,7 @@ paths:
         '400':
           description: Version parameter not positive integer or other problem with request params
         '404':
-          $ref: '#/components/responses/NotFound' # description: Object or file or version not found
+          $ref: '#/components/responses/NotFound'
       parameters:
         - name: id
           in: path
@@ -297,9 +292,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ContentDiff'
         '400':
-          $ref: '#/components/responses/BadRequest' # description: Version parameter not a positive integer or parameter error raised
+          $ref: '#/components/responses/BadRequest'
         '500':
-          $ref: '#/components/responses/InternalServer' # description: Unable to get content diff
+          $ref: '#/components/responses/InternalServer'
       parameters:
         - name: id
           in: path

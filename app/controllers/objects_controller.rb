@@ -31,7 +31,6 @@ class ObjectsController < ApplicationController
     if location
       render build_file_response(:ok, location)
     else
-      # render(plain: "404 File Not Found: #{druid}, #{params[:category]}, #{params[:filepath]}, #{params[:version]}", status: :not_found)
       render build_error("404 File Not Found", :not_found)
     end
   rescue Moab::MoabRuntimeError => e
