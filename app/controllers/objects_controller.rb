@@ -61,10 +61,10 @@ class ObjectsController < ApplicationController
 
     respond_to do |format|
       format.json do
-        render json: checksum_list.to_json
+        render build_response(:ok, checksum_list.to_json)
       end
       format.csv do
-        render plain: to_csv_checksum_list(checksum_list)
+        render build_response(:ok, to_csv_checksum_list(checksum_list))
       end
       format.any { render build_error('406 - Format not acceptable', :not_acceptable) }
     end

@@ -111,7 +111,7 @@ RSpec.describe ObjectsController, type: :request do
                   '5bfc6052b0e458e0aa703a0a6853bb9c112e0695', '1530df24086afefd71bf7e5b7e85bb350b6972c838bf6c87ddd5c556b800c802', '167784']
         end
         expect(response).to have_http_status(:ok)
-        expect(response.body).to eq(expected_response)
+        expect(JSON.parse(response.body)['data'].first['detail']).to eq expected_response
       end
 
       context 'when the caller asks for bare druids in the response' do

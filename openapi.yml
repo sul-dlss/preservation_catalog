@@ -131,11 +131,12 @@ paths:
       summary: Show the checksums and filesizes for a single object
       responses:
         '200':
-          description: Object found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ChecksumsForObject'
+          $ref: '#/components/responses/ChecksumsOK'
+          # description: Object found
+          # content:
+          #   application/json:
+          #     schema:
+          #       $ref: '#/components/schemas/ChecksumsForObject'
         '400':
           description: Bad request (e.g., malformed druid)
         '404':          
@@ -362,8 +363,12 @@ components:
         application/octet-stream:
           schema:
             $ref: '#/components/schemas/File'
-            # type: file
-            # format: binary
+    ChecksumsOK:
+      description: A HTTP OK response with checksum JSON
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ChecksumsForObject'
     OK:
       description: A generic HTTP OK response
       content:
