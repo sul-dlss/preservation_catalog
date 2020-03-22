@@ -243,14 +243,11 @@ paths:
       tags:
         - objects
       summary: Return a specific file from the Moab
+      produces:
+        - application/octet-stream
       responses:
         '200':
-          description: OK, returns a file (of whatever type, thus not validated here)
-          content:
-            application/octet-stream:
-              schema:
-                type: string
-                format: binary
+          $ref: '#/components/responses/File'
         '400':
           description: Version parameter not positive integer or other problem with request params
         '404':
@@ -359,6 +356,14 @@ components:
                 required:
                   - druid
   responses:
+    File:
+      description: OK, returns a file (of whatever type, thus not validated here)
+      content:
+        application/octet-stream:
+          schema:
+            $ref: '#/components/schemas/File'
+            # type: file
+            # format: binary
     OK:
       description: A generic HTTP OK response
       content:
@@ -611,6 +616,17 @@ components:
       required:
         - druid
         - result_array
+    File:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+          format: binary
+      required:
+        - code
+        - message
     OK:
       type: object
       properties:

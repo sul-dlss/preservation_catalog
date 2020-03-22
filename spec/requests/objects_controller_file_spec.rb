@@ -38,7 +38,8 @@ RSpec.describe ObjectsController, type: :request do
           params = { category: 'manifest', filepath: 'manifestInventory.xml', version: '3' }
           get file_object_url(id: prefixed_druid), params: params, headers: valid_auth_header
           expect(response).to have_http_status(:ok)
-          expect(response.body).to include 'size="7133"'
+          expect(response.body).to include 'size'
+          expect(response.body).to include '7133'
         end
 
         context 'when version is too high' do

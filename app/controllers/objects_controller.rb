@@ -29,7 +29,7 @@ class ObjectsController < ApplicationController
     obj_version = params[:version].to_i if params[:version]&.match?(/^[1-9]\d*$/)
     location = MoabStorageService.filepath(druid, params[:category], params[:filepath], obj_version)
     if location
-      send_file location
+      render build_file_response(:ok, location)
     else
       # render(plain: "404 File Not Found: #{druid}, #{params[:category]}, #{params[:filepath]}, #{params[:version]}", status: :not_found)
       render build_error("404 File Not Found", :not_found)
@@ -141,6 +141,22 @@ class ObjectsController < ApplicationController
     content_group.path_hash.map do |file, signature|
       { filename: file, md5: signature.md5, sha1: signature.sha1, sha256: signature.sha256, filesize: signature.size }
     end
+  end
+
+  # JSON-API response
+  def build_file_response(code, file)
+    {
+      json: {
+        data: [
+          {
+            "status": code,
+            "detail": File.binread(file) # the underlying action of send_file: https://apidock.com/rails/ActionDispatch/Response/FileBody/body
+          }
+        ]
+      },
+      content_type: 'application/vnd.api+json',
+      status: code
+    }
   end
 
   # JSON-API response
