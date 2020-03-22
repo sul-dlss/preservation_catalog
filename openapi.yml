@@ -239,8 +239,6 @@ paths:
       tags:
         - objects
       summary: Return a specific file from the Moab
-      produces:
-        - application/octet-stream
       responses:
         '200':
           $ref: '#/components/responses/File'
@@ -554,19 +552,6 @@ components:
           - sha1
           - sha256
           - filesize
-    ChecksumsForObjects:
-      description: A representation of all files and checksums for a list of objects
-      type: array
-      minItems: 1
-      items:
-        type: object
-        additionalProperties:
-          type: object
-          properties:
-            druid:
-              $ref: '#/components/schemas/Druid'
-            checksums:
-              $ref: '#/components/schemas/ChecksumsForObject'
     CSVForObjects:
       description: A csv representation of all files and checksums for a list of objects
       type: string
