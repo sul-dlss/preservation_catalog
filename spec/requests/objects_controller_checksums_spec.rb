@@ -90,13 +90,13 @@ RSpec.describe ObjectsController, type: :request do
         it 'GET json response contains one checksum for each unique, normalized druid (in alpha order by druid)' do
           get checksums_objects_url, params: { druids: [prefixed_druid, prefixed_druid2, bare_druid], format: :json }, headers: valid_auth_header
           expect(response).to have_http_status(:ok)
-          expect(response.body).to eq(expected_response.to_json)
+          expect(JSON.parse(response.body)['data'].first['detail']).to eq(expected_response.to_json)
         end
 
         it 'POST json response contains one checksum for each unique, normalized druid (in alpha order by druid)' do
           post checksums_objects_url, params: { druids: [prefixed_druid, prefixed_druid2, bare_druid], format: :json }.to_json, headers: post_headers
           expect(response).to have_http_status(:ok)
-          expect(response.body).to eq(expected_response.to_json)
+          expect(JSON.parse(response.body)['data'].first['detail']).to eq(expected_response.to_json)
         end
       end
 
@@ -139,7 +139,7 @@ RSpec.describe ObjectsController, type: :request do
                   filesize: 167_784 }] }
           ]
           expect(response).to have_http_status(:ok)
-          expect(response.body).to eq(expected_response.to_json)
+          expect(JSON.parse(response.body)['data'].first['detail']).to eq(expected_response.to_json)
         end
 
         it 'csv response contains multiple object checksums, but still normalizes and de-dupes druids, and alpha sorts by druid' do
@@ -154,7 +154,7 @@ RSpec.describe ObjectsController, type: :request do
                     '5bfc6052b0e458e0aa703a0a6853bb9c112e0695', '1530df24086afefd71bf7e5b7e85bb350b6972c838bf6c87ddd5c556b800c802', '167784']
           end
           expect(response).to have_http_status(:ok)
-          expect(response.body).to eq(expected_response)
+          expect(JSON.parse(response.body)['data'].first['detail']).to eq(expected_response)
         end
       end
     end
@@ -195,8 +195,9 @@ RSpec.describe ObjectsController, type: :request do
         post checksums_objects_url, params: { druids: ['xx123yy9999', bare_druid, bare_druid2], format: :json }.to_json, headers: post_headers
         expect(response.body).to match "409 Conflict"
         expect(response.body).to include "Storage object(s) not found for xx123yy9999"
-        expect(response.body).to include "Problems generating checksums for #{bare_druid} (#<StandardError: I had a stderr>)"
-        # expect(response.body).to include ", #{bare_druid2} (#<NoMethodError: I had a nil result>)"
+        expect(response.body).to include "Problems generating checksums for #{bare_druid}"
+        expect(response.body).to include "StandardError: I had a stderr"
+        expect(response.body).to include "NoMethodError: I had a nil result"
       end
     end
 
