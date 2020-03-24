@@ -94,12 +94,6 @@ Run all validation checks on Moabs and generate reports.  Note that error detail
     ```
   - [ ] ensure there are no running preservation robots workers in the resque GUI:  https://robot-console-prod.stanford.edu/workers
 
-- [ ] (Ops) turn off nagios alerts for accessioning workers
-
-- **Shut Down Accessioning Robots Worker**
-  - [ ] @suntzu or some other not-naomi person should document how to do this.
-  - [ ] affected:  versioning of objects, creating contentMetadata, creating technicalMetadata, ...
-
 - [ ] (Ops) turn off nagios alerts for preservation_catalog prod boxes
 
 - **Shut Down Preservation Catalog Archival Workers, ReST API and weekend crons**
