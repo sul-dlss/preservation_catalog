@@ -18,4 +18,8 @@ class PreservedObject < ApplicationRecord
   validates :preservation_policy, null: false
 
   scope :without_complete_moabs, -> { left_outer_joins(:complete_moabs).where(complete_moabs: { id: nil }) }
+
+  def as_json(*)
+    super.except('id', 'preservation_policy_id')
+  end
 end

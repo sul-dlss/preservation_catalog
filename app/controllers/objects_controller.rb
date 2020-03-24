@@ -9,10 +9,7 @@ class ObjectsController < ApplicationController
   # return the PreservedObject model for the druid (supplied *without* `druid:` prefix)
   # GET /v1/objects/:id.json
   def show
-    obj = JSON.parse(PreservedObject.find_by!(druid: druid).to_json)
-    obj.delete("id")
-    obj.delete("preservation_policy_id")
-    render json: obj.to_json
+    render json: PreservedObject.find_by!(druid: druid).to_json
   end
 
   # return a specific file from the Moab
