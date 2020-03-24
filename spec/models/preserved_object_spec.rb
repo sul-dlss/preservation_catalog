@@ -21,8 +21,19 @@ RSpec.describe PreservedObject, type: :model do
   it { is_expected.to validate_presence_of(:current_version) }
 
   context 'validation' do
+    let(:valid_obj) { described_class.new(required_attributes) }
+
     it 'is valid with required attributes' do
-      expect(described_class.new(required_attributes)).to be_valid
+      expect(valid_obj).to be_valid
+    end
+
+    context 'when returning json' do
+      subject { valid_obj.to_json }
+
+      it 'does not include id and preservation_policy_id' do
+        expect(subject).not_to include '"id"'
+        expect(subject).not_to include '"preservation_policy_id"'
+      end
     end
 
     it 'is not valid without all required attributes' do
