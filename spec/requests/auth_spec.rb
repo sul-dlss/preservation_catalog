@@ -4,11 +4,14 @@ require 'rails_helper'
 
 RSpec.describe 'auth' do
   let(:pres_obj) { create(:preserved_object) }
+  let(:pres_obj_returned) { JSON.parse(pres_obj.to_json) }
 
   before do
     allow(Honeybadger).to receive(:notify)
     allow(Honeybadger).to receive(:context)
     allow(Rails.logger).to receive(:warn)
+    pres_obj_returned.delete("id")
+    pres_obj_returned.delete("preservation_policy_id")
   end
 
   context 'without a bearer token' do
@@ -60,7 +63,7 @@ RSpec.describe 'auth' do
 
     it 'responds with a 200 OK and the correct body' do
       get "/v1/objects/#{pres_obj.druid}", headers: valid_auth_header
-      expect(response.body).to include(pres_obj.to_json)
+      expect(response.body).to include(pres_obj_returned.to_json)
       expect(response).to have_http_status(:ok)
     end
   end
