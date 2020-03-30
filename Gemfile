@@ -16,7 +16,6 @@ gem 'jbuilder', '~> 2.5' # Build JSON APIs with ease.
 gem 'jwt' # for gating programmatic access to the application
 gem 'okcomputer' # ReST endpoint with upness status
 gem 'pg' # postgres database
-gem "factory_bot_rails", "~> 4.0"
 gem 'postgresql_cursor' # for paging over large result sets efficiently
 # pry is useful for debugging, even in prod
 gem 'pry-byebug' # call 'binding.pry' anywhere in the code to stop execution and get a pry-byebug console
@@ -26,7 +25,7 @@ gem 'rails', '~> 6.0.2'
 gem 'resque', '~> 1.27'
 gem 'resque-lock' # deduplication of worker queue jobs
 gem 'resque-pool'
-gem 'ruby-prof' # to profile methods
+# gem 'ruby-prof' # to profile methods
 gem 'whenever' # manage cron for audit checks
 
 # Stanford gems
@@ -34,14 +33,9 @@ gem 'moab-versioning' # work with Moab Objects
 gem 'druid-tools' # for druid validation and druid-tree parsing
 
 group :development, :test do
-  gem 'rspec-rails', '~> 3.6'
-  gem 'rails-controller-testing'
   # Ruby static code analyzer http://rubocop.readthedocs.io/en/latest/
   gem 'rubocop', '~> 0.73.0'
   gem 'rubocop-rspec'
-  # Codeclimate is not compatible with 0.18+. See https://github.com/codeclimate/test-reporter/issues/413
-  gem 'simplecov', '~> 0.17.1'
-  gem 'webmock'
 end
 
 group :development do
@@ -50,7 +44,13 @@ group :development do
 end
 
 group :test do
+  gem "factory_bot_rails", "~> 4.0"
+  gem 'rails-controller-testing'
+  gem 'rspec-rails', '~> 3.6'
   gem 'shoulda-matchers', git: 'https://github.com/thoughtbot/shoulda-matchers.git', branch: 'rails-5'
+  # Codeclimate is not compatible with 0.18+. See https://github.com/codeclimate/test-reporter/issues/413
+  gem 'simplecov', '~> 0.17.1'
+  gem 'webmock'
 end
 
 group :deploy do
