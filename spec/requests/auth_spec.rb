@@ -60,7 +60,8 @@ RSpec.describe 'auth' do
 
     it 'responds with a 200 OK and the correct body' do
       get "/v1/objects/#{pres_obj.druid}", headers: valid_auth_header
-      expect(response.body).to include(pres_obj.to_json)
+      expect(response.body).to include('druid')
+      expect(response.body).to include('current_version')
       expect(response).to have_http_status(:ok)
     end
   end
