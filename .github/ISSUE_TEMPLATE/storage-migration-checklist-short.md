@@ -13,7 +13,7 @@ assignees: ''
 - If multiple roots will be migrated in one weekend, create a separate github issue from this template for each root being migrated.
   - provide a link here to the github uber issue for all roots being migrated.
 
-- More info is available here: https://github.com/sul-dlss/preservation_catalog/wiki/Storage-Migration---Additional-Information
+- More info is available here _(please read before proceeding)_: https://github.com/sul-dlss/preservation_catalog/wiki/Storage-Migration---Additional-Information
 
 - Keep an eye out for Honeybadger errors from preservation_catalog and from preservation_robots.
 - Keep an eye out for failed prescat resque worker jobs.
