@@ -25,14 +25,7 @@ class ChecksumValidator
 
   def validate_checksums
     # check first thing to make sure the moab is present on disk, otherwise weird errors later
-    unless File.exist?(object_dir)
-      transaction_ok = ActiveRecordUtils.with_transaction_and_rescue(results) do
-        mark_moab_not_found
-        complete_moab.save!
-      end
-      results.remove_db_updated_results unless transaction_ok
-      return results.report_results(Audit::Checksum.logger)
-    end
+    return results.result_array unless check_file_existence!
 
     validate_manifest_inventories
     validate_signature_catalog
@@ -58,6 +51,21 @@ class ChecksumValidator
     results.remove_db_updated_results unless transaction_ok
 
     results.report_results(Audit::Checksum.logger)
+  end
+
+  # return true and exit if the moab exists.  otherwise update status to missing on complete_moab, report results, and return false.
+  # @return [Boolean] true and exit if the moab exists, false otherwise
+  def check_file_existence!
+    return true if File.exist?(object_dir)
+
+    transaction_ok = ActiveRecordUtils.with_transaction_and_rescue(results) do
+      mark_moab_not_found
+      complete_moab.save!
+    end
+    results.remove_db_updated_results unless transaction_ok
+    results.report_results(Audit::Checksum.logger)
+
+    false
   end
 
   def validate_manifest_inventories

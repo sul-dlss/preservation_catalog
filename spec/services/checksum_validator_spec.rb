@@ -210,7 +210,7 @@ RSpec.describe ChecksumValidator do
     context 'moab is missing from storage' do
       before do
         # fake a moab gone missing by updating the preserved object to use a non-existent druid
-        comp_moab.preserved_object.update(druid: 'tr808sl1200')
+        comp_moab.preserved_object.update(druid: 'tr808sp1200')
       end
 
       it 'sets status to online_moab_not_found and adds corresponding audit result' do
