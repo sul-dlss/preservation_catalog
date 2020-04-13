@@ -207,6 +207,24 @@ RSpec.describe ChecksumValidator do
   end
 
   describe '#validate_checksums' do
+    context 'moab is missing from storage' do
+      before do
+        # fake a moab gone missing by updating the preserved object to use a non-existent druid
+        comp_moab.preserved_object.update(druid: 'tr808sp1200')
+      end
+
+      it 'sets status to online_moab_not_found and adds corresponding audit result' do
+        expect { cv.validate_checksums }.to change(comp_moab, :status).to 'online_moab_not_found'
+        expect(comp_moab.reload.status).to eq 'online_moab_not_found'
+        expect(cv.results.result_array.first).to have_key(:moab_not_found)
+      end
+
+      it 'calls AuditResults.report_results' do
+        expect(cv.results).to receive(:report_results)
+        cv.validate_checksums
+      end
+    end
+
     context 'passes checksum validation' do
       let(:druid) { 'bz514sm9647' }
       let(:root_name) { 'fixture_sr1' }

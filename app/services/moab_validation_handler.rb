@@ -64,6 +64,13 @@ module MoabValidationHandler
     complete_moab.status_details = results.results_as_string(results.result_array)
   end
 
+  def mark_moab_not_found
+    results.add_result(AuditResults::MOAB_NOT_FOUND,
+                       db_created_at: complete_moab.created_at.iso8601,
+                       db_updated_at: complete_moab.updated_at.iso8601)
+    update_status('online_moab_not_found')
+  end
+
   # found_expected_version is a boolean indicating whether the latest version of the moab
   # on disk is the expected version according to the catalog.  NOTE: in the case of an update
   # this might mean the on disk version is one higher than the catalog version, if the
@@ -74,10 +81,7 @@ module MoabValidationHandler
     begin
       return update_status('invalid_moab') if moab_validation_errors.any?
     rescue Errno::ENOENT
-      results.add_result(AuditResults::MOAB_NOT_FOUND,
-                         db_created_at: complete_moab.created_at.iso8601,
-                         db_updated_at: complete_moab.updated_at.iso8601)
-      return update_status('online_moab_not_found')
+      return mark_moab_not_found
     end
 
     return update_status('unexpected_version_on_storage') unless found_expected_version
