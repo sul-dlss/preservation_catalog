@@ -15,12 +15,12 @@ RSpec.describe CompleteMoabHandler do
   let(:po) { PreservedObject.find_by(druid: druid) }
   let(:ms_root) { MoabStorageRoot.find_by(storage_location: 'spec/fixtures/storage_root01/sdr2objects') }
   let(:cm) { CompleteMoab.find_by(preserved_object: po, moab_storage_root: ms_root) }
-  let(:po_handler) { described_class.new(druid, incoming_version, incoming_size, ms_root) }
+  let(:complete_moab_handler) { described_class.new(druid, incoming_version, incoming_size, ms_root) }
 
   describe '#initialize' do
     it 'sets druid' do
-      po_handler = described_class.new(druid, incoming_version, nil, ms_root)
-      expect(po_handler.druid).to eq druid
+      complete_moab_handler = described_class.new(druid, incoming_version, nil, ms_root)
+      expect(complete_moab_handler.druid).to eq druid
     end
 
     context 'sets incoming_version' do
@@ -37,8 +37,8 @@ RSpec.describe CompleteMoabHandler do
         'asdf' => 'asdf'
       }.each do |k, v|
         it "by parsing '#{k}' to '#{v}'" do
-          po_handler = described_class.new(druid, k, nil, ms_root)
-          expect(po_handler.incoming_version).to eq v
+          complete_moab_handler = described_class.new(druid, k, nil, ms_root)
+          expect(complete_moab_handler.incoming_version).to eq v
         end
       end
     end
@@ -57,20 +57,20 @@ RSpec.describe CompleteMoabHandler do
         'asdf' => 'asdf'
       }.each do |k, v|
         it "by parsing '#{k}' to '#{v}'" do
-          po_handler = described_class.new(druid, nil, k, ms_root)
-          expect(po_handler.incoming_size).to eq v
+          complete_moab_handler = described_class.new(druid, nil, k, ms_root)
+          expect(complete_moab_handler.incoming_size).to eq v
         end
       end
     end
 
     it 'exposes storage_location (from MoabStorageRoot)' do
-      po_handler = described_class.new(druid, incoming_version, nil, ms_root)
-      expect(po_handler.storage_location).to eq ms_root.storage_location
+      complete_moab_handler = described_class.new(druid, incoming_version, nil, ms_root)
+      expect(complete_moab_handler.storage_location).to eq ms_root.storage_location
     end
 
     it 'sets MoabStorageRoot' do
-      po_handler = described_class.new(druid, incoming_version, nil, ms_root)
-      expect(po_handler.moab_storage_root).to eq ms_root
+      complete_moab_handler = described_class.new(druid, incoming_version, nil, ms_root)
+      expect(complete_moab_handler.moab_storage_root).to eq ms_root
     end
   end
 
@@ -84,10 +84,10 @@ RSpec.describe CompleteMoabHandler do
         moab_storage_root: ms_root,
         status: 'validity_unknown'
       )
-      bad_po_handler = described_class.new(druid, 6, incoming_size, ms_root)
+      bad_complete_moab_handler = described_class.new(druid, 6, incoming_size, ms_root)
       allow(cm).to receive(:save!).and_raise(ActiveRecord::ActiveRecordError)
-      allow(bad_po_handler).to receive(:moab_validation_errors).and_return([])
-      bad_po_handler.confirm_version
+      allow(bad_complete_moab_handler).to receive(:moab_validation_errors).and_return([])
+      bad_complete_moab_handler.confirm_version
       expect(PreservedObject.find_by(druid: druid).current_version).to eq 2
     end
 
@@ -96,7 +96,7 @@ RSpec.describe CompleteMoabHandler do
       let(:results) do
         allow(PreservedObject).to receive(:create!).with(hash_including(druid: druid))
                                                    .and_raise(ActiveRecord::ActiveRecordError, 'specific_err_msg')
-        po_handler.create
+        complete_moab_handler.create
       end
 
       it 'specific exception raised' do
@@ -114,15 +114,15 @@ RSpec.describe CompleteMoabHandler do
       sov = instance_double(Moab::StorageObjectValidator)
       allow(Moab::StorageObjectValidator).to receive(:new).and_return(sov)
       expect(sov).to receive(:validation_errors).with(true).and_return([])
-      po_handler.create_after_validation
+      complete_moab_handler.create_after_validation
     end
   end
 
   describe 'MoabStorageRoot validation' do
     it 'errors when moab_storage_root is not an MoabStorageRoot object' do
-      poh = described_class.new(druid, incoming_version, incoming_size, 1)
-      expect(poh).to be_invalid
-      expect(poh.errors.messages).to include(moab_storage_root: ["must be an actual MoabStorageRoot"])
+      complete_moab_handler = described_class.new(druid, incoming_version, incoming_size, 1)
+      expect(complete_moab_handler).to be_invalid
+      expect(complete_moab_handler.errors.messages).to include(moab_storage_root: ["must be an actual MoabStorageRoot"])
     end
   end
 end

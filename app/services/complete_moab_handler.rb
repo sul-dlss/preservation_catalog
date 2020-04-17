@@ -295,7 +295,7 @@ class CompleteMoabHandler
     results.remove_db_updated_results unless transaction_ok
   end
 
-  # this wrapper reads a little nicer in this class, since POH is always doing this the same way
+  # this wrapper reads a little nicer in this class, since CompleteMoabHandler is always doing this the same way
   def with_active_record_transaction_and_rescue
     ActiveRecordUtils.with_transaction_and_rescue(results) { yield }
   end

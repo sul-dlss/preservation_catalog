@@ -12,8 +12,8 @@ RSpec.shared_examples "attributes validated" do |method_sym|
 
   context 'returns' do
     let!(:result) do
-      po_handler = described_class.new(bad_druid, bad_version, bad_size, bad_storage_root)
-      po_handler.send(method_sym)
+      complete_moab_handler = described_class.new(bad_druid, bad_version, bad_size, bad_storage_root)
+      complete_moab_handler.send(method_sym)
     end
 
     it '1 result' do
@@ -59,8 +59,8 @@ RSpec.shared_examples 'calls AuditResults.report_results' do |method_sym|
                                    result_array: [],
                                    results_as_string: nil)
     expect(mock_results).to receive(:report_results)
-    allow(po_handler).to receive(:results).and_return(mock_results)
-    po_handler.send(method_sym)
+    allow(complete_moab_handler).to receive(:results).and_return(mock_results)
+    complete_moab_handler.send(method_sym)
   end
 end
 
@@ -69,7 +69,7 @@ RSpec.shared_examples 'druid not in catalog' do |method_sym|
   let(:exp_msg) { "PreservedObject.* db object does not exist" }
   let(:results) do
     allow(Rails.logger).to receive(:log)
-    po_handler.send(method_sym)
+    complete_moab_handler.send(method_sym)
   end
 
   it 'DB_OBJ_DOES_NOT_EXIST error' do
@@ -81,11 +81,11 @@ RSpec.shared_examples 'CompleteMoab does not exist' do |method_sym|
   let(:exp_msg) { "#<ActiveRecord::RecordNotFound: foo> db object does not exist" }
   let(:results) do
     allow(Rails.logger).to receive(:log)
-    allow(po_handler).to receive(:pres_object).and_return(create(:preserved_object))
-    allow(PreservedObject).to receive(:exists?).with(druid: po_handler.druid).and_return(true)
-    allow(po_handler.pres_object.complete_moabs).to receive(:find_by!)
+    allow(complete_moab_handler).to receive(:pres_object).and_return(create(:preserved_object))
+    allow(PreservedObject).to receive(:exists?).with(druid: complete_moab_handler.druid).and_return(true)
+    allow(complete_moab_handler.pres_object.complete_moabs).to receive(:find_by!)
       .with(any_args).and_raise(ActiveRecord::RecordNotFound, 'foo')
-    po_handler.send(method_sym)
+    complete_moab_handler.send(method_sym)
   end
 
   it 'DB_OBJ_DOES_NOT_EXIST error' do
@@ -95,7 +95,7 @@ RSpec.shared_examples 'CompleteMoab does not exist' do |method_sym|
 end
 
 RSpec.shared_examples 'unexpected version' do |method_sym, actual_version|
-  let(:po_handler) { described_class.new(druid, actual_version, 1, ms_root) }
+  let(:complete_moab_handler) { described_class.new(druid, actual_version, 1, ms_root) }
   let(:version_msg_prefix) { "actual version (#{actual_version})" }
   let(:unexpected_version_msg) { "#{version_msg_prefix} has unexpected relationship to CompleteMoab db version (2); ERROR!" }
 
@@ -103,21 +103,21 @@ RSpec.shared_examples 'unexpected version' do |method_sym, actual_version|
     context 'changed' do
       it 'last_version_audit' do
         orig = cm.last_version_audit
-        po_handler.send(method_sym)
+        complete_moab_handler.send(method_sym)
         expect(cm.reload.last_version_audit).to be > orig
       end
 
       if method_sym == :update_version
         it 'status becomes unexpected_version_on_storage' do
           orig = cm.status
-          po_handler.send(method_sym)
+          complete_moab_handler.send(method_sym)
           expect(cm.reload.status).to eq 'unexpected_version_on_storage'
           expect(cm.status).not_to eq orig
         end
 
         it 'status becomes unexpected_version_on_storage when checksums_validated' do
           orig = cm.status
-          po_handler.send(method_sym, true)
+          complete_moab_handler.send(method_sym, true)
           expect(cm.reload.status).to eq "unexpected_version_on_storage"
           expect(cm.status).not_to eq orig
         end
@@ -127,32 +127,32 @@ RSpec.shared_examples 'unexpected version' do |method_sym, actual_version|
     context 'unchanged' do
       it "version" do
         orig = cm.version
-        po_handler.send(method_sym)
+        complete_moab_handler.send(method_sym)
         expect(cm.reload.version).to eq orig
       end
 
       it "size" do
         orig = cm.size
-        po_handler.send(method_sym)
+        complete_moab_handler.send(method_sym)
         expect(cm.reload.size).to eq orig
       end
 
       it 'last_moab_validation' do
         orig = cm.last_moab_validation
-        po_handler.send(method_sym)
+        complete_moab_handler.send(method_sym)
         expect(cm.reload.last_moab_validation).to eq orig
       end
 
       if method_sym != :update_version
         it 'status' do
           orig = cm.status
-          po_handler.send(method_sym)
+          complete_moab_handler.send(method_sym)
           expect(cm.status).to eq orig
         end
 
         it 'status when checksums_validated' do
           orig = cm.status
-          po_handler.send(method_sym, true)
+          complete_moab_handler.send(method_sym, true)
           expect(cm.status).to eq orig
         end
       end
@@ -163,14 +163,14 @@ RSpec.shared_examples 'unexpected version' do |method_sym, actual_version|
     context 'unchanged' do
       it "PreservedObject current_version stays the same" do
         pocv = po.current_version
-        po_handler.send(method_sym)
+        complete_moab_handler.send(method_sym)
         expect(po.reload.current_version).to eq pocv
       end
     end
   end
 
   context 'returns' do
-    let!(:results) { po_handler.send(method_sym) }
+    let!(:results) { complete_moab_handler.send(method_sym) }
 
     it "number of results" do
       expect(results).to be_an_instance_of Array
@@ -207,32 +207,32 @@ RSpec.shared_examples 'unexpected version' do |method_sym, actual_version|
 end
 
 RSpec.shared_examples 'unexpected version with validation' do |method_sym, incoming_version, new_status|
-  let(:po_handler) { described_class.new(druid, incoming_version, 1, ms_root) }
+  let(:complete_moab_handler) { described_class.new(druid, incoming_version, 1, ms_root) }
   let(:version_msg_prefix) { "actual version (#{incoming_version})" }
   let(:unexpected_version_msg) { "#{version_msg_prefix} has unexpected relationship to CompleteMoab db version; ERROR!" }
   let(:updated_status_msg_regex) { Regexp.new("CompleteMoab status changed from") }
 
   context 'CompleteMoab' do
     it 'last_moab_validation updated' do
-      expect { po_handler.send(method_sym) }.to change { cm.reload.last_moab_validation }
+      expect { complete_moab_handler.send(method_sym) }.to change { cm.reload.last_moab_validation }
     end
 
     it "version unchanged" do
-      expect { po_handler.send(method_sym) }.not_to change { cm.reload.version }
+      expect { complete_moab_handler.send(method_sym) }.not_to change { cm.reload.version }
     end
 
     it "size unchanged" do
-      expect { po_handler.send(method_sym) }.not_to change { cm.reload.size }
+      expect { complete_moab_handler.send(method_sym) }.not_to change { cm.reload.size }
     end
 
     describe 'last_version_audit' do
       if method_sym == :check_existence
         it 'updated' do
-          expect { po_handler.send(method_sym) }.to change { cm.reload.last_version_audit }
+          expect { complete_moab_handler.send(method_sym) }.to change { cm.reload.last_version_audit }
         end
       elsif method_sym == :update_version
         it 'unchanged' do
-          expect { po_handler.send(method_sym) }.not_to change { cm.reload.last_version_audit }
+          expect { complete_moab_handler.send(method_sym) }.not_to change { cm.reload.last_version_audit }
         end
       end
     end
@@ -242,16 +242,16 @@ RSpec.shared_examples 'unexpected version with validation' do |method_sym, incom
 
       if method_sym == :update_version_after_validation
         it "#{new_status} when checksums_validated" do
-          expect { po_handler.send(method_sym, true) }.to change { cm.reload.status }.from('ok').to(new_status)
+          expect { complete_moab_handler.send(method_sym, true) }.to change { cm.reload.status }.from('ok').to(new_status)
         end
 
         it "validity_unknown when not checksums_validated" do
-          expect { po_handler.send(method_sym) }.to change { cm.reload.status }.from('ok').to('validity_unknown')
+          expect { complete_moab_handler.send(method_sym) }.to change { cm.reload.status }.from('ok').to('validity_unknown')
         end
 
       else
         it new_status do
-          expect { po_handler.send(method_sym) }.to change { cm.reload.status }.from('ok').to(new_status)
+          expect { complete_moab_handler.send(method_sym) }.to change { cm.reload.status }.from('ok').to(new_status)
         end
       end
     end
@@ -259,12 +259,12 @@ RSpec.shared_examples 'unexpected version with validation' do |method_sym, incom
 
   context 'PreservedObject' do
     it "current_version" do
-      expect { po_handler.send(method_sym) }.not_to change { po.reload.current_version }
+      expect { complete_moab_handler.send(method_sym) }.not_to change { po.reload.current_version }
     end
   end
 
   context 'returns' do
-    let!(:results) { po_handler.send(method_sym) }
+    let!(:results) { complete_moab_handler.send(method_sym) }
 
     it "number of results" do
       expect(results).to be_an_instance_of Array
@@ -303,23 +303,23 @@ RSpec.shared_examples 'unexpected version with validation' do |method_sym, incom
 end
 
 RSpec.shared_examples 'PreservedObject current_version does not match online CM version' do |method_sym, incoming_version, cm_v, po_v|
-  let(:po_handler) { described_class.new(druid, incoming_version, 1, ms_root) }
+  let(:complete_moab_handler) { described_class.new(druid, incoming_version, 1, ms_root) }
   let(:version_mismatch_msg) { "CompleteMoab online Moab version #{cm_v} does not match PreservedObject current_version #{po_v}" }
 
   it 'does not update CompleteMoab' do
     orig = cm.reload.updated_at
-    po_handler.send(method_sym)
+    complete_moab_handler.send(method_sym)
     expect(cm.reload.updated_at).to eq orig
   end
 
   it 'does not update PreservedObject' do
     orig = po.reload.updated_at
-    po_handler.send(method_sym)
+    complete_moab_handler.send(method_sym)
     expect(po.reload.updated_at).to eq orig
   end
 
   context 'returns' do
-    let!(:results) { po_handler.send(method_sym) }
+    let!(:results) { complete_moab_handler.send(method_sym) }
 
     it '1 result' do
       expect(results).to be_an_instance_of Array
@@ -337,62 +337,62 @@ RSpec.shared_examples 'cannot validate something with INVALID_CHECKSUM_STATUS' d
   before { cm.invalid_checksum! }
 
   it 'CompleteMoab keeps INVALID_CHECKSUM_STATUS' do
-    po_handler.send(method_sym)
+    complete_moab_handler.send(method_sym)
     expect(cm.reload.status).to eq 'invalid_checksum'
   end
 
   it 'has an AuditResults entry indicating inability to check the given status' do
-    po_handler.send(method_sym)
-    expect(po_handler.results.contains_result_code?(AuditResults::UNABLE_TO_CHECK_STATUS)).to eq true
+    complete_moab_handler.send(method_sym)
+    expect(complete_moab_handler.results.contains_result_code?(AuditResults::UNABLE_TO_CHECK_STATUS)).to eq true
   end
 end
 
 RSpec.shared_examples 'CompleteMoab may have its status checked when incoming_version == cm.version' do |method_sym|
   let(:incoming_version) { cm.version }
 
-  before { allow(po_handler).to receive(:moab_validation_errors).and_return([]) } # default
+  before { allow(complete_moab_handler).to receive(:moab_validation_errors).and_return([]) } # default
 
   it 'had OK_STATUS, keeps OK_STATUS' do
     cm.ok!
-    po_handler.send(method_sym)
+    complete_moab_handler.send(method_sym)
     expect(cm.reload.status).to eq 'ok'
   end
 
   it 'had UNEXPECTED_VERSION_ON_STORAGE_STATUS, but is now VALIDITY_UNKNOWN_STATUS' do
     cm.unexpected_version_on_storage!
-    po_handler.send(method_sym)
+    complete_moab_handler.send(method_sym)
     expect(cm.reload.status).to eq 'validity_unknown'
   end
 
   it 'had UNEXPECTED_VERSION_ON_STORAGE_STATUS, but is now INVALID_MOAB_STATUS' do
     cm.unexpected_version_on_storage!
-    allow(po_handler).to receive(:moab_validation_errors).and_return([{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }])
-    po_handler.send(method_sym)
+    allow(complete_moab_handler).to receive(:moab_validation_errors).and_return([{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }])
+    complete_moab_handler.send(method_sym)
     expect(cm.reload.status).to eq 'invalid_moab'
   end
 
   it 'had INVALID_MOAB_STATUS, but is now VALIDITY_UNKNOWN_STATUS' do
     cm.invalid_moab!
-    po_handler.send(method_sym)
+    complete_moab_handler.send(method_sym)
     expect(cm.reload.status).to eq 'validity_unknown'
   end
 
   it 'had VALIDITY_UNKNOWN_STATUS, keeps VALIDITY_UNKNOWN_STATUS' do
     cm.validity_unknown!
-    po_handler.send(method_sym)
+    complete_moab_handler.send(method_sym)
     expect(cm.reload.status).to eq 'validity_unknown'
   end
 
   it 'had VALIDITY_UNKNOWN_STATUS, but is now INVALID_MOAB_STATUS' do
     cm.validity_unknown!
-    allow(po_handler).to receive(:moab_validation_errors).and_return([{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }])
-    po_handler.send(method_sym)
+    allow(complete_moab_handler).to receive(:moab_validation_errors).and_return([{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }])
+    complete_moab_handler.send(method_sym)
     expect(cm.reload.status).to eq 'invalid_moab'
   end
 
   it 'had UNEXPECTED_VERSION_ON_STORAGE_STATUS, seems to have an acceptable version now' do
     cm.unexpected_version_on_storage!
-    po_handler.send(method_sym)
+    complete_moab_handler.send(method_sym)
     expect(cm.reload.status).to eq 'validity_unknown'
   end
 
@@ -403,7 +403,7 @@ RSpec.shared_examples 'CompleteMoab may have its status checked when incoming_ve
 
     context 'with moab validation errors' do
       before do
-        allow(po_handler).to receive(:moab_validation_errors).and_return([{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }])
+        allow(complete_moab_handler).to receive(:moab_validation_errors).and_return([{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }])
       end
 
       it_behaves_like 'cannot validate something with INVALID_CHECKSUM_STATUS', method_sym
@@ -414,43 +414,43 @@ end
 RSpec.shared_examples 'CompleteMoab may have its status checked when incoming_version < cm.version' do |method_sym|
   let(:incoming_version) { cm.version - 1 }
 
-  before { allow(po_handler).to receive(:moab_validation_errors).and_return([]) } # default
+  before { allow(complete_moab_handler).to receive(:moab_validation_errors).and_return([]) } # default
 
   it 'had OK_STATUS, but is now UNEXPECTED_VERSION_ON_STORAGE_STATUS' do
     cm.ok!
-    po_handler.send(method_sym)
+    complete_moab_handler.send(method_sym)
     expect(cm.reload.status).to eq 'unexpected_version_on_storage'
   end
 
   it 'had OK_STATUS, but is now INVALID_MOAB_STATUS' do
     cm.ok!
-    allow(po_handler).to receive(:moab_validation_errors).and_return([{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }])
-    po_handler.send(method_sym)
+    allow(complete_moab_handler).to receive(:moab_validation_errors).and_return([{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }])
+    complete_moab_handler.send(method_sym)
     expect(cm.reload.status).to eq 'invalid_moab'
   end
 
   it 'had INVALID_MOAB_STATUS, was made to a valid moab, but is now UNEXPECTED_VERSION_ON_STORAGE_STATUS' do
     cm.invalid_moab!
-    po_handler.send(method_sym)
+    complete_moab_handler.send(method_sym)
     expect(cm.reload.status).to eq 'unexpected_version_on_storage'
   end
 
   it 'had UNEXPECTED_VERSION_ON_STORAGE_STATUS, still seeing an unexpected version' do
     cm.unexpected_version_on_storage!
-    po_handler.send(method_sym)
+    complete_moab_handler.send(method_sym)
     expect(cm.reload.status).to eq 'unexpected_version_on_storage'
   end
 
   it 'had VALIDITY_UNKNOWN_STATUS, but is now INVALID_MOAB_STATUS' do
     cm.validity_unknown!
-    allow(po_handler).to receive(:moab_validation_errors).and_return([{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }])
-    po_handler.send(method_sym)
+    allow(complete_moab_handler).to receive(:moab_validation_errors).and_return([{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }])
+    complete_moab_handler.send(method_sym)
     expect(cm.reload.status).to eq 'invalid_moab'
   end
 
   it 'had VALIDITY_UNKNOWN_STATUS, but is now UNEXPECTED_VERSION_ON_STORAGE_STATUS' do
     cm.validity_unknown!
-    po_handler.send(method_sym)
+    complete_moab_handler.send(method_sym)
     expect(cm.reload.status).to eq 'unexpected_version_on_storage'
   end
 
@@ -461,7 +461,7 @@ RSpec.shared_examples 'CompleteMoab may have its status checked when incoming_ve
 
     context 'with moab validation errors' do
       before do
-        allow(po_handler).to receive(:moab_validation_errors).and_return([{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }])
+        allow(complete_moab_handler).to receive(:moab_validation_errors).and_return([{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }])
       end
 
       it_behaves_like 'cannot validate something with INVALID_CHECKSUM_STATUS', method_sym

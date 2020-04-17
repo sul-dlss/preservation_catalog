@@ -6,43 +6,43 @@
 # that's already in the catalog.
 class CatalogController < ApplicationController
 
-  attr_accessor :poh
+  attr_accessor :complete_moab_handler
 
   # POST /v1/catalog
   def create
-    @poh = CompleteMoabHandler.new(bare_druid, incoming_version, incoming_size, moab_storage_root)
-    poh.create(checksums_validated)
+    @complete_moab_handler = CompleteMoabHandler.new(bare_druid, incoming_version, incoming_size, moab_storage_root)
+    complete_moab_handler.create(checksums_validated)
     status_code =
-      if poh.results.contains_result_code?(:created_new_object)
+      if complete_moab_handler.results.contains_result_code?(:created_new_object)
         :created # 201
-      elsif poh.results.contains_result_code?(:db_obj_already_exists)
+      elsif complete_moab_handler.results.contains_result_code?(:db_obj_already_exists)
         :conflict # 409
-      elsif poh.results.contains_result_code?(:invalid_arguments)
+      elsif complete_moab_handler.results.contains_result_code?(:invalid_arguments)
         :not_acceptable # 406
       else
         :internal_server_error # 500
       end
-    render status: status_code, json: poh.results.to_json
+    render status: status_code, json: complete_moab_handler.results.to_json
   end
 
   # PUT/PATCH /v1/catalog/:id
   # User can only update a partial record (application controls what can be updated)
   def update
-    @poh = CompleteMoabHandler.new(bare_druid, incoming_version, incoming_size, moab_storage_root)
-    poh.update_version(checksums_validated)
+    @complete_moab_handler = CompleteMoabHandler.new(bare_druid, incoming_version, incoming_size, moab_storage_root)
+    complete_moab_handler.update_version(checksums_validated)
     status_code =
-      if poh.results.contains_result_code?(:actual_vers_gt_db_obj)
+      if complete_moab_handler.results.contains_result_code?(:actual_vers_gt_db_obj)
         :ok # 200
-      elsif poh.results.contains_result_code?(:db_obj_does_not_exist)
+      elsif complete_moab_handler.results.contains_result_code?(:db_obj_does_not_exist)
         :not_found # 404
-      elsif poh.results.contains_result_code?(:invalid_arguments)
+      elsif complete_moab_handler.results.contains_result_code?(:invalid_arguments)
         :not_acceptable # 406
-      elsif poh.results.contains_result_code?(:actual_vers_lt_db_obj)
+      elsif complete_moab_handler.results.contains_result_code?(:actual_vers_lt_db_obj)
         :bad_request # 400
       else
         :internal_server_error # 500 including  :unexpected_version, :cm_po_version_mismatch, :db_update_failed
       end
-    render status: status_code, json: poh.results.to_json
+    render status: status_code, json: complete_moab_handler.results.to_json
   end
 
   private
