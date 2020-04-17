@@ -7,7 +7,7 @@
 # NOTE: performing validation here to allow this class to be called directly avoiding http overhead
 #
 # inspired by http://www.thegreatcodeadventure.com/smarter-rails-services-with-active-record-modules/
-class PreservedObjectHandler
+class CompleteMoabHandler
   include ::MoabValidationHandler
   include ActiveModel::Validations
 

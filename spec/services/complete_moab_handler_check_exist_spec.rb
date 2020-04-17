@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 require 'rails_helper'
-require 'services/shared_examples_preserved_object_handler'
+require 'services/shared_examples_complete_moab_handler'
 
-RSpec.describe PreservedObjectHandler do
+RSpec.describe CompleteMoabHandler do
   before { allow(WorkflowReporter).to receive(:report_error) }
 
   let(:druid) { 'ab123cd4567' }

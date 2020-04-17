@@ -33,7 +33,7 @@ Layout/SpaceAroundEqualsInParameterDefault:
 
 Metrics/BlockLength:
   Exclude:
-    - 'app/services/preserved_object_handler.rb' # FIXME check_existence shameless green
+    - 'app/services/complete_moab_handler.rb' # FIXME check_existence shameless green
     - '**/*.rake'
     - 'spec/**/*'
 
@@ -50,7 +50,7 @@ Metrics/LineLength:
 Metrics/MethodLength:
   Max: 25
   Exclude:
-    - 'app/services/preserved_object_handler.rb'
+    - 'app/services/complete_moab_handler.rb'
 
 Naming/FileName:
   Exclude:
@@ -91,7 +91,7 @@ RSpec/NestedGroups:
     - 'spec/requests/objects_controller_content_diff_spec.rb'
     - 'spec/requests/objects_controller_file_spec.rb'
     - 'spec/services/checksum_validator_spec.rb'
-    - 'spec/services/preserved_object_handler_*.rb'
+    - 'spec/services/complete_moab_handler_*.rb'
 
 Style/AccessModifierDeclarations:
   Exclude:

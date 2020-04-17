@@ -54,16 +54,16 @@ RSpec.describe Audit::MoabToCatalog do
       described_class.check_existence_for_druid(druid)
     end
 
-    it 'calls pohandler.check_existence' do
-      po_handler = instance_double('PreservedObjectHandler')
-      expect(PreservedObjectHandler).to receive(:new).with(
+    it 'calls CompleteMoabHandler.check_existence' do
+      complete_moab_handler = instance_double('CompleteMoabHandler')
+      expect(CompleteMoabHandler).to receive(:new).with(
         druid,
         3, # current_version
         instance_of(Integer), # size
         ms_root
-      ).and_return(po_handler)
-      expect(po_handler).to receive(:logger=)
-      expect(po_handler).to receive(:check_existence)
+      ).and_return(complete_moab_handler)
+      expect(complete_moab_handler).to receive(:logger=)
+      expect(complete_moab_handler).to receive(:check_existence)
       described_class.check_existence_for_druid(druid)
     end
 
@@ -74,8 +74,8 @@ RSpec.describe Audit::MoabToCatalog do
     context 'given a druid that does not exist' do
       let(:druid) { 'db102hs2345' }
 
-      it 'does not call pohandler.check_existence' do
-        expect(PreservedObjectHandler).not_to receive(:new)
+      it 'does not call CompleteMoabHandler.check_existence' do
+        expect(CompleteMoabHandler).not_to receive(:new)
         described_class.check_existence_for_druid(druid)
       end
     end
@@ -115,20 +115,20 @@ RSpec.describe Audit::MoabToCatalog do
 
       before do
         expected_argument_list.each do |arg_hash|
-          po_handler = instance_double('PreservedObjectHandler')
-          arg_hash[:po_handler] = po_handler
-          allow(PreservedObjectHandler).to receive(:new).with(
+          complete_moab_handler = instance_double('CompleteMoabHandler')
+          arg_hash[:complete_moab_handler] = complete_moab_handler
+          allow(CompleteMoabHandler).to receive(:new).with(
             arg_hash[:druid],
             arg_hash[:storage_root_current_version],
             instance_of(Integer),
             ms_root
-          ).and_return(po_handler)
+          ).and_return(complete_moab_handler)
         end
       end
 
       it "call #create_after_validation" do
         expected_argument_list.each do |arg_hash|
-          expect(arg_hash[:po_handler]).to receive(:create_after_validation)
+          expect(arg_hash[:complete_moab_handler]).to receive(:create_after_validation)
         end
         described_class.seed_catalog_for_dir(storage_dir)
       end

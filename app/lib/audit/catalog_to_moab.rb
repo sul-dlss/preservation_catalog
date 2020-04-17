@@ -68,8 +68,8 @@ module Audit
           results.report_results(logger)
         elsif catalog_version < moab_version
           set_status_as_seen_on_disk(true)
-          pohandler = PreservedObjectHandler.new(druid, moab_version, moab.size, complete_moab.moab_storage_root)
-          pohandler.update_version_after_validation # results reported by this call
+          comp_moab_handler = CompleteMoabHandler.new(druid, moab_version, moab.size, complete_moab.moab_storage_root)
+          comp_moab_handler.update_version_after_validation # results reported by this call
         else # catalog_version > moab_version
           set_status_as_seen_on_disk(false)
           results.add_result(

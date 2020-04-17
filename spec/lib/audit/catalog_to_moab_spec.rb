@@ -293,10 +293,10 @@ RSpec.describe Audit::CatalogToMoab do
         allow(moab).to receive(:current_version_id).and_return(4)
       end
 
-      it 'calls PreservedObjectHandler.update_version_after_validation' do
-        pohandler = instance_double(PreservedObjectHandler)
-        expect(PreservedObjectHandler).to receive(:new).and_return(pohandler)
-        expect(pohandler).to receive(:update_version_after_validation)
+      it 'calls CompleteMoabHandler.update_version_after_validation' do
+        complete_moab_handler = instance_double(CompleteMoabHandler)
+        expect(CompleteMoabHandler).to receive(:new).and_return(complete_moab_handler)
+        expect(complete_moab_handler).to receive(:update_version_after_validation)
         c2m.check_catalog_version
       end
 

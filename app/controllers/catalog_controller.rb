@@ -10,7 +10,7 @@ class CatalogController < ApplicationController
 
   # POST /v1/catalog
   def create
-    @poh = PreservedObjectHandler.new(bare_druid, incoming_version, incoming_size, moab_storage_root)
+    @poh = CompleteMoabHandler.new(bare_druid, incoming_version, incoming_size, moab_storage_root)
     poh.create(checksums_validated)
     status_code =
       if poh.results.contains_result_code?(:created_new_object)
@@ -28,7 +28,7 @@ class CatalogController < ApplicationController
   # PUT/PATCH /v1/catalog/:id
   # User can only update a partial record (application controls what can be updated)
   def update
-    @poh = PreservedObjectHandler.new(bare_druid, incoming_version, incoming_size, moab_storage_root)
+    @poh = CompleteMoabHandler.new(bare_druid, incoming_version, incoming_size, moab_storage_root)
     poh.update_version(checksums_validated)
     status_code =
       if poh.results.contains_result_code?(:actual_vers_gt_db_obj)
