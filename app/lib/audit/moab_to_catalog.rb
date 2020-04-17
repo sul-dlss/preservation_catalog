@@ -18,9 +18,9 @@ module Audit
       storage_trunk = Settings.moab.storage_trunk
       storage_dir = "#{moab.object_pathname.to_s.split(storage_trunk).first}#{storage_trunk}"
       ms_root = MoabStorageRoot.find_by!(storage_location: storage_dir)
-      po_handler = PreservedObjectHandler.new(druid, moab.current_version_id, moab.size, ms_root)
-      po_handler.logger = Audit::MoabToCatalog.logger
-      results = po_handler.check_existence
+      comp_moab_handler = CompleteMoabHandler.new(druid, moab.current_version_id, moab.size, ms_root)
+      comp_moab_handler.logger = Audit::MoabToCatalog.logger
+      results = comp_moab_handler.check_existence
       logger.info "#{results} for #{druid}"
       results
     rescue TypeError
@@ -41,8 +41,8 @@ module Audit
       ms_root = MoabStorageRoot.find_by!(storage_location: storage_dir)
       Stanford::MoabStorageDirectory.find_moab_paths(storage_dir) do |druid, path, _path_match_data|
         moab = Moab::StorageObject.new(druid, path)
-        po_handler = PreservedObjectHandler.new(druid, moab.current_version_id, moab.size, ms_root)
-        results << po_handler.create_after_validation
+        comp_moab_handler = CompleteMoabHandler.new(druid, moab.current_version_id, moab.size, ms_root)
+        results << comp_moab_handler.create_after_validation
       end
       results
     ensure
