@@ -127,19 +127,19 @@ RSpec.describe CompleteMoabHandler do
               end
 
               it 'size if supplied' do
-                expect { complete_moab_handler.check_existence }.to change { complete_moab_handler.comp_moab.size }.to(incoming_size)
+                expect { complete_moab_handler.check_existence }.to change { complete_moab_handler.complete_moab.size }.to(incoming_size)
               end
 
               it 'last_moab_validation' do
-                complete_moab_handler.comp_moab.last_moab_validation = Time.current
-                complete_moab_handler.comp_moab.save!
-                expect { complete_moab_handler.check_existence }.to change { complete_moab_handler.comp_moab.last_moab_validation }
+                complete_moab_handler.complete_moab.last_moab_validation = Time.current
+                complete_moab_handler.complete_moab.save!
+                expect { complete_moab_handler.check_existence }.to change { complete_moab_handler.complete_moab.last_moab_validation }
               end
 
               it 'last_version_audit' do
-                complete_moab_handler.comp_moab.last_version_audit = Time.current
-                complete_moab_handler.comp_moab.save!
-                expect { complete_moab_handler.check_existence }.to change { complete_moab_handler.comp_moab.last_version_audit }
+                complete_moab_handler.complete_moab.last_version_audit = Time.current
+                complete_moab_handler.complete_moab.save!
+                expect { complete_moab_handler.check_existence }.to change { complete_moab_handler.complete_moab.last_version_audit }
               end
 
               it 'updated_at' do
@@ -157,8 +157,8 @@ RSpec.describe CompleteMoabHandler do
 
             context 'unchanged' do
               it 'status if former status was ok' do
-                complete_moab_handler.comp_moab.ok!
-                expect { complete_moab_handler.check_existence }.not_to change { complete_moab_handler.comp_moab.status }.from('ok')
+                complete_moab_handler.complete_moab.ok!
+                expect { complete_moab_handler.check_existence }.not_to change { complete_moab_handler.complete_moab.status }.from('ok')
               end
 
               it 'size if incoming size is nil' do
@@ -177,7 +177,7 @@ RSpec.describe CompleteMoabHandler do
             end
 
             it 'dependent CompleteMoab also updated' do
-              expect { complete_moab_handler.check_existence }.to change { complete_moab_handler.comp_moab.updated_at }
+              expect { complete_moab_handler.check_existence }.to change { complete_moab_handler.complete_moab.updated_at }
             end
           end
 
@@ -356,7 +356,7 @@ RSpec.describe CompleteMoabHandler do
 
           context 'transaction is rolled back' do
             it 'CompleteMoab is not updated' do
-              expect { complete_moab_handler.check_existence }.not_to change { complete_moab_handler.comp_moab.updated_at }
+              expect { complete_moab_handler.check_existence }.not_to change { complete_moab_handler.complete_moab.updated_at }
             end
 
             it 'PreservedObject is not updated' do

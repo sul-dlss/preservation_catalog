@@ -173,7 +173,7 @@ RSpec.describe CompleteMoabHandler do
             let(:results) do
               allow(Rails.logger).to receive(:log)
               allow(complete_moab_handler).to receive(:pres_object).and_return(po)
-              allow(complete_moab_handler).to receive(:comp_moab).and_return(cm)
+              allow(complete_moab_handler).to receive(:complete_moab).and_return(cm)
               allow(cm).to receive(:save!).and_raise(ActiveRecord::ActiveRecordError, 'foo')
               complete_moab_handler.update_version
             end
