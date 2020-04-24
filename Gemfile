@@ -9,7 +9,7 @@ end
 gem 'aws-sdk-s3', '~> 1.17'
 gem 'committee' # Validates HTTP requests/responses per OpenAPI specification
 gem 'config' # Settings to manage configs on different instances
-gem 'dor-services-client', '~> 5.1' # avoid inadvertent cocina-model updates
+gem 'dor-services-client', '~> 6.0' # avoid inadvertent cocina-model updates
 gem 'dor-workflow-client', '~> 3.8' # audit errors are reported to the workflow service
 gem 'honeybadger' # for error reporting / tracking / notifications
 gem 'jbuilder', '~> 2.5' # Build JSON APIs with ease.
