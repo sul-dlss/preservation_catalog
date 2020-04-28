@@ -2,7 +2,6 @@
 
 require 'active_record_utils'
 require 'druid-tools'
-require 'profiler'
 require 'csv'
 
 require_relative 'audit/catalog_to_moab'
