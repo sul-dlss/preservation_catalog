@@ -267,6 +267,7 @@ RSpec.describe AuditResults do
         result_code = AuditResults::CM_STATUS_CHANGED
         addl_hash = { old_status: 'invalid_checksum', new_status: 'ok' }
         audit_results.add_result(result_code, addl_hash)
+        expect(WorkflowReporter).to receive(:report_completed).with(druid, actual_version, 'moab-valid', ms_root)
         expect(WorkflowReporter).to receive(:report_completed).with(druid, actual_version, 'preservation-audit', ms_root)
         audit_results.report_results
       end

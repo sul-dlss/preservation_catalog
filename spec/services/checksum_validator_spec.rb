@@ -543,6 +543,7 @@ RSpec.describe ChecksumValidator do
 
     it 'has status changed to OK_STATUS and completes workflow' do
       comp_moab.invalid_moab!
+      expect(WorkflowReporter).to receive(:report_completed).with(druid, nil, 'moab-valid', ms_root)
       expect(WorkflowReporter).to receive(:report_completed).with(druid, nil, 'preservation-audit', ms_root)
       cv.validate_checksums
     end

@@ -161,6 +161,7 @@ class AuditResults
         msg = "#{string_prefix} || #{r.values.first}"
         WorkflowReporter.report_error(druid, actual_version, 'moab-valid', moab_storage_root, msg)
       elsif status_changed_to_ok?(r)
+        WorkflowReporter.report_completed(druid, actual_version, 'moab-valid', moab_storage_root)
         WorkflowReporter.report_completed(druid, actual_version, 'preservation-audit', moab_storage_root)
       elsif WORKFLOW_REPORT_CODES.include?(r.keys.first)
         workflow_results << r
