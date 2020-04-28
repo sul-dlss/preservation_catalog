@@ -27,7 +27,7 @@ RSpec.describe CompleteMoab, type: :model do
   end
 
   it 'defines a status enum with the expected values' do
-    is_expected.to define_enum_for(:status).with(
+    is_expected.to define_enum_for(:status).with_values(
       'ok' => 0,
       'invalid_moab' => 1,
       'invalid_checksum' => 2,
