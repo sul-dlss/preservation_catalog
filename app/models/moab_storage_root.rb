@@ -9,7 +9,7 @@ class MoabStorageRoot < ApplicationRecord
   has_and_belongs_to_many :preservation_policies
 
   validates :name, presence: true, uniqueness: true
-  validates :storage_location, presence: true
+  validates :storage_location, presence: true, uniqueness: true
 
   scope :preserved_objects, lambda {
     joins(complete_moabs: [:preserved_object])

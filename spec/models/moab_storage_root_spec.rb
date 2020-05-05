@@ -19,14 +19,31 @@ RSpec.describe MoabStorageRoot, type: :model do
     expect(moab_storage_root).to be_valid
   end
 
-  it 'enforces unique constraint on name (model level)' do
-    expect do
-      described_class.create!(moab_storage_root.attributes.slice('name', 'storage_location'))
-    end.to raise_error(ActiveRecord::RecordInvalid)
+  describe 'enforces unique constraint on name' do
+    it 'at model level' do
+      msg = 'Validation failed: Name has already been taken'
+      expect do
+        described_class.create!(name: 'storage-root-01', storage_location: '/storage_root02')
+      end.to raise_error(ActiveRecord::RecordInvalid, msg)
+    end
+
+    it 'at db level' do
+      expect { moab_storage_root.dup.save(validate: false) }.to raise_error(ActiveRecord::RecordNotUnique)
+    end
   end
 
-  it 'enforces unique constraint on name (db level)' do
-    expect { moab_storage_root.dup.save(validate: false) }.to raise_error(ActiveRecord::RecordNotUnique)
+  describe 'enforces unique constraint on storage_location' do
+    it 'at model level' do
+      msg = 'Validation failed: Storage location has already been taken'
+      expect do
+        described_class.create!(name: 'storage-root-03', storage_location: '/storage_root01')
+      end.to raise_error(ActiveRecord::RecordInvalid, msg)
+    end
+
+    it 'at db level' do
+      dup_moab_storage_root = described_class.new(name: 'storage-root-03', storage_location: '/storage_root01')
+      expect { dup_moab_storage_root.save(validate: false) }.to raise_error(ActiveRecord::RecordNotUnique)
+    end
   end
 
   it { is_expected.to have_many(:complete_moabs) }
