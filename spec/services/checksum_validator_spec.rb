@@ -26,15 +26,17 @@ RSpec.describe ChecksumValidator do
       expect(cv.bare_druid).to eq druid
       expect(cv.moab_storage_root).to eq ms_root
       expect(cv.results).to be_an_instance_of AuditResults
+      expect(cv.results.actual_version).to eq 3
+    end
+
+    it 'instantiates a Moab::StorageObject from druid and druid_path' do
+      expect(cv.moab).to be_an_instance_of Moab::StorageObject
+      expect(cv.moab.digital_object_id).to eq druid
+      expect(cv.moab.object_pathname.to_s).to eq object_dir
     end
   end
 
   describe '#validate_manifest_inventories' do
-    it 'instantiates a Moab::StorageObject from druid and druid_path' do
-      expect(Moab::StorageObject).to receive(:new).with(cv.bare_druid, a_string_matching(object_dir)).and_call_original
-      cv.validate_manifest_inventories
-    end
-
     it 'calls validate_manifest_inventory for each moab_version' do
       sov1 = instance_double(Moab::StorageObjectVersion)
       sov2 = instance_double(Moab::StorageObjectVersion)
@@ -128,11 +130,6 @@ RSpec.describe ChecksumValidator do
     let(:druid) { 'bj102hs9687' }
     let(:root_name) { 'fixture_sr1' }
     let(:results) { instance_double(AuditResults, report_results: nil, :check_name= => nil) }
-
-    it 'instantiates storage_object from druid and druid_path' do
-      expect(Moab::StorageObject).to receive(:new).with(cv.bare_druid, a_string_matching(object_dir)).and_call_original
-      cv.send(:validate_signature_catalog_listing)
-    end
 
     it 'calls validate_signature_catalog_entry for each signatureCatalog entry' do
       sce01 = instance_double(Moab::SignatureCatalogEntry)
@@ -543,8 +540,8 @@ RSpec.describe ChecksumValidator do
 
     it 'has status changed to OK_STATUS and completes workflow' do
       comp_moab.invalid_moab!
-      expect(WorkflowReporter).to receive(:report_completed).with(druid, nil, 'moab-valid', ms_root)
-      expect(WorkflowReporter).to receive(:report_completed).with(druid, nil, 'preservation-audit', ms_root)
+      expect(WorkflowReporter).to receive(:report_completed).with(druid, 3, 'moab-valid', ms_root)
+      expect(WorkflowReporter).to receive(:report_completed).with(druid, 3, 'preservation-audit', ms_root)
       cv.validate_checksums
     end
 
