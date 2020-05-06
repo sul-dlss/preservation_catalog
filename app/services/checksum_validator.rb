@@ -20,7 +20,7 @@ class ChecksumValidator
   def initialize(complete_moab)
     @complete_moab = complete_moab
     @bare_druid = complete_moab.preserved_object.druid
-    @results = AuditResults.new(bare_druid, nil, moab_storage_root, 'validate_checksums')
+    @results = AuditResults.new(bare_druid, moab.current_version_id, moab_storage_root, 'validate_checksums')
   end
 
   def validate_checksums
