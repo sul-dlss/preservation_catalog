@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_02_06_163659) do
+ActiveRecord::Schema.define(version: 2020_05_04_194352) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -48,7 +48,7 @@ ActiveRecord::Schema.define(version: 2020_02_06_163659) do
     t.datetime "updated_at", null: false
     t.string "storage_location", null: false
     t.index ["name"], name: "index_moab_storage_roots_on_name", unique: true
-    t.index ["storage_location"], name: "index_moab_storage_roots_on_storage_location"
+    t.index ["storage_location"], name: "index_moab_storage_roots_on_storage_location", unique: true
   end
 
   create_table "moab_storage_roots_preservation_policies", force: :cascade do |t|
