@@ -29,10 +29,9 @@ class DruidVersionZip
   # not 'ab/123/cd/4567/ab123cd4567/...'
   def create_zip!
     ensure_zip_directory!
-    Dir.chdir(work_dir.to_s) do
-      combined, status = Open3.capture2e(zip_command)
-      raise "zipmaker failure #{combined}" unless status.success?
-    end
+    combined, status = Open3.capture2e(zip_command, chdir: work_dir.to_s)
+    raise "zipmaker failure #{combined}" unless status.success?
+
     part_keys.each do |part_key|
       DruidVersionZipPart.new(self, part_key).write_md5
     end
