@@ -27,6 +27,7 @@ class CompleteMoab < ApplicationRecord
   delegate :s3_key, to: :druid_version_zip
 
   validates :moab_storage_root, :preserved_object, :status, :version, presence: true
+  validates_uniqueness_of :preserved_object_id, scope: [:moab_storage_root_id]
   # NOTE: size here is approximate and not used for fixity checking
   validates :size, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
 
