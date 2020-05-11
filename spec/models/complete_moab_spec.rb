@@ -72,6 +72,7 @@ RSpec.describe CompleteMoab, type: :model do
   it { is_expected.to validate_presence_of(:moab_storage_root) }
   it { is_expected.to validate_presence_of(:preserved_object) }
   it { is_expected.to validate_presence_of(:version) }
+  it { is_expected.to validate_uniqueness_of(:preserved_object_id).scoped_to(:moab_storage_root_id) }
   it { is_expected.to have_many(:zipped_moab_versions) }
 
   describe '#validate_checksums!' do
@@ -223,6 +224,29 @@ RSpec.describe CompleteMoab, type: :model do
           .not_to include future_timestamp_cm
       end
     end
+  end
+
+  describe 'preserved_object_id and moab_storage_root_id combination' do
+    context 'at the model level' do
+      it 'must be unique ' do
+        expect {
+          create(:complete_moab, preserved_object_id: preserved_object.id,
+                                 moab_storage_root_id: cm.moab_storage_root_id)
+        }.to raise_error(ActiveRecord::RecordInvalid)
+      end
+    end
+
+    context 'at the db level' do
+      it 'must be unique' do
+        dup_complete_moab = described_class.new(preserved_object_id: preserved_object.id,
+                                                moab_storage_root_id: cm.moab_storage_root_id,
+                                                status: status,
+                                                version: cm_version)
+        expect { dup_complete_moab.save(validate: false) }.to raise_error(ActiveRecord::RecordNotUnique)
+
+      end
+    end
+
   end
 
   describe '.normalize_date(timestamp)' do
