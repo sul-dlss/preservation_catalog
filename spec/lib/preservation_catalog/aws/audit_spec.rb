@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe PreservationCatalog::S3::Audit do
+RSpec.describe PreservationCatalog::AWS::Audit do
   let(:zip_endpoint) do
     ZipEndpoint.find_by(endpoint_name: 'aws_s3_west_2')
   end
