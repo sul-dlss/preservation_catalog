@@ -205,15 +205,43 @@ RSpec.describe ChecksumValidator do
 
   describe '#validate_checksums' do
     context 'moab is missing from storage' do
+      let(:events_client) { instance_double(Dor::Services::Client::Events) }
+
       before do
         # fake a moab gone missing by updating the preserved object to use a non-existent druid
         comp_moab.preserved_object.update(druid: 'tr808sp1200')
+        allow(Honeybadger).to receive(:notify)
+        allow(Dor::Services::Client).to receive(:object).with("druid:tr808sp1200").and_return(
+          instance_double(Dor::Services::Client::Object, events: events_client)
+        )
+        allow(Honeybadger).to receive(:notify)
+        allow(events_client).to receive(:create).with(type: 'preservation_audit_failure', data: instance_of(Hash))
       end
 
       it 'sets status to online_moab_not_found and adds corresponding audit result' do
         expect { cv.validate_checksums }.to change(comp_moab, :status).to 'online_moab_not_found'
         expect(comp_moab.reload.status).to eq 'online_moab_not_found'
         expect(cv.results.result_array.first).to have_key(:moab_not_found)
+      end
+
+      it 'sends results in HONEYBADGER_REPORT_CODES errors' do
+        reason = "db CompleteMoab \\(created .*Z; last updated .*Z\\) exists but Moab not found"
+        exp_msg = "validate_checksums\\(tr808sp1200, fixture_sr3\\) #{reason}"
+        cv.validate_checksums
+
+        expect(Honeybadger).to have_received(:notify).with(Regexp.new(exp_msg))
+        expect(events_client).to have_received(:create).once.with(
+          type: 'preservation_audit_failure',
+          data: {
+            host: instance_of(String),
+            invoked_by: 'preservation-catalog',
+            storage_root: ms_root.name,
+            actual_version: 0,
+            check_name: 'validate_checksums',
+            error_result: { moab_not_found: a_string_matching(reason) }
+          }
+        )
+        expect(Dor::Services::Client).to have_received(:object).with("druid:tr808sp1200").once
       end
 
       it 'calls AuditResults.report_results' do
