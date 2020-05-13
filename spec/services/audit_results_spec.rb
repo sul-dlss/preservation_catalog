@@ -243,6 +243,17 @@ RSpec.describe AuditResults do
           ar.add_result(result_code, addl)
           ar
         }
+        let(:events_client) { instance_double(Dor::Services::Client::Events) }
+        let(:reason) { "db CompleteMoab \\(created #{create_date}; last updated #{update_date}\\) exists but Moab not found" }
+        let(:exp_msg) { "\\(ab123cd4567, fixture_sr1\\) #{reason}" }
+
+        before do
+          allow(Honeybadger).to receive(:notify)
+          allow(Dor::Services::Client).to receive(:object).and_return(
+            instance_double(Dor::Services::Client::Object, events: events_client)
+          )
+          allow(events_client).to receive(:create).with(type: 'preservation_audit_failure', data: instance_of(Hash))
+        end
 
         it 'message sent includes CompleteMoab create date' do
           expected = Regexp.escape("db CompleteMoab (created #{create_date}")
@@ -250,6 +261,7 @@ RSpec.describe AuditResults do
             druid, actual_version, 'preservation-audit', ms_root, a_string_matching(expected)
           )
           my_audit_results.report_results
+          expect(Honeybadger).to have_received(:notify).with(Regexp.new(exp_msg))
         end
 
         it 'message sent includes CompleteMoab updated date' do
