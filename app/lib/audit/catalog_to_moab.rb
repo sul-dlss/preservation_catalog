@@ -3,8 +3,14 @@
 module Audit
   # Catalog to Moab existence check code
   class CatalogToMoab
-    include ::MoabValidationHandler
     attr_reader :complete_moab, :druid, :results
+
+    delegate :can_validate_current_comp_moab_status?,
+             :moab,
+             :ran_moab_validation?,
+             :set_status_as_seen_on_disk,
+             :update_status,
+             to: :moab_validator
 
     def initialize(complete_moab)
       @complete_moab = complete_moab
@@ -45,6 +51,10 @@ module Audit
     end
 
     private
+
+    def moab_validator
+      @moab_validator ||= MoabValidator.new(druid: druid, storage_location: storage_location, results: results, complete_moab: complete_moab)
+    end
 
     def storage_location
       complete_moab.moab_storage_root.storage_location

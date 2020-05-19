@@ -229,13 +229,16 @@ RSpec.describe CompleteMoabHandler do
         complete_moab_handler.update_version
       end
 
-      it 'does not call PreservedObject.save when CompleteMoab only has timestamp updates' do
-        complete_moab_handler = described_class.new(druid, 1, 1, ms_root)
-        allow(complete_moab_handler).to receive(:pres_object).and_return(po)
-        allow(complete_moab_handler.pres_object.complete_moabs).to receive(:find_by!).with(moab_storage_root: ms_root).and_return(cm)
-        expect(cm).to receive(:save!)
-        expect(po).not_to receive(:save!)
-        complete_moab_handler.update_version
+      context '' do
+        let(:complete_moab_handler) { described_class.new(druid, 1, 1, ms_root) }
+
+        it 'does not call PreservedObject.save when CompleteMoab only has timestamp updates' do
+          allow(complete_moab_handler).to receive(:pres_object).and_return(po)
+          allow(complete_moab_handler.pres_object.complete_moabs).to receive(:find_by!).with(moab_storage_root: ms_root).and_return(cm)
+          expect(cm).to receive(:save!)
+          expect(po).not_to receive(:save!)
+          complete_moab_handler.update_version
+        end
       end
 
       it 'logs a debug message' do
@@ -247,7 +250,11 @@ RSpec.describe CompleteMoabHandler do
 
     it_behaves_like 'druid not in catalog', :update_version
 
-    it_behaves_like 'CompleteMoab does not exist', :update_version
+    context 'only PreservedObject exists' do
+      before { create(:preserved_object, druid: druid, complete_moabs: []) }
+
+      it_behaves_like 'CompleteMoab does not exist', :update_version
+    end
   end
 
   describe '#update_version_after_validation' do
@@ -722,6 +729,10 @@ RSpec.describe CompleteMoabHandler do
 
     it_behaves_like 'druid not in catalog', :update_version_after_validation
 
-    it_behaves_like 'CompleteMoab does not exist', :update_version_after_validation
+    context 'there is no CompleteMoab for the PreservedObject' do
+      before { create(:preserved_object, druid: druid, complete_moabs: []) }
+
+      it_behaves_like 'CompleteMoab does not exist', :update_version_after_validation
+    end
   end
 end

@@ -86,7 +86,8 @@ RSpec.describe CompleteMoabHandler do
       )
       bad_complete_moab_handler = described_class.new(druid, 6, incoming_size, ms_root)
       allow(cm).to receive(:save!).and_raise(ActiveRecord::ActiveRecordError)
-      allow(bad_complete_moab_handler).to receive(:moab_validation_errors).and_return([])
+      # have to get the #moab_validator instance, because allow won't intercept the delegated CMH#moab_validation_errors
+      allow(bad_complete_moab_handler.send(:moab_validator)).to receive(:moab_validation_errors).and_return([])
       bad_complete_moab_handler.confirm_version
       expect(PreservedObject.find_by(druid: druid).current_version).to eq 2
     end

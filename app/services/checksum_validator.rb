@@ -2,13 +2,12 @@
 
 # code for validating Moab checksums
 class ChecksumValidator
-  include ::MoabValidationHandler
-
   attr_reader :bare_druid, :results, :complete_moab
 
   alias druid bare_druid
   delegate :moab_storage_root, to: :complete_moab
   delegate :storage_location, to: :moab_storage_root
+  delegate :mark_moab_not_found, :moab, :object_dir, :set_status_as_seen_on_disk, :update_status, to: :moab_validator
 
   MANIFESTS = 'manifests'
   MANIFESTS_XML = 'manifestInventory.xml'
@@ -20,7 +19,10 @@ class ChecksumValidator
   def initialize(complete_moab)
     @complete_moab = complete_moab
     @bare_druid = complete_moab.preserved_object.druid
-    @results = AuditResults.new(bare_druid, moab.current_version_id, moab_storage_root, 'validate_checksums')
+    @results = AuditResults.new(bare_druid, nil, moab_storage_root, 'validate_checksums')
+    # TODO: fix fragile interdependence, MoabValidator wants AuditResults instance, but we want MoabValidator#moab.current_version_id
+    # in that AuditResults instance.  so set AuditResults#actual_version after both instances have been created.
+    @results.actual_version = moab.current_version_id
   end
 
   def validate_checksums
@@ -77,12 +79,11 @@ class ChecksumValidator
     validate_signature_catalog_listing
   end
 
-  # override from MoabValidationHandler inclusion
-  def can_validate_checksums?
-    true
-  end
-
   private
+
+  def moab_validator
+    @moab_validator ||= MoabValidator.new(druid: druid, storage_location: storage_location, results: results, complete_moab: complete_moab, caller_validates_checksums: true)
+  end
 
   def validate_signature_catalog_listing
     latest_signature_catalog_entries.each { |entry| validate_signature_catalog_entry(entry) }

@@ -8,7 +8,6 @@
 #
 # inspired by http://www.thegreatcodeadventure.com/smarter-rails-services-with-active-record-modules/
 class CompleteMoabHandler
-  include ::MoabValidationHandler
   include ActiveModel::Validations
 
   validates :druid, presence: true, format: { with: DruidTools::Druid.pattern }
@@ -22,6 +21,14 @@ class CompleteMoabHandler
   attr_writer :logger
 
   delegate :storage_location, to: :moab_storage_root
+  delegate :can_validate_current_comp_moab_status?,
+           :complete_moab,
+           :moab_validation_errors,
+           :ran_moab_validation?,
+           :ran_moab_validation!,
+           :set_status_as_seen_on_disk,
+           :update_status,
+           to: :moab_validator
 
   def initialize(druid, incoming_version, incoming_size, moab_storage_root)
     @druid = druid
@@ -73,6 +80,7 @@ class CompleteMoabHandler
       results.add_result(AuditResults::INVALID_ARGUMENTS, errors.full_messages)
     elsif PreservedObject.exists?(druid: druid)
       Rails.logger.debug "check_existence #{druid} called"
+
       transaction_ok = with_active_record_transaction_and_rescue do
         raise_rollback_if_cm_po_version_mismatch
 
@@ -178,12 +186,11 @@ class CompleteMoabHandler
     @pres_object ||= PreservedObject.find_by!(druid: druid)
   end
 
-  def complete_moab
-    # FIXME: what if there is more than one associated complete_moab?
-    @complete_moab ||= pres_object.complete_moabs.find_by!(moab_storage_root: moab_storage_root)
-  end
-
   private
+
+  def moab_validator
+    @moab_validator ||= MoabValidator.new(druid: druid, storage_location: storage_location, results: results)
+  end
 
   def create_db_objects(status, checksums_validated = false)
     cm_attrs = {
