@@ -76,9 +76,7 @@ RSpec.describe CompleteMoabHandler do
         end
 
         it 'PreservedObject is not updated' do
-          orig_timestamp = po.updated_at
-          complete_moab_handler.confirm_version
-          expect(po.reload.updated_at).to eq orig_timestamp
+          expect { complete_moab_handler.confirm_version }.not_to change { po.reload.updated_at }
         end
 
         it_behaves_like 'calls AuditResults.report_results', :confirm_version
@@ -175,9 +173,7 @@ RSpec.describe CompleteMoabHandler do
           end
 
           it 'PreservedObject is not updated' do
-            orig_timestamp = po.updated_at
-            complete_moab_handler.confirm_version
-            expect(po.reload.updated_at).to eq orig_timestamp
+            expect { complete_moab_handler.confirm_version }.not_to change { po.reload.updated_at }
           end
 
           context 'returns' do
