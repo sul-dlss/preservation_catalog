@@ -55,7 +55,23 @@ describe DruidVersionZip do
 
     after { FileUtils.rm_rf('/tmp/bj') } # cleanup
 
-    context 'succeeds in zipping the binary' do
+    context 'when zip size is less than the moab size' do
+      let(:moab_size) { dvz.send(:moab_size) }
+      let(:total_part_size) { moab_size / 2 }
+
+      before do
+        allow(dvz).to receive(:total_part_size).and_return(total_part_size)
+      end
+
+      it 'raises an error' do
+        expect { dvz.create_zip! }.to raise_error(
+          RuntimeError,
+          /zip size \(#{total_part_size}\) is smaller than the moab size \(#{moab_size}\)/
+        )
+      end
+    end
+
+    context 'when it succeeds' do
       after { File.delete(zip_path) }
 
       it 'produces the expected zip file' do
@@ -83,7 +99,10 @@ describe DruidVersionZip do
     end
 
     context 'for every part' do
-      before { allow(dvz).to receive(:zip_split_size).and_return("1m") }
+      before do
+        allow(dvz).to receive(:zip_split_size).and_return("1m")
+        allow(dvz).to receive(:zip_size_ok?).and_return(true)
+      end
 
       after { dvz.part_paths.each { |path| File.delete(path) } }
 
@@ -96,7 +115,7 @@ describe DruidVersionZip do
       end
     end
 
-    context 'fails to zip the binary' do
+    describe 'zip command' do
       before { allow(dvz).to receive(:zip_command).and_return(zip_command) }
 
       context 'when inpath is incorrect' do
