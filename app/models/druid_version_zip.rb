@@ -31,6 +31,7 @@ class DruidVersionZip
     ensure_zip_directory!
     combined, status = Open3.capture2e(zip_command, chdir: work_dir.to_s)
     raise "zipmaker failure #{combined}" unless status.success?
+    raise "zip size (#{total_part_size}) is smaller than the moab size (#{moab_size})! zipmaker failure #{combined}" unless zip_size_ok?
 
     part_keys.each do |part_key|
       DruidVersionZipPart.new(self, part_key).write_md5
@@ -128,6 +129,24 @@ class DruidVersionZip
   end
 
   private
+
+  def zip_size_ok?
+    total_part_size >= moab_size
+  end
+
+  def total_part_size
+    part_paths
+      .map { |part_path| File.size(part_path) }
+      .sum
+  end
+
+  def moab_size
+    Dir
+      .glob("#{moab_version_path}/**/*")
+      .select { |path| File.file?(path) }
+      .map { |file_path| File.size(file_path) }
+      .sum
+  end
 
   # @return [String] e.g. 'Zip 3.0 (July 5th 2008)' or 'Zip 3.0.1'
   def fetch_zip_version
