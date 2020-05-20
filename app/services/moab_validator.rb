@@ -31,12 +31,9 @@ class MoabValidator
     # complete_moabs.
     # * A moab always lives in the druid tree path of the storage_location, so there is only one
     # possible moab path for any given druid in a given storage root.
-
-    # TODO: switch to the second query, which is better, but use the first for now, to break fewer tests all at once
-    @complete_moab ||= PreservedObject.find_by!(druid: druid).complete_moabs.find_by!(moab_storage_root: MoabStorageRoot.where(storage_location: storage_location))
-    # @complete_moab ||= CompleteMoab.joins(:preserved_object, :moab_storage_root).find_by!(
-    #   preserved_objects: { druid: druid }, moab_storage_roots: { storage_location: storage_location }
-    # )
+    @complete_moab ||= CompleteMoab.joins(:preserved_object, :moab_storage_root).find_by!(
+      preserved_objects: { druid: druid }, moab_storage_roots: { storage_location: storage_location }
+    )
   end
 
   def moab

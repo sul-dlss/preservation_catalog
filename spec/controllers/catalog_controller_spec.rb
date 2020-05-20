@@ -130,15 +130,7 @@ RSpec.describe CatalogController, type: :controller do
 
   describe 'PATCH #update' do
     before do
-      po = PreservedObject.create!(
-        druid: "bj102hs9687", current_version: ver, preservation_policy: PreservationPolicy.default_policy
-      )
-      CompleteMoab.create!(
-        preserved_object: po,
-        moab_storage_root: MoabStorageRoot.find_by(storage_location: storage_location),
-        version: ver,
-        status: 'validity_unknown'
-      )
+      create(:preserved_object_fixture, druid: 'bj102hs9687')
     end
 
     let(:pres_obj) { PreservedObject.find_by(druid: bare_druid) }
@@ -182,9 +174,9 @@ RSpec.describe CatalogController, type: :controller do
       end
 
       it 'response contains error message' do
-        error = "#<ActiveRecord::RecordNotFound: Couldn't find PreservedObject>"
-        exp_msg = [{ AuditResults::DB_OBJ_DOES_NOT_EXIST => "#{error} db object does not exist" }]
-        expect(response.body).to include(exp_msg.to_json)
+        err_regex = /#<ActiveRecord::RecordNotFound: Couldn't find [PreservedObject|CompleteMoab].*> db object does not exist/
+        exp_result = { 'result_array' => [{ AuditResults::DB_OBJ_DOES_NOT_EXIST.to_s => a_string_matching(err_regex) }] }
+        expect(JSON.parse(response.body)).to include(exp_result)
       end
 
       it 'returns a not found error' do
@@ -231,10 +223,13 @@ RSpec.describe CatalogController, type: :controller do
       end
     end
 
-    context 'db update failed' do
+    context 'db update transaction failed' do
       before do
-        allow(PreservedObject).to receive(:find_by!).with(druid: bare_druid)
-                                                    .and_raise(ActiveRecord::ActiveRecordError, 'foo')
+        # pretend DB records are 1 version behind what's on disk, so update gets what it expects; we're testing
+        # specifically for DB update failure bubbling up
+        pres_obj.update(current_version: pres_obj.current_version-1)
+        comp_moab.update(version: comp_moab.version-1)
+        allow(CompleteMoab).to receive(:joins).and_raise(ActiveRecord::ActiveRecordError, 'connection error foo')
       end
 
       it 'response contains error message' do

@@ -14,6 +14,7 @@ RSpec.describe CompleteMoabHandler do
   let(:cm) { po.complete_moabs.find_by!(moab_storage_root: ms_root) }
   let(:db_update_failed_prefix) { "db update failed" }
   let(:complete_moab_handler) { described_class.new(druid, incoming_version, incoming_size, ms_root) }
+  let(:moab_validator) { complete_moab_handler.send(:moab_validator) }
 
   describe '#check_existence' do
     it_behaves_like 'attributes validated', :check_existence
@@ -87,7 +88,7 @@ RSpec.describe CompleteMoabHandler do
 
         it_behaves_like 'calls AuditResults.report_results', :check_existence
         it 'does not validate moab' do
-          expect(complete_moab_handler.send(:moab_validator)).not_to receive(:moab_validation_errors)
+          expect(moab_validator).not_to receive(:moab_validation_errors)
           complete_moab_handler.check_existence
         end
 
@@ -113,7 +114,7 @@ RSpec.describe CompleteMoabHandler do
         end
 
         context 'when moab is valid' do
-          before { allow(complete_moab_handler.send(:moab_validator)).to receive(:moab_validation_errors).and_return([]) }
+          before { allow(moab_validator).to receive(:moab_validation_errors).and_return([]) }
 
           context 'CompleteMoab' do
             context 'changed' do
@@ -186,7 +187,7 @@ RSpec.describe CompleteMoabHandler do
           context 'returns' do
             let(:results) { complete_moab_handler.check_existence }
 
-            before { allow(complete_moab_handler.send(:moab_validator)).to receive(:moab_validation_errors).and_return([]) }
+            before { allow(moab_validator).to receive(:moab_validation_errors).and_return([]) }
 
             it 'ACTUAL_VERS_GT_DB_OBJ results' do
               expect(results).to be_an Array
@@ -313,7 +314,7 @@ RSpec.describe CompleteMoabHandler do
         context 'incoming_version > db version' do
           let(:incoming_version) { cm.version + 1 }
 
-          before { allow(complete_moab_handler.send(:moab_validator)).to receive(:moab_validation_errors).and_return([]) }
+          before { allow(moab_validator).to receive(:moab_validation_errors).and_return([]) }
 
           it 'had OK_STATUS, version increased, should still have OK_STATUS' do
             cm.ok!
@@ -349,7 +350,6 @@ RSpec.describe CompleteMoabHandler do
           let(:incoming_version) { 2 }
           let(:cm) { create(:complete_moab, pres_object: po, moab_storage_root: ms_root) }
           let(:po) { cm.preserved_object }
-          let(:moab_validator) { complete_moab_handler.send(:moab_validator) }
 
           before do
             allow(moab_validator.complete_moab).to receive(:save!).and_raise(ActiveRecord::ActiveRecordError, 'foo')
@@ -388,7 +388,7 @@ RSpec.describe CompleteMoabHandler do
 
       it 'logs a debug message' do
         allow(Rails.logger).to receive(:debug)
-        allow(complete_moab_handler.send(:moab_validator)).to receive(:moab_validation_errors).and_return([])
+        allow(moab_validator).to receive(:moab_validation_errors).and_return([])
         complete_moab_handler.check_existence
         expect(Rails.logger).to have_received(:debug).with("check_existence #{druid} called")
       end
@@ -399,7 +399,7 @@ RSpec.describe CompleteMoabHandler do
       let(:exp_obj_created_msg) { "added object to db as it did not exist" }
 
       context 'presume validity and test other common behavior' do
-        before { allow(complete_moab_handler.send(:moab_validator)).to receive(:moab_validation_errors).and_return([]) }
+        before { allow(moab_validator).to receive(:moab_validation_errors).and_return([]) }
 
         # FIXME: if requirements change to a single message for "object does not exist" and "created object"
         #  then this will no longer be correct?

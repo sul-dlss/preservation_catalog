@@ -53,7 +53,7 @@ RSpec.describe ChecksumValidator do
 
     context 'file checksums in manifestInventory.xml do not match' do
       let(:druid) { 'zz925bx9565' }
-      let(:results) { instance_double(AuditResults, report_results: nil, :check_name= => nil, :actual_version= => nil) }
+      let(:results) { instance_double(AuditResults, report_results: nil, :actual_version= => nil) }
 
       before { allow(AuditResults).to receive(:new).and_return(results) }
 
@@ -130,7 +130,7 @@ RSpec.describe ChecksumValidator do
   describe '#validate_signature_catalog_listing' do
     let(:druid) { 'bj102hs9687' }
     let(:root_name) { 'fixture_sr1' }
-    let(:results) { instance_double(AuditResults, report_results: nil, :check_name= => nil, :actual_version= => nil) }
+    let(:results) { instance_double(AuditResults, report_results: nil, :actual_version= => nil) }
 
     it 'calls validate_signature_catalog_entry for each signatureCatalog entry' do
       sce01 = instance_double(Moab::SignatureCatalogEntry)
@@ -525,7 +525,7 @@ RSpec.describe ChecksumValidator do
     context 'file or directory does not exist' do
       let(:druid) { 'yy000yy0000' }
       let(:root_name) { 'fixture_sr2' }
-      let(:results) { instance_double(AuditResults, report_results: nil, :check_name= => nil) }
+      let(:results) { instance_double(AuditResults, report_results: nil) }
 
       it 'adds error code and continues executing' do
         allow(results).to receive(:add_result)

@@ -66,13 +66,14 @@ end
 
 RSpec.shared_examples 'druid not in catalog' do |method_sym|
   let(:druid) { 'rr111rr1111' }
-  let(:exp_msg) { "PreservedObject.* db object does not exist" }
+  let(:exp_msg) { "[PreservedObject|CompleteMoab].* db object does not exist" }
   let(:results) do
     allow(Rails.logger).to receive(:log)
     complete_moab_handler.send(method_sym)
   end
 
   it 'DB_OBJ_DOES_NOT_EXIST error' do
+    raise 'mis-use of shared example: checking behavior when there is no record for the druid' if PreservedObject.exists?(druid: druid)
     expect(results).to include(a_hash_including(AuditResults::DB_OBJ_DOES_NOT_EXIST => a_string_matching(exp_msg)))
   end
 end

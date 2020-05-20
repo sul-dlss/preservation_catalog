@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-# creating a PreservedObject and/or updating check timestamps may require interactions
-#  beyond the single PreservedObject model (e.g. CompleteMoab, PreservationPolicy).
+# creating a CompleteMoab and/or updating check timestamps may require interactions
+#  beyond the single CompleteMoab model (e.g. PreservedObject, PreservationPolicy).
 #  This service class encapsulates logic to keep the controller and the model object
 #    code simpler/thinner.
 # NOTE: performing validation here to allow this class to be called directly avoiding http overhead
