@@ -1,9 +1,8 @@
 # frozen_string_literal: true
 
-
 module PreservationCatalog
+  # Base class for AWS and IBM audit classes
   class S3Audit
-
     attr_reader :zmv, :results
 
     # @param [ZippedMoabVersion] the ZippedMoabVersion to check

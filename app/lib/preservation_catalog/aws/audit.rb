@@ -3,7 +3,7 @@
 module PreservationCatalog
   module AWS
     # Methods for auditing the state of a ZippedMoabVersion on an AWS S3 endpoint.
-    class Audit  < PreservationCatalog::S3Audit
+    class Audit < PreservationCatalog::S3Audit
       delegate :bucket_name, to: ::PreservationCatalog::S3
 
       private
