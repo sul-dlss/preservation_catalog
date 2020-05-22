@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_05_07_153050) do
+ActiveRecord::Schema.define(version: 2020_05_22_144007) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -107,6 +107,7 @@ ActiveRecord::Schema.define(version: 2020_05_07_153050) do
     t.integer "status", default: 1, null: false
     t.datetime "last_existence_check"
     t.datetime "last_checksum_validation"
+    t.index ["zipped_moab_version_id", "suffix"], name: "index_zip_parts_on_zipped_moab_version_id_and_suffix", unique: true
     t.index ["zipped_moab_version_id"], name: "index_zip_parts_on_zipped_moab_version_id"
   end
 
