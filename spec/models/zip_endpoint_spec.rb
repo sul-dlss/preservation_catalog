@@ -37,7 +37,7 @@ RSpec.describe ZipEndpoint, type: :model do
 
   describe '#audit_class' do
     it 'returns the right audit class when one is configured' do
-      expect(described_class.find_by(endpoint_name: 'aws_s3_west_2').audit_class).to be(PreservationCatalog::S3::Audit)
+      expect(described_class.find_by(endpoint_name: 'aws_s3_west_2').audit_class).to be(PreservationCatalog::AWS::Audit)
       expect(described_class.find_by(endpoint_name: 'ibm_us_south').audit_class).to be(PreservationCatalog::Ibm::Audit)
     end
 
