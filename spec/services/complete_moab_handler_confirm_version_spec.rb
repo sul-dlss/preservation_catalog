@@ -8,46 +8,41 @@ RSpec.describe CompleteMoabHandler do
     allow(WorkflowReporter).to receive(:report_error)
   end
 
-  let(:druid) { 'ab123cd4567' }
   let(:incoming_version) { 6 }
   let(:incoming_size) { 9876 }
-  let!(:default_prez_policy) { PreservationPolicy.default_policy }
-  let(:po) { PreservedObject.find_by!(druid: druid) }
-  let(:ms_root) { MoabStorageRoot.find_by!(storage_location: 'spec/fixtures/storage_root01/sdr2objects') }
-  let(:cm) { po.complete_moabs.find_by!(moab_storage_root: ms_root) }
+  let(:ms_root) { create(:moab_storage_root) }
   let(:complete_moab_handler) { described_class.new(druid, incoming_version, incoming_size, ms_root) }
 
   describe '#confirm_version' do
     it_behaves_like 'attributes validated', :confirm_version
 
     context 'druid in db' do
-      before do
-        po = PreservedObject.create!(druid: druid, current_version: 2, preservation_policy: default_prez_policy)
-        CompleteMoab.create!(
-          preserved_object: po,
-          version: po.current_version,
-          size: 1,
-          moab_storage_root: ms_root,
-          status: 'ok' # NOTE: we are pretending we checked for moab validation errs
-        )
+      let(:druid) { 'ab123cd4567' } # doesn't exist among fixtures on disk
+      let(:po_current_version) { 2 }
+      let(:cm_version) { po_current_version }
+      let!(:po) { create(:preserved_object, druid: druid, current_version: po_current_version) }
+      let!(:cm) do
+        create(:complete_moab, preserved_object: po, version: cm_version, moab_storage_root: ms_root)
       end
+      let(:moab_validator) { complete_moab_handler.send(:moab_validator) }
 
-      it 'stops processing if there is no CompleteMoab' do
-        druid = 'nd000lm0000'
-        diff_root = MoabStorageRoot.create!(
-          name: 'diff_root',
-          storage_location: 'blah'
-        )
-        create(:preserved_object, druid: druid, current_version: 2)
-        complete_moab_handler = described_class.new(druid, 3, incoming_size, diff_root)
-        results = complete_moab_handler.confirm_version
-        exp_str = "ActiveRecord::RecordNotFound: Couldn't find CompleteMoab.* db object does not exist"
-        expect(results).to include(a_hash_including(AuditResults::DB_OBJ_DOES_NOT_EXIST => a_string_matching(exp_str)))
-        expect(PreservedObject.find_by(druid: druid).current_version).to eq 2
+      context 'there is no CompleteMoab' do
+        let(:druid) { 'nd000lm0000' } # doesn't exist among fixtures on disk
+        let(:incoming_version) { 3 }
+        let!(:po) { create(:preserved_object, druid: druid, current_version: po_current_version, complete_moabs: []) }
+        let!(:cm) { nil }
+
+        it 'stops processing' do
+          exp_str = "ActiveRecord::RecordNotFound: Couldn't find CompleteMoab.* db object does not exist"
+          results = complete_moab_handler.confirm_version
+          expect(results).to include(a_hash_including(AuditResults::DB_OBJ_DOES_NOT_EXIST => a_string_matching(exp_str)))
+          expect(PreservedObject.find_by(druid: druid).current_version).to eq 2
+        end
       end
 
       context "incoming and db versions match" do
-        let(:complete_moab_handler) { described_class.new(druid, 2, 1, ms_root) }
+        let(:incoming_version) { 2 }
+        let(:incoming_size) { 1 }
         let(:version_matches_cm_msg) { "actual version (2) matches CompleteMoab db version" }
 
         context 'CompleteMoab' do
@@ -81,9 +76,7 @@ RSpec.describe CompleteMoabHandler do
         end
 
         it 'PreservedObject is not updated' do
-          orig_timestamp = po.updated_at
-          complete_moab_handler.confirm_version
-          expect(po.reload.updated_at).to eq orig_timestamp
+          expect { complete_moab_handler.confirm_version }.not_to change { po.reload.updated_at }
         end
 
         it_behaves_like 'calls AuditResults.report_results', :confirm_version
@@ -106,7 +99,7 @@ RSpec.describe CompleteMoabHandler do
         context 'incoming_version > db version' do
           let(:incoming_version) { cm.version + 1 }
 
-          before { allow(complete_moab_handler).to receive(:moab_validation_errors).and_return([]) }
+          before { allow(moab_validator).to receive(:moab_validation_errors).and_return([]) }
 
           it 'had OK_STATUS, but is now UNEXPECTED_VERSION_ON_STORAGE_STATUS' do
             cm.ok!
@@ -116,7 +109,7 @@ RSpec.describe CompleteMoabHandler do
 
           it 'had INVALID_MOAB_STATUS, structure seems to be remediated, but is now UNEXPECTED_VERSION_ON_STORAGE_STATUS' do
             cm.invalid_moab!
-            allow(complete_moab_handler).to receive(:moab_validation_errors).and_return([])
+            allow(moab_validator).to receive(:moab_validation_errors).and_return([])
             complete_moab_handler.confirm_version
             expect(cm.reload.status).to eq 'unexpected_version_on_storage'
           end
@@ -124,13 +117,15 @@ RSpec.describe CompleteMoabHandler do
       end
 
       context 'incoming version does NOT match db version' do
-        let(:druid) { 'bj102hs9687' } # for shared_examples 'calls AuditResults.report_results'
-        let(:complete_moab_handler) { described_class.new(druid, 1, 666, ms_root) }
+        let(:druid) { 'bj102hs9687' } # for shared_examples 'calls AuditResults.report_results', exists among fixtures on disk
+        let(:ms_root) { MoabStorageRoot.find_by!(storage_location: 'spec/fixtures/storage_root01/sdr2objects') } # bj102hs9687's storage root
+        let(:incoming_version) { 1 }
+        let(:incoming_size) { 666 }
 
         it_behaves_like 'calls AuditResults.report_results', :confirm_version
 
         context '' do
-          before { allow(complete_moab_handler).to receive(:moab_validation_errors).and_return([]) }
+          before { allow(moab_validator).to receive(:moab_validation_errors).and_return([]) }
           # Note this context cannot work with shared_examples 'calls AuditResults.report_results
 
           context 'CompleteMoab' do
@@ -178,9 +173,7 @@ RSpec.describe CompleteMoabHandler do
           end
 
           it 'PreservedObject is not updated' do
-            orig_timestamp = po.updated_at
-            complete_moab_handler.confirm_version
-            expect(po.reload.updated_at).to eq orig_timestamp
+            expect { complete_moab_handler.confirm_version }.not_to change { po.reload.updated_at }
           end
 
           context 'returns' do
@@ -207,25 +200,22 @@ RSpec.describe CompleteMoabHandler do
       end
 
       context 'CompleteMoab version does NOT match PreservedObject current_version (online Moab)' do
-        before do
-          po.current_version = 8
-          po.save!
-        end
+        let(:druid) { 'bj102hs9687' } # for shared_examples 'calls AuditResults.report_results', exists among fixtures on disk
+        let(:ms_root) { MoabStorageRoot.find_by!(storage_location: 'spec/fixtures/storage_root01/sdr2objects') } # bj102hs9687's storage root
+        let(:po_current_version) { 8 }
+        let(:cm_version) { 9 }
 
-        it_behaves_like 'PreservedObject current_version does not match online CM version', :confirm_version, 3, 2, 8
+        it_behaves_like 'PreservedObject current_version does not match online CM version', :confirm_version, 6, 9, 8
       end
 
       context 'db update error (ActiveRecordError)' do
         let(:result_code) { AuditResults::DB_UPDATE_FAILED }
         let(:incoming_version) { 2 }
+        let(:po) { create(:preserved_object, druid: druid, current_version: po_current_version) }
 
         before do
-          po = create(:preserved_object, current_version: 2)
-          cm = create(:complete_moab, preserved_object: po, version: po.current_version)
-          allow(PreservedObject).to receive(:find_by!).with(druid: druid).and_return(po)
-          allow(po.complete_moabs).to receive(:find_by!).and_return(cm)
-          allow(complete_moab_handler).to receive(:moab_validation_errors).and_return([])
-          allow(cm).to receive(:save!).and_raise(ActiveRecord::ActiveRecordError, 'foo')
+          allow(moab_validator).to receive(:moab_validation_errors).and_return([])
+          allow(moab_validator.complete_moab).to receive(:save!).and_raise(ActiveRecord::ActiveRecordError, 'foo')
         end
 
         it 'DB_UPDATE_FAILED error' do
@@ -234,37 +224,43 @@ RSpec.describe CompleteMoabHandler do
       end
 
       describe 'calls CompleteMoab.save! (but not PreservedObject.save!)' do
-        before do
-          allow(PreservedObject).to receive(:find_by).with(druid: druid).and_return(po)
-          allow(po.complete_moabs).to receive(:find_by!).with(moab_storage_root: ms_root).and_return(cm)
-        end
 
         it 'if the existing record is altered' do
-          allow(complete_moab_handler).to receive(:moab_validation_errors).and_return([])
-          expect(cm).to receive(:save!)
-          expect(po).not_to receive(:save!)
+          allow(moab_validator).to receive(:moab_validation_errors).and_return([])
+          expect(moab_validator.complete_moab).to receive(:save!)
+          expect(moab_validator.complete_moab.preserved_object).not_to receive(:save!)
           complete_moab_handler.confirm_version
         end
 
-        it 'calls CompleteMoab.save! (but not PreservedObject.save!) if the existing record is NOT altered' do
-          complete_moab_handler = described_class.new(druid, 1, 1, ms_root)
-          allow(complete_moab_handler).to receive(:moab_validation_errors).and_return([]) # different complete_moab_handler now
-          expect(cm).to receive(:save!)
-          expect(po).not_to receive(:save!)
-          complete_moab_handler.confirm_version
+        context '' do
+          let(:incoming_version) { 1 }
+          let(:incoming_size) { 1 }
+
+          it 'calls CompleteMoab.save! (but not PreservedObject.save!) if the existing record is NOT altered' do
+            allow(moab_validator).to receive(:moab_validation_errors).and_return([]) # different complete_moab_handler now
+            expect(moab_validator.complete_moab).to receive(:save!)
+            expect(moab_validator.complete_moab.preserved_object).not_to receive(:save!)
+            complete_moab_handler.confirm_version
+          end
         end
       end
 
       it 'logs a debug message' do
         allow(Rails.logger).to receive(:debug)
         expect(Rails.logger).to receive(:debug).with("confirm_version #{druid} called")
-        allow(complete_moab_handler).to receive(:moab_validation_errors).and_return([])
+        allow(moab_validator).to receive(:moab_validation_errors).and_return([])
         complete_moab_handler.confirm_version
       end
     end
 
     it_behaves_like 'druid not in catalog', :confirm_version
 
-    it_behaves_like 'CompleteMoab does not exist', :confirm_version
+    context 'there is no CompleteMoab for the PreservedObject' do
+      let(:druid) { 'ab123cd4567' } # doesn't exist among fixtures on disk
+
+      before { create(:preserved_object, druid: druid, complete_moabs: []) }
+
+      it_behaves_like 'CompleteMoab does not exist', :confirm_version
+    end
   end
 end

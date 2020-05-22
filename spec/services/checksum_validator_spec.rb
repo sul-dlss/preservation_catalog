@@ -11,7 +11,8 @@ RSpec.describe ChecksumValidator do
     create(:preserved_object_fixture, druid: druid).complete_moabs.find_by!(moab_storage_root: ms_root)
   end
   let(:cv) { described_class.new(comp_moab) }
-  let(:results) { instance_double(AuditResults, report_results: nil, check_name: nil) }
+  let(:moab_validator) { cv.send(:moab_validator) }
+  let(:results) { instance_double(AuditResults, report_results: nil, check_name: nil, :actual_version= => nil) }
   let(:logger_double) { instance_double(ActiveSupport::Logger, info: nil, error: nil, add: nil) }
 
   before do
@@ -52,7 +53,7 @@ RSpec.describe ChecksumValidator do
 
     context 'file checksums in manifestInventory.xml do not match' do
       let(:druid) { 'zz925bx9565' }
-      let(:results) { instance_double(AuditResults, report_results: nil, :check_name= => nil) }
+      let(:results) { instance_double(AuditResults, report_results: nil, :actual_version= => nil) }
 
       before { allow(AuditResults).to receive(:new).and_return(results) }
 
@@ -129,7 +130,7 @@ RSpec.describe ChecksumValidator do
   describe '#validate_signature_catalog_listing' do
     let(:druid) { 'bj102hs9687' }
     let(:root_name) { 'fixture_sr1' }
-    let(:results) { instance_double(AuditResults, report_results: nil, :check_name= => nil) }
+    let(:results) { instance_double(AuditResults, report_results: nil, :actual_version= => nil) }
 
     it 'calls validate_signature_catalog_entry for each signatureCatalog entry' do
       sce01 = instance_double(Moab::SignatureCatalogEntry)
@@ -322,7 +323,7 @@ RSpec.describe ChecksumValidator do
 
         context 'moab_validation_errors indicates there are structural errors' do
           before do
-            allow(cv).to receive(:moab_validation_errors).and_return([{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }])
+            allow(moab_validator).to receive(:moab_validation_errors).and_return([{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }])
           end
 
           [
@@ -404,7 +405,7 @@ RSpec.describe ChecksumValidator do
 
         context 'moab_validation_errors indicates there are structural errors' do
           before do
-            allow(cv).to receive(:moab_validation_errors).and_return([{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }])
+            allow(moab_validator).to receive(:moab_validation_errors).and_return([{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }])
           end
 
           [
@@ -524,7 +525,7 @@ RSpec.describe ChecksumValidator do
     context 'file or directory does not exist' do
       let(:druid) { 'yy000yy0000' }
       let(:root_name) { 'fixture_sr2' }
-      let(:results) { instance_double(AuditResults, report_results: nil, :check_name= => nil) }
+      let(:results) { instance_double(AuditResults, report_results: nil) }
 
       it 'adds error code and continues executing' do
         allow(results).to receive(:add_result)
