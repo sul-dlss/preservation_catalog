@@ -20,12 +20,12 @@ RSpec.describe Audit::Checksum do
     after { FileUtils.rm_f(logfile) }
 
     it 'writes to STDOUT and its own log' do
-      expect { described_class.logger.debug("foobar") }.to output(/foobar/).to_stdout_from_any_process
+      expect { described_class.logger.debug('foobar') }.to output(/foobar/).to_stdout_from_any_process
       expect(File).to exist(logfile)
     end
   end
 
-  describe ".validate_druid" do
+  describe '.validate_druid' do
     let!(:po) { create(:preserved_object_fixture, druid: 'bz514sm9647') }
 
     it 'creates an instance ancd calls #validate_checksums for every result' do
@@ -37,7 +37,7 @@ RSpec.describe Audit::Checksum do
       described_class.validate_druid(po.druid)
     end
 
-    it "logs a debug message" do
+    it 'logs a debug message' do
       expect(described_class.logger).to receive(:debug).with('Found 0 complete moabs.')
       described_class.validate_druid('xx000xx0500')
     end
@@ -50,7 +50,7 @@ RSpec.describe Audit::Checksum do
     end
   end
 
-  describe ".validate_list_of_druids" do
+  describe '.validate_list_of_druids' do
     it 'calls Checksum.validate_druid once per druid' do
       csv_file_path = 'spec/fixtures/druid_list.csv'
       CSV.foreach(csv_file_path) do |row|

@@ -41,7 +41,7 @@ RSpec.describe ZippedMoabVersion, type: :model do
   describe '.by_druid' do
     before { zmv.save! }
 
-    let(:po) { build(:preserved_object, druid: "jj925bx9565") }
+    let(:po) { build(:preserved_object, druid: 'jj925bx9565') }
     let(:cm_diff) { build(:complete_moab, preserved_object: po) }
     let!(:zmv_diff_druid) { create(:zipped_moab_version, complete_moab: cm_diff) }
 

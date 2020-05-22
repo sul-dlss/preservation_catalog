@@ -35,7 +35,7 @@ module PreservationCatalog
     # TODO: in a later work cycle, we'd like to spot check some cloud archives: that is, pull the zip down,
     # re-compute the checksum for the retrieved zip, and make sure it matches what we stored.
     def compare_checksum_metadata(s3_object, part)
-      replicated_checksum = s3_object.metadata["checksum_md5"]
+      replicated_checksum = s3_object.metadata['checksum_md5']
       if part.md5 == replicated_checksum
         part.update(last_checksum_validation: Time.zone.now)
         true

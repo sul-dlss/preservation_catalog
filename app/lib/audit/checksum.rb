@@ -33,7 +33,7 @@ module Audit
     end
 
     # validate objects with a particular status on a particular moab_storage_root
-    def self.validate_status_root(status, storage_root_name, limit=Settings.c2m_sql_limit)
+    def self.validate_status_root(status, storage_root_name, limit = Settings.c2m_sql_limit)
       # complete_moabs is an AR Relation; it could return a lot of results, so we want to process it in
       # batches.  we can't use ActiveRecord's .find_each, because that'll disregard the order .fixity_check_expired
       # specified.  so we use our own batch processing method, which does respect Relation order.

@@ -12,7 +12,7 @@ RSpec.describe CompleteMoabHandler do
   let(:po) { PreservedObject.find_by!(druid: druid) }
   let(:ms_root) { MoabStorageRoot.find_by!(storage_location: 'spec/fixtures/storage_root01/sdr2objects') }
   let(:cm) { po.complete_moabs.find_by!(moab_storage_root: ms_root) }
-  let(:db_update_failed_prefix) { "db update failed" }
+  let(:db_update_failed_prefix) { 'db update failed' }
   let(:complete_moab_handler) { described_class.new(druid, incoming_version, incoming_size, ms_root) }
   let(:moab_validator) { complete_moab_handler.send(:moab_validator) }
 
@@ -32,9 +32,9 @@ RSpec.describe CompleteMoabHandler do
         )
       end
 
-      context "incoming and db versions match" do
+      context 'incoming and db versions match' do
         let(:complete_moab_handler) { described_class.new(druid, 2, 1, ms_root) }
-        let(:version_matches_cm_msg) { "actual version (2) matches CompleteMoab db version" }
+        let(:version_matches_cm_msg) { 'actual version (2) matches CompleteMoab db version' }
 
         context 'CompleteMoab' do
           context 'changed' do
@@ -103,7 +103,7 @@ RSpec.describe CompleteMoabHandler do
         end
       end
 
-      context "incoming version > db version" do
+      context 'incoming version > db version' do
         let(:version_gt_cm_msg) { "actual version (#{incoming_version}) greater than CompleteMoab db version (2)" }
 
         it 'calls Stanford::StorageObjectValidator.validation_errors for moab' do
@@ -395,8 +395,8 @@ RSpec.describe CompleteMoabHandler do
     end
 
     context 'object not in db' do
-      let(:exp_po_not_exist_msg) { "PreservedObject db object does not exist" }
-      let(:exp_obj_created_msg) { "added object to db as it did not exist" }
+      let(:exp_po_not_exist_msg) { 'PreservedObject db object does not exist' }
+      let(:exp_obj_created_msg) { 'added object to db as it did not exist' }
 
       context 'presume validity and test other common behavior' do
         before { allow(moab_validator).to receive(:moab_validation_errors).and_return([]) }
@@ -514,7 +514,7 @@ RSpec.describe CompleteMoabHandler do
             let(:results) { complete_moab_handler.check_existence }
 
             it '3 results with expected messages' do
-              exp_moab_errs_msg = "Invalid Moab, validation errors: [\"Missing directory: [\\\"data\\\", \\\"manifests\\\"] Version: v0001\"]"
+              exp_moab_errs_msg = 'Invalid Moab, validation errors: ["Missing directory: [\\"data\\", \\"manifests\\"] Version: v0001"]'
               expect(results).to be_an_instance_of Array
               expect(results.size).to eq 3
               expect(results).to include(a_hash_including(AuditResults::INVALID_MOAB => exp_moab_errs_msg))

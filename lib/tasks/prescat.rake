@@ -51,19 +51,19 @@ namespace :prescat do
   end
 
   namespace :audit do
-    desc "run M2C (moab to catalog) validation on a storage root"
+    desc 'run M2C (moab to catalog) validation on a storage root'
     task :m2c, [:storage_root_name] => [:environment] do |_task, args|
       msr = MoabStorageRoot.find_by!(name: args[:storage_root_name])
       msr.m2c_check!
     end
 
-    desc "run C2M (catalog to moab) validation on a storage root"
+    desc 'run C2M (catalog to moab) validation on a storage root'
     task :c2m, [:storage_root_name] => [:environment] do |_task, args|
       msr = MoabStorageRoot.find_by!(name: args[:storage_root_name])
       msr.c2m_check!
     end
 
-    desc "run CV (checksum validation) for all druids on a storage root"
+    desc 'run CV (checksum validation) for all druids on a storage root'
     task :cv, [:storage_root_name] => [:environment] do |_task, args|
       MoabStorageRoot.find_by!(name: args[:storage_root_name]).complete_moabs.find_each(&:validate_checksums!)
     end

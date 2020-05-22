@@ -9,7 +9,7 @@ RSpec.configure do |config|
     begin
       Resque.redis.redis.flushall # clear queues and locks
     rescue Redis::CannotConnectError
-      p "we are rescuing!"
+      p 'we are rescuing!'
     end
   end
 end

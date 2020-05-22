@@ -12,7 +12,7 @@ RSpec.describe CatalogController, type: :controller do
   let(:prefixed_druid) { 'druid:bj102hs9687' }
   let(:bare_druid) { 'bj102hs9687' }
   let(:storage_location) { "#{storage_location_param}/sdr2objects" }
-  let(:storage_location_param) { "spec/fixtures/storage_root01" }
+  let(:storage_location_param) { 'spec/fixtures/storage_root01' }
 
   describe 'POST #create' do
     context 'with valid params' do
@@ -38,7 +38,7 @@ RSpec.describe CatalogController, type: :controller do
       end
 
       it 'response contains create_new_object code ' do
-        exp_msg = [{ AuditResults::CREATED_NEW_OBJECT => "added object to db as it did not exist" }]
+        exp_msg = [{ AuditResults::CREATED_NEW_OBJECT => 'added object to db as it did not exist' }]
         expect(response.body).to include(exp_msg.to_json)
       end
 
@@ -60,7 +60,7 @@ RSpec.describe CatalogController, type: :controller do
       end
 
       it 'response contains error message' do
-        errors = ["Druid can't be blank", "Druid is invalid"]
+        errors = ["Druid can't be blank", 'Druid is invalid']
         exp_msg = [{ AuditResults::INVALID_ARGUMENTS => "encountered validation error(s): #{errors}" }]
         expect(response.body).to include(exp_msg.to_json)
       end
@@ -77,7 +77,7 @@ RSpec.describe CatalogController, type: :controller do
       end
 
       it 'response contains error message' do
-        exp_msg = [{ AuditResults::DB_OBJ_ALREADY_EXISTS => "PreservedObject db object already exists" }]
+        exp_msg = [{ AuditResults::DB_OBJ_ALREADY_EXISTS => 'PreservedObject db object already exists' }]
         expect(response.body).to include(exp_msg.to_json)
       end
 
@@ -158,7 +158,7 @@ RSpec.describe CatalogController, type: :controller do
       end
 
       it 'response contains error message' do
-        errors = ["Moab storage root must be an actual MoabStorageRoot"]
+        errors = ['Moab storage root must be an actual MoabStorageRoot']
         exp_msg = [{ AuditResults::INVALID_ARGUMENTS => "encountered validation error(s): #{errors}" }]
         expect(response.body).to include(exp_msg.to_json)
       end
@@ -192,7 +192,7 @@ RSpec.describe CatalogController, type: :controller do
       end
 
       it 'response contains error message' do
-        exp_msg = [{ AuditResults::CM_PO_VERSION_MISMATCH => "CompleteMoab online Moab version 4 does not match PreservedObject current_version 3" }]
+        exp_msg = [{ AuditResults::CM_PO_VERSION_MISMATCH => 'CompleteMoab online Moab version 4 does not match PreservedObject current_version 3' }]
         expect(response.body).to include(exp_msg.to_json)
       end
 
@@ -207,9 +207,9 @@ RSpec.describe CatalogController, type: :controller do
       end
 
       it 'response contains error message' do
-        unexp_ver = "actual version (1) has unexpected relationship to CompleteMoab db version (3); ERROR!"
-        ver_lt_db = "actual version (1) less than CompleteMoab db version (3); ERROR!"
-        status_change = "CompleteMoab status changed from validity_unknown to unexpected_version_on_storage"
+        unexp_ver = 'actual version (1) has unexpected relationship to CompleteMoab db version (3); ERROR!'
+        ver_lt_db = 'actual version (1) less than CompleteMoab db version (3); ERROR!'
+        status_change = 'CompleteMoab status changed from validity_unknown to unexpected_version_on_storage'
         exp_msg = [
           { AuditResults::UNEXPECTED_VERSION => unexp_ver.to_s },
           { AuditResults::ACTUAL_VERS_LT_DB_OBJ => ver_lt_db.to_s },
@@ -227,8 +227,8 @@ RSpec.describe CatalogController, type: :controller do
       before do
         # pretend DB records are 1 version behind what's on disk, so update gets what it expects; we're testing
         # specifically for DB update failure bubbling up
-        pres_obj.update(current_version: pres_obj.current_version-1)
-        comp_moab.update(version: comp_moab.version-1)
+        pres_obj.update(current_version: pres_obj.current_version - 1)
+        comp_moab.update(version: comp_moab.version - 1)
         allow(CompleteMoab).to receive(:joins).and_raise(ActiveRecord::ActiveRecordError, 'connection error foo')
       end
 

@@ -191,7 +191,7 @@ RSpec.describe ObjectsController, type: :request do
         allow(MoabStorageService).to receive(:retrieve_content_file_group).with(bare_druid).and_raise(StandardError, 'I had a stderr')
         allow(MoabStorageService).to receive(:retrieve_content_file_group).with(bare_druid2).and_raise(NoMethodError, 'I had a nil result')
         post checksums_objects_url, params: { druids: ['xx123yy9999', bare_druid, bare_druid2], format: :json }.to_json, headers: post_headers
-        expect(response.body).to match "409 Conflict -"
+        expect(response.body).to match '409 Conflict -'
         expect(response.body).to include "\nStorage object(s) not found for xx123yy9999"
         expect(response.body).to include "\nProblems generating checksums for #{bare_druid} (#<StandardError: I had a stderr>)"
         expect(response.body).to include ", #{bare_druid2} (#<NoMethodError: I had a nil result>)"
@@ -208,7 +208,7 @@ RSpec.describe ObjectsController, type: :request do
         end
       end
 
-      context "when no param" do
+      context 'when no param' do
         it 'body has additional information from the exception if available' do
           post checksums_objects_url, params: { format: :json }.to_json, headers: post_headers
           expect(response).to have_http_status(:bad_request)
