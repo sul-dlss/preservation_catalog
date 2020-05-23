@@ -182,8 +182,8 @@ RSpec.shared_examples 's3 audit' do |klass, bucket_name, check_name, endpoint_na
           .to('replicated_checksum_mismatch')
           .and change { zmv.zip_parts.second.reload.status }
           .to('replicated_checksum_mismatch')
-          .and change { zmv.zip_parts.second.reload.status }
-          .to('replicated_checksum_mismatch')
+        expect { described_class.check_replicated_zipped_moab_version(zmv, results) }
+          .not_to(change { zmv.zip_parts.third.reload.status })
       end
     end
   end
