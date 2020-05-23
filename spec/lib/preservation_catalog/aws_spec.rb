@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-describe PreservationCatalog::S3 do
+describe PreservationCatalog::Aws do
   before do
     described_class.configure(
       region: 'us-west-2',

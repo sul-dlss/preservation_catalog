@@ -16,7 +16,7 @@ describe S3WestDeliveryJob, type: :job do
 
   before do
     allow(Settings).to receive(:zip_storage).and_return(Rails.root.join('spec', 'fixtures', 'zip_storage'))
-    allow(PreservationCatalog::S3).to receive(:bucket).and_return(bucket)
+    allow(PreservationCatalog::Aws).to receive(:bucket).and_return(bucket)
     allow(ResultsRecorderJob).to receive(:perform_later).with(any_args)
     allow(IO).to receive(:read).with(dvz_part.md5_path).and_return(md5)
   end

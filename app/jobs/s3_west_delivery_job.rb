@@ -2,7 +2,7 @@
 
 # Posts zips to S3, if needed.
 # Notify ResultsRecorderJob, if posted.
-# @see PreservationCatalog::S3 for how S3 credentials and bucket are configured
+# @see PreservationCatalog::Aws for how S3 credentials and bucket are configured
 class S3WestDeliveryJob < ZipPartJobBase
   queue_as :s3_us_west_2_delivery
   # note: base class gives us `zip`, `dvz_part`
@@ -27,12 +27,12 @@ class S3WestDeliveryJob < ZipPartJobBase
   end
 
   def bucket
-    PreservationCatalog::S3.configure(
+    PreservationCatalog::Aws.configure(
       region: Settings.zip_endpoints.aws_s3_west_2.region,
       access_key_id: Settings.zip_endpoints.aws_s3_west_2.access_key_id,
       secret_access_key: Settings.zip_endpoints.aws_s3_west_2.secret_access_key
     )
-    PreservationCatalog::S3.bucket
+    PreservationCatalog::Aws.bucket
   end
 
   # coerce size int to string (all values must be strings)

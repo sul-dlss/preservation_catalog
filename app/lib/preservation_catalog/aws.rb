@@ -2,7 +2,7 @@
 
 module PreservationCatalog
   # The Application's configured interface to AWS S3.
-  module S3
+  module Aws
     class << self
       delegate :client, to: :resource
       attr_reader :aws_client_args
