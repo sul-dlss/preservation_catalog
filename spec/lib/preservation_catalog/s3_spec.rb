@@ -37,7 +37,7 @@ describe PreservationCatalog::S3 do
 
     it 'injects client configuration' do
       expect(config.region).to eq 'us-west-2'
-      expect(config.credentials).to be_an(Aws::Credentials)
+      expect(config.credentials).to be_an(::Aws::Credentials)
       expect(config.credentials).to be_set
       expect(config.credentials.access_key_id).to eq 'some_key'
     end
@@ -56,7 +56,7 @@ describe PreservationCatalog::S3 do
 
     it { is_expected.to exist }
 
-    describe 'Aws::S3::Object#upload_file' do
+    describe '::Aws::S3::Object#upload_file' do
       subject(:s3_object) { bucket.object("test_key_#{test_key_id}") }
 
       let(:test_key_id) { ENV.fetch('TRAVIS_JOB_ID', '000') }
@@ -74,7 +74,7 @@ describe PreservationCatalog::S3 do
         resp = nil
         expect { s3_object.upload_file(dvz_part.file_path, metadata: { our_time: now }) }.not_to raise_error
         expect { resp = s3_object.get }.not_to raise_error
-        expect(resp).to be_a(Aws::S3::Types::GetObjectOutput)
+        expect(resp).to be_a(::Aws::S3::Types::GetObjectOutput)
         expect(resp.metadata.symbolize_keys).to eq(our_time: now)
         expect(resp.body.read).to eq("FOOOOBAR\n")
       end

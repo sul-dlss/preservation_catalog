@@ -15,7 +15,7 @@ class S3WestDeliveryJob < ZipPartJobBase
   # @param [Hash<Symbol => String, Integer>] metadata Zip info
   # @see PlexerJob#perform warning about why metadata must be passed
   def perform(druid, version, part_s3_key, metadata)
-    s3_part = bucket.object(part_s3_key) # Aws::S3::Object
+    s3_part = bucket.object(part_s3_key) # ::Aws::S3::Object
     return if s3_part.exists?
 
     fresh_md5 = dvz_part.read_md5

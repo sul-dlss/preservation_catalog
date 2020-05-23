@@ -15,7 +15,7 @@ module PreservationCatalog
         }
       end
 
-      # @return [Aws::S3::Bucket]
+      # @return [::Aws::S3::Bucket]
       def bucket
         resource.bucket(bucket_name)
       end
@@ -25,9 +25,9 @@ module PreservationCatalog
         ENV['AWS_BUCKET_NAME'] || Settings.zip_endpoints[region_config_section].storage_location || Settings.aws.bucket_name
       end
 
-      # @return [Aws::S3::Resource]
+      # @return [::Aws::S3::Resource]
       def resource
-        Aws::S3::Resource.new(aws_client_args)
+        ::Aws::S3::Resource.new(aws_client_args)
       end
 
       # Allow this class to dynamically pull back config for different AWS

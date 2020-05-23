@@ -7,8 +7,8 @@ describe S3WestDeliveryJob, type: :job do
   let(:version) { 1 }
   let(:dvz) { DruidVersionZip.new(druid, version) }
   let(:dvz_part) { DruidVersionZipPart.new(dvz, part_s3_key) }
-  let(:object) { instance_double(Aws::S3::Object, exists?: false, upload_file: true) }
-  let(:bucket) { instance_double(Aws::S3::Bucket, object: object) }
+  let(:object) { instance_double(::Aws::S3::Object, exists?: false, upload_file: true) }
+  let(:bucket) { instance_double(::Aws::S3::Bucket, object: object) }
   let(:md5) { '4f98f59e877ecb84ff75ef0fab45bac5' }
   let(:base64) { dvz.hex_to_base64(md5) }
   let(:metadata) { dvz_part.metadata.merge(zip_version: 'Zip 3.0 (July 5th 2008)') }

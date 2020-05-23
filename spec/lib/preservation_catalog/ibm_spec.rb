@@ -13,7 +13,7 @@ describe PreservationCatalog::Ibm do
 
   describe '.resource' do
     it 'builds a client with an http/s endpoint setting' do
-      expect(Aws::S3::Resource).to receive(:new).with(hash_including(endpoint: 'https://s3.us-south.cloud-object-storage.appdomain.cloud'))
+      expect(::Aws::S3::Resource).to receive(:new).with(hash_including(endpoint: 'https://s3.us-south.cloud-object-storage.appdomain.cloud'))
       described_class.resource
     end
   end
@@ -44,7 +44,7 @@ describe PreservationCatalog::Ibm do
 
     it 'injects client configuration' do
       expect(config.region).to eq 'us-south'
-      expect(config.credentials).to be_an(Aws::Credentials)
+      expect(config.credentials).to be_an(::Aws::Credentials)
       expect(config.credentials).to be_set
       expect(config.credentials.access_key_id).to eq 'some_key'
     end
@@ -63,7 +63,7 @@ describe PreservationCatalog::Ibm do
 
     it { is_expected.to exist }
 
-    describe 'Aws::S3::Object#upload_file' do
+    describe '::Aws::S3::Object#upload_file' do
       subject(:s3_object) { bucket.object("test_key_#{test_key_id}") }
 
       let(:test_key_id) { ENV.fetch('TRAVIS_JOB_ID', '000') }
@@ -81,7 +81,7 @@ describe PreservationCatalog::Ibm do
         resp = nil
         expect { s3_object.upload_file(dvz_part.file_path, metadata: { our_time: now }) }.not_to raise_error
         expect { resp = s3_object.get }.not_to raise_error
-        expect(resp).to be_a(Aws::S3::Types::GetObjectOutput)
+        expect(resp).to be_a(::Aws::S3::Types::GetObjectOutput)
         expect(resp.metadata.symbolize_keys).to eq(our_time: now)
         expect(resp.body.read).to eq("FOOOOBAR\n")
       end

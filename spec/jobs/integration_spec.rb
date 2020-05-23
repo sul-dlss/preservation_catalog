@@ -3,10 +3,10 @@
 require 'rails_helper'
 
 describe 'the whole replication pipeline', type: :job do # rubocop:disable RSpec/DescribeClass
-  let(:aws_s3_object) { instance_double(Aws::S3::Object, exists?: false, upload_file: true) }
-  let(:ibm_s3_object) { instance_double(Aws::S3::Object, exists?: false, upload_file: true) }
-  let(:aws_bucket) { instance_double(Aws::S3::Bucket, object: aws_s3_object) }
-  let(:ibm_bucket) { instance_double(Aws::S3::Bucket, object: ibm_s3_object) }
+  let(:aws_s3_object) { instance_double(::Aws::S3::Object, exists?: false, upload_file: true) }
+  let(:ibm_s3_object) { instance_double(::Aws::S3::Object, exists?: false, upload_file: true) }
+  let(:aws_bucket) { instance_double(::Aws::S3::Bucket, object: aws_s3_object) }
+  let(:ibm_bucket) { instance_double(::Aws::S3::Bucket, object: ibm_s3_object) }
   let(:cm) { create(:complete_moab) }
   let(:zmv) { cm.zipped_moab_versions.first! }
   let(:zmv2) { cm.zipped_moab_versions.second! }
