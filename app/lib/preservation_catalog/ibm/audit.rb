@@ -6,16 +6,6 @@ module PreservationCatalog
     class Audit < PreservationCatalog::S3Audit
       delegate :bucket_name, to: ::PreservationCatalog::Ibm
 
-      def check_ibm_replicated_zipped_moab_version
-        zmv.zip_parts.where.not(status: :unreplicated).each do |part|
-          ibm_s3_object = bucket.object(part.s3_key)
-          next unless check_existence(ibm_s3_object, part)
-          next unless compare_checksum_metadata(ibm_s3_object, part)
-
-          part.ok!
-        end
-      end
-
       private
 
       def bucket
