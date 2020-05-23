@@ -3,6 +3,7 @@
 # Posts zips to S3, if needed.
 # Notify ResultsRecorderJob, if posted.
 # @see PreservationCatalog::Aws for how S3 credentials and bucket are configured
+# @note This name is slightly misleading, as this class solely deals with AWS US West 2 endpoint
 class S3WestDeliveryJob < ZipPartJobBase
   queue_as :s3_us_west_2_delivery
   # note: base class gives us `zip`, `dvz_part`
