@@ -64,7 +64,7 @@ class DruidVersionZipPart
 
   # @return [String] "ab/123/cd/4567/ab123cd4567.v0001.z03.md5"
   def write_md5
-    File.open(md5_path, "w") { |f| f.write md5 }
+    File.open(md5_path, 'w') { |f| f.write md5 }
   end
 
   # @return [String] The MD5 "7d33a80cb92b081b76aee5feb8bc4569"

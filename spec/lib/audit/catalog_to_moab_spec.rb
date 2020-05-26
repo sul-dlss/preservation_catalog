@@ -110,7 +110,7 @@ RSpec.describe Audit::CatalogToMoab do
           AuditResults::MOAB_NOT_FOUND, db_created_at: anything, db_updated_at: anything
         )
         expect(c2m.results).to receive(:add_result).with(
-          AuditResults::CM_STATUS_CHANGED, old_status: "ok", new_status: "online_moab_not_found"
+          AuditResults::CM_STATUS_CHANGED, old_status: 'ok', new_status: 'online_moab_not_found'
         )
         c2m.check_catalog_version
       end
@@ -136,7 +136,7 @@ RSpec.describe Audit::CatalogToMoab do
               expect(comp_moab.reload.status).to eq 'online_moab_not_found'
             end
 
-            it "status_details updated" do
+            it 'status_details updated' do
               exp = exp_details_prefix + ') '
               exp += "CompleteMoab status changed from #{orig_status} to online_moab_not_found" unless orig_status == 'online_moab_not_found'
               expect(comp_moab.reload.status_details).to eq exp
@@ -186,7 +186,7 @@ RSpec.describe Audit::CatalogToMoab do
         expect(c2m.results).to have_received(:report_results)
       end
 
-      it "does NOT update status" do
+      it 'does NOT update status' do
         expect(comp_moab.reload.status).to eq 'ok'
       end
 
@@ -211,7 +211,7 @@ RSpec.describe Audit::CatalogToMoab do
           c2m.check_catalog_version
         end
 
-        it "does NOT update status" do
+        it 'does NOT update status' do
           expect(comp_moab.reload).to be_ok
         end
 
@@ -236,11 +236,11 @@ RSpec.describe Audit::CatalogToMoab do
               c2m.check_catalog_version
             end
 
-            it "status becomes validity_unknown" do
+            it 'status becomes validity_unknown' do
               expect(comp_moab.reload.status).to eq 'validity_unknown'
             end
 
-            it "updates status_details" do
+            it 'updates status_details' do
               exp = exp_details_prefix + 'actual version: 3) '
               exp += "CompleteMoab status changed from #{orig_status} to validity_unknown" unless orig_status == 'validity_unknown'
               expect(comp_moab.reload.status_details).to eq exp
@@ -266,11 +266,11 @@ RSpec.describe Audit::CatalogToMoab do
               c2m.check_catalog_version
             end
 
-            it "status becomes INVALID_MOAB_STATUS" do
+            it 'status becomes INVALID_MOAB_STATUS' do
               expect(comp_moab.reload.status).to eq 'invalid_moab'
             end
 
-            it "updates status_details" do
+            it 'updates status_details' do
               exp = exp_details_prefix + 'actual version: 3) '
               exp += "CompleteMoab status changed from #{orig_status} to invalid_moab" unless orig_status == 'invalid_moab'
               expect(comp_moab.reload.status_details).to eq exp
@@ -381,7 +381,7 @@ RSpec.describe Audit::CatalogToMoab do
             end
           end
 
-          it "invalid_moab changes to validity_unknown (due to newer version not checksum validated)" do
+          it 'invalid_moab changes to validity_unknown (due to newer version not checksum validated)' do
             comp_moab.invalid_moab!
             allow(mock_sov).to receive(:validation_errors).and_return(
               [{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }]

@@ -61,10 +61,10 @@ RSpec.describe ChecksumValidator do
         file_path1 = "#{object_dir}/v0001/manifests/versionAdditions.xml"
         file_path2 = "#{object_dir}/v0002/manifests/versionInventory.xml"
         expect(results).to receive(:add_result).with(
-          AuditResults::MOAB_FILE_CHECKSUM_MISMATCH, file_path: a_string_matching(file_path1), version: "v1"
+          AuditResults::MOAB_FILE_CHECKSUM_MISMATCH, file_path: a_string_matching(file_path1), version: 'v1'
         )
         expect(results).to receive(:add_result).with(
-          AuditResults::MOAB_FILE_CHECKSUM_MISMATCH, file_path: a_string_matching(file_path2), version: "v2"
+          AuditResults::MOAB_FILE_CHECKSUM_MISMATCH, file_path: a_string_matching(file_path2), version: 'v2'
         )
         cv.validate_manifest_inventories
       end
@@ -104,7 +104,7 @@ RSpec.describe ChecksumValidator do
       before { allow(AuditResults).to receive(:new).and_return(results) }
 
       it 'adds a MANIFEST_NOT_IN_MOAB' do
-        manifest_file_path = "spec/fixtures/checksum_root01/sdr2objects/zz/628/nk/4868/zz628nk4868/v0001/manifests/manifestInventory.xml"
+        manifest_file_path = 'spec/fixtures/checksum_root01/sdr2objects/zz/628/nk/4868/zz628nk4868/v0001/manifests/manifestInventory.xml'
         expect(results).to receive(:add_result).with(
           AuditResults::MANIFEST_NOT_IN_MOAB, manifest_file_path: manifest_file_path
         )
@@ -118,7 +118,7 @@ RSpec.describe ChecksumValidator do
       before { allow(AuditResults).to receive(:new).and_return(results) }
 
       it 'adds an INVALID_MANIFEST' do
-        manifest_file_path = "spec/fixtures/checksum_root01/sdr2objects/zz/048/cw/1328/zz048cw1328/v0002/manifests/manifestInventory.xml"
+        manifest_file_path = 'spec/fixtures/checksum_root01/sdr2objects/zz/048/cw/1328/zz048cw1328/v0002/manifests/manifestInventory.xml'
         expect(results).to receive(:add_result).with(
           AuditResults::INVALID_MANIFEST, manifest_file_path: manifest_file_path
         )
@@ -212,7 +212,7 @@ RSpec.describe ChecksumValidator do
         # fake a moab gone missing by updating the preserved object to use a non-existent druid
         comp_moab.preserved_object.update(druid: 'tr808sp1200')
         allow(Honeybadger).to receive(:notify)
-        allow(Dor::Services::Client).to receive(:object).with("druid:tr808sp1200").and_return(
+        allow(Dor::Services::Client).to receive(:object).with('druid:tr808sp1200').and_return(
           instance_double(Dor::Services::Client::Object, events: events_client)
         )
         allow(Honeybadger).to receive(:notify)
@@ -226,7 +226,7 @@ RSpec.describe ChecksumValidator do
       end
 
       it 'sends results in HONEYBADGER_REPORT_CODES errors' do
-        reason = "db CompleteMoab \\(created .*Z; last updated .*Z\\) exists but Moab not found"
+        reason = 'db CompleteMoab \\(created .*Z; last updated .*Z\\) exists but Moab not found'
         exp_msg = "validate_checksums\\(tr808sp1200, fixture_sr3\\) #{reason}"
         cv.validate_checksums
 
@@ -242,7 +242,7 @@ RSpec.describe ChecksumValidator do
             error_result: { moab_not_found: a_string_matching(reason) }
           }
         )
-        expect(Dor::Services::Client).to have_received(:object).with("druid:tr808sp1200").once
+        expect(Dor::Services::Client).to have_received(:object).with('druid:tr808sp1200').once
       end
 
       it 'calls AuditResults.report_results' do
@@ -275,7 +275,7 @@ RSpec.describe ChecksumValidator do
         end
       end
 
-      it "leaves status of OK_STATUS as-is" do
+      it 'leaves status of OK_STATUS as-is' do
         comp_moab.ok!
         expect { cv.validate_checksums }.not_to(change(comp_moab, :status))
         expect(comp_moab.reload.status).to eq 'ok'
@@ -586,7 +586,7 @@ RSpec.describe ChecksumValidator do
         comp_moab.save!
       end
 
-      it "does not complete workflow" do
+      it 'does not complete workflow' do
         comp_moab.ok!
         expect(WorkflowReporter).not_to receive(:report_completed)
         cv.validate_checksums

@@ -97,7 +97,7 @@ RSpec.describe AuditResults do
         severity_level = described_class.logger_severity_level(result_code)
         expect(Rails.logger).to receive(:add).with(severity_level, a_string_matching(version_not_matched_str))
         severity_level = described_class.logger_severity_level(result_code2)
-        status_changed_str = "CompleteMoab status changed from invalid_moab"
+        status_changed_str = 'CompleteMoab status changed from invalid_moab'
         expect(Rails.logger).to receive(:add).with(severity_level, a_string_matching(status_changed_str))
         audit_results.report_results
       end
@@ -118,7 +118,7 @@ RSpec.describe AuditResults do
         let(:moab_valid_errs) {
           [
             "Version directory name not in 'v00xx' format: original-v1",
-            "Version v0005: No files present in manifest dir"
+            'Version v0005: No files present in manifest dir'
           ]
         }
         let(:im_audit_results) {
@@ -203,7 +203,7 @@ RSpec.describe AuditResults do
         audit_results = described_class.new(druid, actual_version, nil)
         code = AuditResults::DB_UPDATE_FAILED
         audit_results.add_result(code)
-        unexpected = Regexp.escape("actual location: ")
+        unexpected = Regexp.escape('actual location: ')
         expect(WorkflowReporter).not_to receive(:report_error).with(
           druid, actual_version, 'preservation-audit', nil, a_string_matching(unexpected)
         )
@@ -225,7 +225,7 @@ RSpec.describe AuditResults do
         audit_results = described_class.new(druid, nil, ms_root)
         code = AuditResults::DB_UPDATE_FAILED
         audit_results.add_result(code)
-        unexpected = Regexp.escape("actual version: ")
+        unexpected = Regexp.escape('actual version: ')
         expect(WorkflowReporter).not_to receive(:report_error).with(
           druid, nil, 'preservation-audit', ms_root, a_string_matching(unexpected)
         )
@@ -299,7 +299,7 @@ RSpec.describe AuditResults do
         addl_hash = { file_path: 'path/to/file', version: 1 }
         audit_results.add_result(code, addl_hash)
         expect(Honeybadger).to receive(:notify).with(
-          "(ab123cd4567, fixture_sr1) checksums for path/to/file version 1 do not match."
+          '(ab123cd4567, fixture_sr1) checksums for path/to/file version 1 do not match.'
         )
         expect(events_client).to receive(:create).once.with(
           type: 'preservation_audit_failure',
@@ -337,7 +337,7 @@ RSpec.describe AuditResults do
       code = AuditResults::VERSION_MATCHES
       audit_results.add_result(code, 'foo')
       expect(audit_results.result_array.size).to eq 1
-      expect(audit_results.result_array.first).to eq code => "actual version (6) matches foo db version"
+      expect(audit_results.result_array.first).to eq code => 'actual version (6) matches foo db version'
     end
   end
 
@@ -404,12 +404,12 @@ RSpec.describe AuditResults do
       json_text = audit_results.to_json
       json_parsed = JSON.parse(json_text)
 
-      exp_msg = "CompleteMoab online Moab version 1 does not match PreservedObject current_version 2"
+      exp_msg = 'CompleteMoab online Moab version 1 does not match PreservedObject current_version 2'
       expect(json_parsed.length).to eq 2
-      expect(json_parsed["result_array"].first.length).to eq 1
-      expect(json_parsed["result_array"].first.keys).to eq [AuditResults::CM_PO_VERSION_MISMATCH.to_s]
-      expect(json_parsed["result_array"].first[AuditResults::CM_PO_VERSION_MISMATCH.to_s]).to eq exp_msg
-      expect(json_parsed["druid"]).to eq druid
+      expect(json_parsed['result_array'].first.length).to eq 1
+      expect(json_parsed['result_array'].first.keys).to eq [AuditResults::CM_PO_VERSION_MISMATCH.to_s]
+      expect(json_parsed['result_array'].first[AuditResults::CM_PO_VERSION_MISMATCH.to_s]).to eq exp_msg
+      expect(json_parsed['druid']).to eq druid
     end
   end
 end

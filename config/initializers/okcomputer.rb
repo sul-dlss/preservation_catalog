@@ -33,7 +33,7 @@ class TablesHaveDataCheck < OkComputer::Check
     "#{e.class.name} received: #{e.message}."
   end
 end
-OkComputer::Registry.register "feature-tables-have-data", TablesHaveDataCheck.new
+OkComputer::Registry.register 'feature-tables-have-data', TablesHaveDataCheck.new
 
 # check that directory is accessible without consideration for writability
 class DirectoryExistsCheck < OkComputer::Check
@@ -108,10 +108,10 @@ end
 
 # Audit Checks (only) report errors to workflow service so they appear in Argo
 workflows_url = "#{Settings.workflow_services_url}/objects/druid:oo000oo0000/workflows"
-OkComputer::Registry.register "external-workflow-services-url", OkComputer::HttpCheck.new(workflows_url)
+OkComputer::Registry.register 'external-workflow-services-url', OkComputer::HttpCheck.new(workflows_url)
 
 # Replication (only) uses zip_storage directory to build the zips to send to zip endpoints
-OkComputer::Registry.register "feature-zip_storage_dir", OkComputer::DirectoryCheck.new(Settings.zip_storage)
+OkComputer::Registry.register 'feature-zip_storage_dir', OkComputer::DirectoryCheck.new(Settings.zip_storage)
 
 # check CompleteMoab#last_version_audit to ensure it isn't too old
 class VersionAuditWindowCheck < OkComputer::Check
@@ -128,7 +128,7 @@ class VersionAuditWindowCheck < OkComputer::Check
     14.days.ago
   end
 end
-OkComputer::Registry.register "feature-version-audit-window-check", VersionAuditWindowCheck.new
+OkComputer::Registry.register 'feature-version-audit-window-check', VersionAuditWindowCheck.new
 
 # TODO: do we want anything about s3 credentials here?
 

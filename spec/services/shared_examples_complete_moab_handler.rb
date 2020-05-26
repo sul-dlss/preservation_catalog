@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.shared_examples "attributes validated" do |method_sym|
+RSpec.shared_examples 'attributes validated' do |method_sym|
   let(:bad_druid) { '666' }
   let(:bad_version) { 'vv666' }
   let(:bad_size) { '-666' }
@@ -8,7 +8,7 @@ RSpec.shared_examples "attributes validated" do |method_sym|
   let(:bad_druid_msg) { 'Druid is invalid' }
   let(:bad_version_msg) { 'Incoming version is not a number' }
   let(:bad_size_msg) { 'Incoming size must be greater than 0' }
-  let(:bad_storage_root_msg) { "Moab storage root must be an actual MoabStorageRoot" }
+  let(:bad_storage_root_msg) { 'Moab storage root must be an actual MoabStorageRoot' }
 
   context 'returns' do
     let!(:result) do
@@ -28,23 +28,23 @@ RSpec.shared_examples "attributes validated" do |method_sym|
     context 'result message includes' do
       let(:msg) { result.first[AuditResults::INVALID_ARGUMENTS] }
 
-      it "prefix" do
-        expect(msg).to match(Regexp.escape("encountered validation error(s): "))
+      it 'prefix' do
+        expect(msg).to match(Regexp.escape('encountered validation error(s): '))
       end
 
-      it "druid error" do
+      it 'druid error' do
         expect(msg).to match(bad_druid_msg)
       end
 
-      it "version error" do
+      it 'version error' do
         expect(msg).to match(bad_version_msg)
       end
 
-      it "size error" do
+      it 'size error' do
         expect(msg).to match(bad_size_msg)
       end
 
-      it "moab_storage_root error" do
+      it 'moab_storage_root error' do
         expect(msg).to match(bad_storage_root_msg)
       end
     end
@@ -66,7 +66,7 @@ end
 
 RSpec.shared_examples 'druid not in catalog' do |method_sym|
   let(:druid) { 'rr111rr1111' }
-  let(:exp_msg) { "[PreservedObject|CompleteMoab].* db object does not exist" }
+  let(:exp_msg) { '[PreservedObject|CompleteMoab].* db object does not exist' }
   let(:results) do
     allow(Rails.logger).to receive(:log)
     complete_moab_handler.send(method_sym)
@@ -117,20 +117,20 @@ RSpec.shared_examples 'unexpected version' do |method_sym, actual_version|
         it 'status becomes unexpected_version_on_storage when checksums_validated' do
           orig = cm.status
           complete_moab_handler.send(method_sym, true)
-          expect(cm.reload.status).to eq "unexpected_version_on_storage"
+          expect(cm.reload.status).to eq 'unexpected_version_on_storage'
           expect(cm.status).not_to eq orig
         end
       end
     end
 
     context 'unchanged' do
-      it "version" do
+      it 'version' do
         orig = cm.version
         complete_moab_handler.send(method_sym)
         expect(cm.reload.version).to eq orig
       end
 
-      it "size" do
+      it 'size' do
         orig = cm.size
         complete_moab_handler.send(method_sym)
         expect(cm.reload.size).to eq orig
@@ -160,7 +160,7 @@ RSpec.shared_examples 'unexpected version' do |method_sym, actual_version|
 
   context 'PreservedObject' do
     context 'unchanged' do
-      it "PreservedObject current_version stays the same" do
+      it 'PreservedObject current_version stays the same' do
         pocv = po.current_version
         complete_moab_handler.send(method_sym)
         expect(po.reload.current_version).to eq pocv
@@ -171,7 +171,7 @@ RSpec.shared_examples 'unexpected version' do |method_sym, actual_version|
   context 'returns' do
     let!(:results) { complete_moab_handler.send(method_sym) }
 
-    it "number of results" do
+    it 'number of results' do
       expect(results).to be_an_instance_of Array
       expect(results.size).to eq 3
     end
@@ -190,7 +190,7 @@ RSpec.shared_examples 'unexpected version' do |method_sym, actual_version|
       ]
       obj_version_results = results.select { |r| codes.include?(r.keys.first) }
       msgs = obj_version_results.map { |r| r.values.first }
-      expect(msgs).to include(a_string_matching("CompleteMoab"))
+      expect(msgs).to include(a_string_matching('CompleteMoab'))
     end
 
     if method_sym == :update_version
@@ -209,18 +209,18 @@ RSpec.shared_examples 'unexpected version with validation' do |method_sym, incom
   let(:complete_moab_handler) { described_class.new(druid, incoming_version, 1, ms_root) }
   let(:version_msg_prefix) { "actual version (#{incoming_version})" }
   let(:unexpected_version_msg) { "#{version_msg_prefix} has unexpected relationship to CompleteMoab db version; ERROR!" }
-  let(:updated_status_msg_regex) { Regexp.new("CompleteMoab status changed from") }
+  let(:updated_status_msg_regex) { Regexp.new('CompleteMoab status changed from') }
 
   context 'CompleteMoab' do
     it 'last_moab_validation updated' do
       expect { complete_moab_handler.send(method_sym) }.to change { cm.reload.last_moab_validation }
     end
 
-    it "version unchanged" do
+    it 'version unchanged' do
       expect { complete_moab_handler.send(method_sym) }.not_to change { cm.reload.version }
     end
 
-    it "size unchanged" do
+    it 'size unchanged' do
       expect { complete_moab_handler.send(method_sym) }.not_to change { cm.reload.size }
     end
 
@@ -244,7 +244,7 @@ RSpec.shared_examples 'unexpected version with validation' do |method_sym, incom
           expect { complete_moab_handler.send(method_sym, true) }.to change { cm.reload.status }.from('ok').to(new_status)
         end
 
-        it "validity_unknown when not checksums_validated" do
+        it 'validity_unknown when not checksums_validated' do
           expect { complete_moab_handler.send(method_sym) }.to change { cm.reload.status }.from('ok').to('validity_unknown')
         end
 
@@ -257,7 +257,7 @@ RSpec.shared_examples 'unexpected version with validation' do |method_sym, incom
   end
 
   context 'PreservedObject' do
-    it "current_version" do
+    it 'current_version' do
       expect { complete_moab_handler.send(method_sym) }.not_to change { po.reload.current_version }
     end
   end
@@ -265,7 +265,7 @@ RSpec.shared_examples 'unexpected version with validation' do |method_sym, incom
   context 'returns' do
     let!(:results) { complete_moab_handler.send(method_sym) }
 
-    it "number of results" do
+    it 'number of results' do
       expect(results).to be_an_instance_of Array
       if method_sym == :check_existence
         expect(results.size).to eq 2
@@ -290,9 +290,7 @@ RSpec.shared_examples 'unexpected version with validation' do |method_sym, incom
       ]
       obj_version_results = results.select { |r| codes.include?(r.keys.first) }
       msgs = obj_version_results.map { |r| r.values.first }
-      unless results.find { |r| r.keys.first == AuditResults::INVALID_MOAB }
-        expect(msgs).to include(a_string_matching("CompleteMoab"))
-      end
+      expect(msgs).to include(a_string_matching('CompleteMoab')) unless results.find { |r| r.keys.first == AuditResults::INVALID_MOAB }
     end
 
     it 'CM_STATUS_CHANGED result' do

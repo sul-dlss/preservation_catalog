@@ -10,7 +10,7 @@ RSpec.describe CompleteMoabHandler do
   let(:storage_dir) { 'spec/fixtures/storage_root01/sdr2objects' }
   let(:ms_root) { MoabStorageRoot.find_by(storage_location: storage_dir) }
   let(:complete_moab_handler) { described_class.new(druid, incoming_version, incoming_size, ms_root) }
-  let(:exp_msg) { "added object to db as it did not exist" }
+  let(:exp_msg) { 'added object to db as it did not exist' }
 
   before { allow(WorkflowReporter).to receive(:report_error) }
 
@@ -97,11 +97,11 @@ RSpec.describe CompleteMoabHandler do
 
       before { complete_moab_handler.create_after_validation }
 
-      it "sets last_moab_validation with current time" do
+      it 'sets last_moab_validation with current time' do
         expect(cm_db_obj.last_moab_validation).to be_within(10).of(t)
       end
 
-      it "sets last_version_audit with current time" do
+      it 'sets last_version_audit with current time' do
         expect(cm_db_obj.last_version_audit).to be_within(10).of(t)
       end
     end

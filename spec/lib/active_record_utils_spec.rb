@@ -51,7 +51,7 @@ RSpec.describe ActiveRecordUtils do
     let(:num_objs) { 9 }
     let(:expect_num_batches) do
       # integer division returns an integer.  add a cleanup batch if there's any remainder.
-      (num_objs % batch_size == 0) ? (num_objs / batch_size) : (num_objs / batch_size + 1)
+      num_objs % batch_size == 0 ? (num_objs / batch_size) : (num_objs / batch_size + 1)
     end
     let(:ms_root) { MoabStorageRoot.find_by(name: 'fixture_sr1') }
 

@@ -218,7 +218,7 @@ class CompleteMoabHandler
 
   # TODO: this is "too complex" per rubocop: shameless green implementation
   # NOTE: if we can reduce complexity, remove Metrics/PerceivedComplexity exception in .rubocop.yml
-  def update_online_version(status=nil, set_status_to_unexp_version=false, checksums_validated=false)
+  def update_online_version(status = nil, set_status_to_unexp_version = false, checksums_validated = false)
     transaction_ok = with_active_record_transaction_and_rescue do
       raise_rollback_if_cm_po_version_mismatch
 
@@ -248,7 +248,7 @@ class CompleteMoabHandler
       cm_version = complete_moab.version
       po_version = complete_moab.preserved_object.current_version
       res_code = AuditResults::CM_PO_VERSION_MISMATCH
-      results.add_result(res_code, { cm_version: cm_version, po_version: po_version })
+      results.add_result(res_code, cm_version: cm_version, po_version: po_version)
       raise ActiveRecord::Rollback, "CompleteMoab version #{cm_version} != PreservedObject current_version #{po_version}"
     end
   end
@@ -312,12 +312,12 @@ class CompleteMoabHandler
     elsif incoming_version < complete_moab.version
       results.add_result(
         AuditResults::ACTUAL_VERS_LT_DB_OBJ,
-        { db_obj_name: complete_moab.class.name, db_obj_version: complete_moab.version }
+        db_obj_name: complete_moab.class.name, db_obj_version: complete_moab.version
       )
     elsif incoming_version > complete_moab.version
       results.add_result(
         AuditResults::ACTUAL_VERS_GT_DB_OBJ,
-        { db_obj_name: complete_moab.class.name, db_obj_version: complete_moab.version }
+        db_obj_name: complete_moab.class.name, db_obj_version: complete_moab.version
       )
     end
   end

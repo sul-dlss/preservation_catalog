@@ -38,14 +38,14 @@ RSpec.describe CompleteMoab, type: :model do
   end
 
   describe '#status=' do
-    it "validation rejects a value if it does not match the enum" do
+    it 'validation rejects a value if it does not match the enum' do
       expect { described_class.new(status: 654) }
         .to raise_error(ArgumentError, "'654' is not a valid status")
       expect { described_class.new(status: 'INVALID_MOAB') }
         .to raise_error(ArgumentError, "'INVALID_MOAB' is not a valid status")
     end
 
-    it "will accept a symbol, but will always return a string" do
+    it 'will accept a symbol, but will always return a string' do
       expect(described_class.new(status: :invalid_moab).status).to eq 'invalid_moab'
     end
   end
@@ -201,7 +201,6 @@ RSpec.describe CompleteMoab, type: :model do
     end
 
     describe '.least_recent_version_audit' do
-
       it 'returns PreservedCopies with nils and PreservedCopies < given date (not orded by last_version_audit)' do
         expect(described_class.least_recent_version_audit(now).sort).to eq [cm, newer_timestamp_cm, older_timestamp_cm]
       end
@@ -243,10 +242,8 @@ RSpec.describe CompleteMoab, type: :model do
                                                 status: status,
                                                 version: cm_version)
         expect { dup_complete_moab.save(validate: false) }.to raise_error(ActiveRecord::RecordNotUnique)
-
       end
     end
-
   end
 
   describe '.normalize_date(timestamp)' do

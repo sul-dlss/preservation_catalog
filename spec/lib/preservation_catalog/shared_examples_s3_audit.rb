@@ -11,7 +11,7 @@ RSpec.shared_examples 's3 audit' do |klass, bucket_name, check_name, endpoint_na
   let(:bucket) { instance_double(Aws::S3::Bucket) }
   let(:bucket_name) { bucket_name }
   let(:matching_md5) { attributes_for(:zip_part)[:md5] }
-  let(:non_matching_md5) { "asdfasdfb43t347l;x5px54xx6549;f4" }
+  let(:non_matching_md5) { 'asdfasdfb43t347l;x5px54xx6549;f4' }
   let(:results) { AuditResults.new(cm.preserved_object.druid, nil, cm.moab_storage_root, check_name) }
   let(:endpoint_name) { zmv.zip_endpoint.endpoint_name }
 

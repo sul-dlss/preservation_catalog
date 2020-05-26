@@ -81,7 +81,7 @@ describe DruidVersionZip do
       end
 
       it 'produces the expected md5 file' do
-        md5_path = zip_path + ".md5"
+        md5_path = zip_path + '.md5'
         expect(File).not_to exist(md5_path)
         expect { dvz.create_zip! }.not_to raise_error
         expect(File).to exist(md5_path)
@@ -89,7 +89,7 @@ describe DruidVersionZip do
 
       # we `list` a given filepath out of the zip, `unzip` exits w/ 0 only when found
       it 'produced zip has expected structure' do
-        techmd = "bj102hs9687/v0003/data/metadata/technicalMetadata.xml"
+        techmd = 'bj102hs9687/v0003/data/metadata/technicalMetadata.xml'
         dvz.create_zip!
         _, status = Open3.capture2e("unzip -lq #{zip_path} #{techmd}")
         expect(status).to be_success
@@ -100,7 +100,7 @@ describe DruidVersionZip do
 
     context 'for every part' do
       before do
-        allow(dvz).to receive(:zip_split_size).and_return("1m")
+        allow(dvz).to receive(:zip_split_size).and_return('1m')
         allow(dvz).to receive(:zip_size_ok?).and_return(true)
       end
 
@@ -191,11 +191,11 @@ describe DruidVersionZip do
     it 'lists the multiple files produced' do
       expect(dvz.part_keys).to all(be_a String)
       expect(dvz.part_keys).to include(
-        "dc/048/cw/1328/dc048cw1328.v0001.zip",
-        "dc/048/cw/1328/dc048cw1328.v0001.z01",
-        "dc/048/cw/1328/dc048cw1328.v0001.z02",
-        "dc/048/cw/1328/dc048cw1328.v0001.z03",
-        "dc/048/cw/1328/dc048cw1328.v0001.z04"
+        'dc/048/cw/1328/dc048cw1328.v0001.zip',
+        'dc/048/cw/1328/dc048cw1328.v0001.z01',
+        'dc/048/cw/1328/dc048cw1328.v0001.z02',
+        'dc/048/cw/1328/dc048cw1328.v0001.z03',
+        'dc/048/cw/1328/dc048cw1328.v0001.z04'
       )
       expect(dvz.part_keys.count).to eq 5
     end
@@ -215,9 +215,9 @@ describe DruidVersionZip do
       dvz.create_zip!
       expect(dvz.part_paths).to all(be_a Pathname)
       expect(dvz.part_paths.map(&:to_s)).to include(
-        "/tmp/dc/048/cw/1328/dc048cw1328.v0001.zip",
-        "/tmp/dc/048/cw/1328/dc048cw1328.v0001.z01",
-        "/tmp/dc/048/cw/1328/dc048cw1328.v0001.z04"
+        '/tmp/dc/048/cw/1328/dc048cw1328.v0001.zip',
+        '/tmp/dc/048/cw/1328/dc048cw1328.v0001.z01',
+        '/tmp/dc/048/cw/1328/dc048cw1328.v0001.z04'
       )
       expect(dvz.part_paths.count).to eq 5
     end
@@ -230,7 +230,7 @@ describe DruidVersionZip do
       expect(dvz.v_version).to eq 'v0001'
     end
 
-    context "two digit version" do
+    context 'two digit version' do
       let(:version) { 34 }
 
       it 'returns 2 zero-padded string of the version' do

@@ -4,7 +4,7 @@ require: rubocop-rspec
 inherit_from: .rubocop_todo.yml
 
 AllCops:
-  TargetRubyVersion: 2.5
+  TargetRubyVersion: 2.7
   DisplayCopNames: true
   Include:
     - './Rakefile'
@@ -28,35 +28,19 @@ Bundler/OrderedGems:
 Layout/EmptyLineAfterGuardClause:
   Enabled: false
 
-Layout/SpaceAroundEqualsInParameterDefault:
-  Enabled: false
-
 Metrics/BlockLength:
   Exclude:
-    - 'app/services/complete_moab_handler.rb' # FIXME check_existence shameless green
     - '**/*.rake'
     - 'spec/**/*'
 
 # because this isn't 1994
 Metrics/LineLength:
   Max: 150
-  Exclude:
-    - 'app/services/audit_results.rb' # long lines for result code messgaes
-    - 'app/services/checksum_validator.rb' # FIXME
-    - 'lib/capistrano/tasks/capistrano-resque-pool.rake'
-    - 'spec/controllers/catalog_controller_spec.rb' # FIXME
-    - 'spec/jobs/moab_replication_audit_job_spec.rb' # line 32 regex is longer due to zmvs on an additional endpoint
-
-Metrics/MethodLength:
-  Max: 25
-  Exclude:
-    - 'app/services/complete_moab_handler.rb'
 
 Naming/FileName:
   Exclude:
     - 'Capfile'
     - 'Gemfile'
-    - 'lib/capistrano/tasks/capistrano-resque-pool.rake'
 
 RSpec/ContextWording:
   Enabled: false # too dogmatic
@@ -77,8 +61,6 @@ RSpec/MessageSpies:
 
 RSpec/MultipleExpectations:
   Max: 5
-  Exclude:
-    - 'spec/jobs/integration_spec.rb' # line 30 testing additional zip_endpoint needs more expectations
 
 RSpec/NamedSubject:
   Enabled: false
@@ -100,10 +82,6 @@ Style/AccessModifierDeclarations:
 Style/BlockDelimiters:
   Exclude:
     - 'spec/*/*' # rspec expect statements look ugly with do-end instead of {}
-
-# because ' vs " isn't a big deal for readability or maintainability or execution time
-Style/StringLiterals:
-  Enabled: false
 
 Style/SymbolArray:
   Exclude:

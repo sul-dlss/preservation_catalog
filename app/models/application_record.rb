@@ -14,7 +14,7 @@ class ApplicationRecord < ActiveRecord::Base
   end
 
   def log_errors
-    provlog.info errors.full_messages.join(" | ")
+    provlog.info errors.full_messages.join(' | ')
   end
 
   def self.provlog

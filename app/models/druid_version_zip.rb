@@ -71,7 +71,7 @@ class DruidVersionZip
   # @param [String] hex
   # @return [String] base64 equivalent
   def hex_to_base64(hex)
-    [[hex].pack("H*")].pack("m0")
+    [[hex].pack('H*')].pack('m0')
   end
 
   def moab_version_path
@@ -94,7 +94,7 @@ class DruidVersionZip
 
   # @return [String] "v" with zero-padded 4-digit version, e.g., v0001
   def v_version
-    format("v%04d", version)
+    format('v%04d', version)
   end
 
   # @return [Pathname] The proper directory in which to execute zip_command
@@ -151,7 +151,7 @@ class DruidVersionZip
   # @return [String] e.g. 'Zip 3.0 (July 5th 2008)' or 'Zip 3.0.1'
   def fetch_zip_version
     match = nil
-    IO.popen("zip -v") do |io|
+    IO.popen('zip -v') do |io|
       re = zip_version_regexp
       io.find { |line| match = line.match(re) }
     end

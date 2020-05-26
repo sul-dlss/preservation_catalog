@@ -9,7 +9,7 @@ RSpec.describe CompleteMoabHandler do
     allow(WorkflowReporter).to receive(:report_completed)
   end
 
-  let(:db_update_failed_prefix) { "db update failed" }
+  let(:db_update_failed_prefix) { 'db update failed' }
   let(:default_prez_policy) { PreservationPolicy.default_policy }
   let(:druid) { 'ab123cd4567' }
   let(:incoming_size) { 9876 }
@@ -38,7 +38,7 @@ RSpec.describe CompleteMoabHandler do
       context 'incoming version newer than catalog versions (both) (happy path)' do
         context 'CompleteMoab' do
           context 'changed' do
-            it "version becomes incoming_version" do
+            it 'version becomes incoming_version' do
               expect { complete_moab_handler.update_version }.to change(cm, :version).to be(incoming_version)
             end
 
@@ -127,7 +127,7 @@ RSpec.describe CompleteMoabHandler do
         end
 
         context 'PreservedObject changed' do
-          it "current_version becomes incoming version" do
+          it 'current_version becomes incoming version' do
             expect { complete_moab_handler.update_version }.to change(complete_moab_handler.pres_object, :current_version)
               .to(incoming_version)
           end
@@ -614,18 +614,18 @@ RSpec.describe CompleteMoabHandler do
 
               it 'INVALID_MOAB result' do
                 code = AuditResults::INVALID_MOAB
-                invalid_moab_msg = "Invalid Moab, validation errors: [\"Missing directory: [\\\"data\\\", \\\"manifests\\\"] Version: v0001\"]"
+                invalid_moab_msg = 'Invalid Moab, validation errors: ["Missing directory: [\\"data\\", \\"manifests\\"] Version: v0001"]'
                 expect(results).to include(hash_including(code => invalid_moab_msg))
               end
 
               it 'CM_PO_VERSION_MISMATCH result' do
                 code = AuditResults::CM_PO_VERSION_MISMATCH
-                mismatch_msg = "CompleteMoab online Moab version 3 does not match PreservedObject current_version 2"
+                mismatch_msg = 'CompleteMoab online Moab version 3 does not match PreservedObject current_version 2'
                 expect(results).to include(hash_including(code => mismatch_msg))
               end
 
               it 'CM_STATUS_CHANGED result' do
-                updated_status_msg_regex = Regexp.new("CompleteMoab status changed from")
+                updated_status_msg_regex = Regexp.new('CompleteMoab status changed from')
                 expect(results).to include(a_hash_including(AuditResults::CM_STATUS_CHANGED => updated_status_msg_regex))
               end
             end
@@ -668,18 +668,18 @@ RSpec.describe CompleteMoabHandler do
 
               it 'INVALID_MOAB result' do
                 code = AuditResults::INVALID_MOAB
-                invalid_moab_msg = "Invalid Moab, validation errors: [\"Missing directory: [\\\"data\\\", \\\"manifests\\\"] Version: v0001\"]"
+                invalid_moab_msg = 'Invalid Moab, validation errors: ["Missing directory: [\\"data\\", \\"manifests\\"] Version: v0001"]'
                 expect(results).to include(hash_including(code => invalid_moab_msg))
               end
 
               it 'CM_PO_VERSION_MISMATCH result' do
                 code = AuditResults::CM_PO_VERSION_MISMATCH
-                mismatch_msg = "CompleteMoab online Moab version 3 does not match PreservedObject current_version 2"
+                mismatch_msg = 'CompleteMoab online Moab version 3 does not match PreservedObject current_version 2'
                 expect(results).to include(hash_including(code => mismatch_msg))
               end
 
               it 'CM_STATUS_CHANGED result' do
-                updated_status_msg_regex = Regexp.new("CompleteMoab status changed from")
+                updated_status_msg_regex = Regexp.new('CompleteMoab status changed from')
                 expect(results).to include(a_hash_including(AuditResults::CM_STATUS_CHANGED => updated_status_msg_regex))
               end
             end

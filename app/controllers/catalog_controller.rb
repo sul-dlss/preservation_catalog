@@ -5,7 +5,6 @@
 # to add an existing moab object to the catalog, or to update an entry for a moab object
 # that's already in the catalog.
 class CatalogController < ApplicationController
-
   attr_accessor :complete_moab_handler
 
   # POST /v1/catalog

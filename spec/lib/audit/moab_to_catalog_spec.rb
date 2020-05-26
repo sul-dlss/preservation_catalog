@@ -22,12 +22,12 @@ RSpec.describe Audit::MoabToCatalog do
     after { FileUtils.rm_f(logfile) }
 
     it 'writes to STDOUT and its own log' do
-      expect { described_class.logger.debug("foobar") }.to output(/foobar/).to_stdout_from_any_process
+      expect { described_class.logger.debug('foobar') }.to output(/foobar/).to_stdout_from_any_process
       expect(File).to exist(logfile)
     end
   end
 
-  describe ".seed_catalog_for_all_storage_roots" do
+  describe '.seed_catalog_for_all_storage_roots' do
     it 'calls seed_catalog_for_dir with the right argument once per root' do
       expect(described_class).to receive(:seed_catalog_for_dir).exactly(MoabStorageRoot.count).times
       MoabStorageRoot.pluck(:storage_location) do |path|
@@ -40,8 +40,8 @@ RSpec.describe Audit::MoabToCatalog do
   describe '.check_existence_for_druid' do
     let(:druid) { 'bz514sm9647' }
     let(:results) do
-      [{ db_obj_does_not_exist: "PreservedObject db object does not exist" },
-       { created_new_object: "added object to db as it did not exist" }]
+      [{ db_obj_does_not_exist: 'PreservedObject db object does not exist' },
+       { created_new_object: 'added object to db as it did not exist' }]
     end
 
     it 'finds the relevant moab' do
@@ -91,7 +91,7 @@ RSpec.describe Audit::MoabToCatalog do
     end
   end
 
-  describe ".seed_catalog_for_dir" do
+  describe '.seed_catalog_for_dir' do
     it "calls 'find_moab_paths' with appropriate argument" do
       expect(Stanford::MoabStorageDirectory).to receive(:find_moab_paths).with(storage_dir)
       described_class.seed_catalog_for_dir(storage_dir)
@@ -104,7 +104,7 @@ RSpec.describe Audit::MoabToCatalog do
       described_class.seed_catalog_for_dir(storage_dir)
     end
 
-    context "(creates after validation)" do
+    context '(creates after validation)' do
       let(:expected_argument_list) do
         [
           { druid: 'bj102hs9687', storage_root_current_version: 3 },
@@ -126,7 +126,7 @@ RSpec.describe Audit::MoabToCatalog do
         end
       end
 
-      it "call #create_after_validation" do
+      it 'call #create_after_validation' do
         expected_argument_list.each do |arg_hash|
           expect(arg_hash[:complete_moab_handler]).to receive(:create_after_validation)
         end
@@ -134,12 +134,12 @@ RSpec.describe Audit::MoabToCatalog do
       end
     end
 
-    it "return correct number of results" do
+    it 'return correct number of results' do
       expect(described_class.seed_catalog_for_dir(storage_dir).count).to eq 3
     end
   end
 
-  describe ".populate_moab_storage_root" do
+  describe '.populate_moab_storage_root' do
     before { described_class.seed_catalog_for_all_storage_roots }
 
     it "won't change objects in a fully seeded db" do
