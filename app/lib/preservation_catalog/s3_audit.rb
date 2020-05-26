@@ -29,20 +29,24 @@ module PreservationCatalog
       end
     end
 
-    # @return [PreservationCatalog::Aws, PreservationCatalog::Ibm] class that will provide .configure, .bucket, and .bucket_name methods
     def s3_provider
+      @s3_provider ||= s3_provider_class.new(
+        region: Settings.zip_endpoints[zmv.zip_endpoint.endpoint_name].region,
+        access_key_id: Settings.zip_endpoints[zmv.zip_endpoint.endpoint_name].access_key_id,
+        secret_access_key: Settings.zip_endpoints[zmv.zip_endpoint.endpoint_name].secret_access_key
+      )
+    end
+
+    protected
+
+    # @return [PreservationCatalog::AwsProvider, PreservationCatalog::IbmProvider] class that will provide .bucket, and .bucket_name methods
+    def s3_provider_class
       raise 'this method should be implemented by the child class'
     end
 
     private
 
     def bucket
-      endpoint = zmv.zip_endpoint.endpoint_name
-      s3_provider.configure(
-        region: Settings.zip_endpoints[endpoint].region,
-        access_key_id: Settings.zip_endpoints[endpoint].access_key_id,
-        secret_access_key: Settings.zip_endpoints[endpoint].secret_access_key
-      )
       s3_provider.bucket
     end
 

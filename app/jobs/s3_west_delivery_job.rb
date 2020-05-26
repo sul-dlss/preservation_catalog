@@ -28,12 +28,11 @@ class S3WestDeliveryJob < ZipPartJobBase
   end
 
   def bucket
-    PreservationCatalog::Aws.configure(
+    PreservationCatalog::AwsProvider.new(
       region: Settings.zip_endpoints.aws_s3_west_2.region,
       access_key_id: Settings.zip_endpoints.aws_s3_west_2.access_key_id,
       secret_access_key: Settings.zip_endpoints.aws_s3_west_2.secret_access_key
-    )
-    PreservationCatalog::Aws.bucket
+    ).bucket
   end
 
   # coerce size int to string (all values must be strings)

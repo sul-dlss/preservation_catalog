@@ -2,19 +2,26 @@
 
 require 'rails_helper'
 
-describe PreservationCatalog::Aws do
-  before do
-    described_class.configure(
-      region: 'us-west-2',
+describe PreservationCatalog::IbmProvider do
+  let(:provider) do
+    described_class.new(
+      region: 'us-south',
       access_key_id: 'some_key',
       secret_access_key: 'secret'
     )
   end
 
+  describe '.resource' do
+    it 'builds a client with an http/s endpoint setting' do
+      expect(::Aws::S3::Resource).to receive(:new).with(hash_including(endpoint: 'https://s3.us-south.cloud-object-storage.appdomain.cloud'))
+      provider.resource
+    end
+  end
+
   describe '.bucket_name' do
     context 'without ENV variable' do
       it 'returns value from Settings' do
-        expect(described_class.bucket_name).to eq 'sul-sdr-aws-us-west-2-test'
+        expect(provider.bucket_name).to eq 'sul-sdr-ibm-us-south-1-test'
       end
     end
 
@@ -27,30 +34,30 @@ describe PreservationCatalog::Aws do
       end
 
       it 'returns the ENV value' do
-        expect(described_class.bucket_name).to eq 'bucket_44'
+        expect(provider.bucket_name).to eq 'bucket_44'
       end
     end
   end
 
   describe '.configure' do
-    let(:config) { described_class.client.config }
+    let(:config) { provider.client.config }
 
     it 'injects client configuration' do
-      expect(config.region).to eq 'us-west-2'
+      expect(config.region).to eq 'us-south'
       expect(config.credentials).to be_an(::Aws::Credentials)
       expect(config.credentials).to be_set
       expect(config.credentials.access_key_id).to eq 'some_key'
     end
   end
 
-  context 'Live S3 bucket', live_aws: true do
-    subject(:bucket) { described_class.bucket }
+  context 'Live S3 bucket', live_ibm: true do
+    subject(:bucket) { provider.bucket }
 
-    before do
-      described_class.configure(
-        region: Settings.zip_endpoints.aws_s3_west_2.region,
-        access_key_id: Settings.zip_endpoints.aws_s3_west_2.access_key_id,
-        secret_access_key: Settings.zip_endpoints.aws_s3_west_2.secret_access_key
+    let(:provider) do
+      described_class.new(
+        region: Settings.zip_endpoints.ibm_us_south.region,
+        access_key_id: Settings.zip_endpoints.ibm_us_south.access_key_id,
+        secret_access_key: Settings.zip_endpoints.ibm_us_south.secret_access_key
       )
     end
 
