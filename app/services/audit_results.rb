@@ -59,7 +59,7 @@ class AuditResults
     INVALID_MOAB => 'Invalid Moab, validation errors: %{addl}',
     MANIFEST_NOT_IN_MOAB => '%{manifest_file_path} not found in Moab',
     MOAB_CHECKSUM_VALID => 'checksum(s) match',
-    MOAB_FILE_CHECKSUM_MISMATCH => 'checksums for %{file_path} version %{version} do not match.',
+    MOAB_FILE_CHECKSUM_MISMATCH => 'checksums or size for %{file_path} version %{version} do not match entry in latest signatureCatalog.xml.',
     MOAB_NOT_FOUND => 'db CompleteMoab (created %{db_created_at}; last updated %{db_updated_at}) exists but Moab not found',
     SIGNATURE_CATALOG_NOT_IN_MOAB => '%{signature_catalog_path} not found in Moab',
     UNABLE_TO_CHECK_STATUS => 'unable to validate when CompleteMoab status is %{current_status}',
