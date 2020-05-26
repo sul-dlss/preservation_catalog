@@ -8,7 +8,7 @@ RSpec.shared_examples 's3 audit' do |klass, bucket_name, check_name, endpoint_na
     create(:zipped_moab_version, zip_endpoint: zip_endpoint)
   end
   let(:cm) { zmv.complete_moab }
-  let(:bucket) { instance_double(Aws::S3::Bucket) }
+  let(:bucket) { instance_double(::Aws::S3::Bucket) }
   let(:bucket_name) { bucket_name }
   let(:matching_md5) { attributes_for(:zip_part)[:md5] }
   let(:non_matching_md5) { 'asdfasdfb43t347l;x5px54xx6549;f4' }
@@ -35,13 +35,13 @@ RSpec.shared_examples 's3 audit' do |klass, bucket_name, check_name, endpoint_na
 
       # fine to assume existence and matching checksum for all parts for this test case
       allow(bucket).to receive(:object).and_return(
-        instance_double(Aws::S3::Object, exists?: true, metadata: { 'checksum_md5' => args[:md5] })
+        instance_double(::Aws::S3::Object, exists?: true, metadata: { 'checksum_md5' => args[:md5] })
       )
     end
 
     it 'only checks existence and checksum on replicated parts' do
       ok_part = zmv.zip_parts.find_by(suffix: '.z01')
-      s3_obj = instance_double(Aws::S3::Object, exists?: true)
+      s3_obj = instance_double(::Aws::S3::Object, exists?: true)
 
       expect(bucket).to receive(:object).with(ok_part.s3_key).and_return(s3_obj)
       expect(s3_obj).to receive(:metadata).and_return('checksum_md5' => ok_part.md5)
@@ -72,7 +72,7 @@ RSpec.shared_examples 's3 audit' do |klass, bucket_name, check_name, endpoint_na
 
       # fine to assume non-existence (and thus checksum irrelevance) for all parts for this test case
       allow(bucket).to receive(:object).and_return(
-        instance_double(Aws::S3::Object, exists?: false)
+        instance_double(::Aws::S3::Object, exists?: false)
       )
     end
 
@@ -101,7 +101,7 @@ RSpec.shared_examples 's3 audit' do |klass, bucket_name, check_name, endpoint_na
 
       zmv.zip_parts.each_with_index do |part, idx|
         allow(bucket).to receive(:object).with(part.s3_key).and_return(
-          instance_double(Aws::S3::Object, exists?: true, metadata: { 'checksum_md5' => replicated_checksums[idx] })
+          instance_double(::Aws::S3::Object, exists?: true, metadata: { 'checksum_md5' => replicated_checksums[idx] })
         )
       end
     end
@@ -182,8 +182,8 @@ RSpec.shared_examples 's3 audit' do |klass, bucket_name, check_name, endpoint_na
           .to('replicated_checksum_mismatch')
           .and change { zmv.zip_parts.second.reload.status }
           .to('replicated_checksum_mismatch')
-          .and change { zmv.zip_parts.second.reload.status }
-          .to('replicated_checksum_mismatch')
+        expect { described_class.check_replicated_zipped_moab_version(zmv, results) }
+          .not_to(change { zmv.zip_parts.third.reload.status })
       end
     end
   end
@@ -201,16 +201,16 @@ RSpec.shared_examples 's3 audit' do |klass, bucket_name, check_name, endpoint_na
       )
 
       allow(bucket).to receive(:object).with(zmv.zip_parts.first.s3_key).and_return(
-        instance_double(Aws::S3::Object, exists?: false)
+        instance_double(::Aws::S3::Object, exists?: false)
       )
       allow(bucket).to receive(:object).with(zmv.zip_parts.second.s3_key).and_return(
-        instance_double(Aws::S3::Object, exists?: true, metadata: { 'checksum_md5' => replicated_checksums.second })
+        instance_double(::Aws::S3::Object, exists?: true, metadata: { 'checksum_md5' => replicated_checksums.second })
       )
       allow(bucket).to receive(:object).with(zmv.zip_parts.third.s3_key).and_return(
-        instance_double(Aws::S3::Object, exists?: true, metadata: { 'checksum_md5' => replicated_checksums.third })
+        instance_double(::Aws::S3::Object, exists?: true, metadata: { 'checksum_md5' => replicated_checksums.third })
       )
       allow(bucket).to receive(:object).with(zmv.zip_parts.fourth.s3_key).and_return(
-        instance_double(Aws::S3::Object, exists?: false)
+        instance_double(::Aws::S3::Object, exists?: false)
       )
     end
 

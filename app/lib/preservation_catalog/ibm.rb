@@ -16,7 +16,7 @@ module PreservationCatalog
         }
       end
 
-      # @return [Aws::S3::Bucket]
+      # @return [::Aws::S3::Bucket]
       def bucket
         resource.bucket(bucket_name)
       end
@@ -26,9 +26,9 @@ module PreservationCatalog
         ENV['AWS_BUCKET_NAME'] || Settings.zip_endpoints.ibm_us_south.storage_location || Settings.ibm.bucket_name
       end
 
-      # @return [Aws::S3::Resource]
+      # @return [::Aws::S3::Resource]
       def resource
-        Aws::S3::Resource.new(aws_client_args)
+        ::Aws::S3::Resource.new(aws_client_args)
       end
     end
   end

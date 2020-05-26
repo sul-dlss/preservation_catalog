@@ -3,6 +3,8 @@
 module PreservationCatalog
   # Base class for AWS and IBM audit classes
   class S3Audit
+    delegate :bucket_name, to: :s3_provider
+
     attr_reader :zmv, :results
 
     # @param [ZippedMoabVersion] the ZippedMoabVersion to check
@@ -14,10 +16,10 @@ module PreservationCatalog
 
     # convenience method for instantiating the audit class and running the check in one call
     def self.check_replicated_zipped_moab_version(zmv, results)
-      new(zmv, results).check_aws_replicated_zipped_moab_version
+      new(zmv, results).check_replicated_zipped_moab_version
     end
 
-    def check_aws_replicated_zipped_moab_version
+    def check_replicated_zipped_moab_version
       zmv.zip_parts.where.not(status: :unreplicated).each do |part|
         s3_object = bucket.object(part.s3_key)
         next unless check_existence(s3_object, part)
@@ -27,10 +29,25 @@ module PreservationCatalog
       end
     end
 
+    # @return [PreservationCatalog::Aws, PreservationCatalog::Ibm] class that will provide .configure, .bucket, and .bucket_name methods
+    def s3_provider
+      raise 'this method should be implemented by the child class'
+    end
+
     private
 
-    # NOTE: no checksum computation is happening here (neither on our side, nor on AWS's).  we're just comparing
-    # the checksum we have stored with the checksum we asked AWS to store.  we really don't expect any drift, but
+    def bucket
+      endpoint = zmv.zip_endpoint.endpoint_name
+      s3_provider.configure(
+        region: Settings.zip_endpoints[endpoint].region,
+        access_key_id: Settings.zip_endpoints[endpoint].access_key_id,
+        secret_access_key: Settings.zip_endpoints[endpoint].secret_access_key
+      )
+      s3_provider.bucket
+    end
+
+    # NOTE: no checksum computation is happening here (neither on our side, nor on cloud provider's).  we're just comparing
+    # the checksum we have stored with the checksum we asked the cloud provider to store.  we really don't expect any drift, but
     # we're here, and it's a cheap check to do, and it'd be weird if they differed, so why not?
     # TODO: in a later work cycle, we'd like to spot check some cloud archives: that is, pull the zip down,
     # re-compute the checksum for the retrieved zip, and make sure it matches what we stored.
