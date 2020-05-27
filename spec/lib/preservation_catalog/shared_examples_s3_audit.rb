@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.shared_examples 's3 audit' do |klass, bucket_name, check_name, endpoint_name, region|
+RSpec.shared_examples 's3 audit' do |provider_class, bucket_name, check_name, endpoint_name, region|
   let(:zip_endpoint) do
     ZipEndpoint.find_by(endpoint_name: endpoint_name)
   end
@@ -14,11 +14,11 @@ RSpec.shared_examples 's3 audit' do |klass, bucket_name, check_name, endpoint_na
   let(:non_matching_md5) { 'asdfasdfb43t347l;x5px54xx6549;f4' }
   let(:results) { AuditResults.new(cm.preserved_object.druid, nil, cm.moab_storage_root, check_name) }
   let(:endpoint_name) { zmv.zip_endpoint.endpoint_name }
-  let(:provider) { instance_double(klass) }
+  let(:provider) { instance_double(provider_class) }
 
   before do
     allow(AuditResults).to receive(:new).and_return(results)
-    allow(klass).to receive(:new).and_return(provider)
+    allow(provider_class).to receive(:new).and_return(provider)
     allow(provider).to receive(:bucket).and_return(bucket)
     allow(provider).to receive(:bucket_name).and_return(bucket_name)
   end
@@ -54,9 +54,9 @@ RSpec.shared_examples 's3 audit' do |klass, bucket_name, check_name, endpoint_na
     it 'configures S3' do
       described_class.check_replicated_zipped_moab_version(zmv, results)
       # Note that access_key_id and secret_access_key are provided by env variable in CI.
-      expect(klass).to have_received(:new).with(region: region,
-                                                access_key_id: Settings.zip_endpoints[endpoint_name].access_key_id,
-                                                secret_access_key: Settings.zip_endpoints[endpoint_name].secret_access_key)
+      expect(provider_class).to have_received(:new).with(region: region,
+                                                         access_key_id: Settings.zip_endpoints[endpoint_name].access_key_id,
+                                                         secret_access_key: Settings.zip_endpoints[endpoint_name].secret_access_key)
     end
   end
 

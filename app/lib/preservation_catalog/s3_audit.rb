@@ -3,7 +3,7 @@
 module PreservationCatalog
   # Base class for AWS and IBM audit classes
   class S3Audit
-    delegate :bucket_name, to: :s3_provider
+    delegate :bucket, :bucket_name, to: :s3_provider
 
     attr_reader :zmv, :results
 
@@ -45,10 +45,6 @@ module PreservationCatalog
     end
 
     private
-
-    def bucket
-      s3_provider.bucket
-    end
 
     # NOTE: no checksum computation is happening here (neither on our side, nor on cloud provider's).  we're just comparing
     # the checksum we have stored with the checksum we asked the cloud provider to store.  we really don't expect any drift, but
