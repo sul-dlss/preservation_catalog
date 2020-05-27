@@ -59,7 +59,7 @@ describe PreservationCatalog::AwsProvider do
     describe '::Aws::S3::Object#upload_file' do
       subject(:s3_object) { bucket.object("test_key_#{test_key_id}") }
 
-      let(:test_key_id) { ENV.fetch('TRAVIS_JOB_ID', '000') }
+      let(:test_key_id) { ENV.fetch('CIRCLE_SHA1', '000')[0..6] }
       let(:dvz) { DruidVersionZip.new('bj102hs9687', 2) }
       let(:dvz_part) { DruidVersionZipPart.new(dvz, dvz.s3_key('.zip')) }
       let(:digest) { dvz_part.base64digest }
