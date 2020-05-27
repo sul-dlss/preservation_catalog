@@ -298,8 +298,9 @@ RSpec.describe AuditResults do
         code = AuditResults::MOAB_FILE_CHECKSUM_MISMATCH
         addl_hash = { file_path: 'path/to/file', version: 1 }
         audit_results.add_result(code, addl_hash)
+        expected_err_msg = 'checksums or size for path/to/file version 1 do not match entry in latest signatureCatalog.xml.'
         expect(Honeybadger).to receive(:notify).with(
-          '(ab123cd4567, fixture_sr1) checksums for path/to/file version 1 do not match.'
+          "(ab123cd4567, fixture_sr1) #{expected_err_msg}"
         )
         expect(events_client).to receive(:create).once.with(
           type: 'preservation_audit_failure',
@@ -309,7 +310,7 @@ RSpec.describe AuditResults do
             storage_root: ms_root.name,
             actual_version: actual_version,
             check_name: nil,
-            error_result: { moab_file_checksum_mismatch: 'checksums for path/to/file version 1 do not match.' }
+            error_result: { moab_file_checksum_mismatch: expected_err_msg }
           }
         )
         audit_results.report_results
