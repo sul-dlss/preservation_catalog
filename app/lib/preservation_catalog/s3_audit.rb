@@ -5,22 +5,24 @@ module PreservationCatalog
   class S3Audit
     delegate :bucket, :bucket_name, to: :s3_provider
 
-    attr_reader :zmv, :results
+    attr_reader :zmv, :results, :check_unreplicated_parts
 
     # @param [ZippedMoabVersion] the ZippedMoabVersion to check
     # @param [AuditResults] the AuditResults instance used to track findings for this audit run
-    def initialize(zmv, results)
+    # @param [Boolean] defaults to false, skipping parts that aren't expected to be replicated.  "true" is useful for manual auditing, see wiki.
+    def initialize(zmv, results, check_unreplicated_parts)
       @zmv = zmv
       @results = results
+      @check_unreplicated_parts = check_unreplicated_parts
     end
 
     # convenience method for instantiating the audit class and running the check in one call
-    def self.check_replicated_zipped_moab_version(zmv, results)
-      new(zmv, results).check_replicated_zipped_moab_version
+    def self.check_replicated_zipped_moab_version(zmv, results, check_unreplicated_parts = false)
+      new(zmv, results, check_unreplicated_parts).check_replicated_zipped_moab_version
     end
 
     def check_replicated_zipped_moab_version
-      zmv.zip_parts.where.not(status: :unreplicated).each do |part|
+      zip_parts_to_check.each do |part|
         s3_object = bucket.object(part.s3_key)
         next unless check_existence(s3_object, part)
         next unless compare_checksum_metadata(s3_object, part)
@@ -45,6 +47,11 @@ module PreservationCatalog
     end
 
     private
+
+    def zip_parts_to_check
+      return zmv.zip_parts.where.not(status: :unreplicated) unless check_unreplicated_parts
+      zmv.zip_parts
+    end
 
     # NOTE: no checksum computation is happening here (neither on our side, nor on cloud provider's).  we're just comparing
     # the checksum we have stored with the checksum we asked the cloud provider to store.  we really don't expect any drift, but
@@ -81,7 +88,8 @@ module PreservationCatalog
           s3_key: part.s3_key,
           bucket_name: bucket_name
         )
-        part.update(status: 'not_found', last_existence_check: Time.zone.now)
+        status = part.unreplicated? ? 'unreplicated' : 'not_found' # stay in the intial unreplicated status if starting there
+        part.update(status: status, last_existence_check: Time.zone.now)
         false
       end
     end
