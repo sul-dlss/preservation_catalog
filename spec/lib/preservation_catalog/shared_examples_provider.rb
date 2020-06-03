@@ -43,7 +43,7 @@ RSpec.shared_examples 'provider' do |provider_class, bucket_name, region, access
     end
   end
 
-  context 'Live S3 bucket', live_aws: true do
+  context 'Live S3 bucket', live_s3: true do
     subject(:bucket) { provider.bucket }
 
     let(:provider) do
