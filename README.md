@@ -230,9 +230,8 @@ Audit::Checksum.validate_list_of_druids('/file/path/to/your/csv/druid_list.csv')
 
 For example, if you wish to run CV on all the "validity_unknown" druids on storage root 15, from console:
 
-Synchronously, from Rails console:
 ```ruby
-Audit::Checksum.validate_status_root(:validity_unknown, :services-disk15)
+Audit::Checksum.validate_status_root(:validity_unknown, 'services-disk15')
 ```
 
 [Valid status strings](https://github.com/sul-dlss/preservation_catalog/blob/master/app/models/complete_moab.rb#L1-L10)
