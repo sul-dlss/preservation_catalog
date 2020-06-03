@@ -53,7 +53,8 @@ RSpec.shared_examples 's3 audit' do |provider_class, bucket_name, check_name, en
 
     it 'configures S3' do
       described_class.check_replicated_zipped_moab_version(zmv, results)
-      # Note that access_key_id and secret_access_key are provided by env variable in CI.
+      # Note that access_key_id and secret_access_key are provided by env variables in CI, via the usual config gem
+      # override naming convention, e.g. SETTINGS__zip_endpoints__aws_s3_west_2__access_key_id
       expect(provider_class).to have_received(:new).with(region: region,
                                                          access_key_id: Settings.zip_endpoints[endpoint_name].access_key_id,
                                                          secret_access_key: Settings.zip_endpoints[endpoint_name].secret_access_key)

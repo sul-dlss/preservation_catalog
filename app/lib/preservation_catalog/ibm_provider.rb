@@ -22,7 +22,7 @@ module PreservationCatalog
 
     # @return [String]
     def bucket_name
-      ENV['AWS_BUCKET_NAME'] || Settings.zip_endpoints.ibm_us_south.storage_location || Settings.ibm.bucket_name
+      Settings.zip_endpoints.ibm_us_south.storage_location
     end
 
     # @return [::Aws::S3::Resource]

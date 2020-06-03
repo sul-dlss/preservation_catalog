@@ -5,7 +5,7 @@ require 'lib/preservation_catalog/shared_examples_provider'
 
 describe PreservationCatalog::IbmProvider do
   it_behaves_like 'provider', described_class,
-                  Settings.ibm.bucket_name,
+                  Settings.zip_endpoints.ibm_us_south.storage_location,
                   Settings.zip_endpoints.ibm_us_south.region,
                   Settings.zip_endpoints.ibm_us_south.access_key_id,
                   Settings.zip_endpoints.ibm_us_south.secret_access_key
