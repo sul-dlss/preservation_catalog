@@ -29,7 +29,6 @@ storage_root_map: # empty here, override in #{RAILS_ENV}.yml
   default: {}
 
 workflow_services_url: 'https://workflows.example.org/workflow/'
-c2m_sql_limit: 1000
 
 checksum_algos: ['md5'] # 'sha1' 'sha256'
 
