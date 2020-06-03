@@ -12,23 +12,8 @@ RSpec.shared_examples 'provider' do |provider_class, bucket_name, region, access
   end
 
   describe '.bucket_name' do
-    context 'without ENV variable' do
-      it 'returns value from Settings' do
-        expect(provider.bucket_name).to eq bucket_name
-      end
-    end
-
-    context 'with ENV variable AWS_BUCKET_NAME' do
-      around do |example|
-        old_val = ENV['AWS_BUCKET_NAME']
-        ENV['AWS_BUCKET_NAME'] = 'bucket_44'
-        example.run
-        ENV['AWS_BUCKET_NAME'] = old_val
-      end
-
-      it 'returns the ENV value' do
-        expect(provider.bucket_name).to eq 'bucket_44'
-      end
+    it 'returns value from Settings' do
+      expect(provider.bucket_name).to eq bucket_name
     end
   end
 
