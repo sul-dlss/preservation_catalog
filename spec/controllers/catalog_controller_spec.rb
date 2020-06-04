@@ -77,7 +77,7 @@ RSpec.describe CatalogController, type: :controller do
       end
 
       it 'response contains error message' do
-        exp_msg = [{ AuditResults::DB_OBJ_ALREADY_EXISTS => 'PreservedObject db object already exists' }]
+        exp_msg = [{ AuditResults::DB_OBJ_ALREADY_EXISTS => 'CompleteMoab db object already exists' }]
         expect(response.body).to include(exp_msg.to_json)
       end
 
