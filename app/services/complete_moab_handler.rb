@@ -92,13 +92,7 @@ class CompleteMoabHandler
         elsif incoming_version > complete_moab.version
           set_status_as_seen_on_disk(true) unless complete_moab.status == 'ok'
           results.add_result(AuditResults::ACTUAL_VERS_GT_DB_OBJ, db_obj_name: 'CompleteMoab', db_obj_version: complete_moab.version)
-          if moab_validation_errors.empty?
-            complete_moab.upd_audstamps_version_size(ran_moab_validation?, incoming_version, incoming_size)
-            pres_object.current_version = incoming_version
-            pres_object.save!
-          else
-            update_status('invalid_moab')
-          end
+          update_co_po_set_status
         else # incoming_version < complete_moab.version
           set_status_as_seen_on_disk(false)
           results.add_result(AuditResults::ACTUAL_VERS_LT_DB_OBJ, db_obj_name: 'CompleteMoab', db_obj_version: complete_moab.version)
@@ -154,11 +148,7 @@ class CompleteMoabHandler
       end
     else
       results.add_result(AuditResults::DB_OBJ_DOES_NOT_EXIST, 'CompleteMoab')
-      if moab_validation_errors.empty?
-        create_db_objects('validity_unknown')
-      else
-        create_db_objects('invalid_moab')
-      end
+      moab_validation_errors.empty? ? create_db_objects('validity_unknown') : create_db_objects('invalid_moab')
     end
 
     results.report_results
@@ -241,6 +231,16 @@ class CompleteMoabHandler
     end
 
     results.remove_db_updated_results unless transaction_ok
+  end
+
+  def update_co_po_set_status
+    if moab_validation_errors.empty?
+      complete_moab.upd_audstamps_version_size(ran_moab_validation?, incoming_version, incoming_size)
+      pres_object.current_version = incoming_version
+      pres_object.save!
+    else
+      update_status('invalid_moab')
+    end
   end
 
   def raise_rollback_if_cm_po_version_mismatch
