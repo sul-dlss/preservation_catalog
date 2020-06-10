@@ -92,7 +92,7 @@ class CompleteMoabHandler
         elsif incoming_version > complete_moab.version
           set_status_as_seen_on_disk(true) unless complete_moab.status == 'ok'
           results.add_result(AuditResults::ACTUAL_VERS_GT_DB_OBJ, db_obj_name: 'CompleteMoab', db_obj_version: complete_moab.version)
-          update_co_po_set_status
+          update_cm_po_set_status
         else # incoming_version < complete_moab.version
           set_status_as_seen_on_disk(false)
           results.add_result(AuditResults::ACTUAL_VERS_LT_DB_OBJ, db_obj_name: 'CompleteMoab', db_obj_version: complete_moab.version)
@@ -103,8 +103,11 @@ class CompleteMoabHandler
       results.remove_db_updated_results unless transaction_ok
     else
       results.add_result(AuditResults::DB_OBJ_DOES_NOT_EXIST, 'CompleteMoab')
-      # Changed to a ternary operation because rubocop complaining about class size
-      moab_validation_errors.empty? ? create_db_objects('validity_unknown') : create_db_objects('invalid_moab')
+      if moab_validation_errors.empty?
+        create_db_objects('validity_unknown')
+      else
+        create_db_objects('invalid_moab')
+      end
     end
     results.report_results
   end
@@ -128,7 +131,6 @@ class CompleteMoabHandler
     if invalid?
       results.add_result(AuditResults::INVALID_ARGUMENTS, errors.full_messages)
     elsif CompleteMoab.by_druid(druid).by_storage_root(moab_storage_root).exists?
-      # elsif PreservedObject.exists?(druid: druid)
       Rails.logger.debug "update_version_after_validation #{druid} called"
       if moab_validation_errors.empty?
         # NOTE: we deal with active record transactions in update_online_version, not here
@@ -148,7 +150,11 @@ class CompleteMoabHandler
       end
     else
       results.add_result(AuditResults::DB_OBJ_DOES_NOT_EXIST, 'CompleteMoab')
-      moab_validation_errors.empty? ? create_db_objects('validity_unknown') : create_db_objects('invalid_moab')
+      if moab_validation_errors.empty?
+        create_db_objects('validity_unknown')
+      else
+        create_db_objects('invalid_moab')
+      end
     end
 
     results.report_results
@@ -233,7 +239,7 @@ class CompleteMoabHandler
     results.remove_db_updated_results unless transaction_ok
   end
 
-  def update_co_po_set_status
+  def update_cm_po_set_status
     if moab_validation_errors.empty?
       complete_moab.upd_audstamps_version_size(ran_moab_validation?, incoming_version, incoming_size)
       pres_object.current_version = incoming_version
