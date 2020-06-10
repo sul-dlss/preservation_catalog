@@ -349,6 +349,12 @@ RSpec.describe CompleteMoab, type: :model do
         expect(described_class.by_druid('bj102hs9687')).to be_empty
       end
     end
+    describe '.by_storage_root' do
+      it 'returns the expected complete moab when chained with by_druid' do
+        expect(described_class.by_druid(druid).by_storage_root(cm.moab_storage_root).length).to eq 1
+        expect(described_class.by_druid(druid).by_storage_root(MoabStorageRoot.first)).to be_empty
+      end
+    end
   end
 
   describe '#create_zipped_moab_versions!' do

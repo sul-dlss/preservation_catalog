@@ -126,22 +126,4 @@ RSpec.describe CompleteMoabHandler do
       expect(complete_moab_handler.errors.messages).to include(moab_storage_root: ['must be an actual MoabStorageRoot'])
     end
   end
-
-  describe 'validates one complete moab per druid/po combo' do
-    let(:druid) { 'jj925bx9565' }
-
-    before do
-      FileUtils.copy_entry 'spec/fixtures/storage_root01/sdr2objects/jj', 'spec/fixtures/storage_root02/sdr2objects/jj'
-    end
-
-    after do
-      FileUtils.rm_rf 'spec/fixtures/storage_root02/sdr2objects/jj'
-    end
-
-    it 'errors when multiple preserved objects share the same moab_storage_root' do
-      complete_moab_handler = described_class.new(druid, incoming_version, incoming_size, ms_root)
-      # Should be invalid
-      expect(complete_moab_handler).to be_valid
-    end
-  end
 end
