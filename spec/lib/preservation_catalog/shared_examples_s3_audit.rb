@@ -1,27 +1,26 @@
 # frozen_string_literal: true
 
-require 'rails_helper'
-
-RSpec.describe PreservationCatalog::S3::Audit do
+RSpec.shared_examples 's3 audit' do |provider_class, bucket_name, check_name, endpoint_name, region|
   let(:zip_endpoint) do
-    ZipEndpoint.find_by(endpoint_name: 'aws_s3_west_2')
+    ZipEndpoint.find_by(endpoint_name: endpoint_name)
   end
   let(:zmv) do
     create(:zipped_moab_version, zip_endpoint: zip_endpoint)
   end
   let(:cm) { zmv.complete_moab }
-  let(:bucket) { instance_double(Aws::S3::Bucket) }
-  let(:bucket_name) { "sul-sdr-us-west-bucket" }
+  let(:bucket) { instance_double(::Aws::S3::Bucket) }
+  let(:bucket_name) { bucket_name }
   let(:matching_md5) { attributes_for(:zip_part)[:md5] }
-  let(:non_matching_md5) { "asdfasdfb43t347l;x5px54xx6549;f4" }
-  let(:results) { AuditResults.new(cm.preserved_object.druid, nil, cm.moab_storage_root, "S3AuditSpec") }
+  let(:non_matching_md5) { 'asdfasdfb43t347l;x5px54xx6549;f4' }
+  let(:results) { AuditResults.new(cm.preserved_object.druid, nil, cm.moab_storage_root, check_name) }
   let(:endpoint_name) { zmv.zip_endpoint.endpoint_name }
+  let(:provider) { instance_double(provider_class) }
 
   before do
     allow(AuditResults).to receive(:new).and_return(results)
-    allow(PreservationCatalog::S3).to receive(:bucket).and_return(bucket)
-    allow(PreservationCatalog::S3).to receive(:bucket_name).and_return(bucket_name)
-    allow(PreservationCatalog::S3).to receive(:configure)
+    allow(provider_class).to receive(:new).and_return(provider)
+    allow(provider).to receive(:bucket).and_return(bucket)
+    allow(provider).to receive(:bucket_name).and_return(bucket_name)
   end
 
   context 'some parts are unreplicated' do
@@ -37,27 +36,28 @@ RSpec.describe PreservationCatalog::S3::Audit do
 
       # fine to assume existence and matching checksum for all parts for this test case
       allow(bucket).to receive(:object).and_return(
-        instance_double(Aws::S3::Object, exists?: true, metadata: { 'checksum_md5' => args[:md5] })
+        instance_double(::Aws::S3::Object, exists?: true, metadata: { 'checksum_md5' => args[:md5] })
       )
     end
 
     it 'only checks existence and checksum on replicated parts' do
       ok_part = zmv.zip_parts.find_by(suffix: '.z01')
-      s3_obj = instance_double(Aws::S3::Object, exists?: true)
+      s3_obj = instance_double(::Aws::S3::Object, exists?: true)
 
       expect(bucket).to receive(:object).with(ok_part.s3_key).and_return(s3_obj)
       expect(s3_obj).to receive(:metadata).and_return('checksum_md5' => ok_part.md5)
       expect { described_class.check_replicated_zipped_moab_version(zmv, results) }
         .to change { ok_part.reload.last_existence_check }.from(nil)
-        .and change { ok_part.reload.last_checksum_validation }.from(nil)
+                                                          .and change { ok_part.reload.last_checksum_validation }.from(nil)
     end
 
     it 'configures S3' do
       described_class.check_replicated_zipped_moab_version(zmv, results)
-      # Note that access_key_id and secret_access_key are provided by env variable in CI.
-      expect(PreservationCatalog::S3).to have_received(:configure).with(region: 'us-west-2',
-                                                                        access_key_id: Settings.zip_endpoints['aws_s3_west_2'].access_key_id,
-                                                                        secret_access_key: Settings.zip_endpoints['aws_s3_west_2'].secret_access_key)
+      # Note that access_key_id and secret_access_key are provided by env variables in CI, via the usual config gem
+      # override naming convention, e.g. SETTINGS__zip_endpoints__aws_s3_west_2__access_key_id
+      expect(provider_class).to have_received(:new).with(region: region,
+                                                         access_key_id: Settings.zip_endpoints[endpoint_name].access_key_id,
+                                                         secret_access_key: Settings.zip_endpoints[endpoint_name].secret_access_key)
     end
   end
 
@@ -74,7 +74,7 @@ RSpec.describe PreservationCatalog::S3::Audit do
 
       # fine to assume non-existence (and thus checksum irrelevance) for all parts for this test case
       allow(bucket).to receive(:object).and_return(
-        instance_double(Aws::S3::Object, exists?: false)
+        instance_double(::Aws::S3::Object, exists?: false)
       )
     end
 
@@ -103,7 +103,7 @@ RSpec.describe PreservationCatalog::S3::Audit do
 
       zmv.zip_parts.each_with_index do |part, idx|
         allow(bucket).to receive(:object).with(part.s3_key).and_return(
-          instance_double(Aws::S3::Object, exists?: true, metadata: { 'checksum_md5' => replicated_checksums[idx] })
+          instance_double(::Aws::S3::Object, exists?: true, metadata: { 'checksum_md5' => replicated_checksums[idx] })
         )
       end
     end
@@ -125,16 +125,22 @@ RSpec.describe PreservationCatalog::S3::Audit do
 
       it 'updates existence check timestamps' do
         expect { described_class.check_replicated_zipped_moab_version(zmv, results) }
-          .to change { zmv.zip_parts.first.reload.last_existence_check }.from(nil)
-          .and change { zmv.zip_parts.second.reload.last_existence_check }.from(nil)
-          .and change { zmv.zip_parts.third.reload.last_existence_check }.from(nil)
+          .to change { zmv.zip_parts.first.reload.last_existence_check }
+          .from(nil)
+          .and change { zmv.zip_parts.second.reload.last_existence_check }
+          .from(nil)
+          .and change { zmv.zip_parts.third.reload.last_existence_check }
+          .from(nil)
       end
 
       it 'updates checksum validation timestamps' do
         expect { described_class.check_replicated_zipped_moab_version(zmv, results) }
-          .to change { zmv.zip_parts.first.reload.last_checksum_validation }.from(nil)
-          .and change { zmv.zip_parts.second.reload.last_checksum_validation }.from(nil)
-          .and change { zmv.zip_parts.third.reload.last_checksum_validation }.from(nil)
+          .to change { zmv.zip_parts.first.reload.last_checksum_validation }
+          .from(nil)
+          .and change { zmv.zip_parts.second.reload.last_checksum_validation }
+          .from(nil)
+          .and change { zmv.zip_parts.third.reload.last_checksum_validation }
+          .from(nil)
       end
     end
 
@@ -154,16 +160,22 @@ RSpec.describe PreservationCatalog::S3::Audit do
 
       it 'updates existence check timestamps' do
         expect { described_class.check_replicated_zipped_moab_version(zmv, results) }
-          .to change { zmv.zip_parts.first.reload.last_existence_check }.from(nil)
-          .and change { zmv.zip_parts.second.reload.last_existence_check }.from(nil)
-          .and change { zmv.zip_parts.third.reload.last_existence_check }.from(nil)
+          .to change { zmv.zip_parts.first.reload.last_existence_check }
+          .from(nil)
+          .and change { zmv.zip_parts.second.reload.last_existence_check }
+          .from(nil)
+          .and change { zmv.zip_parts.third.reload.last_existence_check }
+          .from(nil)
       end
 
       it 'updates validation timestamps' do
         expect { described_class.check_replicated_zipped_moab_version(zmv, results) }
-          .to change { zmv.zip_parts.first.reload.last_checksum_validation }.from(nil)
-          .and change { zmv.zip_parts.second.reload.last_checksum_validation }.from(nil)
-          .and change { zmv.zip_parts.third.reload.last_checksum_validation }.from(nil)
+          .to change { zmv.zip_parts.first.reload.last_checksum_validation }
+          .from(nil)
+          .and change { zmv.zip_parts.second.reload.last_checksum_validation }
+          .from(nil)
+          .and change { zmv.zip_parts.third.reload.last_checksum_validation }
+          .from(nil)
       end
 
       it 'updates status to replicated_checksum_mismatch' do
@@ -172,8 +184,8 @@ RSpec.describe PreservationCatalog::S3::Audit do
           .to('replicated_checksum_mismatch')
           .and change { zmv.zip_parts.second.reload.status }
           .to('replicated_checksum_mismatch')
-          .and change { zmv.zip_parts.second.reload.status }
-          .to('replicated_checksum_mismatch')
+        expect { described_class.check_replicated_zipped_moab_version(zmv, results) }
+          .not_to(change { zmv.zip_parts.third.reload.status })
       end
     end
   end
@@ -191,16 +203,16 @@ RSpec.describe PreservationCatalog::S3::Audit do
       )
 
       allow(bucket).to receive(:object).with(zmv.zip_parts.first.s3_key).and_return(
-        instance_double(Aws::S3::Object, exists?: false)
+        instance_double(::Aws::S3::Object, exists?: false)
       )
       allow(bucket).to receive(:object).with(zmv.zip_parts.second.s3_key).and_return(
-        instance_double(Aws::S3::Object, exists?: true, metadata: { 'checksum_md5' => replicated_checksums.second })
+        instance_double(::Aws::S3::Object, exists?: true, metadata: { 'checksum_md5' => replicated_checksums.second })
       )
       allow(bucket).to receive(:object).with(zmv.zip_parts.third.s3_key).and_return(
-        instance_double(Aws::S3::Object, exists?: true, metadata: { 'checksum_md5' => replicated_checksums.third })
+        instance_double(::Aws::S3::Object, exists?: true, metadata: { 'checksum_md5' => replicated_checksums.third })
       )
       allow(bucket).to receive(:object).with(zmv.zip_parts.fourth.s3_key).and_return(
-        instance_double(Aws::S3::Object, exists?: false)
+        instance_double(::Aws::S3::Object, exists?: false)
       )
     end
 
@@ -211,6 +223,7 @@ RSpec.describe PreservationCatalog::S3::Audit do
 
       it 'logs the missing parts' do
         described_class.check_replicated_zipped_moab_version(zmv, results)
+
         [zmv.zip_parts.first, zmv.zip_parts.fourth].each do |part|
           msg = "replicated part not found on #{endpoint_name}: #{part.s3_key} was not found on #{bucket_name}"
           expect(results.result_array).to include(a_hash_including(AuditResults::ZIP_PART_NOT_FOUND => msg))

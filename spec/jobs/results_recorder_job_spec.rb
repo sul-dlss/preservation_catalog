@@ -25,7 +25,7 @@ describe ResultsRecorderJob, type: :job do
         described_class.perform_now(druid, zmv.version, 'fake.zip', zip_endpoint.delivery_class.to_s)
       }.to change {
         zmv.zip_parts.first.status
-      }.from("unreplicated").to("ok")
+      }.from('unreplicated').to('ok')
     end
   end
 

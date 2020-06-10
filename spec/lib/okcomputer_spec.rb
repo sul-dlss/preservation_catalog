@@ -39,5 +39,4 @@ describe 'OkComputer custom checks' do # rubocop:disable RSpec/DescribeClass
       expect(described_class.new('i-do-not-exist')).not_to be_successful
     end
   end
-
 end

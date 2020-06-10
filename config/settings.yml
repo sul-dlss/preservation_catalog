@@ -2,12 +2,6 @@ dor_services:
   url: 'https://dor-services-app.example.edu'
   token: 'not-a-real-token'
 
-aws:
-  bucket_name: 'sul-sdr-aws-us-west-2-test' # override in prod
-
-ibm:
-  bucket_name: 'sul-sdr-ibm-us-south-1-test' # override in prod
-
 # named storage roots are in the storage_root_map (see config/settings/xxx.yml for examples).
 # the storage_root_map contains lookups of storage roots per host.
 # see sul-dlss/shared_configs for the storage_root_map of all hosts we deploy to.
@@ -29,7 +23,6 @@ storage_root_map: # empty here, override in #{RAILS_ENV}.yml
   default: {}
 
 workflow_services_url: 'https://workflows.example.org/workflow/'
-c2m_sql_limit: 1000
 
 checksum_algos: ['md5'] # 'sha1' 'sha256'
 

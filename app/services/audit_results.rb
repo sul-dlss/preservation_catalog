@@ -43,34 +43,34 @@ class AuditResults
   ZIP_PARTS_NOT_CREATED = :zip_parts_not_created
 
   RESPONSE_CODE_TO_MESSAGES = {
-    ACTUAL_VERS_GT_DB_OBJ => "actual version (%{actual_version}) greater than %{db_obj_name} db version (%{db_obj_version})",
-    ACTUAL_VERS_LT_DB_OBJ => "actual version (%{actual_version}) less than %{db_obj_name} db version (%{db_obj_version}); ERROR!",
-    CM_PO_VERSION_MISMATCH => "CompleteMoab online Moab version %{cm_version} does not match PreservedObject current_version %{po_version}",
-    CM_STATUS_CHANGED => "CompleteMoab status changed from %{old_status} to %{new_status}",
-    CREATED_NEW_OBJECT => "added object to db as it did not exist",
-    DB_OBJ_ALREADY_EXISTS => "%{addl} db object already exists",
-    DB_OBJ_DOES_NOT_EXIST => "%{addl} db object does not exist",
-    DB_UPDATE_FAILED => "db update failed: %{addl}",
-    FILE_NOT_IN_MANIFEST => "Moab file %{file_path} was not found in Moab manifest %{manifest_file_path}",
-    FILE_NOT_IN_MOAB => "%{manifest_file_path} refers to file (%{file_path}) not found in Moab",
-    FILE_NOT_IN_SIGNATURE_CATALOG => "Moab file %{file_path} was not found in Moab signature catalog %{signature_catalog_path}",
-    INVALID_ARGUMENTS => "encountered validation error(s): %{addl}",
-    INVALID_MANIFEST => "unable to parse %{manifest_file_path} in Moab",
-    INVALID_MOAB => "Invalid Moab, validation errors: %{addl}",
-    MANIFEST_NOT_IN_MOAB => "%{manifest_file_path} not found in Moab",
-    MOAB_CHECKSUM_VALID => "checksum(s) match",
-    MOAB_FILE_CHECKSUM_MISMATCH => "checksums for %{file_path} version %{version} do not match.",
-    MOAB_NOT_FOUND => "db CompleteMoab (created %{db_created_at}; last updated %{db_updated_at}) exists but Moab not found",
-    SIGNATURE_CATALOG_NOT_IN_MOAB => "%{signature_catalog_path} not found in Moab",
-    UNABLE_TO_CHECK_STATUS => "unable to validate when CompleteMoab status is %{current_status}",
-    UNEXPECTED_VERSION => "actual version (%{actual_version}) has unexpected relationship to %{db_obj_name} db version (%{db_obj_version}); ERROR!",
-    VERSION_MATCHES => "actual version (%{actual_version}) matches %{addl} db version",
+    ACTUAL_VERS_GT_DB_OBJ => 'actual version (%{actual_version}) greater than %{db_obj_name} db version (%{db_obj_version})',
+    ACTUAL_VERS_LT_DB_OBJ => 'actual version (%{actual_version}) less than %{db_obj_name} db version (%{db_obj_version}); ERROR!',
+    CM_PO_VERSION_MISMATCH => 'CompleteMoab online Moab version %{cm_version} does not match PreservedObject current_version %{po_version}',
+    CM_STATUS_CHANGED => 'CompleteMoab status changed from %{old_status} to %{new_status}',
+    CREATED_NEW_OBJECT => 'added object to db as it did not exist',
+    DB_OBJ_ALREADY_EXISTS => '%{addl} db object already exists',
+    DB_OBJ_DOES_NOT_EXIST => '%{addl} db object does not exist',
+    DB_UPDATE_FAILED => 'db update failed: %{addl}',
+    FILE_NOT_IN_MANIFEST => 'Moab file %{file_path} was not found in Moab manifest %{manifest_file_path}',
+    FILE_NOT_IN_MOAB => '%{manifest_file_path} refers to file (%{file_path}) not found in Moab',
+    FILE_NOT_IN_SIGNATURE_CATALOG => 'Moab file %{file_path} was not found in Moab signature catalog %{signature_catalog_path}',
+    INVALID_ARGUMENTS => 'encountered validation error(s): %{addl}',
+    INVALID_MANIFEST => 'unable to parse %{manifest_file_path} in Moab',
+    INVALID_MOAB => 'Invalid Moab, validation errors: %{addl}',
+    MANIFEST_NOT_IN_MOAB => '%{manifest_file_path} not found in Moab',
+    MOAB_CHECKSUM_VALID => 'checksum(s) match',
+    MOAB_FILE_CHECKSUM_MISMATCH => 'checksums or size for %{file_path} version %{version} do not match entry in latest signatureCatalog.xml.',
+    MOAB_NOT_FOUND => 'db CompleteMoab (created %{db_created_at}; last updated %{db_updated_at}) exists but Moab not found',
+    SIGNATURE_CATALOG_NOT_IN_MOAB => '%{signature_catalog_path} not found in Moab',
+    UNABLE_TO_CHECK_STATUS => 'unable to validate when CompleteMoab status is %{current_status}',
+    UNEXPECTED_VERSION => 'actual version (%{actual_version}) has unexpected relationship to %{db_obj_name} db version (%{db_obj_version}); ERROR!',
+    VERSION_MATCHES => 'actual version (%{actual_version}) matches %{addl} db version',
     ZIP_PART_CHECKSUM_MISMATCH => "replicated md5 mismatch on %{endpoint_name}: %{s3_key} catalog md5 (%{md5}) doesn't match the replicated md5 (%{replicated_checksum}) on %{bucket_name}",
-    ZIP_PART_NOT_FOUND => "replicated part not found on %{endpoint_name}: %{s3_key} was not found on %{bucket_name}",
+    ZIP_PART_NOT_FOUND => 'replicated part not found on %{endpoint_name}: %{s3_key} was not found on %{bucket_name}',
     ZIP_PARTS_COUNT_DIFFERS_FROM_ACTUAL => "%{version} on %{endpoint_name}: ZippedMoabVersion stated parts count (%{db_count}) doesn't match actual number of zip parts rows (%{actual_count})",
-    ZIP_PARTS_COUNT_INCONSISTENCY => "%{version} on %{endpoint_name}: ZippedMoabVersion has variation in child parts_counts: %{child_parts_counts}",
-    ZIP_PARTS_NOT_ALL_REPLICATED => "%{version} on %{endpoint_name}: not all ZippedMoabVersion parts are replicated yet: %{unreplicated_parts_list}",
-    ZIP_PARTS_NOT_CREATED => "%{version} on %{endpoint_name}: no zip_parts exist yet for this ZippedMoabVersion"
+    ZIP_PARTS_COUNT_INCONSISTENCY => '%{version} on %{endpoint_name}: ZippedMoabVersion has variation in child parts_counts: %{child_parts_counts}',
+    ZIP_PARTS_NOT_ALL_REPLICATED => '%{version} on %{endpoint_name}: not all ZippedMoabVersion parts are replicated yet: %{unreplicated_parts_list}',
+    ZIP_PARTS_NOT_CREATED => '%{version} on %{endpoint_name}: no zip_parts exist yet for this ZippedMoabVersion'
   }.freeze
 
   WORKFLOW_REPORT_CODES = [
@@ -127,7 +127,7 @@ class AuditResults
   attr_reader :result_array, :druid, :moab_storage_root
   attr_accessor :actual_version, :check_name
 
-  def initialize(druid, actual_version, moab_storage_root, check_name=nil)
+  def initialize(druid, actual_version, moab_storage_root, check_name = nil)
     @druid = druid
     @actual_version = actual_version
     @moab_storage_root = moab_storage_root
@@ -135,7 +135,7 @@ class AuditResults
     @result_array = []
   end
 
-  def add_result(code, msg_args=nil)
+  def add_result(code, msg_args = nil)
     result_array << result_hash(code, msg_args)
   end
 
@@ -149,7 +149,7 @@ class AuditResults
   #   results = [result1, result2]
   #   result1 = {response_code => msg}
   #   result2 = {response_code => msg}
-  def report_results(logger=Rails.logger)
+  def report_results(logger = Rails.logger)
     workflow_results = []
     result_array.each do |r|
       log_result(r, logger)
@@ -191,7 +191,7 @@ class AuditResults
 
   private
 
-  def result_hash(code, msg_args=nil)
+  def result_hash(code, msg_args = nil)
     { code => result_code_msg(code, msg_args) }
   end
 
@@ -227,7 +227,7 @@ class AuditResults
     Dor::Services::Client.object("druid:#{druid}").events # dor-services-app wants the namespaced druid
   end
 
-  def result_code_msg(code, addl=nil)
+  def result_code_msg(code, addl = nil)
     arg_hash = { actual_version: actual_version }
     if addl.is_a?(Hash)
       arg_hash.merge!(addl)

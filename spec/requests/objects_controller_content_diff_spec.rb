@@ -111,7 +111,7 @@ RSpec.describe ObjectsController, type: :request do
     end
 
     context 'when no id param' do
-      context "when id param missing" do
+      context 'when id param missing' do
         it 'Rails will raise error and do the right thing' do
           expect do
             post content_diff_object_url({}), headers: valid_auth_header.merge('Content-Type' => 'application/json')

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-set :application, "preservation_catalog"
-set :repo_url, "https://github.com/sul-dlss/preservation_catalog.git"
+set :application, 'preservation_catalog'
+set :repo_url, 'https://github.com/sul-dlss/preservation_catalog.git'
 
 # Default branch is :master
 ask :branch, `git rev-parse --abbrev-ref HEAD`.chomp
@@ -20,10 +20,10 @@ set :deploy_to, "/opt/app/pres/#{fetch(:application)}"
 # set :pty, true
 
 # Default value for :linked_files is []
-append :linked_files, "config/database.yml", "config/resque.yml", "config/resque-pool.yml"
+append :linked_files, 'config/database.yml', 'config/resque.yml', 'config/resque-pool.yml'
 
 # Default value for linked_dirs is []
-append :linked_dirs, "log", "config/settings", "tmp/pids"
+append :linked_dirs, 'log', 'config/settings', 'tmp/pids'
 
 set :honeybadger_env, fetch(:stage)
 set :whenever_identifier, -> { "#{fetch(:application)}_#{fetch(:stage)}" }

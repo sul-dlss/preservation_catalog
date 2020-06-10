@@ -22,15 +22,15 @@ RSpec.describe ZipPart, type: :model do
     expect(described_class.new(args)).to be_valid
   end
 
-  context "md5 checksum validation" do
-    it "enforces legnth of 32" do
-      expect(described_class.new(args.merge(md5: "00236a2ae5580"))).not_to be_valid
-      expect(described_class.new(args.merge(md5: "00236a2ae558018ed13b5222ef1bd977"))).to be_valid
+  context 'md5 checksum validation' do
+    it 'enforces legnth of 32' do
+      expect(described_class.new(args.merge(md5: '00236a2ae5580'))).not_to be_valid
+      expect(described_class.new(args.merge(md5: '00236a2ae558018ed13b5222ef1bd977'))).to be_valid
     end
 
-    it "enforces content contains only a-f and 0-9 characters" do
-      expect(described_class.new(args.merge(md5: "ghijklmnopqrstuvwxyz123456789101"))).not_to be_valid
-      expect(described_class.new(args.merge(md5: "abcdeabcdefabcdefabcdefabcdeff21"))).to be_valid
+    it 'enforces content contains only a-f and 0-9 characters' do
+      expect(described_class.new(args.merge(md5: 'ghijklmnopqrstuvwxyz123456789101'))).not_to be_valid
+      expect(described_class.new(args.merge(md5: 'abcdeabcdefabcdefabcdefabcdeff21'))).to be_valid
     end
   end
 
@@ -47,7 +47,7 @@ RSpec.describe ZipPart, type: :model do
     end
   end
 
-  describe "#all_parts_replicated?" do
+  describe '#all_parts_replicated?' do
     let(:zp) { described_class.new(args) }
 
     it "returns false if status is 'unreplicated'" do
@@ -80,11 +80,11 @@ RSpec.describe ZipPart, type: :model do
     end
   end
 
-  describe "#suffixes_in_set" do
+  describe '#suffixes_in_set' do
     let(:zp) { described_class.new(args.merge(parts_count: 3)) }
 
     it 'returns suffixes of all parts' do
-      expect(zp.suffixes_in_set).to eq [".zip", ".z01", ".z02"]
+      expect(zp.suffixes_in_set).to eq ['.zip', '.z01', '.z02']
     end
   end
 

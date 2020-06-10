@@ -19,7 +19,7 @@ zip_endpoints:
     endpoint_node: 'us-west-2'
     storage_location: 'sul-sdr-aws-us-west-2-test'
     delivery_class: 'S3WestDeliveryJob'
-    audit_class: 'PreservationCatalog::S3::Audit'
+    audit_class: 'PreservationCatalog::Aws::Audit'
     access_key_id: 'overridden-by-env-var-in-ci'
     secret_access_key: 'overridden-by-env-var-in-ci'
   ibm_us_south:

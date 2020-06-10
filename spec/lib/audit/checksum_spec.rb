@@ -20,12 +20,12 @@ RSpec.describe Audit::Checksum do
     after { FileUtils.rm_f(logfile) }
 
     it 'writes to STDOUT and its own log' do
-      expect { described_class.logger.debug("foobar") }.to output(/foobar/).to_stdout_from_any_process
+      expect { described_class.logger.debug('foobar') }.to output(/foobar/).to_stdout_from_any_process
       expect(File).to exist(logfile)
     end
   end
 
-  describe ".validate_druid" do
+  describe '.validate_druid' do
     let!(:po) { create(:preserved_object_fixture, druid: 'bz514sm9647') }
 
     it 'creates an instance ancd calls #validate_checksums for every result' do
@@ -37,7 +37,7 @@ RSpec.describe Audit::Checksum do
       described_class.validate_druid(po.druid)
     end
 
-    it "logs a debug message" do
+    it 'logs a debug message' do
       expect(described_class.logger).to receive(:debug).with('Found 0 complete moabs.')
       described_class.validate_druid('xx000xx0500')
     end
@@ -50,7 +50,7 @@ RSpec.describe Audit::Checksum do
     end
   end
 
-  describe ".validate_list_of_druids" do
+  describe '.validate_list_of_druids' do
     it 'calls Checksum.validate_druid once per druid' do
       csv_file_path = 'spec/fixtures/druid_list.csv'
       CSV.foreach(csv_file_path) do |row|
@@ -62,35 +62,26 @@ RSpec.describe Audit::Checksum do
 
   describe '.validate_status_root' do
     context 'when there are CompleteMoabs to check' do
-      let(:cv_mock) { instance_double(ChecksumValidator) }
-
       before do
         create(:preserved_object_fixture, druid: 'bj102hs9687')
         create(:preserved_object_fixture, druid: 'bz514sm9647')
         create(:preserved_object_fixture, druid: 'jj925bx9565')
       end
 
-      it 'creates an instance and calls #validate_checksums for every result when results are in a single batch' do
-        allow(ChecksumValidator).to receive(:new).and_return(cv_mock)
-        expect(cv_mock).to receive(:validate_checksums).exactly(3).times
-        described_class.validate_status_root('validity_unknown', root_name)
-      end
-
-      it 'creates an instance and calls #validate_checksums on everything in batches' do
+      it 'queues a ChecksumValidationJob for each result' do
         msr = MoabStorageRoot.find_by!(name: root_name)
-        cv_list = msr.complete_moabs.validity_unknown.map { |cm| ChecksumValidator.new(cm) }
-        expect(cv_list.size).to eq 3
-        cv_list.each do |cv|
-          allow(ChecksumValidator).to receive(:new).with(cv.complete_moab).and_return(cv)
-          expect(cv).to receive(:validate_checksums).once.and_call_original
+        cm_list = msr.complete_moabs.validity_unknown
+        expect(cm_list.size).to eq 3
+        cm_list.each do |cm|
+          expect(ChecksumValidationJob).to receive(:perform_later).with(cm).once
         end
-        described_class.validate_status_root('validity_unknown', root_name, 2)
+        described_class.validate_status_root('validity_unknown', root_name)
       end
     end
 
     context 'when there are no CompleteMoabs to check' do
       it 'will not create an instance of ChecksumValidator' do
-        expect(ChecksumValidator).not_to receive(:new)
+        expect(ChecksumValidationJob).not_to receive(:perform_later)
         described_class.validate_status_root('ok', root_name)
       end
     end

@@ -40,10 +40,10 @@ RSpec.describe CompleteMoabHandler do
         end
       end
 
-      context "incoming and db versions match" do
+      context 'incoming and db versions match' do
         let(:incoming_version) { 2 }
         let(:incoming_size) { 1 }
-        let(:version_matches_cm_msg) { "actual version (2) matches CompleteMoab db version" }
+        let(:version_matches_cm_msg) { 'actual version (2) matches CompleteMoab db version' }
 
         context 'CompleteMoab' do
           context 'changed' do
@@ -186,13 +186,13 @@ RSpec.describe CompleteMoabHandler do
 
             it 'UNEXPECTED_VERSION CompleteMoab result' do
               code = AuditResults::UNEXPECTED_VERSION
-              unexpected_version_cm_msg = "actual version (1) has unexpected relationship to CompleteMoab db version (2); ERROR!"
+              unexpected_version_cm_msg = 'actual version (1) has unexpected relationship to CompleteMoab db version (2); ERROR!'
               expect(results).to include(a_hash_including(code => unexpected_version_cm_msg))
             end
 
-            it "CM_STATUS_CHANGED CompleteMoab result" do
+            it 'CM_STATUS_CHANGED CompleteMoab result' do
               code = AuditResults::CM_STATUS_CHANGED
-              updated_cm_db_status_msg = "CompleteMoab status changed from ok to unexpected_version_on_storage"
+              updated_cm_db_status_msg = 'CompleteMoab status changed from ok to unexpected_version_on_storage'
               expect(results).to include(a_hash_including(code => updated_cm_db_status_msg))
             end
           end
@@ -224,7 +224,6 @@ RSpec.describe CompleteMoabHandler do
       end
 
       describe 'calls CompleteMoab.save! (but not PreservedObject.save!)' do
-
         it 'if the existing record is altered' do
           allow(moab_validator).to receive(:moab_validation_errors).and_return([])
           expect(moab_validator.complete_moab).to receive(:save!)

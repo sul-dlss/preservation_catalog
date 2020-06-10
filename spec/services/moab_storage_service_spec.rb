@@ -28,7 +28,7 @@ RSpec.describe MoabStorageService do
     end
 
     context 'content_md param' do
-      let(:err_msg) { "No contentMetadata provided to MoabStorageService.content_diff for druid jj925bx9565" }
+      let(:err_msg) { 'No contentMetadata provided to MoabStorageService.content_diff for druid jj925bx9565' }
 
       context 'when missing' do
         it 'raises ArgumentError' do
@@ -199,7 +199,7 @@ RSpec.describe MoabStorageService do
       end
 
       context 'when missing' do
-        let(:err_msg) { "No filename provided to MoabStorageService.filepath for druid jj925bx9565" }
+        let(:err_msg) { 'No filename provided to MoabStorageService.filepath for druid jj925bx9565' }
 
         it 'raises ArgumentError' do
           expect { described_class.filepath(druid, 'metadata', nil) }.to raise_error(ArgumentError, err_msg)

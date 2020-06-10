@@ -20,7 +20,7 @@ class ObjectsController < ApplicationController
   # - version (positive integer (as a string)) version of Moab
   def file
     if params[:version] && !params[:version].match?(/^[1-9]\d*$/)
-      render(plain: "400 Bad Request: version parameter must be positive integer", status: :bad_request)
+      render(plain: '400 Bad Request: version parameter must be positive integer', status: :bad_request)
       return
     end
 
@@ -75,7 +75,7 @@ class ObjectsController < ApplicationController
   # - version (positive integer (as a string)) version of Moab to be compared against (defaults to latest version)
   def content_diff
     if params[:version] && !params[:version].match?(/^[1-9]\d*$/)
-      render(plain: "400 Bad Request: version parameter must be positive integer", status: :bad_request)
+      render(plain: '400 Bad Request: version parameter must be positive integer', status: :bad_request)
       return
     end
     obj_version = params[:version].to_i if params[:version]&.match?(/^[1-9]\d*$/)

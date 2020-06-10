@@ -20,12 +20,12 @@ RSpec.describe 'auth' do
 
     it 'notifies Honeybadger' do
       get "/v1/objects/#{pres_obj.druid}", headers: {}
-      expect(Honeybadger).to have_received(:notify).with("no Authorization token was provided by 127.0.0.1")
+      expect(Honeybadger).to have_received(:notify).with('no Authorization token was provided by 127.0.0.1')
     end
 
     it 'logs a warning' do
       get "/v1/objects/#{pres_obj.druid}", headers: {}
-      expect(Rails.logger).to have_received(:warn).with("no Authorization token was provided by 127.0.0.1")
+      expect(Rails.logger).to have_received(:warn).with('no Authorization token was provided by 127.0.0.1')
     end
   end
 

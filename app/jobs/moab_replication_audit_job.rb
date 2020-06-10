@@ -31,6 +31,6 @@ class MoabReplicationAuditJob < ApplicationJob
 
   # @return [String] a potentially large message
   def format_zmvs(zmvs)
-    zmvs.map { |bz| "#{bz.version} to #{bz.zip_endpoint.endpoint_name}" }.sort.join("; ")
+    zmvs.map { |bz| "#{bz.version} to #{bz.zip_endpoint.endpoint_name}" }.sort.join('; ')
   end
 end

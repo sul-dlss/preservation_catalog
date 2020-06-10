@@ -33,17 +33,12 @@ module Audit
     end
 
     # validate objects with a particular status on a particular moab_storage_root
-    def self.validate_status_root(status, storage_root_name, limit=Settings.c2m_sql_limit)
-      # complete_moabs is an AR Relation; it could return a lot of results, so we want to process it in
-      # batches.  we can't use ActiveRecord's .find_each, because that'll disregard the order .fixity_check_expired
-      # specified.  so we use our own batch processing method, which does respect Relation order.
+    def self.validate_status_root(status, storage_root_name)
       complete_moabs = MoabStorageRoot.find_by!(name: storage_root_name).complete_moabs.where(status: status)
       desc = "Number of Complete Moabs of status #{status} from #{storage_root_name} to be checksum validated"
       logger.info "#{desc}: #{complete_moabs.count}"
-      ActiveRecordUtils.process_in_batches(complete_moabs, limit) do |cm|
-        logger.info "CV beginning for #{cm.preserved_object.druid}; starting status #{cm.status}"
-        ChecksumValidator.new(cm).validate_checksums
-        logger.info "CV ended for #{cm.preserved_object.druid}; ending status #{cm.status}"
+      complete_moabs.find_each do |cm|
+        ChecksumValidationJob.perform_later(cm)
       end
     end
   end

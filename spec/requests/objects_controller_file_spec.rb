@@ -78,7 +78,7 @@ RSpec.describe ObjectsController, type: :request do
 
     context 'when no id param' do
       context 'when id param is empty' do
-        it "returns 400 error" do
+        it 'returns 400 error' do
           get file_object_url(id: ''), params: { category: 'manifest', filepath: 'manifestInventory.xml' }, headers: valid_auth_header
           expect(response).to have_http_status(:bad_request)
           error_response = JSON.parse(response.body)['errors'].first
@@ -86,7 +86,7 @@ RSpec.describe ObjectsController, type: :request do
         end
       end
 
-      context "when id param missing" do
+      context 'when id param missing' do
         it 'Rails will raise error and do the right thing' do
           expect do
             get file_object_url({}), params: { category: 'manifest', filepath: 'manifestInventory.xml' }, headers: valid_auth_header

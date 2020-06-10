@@ -7,8 +7,9 @@ describe S3WestDeliveryJob, type: :job do
   let(:version) { 1 }
   let(:dvz) { DruidVersionZip.new(druid, version) }
   let(:dvz_part) { DruidVersionZipPart.new(dvz, part_s3_key) }
-  let(:object) { instance_double(Aws::S3::Object, exists?: false, upload_file: true) }
-  let(:bucket) { instance_double(Aws::S3::Bucket, object: object) }
+  let(:object) { instance_double(::Aws::S3::Object, exists?: false, upload_file: true) }
+  let(:bucket) { instance_double(::Aws::S3::Bucket, object: object) }
+  let(:provider) { instance_double(PreservationCatalog::AwsProvider, bucket: bucket) }
   let(:md5) { '4f98f59e877ecb84ff75ef0fab45bac5' }
   let(:base64) { dvz.hex_to_base64(md5) }
   let(:metadata) { dvz_part.metadata.merge(zip_version: 'Zip 3.0 (July 5th 2008)') }
@@ -16,7 +17,7 @@ describe S3WestDeliveryJob, type: :job do
 
   before do
     allow(Settings).to receive(:zip_storage).and_return(Rails.root.join('spec', 'fixtures', 'zip_storage'))
-    allow(PreservationCatalog::S3).to receive(:bucket).and_return(bucket)
+    allow(PreservationCatalog::AwsProvider).to receive(:new).and_return(provider)
     allow(ResultsRecorderJob).to receive(:perform_later).with(any_args)
     allow(IO).to receive(:read).with(dvz_part.md5_path).and_return(md5)
   end
