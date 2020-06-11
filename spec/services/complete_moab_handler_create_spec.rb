@@ -40,7 +40,7 @@ RSpec.describe CompleteMoabHandler do
       new_complete_moab_handler = described_class.new(druid, incoming_version, incoming_size, ms_root)
       results = new_complete_moab_handler.create
       code = AuditResults::DB_OBJ_ALREADY_EXISTS
-      expect(results).to include(a_hash_including(code => a_string_matching('PreservedObject db object already exists')))
+      expect(results).to include(a_hash_including(code => a_string_matching('CompleteMoab db object already exists')))
     end
 
     it_behaves_like 'calls AuditResults.report_results', :create

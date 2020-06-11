@@ -44,8 +44,8 @@ class CompleteMoabHandler
     results.check_name = 'create_after_validation'
     if invalid?
       results.add_result(AuditResults::INVALID_ARGUMENTS, errors.full_messages)
-    elsif PreservedObject.exists?(druid: druid)
-      results.add_result(AuditResults::DB_OBJ_ALREADY_EXISTS, 'PreservedObject')
+    elsif CompleteMoab.by_druid(druid).by_storage_root(moab_storage_root).exists?
+      results.add_result(AuditResults::DB_OBJ_ALREADY_EXISTS, 'CompleteObject')
     elsif moab_validation_errors.empty?
       creation_status = (checksums_validated ? 'ok' : 'validity_unknown')
       create_db_objects(creation_status, checksums_validated)
@@ -61,8 +61,8 @@ class CompleteMoabHandler
     results.check_name = 'create'
     if invalid?
       results.add_result(AuditResults::INVALID_ARGUMENTS, errors.full_messages)
-    elsif PreservedObject.exists?(druid: druid)
-      results.add_result(AuditResults::DB_OBJ_ALREADY_EXISTS, 'PreservedObject')
+    elsif CompleteMoab.by_druid(druid).by_storage_root(moab_storage_root).exists?
+      results.add_result(AuditResults::DB_OBJ_ALREADY_EXISTS, 'CompleteMoab')
     else
       creation_status = (checksums_validated ? 'ok' : 'validity_unknown')
       ran_moab_validation! if checksums_validated # ensure validation timestamps updated
@@ -78,7 +78,7 @@ class CompleteMoabHandler
 
     if invalid?
       results.add_result(AuditResults::INVALID_ARGUMENTS, errors.full_messages)
-    elsif PreservedObject.exists?(druid: druid)
+    elsif CompleteMoab.by_druid(druid).by_storage_root(moab_storage_root).exists?
       Rails.logger.debug "check_existence #{druid} called"
 
       transaction_ok = with_active_record_transaction_and_rescue do
@@ -92,13 +92,7 @@ class CompleteMoabHandler
         elsif incoming_version > complete_moab.version
           set_status_as_seen_on_disk(true) unless complete_moab.status == 'ok'
           results.add_result(AuditResults::ACTUAL_VERS_GT_DB_OBJ, db_obj_name: 'CompleteMoab', db_obj_version: complete_moab.version)
-          if moab_validation_errors.empty?
-            complete_moab.upd_audstamps_version_size(ran_moab_validation?, incoming_version, incoming_size)
-            pres_object.current_version = incoming_version
-            pres_object.save!
-          else
-            update_status('invalid_moab')
-          end
+          update_cm_po_set_status
         else # incoming_version < complete_moab.version
           set_status_as_seen_on_disk(false)
           results.add_result(AuditResults::ACTUAL_VERS_LT_DB_OBJ, db_obj_name: 'CompleteMoab', db_obj_version: complete_moab.version)
@@ -108,7 +102,7 @@ class CompleteMoabHandler
       end
       results.remove_db_updated_results unless transaction_ok
     else
-      results.add_result(AuditResults::DB_OBJ_DOES_NOT_EXIST, 'PreservedObject')
+      results.add_result(AuditResults::DB_OBJ_DOES_NOT_EXIST, 'CompleteMoab')
       if moab_validation_errors.empty?
         create_db_objects('validity_unknown')
       else
@@ -136,7 +130,7 @@ class CompleteMoabHandler
     results.check_name = 'update_version_after_validation'
     if invalid?
       results.add_result(AuditResults::INVALID_ARGUMENTS, errors.full_messages)
-    elsif PreservedObject.exists?(druid: druid)
+    elsif CompleteMoab.by_druid(druid).by_storage_root(moab_storage_root).exists?
       Rails.logger.debug "update_version_after_validation #{druid} called"
       if moab_validation_errors.empty?
         # NOTE: we deal with active record transactions in update_online_version, not here
@@ -155,7 +149,7 @@ class CompleteMoabHandler
         end
       end
     else
-      results.add_result(AuditResults::DB_OBJ_DOES_NOT_EXIST, 'PreservedObject')
+      results.add_result(AuditResults::DB_OBJ_DOES_NOT_EXIST, 'CompleteMoab')
       if moab_validation_errors.empty?
         create_db_objects('validity_unknown')
       else
@@ -210,8 +204,10 @@ class CompleteMoabHandler
     # TODO: remove tests' dependence on 2 "create!" calls, use single built-in AR transactionality
     transaction_ok = with_active_record_transaction_and_rescue do
       PreservedObject
-        .create!(druid: druid, current_version: incoming_version, preservation_policy_id: ppid)
-        .complete_moabs.create!(cm_attrs)
+        .find_or_create_by!(druid: druid) do |po|
+          po.current_version = incoming_version
+          po.preservation_policy_id = ppid
+        end.complete_moabs.create!(cm_attrs)
     end
     results.add_result(AuditResults::CREATED_NEW_OBJECT) if transaction_ok
   end
@@ -241,6 +237,16 @@ class CompleteMoabHandler
     end
 
     results.remove_db_updated_results unless transaction_ok
+  end
+
+  def update_cm_po_set_status
+    if moab_validation_errors.empty?
+      complete_moab.upd_audstamps_version_size(ran_moab_validation?, incoming_version, incoming_size)
+      pres_object.current_version = incoming_version
+      pres_object.save!
+    else
+      update_status('invalid_moab')
+    end
   end
 
   def raise_rollback_if_cm_po_version_mismatch

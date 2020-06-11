@@ -81,7 +81,7 @@ end
 RSpec.shared_examples 'CompleteMoab does not exist' do |method_sym|
   # expectation is that calling context has a PreservedObject for the druid, but no CompleteMoab
 
-  let(:exp_msg) { /#<ActiveRecord::RecordNotFound: Couldn't find CompleteMoab.*> db object does not exist/ }
+  let(:exp_msg) { /CompleteMoab.* db object does not exist/ }
   let(:results) do
     allow(Rails.logger).to receive(:log)
     complete_moab_handler.send(method_sym)

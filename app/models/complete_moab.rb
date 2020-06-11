@@ -35,6 +35,10 @@ class CompleteMoab < ApplicationRecord
     joins(:preserved_object).where(preserved_objects: { druid: druid })
   }
 
+  scope :by_storage_root, lambda { |moab_storage_root|
+    joins(:moab_storage_root).where(moab_storage_root: moab_storage_root)
+  }
+
   scope :least_recent_version_audit, lambda { |last_checked_b4_date|
     where('last_version_audit IS NULL or last_version_audit < ?', normalize_date(last_checked_b4_date))
   }

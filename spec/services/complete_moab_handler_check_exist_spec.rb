@@ -395,7 +395,7 @@ RSpec.describe CompleteMoabHandler do
     end
 
     context 'object not in db' do
-      let(:exp_po_not_exist_msg) { 'PreservedObject db object does not exist' }
+      let(:exp_cm_not_exist_msg) { 'CompleteMoab db object does not exist' }
       let(:exp_obj_created_msg) { 'added object to db as it did not exist' }
 
       context 'presume validity and test other common behavior' do
@@ -437,8 +437,9 @@ RSpec.describe CompleteMoabHandler do
               current_version: incoming_version,
               preservation_policy_id: PreservationPolicy.default_policy.id
             }
-            expect(PreservedObject).to receive(:create!).with(po_args).and_call_original
+            # expect(PreservedObject).to receive(:create!).with(po_args).and_call_original
             complete_moab_handler.check_existence
+            expect(PreservedObject.where(po_args)).to exist
           end
 
           it 'CompleteMoab created' do
@@ -456,7 +457,7 @@ RSpec.describe CompleteMoabHandler do
             it 'returns 2 results including expected messages' do
               expect(results).to be_an_instance_of Array
               expect(results.size).to eq 2
-              expect(results).to include(a_hash_including(AuditResults::DB_OBJ_DOES_NOT_EXIST => exp_po_not_exist_msg))
+              expect(results).to include(a_hash_including(AuditResults::DB_OBJ_DOES_NOT_EXIST => exp_cm_not_exist_msg))
               expect(results).to include(a_hash_including(AuditResults::CREATED_NEW_OBJECT => exp_obj_created_msg))
             end
           end
@@ -518,7 +519,7 @@ RSpec.describe CompleteMoabHandler do
               expect(results).to be_an_instance_of Array
               expect(results.size).to eq 3
               expect(results).to include(a_hash_including(AuditResults::INVALID_MOAB => exp_moab_errs_msg))
-              expect(results).to include(a_hash_including(AuditResults::DB_OBJ_DOES_NOT_EXIST => exp_po_not_exist_msg))
+              expect(results).to include(a_hash_including(AuditResults::DB_OBJ_DOES_NOT_EXIST => exp_cm_not_exist_msg))
               expect(results).to include(a_hash_including(AuditResults::CREATED_NEW_OBJECT => exp_obj_created_msg))
             end
           end
