@@ -34,6 +34,19 @@ RSpec.describe ZipPart, type: :model do
     end
   end
 
+  context 'when creating a new ZipPart without unique zipped_moab_version_id/suffix combination' do
+    before do
+      described_class.create(args)
+    end
+
+    it 'raises ActiveRecord::RecordNotUnique' do
+      expect { described_class.create(args) }.to raise_error(
+        ActiveRecord::RecordNotUnique,
+        /Key \(zipped_moab_version_id, suffix\)=\(#{zmv.id}, .zip\) already exist/
+      )
+    end
+  end
+
   describe '#all_parts_replicated?' do
     let(:zp) { described_class.new(args) }
 

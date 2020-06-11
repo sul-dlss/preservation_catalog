@@ -52,6 +52,10 @@ class PlexerJob < ZipPartJobBase
       size: metadata[:size],
       suffix: File.extname(part_s3_key)
     ) { |part| part.unreplicated! }
+  rescue ActiveRecord::RecordNotUnique
+    # This catches an exception triggered by a race condition because find_or_create_by is not atomic.
+
+    retry
   end
 
   # @return [Array<Class>] target delivery worker classes
