@@ -437,7 +437,6 @@ RSpec.describe CompleteMoabHandler do
               current_version: incoming_version,
               preservation_policy_id: PreservationPolicy.default_policy.id
             }
-            # expect(PreservedObject).to receive(:create!).with(po_args).and_call_original
             complete_moab_handler.check_existence
             expect(PreservedObject.where(po_args)).to exist
           end
