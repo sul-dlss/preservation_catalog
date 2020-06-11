@@ -3,38 +3,11 @@
 require 'rails_helper'
 
 RSpec.describe AuditResults do
-  before do
-    allow(WorkflowReporter).to receive(:report_error)
-    allow(WorkflowReporter).to receive(:report_completed)
-    allow(Socket).to receive(:gethostname).and_return('fakehost')
-    allow(Dor::Services::Client).to receive(:object).with("druid:#{druid}").and_return(
-      instance_double(Dor::Services::Client::Object, events: events_client)
-    )
-  end
-
   let(:actual_version) { 6 }
   let(:audit_results) { described_class.new(druid, actual_version, ms_root) }
   let(:druid) { 'ab123cd4567' }
   let(:events_client) { instance_double(Dor::Services::Client::Events) }
   let(:ms_root) { MoabStorageRoot.find_by(storage_location: 'spec/fixtures/storage_root01/sdr2objects') }
-
-  describe '.logger_severity_level' do
-    it 'CM_PO_VERSION_MISMATCH is an ERROR' do
-      expect(described_class.logger_severity_level(AuditResults::CM_PO_VERSION_MISMATCH)).to eq Logger::ERROR
-    end
-
-    it 'DB_OBJ_DOES_NOT_EXIST is WARN' do
-      expect(described_class.logger_severity_level(AuditResults::DB_OBJ_DOES_NOT_EXIST)).to eq Logger::WARN
-    end
-
-    it 'CREATED_NEW_OBJECT is INFO' do
-      expect(described_class.logger_severity_level(AuditResults::CREATED_NEW_OBJECT)).to eq Logger::INFO
-    end
-
-    it 'default for unrecognized value is ERROR' do
-      expect(described_class.logger_severity_level(:whatever)).to eq Logger::ERROR
-    end
-  end
 
   describe '#new' do
     it 'sets result_array attr to []' do
@@ -51,271 +24,55 @@ RSpec.describe AuditResults do
   end
 
   describe '#report_results' do
-    let(:check_name) { 'FooCheck' }
+    let(:workflow_reporter) { instance_double(Reporters::WorkflowReporter, report_errors: nil, report_completed: nil) }
+    let(:event_service_reporter) { instance_double(Reporters::EventServiceReporter, report_errors: nil, report_completed: nil) }
+    let(:honeybadger_reporter) { instance_double(Reporters::HoneybadgerReporter, report_errors: nil, report_completed: nil) }
+    let(:logger_reporter) { instance_double(Reporters::LoggerReporter, report_errors: nil, report_completed: nil) }
 
-    context 'writes to Rails log' do
-      let(:version_not_matched_str) { 'does not match PreservedObject current_version' }
-      let(:result_code) { AuditResults::CM_PO_VERSION_MISMATCH }
+    before do
+      allow(Reporters::WorkflowReporter).to receive(:new).and_return(workflow_reporter)
+      allow(Reporters::EventServiceReporter).to receive(:new).and_return(event_service_reporter)
+      allow(Reporters::HoneybadgerReporter).to receive(:new).and_return(honeybadger_reporter)
+      allow(Reporters::LoggerReporter).to receive(:new).and_return(logger_reporter)
 
-      before do
-        audit_results.check_name = check_name
-        addl_hash = { cm_version: 1, po_version: 2 }
-        audit_results.add_result(result_code, addl_hash)
-      end
-
-      it 'with log_msg_prefix' do
-        expected = "FooCheck(#{druid}, fixture_sr1)"
-        expect(Rails.logger).to receive(:add).with(Logger::ERROR, a_string_matching(Regexp.escape(expected)))
-        audit_results.report_results
-      end
-
-      it 'with check name' do
-        expect(Rails.logger).to receive(:add).with(Logger::ERROR, a_string_matching(check_name))
-        audit_results.report_results
-      end
-
-      it 'with druid' do
-        expect(Rails.logger).to receive(:add).with(Logger::ERROR, a_string_matching(druid))
-        audit_results.report_results
-      end
-
-      it 'with moab_storage_root name' do
-        expect(Rails.logger).to receive(:add).with(Logger::ERROR, a_string_matching(ms_root.name))
-        audit_results.report_results
-      end
-
-      it 'with severity assigned by .logger_severity_level' do
-        expect(described_class).to receive(:logger_severity_level).with(result_code).and_return(Logger::FATAL)
-        expect(Rails.logger).to receive(:add).with(Logger::FATAL, a_string_matching(version_not_matched_str))
-        audit_results.report_results
-      end
-
-      it 'for every result' do
-        result_code2 = AuditResults::CM_STATUS_CHANGED
-        status_details = { old_status: 'invalid_moab', new_status: 'ok' }
-        audit_results.add_result(result_code2, status_details)
-        severity_level = described_class.logger_severity_level(result_code)
-        expect(Rails.logger).to receive(:add).with(severity_level, a_string_matching(version_not_matched_str))
-        severity_level = described_class.logger_severity_level(result_code2)
-        status_changed_str = 'CompleteMoab status changed from invalid_moab'
-        expect(Rails.logger).to receive(:add).with(severity_level, a_string_matching(status_changed_str))
-        audit_results.report_results
-      end
-
-      it 'actual_version number is in log message when set after initialization' do
-        my_results = described_class.new(druid, nil, ms_root)
-        result_code = AuditResults::VERSION_MATCHES
-        my_results.actual_version = 666 # NOTE: must be set before "add_result" call
-        my_results.add_result(result_code, 'foo')
-        expect(Rails.logger).to receive(:add).with(anything, a_string_matching('666'))
-        my_results.report_results
-      end
+      audit_results.add_result(AuditResults::INVALID_MOAB, [
+                                 "Version directory name not in 'v00xx' format: original-v1",
+                                 'Version v0005: No files present in manifest dir'
+                               ])
+      audit_results.add_result(AuditResults::CM_STATUS_CHANGED, old_status: 'invalid_checksum', new_status: 'ok')
     end
 
-    context 'sends errors to workflows' do
-      context 'for INVALID_MOAB with' do
-        let(:result_code) { AuditResults::INVALID_MOAB }
-        let(:moab_valid_errs) {
-          [
-            "Version directory name not in 'v00xx' format: original-v1",
-            'Version v0005: No files present in manifest dir'
-          ]
-        }
-        let(:im_audit_results) {
-          ar = described_class.new(druid, actual_version, ms_root)
-          ar.check_name = check_name
-          ar.add_result(result_code, moab_valid_errs)
-          ar
-        }
+    it 'invokes the reporters' do
+      audit_results.report_results
+      expect(workflow_reporter).to have_received(:report_errors)
+        .with(druid: druid, version: actual_version, moab_storage_root: ms_root, check_name: nil,
+              results: [{ invalid_moab: "Invalid Moab, validation errors: [\"Version directory name not in 'v00xx' " \
+          'format: original-v1", "Version v0005: No files present in manifest dir"]' }])
+      expect(event_service_reporter).to have_received(:report_errors)
+        .with(druid: druid, version: actual_version, moab_storage_root: ms_root, check_name: nil,
+              results: [{ invalid_moab: "Invalid Moab, validation errors: [\"Version directory name not in 'v00xx' " \
+          'format: original-v1", "Version v0005: No files present in manifest dir"]' }])
+      expect(honeybadger_reporter).to have_received(:report_errors)
+        .with(druid: druid, version: actual_version, moab_storage_root: ms_root, check_name: nil,
+              results: [{ invalid_moab: "Invalid Moab, validation errors: [\"Version directory name not in 'v00xx' " \
+          'format: original-v1", "Version v0005: No files present in manifest dir"]' }])
+      expect(logger_reporter).to have_received(:report_errors)
+        .with(druid: druid, version: actual_version, moab_storage_root: ms_root, check_name: nil,
+              results: [{ invalid_moab: "Invalid Moab, validation errors: [\"Version directory name not in 'v00xx' " \
+          'format: original-v1", "Version v0005: No files present in manifest dir"]' }])
 
-        it 'details about the failures' do
-          err_details = im_audit_results.send(:result_code_msg, result_code, moab_valid_errs)
-          expect(WorkflowReporter).to receive(:report_error)
-            .with(druid, actual_version, 'moab-valid', ms_root, a_string_matching(Regexp.escape(err_details)))
-          im_audit_results.report_results
-        end
-
-        it 'check name' do
-          expect(WorkflowReporter).to receive(:report_error).with(druid, actual_version, 'moab-valid', ms_root, a_string_matching(check_name))
-          im_audit_results.report_results
-        end
-
-        it 'ms_root name' do
-          expected = Regexp.escape("actual location: #{ms_root.name}")
-          expect(WorkflowReporter).to receive(:report_error).with(druid, actual_version, 'moab-valid', ms_root, a_string_matching(expected))
-          im_audit_results.report_results
-        end
-      end
-
-      it "does not send results that aren't in WORKFLOW_REPORT_CODES" do
-        code = AuditResults::CREATED_NEW_OBJECT
-        audit_results.add_result(code)
-        expect(WorkflowReporter).not_to receive(:report_error)
-        audit_results.report_results
-      end
-
-      it 'sends results in WORKFLOW_REPORT_CODES errors' do
-        code = AuditResults::CM_PO_VERSION_MISMATCH
-        addl_hash = { cm_version: 1, po_version: 2 }
-        audit_results.add_result(code, addl_hash)
-        wf_err_msg = audit_results.send(:result_code_msg, code, addl_hash)
-        expect(WorkflowReporter).to receive(:report_error).with(
-          druid, actual_version, 'preservation-audit', ms_root, a_string_matching(wf_err_msg)
-        )
-        audit_results.report_results
-      end
-
-      it 'multiple errors are concatenated together with && separator' do
-        code1 = AuditResults::CM_PO_VERSION_MISMATCH
-        result_msg_args1 = { cm_version: 1, po_version: 2 }
-        audit_results.add_result(code1, result_msg_args1)
-        result_msg1 = audit_results.send(:result_code_msg, code1, result_msg_args1)
-        code2 = AuditResults::DB_OBJ_ALREADY_EXISTS
-        result_msg_args2 = 'foo'
-        audit_results.add_result(code2, result_msg_args2)
-        result_msg2 = audit_results.send(:result_code_msg, code2, result_msg_args2)
-        allow(WorkflowReporter).to receive(:report_error).with(
-          druid, actual_version, 'preservation-audit', ms_root, instance_of(String)
-        )
-        audit_results.report_results
-        expect(WorkflowReporter).to have_received(:report_error).with(
-          druid, actual_version, 'preservation-audit', ms_root, a_string_matching(result_msg1)
-        )
-        expect(WorkflowReporter).to have_received(:report_error).with(
-          druid, actual_version, 'preservation-audit', ms_root, a_string_matching(/ \&\& /)
-        )
-        expect(WorkflowReporter).to have_received(:report_error).with(
-          druid, actual_version, 'preservation-audit', ms_root, a_string_matching(result_msg2)
-        )
-      end
-
-      it 'message sent includes moab_storage_root information' do
-        code = AuditResults::DB_UPDATE_FAILED
-        audit_results.add_result(code)
-        expected = Regexp.escape("actual location: #{ms_root.name}")
-        expect(WorkflowReporter).to receive(:report_error).with(
-          druid, actual_version, 'preservation-audit', ms_root, a_string_matching(expected)
-        )
-        audit_results.report_results
-      end
-
-      it 'does NOT send moab_storage_root information if there is none' do
-        audit_results = described_class.new(druid, actual_version, nil)
-        code = AuditResults::DB_UPDATE_FAILED
-        audit_results.add_result(code)
-        unexpected = Regexp.escape('actual location: ')
-        expect(WorkflowReporter).not_to receive(:report_error).with(
-          druid, actual_version, 'preservation-audit', nil, a_string_matching(unexpected)
-        )
-        expect(WorkflowReporter).to receive(:report_error).with(druid, actual_version, 'preservation-audit', nil, anything)
-        audit_results.report_results
-      end
-
-      it 'message sent includes actual version of object' do
-        code = AuditResults::DB_UPDATE_FAILED
-        audit_results.add_result(code)
-        expected = "actual version: #{actual_version}"
-        expect(WorkflowReporter).to receive(:report_error).with(
-          druid, actual_version, 'preservation-audit', ms_root, a_string_matching(expected)
-        )
-        audit_results.report_results
-      end
-
-      it 'does NOT send actual version if there is none' do
-        audit_results = described_class.new(druid, nil, ms_root)
-        code = AuditResults::DB_UPDATE_FAILED
-        audit_results.add_result(code)
-        unexpected = Regexp.escape('actual version: ')
-        expect(WorkflowReporter).not_to receive(:report_error).with(
-          druid, nil, 'preservation-audit', ms_root, a_string_matching(unexpected)
-        )
-        expect(WorkflowReporter).to receive(:report_error).with(druid, nil, 'preservation-audit', ms_root, anything)
-        audit_results.report_results
-      end
-
-      context 'MOAB_NOT_FOUND result' do
-        let(:result_code) { AuditResults::MOAB_NOT_FOUND }
-        let(:create_date) { (Time.current - 5.days).utc.iso8601 }
-        let(:update_date) { Time.current.utc.iso8601 }
-        let(:addl) { { db_created_at: create_date, db_updated_at: update_date } }
-        let(:my_audit_results) {
-          ar = described_class.new(druid, actual_version, ms_root)
-          ar.add_result(result_code, addl)
-          ar
-        }
-        let(:events_client) { instance_double(Dor::Services::Client::Events) }
-        let(:reason) { "db CompleteMoab \\(created #{create_date}; last updated #{update_date}\\) exists but Moab not found" }
-        let(:exp_msg) { "\\(ab123cd4567, fixture_sr1\\) #{reason}" }
-
-        before do
-          allow(Honeybadger).to receive(:notify)
-          allow(Dor::Services::Client).to receive(:object).and_return(
-            instance_double(Dor::Services::Client::Object, events: events_client)
-          )
-          allow(events_client).to receive(:create).with(type: 'preservation_audit_failure', data: instance_of(Hash))
-        end
-
-        it 'message sent includes CompleteMoab create date' do
-          expected = Regexp.escape("db CompleteMoab (created #{create_date}")
-          expect(WorkflowReporter).to receive(:report_error).with(
-            druid, actual_version, 'preservation-audit', ms_root, a_string_matching(expected)
-          )
-          my_audit_results.report_results
-          expect(Honeybadger).to have_received(:notify).with(Regexp.new(exp_msg))
-        end
-
-        it 'message sent includes CompleteMoab updated date' do
-          expected = "db CompleteMoab .* last updated #{update_date}"
-          expect(WorkflowReporter).to receive(:report_error).with(
-            druid, actual_version, 'preservation-audit', ms_root, a_string_matching(expected)
-          )
-          my_audit_results.report_results
-        end
-      end
-    end
-
-    context 'resets error in workflow service' do
-      it 'has AuditResult:CM_STATUS_CHANGED and PreseredCopy::OK_STATUS' do
-        result_code = AuditResults::CM_STATUS_CHANGED
-        addl_hash = { old_status: 'invalid_checksum', new_status: 'ok' }
-        audit_results.add_result(result_code, addl_hash)
-        expect(WorkflowReporter).to receive(:report_completed).with(druid, actual_version, 'moab-valid', ms_root)
-        expect(WorkflowReporter).to receive(:report_completed).with(druid, actual_version, 'preservation-audit', ms_root)
-        audit_results.report_results
-      end
-    end
-
-    context 'sends errors to Honeybadger and the event service' do
-      it "does not send results that aren't in HONEYBADGER_REPORT_CODES" do
-        code = AuditResults::MOAB_CHECKSUM_VALID
-        audit_results.add_result(code)
-        expect(Honeybadger).not_to receive(:notify)
-        audit_results.report_results
-        expect(Dor::Services::Client).not_to have_received(:object).with("druid:#{druid}")
-      end
-
-      it 'sends results in HONEYBADGER_REPORT_CODES errors' do
-        code = AuditResults::MOAB_FILE_CHECKSUM_MISMATCH
-        addl_hash = { file_path: 'path/to/file', version: 1 }
-        audit_results.add_result(code, addl_hash)
-        expected_err_msg = 'checksums or size for path/to/file version 1 do not match entry in latest signatureCatalog.xml.'
-        expect(Honeybadger).to receive(:notify).with(
-          "(ab123cd4567, fixture_sr1) #{expected_err_msg}"
-        )
-        expect(events_client).to receive(:create).once.with(
-          type: 'preservation_audit_failure',
-          data: {
-            host: 'fakehost',
-            invoked_by: 'preservation-catalog',
-            storage_root: ms_root.name,
-            actual_version: actual_version,
-            check_name: nil,
-            error_result: { moab_file_checksum_mismatch: expected_err_msg }
-          }
-        )
-        audit_results.report_results
-        expect(Dor::Services::Client).to have_received(:object).with("druid:#{druid}").once
-      end
+      expect(workflow_reporter).to have_received(:report_completed)
+        .with(druid: druid, version: actual_version, moab_storage_root: ms_root, check_name: nil,
+              result: { cm_status_changed: 'CompleteMoab status changed from invalid_checksum to ok' })
+      expect(event_service_reporter).to have_received(:report_completed)
+        .with(druid: druid, version: actual_version, moab_storage_root: ms_root, check_name: nil,
+              result: { cm_status_changed: 'CompleteMoab status changed from invalid_checksum to ok' })
+      expect(honeybadger_reporter).to have_received(:report_completed)
+        .with(druid: druid, version: actual_version, moab_storage_root: ms_root, check_name: nil,
+              result: { cm_status_changed: 'CompleteMoab status changed from invalid_checksum to ok' })
+      expect(logger_reporter).to have_received(:report_completed)
+        .with(druid: druid, version: actual_version, moab_storage_root: ms_root, check_name: nil,
+              result: { cm_status_changed: 'CompleteMoab status changed from invalid_checksum to ok' })
     end
   end
 

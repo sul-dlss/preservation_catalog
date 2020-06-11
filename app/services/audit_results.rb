@@ -73,66 +73,21 @@ class AuditResults
     ZIP_PARTS_NOT_CREATED => '%{version} on %{endpoint_name}: no zip_parts exist yet for this ZippedMoabVersion'
   }.freeze
 
-  WORKFLOW_REPORT_CODES = [
-    ACTUAL_VERS_LT_DB_OBJ,
-    CM_PO_VERSION_MISMATCH,
-    DB_OBJ_ALREADY_EXISTS,
-    DB_UPDATE_FAILED,
-    FILE_NOT_IN_MANIFEST,
-    FILE_NOT_IN_MOAB,
-    FILE_NOT_IN_SIGNATURE_CATALOG,
-    INVALID_MANIFEST,
-    INVALID_MOAB,
-    MANIFEST_NOT_IN_MOAB,
-    MOAB_FILE_CHECKSUM_MISMATCH,
-    MOAB_NOT_FOUND,
-    SIGNATURE_CATALOG_NOT_IN_MOAB,
-    UNABLE_TO_CHECK_STATUS,
-    UNEXPECTED_VERSION
-    # Temporary fix for workflow-service throwing exceptions
-    # because some error reports from MoabReplicationAudit are too long
-    # ZIP_PART_CHECKSUM_MISMATCH,
-    # ZIP_PART_NOT_FOUND,
-    # ZIP_PARTS_COUNT_DIFFERS_FROM_ACTUAL,
-    # ZIP_PARTS_COUNT_INCONSISTENCY,
-    # ZIP_PARTS_NOT_ALL_REPLICATED
-  ].freeze
-
-  HONEYBADGER_REPORT_CODES = [
-    MOAB_FILE_CHECKSUM_MISMATCH,
-    MOAB_NOT_FOUND,
-    ZIP_PART_CHECKSUM_MISMATCH,
-    ZIP_PART_NOT_FOUND,
-    ZIP_PARTS_COUNT_DIFFERS_FROM_ACTUAL,
-    ZIP_PARTS_COUNT_INCONSISTENCY,
-    ZIP_PARTS_NOT_ALL_REPLICATED
-  ].freeze
-
   DB_UPDATED_CODES = [
     CREATED_NEW_OBJECT,
     CM_STATUS_CHANGED
   ].freeze
 
-  def self.logger_severity_level(result_code)
-    case result_code
-    when DB_OBJ_DOES_NOT_EXIST, ZIP_PARTS_NOT_CREATED, ZIP_PARTS_NOT_ALL_REPLICATED
-      Logger::WARN
-    when VERSION_MATCHES, ACTUAL_VERS_GT_DB_OBJ, CREATED_NEW_OBJECT, CM_STATUS_CHANGED, MOAB_CHECKSUM_VALID
-      Logger::INFO
-    else
-      Logger::ERROR
-    end
-  end
-
-  attr_reader :result_array, :druid, :moab_storage_root
+  attr_reader :result_array, :druid, :moab_storage_root, :logger
   attr_accessor :actual_version, :check_name
 
-  def initialize(druid, actual_version, moab_storage_root, check_name = nil)
+  def initialize(druid, actual_version, moab_storage_root, check_name = nil, logger: nil)
     @druid = druid
     @actual_version = actual_version
     @moab_storage_root = moab_storage_root
     @check_name = check_name
     @result_array = []
+    @logger = logger
   end
 
   def add_result(code, msg_args = nil)
@@ -144,32 +99,14 @@ class AuditResults
     result_array.delete_if { |res_hash| DB_UPDATED_CODES.include?(res_hash.keys.first) }
   end
 
-  # output results to Rails.logger and send errors to WorkflowReporter
-  # @return Array<Hash>
-  #   results = [result1, result2]
-  #   result1 = {response_code => msg}
-  #   result2 = {response_code => msg}
-  def report_results(logger = Rails.logger)
-    workflow_results = []
-    result_array.each do |r|
-      log_result(r, logger)
-      if r.key?(INVALID_MOAB)
-        # This error goes to diff workflow ('moab-valid') than 'preservation-audit'
-        # also note that we shorten it because workflow service doesn't like really long strings
-        # NOTE: this approach allows online Moab audit errors to block further accessioning (which is desired)
-        #   - any WF error blocks further accessioning (i.e. can't open a new version)
-        #   - we currently only send WF errors from audits of online moabs (replication audit problems don't show up in WF)
-        msg = "#{string_prefix} || #{r.values.first}"
-        WorkflowReporter.report_error(druid, actual_version, 'moab-valid', moab_storage_root, msg)
-      elsif status_changed_to_ok?(r)
-        WorkflowReporter.report_completed(druid, actual_version, 'moab-valid', moab_storage_root)
-        WorkflowReporter.report_completed(druid, actual_version, 'preservation-audit', moab_storage_root)
-      elsif WORKFLOW_REPORT_CODES.include?(r.keys.first)
-        workflow_results << r
-      end
-      send_honeybadger_notification(r) if HONEYBADGER_REPORT_CODES.include?(r.keys.first)
-    end
-    report_errors_to_workflows(workflow_results)
+  def report_results
+    # Report completed
+    completed_results = result_array.select { |result| status_changed_to_ok?(result) }
+    report_completed(completed_results)
+
+    # Report errors
+    error_results = result_array - completed_results
+    report_errors(error_results)
     result_array
   end
 
@@ -191,40 +128,31 @@ class AuditResults
 
   private
 
+  def reporters
+    @reporters ||= [
+      Reporters::LoggerReporter.new(logger),
+      Reporters::HoneybadgerReporter.new,
+      Reporters::WorkflowReporter.new,
+      Reporters::EventServiceReporter.new
+    ].freeze
+  end
+
+  def report_errors(results)
+    reporters.each do |reporter|
+      reporter.report_errors(druid: druid, version: actual_version, moab_storage_root: moab_storage_root, check_name: check_name, results: results)
+    end
+  end
+
+  def report_completed(results)
+    reporters.each do |reporter|
+      results.each do |result|
+        reporter.report_completed(druid: druid, version: actual_version, moab_storage_root: moab_storage_root, check_name: check_name, result: result)
+      end
+    end
+  end
+
   def result_hash(code, msg_args = nil)
     { code => result_code_msg(code, msg_args) }
-  end
-
-  # NOTE: this approach allows online Moab audit errors to block further accessioning (which is desired)
-  #   - any WF error blocks further accessioning (i.e. can't open a new version)
-  #   - we currently only send WF errors from audits of online moabs (replication audit problems don't show up in WF)
-  def report_errors_to_workflows(error_results)
-    return if error_results.empty?
-    WorkflowReporter.report_error(druid, actual_version, 'preservation-audit', moab_storage_root, results_as_string(error_results))
-  end
-
-  def log_result(result, logger)
-    severity = self.class.logger_severity_level(result.keys.first)
-    logger.add(severity, "#{log_msg_prefix} #{result.values.first}")
-  end
-
-  def send_honeybadger_notification(result)
-    Honeybadger.notify("#{log_msg_prefix} #{result.values.first}")
-    events_client.create(
-      type: 'preservation_audit_failure',
-      data: {
-        host: Socket.gethostname,
-        invoked_by: 'preservation-catalog',
-        storage_root: moab_storage_root&.name,
-        actual_version: actual_version,
-        check_name: check_name,
-        error_result: result
-      }
-    )
-  end
-
-  def events_client
-    Dor::Services::Client.object("druid:#{druid}").events # dor-services-app wants the namespaced druid
   end
 
   def result_code_msg(code, addl = nil)
@@ -235,10 +163,6 @@ class AuditResults
       arg_hash[:addl] = addl
     end
     RESPONSE_CODE_TO_MESSAGES[code] % arg_hash
-  end
-
-  def log_msg_prefix
-    @log_msg_prefix ||= "#{check_name}(#{druid}, #{moab_storage_root&.name})"
   end
 
   def string_prefix

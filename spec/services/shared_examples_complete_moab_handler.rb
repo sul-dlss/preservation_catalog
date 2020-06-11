@@ -68,7 +68,6 @@ RSpec.shared_examples 'druid not in catalog' do |method_sym|
   let(:druid) { 'rr111rr1111' }
   let(:exp_msg) { '[PreservedObject|CompleteMoab].* db object does not exist' }
   let(:results) do
-    allow(Rails.logger).to receive(:log)
     complete_moab_handler.send(method_sym)
   end
 
@@ -83,7 +82,6 @@ RSpec.shared_examples 'CompleteMoab does not exist' do |method_sym|
 
   let(:exp_msg) { /#<ActiveRecord::RecordNotFound: Couldn't find CompleteMoab.*> db object does not exist/ }
   let(:results) do
-    allow(Rails.logger).to receive(:log)
     complete_moab_handler.send(method_sym)
   end
 

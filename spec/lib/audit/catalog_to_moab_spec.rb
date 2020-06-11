@@ -29,9 +29,16 @@ RSpec.describe Audit::CatalogToMoab do
     'check_catalog_version\\(bj102hs9687, fixture_sr1\\)' \
     ' db CompleteMoab \\(created .*Z; last updated .*Z\\) exists but Moab not found'
   end
+  let(:workflow_reporter) { instance_double(Reporters::WorkflowReporter, report_errors: nil) }
+  let(:event_service_reporter) { instance_double(Reporters::EventServiceReporter, report_errors: nil) }
+  let(:honeybadger_reporter) { instance_double(Reporters::HoneybadgerReporter, report_errors: nil) }
+  let(:logger_reporter) { instance_double(Reporters::LoggerReporter, report_errors: nil) }
 
   before do
-    allow(WorkflowReporter).to receive(:report_error)
+    allow(Reporters::WorkflowReporter).to receive(:new).and_return(workflow_reporter)
+    allow(Reporters::EventServiceReporter).to receive(:new).and_return(event_service_reporter)
+    allow(Reporters::HoneybadgerReporter).to receive(:new).and_return(honeybadger_reporter)
+    allow(Reporters::LoggerReporter).to receive(:new).and_return(logger_reporter)
     allow(c2m).to receive(:logger).and_return(logger_double) # silence log output
   end
 

@@ -19,7 +19,7 @@ class ChecksumValidator
   def initialize(complete_moab)
     @complete_moab = complete_moab
     @bare_druid = complete_moab.preserved_object.druid
-    @results = AuditResults.new(bare_druid, nil, moab_storage_root, 'validate_checksums')
+    @results = AuditResults.new(bare_druid, nil, moab_storage_root, 'validate_checksums', logger: Audit::Checksum.logger)
     # TODO: fix fragile interdependence, MoabValidator wants AuditResults instance, but we want MoabValidator#moab.current_version_id
     # in that AuditResults instance.  so set AuditResults#actual_version after both instances have been created.
     @results.actual_version = moab.current_version_id
@@ -52,7 +52,7 @@ class ChecksumValidator
     end
     results.remove_db_updated_results unless transaction_ok
 
-    results.report_results(Audit::Checksum.logger)
+    results.report_results
   end
 
   # return true and exit if the moab exists.  otherwise update status to missing on complete_moab, report results, and return false.
@@ -65,7 +65,7 @@ class ChecksumValidator
       complete_moab.save!
     end
     results.remove_db_updated_results unless transaction_ok
-    results.report_results(Audit::Checksum.logger)
+    results.report_results
 
     false
   end

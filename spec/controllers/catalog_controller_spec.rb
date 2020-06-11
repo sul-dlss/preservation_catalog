@@ -2,17 +2,25 @@
 
 require 'rails_helper'
 RSpec.describe CatalogController, type: :controller do
-  before do
-    allow(WorkflowReporter).to receive(:report_error)
-    allow(controller).to receive(:check_auth_token!) # gating on valid token tested in request specs and auth spec
-  end
-
+  let(:workflow_reporter) { instance_double(Reporters::WorkflowReporter, report_errors: nil) }
   let(:size) { 2342 }
   let(:ver) { 3 }
   let(:prefixed_druid) { 'druid:bj102hs9687' }
   let(:bare_druid) { 'bj102hs9687' }
   let(:storage_location) { "#{storage_location_param}/sdr2objects" }
   let(:storage_location_param) { 'spec/fixtures/storage_root01' }
+  let(:event_service_reporter) { instance_double(Reporters::EventServiceReporter, report_errors: nil) }
+  let(:honeybadger_reporter) { instance_double(Reporters::HoneybadgerReporter, report_errors: nil) }
+  let(:logger_reporter) { instance_double(Reporters::LoggerReporter, report_errors: nil) }
+
+  before do
+    allow(described_class.logger).to receive(:info) # silence STDOUT chatter
+    allow(Reporters::WorkflowReporter).to receive(:new).and_return(workflow_reporter)
+    allow(Reporters::EventServiceReporter).to receive(:new).and_return(event_service_reporter)
+    allow(Reporters::HoneybadgerReporter).to receive(:new).and_return(honeybadger_reporter)
+    allow(Reporters::LoggerReporter).to receive(:new).and_return(logger_reporter)
+    allow(controller).to receive(:check_auth_token!) # gating on valid token tested in request specs and auth spec
+  end
 
   describe 'POST #create' do
     context 'with valid params' do
