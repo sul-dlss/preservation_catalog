@@ -4,11 +4,7 @@ require 'rails_helper'
 require 'services/shared_examples_complete_moab_handler'
 
 RSpec.describe CompleteMoabHandler do
-  before do
-    allow(WorkflowReporter).to receive(:report_error)
-    allow(WorkflowReporter).to receive(:report_completed)
-  end
-
+  let(:workflow_reporter) { instance_double(Reporters::WorkflowReporter, report_errors: nil, report_completed: nil) }
   let(:db_update_failed_prefix) { 'db update failed' }
   let(:default_prez_policy) { PreservationPolicy.default_policy }
   let(:druid) { 'ab123cd4567' }
@@ -18,6 +14,16 @@ RSpec.describe CompleteMoabHandler do
   let(:cm) { complete_moab_handler.complete_moab }
   let(:po) { PreservedObject.find_by(druid: druid) }
   let(:complete_moab_handler) { described_class.new(druid, incoming_version, incoming_size, ms_root) }
+  let(:logger_reporter) { instance_double(Reporters::LoggerReporter, report_errors: nil, report_completed: nil) }
+  let(:honeybadger_reporter) { instance_double(Reporters::HoneybadgerReporter, report_errors: nil, report_completed: nil) }
+  let(:event_service_reporter) { instance_double(Reporters::EventServiceReporter, report_errors: nil, report_completed: nil) }
+
+  before do
+    allow(Reporters::WorkflowReporter).to receive(:new).and_return(workflow_reporter)
+    allow(Reporters::LoggerReporter).to receive(:new).and_return(logger_reporter)
+    allow(Reporters::HoneybadgerReporter).to receive(:new).and_return(honeybadger_reporter)
+    allow(Reporters::EventServiceReporter).to receive(:new).and_return(event_service_reporter)
+  end
 
   describe '#update_version' do
     it_behaves_like 'attributes validated', :update_version

@@ -4,8 +4,7 @@ require 'rails_helper'
 require 'services/shared_examples_complete_moab_handler'
 
 RSpec.describe CompleteMoabHandler do
-  before { allow(WorkflowReporter).to receive(:report_error) }
-
+  let(:workflow_reporter) { instance_double(Reporters::WorkflowReporter, report_errors: nil) }
   let(:druid) { 'ab123cd4567' }
   let(:incoming_version) { 6 }
   let(:incoming_size) { 9876 }
@@ -15,6 +14,16 @@ RSpec.describe CompleteMoabHandler do
   let(:db_update_failed_prefix) { 'db update failed' }
   let(:complete_moab_handler) { described_class.new(druid, incoming_version, incoming_size, ms_root) }
   let(:moab_validator) { complete_moab_handler.send(:moab_validator) }
+  let(:logger_reporter) { instance_double(Reporters::LoggerReporter, report_errors: nil) }
+  let(:honeybadger_reporter) { instance_double(Reporters::HoneybadgerReporter, report_errors: nil) }
+  let(:event_service_reporter) { instance_double(Reporters::EventServiceReporter, report_errors: nil) }
+
+  before do
+    allow(Reporters::WorkflowReporter).to receive(:new).and_return(workflow_reporter)
+    allow(Reporters::LoggerReporter).to receive(:new).and_return(logger_reporter)
+    allow(Reporters::HoneybadgerReporter).to receive(:new).and_return(honeybadger_reporter)
+    allow(Reporters::EventServiceReporter).to receive(:new).and_return(event_service_reporter)
+  end
 
   describe '#check_existence' do
     it_behaves_like 'attributes validated', :check_existence

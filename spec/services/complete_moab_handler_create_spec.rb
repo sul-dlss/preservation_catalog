@@ -11,8 +11,17 @@ RSpec.describe CompleteMoabHandler do
   let(:ms_root) { MoabStorageRoot.find_by(storage_location: storage_dir) }
   let(:complete_moab_handler) { described_class.new(druid, incoming_version, incoming_size, ms_root) }
   let(:exp_msg) { 'added object to db as it did not exist' }
+  let(:workflow_reporter) { instance_double(Reporters::WorkflowReporter, report_errors: nil) }
+  let(:logger_reporter) { instance_double(Reporters::LoggerReporter, report_errors: nil) }
+  let(:honeybadger_reporter) { instance_double(Reporters::HoneybadgerReporter, report_errors: nil) }
+  let(:event_service_reporter) { instance_double(Reporters::EventServiceReporter, report_errors: nil) }
 
-  before { allow(WorkflowReporter).to receive(:report_error) }
+  before do
+    allow(Reporters::WorkflowReporter).to receive(:new).and_return(workflow_reporter)
+    allow(Reporters::LoggerReporter).to receive(:new).and_return(logger_reporter)
+    allow(Reporters::HoneybadgerReporter).to receive(:new).and_return(honeybadger_reporter)
+    allow(Reporters::EventServiceReporter).to receive(:new).and_return(event_service_reporter)
+  end
 
   describe '#create' do
     it 'creates PreservedObject and CompleteMoab in database' do

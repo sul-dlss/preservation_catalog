@@ -137,7 +137,7 @@ RSpec.describe ZipEndpoint, type: :model do
     before { ZippedMoabVersion.destroy_all }
 
     describe '.which_have_archive_copy' do
-      it 'returns the zip endpoints which have a complete moab for the druid version' do # rubocop:disable RSpec/MultipleExpectations
+      it 'returns the zip endpoints which have a complete moab for the druid version' do
         expect(described_class.which_have_archive_copy(druid, version).pluck(:endpoint_name)).to eq []
         expect { cm.zipped_moab_versions.create!(version: version, zip_endpoint: other_ep1) }.not_to change {
           [

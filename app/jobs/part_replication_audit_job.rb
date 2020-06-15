@@ -17,12 +17,12 @@ class PartReplicationAuditJob < ApplicationJob
       next unless check_child_zip_part_attributes(zmv, results)
       zip_endpoint.audit_class.check_replicated_zipped_moab_version(zmv, results)
     end
-    results.report_results(logger)
+    results.report_results
   end
 
   private
 
   def new_results(complete_moab)
-    AuditResults.new(complete_moab.preserved_object.druid, nil, complete_moab.moab_storage_root, 'PartReplicationAuditJob')
+    AuditResults.new(complete_moab.preserved_object.druid, nil, complete_moab.moab_storage_root, 'PartReplicationAuditJob', logger: logger)
   end
 end

@@ -14,11 +14,17 @@ RSpec.describe ChecksumValidator do
   let(:moab_validator) { cv.send(:moab_validator) }
   let(:results) { instance_double(AuditResults, report_results: nil, check_name: nil, :actual_version= => nil) }
   let(:logger_double) { instance_double(ActiveSupport::Logger, info: nil, error: nil, add: nil) }
+  let(:workflow_reporter) { instance_double(Reporters::WorkflowReporter, report_errors: nil, report_completed: nil) }
+  let(:honeybadger_reporter) { instance_double(Reporters::HoneybadgerReporter, report_errors: nil, report_completed: nil) }
+  let(:event_service_reporter) { instance_double(Reporters::EventServiceReporter, report_errors: nil, report_completed: nil) }
+  let(:logger_reporter) { instance_double(Reporters::LoggerReporter, report_errors: nil, report_completed: nil) }
 
   before do
     allow(Audit::Checksum).to receive(:logger).and_return(logger_double) # silence log output
-    allow(WorkflowReporter).to receive(:report_error)
-    allow(WorkflowReporter).to receive(:report_completed)
+    allow(Reporters::LoggerReporter).to receive(:new).and_return(logger_reporter)
+    allow(Reporters::WorkflowReporter).to receive(:new).and_return(workflow_reporter)
+    allow(Reporters::HoneybadgerReporter).to receive(:new).and_return(honeybadger_reporter)
+    allow(Reporters::EventServiceReporter).to receive(:new).and_return(event_service_reporter)
   end
 
   describe '#initialize' do
@@ -211,11 +217,9 @@ RSpec.describe ChecksumValidator do
       before do
         # fake a moab gone missing by updating the preserved object to use a non-existent druid
         comp_moab.preserved_object.update(druid: 'tr808sp1200')
-        allow(Honeybadger).to receive(:notify)
         allow(Dor::Services::Client).to receive(:object).with('druid:tr808sp1200').and_return(
           instance_double(Dor::Services::Client::Object, events: events_client)
         )
-        allow(Honeybadger).to receive(:notify)
         allow(events_client).to receive(:create).with(type: 'preservation_audit_failure', data: instance_of(Hash))
       end
 
@@ -227,22 +231,22 @@ RSpec.describe ChecksumValidator do
 
       it 'sends results in HONEYBADGER_REPORT_CODES errors' do
         reason = 'db CompleteMoab \\(created .*Z; last updated .*Z\\) exists but Moab not found'
-        exp_msg = "validate_checksums\\(tr808sp1200, fixture_sr3\\) #{reason}"
         cv.validate_checksums
 
-        expect(Honeybadger).to have_received(:notify).with(Regexp.new(exp_msg))
-        expect(events_client).to have_received(:create).once.with(
-          type: 'preservation_audit_failure',
-          data: {
-            host: instance_of(String),
-            invoked_by: 'preservation-catalog',
-            storage_root: ms_root.name,
-            actual_version: 0,
-            check_name: 'validate_checksums',
-            error_result: { moab_not_found: a_string_matching(reason) }
-          }
-        )
-        expect(Dor::Services::Client).to have_received(:object).with('druid:tr808sp1200').once
+        expect(honeybadger_reporter).to have_received(:report_errors)
+          .with(druid: 'tr808sp1200',
+                version: 0,
+                moab_storage_root: ms_root,
+                check_name: 'validate_checksums',
+                results: [{ moab_not_found: match(reason) },
+                          { cm_status_changed: 'CompleteMoab status changed from validity_unknown to online_moab_not_found' }])
+        expect(event_service_reporter).to have_received(:report_errors)
+          .with(druid: 'tr808sp1200',
+                version: 0,
+                moab_storage_root: ms_root,
+                check_name: 'validate_checksums',
+                results: [{ moab_not_found: match(reason) },
+                          { cm_status_changed: 'CompleteMoab status changed from validity_unknown to online_moab_not_found' }])
       end
 
       it 'calls AuditResults.report_results' do
@@ -569,14 +573,18 @@ RSpec.describe ChecksumValidator do
 
     it 'has status changed to OK_STATUS and completes workflow' do
       comp_moab.invalid_moab!
-      expect(WorkflowReporter).to receive(:report_completed).with(druid, 3, 'moab-valid', ms_root)
-      expect(WorkflowReporter).to receive(:report_completed).with(druid, 3, 'preservation-audit', ms_root)
+      expect(workflow_reporter).to receive(:report_completed)
+        .with(druid: druid,
+              version: 3,
+              check_name: 'validate_checksums',
+              moab_storage_root: ms_root,
+              result: { cm_status_changed: 'CompleteMoab status changed from invalid_moab to ok' })
       cv.validate_checksums
     end
 
     it 'has status that does not change and does not complete workflow' do
       comp_moab.ok!
-      expect(WorkflowReporter).not_to receive(:report_completed)
+      expect(workflow_reporter).not_to receive(:report_completed)
       cv.validate_checksums
     end
 
@@ -588,7 +596,7 @@ RSpec.describe ChecksumValidator do
 
       it 'does not complete workflow' do
         comp_moab.ok!
-        expect(WorkflowReporter).not_to receive(:report_completed)
+        expect(workflow_reporter).not_to receive(:report_completed)
         cv.validate_checksums
       end
     end
@@ -603,7 +611,7 @@ RSpec.describe ChecksumValidator do
       end
 
       it 'does not complete workflow' do
-        expect(WorkflowReporter).not_to receive(:report_completed)
+        expect(workflow_reporter).not_to receive(:report_completed)
         cv.validate_checksums
       end
     end
