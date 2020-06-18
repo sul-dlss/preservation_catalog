@@ -28,7 +28,7 @@ gem 'druid-tools' # for druid validation and druid-tree parsing
 
 group :development, :test do
   # Ruby static code analyzer http://rubocop.readthedocs.io/en/latest/
-  gem 'rubocop', '~> 0.73.0'
+  gem 'rubocop', '~> 0.73'
   gem 'rubocop-rspec'
 end
 
