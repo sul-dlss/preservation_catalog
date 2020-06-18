@@ -33,10 +33,6 @@ Metrics/BlockLength:
     - '**/*.rake'
     - 'spec/**/*'
 
-# because this isn't 1994
-Metrics/LineLength:
-  Max: 150
-
 Naming/FileName:
   Exclude:
     - 'Capfile'
