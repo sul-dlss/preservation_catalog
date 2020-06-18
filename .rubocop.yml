@@ -28,6 +28,9 @@ Bundler/OrderedGems:
 Layout/EmptyLineAfterGuardClause:
   Enabled: false
 
+Layout/LineLength:
+  Max: 150
+
 Metrics/BlockLength:
   Exclude:
     - '**/*.rake'

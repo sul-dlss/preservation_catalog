@@ -300,13 +300,21 @@ RSpec.describe CatalogController, type: :controller do
       ['true', 'True', 'TRUE'].each do |t_val|
         it "#{t_val} evaluates to true" do
           expect(complete_moab_handler).to receive(:create).with(true)
-          post :create, params: { druid: bare_druid, incoming_version: ver, incoming_size: size, storage_location: storage_location_param, checksums_validated: t_val }
+          post :create, params: { druid: bare_druid,
+                                  incoming_version: ver,
+                                  incoming_size: size,
+                                  storage_location: storage_location_param,
+                                  checksums_validated: t_val }
         end
       end
       ['nil', '1', 'on', 'false', 'False', 'FALSE'].each do |t_val|
         it "#{t_val} evaluates to false" do
           expect(complete_moab_handler).to receive(:update_version).with(false)
-          patch :update, params: { druid: bare_druid, incoming_version: ver, incoming_size: size, storage_location: storage_location_param, checksums_validated: t_val }
+          patch :update, params: { druid: bare_druid,
+                                   incoming_version: ver,
+                                   incoming_size: size,
+                                   storage_location: storage_location_param,
+                                   checksums_validated: t_val }
         end
       end
     end
