@@ -70,10 +70,8 @@ module Reporters
 
     def update_status(druid, version, process_name, moab_storage_root)
       if Settings.workflow_services_url.present?
-        workflow_client.update_status(druid: druid,
-                                      workflow: 'preservationAuditWF',
-                                      process: process_name,
-                                      status: 'completed')
+        workflow_client.update_status(druid: druid, workflow: 'preservationAuditWF',
+                                      process: process_name, status: 'completed')
       else
         Rails.logger.warn('no workflow hookup - assume you are in test or dev environment')
       end
@@ -85,10 +83,8 @@ module Reporters
 
     def update_error_status(druid, version, process_name, moab_storage_root, error_message)
       if Settings.workflow_services_url.present?
-        workflow_client.update_error_status(druid: druid,
-                                            workflow: 'preservationAuditWF',
-                                            process: process_name,
-                                            error_msg: error_message)
+        workflow_client.update_error_status(druid: druid, workflow: 'preservationAuditWF',
+                                            process: process_name, error_msg: error_message)
       else
         Rails.logger.warn('no workflow hookup - assume you are in test or dev environment')
       end

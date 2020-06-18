@@ -73,12 +73,9 @@ module Reporters
       events_client_for(druid).create(
         type: 'preservation_audit_failure',
         data: {
-          host: Socket.gethostname,
-          invoked_by: 'preservation-catalog',
-          storage_root: moab_storage_root&.name,
-          actual_version: version,
-          check_name: process_name,
-          error: error_message
+          host: Socket.gethostname, invoked_by: 'preservation-catalog',
+          storage_root: moab_storage_root&.name, actual_version: version,
+          check_name: process_name, error: error_message
         }
       )
     end
