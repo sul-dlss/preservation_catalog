@@ -9,6 +9,7 @@ require 'open3'
 # Just a regular model, not an ActiveRecord-backed model
 class DruidVersionZip
   attr_reader :druid, :version
+
   delegate :base64digest, :hexdigest, to: :md5
 
   # @param [String] druid

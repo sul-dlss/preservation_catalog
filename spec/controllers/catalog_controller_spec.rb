@@ -323,7 +323,7 @@ RSpec.describe CatalogController, type: :controller do
       it 'incoming_size absent - errors' do
         patch :create, params: { druid: bare_druid, incoming_version: ver, storage_location: storage_location_param }
         expect(response).to have_http_status(:not_acceptable)
-        expect(response.body).to match(/encountered validation error\(s\)\:.*Incoming size is not a number/)
+        expect(response.body).to match(/encountered validation error\(s\):.*Incoming size is not a number/)
       end
 
       it 'incoming size present - no errors' do

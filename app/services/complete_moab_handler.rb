@@ -332,7 +332,7 @@ class CompleteMoabHandler
     result = string_to_int(val)
     return result if result.instance_of?(Integer)
     # accommodate 'vnnn' strings from Moab version directories
-    return val[1..-1].to_i if val.instance_of?(String) && val.match(/^v\d+$/)
+    return val[1..].to_i if val.instance_of?(String) && val.match(/^v\d+$/)
     val
   end
 
