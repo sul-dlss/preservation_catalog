@@ -43,7 +43,10 @@ class ChecksumValidator
         set_status_as_seen_on_disk(found_expected_version)
         complete_moab.update_audit_timestamps(true, true)
         unless found_expected_version
-          results.add_result(AuditResults::UNEXPECTED_VERSION, actual_version: moab.current_version_id, db_obj_name: 'CompleteMoab', db_obj_version: complete_moab.version)
+          results.add_result(AuditResults::UNEXPECTED_VERSION,
+                             actual_version: moab.current_version_id,
+                             db_obj_name: 'CompleteMoab',
+                             db_obj_version: complete_moab.version)
         end
       else
         update_status('invalid_checksum')
@@ -82,7 +85,11 @@ class ChecksumValidator
   private
 
   def moab_validator
-    @moab_validator ||= MoabValidator.new(druid: druid, storage_location: storage_location, results: results, complete_moab: complete_moab, caller_validates_checksums: true)
+    @moab_validator ||= MoabValidator.new(druid: druid,
+                                          storage_location: storage_location,
+                                          results: results,
+                                          complete_moab: complete_moab,
+                                          caller_validates_checksums: true)
   end
 
   def validate_signature_catalog_listing

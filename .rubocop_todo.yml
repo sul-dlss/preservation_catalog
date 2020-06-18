@@ -115,10 +115,3 @@ Style/GuardClause:
 Style/IfUnlessModifier:
   Exclude:
     - 'spec/lib/audit/catalog_to_moab_spec.rb'
-
-# Offense count: 295
-# Cop supports --auto-correct.
-# Configuration parameters: AutoCorrect, AllowHeredoc, AllowURI, URISchemes, IgnoreCopDirectives, IgnoredPatterns.
-# URISchemes: http, https
-Layout/LineLength:
-  Max: 192
