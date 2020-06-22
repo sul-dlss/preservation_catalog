@@ -9,6 +9,8 @@ class PreservedObject < ApplicationRecord
   PREFIX_RE = /druid:/i.freeze
   belongs_to :preservation_policy
   has_many :complete_moabs, dependent: :restrict_with_exception, autosave: true
+  has_one :preserved_objects_primary_moab, dependent: :restrict_with_exception
+
   validates :druid,
             presence: true,
             uniqueness: true,

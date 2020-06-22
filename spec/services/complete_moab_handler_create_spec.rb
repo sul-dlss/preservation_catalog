@@ -24,13 +24,14 @@ RSpec.describe CompleteMoabHandler do
   end
 
   describe '#create' do
-    it 'creates PreservedObject and CompleteMoab in database' do
+    it 'creates PreservedObject and CompleteMoab and PreservedObjectsPrimaryMoab in database' do
       complete_moab_handler.create
       new_po = PreservedObject.find_by(druid: druid)
       new_cm = new_po.complete_moabs.find_by(version: incoming_version)
       expect(new_po.current_version).to eq incoming_version
       expect(new_cm.moab_storage_root).to eq ms_root
       expect(new_cm.size).to eq incoming_size
+      expect(new_po.preserved_objects_primary_moab.complete_moab_id).to eq new_cm.id
     end
 
     it 'creates the CompleteMoab with "ok" status and validation timestamps if caller ran CV' do
@@ -115,7 +116,7 @@ RSpec.describe CompleteMoabHandler do
       end
     end
 
-    it 'creates PreservedObject and CompleteMoab in database when there are no validation errors' do
+    it 'creates PreservedObject and CompleteMoab and PreservedObjectsPrimaryMoab in database when there are no validation errors' do
       complete_moab_handler = described_class.new(valid_druid, incoming_version, incoming_size, ms_root)
       complete_moab_handler.create_after_validation
       new_po = PreservedObject.find_by(druid: valid_druid, current_version: incoming_version)
@@ -123,6 +124,7 @@ RSpec.describe CompleteMoabHandler do
       new_cm = new_po.complete_moabs.find_by(moab_storage_root: ms_root, version: incoming_version)
       expect(new_cm).not_to be_nil
       expect(new_cm.status).to eq 'validity_unknown'
+      expect(new_po.preserved_objects_primary_moab.complete_moab_id).to eq new_cm.id
     end
 
     it 'creates CompleteMoab with "ok" status and validation timestamps if no validation errors and caller ran CV' do
@@ -157,7 +159,7 @@ RSpec.describe CompleteMoabHandler do
         end
       end
 
-      it 'creates PreservedObject, and CompleteMoab with "invalid_moab" status in database' do
+      it 'creates PreservedObject, and CompleteMoab with "invalid_moab" status, and PreservedObjectsPrimaryMoab in database' do
         complete_moab_handler.create_after_validation
         new_po = PreservedObject.find_by(druid: invalid_druid, current_version: incoming_version)
         expect(new_po).not_to be_nil
@@ -166,6 +168,7 @@ RSpec.describe CompleteMoabHandler do
         expect(new_cm.status).to eq 'invalid_moab'
         expect(new_cm.last_moab_validation).to be_a ActiveSupport::TimeWithZone
         expect(new_cm.last_version_audit).to be_a ActiveSupport::TimeWithZone
+        expect(new_po.preserved_objects_primary_moab.complete_moab_id).to eq new_cm.id
       end
 
       it 'creates CompleteMoab with "invalid_moab" status in database even if caller ran CV' do

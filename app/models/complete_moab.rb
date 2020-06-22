@@ -22,6 +22,9 @@ class CompleteMoab < ApplicationRecord
   belongs_to :moab_storage_root, inverse_of: :complete_moabs
   belongs_to :from_moab_storage_root, class_name: 'MoabStorageRoot', required: false
 
+  # NOTE: we'd like to check if there is a different complete_moab for the preserved_object and
+  #  assign the other complete_moab to preserved_objects_primary_moab
+  has_one :preserved_objects_primary_moab, dependent: :destroy
   has_many :zipped_moab_versions, dependent: :restrict_with_exception, inverse_of: :complete_moab
 
   delegate :s3_key, to: :druid_version_zip
