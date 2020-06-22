@@ -10,7 +10,11 @@ RSpec.describe CompleteMoabHandler do
   let(:incoming_size) { 9876 }
   let(:po) { PreservedObject.find_by!(druid: druid) }
   let(:ms_root) { MoabStorageRoot.find_by!(storage_location: 'spec/fixtures/storage_root01/sdr2objects') }
-  let(:cm) { po.complete_moabs.find_by!(moab_storage_root: ms_root) }
+  # Adds new complete moab with the same druid to confirm that tests pass
+  let(:cm) {
+    create(:complete_moab, preserved_object: po)
+    po.complete_moabs.find_by!(moab_storage_root: ms_root)
+  }
   let(:db_update_failed_prefix) { 'db update failed' }
   let(:complete_moab_handler) { described_class.new(druid, incoming_version, incoming_size, ms_root) }
   let(:moab_validator) { complete_moab_handler.send(:moab_validator) }

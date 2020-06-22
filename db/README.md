@@ -23,7 +23,7 @@ _Please keep this up to date as the schema changes!_
   * `druid` is the digital resource unique identifier
   * `current_version` is current latest version we've seen for the druid across all instances.
   * `preservation_policy_id` points to the policy governing how the object should be preserved.
-* A `CompleteMoab` represents a physical copy of a `PreservedObject`, e.g. a moab (represents all versions) stored on premesis and accessed via NFS mount, the `zipped_moab_vesion` (represents a single version) copy sitting on a cloud endpoint (manipulable via REST calls to a 3rd party cloud service), etc.
+* A `CompleteMoab` represents a physical copy of a `PreservedObject`, e.g. a moab (represents all versions) stored on premesis and accessed via NFS mount, the `zipped_moab_vesion` (represents a single version) copy sitting on a cloud endpoint (manipulable via REST calls to a 3rd party cloud service), etc. Multiple `CompleteMoab` instances can belong to the same `PreservedObject` instance. 
   * `size`: is approximate, and given in bytes.  It's intended to be used for things like allocating storage.  It should _not_ be treated as an exact value for fixity checking.
   * `status`: a high-level summary of the copy's current state.  This is just a reflection of what we last saw on disk, and does not capture history, nor does it necessarily enumerate all errors for a copy that needs remediation.
   * `version`: should be the same as `PreservedObject` current version. This is left over from when `complete_moab` and `zipped_moab_version` shared a table.
@@ -139,7 +139,7 @@ INNER JOIN "preserved_objects" ON "preserved_objects"."id" = "complete_moabs"."p
 INNER JOIN "moab_storage_roots" ON "moab_storage_roots"."id" = "complete_moabs"."moab_storage_root_id"
 WHERE ("complete_moabs"."status" != $1)
 GROUP BY "complete_moabs"."status", "storage_location"
-ORDER BY complete_moabs.status asc, moab_storage_roots.storage_location asc 
+ORDER BY complete_moabs.status asc, moab_storage_roots.storage_location asc
 ```
 ```ruby
 # example result, some moabs that failed structural validation

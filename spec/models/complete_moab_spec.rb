@@ -439,4 +439,16 @@ RSpec.describe CompleteMoab, type: :model do
       cm.validity_unknown!
     end
   end
+
+  describe 'Multiple moabs for a druid' do
+    let(:druid) { 'ab123cd4567' }
+    let(:preserved_object) { create(:preserved_object, druid: druid) }
+    let(:cm1) { create(:complete_moab, preserved_object: preserved_object) }
+    let(:cm2) { create(:complete_moab, preserved_object: preserved_object) }
+
+    it 'confirms multiple complete moabs have the same druid' do
+      expect(cm1).not_to equal(cm2)
+      expect(cm1.preserved_object.druid).to equal(cm2.preserved_object.druid)
+    end
+  end
 end
