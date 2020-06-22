@@ -335,6 +335,29 @@ paths:
                     - preserve
               required:
                 - content_metadata
+  /v1/objects/{id}/primary_moab:
+    get:
+      tags:
+        - objects
+      summary: Return the CompleteMoab information for the primary moab
+      responses:
+        '200':
+          description: Object found
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+        '400':
+          description: Bad request (e.g., malformed druid)
+        '404':
+          description: Object not found
+      parameters:
+        - name: id
+          in: path
+          required: true
+          example: 'druid:bc123df4567'
+          schema:
+            $ref: '#/components/schemas/Druid'
 components:
   requestBodies:
     CatalogOptions:
