@@ -186,6 +186,8 @@ class CompleteMoabHandler
     @moab_validator ||= MoabValidator.new(druid: druid, storage_location: storage_location, results: results)
   end
 
+  # Note that this may be called by running M2C on a storage root and discovering a second copy of a Moab,
+  #   or maybe by calling #create_after_validation directly after copying a Moab
   def create_db_objects(status, checksums_validated = false)
     cm_attrs = {
       version: incoming_version,
@@ -203,11 +205,14 @@ class CompleteMoabHandler
 
     # TODO: remove tests' dependence on 2 "create!" calls, use single built-in AR transactionality
     transaction_ok = with_active_record_transaction_and_rescue do
-      PreservedObject
-        .find_or_create_by!(druid: druid) do |po|
-          po.current_version = incoming_version
-          po.preservation_policy_id = ppid
-        end.complete_moabs.create!(cm_attrs)
+      this_po = PreservedObject
+                .find_or_create_by!(druid: druid) do |po|
+                  po.current_version = incoming_version
+                  po.preservation_policy_id = ppid
+                end
+      this_cm = this_po.complete_moabs.create!(cm_attrs)
+      # add to join table unless there is already a primary moab
+      PreservedObjectsPrimaryMoab.find_or_create_by!(preserved_object: this_po, complete_moab: this_cm)
     end
     results.add_result(AuditResults::CREATED_NEW_OBJECT) if transaction_ok
   end
