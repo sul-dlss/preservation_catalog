@@ -358,6 +358,29 @@ paths:
           example: 'druid:bc123df4567'
           schema:
             $ref: '#/components/schemas/Druid'
+  /v1/objects/{id}/primary_moab.json:
+    get:
+      tags:
+        - objects
+      summary: Return the CompleteMoab information for the primary moab
+      responses:
+        '200':
+          description: Object found
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+        '400':
+          description: Bad request (e.g., malformed druid)
+        '404':
+          description: Object not found
+      parameters:
+        - name: id
+          in: path
+          required: true
+          example: 'druid:bc123df4567'
+          schema:
+            $ref: '#/components/schemas/Druid'          
 components:
   requestBodies:
     CatalogOptions:
