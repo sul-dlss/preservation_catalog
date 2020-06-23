@@ -212,7 +212,7 @@ class CompleteMoabHandler
                 end
       this_cm = this_po.complete_moabs.create!(cm_attrs)
       # add to join table unless there is already a primary moab
-      PreservedObjectsPrimaryMoab.find_or_create_by!(preserved_object: this_po, complete_moab: this_cm)
+      PreservedObjectsPrimaryMoab.find_or_create_by!(preserved_object: this_po) { |popm| popm.complete_moab = this_cm }
     end
     results.add_result(AuditResults::CREATED_NEW_OBJECT) if transaction_ok
   end
