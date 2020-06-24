@@ -86,6 +86,13 @@ class ObjectsController < ApplicationController
     Honeybadger.notify(e)
   end
 
+  # Retrieves the primary complete moabs storage location for a preserved objects and returns the output in plain text
+  # rubocop:disable Layout/LineLength
+  def primary_moab_location
+    render plain: MoabStorageRoot.joins(complete_moabs: %i[preserved_object preserved_objects_primary_moab]).find_by!(preserved_objects: { druid: druid }).storage_location
+  end
+  # rubocop:enable Layout/LineLength
+
   private
 
   def druid

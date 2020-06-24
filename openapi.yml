@@ -335,6 +335,29 @@ paths:
                     - preserve
               required:
                 - content_metadata
+  /v1/objects/{id}/primary_moab_location:
+    get:
+      tags:
+        - objects
+      summary: Return the storage location for the primary complete moab for the druid
+      responses:
+        '200':
+          description: Object found
+          content:
+            text/plain:
+              schema:
+                type: string
+        '400':
+          description: Bad request (e.g., malformed druid)
+        '404':
+          description: Object not found
+      parameters:
+        - name: id
+          in: path
+          required: true
+          example: 'druid:bc123df4567'
+          schema:
+            $ref: '#/components/schemas/Druid'
 components:
   requestBodies:
     CatalogOptions:
