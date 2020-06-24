@@ -339,7 +339,7 @@ paths:
     get:
       tags:
         - objects
-      summary: Return the CompleteMoab information for the primary moab
+      summary: Return the storage location for the primary complete moab for the druid
       responses:
         '200':
           description: Object found

@@ -9,17 +9,13 @@ RSpec.describe ObjectsController, type: :request do
 
   describe 'GET #primary_moab_location' do
     context 'when object found' do
-      before do
-        allow(pres_obj.preserved_objects_primary_moab).to receive(:complete_moab).and_return(primary_moab)
-      end
-
-      it 'response contains the primary moab of the given prefixed druid' do
+      it 'response contains the locaiton of primary moab of the given prefixed druid' do
         get primary_moab_location_object_url("druid:#{pres_obj.druid}"), headers: valid_auth_header
         expect(response.body).to eq(primary_moab.moab_storage_root.storage_location)
         expect(response).to have_http_status(:ok)
       end
 
-      it 'response contains the object when given bare druid' do
+      it 'response contains the location of the primary moab when given bare druid' do
         get primary_moab_location_object_url(pres_obj.druid), headers: valid_auth_header
         expect(response.body).to eq(primary_moab.moab_storage_root.storage_location)
         expect(response).to have_http_status(:ok)
