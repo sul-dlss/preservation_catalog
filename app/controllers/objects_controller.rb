@@ -86,9 +86,9 @@ class ObjectsController < ApplicationController
     Honeybadger.notify(e)
   end
 
-  # Retrieves the primary complete moab for a preserved objects and returns the output in JSON format
-  def primary_moab
-    render json: PreservedObject.find_by!(druid: druid).preserved_objects_primary_moab.complete_moab.to_json
+  # Retrieves the primary complete moabs storage location for a preserved objects and returns the output in plain text
+  def primary_moab_location
+    render plain: MoabStorageRoot.joins(complete_moabs: [:preserved_object, :preserved_objects_primary_moab]).find_by!(preserved_objects: { druid: druid }).storage_location
   end
 
   private

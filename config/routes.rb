@@ -14,7 +14,7 @@ Rails.application.routes.draw do
       member do
         get 'checksum'
         get 'file', format: false # no need to add extension to url
-        get 'primary_moab'
+        get 'primary_moab_location'
         post 'content_diff'
       end
       collection do
