@@ -5,6 +5,7 @@ storage_root_map:
     fixture_sr1: 'spec/fixtures/storage_root01'
     fixture_sr2: 'spec/fixtures/storage_root02'
     fixture_sr3: 'spec/fixtures/checksum_root01'
+    fixture_srA: 'spec/fixtures/storage_rootA' # a nascent but lagging copy of fixture_sr1.  has v0001 of one of its moabs.
   preservation_catalog_prod:
     fixture_sr1: 'spec/fixtures/storage_root01'
     fixture_sr2: 'spec/fixtures/storage_root02'

@@ -66,7 +66,7 @@ RSpec.describe MoabStorageRoot, type: :model do
     it 'does not re-create records that already exist' do
       expect { described_class.seed_from_config(default_pres_policies) }
         .not_to change { described_class.pluck(:name).sort }
-        .from(%w[fixture_empty fixture_sr1 fixture_sr2 fixture_sr3 storage-root-01])
+        .from(%w[fixture_empty fixture_sr1 fixture_sr2 fixture_sr3 fixture_srA storage-root-01])
     end
 
     it 'adds new records from Settings (but does not delete)' do
@@ -79,8 +79,8 @@ RSpec.describe MoabStorageRoot, type: :model do
 
       expect { described_class.seed_from_config(default_pres_policies) }
         .to change { described_class.pluck(:name).sort }
-        .from(%w[fixture_empty fixture_sr1 fixture_sr2 fixture_sr3 storage-root-01])
-        .to(%w[fixture_empty fixture_sr1 fixture_sr2 fixture_sr3 fixture_srTest storage-root-01])
+        .from(%w[fixture_empty fixture_sr1 fixture_sr2 fixture_sr3 fixture_srA storage-root-01])
+        .to(%w[fixture_empty fixture_sr1 fixture_sr2 fixture_sr3 fixture_srA fixture_srTest storage-root-01])
     end
   end
 

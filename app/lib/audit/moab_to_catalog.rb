@@ -14,15 +14,16 @@ module Audit
     # this method intended to be called from rake task or via ReST call
     def self.check_existence_for_druid(druid)
       logger.info "#{Time.now.utc.iso8601} M2C check_existence_for_druid starting for #{druid}"
-      moab = Stanford::StorageServices.find_storage_object(druid)
-      storage_trunk = Settings.moab.storage_trunk
-      storage_dir = "#{moab.object_pathname.to_s.split(storage_trunk).first}#{storage_trunk}"
-      ms_root = MoabStorageRoot.find_by!(storage_location: storage_dir)
-      comp_moab_handler = CompleteMoabHandler.new(druid, moab.current_version_id, moab.size, ms_root)
-      comp_moab_handler.logger = Audit::MoabToCatalog.logger
-      results = comp_moab_handler.check_existence
-      logger.info "#{results} for #{druid}"
-      results
+      Stanford::StorageServices.search_storage_objects(druid).map do |moab|
+        storage_trunk = Settings.moab.storage_trunk
+        storage_dir = "#{moab.object_pathname.to_s.split(storage_trunk).first}#{storage_trunk}"
+        ms_root = MoabStorageRoot.find_by!(storage_location: storage_dir)
+        comp_moab_handler = CompleteMoabHandler.new(druid, moab.current_version_id, moab.size, ms_root)
+        comp_moab_handler.logger = Audit::MoabToCatalog.logger
+        results = comp_moab_handler.check_existence
+        logger.info "#{results} for #{druid}"
+        results
+      end
     rescue TypeError
       logger.info "#{Time.now.utc.iso8601} Moab object path does not exist."
     ensure
