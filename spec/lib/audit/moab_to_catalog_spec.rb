@@ -53,16 +53,22 @@ RSpec.describe Audit::MoabToCatalog do
        [{ db_obj_does_not_exist: 'CompleteMoab db object does not exist' },
         { created_new_object: 'added object to db as it did not exist' }]]
     end
+    let(:po) { PreservedObject.find_by!(druid: druid) }
+    let(:msr) { MoabStorageRoot.find_by!(storage_location: storage_dir) }
+    let(:msr_a) { MoabStorageRoot.find_by!(storage_location: storage_dir_a) }
 
-    it 'finds the relevant moabs' do
-      expect(Stanford::StorageServices).to receive(:search_storage_objects).with(druid).and_call_original
+    it 'finds and catalogs the relevant moabs' do
+      expect(CompleteMoab.by_druid(druid).by_storage_root(msr)).not_to exist
+      expect(CompleteMoab.by_druid(druid).by_storage_root(msr_a)).not_to exist
       described_class.check_existence_for_druid(druid)
+      expect(CompleteMoab.by_druid(druid).by_storage_root(msr)).to exist
+      expect(CompleteMoab.by_druid(druid).by_storage_root(msr_a)).to exist
     end
 
-    it 'finds the correct MoabStorageRoot' do
-      expect(MoabStorageRoot).to receive(:find_by!).with(storage_location: storage_dir)
-      expect(MoabStorageRoot).to receive(:find_by!).with(storage_location: storage_dir_a)
+    it 'creates the CompleteMoab records, each with its respective version' do
       described_class.check_existence_for_druid(druid)
+      expect(CompleteMoab.find_by!(preserved_object: po, moab_storage_root: msr).version).to eq 3
+      expect(CompleteMoab.find_by!(preserved_object: po, moab_storage_root: msr_a).version).to eq 1
     end
 
     it 'calls CompleteMoabHandler.check_existence' do
@@ -112,6 +118,9 @@ RSpec.describe Audit::MoabToCatalog do
   end
 
   describe '.seed_catalog_for_dir' do
+    let(:storage_dir_a) { 'spec/fixtures/storage_rootA/sdr2objects' }
+    let(:druid) { 'bz514sm9647' }
+
     it "calls 'find_moab_paths' with appropriate argument" do
       expect(Stanford::MoabStorageDirectory).to receive(:find_moab_paths).with(storage_dir)
       described_class.seed_catalog_for_dir(storage_dir)
@@ -157,6 +166,17 @@ RSpec.describe Audit::MoabToCatalog do
     it 'return correct number of results' do
       expect(described_class.seed_catalog_for_dir(storage_dir).count).to eq 3
     end
+
+    it 'works even if there is already a CompleteMoab for the druid' do
+      expect(CompleteMoab.by_druid(druid).count).to eq 0
+      expect(described_class.seed_catalog_for_dir(storage_dir).count).to eq 3
+      expect(CompleteMoab.by_druid(druid).count).to eq 1
+      expect(CompleteMoab.count).to eq 3
+      expect(described_class.seed_catalog_for_dir(storage_dir_a).count).to eq 1
+      expect(CompleteMoab.by_druid(druid).count).to eq 2
+      expect(CompleteMoab.count).to eq 4
+      expect(PreservedObject.count).to eq 3
+    end
   end
 
   describe '.populate_moab_storage_root' do
@@ -164,7 +184,7 @@ RSpec.describe Audit::MoabToCatalog do
 
     it "won't change objects in a fully seeded db" do
       expect { described_class.populate_moab_storage_root('fixture_sr1') }.not_to change(CompleteMoab, :count).from(17)
-      expect(PreservedObject.count).to eq 16
+      expect(PreservedObject.count).to eq 16 # two moabs for bz514sm9647, hence difference in count between CompleteMoab & PreservedObject
     end
 
     it 're-adds objects for a dropped MoabStorageRoot' do
