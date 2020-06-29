@@ -3,6 +3,18 @@
 require 'csv'
 
 namespace :prescat do
+  namespace :cache_cleaner do
+    desc 'Clean zip storage cache of empty directories'
+    task empty_directories: :environment do
+      `find #{Settings.zip_storage} -not -path "*/\.*" -type d -empty -delete`
+    end
+
+    desc 'Clean zip storage cache of stale checksum & zip files'
+    task stale_files: :environment do
+      `find #{Settings.zip_storage} -mindepth 3 -type f -amin #{Settings.zip_cache_expiry_time} -delete`
+    end
+  end
+
   desc 'Migrate storage root, returning druids of all migrated moabs'
   task :migrate_storage_root, [:from, :to] => :environment do |_task, args|
     puts 'This will move all complete_moabs from the old storage root to a new storage root.'

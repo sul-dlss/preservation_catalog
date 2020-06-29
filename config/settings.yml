@@ -26,6 +26,7 @@ workflow_services_url: 'https://workflows.example.org/workflow/'
 
 checksum_algos: ['md5'] # 'sha1' 'sha256'
 
+zip_cache_expiry_time: '+10080' # this is UNIX `find` speak for "greater than seven days"
 zip_storage: '/tmp' # override in #{RAILS_ENV}.yml
 
 resque_dashboard_hostnames: # tells the router where to mount the resque dashboard
