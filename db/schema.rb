@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_06_24_144318) do
+ActiveRecord::Schema.define(version: 2020_06_29_232757) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -79,6 +79,7 @@ ActiveRecord::Schema.define(version: 2020_06_24_144318) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "preservation_policy_id", null: false
+    t.boolean "robot_versioning_allowed", default: true, null: false
     t.index ["created_at"], name: "index_preserved_objects_on_created_at"
     t.index ["druid"], name: "index_preserved_objects_on_druid", unique: true
     t.index ["preservation_policy_id"], name: "index_preserved_objects_on_preservation_policy_id"
