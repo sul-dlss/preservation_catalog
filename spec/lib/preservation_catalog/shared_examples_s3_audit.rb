@@ -41,14 +41,69 @@ RSpec.shared_examples 's3 audit' do |provider_class, bucket_name, check_name, en
     end
 
     it 'only checks existence and checksum on replicated parts' do
+      part1 = zmv.zip_parts.find_by(suffix: '.zip')
+      part3 = zmv.zip_parts.find_by(suffix: '.z02')
       ok_part = zmv.zip_parts.find_by(suffix: '.z01')
       s3_obj = instance_double(::Aws::S3::Object, exists?: true)
 
       expect(bucket).to receive(:object).with(ok_part.s3_key).and_return(s3_obj)
       expect(s3_obj).to receive(:metadata).and_return('checksum_md5' => ok_part.md5)
+      expect(bucket).not_to receive(:object).with(part1.s3_key)
+      expect(bucket).not_to receive(:object).with(part3.s3_key)
       expect { described_class.check_replicated_zipped_moab_version(zmv, results) }
-        .to change { ok_part.reload.last_existence_check }.from(nil)
-                                                          .and change { ok_part.reload.last_checksum_validation }.from(nil)
+        .to change { ok_part.reload.last_existence_check }
+        .from(nil)
+        .and change { ok_part.reload.last_checksum_validation }
+        .from(nil)
+    end
+
+    context 'check_unreplicated_parts is true' do
+      let(:part1) { zmv.zip_parts.find_by(suffix: '.zip') }
+      let(:part2) { zmv.zip_parts.find_by(suffix: '.z01') }
+      let(:part3) { zmv.zip_parts.find_by(suffix: '.z02') }
+      let(:s3_obj_part1) { instance_double(::Aws::S3::Object, exists?: false) }
+      let(:s3_obj_part2) { instance_double(::Aws::S3::Object, exists?: true) }
+      let(:s3_obj_part3) { instance_double(::Aws::S3::Object, exists?: true) }
+
+      before do
+        allow(bucket).to receive(:object).with(part1.s3_key).and_return(s3_obj_part1)
+        allow(bucket).to receive(:object).with(part2.s3_key).and_return(s3_obj_part2)
+        allow(bucket).to receive(:object).with(part3.s3_key).and_return(s3_obj_part3)
+      end
+
+      it 'checks existence on all parts, and metadata on any parts present in the cloud' do
+        expect(s3_obj_part1).not_to receive(:metadata) # no metadata to check since cloud copy doesn't exist
+        expect(s3_obj_part2).to receive(:metadata).and_return('checksum_md5' => part2.md5)
+        expect(s3_obj_part3).to receive(:metadata).and_return('checksum_md5' => part3.md5)
+        expect { described_class.check_replicated_zipped_moab_version(zmv, results, true) }
+          .to change { part1.reload.last_existence_check }
+          .from(nil)
+          .and change { part2.reload.last_existence_check }
+          .from(nil)
+          .and change { part2.reload.last_checksum_validation }
+          .from(nil)
+          .and change { part3.reload.last_existence_check }
+          .from(nil)
+          .and change { part3.reload.last_checksum_validation }
+          .from(nil)
+        expect(part1.reload.last_checksum_validation).to be nil
+      end
+
+      it 'leaves unfound unreplicated parts and found ok in their respective current statuses' do
+        allow(s3_obj_part2).to receive(:metadata).and_return('checksum_md5' => part2.md5)
+        allow(s3_obj_part3).to receive(:metadata).and_return('checksum_md5' => part3.md5)
+        expect { described_class.check_replicated_zipped_moab_version(zmv, results, true) }
+          .not_to change { part1.reload.status }.from('unreplicated')
+        expect { described_class.check_replicated_zipped_moab_version(zmv, results, true) }
+          .not_to change { part2.reload.status }.from('ok')
+      end
+
+      it 'updates status on parts that are found' do
+        allow(s3_obj_part2).to receive(:metadata).and_return('checksum_md5' => part2.md5)
+        allow(s3_obj_part3).to receive(:metadata).and_return('checksum_md5' => part3.md5)
+        expect { described_class.check_replicated_zipped_moab_version(zmv, results, true) }
+          .to change { part3.reload.status }.from('unreplicated').to('ok')
+      end
     end
 
     it 'configures S3' do
