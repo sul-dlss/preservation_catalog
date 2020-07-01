@@ -12,6 +12,8 @@ RSpec.describe PreservedObjectsPrimaryMoab, type: :model do
   end
 
   it 'raises error if complete moab preserved object differs from primary moab' do
-    expect { described_class.create(complete_moab: cm, preserved_object: alt_po) }.to raise_error(RuntimeError, /does not match/)
+    bad_primary = described_class.create(complete_moab: cm, preserved_object: alt_po)
+    expect(bad_primary).not_to be_valid
+    expect(bad_primary.errors.messages[:preserved_object]).to eq ['must match the preserved object associated with the complete moab']
   end
 end

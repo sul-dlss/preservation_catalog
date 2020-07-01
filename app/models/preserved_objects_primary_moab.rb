@@ -9,6 +9,7 @@ class PreservedObjectsPrimaryMoab < ApplicationRecord
   validate :complete_moab_matches_preserved_object
 
   def complete_moab_matches_preserved_object
-    raise "Complete Moab #{complete_moab.preserved_object_id} does not match" unless complete_moab.preserved_object == preserved_object
+    err_msg = 'must match the preserved object associated with the complete moab'
+    errors.add(:preserved_object, err_msg) unless complete_moab.preserved_object == preserved_object
   end
 end
