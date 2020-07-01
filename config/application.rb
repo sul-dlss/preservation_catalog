@@ -37,9 +37,14 @@ module PreservationCatalog
 
     # accept_request_filter omits OKComputer & Resque routes
     accept_proc = proc { |request| request.path.start_with?('/v1') }
-    config.middleware.use Committee::Middleware::RequestValidation, schema_path: 'openapi.yml',
-                                                                    strict: true, error_class: JSONAPIError,
-                                                                    accept_request_filter: accept_proc
+    config.middleware.use(
+      Committee::Middleware::RequestValidation,
+      schema_path: 'openapi.yml',
+      strict: true,
+      error_class: JSONAPIError,
+      accept_request_filter: accept_proc,
+      parse_response_by_content_type: false
+    )
     # TODO: we can uncomment this at a later date to ensure we are passing back
     #       valid responses. Currently, uncommenting this line causes 24 spec
     #       failures. See https://github.com/sul-dlss/preservation_catalog/issues/1407

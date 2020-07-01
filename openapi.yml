@@ -351,6 +351,8 @@ paths:
           description: Bad request (e.g., malformed druid)
         '404':
           description: Object not found
+        '423':
+          description: Versioning is locked for the primary moab's preserved object
       parameters:
         - name: id
           in: path
