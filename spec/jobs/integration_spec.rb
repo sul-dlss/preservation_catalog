@@ -7,9 +7,9 @@ describe 'the whole replication pipeline', type: :job do
   let(:ibm_s3_object) { instance_double(::Aws::S3::Object, exists?: false, upload_file: true) }
   let(:aws_bucket) { instance_double(::Aws::S3::Bucket, object: aws_s3_object) }
   let(:ibm_bucket) { instance_double(::Aws::S3::Bucket, object: ibm_s3_object) }
-  let(:preserved_object) { create(:preserved_object) }
-  let(:druid) { preserved_object.druid }
-  let(:version) { preserved_object.current_version }
+  let(:druid) { 'bj102hs9687' }
+  let(:version) { 1 }
+  let(:preserved_object) { create(:preserved_object, druid: druid, current_version: version) }
   let(:zip_endpoints) { preserved_object.preservation_policy.zip_endpoints }
   let(:hash) do
     {
@@ -37,7 +37,7 @@ describe 'the whole replication pipeline', type: :job do
     allow(PreservationCatalog::IbmProvider).to receive(:new).and_return(ibm_provider)
   end
 
-  it 'gets from zipmaker queue to replication result message' do
+  it 'gets from zipmaker queue to replication result message upon initial moab creation' do
     expect(ZipmakerJob).to receive(:perform_later).with(druid, version, moab_storage_root.storage_location).and_call_original
     expect(PlexerJob).to receive(:perform_later).with(druid, version, s3_key, Hash).and_call_original
     expect(S3WestDeliveryJob).to receive(:perform_later).with(druid, version, s3_key, Hash).and_call_original
@@ -48,6 +48,6 @@ describe 'the whole replication pipeline', type: :job do
     expect(Resque.redis.redis).to receive(:lpush).with('replication.results', hash.to_json)
 
     # creating or updating a CompleteMoab should trigger its parent PreservedObject to replicate any missing versions to any target endpoints
-    create(:complete_moab, preserved_object: preserved_object, version: preserved_object.current_version, moab_storage_root: moab_storage_root)
+    create(:complete_moab, preserved_object: preserved_object, version: version, moab_storage_root: moab_storage_root)
   end
 end
