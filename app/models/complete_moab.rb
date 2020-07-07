@@ -15,6 +15,9 @@ class CompleteMoab < ApplicationRecord
   }
 
   after_create :create_zipped_moab_versions!
+  # hook for creating archive zips is here and on PreservedObject, because version and current_version must be in sync, and
+  # even though both fields will usually be updated together in a single transaction, one has to be updated first.  latter
+  # of the two updates will actually trigger replication.
   after_update :create_zipped_moab_versions!, if: :saved_change_to_version? # an ActiveRecord dynamic method
   after_save :validate_checksums!, if: proc { |cm| cm.saved_change_to_status? && cm.validity_unknown? }
 
