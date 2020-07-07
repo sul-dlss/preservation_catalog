@@ -50,4 +50,33 @@ describe 'the whole replication pipeline', type: :job do
     # creating or updating a CompleteMoab should trigger its parent PreservedObject to replicate any missing versions to any target endpoints
     create(:complete_moab, preserved_object: preserved_object, version: version, moab_storage_root: moab_storage_root)
   end
+
+  context 'updating an existing moab' do
+    let(:druid) { 'bz514sm9647' }
+    let(:version) { 2 }
+    let(:next_version) { version + 1 }
+    let(:moab_storage_root) { MoabStorageRoot.find_by!(name: 'fixture_sr1') }
+    let(:s3_key) { "bz/514/sm/9647/bz514sm9647.v000#{next_version}.zip" }
+
+    after do
+      FileUtils.rm_rf('spec/fixtures/zip_storage/bz/')
+    end
+
+    it 'gets from zipmaker queue to replication result message for the new version when the moab is updated' do
+      # pretend catalog is on version 2 before update call from robots
+      create(:complete_moab, preserved_object: preserved_object, version: version, moab_storage_root: moab_storage_root)
+
+      expect(ZipmakerJob).to receive(:perform_later).with(druid, next_version, moab_storage_root.storage_location).and_call_original
+      expect(PlexerJob).to receive(:perform_later).with(druid, next_version, s3_key, Hash).and_call_original
+      expect(S3WestDeliveryJob).to receive(:perform_later).with(druid, next_version, s3_key, Hash).and_call_original
+      expect(IbmSouthDeliveryJob).to receive(:perform_later).with(druid, next_version, s3_key, Hash).and_call_original
+      # other endpoints as added...
+      expect(ResultsRecorderJob).to receive(:perform_later).with(druid, next_version, s3_key, 'S3WestDeliveryJob').and_call_original
+      expect(ResultsRecorderJob).to receive(:perform_later).with(druid, next_version, s3_key, 'IbmSouthDeliveryJob').and_call_original
+      expect(Resque.redis.redis).to receive(:lpush).with('replication.results', hash.merge(version: next_version).to_json)
+
+      # updating the CompleteMoab#version and its PreservedObject#current_version should trigger the replication cycle again, on the new version
+      CompleteMoabHandler.new(druid, next_version, 712, moab_storage_root).update_version(true)
+    end
+  end
 end
