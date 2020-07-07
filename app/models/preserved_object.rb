@@ -8,6 +8,11 @@
 class PreservedObject < ApplicationRecord
   PREFIX_RE = /druid:/i.freeze
 
+  # hook for creating archive zips is here and on CompleteMoab, because version and current_version must be in sync, and
+  # even though both fields will usually be updated together in a single transaction, one has to be updated first.  latter
+  # of the two updates will actually trigger replication.
+  after_update :create_zipped_moab_versions!, if: :saved_change_to_current_version? # an ActiveRecord dynamic method
+
   belongs_to :preservation_policy
   has_many :complete_moabs, dependent: :restrict_with_exception, autosave: true
   has_many :zipped_moab_versions, dependent: :restrict_with_exception, inverse_of: :preserved_object
