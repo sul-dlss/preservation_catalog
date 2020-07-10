@@ -7,7 +7,9 @@ FactoryBot.define do
     preservation_policy { PreservationPolicy.default_policy }
   end
 
-  # searches through fixture dirs to find the druid, creates a complete moab for the PO
+  # searches through fixture dirs to find the druid, creates a complete moab for the PO.
+  # if there is more than one moab among the storage roots for the druid, the one from the
+  # storage root listed first in the configs will be used.
   factory :preserved_object_fixture, parent: :preserved_object do
     current_version { Stanford::StorageServices.current_version(druid) }
 
