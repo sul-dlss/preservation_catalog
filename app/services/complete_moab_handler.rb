@@ -227,10 +227,7 @@ class CompleteMoabHandler
     transaction_ok = with_active_record_transaction_and_rescue do
       raise_rollback_if_cm_po_version_mismatch
 
-      # FIXME: what if there is more than one associated complete_moab?
-      # TODO: is the complete_moab.matches_po_current_version? even useful, since we should've raised an error with
-      # the call to raise_rollback_if_cm_po_version_mismatch if that condition weren't met?
-      if incoming_version > complete_moab.version && complete_moab.matches_po_current_version?
+      if incoming_version > complete_moab.version
         # add results without db updates
         code = AuditResults::ACTUAL_VERS_GT_DB_OBJ
         results.add_result(code, db_obj_name: 'CompleteMoab', db_obj_version: complete_moab.version)
