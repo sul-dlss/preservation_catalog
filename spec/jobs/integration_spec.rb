@@ -7,26 +7,21 @@ describe 'the whole replication pipeline', type: :job do
   let(:ibm_s3_object) { instance_double(::Aws::S3::Object, exists?: false, upload_file: true) }
   let(:aws_bucket) { instance_double(::Aws::S3::Bucket, object: aws_s3_object) }
   let(:ibm_bucket) { instance_double(::Aws::S3::Bucket, object: ibm_s3_object) }
-  let(:cm) { create(:complete_moab) }
-  let(:zmv) { cm.zipped_moab_versions.first! }
-  let(:zmv2) { cm.zipped_moab_versions.second! }
-  let(:druid) { zmv.preserved_object.druid }
-  let(:version) { zmv.version }
-  let(:deliverer) { zmv.zip_endpoint.delivery_class.to_s }
-  let(:deliverer2) { zmv2.zip_endpoint.delivery_class.to_s }
+  let(:druid) { 'bj102hs9687' }
+  let(:version) { 1 }
+  let(:preserved_object) { create(:preserved_object, druid: druid, current_version: version) }
+  let(:zip_endpoints) { preserved_object.preservation_policy.zip_endpoints }
   let(:hash) do
     {
       druid: druid,
       version: version,
-      zip_endpoints: [
-        zmv.zip_endpoint.endpoint_name,
-        zmv2.zip_endpoint.endpoint_name
-      ].sort
+      zip_endpoints: zip_endpoints.map(&:endpoint_name).sort
     }
   end
   let(:s3_key) { 'bj/102/hs/9687/bj102hs9687.v0001.zip' }
   let(:aws_provider) { instance_double(PreservationCatalog::AwsProvider, bucket: aws_bucket) }
   let(:ibm_provider) { instance_double(PreservationCatalog::IbmProvider, bucket: ibm_bucket) }
+  let(:moab_storage_root) { create(:moab_storage_root) }
 
   around do |example|
     old_adapter = ApplicationJob.queue_adapter
@@ -42,14 +37,46 @@ describe 'the whole replication pipeline', type: :job do
     allow(PreservationCatalog::IbmProvider).to receive(:new).and_return(ibm_provider)
   end
 
-  it 'gets from zipmaker queue to replication result message' do
+  it 'gets from zipmaker queue to replication result message upon initial moab creation' do
+    expect(ZipmakerJob).to receive(:perform_later).with(druid, version, moab_storage_root.storage_location).and_call_original
     expect(PlexerJob).to receive(:perform_later).with(druid, version, s3_key, Hash).and_call_original
     expect(S3WestDeliveryJob).to receive(:perform_later).with(druid, version, s3_key, Hash).and_call_original
     expect(IbmSouthDeliveryJob).to receive(:perform_later).with(druid, version, s3_key, Hash).and_call_original
     # other endpoints as added...
-    expect(ResultsRecorderJob).to receive(:perform_later).with(druid, version, s3_key, deliverer).and_call_original
-    expect(ResultsRecorderJob).to receive(:perform_later).with(druid, version, s3_key, deliverer2).and_call_original
+    expect(ResultsRecorderJob).to receive(:perform_later).with(druid, version, s3_key, 'S3WestDeliveryJob').and_call_original
+    expect(ResultsRecorderJob).to receive(:perform_later).with(druid, version, s3_key, 'IbmSouthDeliveryJob').and_call_original
     expect(Resque.redis.redis).to receive(:lpush).with('replication.results', hash.to_json)
-    ZipmakerJob.perform_now(druid, version)
+
+    # creating or updating a CompleteMoab should trigger its parent PreservedObject to replicate any missing versions to any target endpoints
+    create(:complete_moab, preserved_object: preserved_object, version: version, moab_storage_root: moab_storage_root)
+  end
+
+  context 'updating an existing moab' do
+    let(:druid) { 'bz514sm9647' }
+    let(:version) { 2 }
+    let(:next_version) { version + 1 }
+    let(:moab_storage_root) { MoabStorageRoot.find_by!(name: 'fixture_sr1') }
+    let(:s3_key) { "bz/514/sm/9647/bz514sm9647.v000#{next_version}.zip" }
+
+    after do
+      FileUtils.rm_rf('spec/fixtures/zip_storage/bz/')
+    end
+
+    it 'gets from zipmaker queue to replication result message for the new version when the moab is updated' do
+      # pretend catalog is on version 2 before update call from robots
+      create(:complete_moab, preserved_object: preserved_object, version: version, moab_storage_root: moab_storage_root)
+
+      expect(ZipmakerJob).to receive(:perform_later).with(druid, next_version, moab_storage_root.storage_location).and_call_original
+      expect(PlexerJob).to receive(:perform_later).with(druid, next_version, s3_key, Hash).and_call_original
+      expect(S3WestDeliveryJob).to receive(:perform_later).with(druid, next_version, s3_key, Hash).and_call_original
+      expect(IbmSouthDeliveryJob).to receive(:perform_later).with(druid, next_version, s3_key, Hash).and_call_original
+      # other endpoints as added...
+      expect(ResultsRecorderJob).to receive(:perform_later).with(druid, next_version, s3_key, 'S3WestDeliveryJob').and_call_original
+      expect(ResultsRecorderJob).to receive(:perform_later).with(druid, next_version, s3_key, 'IbmSouthDeliveryJob').and_call_original
+      expect(Resque.redis.redis).to receive(:lpush).with('replication.results', hash.merge(version: next_version).to_json)
+
+      # updating the CompleteMoab#version and its PreservedObject#current_version should trigger the replication cycle again, on the new version
+      CompleteMoabHandler.new(druid, next_version, 712, moab_storage_root).update_version(true)
+    end
   end
 end

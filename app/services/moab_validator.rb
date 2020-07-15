@@ -21,7 +21,7 @@ class MoabValidator
   end
 
   def object_dir
-    @object_dir ||= "#{storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}"
+    @object_dir ||= DruidTools::Druid.new(druid, storage_location).path
   end
 
   def complete_moab
@@ -80,7 +80,7 @@ class MoabValidator
       )
     end
 
-    complete_moab.status_details = results.results_as_string(results.result_array)
+    complete_moab.status_details = results.results_as_string
   end
 
   def mark_moab_not_found

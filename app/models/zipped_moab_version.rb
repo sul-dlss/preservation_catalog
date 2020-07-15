@@ -2,25 +2,20 @@
 
 # Corresponds to a Moab-Version on a ZipEndpoint.
 #   There will be individual parts (at least one) - see ZipPart.
-# For a fully consistent system, given a CompleteMoab, the number of associated
+# For a fully consistent system, given a PreservedObject, the number of associated
 # ZippedMoabVersion objects should be:
-#   cm.preserved_object.current_version * number_of_zip_endpoints
+#   preserved_object.current_version * number_of_zip_endpoints_for_preservation_policy
 #
 # @note Does not have size independent of part(s)
 class ZippedMoabVersion < ApplicationRecord
-  belongs_to :complete_moab, inverse_of: :zipped_moab_versions
+  belongs_to :preserved_object, inverse_of: :zipped_moab_versions
   belongs_to :zip_endpoint, inverse_of: :zipped_moab_versions
   has_many :zip_parts, dependent: :destroy, inverse_of: :zipped_moab_version
-  has_one :preserved_object, through: :complete_moab
 
-  # Note: In the context of creating many ZMV rows, this may *attempt* to queue the same druid/version multiple times,
-  # but queue locking easily prevents duplicates (and the job is idempotent anyway).
-  after_create :replicate!
-
-  validates :complete_moab, :version, :zip_endpoint, presence: true
+  validates :preserved_object, :version, :zip_endpoint, presence: true
 
   scope :by_druid, lambda { |druid|
-    joins(complete_moab: [:preserved_object]).where(preserved_objects: { druid: druid })
+    joins(:preserved_object).where(preserved_objects: { druid: druid })
   }
 
   # ideally, there should be only one distinct parts_count value among a set of sibling
@@ -38,12 +33,5 @@ class ZippedMoabVersion < ApplicationRecord
 
   def all_parts_replicated?
     zip_parts.count.positive? && zip_parts.all?(&:ok?)
-  end
-
-  # Send to asynchronous replication pipeline
-  # @return [ZipmakerJob, nil] nil if unpersisted or parent PC has non-replicatable status
-  def replicate!
-    return nil unless persisted? && complete_moab.replicatable_status?
-    ZipmakerJob.perform_later(preserved_object.druid, version)
   end
 end
