@@ -34,15 +34,17 @@ RSpec.describe CompleteMoabHandler do
 
     context 'in Catalog' do
       before do
-        v2 = create(:preserved_object, druid: druid, current_version: 2, preservation_policy: default_prez_policy)
-        v2.complete_moabs.create!(
-          version: v2.current_version,
+        create(:preserved_object, druid: druid, current_version: 2, preservation_policy: default_prez_policy)
+        po.complete_moabs.create!(
+          version: po.current_version,
           size: 1,
           moab_storage_root: ms_root,
           status: 'ok', # pretending we checked for moab validation errs at create time
           last_version_audit: Time.current,
           last_moab_validation: Time.current
-        )
+        ) do |primary_cm|
+          PreservedObjectsPrimaryMoab.create!(preserved_object: po, complete_moab: primary_cm)
+        end
       end
 
       context 'incoming version newer than catalog versions (both) (happy path)' do
@@ -291,7 +293,9 @@ RSpec.describe CompleteMoabHandler do
             status: 'ok', # NOTE: pretending we checked for moab validation errs at create time
             last_version_audit: t,
             last_moab_validation: t
-          )
+          ) do |primary_cm|
+            PreservedObjectsPrimaryMoab.create!(preserved_object: po, complete_moab: primary_cm)
+          end
         end
 
         let(:po) { PreservedObject.create!(druid: druid, current_version: 2, preservation_policy: default_prez_policy) }
@@ -436,7 +440,9 @@ RSpec.describe CompleteMoabHandler do
             status: 'ok', # pretending we checked for moab validation errs at create time
             last_version_audit: t,
             last_moab_validation: t
-          )
+          ) do |primary_cm|
+            PreservedObjectsPrimaryMoab.create!(preserved_object: po, complete_moab: primary_cm)
+          end
         end
 
         context 'checksums_validated = false' do

@@ -64,7 +64,9 @@ describe 'the whole replication pipeline', type: :job do
 
     it 'gets from zipmaker queue to replication result message for the new version when the moab is updated' do
       # pretend catalog is on version 2 before update call from robots
-      create(:complete_moab, preserved_object: preserved_object, version: version, moab_storage_root: moab_storage_root)
+      create(:complete_moab, preserved_object: preserved_object, version: version, moab_storage_root: moab_storage_root) do |cm|
+        PreservedObjectsPrimaryMoab.create!(preserved_object: preserved_object, complete_moab: cm)
+      end
 
       expect(ZipmakerJob).to receive(:perform_later).with(druid, next_version, moab_storage_root.storage_location).and_call_original
       expect(PlexerJob).to receive(:perform_later).with(druid, next_version, s3_key, Hash).and_call_original

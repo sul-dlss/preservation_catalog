@@ -186,6 +186,10 @@ class CompleteMoabHandler
     @moab_validator ||= MoabValidator.new(druid: druid, storage_location: storage_location, results: results)
   end
 
+  def primary_moab?
+    @primary_moab ||= complete_moab.primary?
+  end
+
   # Note that this may be called by running M2C on a storage root and discovering a second copy of a Moab,
   #   or maybe by calling #create_after_validation directly after copying a Moab
   def create_db_objects(status, checksums_validated = false)
@@ -207,7 +211,7 @@ class CompleteMoabHandler
     transaction_ok = with_active_record_transaction_and_rescue do
       this_po = PreservedObject
                 .find_or_create_by!(druid: druid) do |po|
-                  po.current_version = incoming_version
+                  po.current_version = incoming_version # init to match version of the first moab for the druid
                   po.preservation_policy_id = ppid
                 end
       this_cm = this_po.complete_moabs.create!(cm_attrs)
@@ -223,8 +227,7 @@ class CompleteMoabHandler
     transaction_ok = with_active_record_transaction_and_rescue do
       raise_rollback_if_cm_po_version_mismatch
 
-      # FIXME: what if there is more than one associated complete_moab?
-      if incoming_version > complete_moab.version && complete_moab.matches_po_current_version?
+      if incoming_version > complete_moab.version
         # add results without db updates
         code = AuditResults::ACTUAL_VERS_GT_DB_OBJ
         results.add_result(code, db_obj_name: 'CompleteMoab', db_obj_version: complete_moab.version)
@@ -233,7 +236,7 @@ class CompleteMoabHandler
         complete_moab.last_checksum_validation = Time.current if checksums_validated && complete_moab.last_checksum_validation
         update_status(status) if status
         complete_moab.save!
-        pres_object.current_version = incoming_version
+        pres_object.current_version = incoming_version if primary_moab? # we only want to track highest seen version based on primary
         pres_object.save!
       else
         status = 'unexpected_version_on_storage' if set_status_to_unexp_version
@@ -247,7 +250,7 @@ class CompleteMoabHandler
   def update_cm_po_set_status
     if moab_validation_errors.empty?
       complete_moab.upd_audstamps_version_size(ran_moab_validation?, incoming_version, incoming_size)
-      pres_object.current_version = incoming_version
+      pres_object.current_version = incoming_version if primary_moab? # we only want to track highest seen version based on primary
       pres_object.save!
     else
       update_status('invalid_moab')
@@ -255,6 +258,8 @@ class CompleteMoabHandler
   end
 
   def raise_rollback_if_cm_po_version_mismatch
+    return unless primary_moab?
+
     unless complete_moab.matches_po_current_version?
       cm_version = complete_moab.version
       po_version = complete_moab.preserved_object.current_version

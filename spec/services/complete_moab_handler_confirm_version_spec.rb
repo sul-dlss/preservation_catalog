@@ -31,7 +31,9 @@ RSpec.describe CompleteMoabHandler do
       let!(:cm) do
         # Adds new complete moab with the same druid to confirm that tests pass
         create(:complete_moab, preserved_object: po, moab_storage_root: create(:moab_storage_root))
-        create(:complete_moab, preserved_object: po, version: cm_version, moab_storage_root: ms_root)
+        create(:complete_moab, preserved_object: po, version: cm_version, moab_storage_root: ms_root) do |primary_cm|
+          PreservedObjectsPrimaryMoab.create!(preserved_object: po, complete_moab: primary_cm)
+        end
       end
       let(:moab_validator) { complete_moab_handler.send(:moab_validator) }
 

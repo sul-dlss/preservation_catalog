@@ -5,8 +5,8 @@ RSpec.describe CatalogController, type: :controller do
   let(:workflow_reporter) { instance_double(Reporters::WorkflowReporter, report_errors: nil) }
   let(:size) { 2342 }
   let(:ver) { 3 }
-  let(:prefixed_druid) { 'druid:bj102hs9687' }
   let(:bare_druid) { 'bj102hs9687' }
+  let(:prefixed_druid) { "druid:#{bare_druid}" }
   let(:storage_location) { "#{storage_location_param}/sdr2objects" }
   let(:storage_location_param) { 'spec/fixtures/storage_root01' }
   let(:event_service_reporter) { instance_double(Reporters::EventServiceReporter, report_errors: nil) }
@@ -137,12 +137,23 @@ RSpec.describe CatalogController, type: :controller do
   end
 
   describe 'PATCH #update' do
-    before do
-      create(:preserved_object_fixture, druid: 'bj102hs9687')
+    let(:bare_druid) { 'bz514sm9647' }
+    let!(:pres_obj) do
+      # creates a PreservedObject, and the CompleteMoab for the first moab found for the druid (by walking the storage roots in configured order)
+      create(:preserved_object_fixture, druid: bare_druid)
     end
+    let(:comp_moab) do
+      pres_obj.complete_moabs.find_by!(moab_storage_root: MoabStorageRoot.find_by!(name: 'fixture_sr1'))
+    end
+    let!(:comp_moab_sr_a) do
+      # create a CompleteMoab record for the other moab we have for this druid, to confirm support for multiple copies of a moab
+      create(:complete_moab, preserved_object: pres_obj, version: 1, moab_storage_root: MoabStorageRoot.find_by!(name: 'fixture_srA'))
+    end
+    let(:primary_moab) { comp_moab }
 
-    let(:pres_obj) { PreservedObject.find_by(druid: bare_druid) }
-    let(:comp_moab) { CompleteMoab.find_by(preserved_object: pres_obj) }
+    before do
+      PreservedObjectsPrimaryMoab.create!(preserved_object: pres_obj, complete_moab: primary_moab)
+    end
 
     context 'with valid params' do
       before do
@@ -151,12 +162,31 @@ RSpec.describe CatalogController, type: :controller do
 
       let(:upd_version) { 4 }
 
-      it 'updates the version' do
-        expect(comp_moab.version).to eq upd_version
+      it 'updates CompleteMoab#version' do
+        expect(comp_moab.reload.version).to eq upd_version
+      end
+
+      it 'updates PreservedObject#current_version' do
+        expect(pres_obj.reload.current_version).to eq upd_version
       end
 
       it 'returns an ok response code' do
         expect(response).to have_http_status(:ok)
+      end
+
+      context 'updating a non-primary' do
+        let!(:pres_obj) { create(:preserved_object, druid: bare_druid, current_version: 1) } # as if the one on srA was always primary
+        let!(:comp_moab) { create(:complete_moab, preserved_object: pres_obj, version: 3) } # create fixture_sr1 record, not created w/ PO this case
+        let(:primary_moab) { comp_moab_sr_a } # but we're still doing PATCH on the fixture_sr1 moab
+
+        it 'updates CompleteMoab#version' do
+          pending('this is known to fail, because CMH does not update CompleteMoab if its version does not match parent PO#current_version')
+          expect(comp_moab.reload.version).to eq upd_version
+        end
+
+        it 'updates PreservedObject#current_version' do
+          expect(pres_obj.reload.current_version).to eq primary_moab.version
+        end
       end
     end
 
