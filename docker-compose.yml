@@ -34,6 +34,17 @@ services:
       - 6379:6379
     volumes:
         - redis:/data
+  gen_er_diagram:
+    image: schemacrawler/schemacrawler
+    entrypoint: /bin/bash
+    # https://www.schemacrawler.com/diagramming.html
+    # https://www.schemacrawler.com/docker-image.html
+    # https://github.com/HakumenNC/docker-schemacrawler-reporting/blob/27d80e7debf6abbdf64b158d8a174e30dba4cec8/Dockerfile
+    # https://stackoverflow.com/questions/43714358/schemacrawler-getting-sequences-from-postgresql-database
+    command: /opt/schemacrawler/schemacrawler.sh --server=postgresql --host=db --database=development --user=postgres --password=sekret --info-level=standard --command=schema --output-format=svg --output-file=/var/preservation_catalog/db/schema_er_diagram.svg --config-file=/var/preservation_catalog/db/schemacrawler.config.properties --title "PresCat Schema ER Diagram"
+    volumes:
+      - ./db:/var/preservation_catalog/db
+
 
 volumes:
   redis:

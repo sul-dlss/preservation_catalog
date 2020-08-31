@@ -13,26 +13,31 @@ Rails application to track, audit and replicate archival artifacts associated wi
 
 * [Getting Started](#getting-started)
 * [Usage Instructions](#usage-instructions)
+    * [General Info](#general-info)
     * [Moab to Catalog](#m2c) (M2C) existence/version check
     * [Catalog to Moab](#c2m) (C2M) existence/version check
     * [Checksum Validation](#cv) (CV)
     * [Seed the catalog](#seed-the-catalog-with-data-about-the-moabs-on-the-storage-roots-the-catalog-tracks----presumes-rake-dbseed-already-performed)
     * [Update the Catalog Because a Moab Moved](#migrate_moab_manually)
 * [Development](#development)
+    * [Running tests](#running-tests)
     * [Dockerized Development](#docker)
 * [Deploying](#deploying)
+    * [Resque Pool](#resque-pool)
 * [API](#api)
+    * [Authentication/Authorization](#authn)
+    * [V1](#v1)
 
 ## Getting Started
 
 ### Installing dependencies
 
-Use the docker-compose to start the dependencies (PostgreSQL and Redis)
+Use `docker-compose` to start supporting services (PostgreSQL and Redis)
 ```sh
 docker-compose up -d db redis
 ```
 
-### Configuring The database
+### Configuring The database (ensure all defined storage roots, cloud endpoints, etc have the necessary DB records)
 
 Run this script:
 ```sh
@@ -42,25 +47,38 @@ RAILS_ENV=test ./bin/rails db:seed
 
 # Usage Instructions
 
-**We use the whenever gem for writing and deploying cron jobs. M2C, C2M, and CV are all scheduled using the whenever gem. See config/schedule.rb**
-
 ## General Info
 
-- We strongly prefer to run large numbers of validations using ActiveJob approach so they can be run in parallel.
+- The PostgreSQL database is the catalog of metadata about preserved SDR content, both on premises and in the cloud.  Integrity constraints are used heavily for keeping data clean and consistent.
 
-- Rake and console tasks must be run from the root directory of the project, with whatever `RAILS_ENV` is appropriate.
+- Background jobs (using ActiveJob/Resque/Redis) perform the audit and replication work.
 
-- You can monitor the progress of most tasks by tailing `log/production.log` (or task specific log), checking the Resque dashboard or by querying the database. The tasks for large storage_roots can take a while -- check [the repo wiki for stats](https://github.com/sul-dlss/preservation_catalog/wiki) on the timing of past runs (and some suggested overview queries). Profiling will add some overhead.
+- The whenever gem is used for writing and deploying cron jobs. Queueing of weekly audit jobs, temp space cleanup, etc are scheduled using the whenever gem.
 
-- Tasks that use asynchronous workers will execute on any of the eligible worker pool systems for that job.  Therefore, do not expect all the results to show in the logs of the machine that enqueued the jobs!
+- Communication with other DLSS services happens via REST.
 
-- Because large tasks can take days when run over all storage roots, consider running in a [screen session](http://thingsilearned.com/2009/05/26/gnu-screen-super-basic-tutorial/) so you don't need to keep your connection open but can still see the output.
+- Most human/manual interaction happens via Rails console and rake tasks.
 
-As an alternative to `screen`, you can also run tasks in the background using `nohup` so the invoked command is not killed when you exist your session. Output that would've gone to stdout is instead redirected to a file called `nohup.out`, or you can redirect the output explicitly.  For example:
+- There's troubleshooting advice in the wiki.  If you debug or clean something up in prod, consider documenting in a wiki entry (and please update entries that you use that are out of date).
 
-```sh
-RAILS_ENV=production nohup bundle exec ...
-```
+- Tasks that use asynchronous workers will execute on any of the eligible worker pool VM.  Therefore, do not expect all the results to show in the logs of the machine that enqueued the jobs!
+
+- We strongly prefer to run large numbers of validations using ActiveJob, so they can be run in parallel.
+
+- You can monitor the progress of most tasks by tailing `log/production.log` (or task specific log), checking the Resque dashboard, or by querying the database. The tasks for large storage roots can take a while -- check [the repo wiki for stats](https://github.com/sul-dlss/preservation_catalog/wiki) on the timing of past runs.
+
+- When executing long running queries, audits, remediations, etc from rails console, consider using a [screen session](http://thingsilearned.com/2009/05/26/gnu-screen-super-basic-tutorial/) in case you lose your connection.
+  - As an alternative to `screen`, you can also run tasks in the background using `nohup` so the invoked command is not killed when you exist your session. Output that would've gone to stdout is instead redirected to a file called `nohup.out`, or you can redirect the output explicitly.  For example:  `RAILS_ENV=production nohup bundle exec ...`
+
+If you are new to developing on this project, you should at least skim [the database README](db/README.md).
+It has a detailed explanation of the data model, some sample queries, and an ER diagram illustrating the
+table/model relationships.  For those less familiar with ActiveRecord, there is also some guidance about
+how this project uses it.
+
+_Please keep the database README up to date as the schema changes!_
+
+You may also wish to glance at the (much shorter) [Replication README](app/jobs/README.md).
+
 
 ### Rake Tasks
 
@@ -213,7 +231,7 @@ MoabStorageRoot.find_each { |msr| msr.validate_expired_checksums! }
 ```
 
 #### Single Druid
-Synchronously, from Rails console:
+Synchronously, from Rails console (will take a long time for very large objects):
 ```ruby
 Audit::Checksum.validate_druid(druid)
 ```
@@ -250,7 +268,7 @@ Audit::MoabToCatalog.seed_catalog_for_all_storage_roots
 
 #### Reset the catalog for re-seeding
 
-WARNING! this will erase the catalog, and thus require re-seeding from scratch.  It is mostly intended for development purposes, and it is unlikely that you'll need to run this against production once the catalog is in regular use.
+**DANGER!** this will erase the catalog, and thus require re-seeding from scratch.  It is mostly intended for development purposes, and it is unlikely that you'll _ever_ need to run this against production once the catalog is in regular use.
 
 * Deploy the branch of the code with which you wish to seed, to the instance which you wish to seed (e.g. main to stage).
 * Reset the database for that instance.  E.g., on production or stage:  `RAILS_ENV=production bundle exec rake db:reset`
@@ -311,28 +329,6 @@ cm.migrate_moab(target_storage_root).save! # save! is important.  migrate_moab d
 Under the assumption that the contents of the Moab were written anew in the target location, `#migrate_moab` will clear all audit timestamps related to the state of the Moab on our disks, along with `status_details`.  `status` will similarly be re-set to `validity_unknown`, and a checksum validation job will automatically be queued for the Moab.
 
 ## Development
-
-### Seed
-
-You should only need to do this:
-* when you first start developing on Preservation Catalog
-* after nuking your test database
-* when adding storage roots or zip endpoints:
-```
-RAILS_ENV=test bundle exec rails db:reset
-```
-
-The above populates the database with PreservationPolicy, MoabStorageRoot, and ZipEndpoint objects
-as defined in the configuration files.
-
-If you are new to developing on this project, you should read [the database README](db/README.md).  It
-has a detailed explanation of the data model, some sample queries, and an ER diagram illustrating the
-DB table relationships.  For those less familiar with ActiveRecord, there is also some guidance about
-how this project uses it.
-
-_Please keep the database README up to date as the schema changes!_
-
-You may also wish to glance at the (much shorter) [Replication README](app/jobs/README.md).
 
 ### Running Tests
 
@@ -407,7 +403,8 @@ bundle exec cap prod deploy # for the prod servers
 ```
 
 ### Resque Pool
-The Resque Pool admin interface is available at `<hostname>/resque/overview`.
+
+The Resque Pool admin interface is available at `<hostname>/resque/overview`.  The wiki has advice for troubleshooting failed jobs.
 
 ## API
 
