@@ -78,11 +78,11 @@ RSpec.describe ObjectsController, type: :request do
 
     context 'when no id param' do
       context 'when id param is empty' do
-        it 'returns 400 error' do
+        it 'returns 404 error' do
           get file_object_url(id: ''), params: { category: 'manifest', filepath: 'manifestInventory.xml' }, headers: valid_auth_header
-          expect(response).to have_http_status(:bad_request)
+          expect(response).to have_http_status(:not_found)
           error_response = JSON.parse(response.body)['errors'].first
-          expect(error_response['detail']).to include('does not match value: , example: druid:bc123df4567')
+          expect(error_response['detail']).to include("That request method and path combination isn't defined.")
         end
       end
 

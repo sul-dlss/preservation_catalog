@@ -133,14 +133,14 @@ RSpec.describe ObjectsController, type: :request do
     end
 
     context 'when druid empty' do
-      it 'returns 400 response' do
+      it 'returns 404 response' do
         post content_diff_object_url(id: ''),
              params: { content_metadata: content_md, subset: 'all' },
              headers: valid_auth_header.merge('Content-Type' => 'application/json')
-        expect(response).to have_http_status(:bad_request)
+        expect(response).to have_http_status(:not_found)
         error_response = JSON.parse(response.body)['errors'].first
-        expect(error_response['status']).to eq('bad_request')
-        expect(error_response['detail']).to include('does not match value: , example: druid:bc123df4567')
+        expect(error_response['status']).to eq('not_found')
+        expect(error_response['detail']).to include("That request method and path combination isn't defined.")
       end
     end
   end
