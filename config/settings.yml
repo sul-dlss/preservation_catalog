@@ -46,3 +46,9 @@ total_worker_count: 117 # for okcomputer endpoint
 
 api_jwt:
   hmac_secret: 'my$ecretK3y'
+
+# we expect/hope that this will not stay around forever.  see usage for further explanation.
+hacks:
+  update_catalog_sleep:
+    base_time: 0.05    # the default values are artificially low to keep test suite fast -- should override to be many seconds in prod
+    max_stagger: 0.01

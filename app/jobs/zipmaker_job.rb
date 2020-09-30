@@ -24,6 +24,8 @@ class ZipmakerJob < ApplicationJob
   # @param [String] moab_replication_path The path containing the druid tree from which the zipped version should be
   #   created.  used via job.arguments in before_perform setup.
   def perform(druid, version, moab_replication_path) # rubocop:disable Lint/UnusedMethodArgument
+    wait_as_needed
+
     if File.exist?(file_path)
       FileUtils.touch(file_path)
     else
@@ -32,5 +34,15 @@ class ZipmakerJob < ApplicationJob
     part_keys.each do |part_key|
       PlexerJob.perform_later(druid, version, part_key, DruidVersionZipPart.new(zip, part_key).metadata)
     end
+  end
+
+  # sleep for a configured amount of time, including a random additional delay to help ensure staggering.
+  #
+  # BUT WHY? to prevent duplication and possible explanation drift, see Robots::SdrRepo::PreservationIngest::UpdateCatalog#wait_as_needed
+  # for more detailed explanation.  the short version is, this helps alleviate Ceph MDS write/read sync and/or contention issues that
+  # we don't yet fully understand.
+  def wait_as_needed
+    additional_delay = rand(0.0..Settings.hacks.update_catalog_sleep.max_stagger)
+    sleep(Settings.hacks.update_catalog_sleep.base_time + additional_delay)
   end
 end
