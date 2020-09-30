@@ -57,8 +57,8 @@ describe DruidVersionZip do
     after { FileUtils.rm_rf('/tmp/bj') } # cleanup
 
     context 'when zip size is less than the moab size' do
-      let(:moab_size) { dvz.send(:moab_size) }
-      let(:total_part_size) { moab_size / 2 }
+      let(:moab_version_size) { dvz.send(:moab_version_size) }
+      let(:total_part_size) { moab_version_size / 2 }
 
       before do
         allow(dvz).to receive(:total_part_size).and_return(total_part_size)
@@ -67,7 +67,7 @@ describe DruidVersionZip do
       it 'raises an error' do
         expect { dvz.create_zip! }.to raise_error(
           RuntimeError,
-          /zip size \(#{total_part_size}\) is smaller than the moab size \(#{moab_size}\)/
+          /zip size \(#{total_part_size}\) is smaller than the moab version size \(#{moab_version_size}\)/
         )
       end
     end
