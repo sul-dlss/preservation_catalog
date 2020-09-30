@@ -36,13 +36,12 @@ class ZipmakerJob < ApplicationJob
     end
   end
 
-  # sleep for a configured amount of time, including a random additional delay to help ensure staggering.
+  # sleep for a configured amount of time.
   #
   # BUT WHY? to prevent duplication and possible explanation drift, see Robots::SdrRepo::PreservationIngest::UpdateCatalog#wait_as_needed
   # for more detailed explanation.  the short version is, this helps alleviate Ceph MDS write/read sync and/or contention issues that
   # we don't yet fully understand.
   def wait_as_needed
-    additional_delay = rand(0.0..Settings.hacks.update_catalog_sleep.max_stagger)
-    sleep(Settings.hacks.update_catalog_sleep.base_time + additional_delay)
+    sleep(Settings.hacks.zipmaker_delay_seconds)
   end
 end
