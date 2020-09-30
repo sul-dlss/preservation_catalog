@@ -49,6 +49,4 @@ api_jwt:
 
 # we expect/hope that this will not stay around forever.  see usage for further explanation.
 hacks:
-  update_catalog_sleep:
-    base_time: 0.05    # the default values are artificially low to keep test suite fast -- should override to be many seconds in prod
-    max_stagger: 0.01
+  zipmaker_delay_seconds: 0.05 # the default value is artificially low to keep test suite fast -- should override to be many seconds in prod
