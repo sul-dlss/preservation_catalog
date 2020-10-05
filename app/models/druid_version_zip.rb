@@ -37,7 +37,9 @@ class DruidVersionZip
     combined, status = Open3.capture2e(zip_command, chdir: work_dir.to_s)
     raise "zipmaker failure #{combined}" unless status.success?
     unless zip_size_ok?
-      raise "zip size (#{total_part_size}) is smaller than the moab version size (#{moab_version_size})! zipmaker failure #{combined}"
+      part_cleanup_errors = cleanup_zip_parts!
+      part_cleanup_err_msg = "\n-- errors cleaning up zip parts: #{part_cleanup_errors.map(&:inspect)}" if part_cleanup_errors.present?
+      raise "zip size (#{total_part_size}) is smaller than the moab version size (#{moab_version_size})! zipmaker failure #{combined}#{part_cleanup_err_msg}"
     end
 
     part_keys.each do |part_key|
@@ -96,9 +98,15 @@ class DruidVersionZip
   #  the last one will end .zip, so two parts is:  .z01, zip. (this agrees with zip utility)
   # @return [Array<Pathname>] Existing pathnames for zip parts based on glob (.zip, .z01, .z02, etc.)
   def part_paths
-    @part_paths ||= Pathname.glob(file_path.sub(/.zip\z/, '.z*')).reject do |path|
+    Pathname.glob(file_path.sub(/.zip\z/, '.z*')).reject do |path|
       path.to_s =~ /.md5\z/
     end
+  end
+
+  # @return [Array<Pathname>] all extant zip part and checksum files for this dvz (e.g. bc123df4567.zip, bc123df4567.z01, bc123df4567.zip.md5,
+  #  bc123df4567.z01.md5, etc)
+  def parts_and_checksums_paths
+    Pathname.glob(File.join(zip_storage, s3_key('.*')))
   end
 
   # @return [String] "v" with zero-padded 4-digit version, e.g., v0001
@@ -152,6 +160,16 @@ class DruidVersionZip
 
   def zip_size_ok?
     total_part_size > moab_version_size
+  end
+
+  def cleanup_zip_parts!
+    errors = []
+    parts_and_checksums_paths.map do |p|
+      File.delete(p)
+    rescue StandardError => e
+      errors << e
+    end
+    errors
   end
 
   def total_part_size
