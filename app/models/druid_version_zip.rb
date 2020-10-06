@@ -151,7 +151,7 @@ class DruidVersionZip
   end
 
   def zip_size_ok?
-    total_part_size >= moab_version_size
+    total_part_size > moab_version_size
   end
 
   def total_part_size
