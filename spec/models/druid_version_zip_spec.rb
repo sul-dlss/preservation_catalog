@@ -3,6 +3,9 @@
 require 'rails_helper'
 
 describe DruidVersionZip do
+  # Some tests below will use the constructor that takes storage_location, because they are
+  # testing behavior where a zip is being created from a Moab on disk.  For tests that don't
+  # exercise that behavior, the parameter is omitted to test that it isn't needed.
   let(:dvz) { described_class.new(druid, version) }
   let(:druid) { 'bj102hs9687' }
   let(:version) { 1 }
@@ -57,8 +60,8 @@ describe DruidVersionZip do
     after { FileUtils.rm_rf('/tmp/bj') } # cleanup
 
     context 'when zip size is less than the moab size' do
-      let(:moab_size) { dvz.send(:moab_size) }
-      let(:total_part_size) { moab_size / 2 }
+      let(:moab_version_size) { dvz.send(:moab_version_size) }
+      let(:total_part_size) { moab_version_size / 2 }
 
       before do
         allow(dvz).to receive(:total_part_size).and_return(total_part_size)
@@ -67,7 +70,7 @@ describe DruidVersionZip do
       it 'raises an error' do
         expect { dvz.create_zip! }.to raise_error(
           RuntimeError,
-          /zip size \(#{total_part_size}\) is smaller than the moab size \(#{moab_size}\)/
+          /zip size \(#{total_part_size}\) is smaller than the moab version size \(#{moab_version_size}\)/
         )
       end
     end
@@ -96,6 +99,24 @@ describe DruidVersionZip do
         expect(status).to be_success
         _, status = Open3.capture2e("unzip -lq #{zip_path} bj/102/hs/9687/#{techmd}")
         expect(status).not_to be_success
+      end
+
+      it 'calls check_moab_version_readability! before attempting to create the zip' do
+        # This checks that we only attempt zip creation after checking to see that all files are readable.
+        expect(dvz).to receive(:check_moab_version_readability!).ordered.and_call_original
+        expect(Open3).to receive(:capture2e).with(dvz.zip_command, chdir: dvz.work_dir.to_s).ordered.and_call_original
+        expect { dvz.create_zip! }.not_to raise_error
+        expect(File).to exist(zip_path)
+      end
+    end
+
+    context 'when the moab version directory to be zipped has unreadable files' do
+      let(:unreadable_filename) { 'spec/fixtures/storage_root01/sdr2objects/bj/102/hs/9687/bj102hs9687/v0003/manifests/versionInventory.xml' }
+
+      it 'allows the error to bubble up when stat is unsuccessfully called on a file in the moab version' do
+        allow(File).to receive(:stat).and_call_original
+        expect(File).to receive(:stat).with(unreadable_filename).and_raise(Errno::EACCES, 'no file for you')
+        expect { dvz.create_zip! }.to raise_error(Errno::EACCES, /no file for you/)
       end
     end
 
@@ -293,6 +314,35 @@ describe DruidVersionZip do
   describe '#zip_storage' do
     it 'returns Pathname to location where the zip file is to be created' do
       expect(dvz.zip_storage.to_s).to eq '/tmp'
+    end
+  end
+
+  describe '#check_moab_version_readability!' do
+    let(:dvz) { described_class.new(druid, version, 'spec/fixtures/storage_root01/sdr2objects') }
+    let(:v1_moab_files) do
+      %w[
+        spec/fixtures/storage_root01/sdr2objects/bj/102/hs/9687/bj102hs9687/v0001/data/content/eric-smith-dissertation-augmented.pdf
+        spec/fixtures/storage_root01/sdr2objects/bj/102/hs/9687/bj102hs9687/v0001/data/content/eric-smith-dissertation.pdf
+        spec/fixtures/storage_root01/sdr2objects/bj/102/hs/9687/bj102hs9687/v0001/data/metadata/contentMetadata.xml
+        spec/fixtures/storage_root01/sdr2objects/bj/102/hs/9687/bj102hs9687/v0001/data/metadata/descMetadata.xml
+        spec/fixtures/storage_root01/sdr2objects/bj/102/hs/9687/bj102hs9687/v0001/data/metadata/identityMetadata.xml
+        spec/fixtures/storage_root01/sdr2objects/bj/102/hs/9687/bj102hs9687/v0001/data/metadata/provenanceMetadata.xml
+        spec/fixtures/storage_root01/sdr2objects/bj/102/hs/9687/bj102hs9687/v0001/data/metadata/relationshipMetadata.xml
+        spec/fixtures/storage_root01/sdr2objects/bj/102/hs/9687/bj102hs9687/v0001/data/metadata/rightsMetadata.xml
+        spec/fixtures/storage_root01/sdr2objects/bj/102/hs/9687/bj102hs9687/v0001/data/metadata/technicalMetadata.xml
+        spec/fixtures/storage_root01/sdr2objects/bj/102/hs/9687/bj102hs9687/v0001/data/metadata/versionMetadata.xml
+        spec/fixtures/storage_root01/sdr2objects/bj/102/hs/9687/bj102hs9687/v0001/manifests/fileInventoryDifference.xml
+        spec/fixtures/storage_root01/sdr2objects/bj/102/hs/9687/bj102hs9687/v0001/manifests/manifestInventory.xml
+        spec/fixtures/storage_root01/sdr2objects/bj/102/hs/9687/bj102hs9687/v0001/manifests/signatureCatalog.xml
+        spec/fixtures/storage_root01/sdr2objects/bj/102/hs/9687/bj102hs9687/v0001/manifests/versionAdditions.xml
+        spec/fixtures/storage_root01/sdr2objects/bj/102/hs/9687/bj102hs9687/v0001/manifests/versionInventory.xml
+      ]
+    end
+
+    it 'calls File.stat on each file in the moab version directory' do
+      allow(File).to receive(:stat)
+      v1_moab_files.each { |filename| expect(File).to receive(:stat).with(filename) }
+      dvz.send(:check_moab_version_readability!)
     end
   end
 end

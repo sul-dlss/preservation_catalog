@@ -32,10 +32,13 @@ class DruidVersionZip
   # the archival directory structure, just the object, e.g. starting at 'ab123cd4567/...' directory,
   # not 'ab/123/cd/4567/ab123cd4567/...'
   def create_zip!
+    check_moab_version_readability!
     ensure_zip_directory!
     combined, status = Open3.capture2e(zip_command, chdir: work_dir.to_s)
     raise "zipmaker failure #{combined}" unless status.success?
-    raise "zip size (#{total_part_size}) is smaller than the moab size (#{moab_size})! zipmaker failure #{combined}" unless zip_size_ok?
+    unless zip_size_ok?
+      raise "zip size (#{total_part_size}) is smaller than the moab version size (#{moab_version_size})! zipmaker failure #{combined}"
+    end
 
     part_keys.each do |part_key|
       DruidVersionZipPart.new(self, part_key).write_md5
@@ -137,22 +140,32 @@ class DruidVersionZip
 
   private
 
+  # Throws an error if any of the files in the moab are not yet readable.  For example due to
+  # Ceph MDS instance for a pres cat worker VM thinking that a file is a stray as a result of our
+  # particular use of hardlinking in preservation ingest.  Allows for a quick directory walk before
+  # attempting to create the zip file(s).  See https://github.com/sul-dlss/preservation_catalog/issues/1633
+  # @raise [StandardError] if storage_location is not available (should have been provided in constructor)
+  # @raise [Errno::EACCES, Errno::EIO, Errno::ENOENT, Errno::ESTALE, ?] if it is not possible to stat one or more files in the Moab
+  def check_moab_version_readability!
+    moab_version_files.map { |f| File.stat(f) }
+  end
+
   def zip_size_ok?
-    total_part_size >= moab_size
+    total_part_size > moab_version_size
   end
 
   def total_part_size
-    part_paths
-      .map { |part_path| File.size(part_path) }
-      .sum
+    part_paths.sum { |part_path| File.size(part_path) }
   end
 
-  def moab_size
+  def moab_version_size
+    moab_version_files.sum { |file_path| File.size(file_path) }
+  end
+
+  def moab_version_files
     Dir
       .glob("#{moab_version_path}/**/*")
       .select { |path| File.file?(path) }
-      .map { |file_path| File.size(file_path) }
-      .sum
   end
 
   # @return [String] e.g. 'Zip 3.0 (July 5th 2008)' or 'Zip 3.0.1'
