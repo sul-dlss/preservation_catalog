@@ -10,7 +10,7 @@
 class ZippedMoabVersion < ApplicationRecord
   belongs_to :preserved_object, inverse_of: :zipped_moab_versions
   belongs_to :zip_endpoint, inverse_of: :zipped_moab_versions
-  has_many :zip_parts, dependent: :destroy, inverse_of: :zipped_moab_version
+  has_many :zip_parts, dependent: :restrict_with_exception, inverse_of: :zipped_moab_version
 
   validates :preserved_object, :version, :zip_endpoint, presence: true
 
