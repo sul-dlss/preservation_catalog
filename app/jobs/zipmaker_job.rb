@@ -6,7 +6,7 @@
 # Invoke PlexerJob for each zip part.
 class ZipmakerJob < ApplicationJob
   queue_as :zipmaker
-  delegate :create_zip!, :file_path, :part_keys, to: :zip
+  delegate :ensure_zip!, :file_path, :part_keys, to: :zip
 
   attr_accessor :zip
 
@@ -26,11 +26,7 @@ class ZipmakerJob < ApplicationJob
   def perform(druid, version, moab_replication_path) # rubocop:disable Lint/UnusedMethodArgument
     wait_as_needed
 
-    if File.exist?(file_path)
-      FileUtils.touch(file_path)
-    else
-      create_zip!
-    end
+    ensure_zip!
     part_keys.each do |part_key|
       PlexerJob.perform_later(druid, version, part_key, DruidVersionZipPart.new(zip, part_key).metadata)
     end
