@@ -177,7 +177,7 @@ class DruidVersionZip
   end
 
   def moab_version_size
-    moab_version_files.sum { |file_path| File.size(file_path) }
+    moab_version_files.sum { |f| File.size(f) }
   end
 
   def moab_version_files
