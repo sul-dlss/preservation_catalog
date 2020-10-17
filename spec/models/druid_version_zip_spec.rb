@@ -52,6 +52,44 @@ describe DruidVersionZip do
     end
   end
 
+  describe '#ensure_zip!' do
+    let(:dvz) { described_class.new(druid, version, 'spec/fixtures/storage_root01/sdr2objects') }
+
+    context 'there is a zip file already made, but it looks too small' do
+      before do
+        dvz.create_zip!
+        File.open(dvz.file_path, 'w') { |f| f.write('pretend it is too small because zip binary silently omitted versionAdditions.xml') }
+      end
+
+      it 'raises an error indicating that the file in the zip temp space looks too small' do
+        expect { dvz.ensure_zip! }.to raise_error(RuntimeError, 'zip already exists, but size (80) is smaller than the moab version size (1928387)!')
+      end
+    end
+
+    context 'there is a zip file already made, and it passes the size check' do
+      let(:version) { 3 }
+
+      before { dvz.create_zip! }
+
+      after { FileUtils.rm_rf('/tmp/bj') } # cleanup
+
+      it 'updates atime and mtime on the zip file that is already there' do
+        expect { dvz.ensure_zip! }.to(
+          (change {
+            File.stat(dvz.file_path).atime
+          }).and(change {
+            File.stat(dvz.file_path).mtime
+          })
+        )
+      end
+
+      it 'does not attempt to re-create the zip file' do
+        expect(dvz).not_to receive(:create_zip!)
+        dvz.ensure_zip!
+      end
+    end
+  end
+
   describe '#create_zip!' do
     let(:dvz) { described_class.new(druid, version, 'spec/fixtures/storage_root01/sdr2objects') }
     let(:zip_path) { dvz.file_path }

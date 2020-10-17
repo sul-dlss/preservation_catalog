@@ -63,6 +63,19 @@ describe ZipmakerJob, type: :job do
     end
   end
 
+  context 'a supsiciously small zip already exists in storage' do
+    let(:version) { 1 }
+
+    it 'raises an informative error' do
+      expect(File).to exist(zip_path)
+      expect(druid_version_zip).not_to receive(:create_zip!)
+
+      expect do
+        described_class.perform_now(druid, version, moab_replication_storage_location)
+      end.to raise_error(RuntimeError, 'zip already exists, but size (3) is smaller than the moab version size (1928387)!')
+    end
+  end
+
   context 'zip is not yet in zip storage' do
     let(:version) { 3 }
 
