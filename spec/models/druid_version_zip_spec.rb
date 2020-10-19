@@ -52,6 +52,47 @@ describe DruidVersionZip do
     end
   end
 
+  describe '#find_or_create_zip!' do
+    let(:dvz) { described_class.new(druid, version, 'spec/fixtures/storage_root01/sdr2objects') }
+
+    context 'there is a zip file already made, but it looks too small' do
+      before do
+        dvz.create_zip!
+        File.open(dvz.file_path, 'w') { |f| f.write('pretend it is too small because zip binary silently omitted versionAdditions.xml') }
+      end
+
+      it 'raises an error indicating that the file in the zip temp space looks too small' do
+        expect {
+          dvz.find_or_create_zip!
+        }.to raise_error(RuntimeError, 'zip already exists, but size (80) is smaller than the moab version size (1928387)!')
+      end
+    end
+
+    context 'there is a zip file already made, and it passes the size check' do
+      let(:version) { 3 }
+
+      before { dvz.create_zip! }
+
+      after { FileUtils.rm_rf('/tmp/bj') } # cleanup
+
+      it 'updates atime and mtime on the zip file that is already there' do
+        sleep(0.1) # sorta hate this, but sleep for a 1/10 s, to give a moment before checking atime/mtime (to prevent flappy test in CI).
+        expect { dvz.find_or_create_zip! }.to(
+          (change {
+            File.stat(dvz.file_path).atime
+          }).and(change {
+            File.stat(dvz.file_path).mtime
+          })
+        )
+      end
+
+      it 'does not attempt to re-create the zip file' do
+        expect(dvz).not_to receive(:create_zip!)
+        dvz.find_or_create_zip!
+      end
+    end
+  end
+
   describe '#create_zip!' do
     let(:dvz) { described_class.new(druid, version, 'spec/fixtures/storage_root01/sdr2objects') }
     let(:zip_path) { dvz.file_path }
@@ -72,6 +113,24 @@ describe DruidVersionZip do
           RuntimeError,
           /zip size \(#{total_part_size}\) is smaller than the moab version size \(#{moab_version_size}\)/
         )
+      end
+
+      it 'cleans up the zip file' do
+        expect { dvz.create_zip! }.to raise_error(RuntimeError)
+        expect(dvz.parts_and_checksums_paths).to be_empty
+      end
+
+      it 'handles errors from zip cleanup gracefully and includes cleanup error messages in the overall message' do
+        cleanup_err_msg = "Errno::EACCES: Permission denied - No delete for you - #{dvz.file_path}"
+        allow(File).to receive(:delete).with(Pathname.new(dvz.file_path)).and_raise(Errno::EACCES, cleanup_err_msg)
+        expect { dvz.create_zip! }.to raise_error(RuntimeError, /#{cleanup_err_msg}/m)
+      end
+
+      it 'does not interfere with zip files created for other versions' do
+        dvz_v2 = described_class.new(druid, version - 1, 'spec/fixtures/storage_root01/sdr2objects')
+        dvz_v2.create_zip!
+        expect { dvz.create_zip! }.to raise_error(RuntimeError)
+        expect(dvz_v2.parts_and_checksums_paths.sort).to eq [Pathname.new(dvz_v2.file_path), Pathname.new(dvz_v2.file_path + '.md5')]
       end
     end
 

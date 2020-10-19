@@ -27,6 +27,19 @@ class DruidVersionZip
     @base_key ||= s3_key.sub(/.zip\z/, '')
   end
 
+  # Checks to see whether a zip file already exists for this druid-version.  If it does, just touch the
+  # file to refresh atime and mtime, so the zip cache cleaning cron job doesn't see it as stale.  If it doesn't,
+  # create it.
+  # @raise [StandardError] if there's a zip file for this druid-version, but it looks too small to be complete.
+  def find_or_create_zip!
+    if File.exist?(file_path)
+      raise "zip already exists, but size (#{total_part_size}) is smaller than the moab version size (#{moab_version_size})!" unless zip_size_ok?
+      FileUtils.touch(file_path)
+    else
+      create_zip!
+    end
+  end
+
   # Creates a zip of Druid-Version content.
   # Changes directory so that the storage root (and druid tree) are not part of
   # the archival directory structure, just the object, e.g. starting at 'ab123cd4567/...' directory,
@@ -37,7 +50,9 @@ class DruidVersionZip
     combined, status = Open3.capture2e(zip_command, chdir: work_dir.to_s)
     raise "zipmaker failure #{combined}" unless status.success?
     unless zip_size_ok?
-      raise "zip size (#{total_part_size}) is smaller than the moab version size (#{moab_version_size})! zipmaker failure #{combined}"
+      part_cleanup_errors = cleanup_zip_parts!
+      part_cleanup_err_msg = "\n-- errors cleaning up zip parts: #{part_cleanup_errors.map(&:inspect)}" if part_cleanup_errors.present?
+      raise "zip size (#{total_part_size}) is smaller than the moab version size (#{moab_version_size})! zipmaker failure #{combined}#{part_cleanup_err_msg}"
     end
 
     part_keys.each do |part_key|
@@ -96,9 +111,15 @@ class DruidVersionZip
   #  the last one will end .zip, so two parts is:  .z01, zip. (this agrees with zip utility)
   # @return [Array<Pathname>] Existing pathnames for zip parts based on glob (.zip, .z01, .z02, etc.)
   def part_paths
-    @part_paths ||= Pathname.glob(file_path.sub(/.zip\z/, '.z*')).reject do |path|
+    Pathname.glob(file_path.sub(/.zip\z/, '.z*')).reject do |path|
       path.to_s =~ /.md5\z/
     end
+  end
+
+  # @return [Array<Pathname>] all extant zip part and checksum files for this dvz (e.g. bc123df4567.zip, bc123df4567.z01, bc123df4567.zip.md5,
+  #  bc123df4567.z01.md5, etc)
+  def parts_and_checksums_paths
+    Pathname.glob(File.join(zip_storage, s3_key('.*')))
   end
 
   # @return [String] "v" with zero-padded 4-digit version, e.g., v0001
@@ -138,6 +159,15 @@ class DruidVersionZip
     @zip_storage ||= Pathname.new(Settings.zip_storage)
   end
 
+  def zip_size_ok?
+    total_part_size > moab_version_size
+  end
+
+  # @return [String] the option included with "zip -s"
+  def zip_split_size
+    '10g'
+  end
+
   private
 
   # Throws an error if any of the files in the moab are not yet readable.  For example due to
@@ -150,8 +180,14 @@ class DruidVersionZip
     moab_version_files.map { |f| File.stat(f) }
   end
 
-  def zip_size_ok?
-    total_part_size > moab_version_size
+  def cleanup_zip_parts!
+    errors = []
+    parts_and_checksums_paths.map do |p|
+      File.delete(p)
+    rescue StandardError => e
+      errors << e
+    end
+    errors
   end
 
   def total_part_size
@@ -159,10 +195,11 @@ class DruidVersionZip
   end
 
   def moab_version_size
-    moab_version_files.sum { |file_path| File.size(file_path) }
+    moab_version_files.sum { |f| File.size(f) }
   end
 
   def moab_version_files
+    raise unless File.exist?(moab_version_path)
     Dir
       .glob("#{moab_version_path}/**/*")
       .select { |path| File.file?(path) }
@@ -177,11 +214,6 @@ class DruidVersionZip
     end
     return match[1] if match && match[1].present?
     raise 'No version info matched from `zip -v` ouptut'
-  end
-
-  # @return [String] the option included with "zip -s"
-  def zip_split_size
-    '10g'
   end
 
   def zip_version_regexp

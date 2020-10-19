@@ -7,7 +7,7 @@ describe 'the whole replication pipeline', type: :job do
   let(:ibm_s3_object) { instance_double(::Aws::S3::Object, exists?: false, upload_file: true) }
   let(:aws_bucket) { instance_double(::Aws::S3::Bucket, object: aws_s3_object) }
   let(:ibm_bucket) { instance_double(::Aws::S3::Bucket, object: ibm_s3_object) }
-  let(:druid) { 'bj102hs9687' }
+  let(:druid) { 'bz514sm9647' }
   let(:version) { 1 }
   let(:preserved_object) { create(:preserved_object, druid: druid, current_version: version) }
   let(:zip_endpoints) { preserved_object.preservation_policy.zip_endpoints }
@@ -18,10 +18,10 @@ describe 'the whole replication pipeline', type: :job do
       zip_endpoints: zip_endpoints.map(&:endpoint_name).sort
     }
   end
-  let(:s3_key) { 'bj/102/hs/9687/bj102hs9687.v0001.zip' }
+  let(:s3_key) { 'bz/514/sm/9647/bz514sm9647.v0001.zip' }
   let(:aws_provider) { instance_double(PreservationCatalog::AwsProvider, bucket: aws_bucket) }
   let(:ibm_provider) { instance_double(PreservationCatalog::IbmProvider, bucket: ibm_bucket) }
-  let(:moab_storage_root) { create(:moab_storage_root) }
+  let(:moab_storage_root) { MoabStorageRoot.find_by!(name: 'fixture_sr1') }
 
   around do |example|
     old_adapter = ApplicationJob.queue_adapter
@@ -31,10 +31,13 @@ describe 'the whole replication pipeline', type: :job do
   end
 
   before do
-    FactoryBot.reload # we need the "first" PO, bj102hs9687, for PC to line up w/ fixture
     allow(Settings).to receive(:zip_storage).and_return(Rails.root.join('spec', 'fixtures', 'zip_storage'))
     allow(PreservationCatalog::AwsProvider).to receive(:new).and_return(aws_provider)
     allow(PreservationCatalog::IbmProvider).to receive(:new).and_return(ibm_provider)
+  end
+
+  after do
+    FileUtils.rm_rf('spec/fixtures/zip_storage/bz/')
   end
 
   it 'gets from zipmaker queue to replication result message upon initial moab creation' do
@@ -52,15 +55,9 @@ describe 'the whole replication pipeline', type: :job do
   end
 
   context 'updating an existing moab' do
-    let(:druid) { 'bz514sm9647' }
     let(:version) { 2 }
     let(:next_version) { version + 1 }
-    let(:moab_storage_root) { MoabStorageRoot.find_by!(name: 'fixture_sr1') }
     let(:s3_key) { "bz/514/sm/9647/bz514sm9647.v000#{next_version}.zip" }
-
-    after do
-      FileUtils.rm_rf('spec/fixtures/zip_storage/bz/')
-    end
 
     it 'gets from zipmaker queue to replication result message for the new version when the moab is updated' do
       # pretend catalog is on version 2 before update call from robots
