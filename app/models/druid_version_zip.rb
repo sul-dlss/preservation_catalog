@@ -31,7 +31,7 @@ class DruidVersionZip
   # file to refresh atime and mtime, so the zip cache cleaning cron job doesn't see it as stale.  If it doesn't,
   # create it.
   # @raise [StandardError] if there's a zip file for this druid-version, but it looks too small to be complete.
-  def ensure_zip!
+  def find_or_create_zip!
     if File.exist?(file_path)
       raise "zip already exists, but size (#{total_part_size}) is smaller than the moab version size (#{moab_version_size})!" unless zip_size_ok?
       FileUtils.touch(file_path)
