@@ -27,6 +27,19 @@ class DruidVersionZip
     @base_key ||= s3_key.sub(/.zip\z/, '')
   end
 
+  # Checks to see whether a zip file already exists for this druid-version.  If it does, just touch the
+  # file to refresh atime and mtime, so the zip cache cleaning cron job doesn't see it as stale.  If it doesn't,
+  # create it.
+  # @raise [StandardError] if there's a zip file for this druid-version, but it looks too small to be complete.
+  def find_or_create_zip!
+    if File.exist?(file_path)
+      raise "zip already exists, but size (#{total_part_size}) is smaller than the moab version size (#{moab_version_size})!" unless zip_size_ok?
+      FileUtils.touch(file_path)
+    else
+      create_zip!
+    end
+  end
+
   # Creates a zip of Druid-Version content.
   # Changes directory so that the storage root (and druid tree) are not part of
   # the archival directory structure, just the object, e.g. starting at 'ab123cd4567/...' directory,
@@ -146,6 +159,15 @@ class DruidVersionZip
     @zip_storage ||= Pathname.new(Settings.zip_storage)
   end
 
+  def zip_size_ok?
+    total_part_size > moab_version_size
+  end
+
+  # @return [String] the option included with "zip -s"
+  def zip_split_size
+    '10g'
+  end
+
   private
 
   # Throws an error if any of the files in the moab are not yet readable.  For example due to
@@ -156,10 +178,6 @@ class DruidVersionZip
   # @raise [Errno::EACCES, Errno::EIO, Errno::ENOENT, Errno::ESTALE, ?] if it is not possible to stat one or more files in the Moab
   def check_moab_version_readability!
     moab_version_files.map { |f| File.stat(f) }
-  end
-
-  def zip_size_ok?
-    total_part_size > moab_version_size
   end
 
   def cleanup_zip_parts!
@@ -181,6 +199,7 @@ class DruidVersionZip
   end
 
   def moab_version_files
+    raise unless File.exist?(moab_version_path)
     Dir
       .glob("#{moab_version_path}/**/*")
       .select { |path| File.file?(path) }
@@ -195,11 +214,6 @@ class DruidVersionZip
     end
     return match[1] if match && match[1].present?
     raise 'No version info matched from `zip -v` ouptut'
-  end
-
-  # @return [String] the option included with "zip -s"
-  def zip_split_size
-    '10g'
   end
 
   def zip_version_regexp
