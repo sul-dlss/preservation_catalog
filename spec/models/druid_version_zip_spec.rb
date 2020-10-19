@@ -76,6 +76,7 @@ describe DruidVersionZip do
       after { FileUtils.rm_rf('/tmp/bj') } # cleanup
 
       it 'updates atime and mtime on the zip file that is already there' do
+        sleep(0.1) # sorta hate this, but sleep for a 1/10 s, to give a moment before checking atime/mtime (to prevent flappy test in CI).
         expect { dvz.find_or_create_zip! }.to(
           (change {
             File.stat(dvz.file_path).atime
