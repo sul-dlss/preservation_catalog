@@ -51,5 +51,4 @@ group :deploy do
   gem 'capistrano-rails'
   gem 'capistrano-passenger'
   gem 'dlss-capistrano'
-  gem 'capistrano-resque-pool'
 end

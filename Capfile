@@ -13,8 +13,8 @@ require "capistrano/rails/migrations"
 require "capistrano/passenger"
 require "capistrano/honeybadger"
 require "dlss/capistrano"
+require "dlss/capistrano/resque_pool"
 require 'whenever/capistrano'
-require 'capistrano-resque-pool'
 
 # Load custom tasks from `lib/capistrano/tasks` if you have any defined
 Dir.glob("lib/capistrano/tasks/*.rake").each { |r| import r }

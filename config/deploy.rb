@@ -20,7 +20,7 @@ set :deploy_to, "/opt/app/pres/#{fetch(:application)}"
 # set :pty, true
 
 # Default value for :linked_files is []
-append :linked_files, 'config/database.yml', 'config/resque.yml', 'config/resque-pool.yml'
+append :linked_files, 'config/database.yml', 'config/resque.yml', 'config/resque-pool.yml', 'tmp/resque-pool.lock'
 
 # Default value for linked_dirs is []
 append :linked_dirs, 'log', 'config/settings', 'tmp/pids'
@@ -41,10 +41,7 @@ set :resque_server_roles, :resque
 
 # update shared_configs before db seed
 before 'deploy:migrate', 'shared_configs:update'
-
 after 'deploy:migrate', 'db_seed'
-
-after 'deploy:restart', 'resque:pool:hot_swap'
 
 desc 'Run rake db:seed'
 task :db_seed do
