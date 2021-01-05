@@ -134,7 +134,7 @@ RSpec.describe CompleteMoabHandler do
     it 'errors when moab_storage_root is not an MoabStorageRoot object' do
       complete_moab_handler = described_class.new(druid, incoming_version, incoming_size, 1)
       expect(complete_moab_handler).to be_invalid
-      expect(complete_moab_handler.errors.messages).to include(moab_storage_root: ['must be an actual MoabStorageRoot'])
+      expect(complete_moab_handler.errors.messages).to match(hash_including(moab_storage_root: ['must be an actual MoabStorageRoot']))
     end
   end
 end

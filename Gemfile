@@ -16,7 +16,7 @@ gem 'postgresql_cursor' # for paging over large result sets efficiently
 gem 'pry-byebug' # call 'binding.pry' anywhere in the code to stop execution and get a pry-byebug console
 gem 'pry-rails' # use pry as the rails console shell instead of IRB
 gem 'puma', '~> 3.12' # app server
-gem 'rails', '~> 6.0.2'
+gem 'rails', '~> 6.1.0'
 gem 'resque', '~> 1.27'
 gem 'resque-lock' # deduplication of worker queue jobs
 gem 'resque-pool'
@@ -38,9 +38,9 @@ group :development do
 end
 
 group :test do
-  gem "factory_bot_rails", "~> 4.0"
+  gem 'factory_bot_rails', '~> 4.0'
   gem 'rails-controller-testing'
-  gem 'rspec-rails', '~> 3.6'
+  gem 'rspec-rails', '~> 4.0'
   gem 'shoulda-matchers'
   # Codeclimate is not compatible with 0.18+. See https://github.com/codeclimate/test-reporter/issues/413
   gem 'simplecov', '~> 0.17.1'
