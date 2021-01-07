@@ -23,7 +23,7 @@ _Please keep this up to date as the schema changes!_
   * `druid` is the digital resource unique identifier
   * `current_version` is current latest version we've seen for the druid across all instances.
   * `preservation_policy_id` points to the policy governing how the object should be preserved.
-* A `CompleteMoab` represents a physical copy of a `PreservedObject`, e.g. a moab (represents all versions) stored on premesis and accessed via NFS mount, the `zipped_moab_vesion` (represents a single version) copy sitting on a cloud endpoint (manipulable via REST calls to a 3rd party cloud service), etc. Multiple `CompleteMoab` instances can belong to the same `PreservedObject` instance. 
+* A `CompleteMoab` represents a physical copy of a `PreservedObject`, e.g. a moab (represents all versions) stored on premesis and accessed via NFS mount, the `zipped_moab_vesion` (represents a single version) copy sitting on a cloud endpoint (manipulable via REST calls to a 3rd party cloud service), etc. Multiple `CompleteMoab` instances can belong to the same `PreservedObject` instance.
   * `size`: is approximate, and given in bytes.  It's intended to be used for things like allocating storage.  It should _not_ be treated as an exact value for fixity checking.
   * `status`: a high-level summary of the copy's current state.  This is just a reflection of what we last saw on disk, and does not capture history, nor does it necessarily enumerate all errors for a copy that needs remediation.
   * `version`: should be the same as `PreservedObject` current version. This is left over from when `complete_moab` and `zipped_moab_version` shared a table.
@@ -84,7 +84,7 @@ General advice:
 * Use for ActiveRecord enums (http://edgeapi.rubyonrails.org/classes/ActiveRecord/Enum.html):
   * Instead of using plain string values everywhere, define class constants for the string values, and use those class constants both when defining the enum, and when referring to enum values in other parts of the codebase.
   * In the enum definition, explicitly map each enum string to its underlying integer value, and leave a note admonishing future developers not to change enums that are already in use in production (or to think about the needed migration).  This is to prevent unintentional re-mapping of existing enum values.
-  * Example:  https://github.com/sul-dlss/preservation_catalog/blob/master/app/models/complete_moab.rb
+  * Example:  https://github.com/sul-dlss/preservation_catalog/blob/main/app/models/complete_moab.rb
 
 
 

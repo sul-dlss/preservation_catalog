@@ -3,7 +3,7 @@
 [![Maintainability](https://api.codeclimate.com/v1/badges/96b330db62f304b786cb/maintainability)](https://codeclimate.com/github/sul-dlss/preservation_catalog/maintainability)
 [![GitHub version](https://badge.fury.io/gh/sul-dlss%2Fpreservation_catalog.svg)](https://badge.fury.io/gh/sul-dlss%2Fpreservation_catalog)
 [![Docker image](https://images.microbadger.com/badges/image/suldlss/preservation_catalog.svg)](https://microbadger.com/images/suldlss/preservation_catalog "Get your own image badge on microbadger.com")
-[![OpenAPI Validator](http://validator.swagger.io/validator?url=https://raw.githubusercontent.com/sul-dlss/preservation_catalog/master/openapi.yml)](http://validator.swagger.io/validator/debug?url=https://raw.githubusercontent.com/sul-dlss/preservation_catalog/master/openapi.yml)
+[![OpenAPI Validator](http://validator.swagger.io/validator?url=https://raw.githubusercontent.com/sul-dlss/preservation_catalog/main/openapi.yml)](http://validator.swagger.io/validator/debug?url=https://raw.githubusercontent.com/sul-dlss/preservation_catalog/main/openapi.yml)
 
 # README
 
@@ -234,7 +234,7 @@ For example, if you wish to run CV on all the "validity_unknown" druids on stora
 Audit::Checksum.validate_status_root(:validity_unknown, 'services-disk15')
 ```
 
-[Valid status strings](https://github.com/sul-dlss/preservation_catalog/blob/master/app/models/complete_moab.rb#L1-L10)
+[Valid status strings](https://github.com/sul-dlss/preservation_catalog/blob/main/app/models/complete_moab.rb#L1-L10)
 
 ## Seed the catalog (with data about the Moabs on the storage roots the catalog tracks -- presumes rake db:seed already performed)
 
@@ -252,7 +252,7 @@ Audit::MoabToCatalog.seed_catalog_for_all_storage_roots
 
 WARNING! this will erase the catalog, and thus require re-seeding from scratch.  It is mostly intended for development purposes, and it is unlikely that you'll need to run this against production once the catalog is in regular use.
 
-* Deploy the branch of the code with which you wish to seed, to the instance which you wish to seed (e.g. master to stage).
+* Deploy the branch of the code with which you wish to seed, to the instance which you wish to seed (e.g. main to stage).
 * Reset the database for that instance.  E.g., on production or stage:  `RAILS_ENV=production bundle exec rake db:reset`
   * note that if you do this while `RAILS_ENV=production` (i.e. production or stage), you'll get a scary warning along the lines of:
   ```

@@ -61,7 +61,7 @@ Run all validation checks on Moabs and generate reports.  Note that error detail
 
 We have a list of druids that were on this root, and of objects from this root that had errors before the migration.
 
-- [ ] did the post-migration C2M run indicate that any moabs which were expected on the target storage root were actually missing?  [Query the database for non-`ok` moabs](https://github.com/sul-dlss/preservation_catalog/blob/master/db/README.md#how-many-moabs-on-each-storage-root-are-status--ok) and examine the c2m_after error report.
+- [ ] did the post-migration C2M run indicate that any moabs which were expected on the target storage root were actually missing?  [Query the database for non-`ok` moabs](https://github.com/sul-dlss/preservation_catalog/blob/main/db/README.md#how-many-moabs-on-each-storage-root-are-status--ok) and examine the c2m_after error report.
 
   - [ ] if so, work with ops to copy them manually to the target storage root
     - [ ] run C2M manually for any such remediated druid on the new storage.  e.g.: `Audit::CatalogToMoab.new(CompleteMoab.by_druid('somedruid').first).check_catalog_version # .first because the .by_druid relation will be coerced to an array, though there should only be one CM per druid`
