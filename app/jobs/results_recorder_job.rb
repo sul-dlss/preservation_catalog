@@ -17,7 +17,7 @@ class ResultsRecorderJob < ApplicationJob
                  .by_druid(job.arguments.first)
                  .joins(:zip_endpoint)
                  .where(version: job.arguments.second)
-    job.zmv ||= zmvs.find_by!(zip_endpoints: { delivery_class: Object.const_get(job.arguments.fourth) })
+    job.zmv ||= zmvs.find_by!(zip_endpoints: { delivery_class: job.arguments.fourth })
   end
 
   # @param [String] druid

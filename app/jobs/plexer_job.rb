@@ -60,6 +60,6 @@ class PlexerJob < ZipPartJobBase
 
   # @return [Array<Class>] target delivery worker classes
   def deliverers
-    zmvs.map { |zmv| zmv.zip_endpoint.delivery_class }.uniq
+    zmvs.map { |zmv| zmv.zip_endpoint.delivery_class.constantize }.uniq
   end
 end
