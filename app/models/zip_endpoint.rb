@@ -8,11 +8,10 @@ class ZipEndpoint < ApplicationRecord
 
   # @note Hash values cannot be modified without migrating any associated persisted data.
   # @see [enum docs] http://api.rubyonrails.org/classes/ActiveRecord/Enum.html
-  # TODO: switch this to use plain strings representing the class name
   enum delivery_class: {
-    S3WestDeliveryJob => 1,
-    S3EastDeliveryJob => 2,
-    IbmSouthDeliveryJob => 3
+    'S3WestDeliveryJob' => 1,
+    'S3EastDeliveryJob' => 2,
+    'IbmSouthDeliveryJob' => 3
   }
 
   validates :endpoint_name, presence: true, uniqueness: true
@@ -53,7 +52,7 @@ class ZipEndpoint < ApplicationRecord
         zip_endpoint.endpoint_node = endpoint_config.endpoint_node
         zip_endpoint.storage_location = endpoint_config.storage_location
         zip_endpoint.preservation_policies = preservation_policies
-        zip_endpoint.delivery_class = delivery_classes[endpoint_config.delivery_class.constantize]
+        zip_endpoint.delivery_class = delivery_classes[endpoint_config.delivery_class]
       end
     end
   end

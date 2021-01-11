@@ -15,7 +15,7 @@ RSpec.describe ZipEndpoint, type: :model do
 
   it 'enforces unique constraint on endpoint_name (model level)' do
     expect do
-      described_class.create!(endpoint_name: 'zip-endpoint', delivery_class: S3EastDeliveryJob)
+      described_class.create!(endpoint_name: 'zip-endpoint', delivery_class: 'S3EastDeliveryJob')
     end.to raise_error(ActiveRecord::RecordInvalid)
   end
 
@@ -26,7 +26,7 @@ RSpec.describe ZipEndpoint, type: :model do
   end
 
   it 'has multiple delivery_classes' do
-    expect(described_class.delivery_classes).to include(S3WestDeliveryJob, S3EastDeliveryJob)
+    expect(described_class.delivery_classes).to include('S3WestDeliveryJob', 'S3EastDeliveryJob')
   end
 
   it { is_expected.to have_many(:zipped_moab_versions) }
@@ -70,7 +70,7 @@ RSpec.describe ZipEndpoint, type: :model do
           endpoint_node: endpoint_config.endpoint_node,
           storage_location: endpoint_config.storage_location,
           preservation_policies: default_pres_policies,
-          delivery_class: endpoint_config.delivery_class.constantize
+          delivery_class: endpoint_config.delivery_class
         }
         expect(described_class.find_by(endpoint_name: endpoint_name)).to have_attributes(zip_endpoint_attrs)
       end
