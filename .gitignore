@@ -11,6 +11,9 @@
 /db/*.sqlite3
 /db/*.sqlite3-journal
 
+# Ignore intermediate file for schema diagram generation
+db/schema_er_diagram.svg.dot
+
 # Ignore all logfiles and tempfiles.
 /log/*
 /tmp/*
