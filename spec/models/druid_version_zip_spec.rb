@@ -130,7 +130,7 @@ describe DruidVersionZip do
         dvz_v2 = described_class.new(druid, version - 1, 'spec/fixtures/storage_root01/sdr2objects')
         dvz_v2.create_zip!
         expect { dvz.create_zip! }.to raise_error(RuntimeError)
-        expect(dvz_v2.parts_and_checksums_paths.sort).to eq [Pathname.new(dvz_v2.file_path), Pathname.new(dvz_v2.file_path + '.md5')]
+        expect(dvz_v2.parts_and_checksums_paths.sort).to eq [Pathname.new(dvz_v2.file_path), Pathname.new("#{dvz_v2.file_path}.md5")]
       end
     end
 
@@ -144,7 +144,7 @@ describe DruidVersionZip do
       end
 
       it 'produces the expected md5 file' do
-        md5_path = zip_path + '.md5'
+        md5_path = "#{zip_path}.md5"
         expect(File).not_to exist(md5_path)
         expect { dvz.create_zip! }.not_to raise_error
         expect(File).to exist(md5_path)

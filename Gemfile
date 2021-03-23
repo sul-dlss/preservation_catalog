@@ -23,11 +23,11 @@ gem 'resque-pool'
 gem 'whenever' # manage cron for audit checks
 
 # Stanford gems
-gem 'moab-versioning' # work with Moab Objects
 gem 'druid-tools' # for druid validation and druid-tree parsing
+gem 'moab-versioning' # work with Moab Objects
 
 group :development, :test do
-  # Ruby static code analyzer http://rubocop.readthedocs.io/en/latest/
+  # Ruby static code analyzer https://rubocop.readthedocs.io/en/latest/
   gem 'rubocop', '~> 0.73'
   gem 'rubocop-rspec'
 end

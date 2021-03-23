@@ -2,8 +2,8 @@
 
 require 'rails_helper'
 
-require 'active_record_utils.rb'
-require 'audit_results.rb'
+require 'active_record_utils'
+require 'audit_results'
 
 RSpec.describe ActiveRecordUtils do
   describe '.with_transaction_and_rescue' do
