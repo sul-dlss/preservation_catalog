@@ -100,7 +100,7 @@ RSpec.describe ObjectsController, type: :request do
         get file_object_url(id: 'foobar'), params: { category: 'manifest', filepath: 'manifestInventory.xml' }, headers: valid_auth_header
         expect(response).to have_http_status(:bad_request)
         error_response = JSON.parse(response.body)['errors'].first
-        expect(error_response['detail']).to include('does not match value: foobar, example: druid:bc123df4567')
+        expect(error_response['detail']).to include('does not match value: "foobar", example: druid:bc123df4567')
       end
     end
   end

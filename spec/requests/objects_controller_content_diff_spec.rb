@@ -78,7 +78,7 @@ RSpec.describe ObjectsController, type: :request do
           expect(response).to have_http_status(:bad_request)
           error_response = JSON.parse(response.body)['errors'].first
           expect(error_response['status']).to eq('bad_request')
-          expect(error_response['detail']).to include('unrecognized isn\'t include enum') # sic
+          expect(error_response['detail']).to include('"unrecognized" isn\'t part of the enum')
         end
       end
 
@@ -128,7 +128,7 @@ RSpec.describe ObjectsController, type: :request do
         expect(response).to have_http_status(:bad_request)
         error_response = JSON.parse(response.body)['errors'].first
         expect(error_response['status']).to eq('bad_request')
-        expect(error_response['detail']).to include('does not match value: foobar, example: druid:bc123df4567')
+        expect(error_response['detail']).to include('does not match value: "foobar", example: druid:bc123df4567')
       end
     end
 

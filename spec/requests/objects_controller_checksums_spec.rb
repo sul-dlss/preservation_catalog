@@ -223,7 +223,7 @@ RSpec.describe ObjectsController, type: :request do
         post checksums_objects_url, params: { druids: [prefixed_druid, 'foobar'], format: :json }.to_json, headers: post_headers
         expect(response).to have_http_status(:bad_request)
         error_response = JSON.parse(response.body)['errors'].first
-        expect(error_response['detail']).to include('does not match value: foobar, example: druid:bc123df4567')
+        expect(error_response['detail']).to include('does not match value: "foobar", example: druid:bc123df4567')
       end
     end
 
