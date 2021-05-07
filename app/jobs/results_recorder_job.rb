@@ -24,7 +24,7 @@ class ResultsRecorderJob < ApplicationJob
   # @param [Integer] version
   # @param [String] s3_part_key
   # @param [String] delivery_class Name of the worker class that performed delivery
-  def perform(druid, version, s3_part_key, _delivery_class)
+  def perform(druid, version, s3_part_key, delivery_class) # rubocop:disable Lint/UnusedMethodArgument used as job.arguments.fourth in before_perform
     part = zip_part!(s3_part_key)
     part.ok!
     # only publish result if all of the parts replicated for all zip_endpoints
