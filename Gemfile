@@ -9,6 +9,7 @@ gem 'dor-workflow-client', '~> 3.8' # audit errors are reported to the workflow 
 gem 'honeybadger' # for error reporting / tracking / notifications
 gem 'jbuilder', '~> 2.5' # Build JSON APIs with ease.
 gem 'jwt' # for gating programmatic access to the application
+gem 'lograge'
 gem 'okcomputer' # ReST endpoint with upness status
 gem 'pg' # postgres database
 gem 'postgresql_cursor' # for paging over large result sets efficiently
