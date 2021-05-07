@@ -28,7 +28,8 @@ gem 'moab-versioning' # work with Moab Objects
 
 group :development, :test do
   # Ruby static code analyzer https://rubocop.readthedocs.io/en/latest/
-  gem 'rubocop', '~> 0.73'
+  gem 'rubocop', '~> 1.0'
+  gem 'rubocop-rails'
   gem 'rubocop-rspec'
 end
 

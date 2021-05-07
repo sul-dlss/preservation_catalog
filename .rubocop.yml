@@ -1,5 +1,7 @@
 # Turn on RSpec cops
-require: rubocop-rspec
+require:
+  - rubocop-rails
+  - rubocop-rspec
 
 inherit_from: .rubocop_todo.yml
 
@@ -16,10 +18,6 @@ AllCops:
     - 'config/environments/*.rb'
     - 'db/**/*'
     - 'vendor/**/*'
-
-# Turn on Rails cops
-Rails:
-  Enabled: true
 
 
 # customizations
@@ -83,6 +81,12 @@ Style/AccessModifierDeclarations:
 Style/BlockDelimiters:
   Exclude:
     - 'spec/*/*' # rspec expect statements look ugly with do-end instead of {}
+
+Style/ExplicitBlockArgument: # (new in 0.89)
+  Enabled: false
+
+Style/FormatStringToken:
+  Enabled: false
 
 Style/SymbolArray:
   Exclude:
