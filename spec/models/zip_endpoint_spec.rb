@@ -158,7 +158,6 @@ RSpec.describe ZipEndpoint, type: :model do
     describe '.which_need_archive_copy' do
       let(:names) { [other_ep1.endpoint_name, other_ep2.endpoint_name, zip_endpoint.endpoint_name] }
 
-      # rubocop:disable RSpec/MultipleExpectations
       it "returns the zip endpoints which should have a complete moab for the druid/version, but which don't yet" do
         expect(described_class.which_need_archive_copy(druid, version).pluck(:endpoint_name).sort).to eq names
         expect(described_class.which_need_archive_copy(druid, version - 1).pluck(:endpoint_name).sort).to eq names
@@ -177,7 +176,6 @@ RSpec.describe ZipEndpoint, type: :model do
         expect(described_class.which_need_archive_copy(other_druid, version).pluck(:endpoint_name).sort).to eq names
         expect(described_class.which_need_archive_copy(other_druid, version - 1).pluck(:endpoint_name).sort).to eq %w[ibm_us_south zip-endpoint]
       end
-      # rubocop:enable RSpec/MultipleExpectations
     end
   end
 end

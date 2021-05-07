@@ -23,6 +23,8 @@ describe 'the whole replication pipeline', type: :job do
   let(:ibm_provider) { instance_double(PreservationCatalog::IbmProvider, bucket: ibm_bucket) }
   let(:moab_storage_root) { MoabStorageRoot.find_by!(name: 'fixture_sr1') }
 
+  let(:events_client) { instance_double(Dor::Services::Client::Events, create: nil) }
+
   around do |example|
     old_adapter = ApplicationJob.queue_adapter
     ApplicationJob.queue_adapter = :inline
@@ -34,6 +36,11 @@ describe 'the whole replication pipeline', type: :job do
     allow(Settings).to receive(:zip_storage).and_return(Rails.root.join('spec', 'fixtures', 'zip_storage'))
     allow(PreservationCatalog::AwsProvider).to receive(:new).and_return(aws_provider)
     allow(PreservationCatalog::IbmProvider).to receive(:new).and_return(ibm_provider)
+    allow(Dor::Services::Client).to receive(:object).with("druid:#{druid}").and_return(
+      instance_double(Dor::Services::Client::Object, events: events_client)
+    )
+    allow(events_client).to receive(:create)
+    allow(Socket).to receive(:gethostname).and_return('fakehost')
   end
 
   after do
@@ -48,6 +55,12 @@ describe 'the whole replication pipeline', type: :job do
     # other endpoints as added...
     expect(ResultsRecorderJob).to receive(:perform_later).with(druid, version, s3_key, 'S3WestDeliveryJob').and_call_original
     expect(ResultsRecorderJob).to receive(:perform_later).with(druid, version, s3_key, 'IbmSouthDeliveryJob').and_call_original
+    expect(events_client).to receive(:create).with(
+      { type: 'druid_version_replicated', data: a_hash_including({ host: 'fakehost', version: 1, endpoint_name: 'aws_s3_west_2' }) }
+    )
+    expect(events_client).to receive(:create).with(
+      { type: 'druid_version_replicated', data: a_hash_including({ host: 'fakehost', version: 1, endpoint_name: 'ibm_us_south' }) }
+    )
     expect(Resque.redis.redis).to receive(:lpush).with('replication.results', hash.to_json)
 
     # creating or updating a CompleteMoab should trigger its parent PreservedObject to replicate any missing versions to any target endpoints
@@ -72,6 +85,12 @@ describe 'the whole replication pipeline', type: :job do
       # other endpoints as added...
       expect(ResultsRecorderJob).to receive(:perform_later).with(druid, next_version, s3_key, 'S3WestDeliveryJob').and_call_original
       expect(ResultsRecorderJob).to receive(:perform_later).with(druid, next_version, s3_key, 'IbmSouthDeliveryJob').and_call_original
+      expect(events_client).to receive(:create).with(
+        { type: 'druid_version_replicated', data: a_hash_including({ host: 'fakehost', version: 3, endpoint_name: 'aws_s3_west_2' }) }
+      )
+      expect(events_client).to receive(:create).with(
+        { type: 'druid_version_replicated', data: a_hash_including({ host: 'fakehost', version: 3, endpoint_name: 'ibm_us_south' }) }
+      )
       expect(Resque.redis.redis).to receive(:lpush).with('replication.results', hash.merge(version: next_version).to_json)
 
       # updating the CompleteMoab#version and its PreservedObject#current_version should trigger the replication cycle again, on the new version

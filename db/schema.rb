@@ -2,8 +2,8 @@
 # of editing this file, please use the migrations feature of Active Record to
 # incrementally modify your database, and then regenerate this schema definition.
 #
-# This file is the source Rails uses to define your schema when running `rails
-# db:schema:load`. When creating a new database, `rails db:schema:load` tends to
+# This file is the source Rails uses to define your schema when running `bin/rails
+# db:schema:load`. When creating a new database, `bin/rails db:schema:load` tends to
 # be faster and is potentially less error prone than running all of your
 # migrations from scratch. Old migrations may fail to apply correctly if those
 # migrations use external dependencies or application code.
@@ -77,8 +77,8 @@ ActiveRecord::Schema.define(version: 2020_06_29_232757) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "preservation_policy_id", null: false
-    t.boolean "robot_versioning_allowed", default: true, null: false
     t.datetime "last_archive_audit"
+    t.boolean "robot_versioning_allowed", default: true, null: false
     t.index ["created_at"], name: "index_preserved_objects_on_created_at"
     t.index ["druid"], name: "index_preserved_objects_on_druid", unique: true
     t.index ["last_archive_audit"], name: "index_preserved_objects_on_last_archive_audit"

@@ -24,9 +24,13 @@ class ResultsRecorderJob < ApplicationJob
   # @param [Integer] version
   # @param [String] s3_part_key
   # @param [String] delivery_class Name of the worker class that performed delivery
-  def perform(druid, version, s3_part_key, _delivery_class)
+  def perform(druid, version, s3_part_key, delivery_class) # rubocop:disable Lint/UnusedMethodArgument used as job.arguments.fourth in before_perform
     part = zip_part!(s3_part_key)
     part.ok!
+
+    # log to event service if this part upload is the last one for the endpoint
+    create_zmv_replicated_event(druid) if zmv.reload.all_parts_replicated?
+
     # only publish result if all of the parts replicated for all zip_endpoints
     return unless zmvs.reload.all?(&:all_parts_replicated?)
 
@@ -58,5 +62,23 @@ class ResultsRecorderJob < ApplicationJob
     # Example: RabbitMQ using `connection` from the gem "Bunny":
     # connection.create_channel.fanout('replication.results').publish(message)
     Resque.redis.redis.lpush('replication.results', message)
+  end
+
+  def create_zmv_replicated_event(druid)
+    parts_info = zmv.zip_parts.order(:suffix).map do |part|
+      { s3_key: part.s3_key, size: part.size, md5: part.md5 }
+    end
+
+    events_client = Dor::Services::Client.object("druid:#{druid}").events
+    events_client.create(
+      type: 'druid_version_replicated',
+      data: {
+        host: Socket.gethostname,
+        invoked_by: 'preservation-catalog',
+        version: zmv.version,
+        endpoint_name: zmv.zip_endpoint.endpoint_name,
+        parts_info: parts_info
+      }
+    )
   end
 end

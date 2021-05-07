@@ -59,7 +59,7 @@ RSpec/MessageSpies:
   Enabled: false
 
 RSpec/MultipleExpectations:
-  Max: 8
+  Max: 12
 
 RSpec/NamedSubject:
   Enabled: false
