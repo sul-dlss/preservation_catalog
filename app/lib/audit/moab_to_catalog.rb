@@ -7,7 +7,7 @@ module Audit
   #   according to method called
   class MoabToCatalog
     def self.logger
-      @logger ||= Logger.new(STDOUT)
+      @logger ||= Logger.new($stdout)
                         .extend(ActiveSupport::Logger.broadcast(Logger.new(Rails.root.join('log', 'm2c.log'))))
     end
 

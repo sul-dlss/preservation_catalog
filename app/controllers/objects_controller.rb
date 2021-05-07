@@ -107,7 +107,7 @@ class ObjectsController < ApplicationController
   end
 
   def normalized_druids
-    return [] unless params[:druids].present?
+    return [] if params[:druids].blank?
     params[:druids].map { |druid| strip_druid(druid) }.sort.uniq # normalize, then sort, then de-dupe
   end
 

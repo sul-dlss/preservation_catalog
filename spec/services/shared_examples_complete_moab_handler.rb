@@ -223,11 +223,12 @@ RSpec.shared_examples 'unexpected version with validation' do |method_sym, incom
     end
 
     describe 'last_version_audit' do
-      if method_sym == :check_existence
+      case method_sym
+      when :check_existence
         it 'updated' do
           expect { complete_moab_handler.send(method_sym) }.to change { cm.reload.last_version_audit }
         end
-      elsif method_sym == :update_version
+      when :update_version
         it 'unchanged' do
           expect { complete_moab_handler.send(method_sym) }.not_to change { cm.reload.last_version_audit }
         end
@@ -265,9 +266,10 @@ RSpec.shared_examples 'unexpected version with validation' do |method_sym, incom
 
     it 'number of results' do
       expect(results).to be_an_instance_of Array
-      if method_sym == :check_existence
+      case method_sym
+      when :check_existence
         expect(results.size).to eq 2
-      elsif method_sym == :update_version_after_validation
+      when :update_version_after_validation
         expect(results.size).to eq 4
       end
     end

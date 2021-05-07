@@ -144,7 +144,7 @@ RSpec.describe Audit::CatalogToMoab do
             end
 
             it 'status_details updated' do
-              exp = exp_details_prefix + ') '
+              exp = "#{exp_details_prefix}) "
               exp += "CompleteMoab status changed from #{orig_status} to online_moab_not_found" unless orig_status == 'online_moab_not_found'
               expect(comp_moab.reload.status_details).to eq exp
             end
@@ -248,7 +248,7 @@ RSpec.describe Audit::CatalogToMoab do
             end
 
             it 'updates status_details' do
-              exp = exp_details_prefix + 'actual version: 3) '
+              exp = "#{exp_details_prefix}actual version: 3) "
               exp += "CompleteMoab status changed from #{orig_status} to validity_unknown" unless orig_status == 'validity_unknown'
               expect(comp_moab.reload.status_details).to eq exp
             end
@@ -278,7 +278,7 @@ RSpec.describe Audit::CatalogToMoab do
             end
 
             it 'updates status_details' do
-              exp = exp_details_prefix + 'actual version: 3) '
+              exp = "#{exp_details_prefix}actual version: 3) "
               exp += "CompleteMoab status changed from #{orig_status} to invalid_moab" unless orig_status == 'invalid_moab'
               expect(comp_moab.reload.status_details).to eq exp
             end
@@ -349,7 +349,7 @@ RSpec.describe Audit::CatalogToMoab do
               end
 
               it 'status_details updated' do
-                exp = exp_details_prefix + 'actual version: 4) '
+                exp = "#{exp_details_prefix}actual version: 4) "
                 exp += "CompleteMoab status changed from #{orig_status} to validity_unknown" unless orig_status == 'validity_unknown'
                 expect(comp_moab.reload.status_details).to eq exp
               end
@@ -396,8 +396,8 @@ RSpec.describe Audit::CatalogToMoab do
             allow(Stanford::StorageObjectValidator).to receive(:new).and_return(mock_sov)
             c2m.check_catalog_version
             expect(comp_moab.reload.status).to eq 'validity_unknown'
-            exp = exp_details_prefix + 'actual version: 4) Invalid Moab, validation errors: ["err msg"]'
-            expect(comp_moab.status_details).to eq exp
+            exp_details_postfix = 'actual version: 4) Invalid Moab, validation errors: ["err msg"]'
+            expect(comp_moab.status_details).to eq "#{exp_details_prefix}#{exp_details_postfix}"
           end
         end
 
@@ -464,7 +464,7 @@ RSpec.describe Audit::CatalogToMoab do
 
       it 'valid moab updates status_details' do
         c2m.check_catalog_version
-        exp = exp_details_prefix + 'actual version: 2) CompleteMoab status changed from ok to unexpected_version_on_storage'
+        exp = "#{exp_details_prefix}actual version: 2) CompleteMoab status changed from ok to unexpected_version_on_storage"
         expect(comp_moab.reload.status_details).to eq exp
       end
 
@@ -556,7 +556,7 @@ RSpec.describe Audit::CatalogToMoab do
             end
 
             it 'status_details updated' do
-              exp = exp_details_prefix + 'actual version: 2) '
+              exp = "#{exp_details_prefix}actual version: 2) "
               unless orig_status == 'unexpected_version_on_storage'
                 exp += "CompleteMoab status changed from #{orig_status} to unexpected_version_on_storage"
               end
@@ -588,7 +588,7 @@ RSpec.describe Audit::CatalogToMoab do
             end
 
             it 'status_details updated' do
-              exp = exp_details_prefix + 'actual version: 2) '
+              exp = "#{exp_details_prefix}actual version: 2) "
               exp += "CompleteMoab status changed from #{orig_status} to invalid_moab" unless orig_status == 'invalid_moab'
               expect(comp_moab.reload.status_details).to eq exp
             end

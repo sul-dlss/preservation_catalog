@@ -23,14 +23,14 @@ class CompleteMoab < ApplicationRecord
 
   belongs_to :preserved_object, inverse_of: :complete_moabs
   belongs_to :moab_storage_root, inverse_of: :complete_moabs
-  belongs_to :from_moab_storage_root, class_name: 'MoabStorageRoot', required: false
+  belongs_to :from_moab_storage_root, class_name: 'MoabStorageRoot', optional: true
 
   # NOTE: we'd like to check if there is a different complete_moab for the preserved_object and
   #  assign the other complete_moab to preserved_objects_primary_moab
   has_one :preserved_objects_primary_moab, dependent: :destroy
 
   validates :moab_storage_root, :preserved_object, :status, :version, presence: true
-  validates_uniqueness_of :preserved_object_id, scope: [:moab_storage_root_id]
+  validates :preserved_object_id, uniqueness: { scope: [:moab_storage_root_id] }
   # NOTE: size here is approximate and not used for fixity checking
   validates :size, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
 

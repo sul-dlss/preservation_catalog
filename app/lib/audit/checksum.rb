@@ -4,7 +4,7 @@ module Audit
   # Checksum validator code
   class Checksum
     def self.logger
-      @logger ||= Logger.new(STDOUT)
+      @logger ||= Logger.new($stdout)
                         .extend(ActiveSupport::Logger.broadcast(Logger.new(Rails.root.join('log', 'cv.log'))))
     end
 

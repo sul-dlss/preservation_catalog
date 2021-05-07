@@ -55,13 +55,14 @@ module Reporters
     private
 
     def workflow_client
-      @workflow_client ||= begin
-                               wf_log = Logger.new('log/workflow_service.log', 'weekly')
-                               Dor::Workflow::Client.new(
-                                 url: Settings.workflow_services_url,
-                                 logger: wf_log
-                               )
-                             end
+      @workflow_client ||=
+        begin
+          wf_log = Logger.new('log/workflow_service.log', 'weekly')
+          Dor::Workflow::Client.new(
+            url: Settings.workflow_services_url,
+            logger: wf_log
+          )
+        end
     end
 
     def create_workflow(druid, version)

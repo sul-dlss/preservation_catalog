@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# Helper methods for testing auth related behaviors behaviors in request specs.
 module AuthHelper
   def valid_auth_header
     { 'Authorization' => "Bearer #{valid_jwt_value}" }
