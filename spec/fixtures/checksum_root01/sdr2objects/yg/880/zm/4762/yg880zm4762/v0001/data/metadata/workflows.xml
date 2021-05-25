@@ -1,0 +1,20 @@
+<workflows objectId="druid:yg880zm4762">
+  <workflow objectId="druid:yg880zm4762" id="accessionWF">
+    <process version="1" note="" lifecycle="submitted" laneId="low" elapsed="" attempts="0" datetime="2021-02-08T05:01:52+00:00" status="completed" name="start-accession"/>
+    <process version="1" note="No descMetadata.xml was provided" lifecycle="described" laneId="low" elapsed="0.115" attempts="0" datetime="2021-02-08T05:01:53+00:00" status="skipped" name="descriptive-metadata"/>
+    <process version="1" note="No rightsMetadata.xml was provided" lifecycle="" laneId="low" elapsed="0.147" attempts="0" datetime="2021-02-08T05:01:53+00:00" status="skipped" name="rights-metadata"/>
+    <process version="1" note="No contentMetadata.xml was provided" lifecycle="" laneId="low" elapsed="0.485" attempts="0" datetime="2021-02-08T05:01:54+00:00" status="skipped" name="content-metadata"/>
+    <process version="1" note="Completed by technical-metadata-service on dor-techmd-prod.stanford.edu." lifecycle="" laneId="low" elapsed="0.992" attempts="0" datetime="2021-02-08T05:01:56+00:00" status="completed" name="technical-metadata"/>
+    <process version="1" note="common-accessioning-prod-a.stanford.edu" lifecycle="" laneId="low" elapsed="0.0" attempts="0" datetime="2021-02-08T05:01:56+00:00" status="completed" name="remediate-object"/>
+    <process version="1" note="Completed Job 5054732 on dor-services-app" lifecycle="" laneId="low" elapsed="1.0" attempts="0" datetime="2021-02-08T05:01:57+00:00" status="completed" name="shelve"/>
+    <process version="1" note="Completed Job 5054735 on dor-services-app" lifecycle="published" laneId="low" elapsed="1.0" attempts="0" datetime="2021-02-08T05:01:59+00:00" status="completed" name="publish"/>
+    <process version="1" note="common-accessioning-prod-a.stanford.edu" lifecycle="" laneId="low" elapsed="0.241" attempts="0" datetime="2021-02-08T05:01:59+00:00" status="completed" name="provenance-metadata"/>
+    <process version="1" note="common-accessioning-prod-a.stanford.edu" lifecycle="" laneId="low" elapsed="1.0" attempts="0" datetime="2021-02-08T05:01:59+00:00" status="started" name="sdr-ingest-transfer"/>
+    <process version="1" note="" lifecycle="deposited" laneId="low" elapsed="" attempts="0" datetime="2021-02-08T05:01:53+00:00" status="waiting" name="sdr-ingest-received"/>
+    <process version="1" note="" lifecycle="" laneId="low" elapsed="" attempts="0" datetime="2021-02-08T05:01:53+00:00" status="waiting" name="reset-workspace"/>
+    <process version="1" note="" lifecycle="accessioned" laneId="low" elapsed="" attempts="0" datetime="2021-02-08T05:01:53+00:00" status="waiting" name="end-accession"/>
+  </workflow>
+  <workflow objectId="druid:yg880zm4762" id="registrationWF">
+    <process version="1" note="" lifecycle="registered" laneId="low" elapsed="" attempts="0" datetime="2021-02-08T05:01:52+00:00" status="completed" name="register"/>
+  </workflow>
+</workflows>

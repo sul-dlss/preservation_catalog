@@ -1,0 +1,50 @@
+<mods xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.loc.gov/mods/v3" xmlns:mods="http://www.loc.gov/mods/v3" version="3.7" xsi:schemaLocation="http://www.loc.gov/mods/v3 http://www.loc.gov/standards/mods/v3/mods-3-7.xsd">
+  <titleInfo>
+    <title>Terzetto per corni</title>
+  </titleInfo>
+  <titleInfo type="uniform" nameTitleGroup="1">
+    <title>Trio, horns</title>
+  </titleInfo>
+  <name type="personal" usage="primary" nameTitleGroup="1">
+    <namePart>Oestreich, Carl</namePart>
+    <namePart type="date">1800-1840</namePart>
+  </name>
+  <name type="personal">
+    <namePart>Fensterer, Manfred</namePart>
+  </name>
+  <typeOfResource>notated music</typeOfResource>
+  <originInfo>
+    <place>
+      <placeTerm type="code" authority="marccountry">gw</placeTerm>
+    </place>
+    <dateIssued encoding="marc">1993</dateIssued>
+    <issuance>monographic</issuance>
+    <place>
+      <placeTerm type="text">Kaufungen, Hessen</placeTerm>
+    </place>
+    <publisher>Edition mf</publisher>
+    <dateIssued>c1993</dateIssued>
+  </originInfo>
+  <language>
+    <languageTerm authority="iso639-2b" type="code">zxx</languageTerm>
+  </language>
+  <physicalDescription>
+    <form authority="marcform">print</form>
+    <extent>1 score (12 p.) + 3 parts ; 30 cm.</extent>
+  </physicalDescription>
+  <note type="statement of responsibility">Carl Oestreich.</note>
+  <note>Includes editorial commentary by Manfred Fensterer.</note>
+  <subject authority="lcsh">
+    <topic>Brass trios (Horns (3))</topic>
+    <topic>Scores and parts</topic>
+  </subject>
+  <classification authority="lcc">M357.4 .O35 1993</classification>
+  <identifier type="lccn">94774362 /M</identifier>
+  <recordInfo>
+    <descriptionStandard>aacr</descriptionStandard>
+    <recordContentSource authority="marcorg">NN</recordContentSource>
+    <recordCreationDate encoding="marc">940531</recordCreationDate>
+    <recordIdentifier source="SIRSI">a2859143</recordIdentifier>
+    <recordOrigin>Converted from MARCXML to MODS version 3.7 using MARC21slim2MODS3-7_SDR_v1.xsl (SUL 3.7 version 1.1 20200917; LC Revision 1.140 20200717)</recordOrigin>
+  </recordInfo>
+</mods>

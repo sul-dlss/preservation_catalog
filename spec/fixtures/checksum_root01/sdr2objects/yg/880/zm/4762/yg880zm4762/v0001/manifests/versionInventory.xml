@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fileInventory type="version" objectId="druid:yg880zm4762" versionId="1" inventoryDatetime="2021-02-08T05:02:01Z" fileCount="13" byteCount="8172029" blockCount="7988">
+  <fileGroup groupId="content" dataSource="contentMetadata-preserve" fileCount="5" byteCount="8163276" blockCount="7974">
+    <file>
+      <fileSignature size="457566" md5="3a637790fbe22a534af56b7b33385554" sha1="52b1b0fca089375d81cff9d6e31b3e9022ba2c99" sha256="30dc420a82b0732c1be7f78516c2a9658f8a361d691bec9eb191e55e0c3636e0"/>
+      <fileInstance path="36105016577111-gb-hocr.zip" datetime=""/>
+    </file>
+    <file>
+      <fileSignature size="7530720" md5="ee6d06bccc069c30bc05f93578ec0c41" sha1="9fcb3f8846294ba8d2cebb8fd03b25140bbb71d7" sha256="ecca2d0912a84a78e19e5f96be877a7d3110c28f03c94d70ab286d49c7a60532"/>
+      <fileInstance path="36105016577111-gb-jp2.zip" datetime=""/>
+    </file>
+    <file>
+      <fileSignature size="13227" md5="6e8067f0140081ac94dfa1eb540a8cf0" sha1="b8c428835c45ce6a66956f1699902e87c0b3ff56" sha256="2caf26a3d1669e4b9bfaa9d6b3e9acd91a97b941a4b54475ea65591340cac83c"/>
+      <fileInstance path="36105016577111-gb-txt.zip" datetime=""/>
+    </file>
+    <file>
+      <fileSignature size="154317" md5="c473dd912bca03ec7b7500499a9a3cbf" sha1="62c35f4b935a5575bcbd520da9068ced62d6c4de" sha256="b10047f35d89ebf4d2bb8569334dc925a29ed9f8c00687b80353d1ed08613941"/>
+      <fileInstance path="STANFORD_36105016577111.xml" datetime=""/>
+    </file>
+    <file>
+      <fileSignature size="7446" md5="50e191a76dbb6274f2d92bd293c1bcdf" sha1="b3d1ac878c2767f4c60ab11958390be71f9f783a" sha256="1b680d6c6dccd24dcc80fdbee56c8a65019136d8a228cac69872076a1b482d40"/>
+      <fileInstance path="checksum.md5" datetime=""/>
+    </file>
+  </fileGroup>
+  <fileGroup groupId="metadata" dataSource="/dor/workspace/yg/880/zm/4762/yg880zm4762/metadata" fileCount="8" byteCount="8753" blockCount="14">
+    <file>
+      <fileSignature size="2079" md5="9717cf094485b7e7453e6c5b812a6745" sha1="809bbcb99421506e9f19d6d0071442f5d5f336df" sha256="718f9ee93411e8dddcabb012c895f686355f7da5d3077cf3ae2f8d8910e758b7"/>
+      <fileInstance path="contentMetadata.xml" datetime="2021-02-08T05:02:00Z"/>
+    </file>
+    <file>
+      <fileSignature size="2147" md5="34ad792743b0501e95bfb5843ea26df9" sha1="5bf386cd2af9dbb13d03d5b36e554ecf0d8883e4" sha256="686103fe46d5437a44c9184e932fa0db1e8b5c48de3c6a4169e717c803c6f4b5"/>
+      <fileInstance path="descMetadata.xml" datetime="2021-02-08T05:02:00Z"/>
+    </file>
+    <file>
+      <fileSignature size="307" md5="172b3c0baa295f3e03284e3055bca33b" sha1="4ae3625e5cdf73d27a5c2c8dd3381ce0a8892b46" sha256="2346fdb9a31701dd7b32af1e2c0ef4e7340f9668fbc9dfc693c4662ba1c9513b"/>
+      <fileInstance path="identityMetadata.xml" datetime="2021-02-08T05:02:00Z"/>
+    </file>
+    <file>
+      <fileSignature size="263" md5="4c906934b220b1a215b0ecc8c3759cbb" sha1="32a15b87c7b6c195283911231848658e636d1a14" sha256="d2d4780c646c3d3f7894513fb1235e263a5ef1fdf752f778bd219c9beee6bd2e"/>
+      <fileInstance path="provenanceMetadata.xml" datetime="2021-02-08T05:02:00Z"/>
+    </file>
+    <file>
+      <fileSignature size="632" md5="ecad660d2aec270e2b36df8e9fa742bc" sha1="04584a7c196e9aa119903972f2af3982b8f74c64" sha256="c59ee236b4dff4bcfa6b0191a3be95af00b5e84487d2e35b2ca14389a89546a2"/>
+      <fileInstance path="relationshipMetadata.xml" datetime="2021-02-08T05:02:00Z"/>
+    </file>
+    <file>
+      <fileSignature size="244" md5="8f17d10df7ca51390c16d5e3fc062347" sha1="dbcc2bd08579ca3e73fbbac8f77b3d78337c0a8b" sha256="d01083fe73df9faebf7371f925cf17cfaaa688e064e8954647565692aa70eedc"/>
+      <fileInstance path="rightsMetadata.xml" datetime="2021-02-08T05:02:00Z"/>
+    </file>
+    <file>
+      <fileSignature size="134" md5="4748af432b1a1131216bbc64fb6eeea7" sha1="1a0c31ae15e477ee4ff135a3691c25c753c31753" sha256="fb206337b553dbc2cf5da35ef08388661aadda52b1cbf6667fad260a0e90c915"/>
+      <fileInstance path="versionMetadata.xml" datetime="2021-02-08T05:02:01Z"/>
+    </file>
+    <file>
+      <fileSignature size="2947" md5="0add74558f4380d9d65db14ecddd8d96" sha1="a3c85ad00d75bd51c4c69f42e8cc46c44f9c87d0" sha256="e7254e97bd4df225e38c9ead410384073e272e00e254d247629c85c9fd061e39"/>
+      <fileInstance path="workflows.xml" datetime="2021-02-08T05:02:01Z"/>
+    </file>
+  </fileGroup>
+</fileInventory>

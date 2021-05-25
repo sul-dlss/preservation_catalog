@@ -1,0 +1,38 @@
+<contentMetadata objectId="druid:yg880zm4762" type="book">
+  <bookData readingOrder="ltr"/>
+  <resource id="yg880zm4762_1" sequence="1" type="object">
+    <label>hOCR</label>
+    <file id="36105016577111-gb-hocr.zip" mimetype="application/zip" size="457566" publish="no" shelve="no" preserve="yes">
+      <checksum type="sha1">52b1b0fca089375d81cff9d6e31b3e9022ba2c99</checksum>
+      <checksum type="md5">3a637790fbe22a534af56b7b33385554</checksum>
+    </file>
+  </resource>
+  <resource id="yg880zm4762_2" sequence="2" type="object">
+    <label>Page images</label>
+    <file id="36105016577111-gb-jp2.zip" mimetype="application/zip" size="7530720" publish="no" shelve="no" preserve="yes">
+      <checksum type="sha1">9fcb3f8846294ba8d2cebb8fd03b25140bbb71d7</checksum>
+      <checksum type="md5">ee6d06bccc069c30bc05f93578ec0c41</checksum>
+    </file>
+  </resource>
+  <resource id="yg880zm4762_3" sequence="3" type="object">
+    <label>Plain text OCR</label>
+    <file id="36105016577111-gb-txt.zip" mimetype="application/zip" size="13227" publish="no" shelve="no" preserve="yes">
+      <checksum type="sha1">b8c428835c45ce6a66956f1699902e87c0b3ff56</checksum>
+      <checksum type="md5">6e8067f0140081ac94dfa1eb540a8cf0</checksum>
+    </file>
+  </resource>
+  <resource id="yg880zm4762_4" sequence="4" type="object">
+    <label>Google Books METS XML</label>
+    <file id="STANFORD_36105016577111.xml" mimetype="application/xml" size="154317" publish="no" shelve="no" preserve="yes">
+      <checksum type="sha1">62c35f4b935a5575bcbd520da9068ced62d6c4de</checksum>
+      <checksum type="md5">c473dd912bca03ec7b7500499a9a3cbf</checksum>
+    </file>
+  </resource>
+  <resource id="yg880zm4762_5" sequence="5" type="object">
+    <label>Google Books file checksums</label>
+    <file id="checksum.md5" mimetype="application/octet-stream" size="7446" publish="no" shelve="no" preserve="yes">
+      <checksum type="sha1">b3d1ac878c2767f4c60ab11958390be71f9f783a</checksum>
+      <checksum type="md5">50e191a76dbb6274f2d92bd293c1bcdf</checksum>
+    </file>
+  </resource>
+</contentMetadata>

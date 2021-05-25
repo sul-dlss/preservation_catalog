@@ -188,6 +188,9 @@ class ChecksumValidator
   rescue Errno::ENOENT, NoMethodError # e.g. latest_moab_version.signature_catalog is nil (signatureCatalog.xml does not exist)
     results.add_result(AuditResults::SIGNATURE_CATALOG_NOT_IN_MOAB, signature_catalog_path: latest_signature_catalog_path)
     []
+  rescue Nokogiri::XML::SyntaxError => e
+    results.add_result(AuditResults::INVALID_MANIFEST, manifest_file_path: latest_signature_catalog_path, addl: e.inspect)
+    []
   end
 
   def paths_from_signature_catalog

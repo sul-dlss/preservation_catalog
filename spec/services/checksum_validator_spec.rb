@@ -59,7 +59,6 @@ RSpec.describe ChecksumValidator do
 
     context 'file checksums in manifestInventory.xml do not match' do
       let(:druid) { 'zz925bx9565' }
-      let(:results) { instance_double(AuditResults, report_results: nil, :actual_version= => nil) }
 
       before { allow(AuditResults).to receive(:new).and_return(results) }
 
@@ -118,7 +117,7 @@ RSpec.describe ChecksumValidator do
       end
     end
 
-    context 'cannot parse xml file' do
+    context 'cannot parse manifestInventory.xml file' do
       let(:druid) { 'zz048cw1328' }
 
       before { allow(AuditResults).to receive(:new).and_return(results) }
@@ -136,7 +135,6 @@ RSpec.describe ChecksumValidator do
   describe '#validate_signature_catalog_listing' do
     let(:druid) { 'bj102hs9687' }
     let(:root_name) { 'fixture_sr1' }
-    let(:results) { instance_double(AuditResults, report_results: nil, :actual_version= => nil) }
 
     it 'calls validate_signature_catalog_entry for each signatureCatalog entry' do
       sce01 = instance_double(Moab::SignatureCatalogEntry)
@@ -202,8 +200,10 @@ RSpec.describe ChecksumValidator do
       before { allow(AuditResults).to receive(:new).and_return(results) }
 
       it 'adds an INVALID_MANIFEST error' do
+        exp_msg_start = '#<Nokogiri::XML::SyntaxError: 6:28: FATAL: Opening and ending tag mismatch: signatureCatalog'
         expect(results).to receive(:add_result).with(
-          AuditResults::INVALID_MANIFEST, manifest_file_path: "#{object_dir}/v0001/manifests/signatureCatalog.xml"
+          AuditResults::INVALID_MANIFEST, hash_including(manifest_file_path: "#{object_dir}/v0001/manifests/signatureCatalog.xml",
+                                                         addl: a_string_starting_with(exp_msg_start))
         )
         cv.send(:validate_signature_catalog_listing)
       end
@@ -529,7 +529,6 @@ RSpec.describe ChecksumValidator do
     context 'file or directory does not exist' do
       let(:druid) { 'yy000yy0000' }
       let(:root_name) { 'fixture_sr2' }
-      let(:results) { instance_double(AuditResults, report_results: nil) }
 
       it 'adds error code and continues executing' do
         allow(results).to receive(:add_result)
@@ -537,6 +536,38 @@ RSpec.describe ChecksumValidator do
         cv.validate_signature_catalog
         expect(results).to have_received(:add_result).with(
           AuditResults::SIGNATURE_CATALOG_NOT_IN_MOAB, anything
+        ).at_least(:once)
+      end
+    end
+
+    context 'with unparseable signatureCatalog.xml' do
+      let(:druid) { 'xx444xx4444' }
+      let(:root_name) { 'fixture_sr3' }
+
+      it 'adds an INVALID_MANIFEST error' do
+        allow(results).to receive(:add_result)
+        allow(cv).to receive(:results).and_return(results)
+        exp_msg_start = '#<Nokogiri::XML::SyntaxError: 6:28: FATAL: Opening and ending tag mismatch: signatureCatalog'
+        cv.validate_signature_catalog
+        expect(results).to have_received(:add_result).with(
+          AuditResults::INVALID_MANIFEST, hash_including(manifest_file_path: "#{object_dir}/v0001/manifests/signatureCatalog.xml",
+                                                         addl: a_string_starting_with(exp_msg_start))
+        )
+      end
+    end
+
+    context 'with empty signatureCatalog.xml' do
+      let(:druid) { 'yg880zm4762' }
+      let(:root_name) { 'fixture_sr3' }
+
+      it 'adds error code and continues executing' do
+        allow(results).to receive(:add_result)
+        allow(cv).to receive(:results).and_return(results)
+        exp_msg_start = '#<Nokogiri::XML::SyntaxError: 1:1: FATAL: Document is empty'
+        cv.validate_signature_catalog
+        expect(results).to have_received(:add_result).with(
+          AuditResults::INVALID_MANIFEST, hash_including(manifest_file_path: "#{object_dir}/v0001/manifests/signatureCatalog.xml",
+                                                         addl: a_string_starting_with(exp_msg_start))
         ).at_least(:once)
       end
     end

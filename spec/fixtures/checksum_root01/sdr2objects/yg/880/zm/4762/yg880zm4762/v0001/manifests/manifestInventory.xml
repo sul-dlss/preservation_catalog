@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fileInventory type="manifests" objectId="druid:yg880zm4762" versionId="1" inventoryDatetime="2021-02-08T05:03:02Z" fileCount="4" byteCount="17562" blockCount="19">
+  <fileGroup groupId="manifests" dataSource="/pres-03/sdr2objects/yg/880/zm/4762/yg880zm4762/v0001/manifests" fileCount="4" byteCount="17562" blockCount="19">
+    <file>
+      <fileSignature size="4976" md5="a7dfb66d0d6b4ff051d2d7397ccc72a4" sha1="419542ca6eb82acc1ddbee7a10b77afcf9992d93" sha256="59c2d15b07389f429d4e762cfb20b784abc314ab46901b6ded21087e8a3e1965"/>
+      <fileInstance path="fileInventoryDifference.xml" datetime="2021-02-08T05:03:02Z"/>
+    </file>
+    <file>
+      <fileSignature size="3974" md5="1474652e5fe87fc815be72c5bc54f9d0" sha1="210789f2d595d90712b0f779abe5ce3e1196cb5f" sha256="fe7e2afeb527721ae85bffbc3b9196a746cbbdd1759d074dc9b38d489f489d1d"/>
+      <fileInstance path="signatureCatalog.xml" datetime="2021-02-08T05:03:02Z"/>
+    </file>
+    <file>
+      <fileSignature size="4270" md5="cd0203a5dcbe9deb8794aa5e9fea61c1" sha1="2e834c8fc43feaf39bdb144eb40a28c03594597a" sha256="c86b75250c344dbc51c269a2cc1a2f0a5fd7ab22ecde1dac31bee47f00544142"/>
+      <fileInstance path="versionAdditions.xml" datetime="2021-02-08T05:02:06Z"/>
+    </file>
+    <file>
+      <fileSignature size="4342" md5="02ac552856e6ad0132e9e549eefb61f6" sha1="3be77f323a53c314491e110745f963077a552a9c" sha256="5292c0a706900ca803b272ba64a831f53c11f46262057a8ac4256695477d0a57"/>
+      <fileInstance path="versionInventory.xml" datetime="2021-02-08T05:02:06Z"/>
+    </file>
+  </fileGroup>
+</fileInventory>
