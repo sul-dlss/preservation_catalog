@@ -183,17 +183,17 @@ RSpec.describe Audit::MoabToCatalog do
     before { described_class.seed_catalog_for_all_storage_roots }
 
     it "won't change objects in a fully seeded db" do
-      expect { described_class.populate_moab_storage_root('fixture_sr1') }.not_to change(CompleteMoab, :count).from(17)
-      expect(PreservedObject.count).to eq 16 # two moabs for bz514sm9647, hence difference in count between CompleteMoab & PreservedObject
+      expect { described_class.populate_moab_storage_root('fixture_sr1') }.not_to change(CompleteMoab, :count).from(18)
+      expect(PreservedObject.count).to eq 17 # two moabs for bz514sm9647, hence difference in count between CompleteMoab & PreservedObject
     end
 
     it 're-adds objects for a dropped MoabStorageRoot' do
       ZippedMoabVersion.destroy_all
       ms_root.complete_moabs.destroy_all
       PreservedObject.without_complete_moabs.destroy_all
-      expect(PreservedObject.count).to eq 14
-      expect { described_class.populate_moab_storage_root('fixture_sr1') }.to change(CompleteMoab, :count).from(14).to(17)
-      expect(PreservedObject.count).to eq 16
+      expect(PreservedObject.count).to eq 15
+      expect { described_class.populate_moab_storage_root('fixture_sr1') }.to change(CompleteMoab, :count).from(15).to(18)
+      expect(PreservedObject.count).to eq 17
     end
   end
 end

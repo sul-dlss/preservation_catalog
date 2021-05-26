@@ -70,7 +70,7 @@ class CompleteMoab < ApplicationRecord
   end
 
   def primary?
-    PreservedObjectsPrimaryMoab.where(preserved_object: preserved_object, complete_moab: self).exists?
+    PreservedObjectsPrimaryMoab.exists?(preserved_object: preserved_object, complete_moab: self)
   end
 
   def update_audit_timestamps(moab_validated, version_audited)
