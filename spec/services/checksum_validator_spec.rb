@@ -43,173 +43,6 @@ RSpec.describe ChecksumValidator do
     end
   end
 
-  describe '#validate_manifest_inventories' do
-    it 'calls validate_manifest_inventory for each moab_version' do
-      sov1 = instance_double(Moab::StorageObjectVersion)
-      sov2 = instance_double(Moab::StorageObjectVersion)
-      sov3 = instance_double(Moab::StorageObjectVersion)
-      version_list = [sov1, sov2, sov3]
-      moab = instance_double(Moab::StorageObject, version_list: [sov1, sov2, sov3])
-      allow(cv).to receive(:moab).and_return(moab)
-      version_list.each do |moab_version|
-        expect(cv).to receive(:validate_manifest_inventory).with(moab_version)
-      end
-      cv.validate_manifest_inventories
-    end
-
-    context 'file checksums in manifestInventory.xml do not match' do
-      let(:druid) { 'zz925bx9565' }
-
-      before { allow(AuditResults).to receive(:new).and_return(results) }
-
-      it 'adds a MOAB_FILE_CHECKSUM_MISMATCH result' do
-        file_path1 = "#{object_dir}/v0001/manifests/versionAdditions.xml"
-        file_path2 = "#{object_dir}/v0002/manifests/versionInventory.xml"
-        expect(results).to receive(:add_result).with(
-          AuditResults::MOAB_FILE_CHECKSUM_MISMATCH, file_path: a_string_matching(file_path1), version: 'v1'
-        )
-        expect(results).to receive(:add_result).with(
-          AuditResults::MOAB_FILE_CHECKSUM_MISMATCH, file_path: a_string_matching(file_path2), version: 'v2'
-        )
-        cv.validate_manifest_inventories
-      end
-    end
-
-    context 'file missing from manifestInventory.xml' do
-      before { allow(AuditResults).to receive(:new).and_return(results) }
-
-      it 'adds a FILE_NOT_IN_MANIFEST result' do
-        manifest_file_path = "#{object_dir}/v0003/manifests/manifestInventory.xml"
-        file_path = "#{object_dir}/v0003/manifests/versionInventory.xml"
-        expect(results).to receive(:add_result).with(
-          AuditResults::FILE_NOT_IN_MANIFEST, file_path: a_string_matching(file_path), manifest_file_path: a_string_matching(manifest_file_path)
-        )
-        cv.validate_manifest_inventories
-      end
-    end
-
-    context 'file not on disk, but is described in manifestInventory.xml' do
-      let(:druid) { 'zz514sm9647' }
-
-      before { allow(AuditResults).to receive(:new).and_return(results) }
-
-      it 'adds a FILE_NOT_IN_MOAB result' do
-        manifest_file_path = "#{object_dir}/v0003/manifests/manifestInventory.xml"
-        file_path = "#{object_dir}/v0003/manifests/versionInventory.xml"
-        expect(results).to receive(:add_result).with(
-          AuditResults::FILE_NOT_IN_MOAB, manifest_file_path: a_string_matching(manifest_file_path), file_path: a_string_matching(file_path)
-        )
-        cv.validate_manifest_inventories
-      end
-    end
-
-    context 'manifestInventory.xml not found in Moab' do
-      let(:druid) { 'zz628nk4868' }
-
-      before { allow(AuditResults).to receive(:new).and_return(results) }
-
-      it 'adds a MANIFEST_NOT_IN_MOAB' do
-        manifest_file_path = 'spec/fixtures/checksum_root01/sdr2objects/zz/628/nk/4868/zz628nk4868/v0001/manifests/manifestInventory.xml'
-        expect(results).to receive(:add_result).with(
-          AuditResults::MANIFEST_NOT_IN_MOAB, manifest_file_path: manifest_file_path
-        )
-        cv.validate_manifest_inventories
-      end
-    end
-
-    context 'cannot parse manifestInventory.xml file' do
-      let(:druid) { 'zz048cw1328' }
-
-      before { allow(AuditResults).to receive(:new).and_return(results) }
-
-      it 'adds an INVALID_MANIFEST' do
-        manifest_file_path = 'spec/fixtures/checksum_root01/sdr2objects/zz/048/cw/1328/zz048cw1328/v0002/manifests/manifestInventory.xml'
-        expect(results).to receive(:add_result).with(
-          AuditResults::INVALID_MANIFEST, manifest_file_path: manifest_file_path
-        )
-        cv.validate_manifest_inventories
-      end
-    end
-  end
-
-  describe '#validate_signature_catalog_listing' do
-    let(:druid) { 'bj102hs9687' }
-    let(:root_name) { 'fixture_sr1' }
-
-    it 'calls validate_signature_catalog_entry for each signatureCatalog entry' do
-      sce01 = instance_double(Moab::SignatureCatalogEntry)
-      entry_list = [sce01] + Array.new(10, sce01.dup)
-      moab = instance_double(Moab::StorageObject)
-      allow(cv).to receive(:moab).and_return(moab)
-      allow(cv).to receive(:latest_signature_catalog_entries).and_return(entry_list)
-      entry_list.each do |entry|
-        expect(cv).to receive(:validate_signature_catalog_entry).with(entry)
-      end
-      cv.send(:validate_signature_catalog_listing)
-    end
-
-    context 'file checksums in singatureCatalog.xml do not match' do
-      let(:druid) { 'zz111rr1111' }
-      let(:root_name) { 'fixture_sr3' }
-
-      before { allow(AuditResults).to receive(:new).and_return(results) }
-
-      it 'adds a MOAB_FILE_CHECKSUM_MISMATCH result' do
-        file_path = "#{object_dir}/v0001/data/content/eric-smith-dissertation-augmented.pdf"
-        expect(results).to receive(:add_result).with(
-          AuditResults::MOAB_FILE_CHECKSUM_MISMATCH, file_path: file_path, version: 1
-        )
-        cv.send(:validate_signature_catalog_listing)
-      end
-    end
-
-    context "SC1258_FUR_032a.jpg not on disk, but it's entry element exists in signatureCatalog.xml" do
-      let(:druid) { 'tt222tt2222' }
-      let(:root_name) { 'fixture_sr3' }
-
-      before { allow(AuditResults).to receive(:new).and_return(results) }
-
-      it 'adds a FILE_NOT_IN_MOAB error' do
-        manifest_file_path = "#{object_dir}/v0003/manifests/signatureCatalog.xml"
-        file_path = "#{object_dir}/v0001/data/content/SC1258_FUR_032a.jpg"
-        expect(results).to receive(:add_result).with(
-          AuditResults::FILE_NOT_IN_MOAB, manifest_file_path: manifest_file_path, file_path: file_path
-        )
-        cv.send(:validate_signature_catalog_listing)
-      end
-    end
-
-    context 'signatureCatalog.xml not found in moab' do
-      let(:druid) { 'zz333vv3333' }
-      let(:root_name) { 'fixture_sr3' }
-
-      before { allow(AuditResults).to receive(:new).and_return(results) }
-
-      it 'adds a MANIFEST_NOT_IN_MOAB error' do
-        expect(results).to receive(:add_result).with(
-          AuditResults::SIGNATURE_CATALOG_NOT_IN_MOAB, signature_catalog_path: "#{object_dir}/v0002/manifests/signatureCatalog.xml"
-        )
-        cv.send(:validate_signature_catalog_listing)
-      end
-    end
-
-    context 'cannot parse signatureCatalog.xml' do
-      let(:druid) { 'xx444xx4444' }
-      let(:root_name) { 'fixture_sr3' }
-
-      before { allow(AuditResults).to receive(:new).and_return(results) }
-
-      it 'adds an INVALID_MANIFEST error' do
-        exp_msg_start = '#<Nokogiri::XML::SyntaxError: 6:28: FATAL: Opening and ending tag mismatch: signatureCatalog'
-        expect(results).to receive(:add_result).with(
-          AuditResults::INVALID_MANIFEST, hash_including(manifest_file_path: "#{object_dir}/v0001/manifests/signatureCatalog.xml",
-                                                         addl: a_string_starting_with(exp_msg_start))
-        )
-        cv.send(:validate_signature_catalog_listing)
-      end
-    end
-  end
-
   describe '#validate_checksums' do
     context 'moab is missing from storage' do
       let(:events_client) { instance_double(Dor::Services::Client::Events) }
@@ -467,6 +300,173 @@ RSpec.describe ChecksumValidator do
       it 'does not have a result code indicating the update happened' do
         cv.validate_checksums
         expect(cv.results.contains_result_code?(AuditResults::CM_STATUS_CHANGED)).to eq false
+      end
+    end
+  end
+
+  describe '#validate_manifest_inventories' do
+    it 'calls validate_manifest_inventory for each moab_version' do
+      sov1 = instance_double(Moab::StorageObjectVersion)
+      sov2 = instance_double(Moab::StorageObjectVersion)
+      sov3 = instance_double(Moab::StorageObjectVersion)
+      version_list = [sov1, sov2, sov3]
+      moab = instance_double(Moab::StorageObject, version_list: [sov1, sov2, sov3])
+      allow(cv).to receive(:moab).and_return(moab)
+      version_list.each do |moab_version|
+        expect(cv).to receive(:validate_manifest_inventory).with(moab_version)
+      end
+      cv.validate_manifest_inventories
+    end
+
+    context 'file checksums in manifestInventory.xml do not match' do
+      let(:druid) { 'zz925bx9565' }
+
+      before { allow(AuditResults).to receive(:new).and_return(results) }
+
+      it 'adds a MOAB_FILE_CHECKSUM_MISMATCH result' do
+        file_path1 = "#{object_dir}/v0001/manifests/versionAdditions.xml"
+        file_path2 = "#{object_dir}/v0002/manifests/versionInventory.xml"
+        expect(results).to receive(:add_result).with(
+          AuditResults::MOAB_FILE_CHECKSUM_MISMATCH, file_path: a_string_matching(file_path1), version: 'v1'
+        )
+        expect(results).to receive(:add_result).with(
+          AuditResults::MOAB_FILE_CHECKSUM_MISMATCH, file_path: a_string_matching(file_path2), version: 'v2'
+        )
+        cv.validate_manifest_inventories
+      end
+    end
+
+    context 'file missing from manifestInventory.xml' do
+      before { allow(AuditResults).to receive(:new).and_return(results) }
+
+      it 'adds a FILE_NOT_IN_MANIFEST result' do
+        manifest_file_path = "#{object_dir}/v0003/manifests/manifestInventory.xml"
+        file_path = "#{object_dir}/v0003/manifests/versionInventory.xml"
+        expect(results).to receive(:add_result).with(
+          AuditResults::FILE_NOT_IN_MANIFEST, file_path: a_string_matching(file_path), manifest_file_path: a_string_matching(manifest_file_path)
+        )
+        cv.validate_manifest_inventories
+      end
+    end
+
+    context 'file not on disk, but is described in manifestInventory.xml' do
+      let(:druid) { 'zz514sm9647' }
+
+      before { allow(AuditResults).to receive(:new).and_return(results) }
+
+      it 'adds a FILE_NOT_IN_MOAB result' do
+        manifest_file_path = "#{object_dir}/v0003/manifests/manifestInventory.xml"
+        file_path = "#{object_dir}/v0003/manifests/versionInventory.xml"
+        expect(results).to receive(:add_result).with(
+          AuditResults::FILE_NOT_IN_MOAB, manifest_file_path: a_string_matching(manifest_file_path), file_path: a_string_matching(file_path)
+        )
+        cv.validate_manifest_inventories
+      end
+    end
+
+    context 'manifestInventory.xml not found in Moab' do
+      let(:druid) { 'zz628nk4868' }
+
+      before { allow(AuditResults).to receive(:new).and_return(results) }
+
+      it 'adds a MANIFEST_NOT_IN_MOAB' do
+        manifest_file_path = 'spec/fixtures/checksum_root01/sdr2objects/zz/628/nk/4868/zz628nk4868/v0001/manifests/manifestInventory.xml'
+        expect(results).to receive(:add_result).with(
+          AuditResults::MANIFEST_NOT_IN_MOAB, manifest_file_path: manifest_file_path
+        )
+        cv.validate_manifest_inventories
+      end
+    end
+
+    context 'cannot parse manifestInventory.xml file' do
+      let(:druid) { 'zz048cw1328' }
+
+      before { allow(AuditResults).to receive(:new).and_return(results) }
+
+      it 'adds an INVALID_MANIFEST' do
+        manifest_file_path = 'spec/fixtures/checksum_root01/sdr2objects/zz/048/cw/1328/zz048cw1328/v0002/manifests/manifestInventory.xml'
+        expect(results).to receive(:add_result).with(
+          AuditResults::INVALID_MANIFEST, manifest_file_path: manifest_file_path
+        )
+        cv.validate_manifest_inventories
+      end
+    end
+  end
+
+  describe '#validate_signature_catalog_listing' do
+    let(:druid) { 'bj102hs9687' }
+    let(:root_name) { 'fixture_sr1' }
+
+    it 'calls validate_signature_catalog_entry for each signatureCatalog entry' do
+      sce01 = instance_double(Moab::SignatureCatalogEntry)
+      entry_list = [sce01] + Array.new(10, sce01.dup)
+      moab = instance_double(Moab::StorageObject)
+      allow(cv).to receive(:moab).and_return(moab)
+      allow(cv).to receive(:latest_signature_catalog_entries).and_return(entry_list)
+      entry_list.each do |entry|
+        expect(cv).to receive(:validate_signature_catalog_entry).with(entry)
+      end
+      cv.send(:validate_signature_catalog_listing)
+    end
+
+    context 'file checksums in singatureCatalog.xml do not match' do
+      let(:druid) { 'zz111rr1111' }
+      let(:root_name) { 'fixture_sr3' }
+
+      before { allow(AuditResults).to receive(:new).and_return(results) }
+
+      it 'adds a MOAB_FILE_CHECKSUM_MISMATCH result' do
+        file_path = "#{object_dir}/v0001/data/content/eric-smith-dissertation-augmented.pdf"
+        expect(results).to receive(:add_result).with(
+          AuditResults::MOAB_FILE_CHECKSUM_MISMATCH, file_path: file_path, version: 1
+        )
+        cv.send(:validate_signature_catalog_listing)
+      end
+    end
+
+    context "SC1258_FUR_032a.jpg not on disk, but it's entry element exists in signatureCatalog.xml" do
+      let(:druid) { 'tt222tt2222' }
+      let(:root_name) { 'fixture_sr3' }
+
+      before { allow(AuditResults).to receive(:new).and_return(results) }
+
+      it 'adds a FILE_NOT_IN_MOAB error' do
+        manifest_file_path = "#{object_dir}/v0003/manifests/signatureCatalog.xml"
+        file_path = "#{object_dir}/v0001/data/content/SC1258_FUR_032a.jpg"
+        expect(results).to receive(:add_result).with(
+          AuditResults::FILE_NOT_IN_MOAB, manifest_file_path: manifest_file_path, file_path: file_path
+        )
+        cv.send(:validate_signature_catalog_listing)
+      end
+    end
+
+    context 'signatureCatalog.xml not found in moab' do
+      let(:druid) { 'zz333vv3333' }
+      let(:root_name) { 'fixture_sr3' }
+
+      before { allow(AuditResults).to receive(:new).and_return(results) }
+
+      it 'adds a MANIFEST_NOT_IN_MOAB error' do
+        expect(results).to receive(:add_result).with(
+          AuditResults::SIGNATURE_CATALOG_NOT_IN_MOAB, signature_catalog_path: "#{object_dir}/v0002/manifests/signatureCatalog.xml"
+        )
+        cv.send(:validate_signature_catalog_listing)
+      end
+    end
+
+    context 'cannot parse signatureCatalog.xml' do
+      let(:druid) { 'xx444xx4444' }
+      let(:root_name) { 'fixture_sr3' }
+
+      before { allow(AuditResults).to receive(:new).and_return(results) }
+
+      it 'adds an INVALID_MANIFEST error' do
+        exp_msg_start = '#<Nokogiri::XML::SyntaxError: 6:28: FATAL: Opening and ending tag mismatch: signatureCatalog'
+        expect(results).to receive(:add_result).with(
+          AuditResults::INVALID_MANIFEST, hash_including(manifest_file_path: "#{object_dir}/v0001/manifests/signatureCatalog.xml",
+                                                         addl: a_string_starting_with(exp_msg_start))
+        )
+        cv.send(:validate_signature_catalog_listing)
       end
     end
   end
