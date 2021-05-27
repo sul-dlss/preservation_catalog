@@ -313,9 +313,12 @@ RSpec.describe ChecksumValidator do
       moab = instance_double(Moab::StorageObject, version_list: [sov1, sov2, sov3])
       allow(cv).to receive(:moab).and_return(moab)
       version_list.each do |moab_version|
-        expect(cv).to receive(:validate_manifest_inventory).with(moab_version)
+        allow(cv).to receive(:validate_manifest_inventory).with(moab_version)
       end
-      cv.validate_manifest_inventories
+      cv.send(:validate_manifest_inventories)
+      version_list.each do |moab_version|
+        expect(cv).to have_received(:validate_manifest_inventory).with(moab_version)
+      end
     end
 
     context 'file checksums in manifestInventory.xml do not match' do
@@ -326,13 +329,19 @@ RSpec.describe ChecksumValidator do
       it 'adds a MOAB_FILE_CHECKSUM_MISMATCH result' do
         file_path1 = "#{object_dir}/v0001/manifests/versionAdditions.xml"
         file_path2 = "#{object_dir}/v0002/manifests/versionInventory.xml"
-        expect(results).to receive(:add_result).with(
+        allow(results).to receive(:add_result).with(
           AuditResults::MOAB_FILE_CHECKSUM_MISMATCH, file_path: a_string_matching(file_path1), version: 'v1'
         )
-        expect(results).to receive(:add_result).with(
+        allow(results).to receive(:add_result).with(
           AuditResults::MOAB_FILE_CHECKSUM_MISMATCH, file_path: a_string_matching(file_path2), version: 'v2'
         )
-        cv.validate_manifest_inventories
+        cv.send(:validate_manifest_inventories)
+        expect(results).to have_received(:add_result).with(
+          AuditResults::MOAB_FILE_CHECKSUM_MISMATCH, file_path: a_string_matching(file_path1), version: 'v1'
+        )
+        expect(results).to have_received(:add_result).with(
+          AuditResults::MOAB_FILE_CHECKSUM_MISMATCH, file_path: a_string_matching(file_path2), version: 'v2'
+        )
       end
     end
 
@@ -342,10 +351,13 @@ RSpec.describe ChecksumValidator do
       it 'adds a FILE_NOT_IN_MANIFEST result' do
         manifest_file_path = "#{object_dir}/v0003/manifests/manifestInventory.xml"
         file_path = "#{object_dir}/v0003/manifests/versionInventory.xml"
-        expect(results).to receive(:add_result).with(
+        allow(results).to receive(:add_result).with(
           AuditResults::FILE_NOT_IN_MANIFEST, file_path: a_string_matching(file_path), manifest_file_path: a_string_matching(manifest_file_path)
         )
-        cv.validate_manifest_inventories
+        cv.send(:validate_manifest_inventories)
+        expect(results).to have_received(:add_result).with(
+          AuditResults::FILE_NOT_IN_MANIFEST, file_path: a_string_matching(file_path), manifest_file_path: a_string_matching(manifest_file_path)
+        )
       end
     end
 
@@ -357,10 +369,13 @@ RSpec.describe ChecksumValidator do
       it 'adds a FILE_NOT_IN_MOAB result' do
         manifest_file_path = "#{object_dir}/v0003/manifests/manifestInventory.xml"
         file_path = "#{object_dir}/v0003/manifests/versionInventory.xml"
-        expect(results).to receive(:add_result).with(
+        allow(results).to receive(:add_result).with(
           AuditResults::FILE_NOT_IN_MOAB, manifest_file_path: a_string_matching(manifest_file_path), file_path: a_string_matching(file_path)
         )
-        cv.validate_manifest_inventories
+        cv.send(:validate_manifest_inventories)
+        expect(results).to have_received(:add_result).with(
+          AuditResults::FILE_NOT_IN_MOAB, manifest_file_path: a_string_matching(manifest_file_path), file_path: a_string_matching(file_path)
+        )
       end
     end
 
@@ -371,10 +386,13 @@ RSpec.describe ChecksumValidator do
 
       it 'adds a MANIFEST_NOT_IN_MOAB' do
         manifest_file_path = 'spec/fixtures/checksum_root01/sdr2objects/zz/628/nk/4868/zz628nk4868/v0001/manifests/manifestInventory.xml'
-        expect(results).to receive(:add_result).with(
+        allow(results).to receive(:add_result).with(
           AuditResults::MANIFEST_NOT_IN_MOAB, manifest_file_path: manifest_file_path
         )
-        cv.validate_manifest_inventories
+        cv.send(:validate_manifest_inventories)
+        expect(results).to have_received(:add_result).with(
+          AuditResults::MANIFEST_NOT_IN_MOAB, manifest_file_path: manifest_file_path
+        )
       end
     end
 
@@ -385,10 +403,13 @@ RSpec.describe ChecksumValidator do
 
       it 'adds an INVALID_MANIFEST' do
         manifest_file_path = 'spec/fixtures/checksum_root01/sdr2objects/zz/048/cw/1328/zz048cw1328/v0002/manifests/manifestInventory.xml'
-        expect(results).to receive(:add_result).with(
+        allow(results).to receive(:add_result).with(
           AuditResults::INVALID_MANIFEST, manifest_file_path: manifest_file_path
         )
-        cv.validate_manifest_inventories
+        cv.send(:validate_manifest_inventories)
+        expect(results).to have_received(:add_result).with(
+          AuditResults::INVALID_MANIFEST, manifest_file_path: manifest_file_path
+        )
       end
     end
   end
@@ -517,13 +538,15 @@ RSpec.describe ChecksumValidator do
     let(:root_name) { 'fixture_sr1' }
 
     it 'calls validate_signature_catalog_listing' do
-      expect(cv).to receive(:validate_signature_catalog_listing)
-      cv.validate_signature_catalog
+      allow(cv).to receive(:validate_signature_catalog_listing)
+      cv.send(:validate_signature_catalog)
+      expect(cv).to have_received(:validate_signature_catalog_listing)
     end
 
     it 'calls flag_unexpected_data_content_files' do
-      expect(cv).to receive(:flag_unexpected_data_files)
-      cv.validate_signature_catalog
+      allow(cv).to receive(:flag_unexpected_data_files)
+      cv.send(:validate_signature_catalog)
+      expect(cv).to have_received(:flag_unexpected_data_files)
     end
 
     context 'file or directory does not exist' do
@@ -533,7 +556,7 @@ RSpec.describe ChecksumValidator do
       it 'adds error code and continues executing' do
         allow(results).to receive(:add_result)
         allow(cv).to receive(:results).and_return(results)
-        cv.validate_signature_catalog
+        cv.send(:validate_signature_catalog)
         expect(results).to have_received(:add_result).with(
           AuditResults::SIGNATURE_CATALOG_NOT_IN_MOAB, anything
         ).at_least(:once)
@@ -548,7 +571,7 @@ RSpec.describe ChecksumValidator do
         allow(results).to receive(:add_result)
         allow(cv).to receive(:results).and_return(results)
         exp_msg_start = '#<Nokogiri::XML::SyntaxError: 6:28: FATAL: Opening and ending tag mismatch: signatureCatalog'
-        cv.validate_signature_catalog
+        cv.send(:validate_signature_catalog)
         expect(results).to have_received(:add_result).with(
           AuditResults::INVALID_MANIFEST, hash_including(manifest_file_path: "#{object_dir}/v0001/manifests/signatureCatalog.xml",
                                                          addl: a_string_starting_with(exp_msg_start))
@@ -564,7 +587,7 @@ RSpec.describe ChecksumValidator do
         allow(results).to receive(:add_result)
         allow(cv).to receive(:results).and_return(results)
         exp_msg_start = '#<Nokogiri::XML::SyntaxError: 1:1: FATAL: Document is empty'
-        cv.validate_signature_catalog
+        cv.send(:validate_signature_catalog)
         expect(results).to have_received(:add_result).with(
           AuditResults::INVALID_MANIFEST, hash_including(manifest_file_path: "#{object_dir}/v0001/manifests/signatureCatalog.xml",
                                                          addl: a_string_starting_with(exp_msg_start))

@@ -58,6 +58,8 @@ class ChecksumValidator
     results.report_results
   end
 
+  private
+
   # return true and exit if the moab exists.  otherwise update status to missing on complete_moab, report results, and return false.
   # @return [Boolean] true and exit if the moab exists, false otherwise
   def check_file_existence!
@@ -81,8 +83,6 @@ class ChecksumValidator
     flag_unexpected_data_files
     validate_signature_catalog_listing
   end
-
-  private
 
   def moab_validator
     @moab_validator ||= MoabValidator.new(druid: druid,
