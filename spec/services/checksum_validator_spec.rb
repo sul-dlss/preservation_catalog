@@ -430,7 +430,7 @@ RSpec.describe ChecksumValidator do
       cv.send(:validate_signature_catalog_listing)
     end
 
-    context 'file checksums in singatureCatalog.xml do not match' do
+    context 'file checksums in signatureCatalog.xml do not match' do
       let(:druid) { 'zz111rr1111' }
       let(:root_name) { 'fixture_sr3' }
 
@@ -445,7 +445,7 @@ RSpec.describe ChecksumValidator do
       end
     end
 
-    context "SC1258_FUR_032a.jpg not on disk, but it's entry element exists in signatureCatalog.xml" do
+    context 'SC1258_FUR_032a.jpg not on disk, but its entry element exists in signatureCatalog.xml' do
       let(:druid) { 'tt222tt2222' }
       let(:root_name) { 'fixture_sr3' }
 
