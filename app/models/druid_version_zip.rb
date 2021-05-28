@@ -199,7 +199,7 @@ class DruidVersionZip
   end
 
   def moab_version_files
-    raise unless File.exist?(moab_version_path)
+    raise "Moab version does not exist: #{moab_version_path}" unless File.exist?(moab_version_path)
     Dir
       .glob("#{moab_version_path}/**/*")
       .select { |path| File.file?(path) }
