@@ -2,7 +2,7 @@
 
 module Reporters
   # Reports to DOR Workflow Service.
-  class WorkflowReporter < BaseReporter
+  class AuditWorkflowReporter < BaseReporter
     protected
 
     def handled_single_codes
