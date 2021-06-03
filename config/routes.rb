@@ -13,6 +13,7 @@ Rails.application.routes.draw do
     resources :objects, only: %i[show] do
       member do
         get 'checksum'
+        get 'validate_moab'
         get 'file', format: false # no need to add extension to url
         get 'primary_moab_location'
         post 'content_diff'
