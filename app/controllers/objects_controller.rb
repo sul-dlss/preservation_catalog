@@ -12,6 +12,13 @@ class ObjectsController < ApplicationController
     render json: PreservedObject.find_by!(druid: druid).to_json
   end
 
+  # queue a ValidateMoab job for a specific druid, typically called by a preservationIngestWF robot
+  # GET /v1/objects/:id/validate_moab
+  def validate_moab
+    ValidateMoabJob.perform_later(druid)
+    render(plain: 'ok', status: :ok)
+  end
+
   # return a specific file from the Moab
   # GET /v1/objects/:id/file?category=manifest&filepath=signatureCatalog.xml
   # useful params:

@@ -124,6 +124,25 @@ paths:
           example: 'druid:bc123df4567.json'
           schema:
             $ref: '#/components/schemas/DruidWithOptionalFormat'
+  /v1/objects/{id}/validate_moab:
+    get:
+      tags:
+        - objects
+      summary: Starts a validate moab job, which does a validation of the on disk Moab, without reference to the preservation-catalog basis
+      responses:
+        '200':
+          description: Job queued
+        '400':
+          description: Bad request (e.g., malformed druid)
+        '404':
+          description: Object not found
+      parameters:
+        - name: id
+          in: path
+          required: true
+          example: 'druid:bc123df4567'
+          schema:
+            $ref: '#/components/schemas/Druid'
   /v1/objects/{id}/checksum.json:
     get:
       tags:
