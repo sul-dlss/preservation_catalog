@@ -43,6 +43,8 @@ replication:
   audit_should_backfill: false
 
 total_worker_count: 117 # for okcomputer endpoint
+minimum_subfolder_count: 1 # for okcomputer pres-cat mount check, verifies the storage_trunk has at least this many subfolders
+                           # NOTE: when null, no minimum check is performed, and this can be overriden per environment as needed
 
 api_jwt:
   hmac_secret: 'my$ecretK3y'

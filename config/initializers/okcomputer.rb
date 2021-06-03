@@ -35,31 +35,41 @@ class TablesHaveDataCheck < OkComputer::Check
 end
 OkComputer::Registry.register 'feature-tables-have-data', TablesHaveDataCheck.new
 
+# rubocop:disable Metrics/AbcSize
 # check that directory is accessible without consideration for writability
 class DirectoryExistsCheck < OkComputer::Check
-  attr_accessor :directory
+  attr_accessor :directory, :min_subfolder_count
 
-  def initialize(directory)
+  def initialize(directory, min_subfolder_count = nil)
     self.directory = directory
+    self.min_subfolder_count = min_subfolder_count
   end
 
   def check
-    stat = File.stat(directory) if File.exist?(directory)
-    if stat
-      if stat.directory?
-        mark_message "'#{directory}' is a reachable directory"
-      else
-        mark_message "'#{directory}' is not a directory."
-        mark_failure
-      end
-    else
+    unless File.exist? directory
       mark_message "Directory '#{directory}' does not exist."
+      mark_failure
+    end
+
+    unless File.directory? directory
+      mark_message "'#{directory}' is not a directory."
+      mark_failure
+    end
+
+    mark_message "'#{directory}' is a reachable directory"
+    if min_subfolder_count && Dir.entries(directory).size > min_subfolder_count
+      mark_message "'#{directory}' has the required minimum number of subfolders (#{min_subfolder_count})"
+    elsif min_subfolder_count
+      mark_message "'#{directory}' does not have the required minimum number of subfolders (#{min_subfolder_count})"
       mark_failure
     end
   end
 end
+# rubocop:enable Metrics/AbcSize
+
 Settings.storage_root_map.default.each do |name, location|
-  OkComputer::Registry.register "feature-#{name}", DirectoryExistsCheck.new(location)
+  sdrobjects_location = "#{location}/#{Settings.moab.storage_trunk}"
+  OkComputer::Registry.register "feature-#{name}-sdr2objects", DirectoryExistsCheck.new(sdrobjects_location, Settings.minimum_subfolder_count)
 end
 
 OkComputer::Registry.register 'ruby_version', OkComputer::RubyVersionCheck.new
