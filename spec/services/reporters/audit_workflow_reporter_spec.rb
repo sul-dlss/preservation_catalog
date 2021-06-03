@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe Reporters::WorkflowReporter do
+RSpec.describe Reporters::AuditWorkflowReporter do
   let(:subject) { described_class.new }
 
   let(:client) { instance_double(Dor::Workflow::Client) }

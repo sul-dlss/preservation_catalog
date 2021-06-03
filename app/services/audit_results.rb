@@ -146,7 +146,7 @@ class AuditResults
     @reporters ||= [
       Reporters::LoggerReporter.new(logger),
       Reporters::HoneybadgerReporter.new,
-      Reporters::WorkflowReporter.new,
+      Reporters::AuditWorkflowReporter.new,
       Reporters::EventServiceReporter.new
     ].freeze
   end

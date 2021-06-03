@@ -24,13 +24,13 @@ RSpec.describe AuditResults do
   end
 
   describe '#report_results' do
-    let(:workflow_reporter) { instance_double(Reporters::WorkflowReporter, report_errors: nil, report_completed: nil) }
+    let(:audit_workflow_reporter) { instance_double(Reporters::AuditWorkflowReporter, report_errors: nil, report_completed: nil) }
     let(:event_service_reporter) { instance_double(Reporters::EventServiceReporter, report_errors: nil, report_completed: nil) }
     let(:honeybadger_reporter) { instance_double(Reporters::HoneybadgerReporter, report_errors: nil, report_completed: nil) }
     let(:logger_reporter) { instance_double(Reporters::LoggerReporter, report_errors: nil, report_completed: nil) }
 
     before do
-      allow(Reporters::WorkflowReporter).to receive(:new).and_return(workflow_reporter)
+      allow(Reporters::AuditWorkflowReporter).to receive(:new).and_return(audit_workflow_reporter)
       allow(Reporters::EventServiceReporter).to receive(:new).and_return(event_service_reporter)
       allow(Reporters::HoneybadgerReporter).to receive(:new).and_return(honeybadger_reporter)
       allow(Reporters::LoggerReporter).to receive(:new).and_return(logger_reporter)
@@ -44,7 +44,7 @@ RSpec.describe AuditResults do
 
     it 'invokes the reporters' do
       audit_results.report_results
-      expect(workflow_reporter).to have_received(:report_errors)
+      expect(audit_workflow_reporter).to have_received(:report_errors)
         .with(druid: druid, version: actual_version, storage_area: ms_root, check_name: nil,
               results: [{ invalid_moab: "Invalid Moab, validation errors: [\"Version directory name not in 'v00xx' " \
           'format: original-v1", "Version v0005: No files present in manifest dir"]' }])
@@ -61,7 +61,7 @@ RSpec.describe AuditResults do
               results: [{ invalid_moab: "Invalid Moab, validation errors: [\"Version directory name not in 'v00xx' " \
           'format: original-v1", "Version v0005: No files present in manifest dir"]' }])
 
-      expect(workflow_reporter).to have_received(:report_completed)
+      expect(audit_workflow_reporter).to have_received(:report_completed)
         .with(druid: druid, version: actual_version, storage_area: ms_root, check_name: nil,
               result: { cm_status_changed: 'CompleteMoab status changed from invalid_checksum to ok' })
       expect(event_service_reporter).to have_received(:report_completed)

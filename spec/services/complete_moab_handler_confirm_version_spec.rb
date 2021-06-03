@@ -4,7 +4,7 @@ require 'rails_helper'
 require 'services/shared_examples_complete_moab_handler'
 
 RSpec.describe CompleteMoabHandler do
-  let(:workflow_reporter) { instance_double(Reporters::WorkflowReporter, report_errors: nil) }
+  let(:audit_workflow_reporter) { instance_double(Reporters::AuditWorkflowReporter, report_errors: nil) }
   let(:incoming_version) { 6 }
   let(:incoming_size) { 9876 }
   let(:ms_root) { create(:moab_storage_root) }
@@ -14,7 +14,7 @@ RSpec.describe CompleteMoabHandler do
   let(:event_service_reporter) { instance_double(Reporters::EventServiceReporter, report_errors: nil) }
 
   before do
-    allow(Reporters::WorkflowReporter).to receive(:new).and_return(workflow_reporter)
+    allow(Reporters::AuditWorkflowReporter).to receive(:new).and_return(audit_workflow_reporter)
     allow(Reporters::LoggerReporter).to receive(:new).and_return(logger_reporter)
     allow(Reporters::HoneybadgerReporter).to receive(:new).and_return(honeybadger_reporter)
     allow(Reporters::EventServiceReporter).to receive(:new).and_return(event_service_reporter)
