@@ -30,6 +30,14 @@ describe 'OkComputer custom checks' do # rubocop:disable RSpec/DescribeClass
       expect(described_class.new(Settings.zip_storage)).to be_successful
     end
 
+    it 'successful for existing directory with minumum number of subfolders' do
+      expect(described_class.new(Rails.root, 5)).to be_successful
+    end
+
+    it 'fails for existing directory with fewer than the minumum number of subfolders' do
+      expect(described_class.new(Rails.root, 500)).not_to be_successful
+    end
+
     it 'fails for a file' do
       zip_path = 'spec/fixtures/zip_storage/bj/102/hs/9687/bj102hs9687.v0001.zip'
       expect(described_class.new(zip_path)).not_to be_successful
