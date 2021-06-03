@@ -68,10 +68,8 @@ end
 # rubocop:enable Metrics/AbcSize
 
 Settings.storage_root_map.default.each do |name, location|
-  deposit_location = "#{location}/deposit"
-  sdrobjects_locations = "#{location}/sdr2objects"
-  OkComputer::Registry.register "feature-#{name}-deposit", DirectoryExistsCheck.new(deposit_location)
-  OkComputer::Registry.register "feature-#{name}-sdr2objects", DirectoryExistsCheck.new(sdrobjects_locations, Settings.minimum_subfolder_count)
+  sdrobjects_location = "#{location}/#{Settings.moab.storage_trunk}"
+  OkComputer::Registry.register "feature-#{name}-sdr2objects", DirectoryExistsCheck.new(sdrobjects_location, Settings.minimum_subfolder_count)
 end
 
 OkComputer::Registry.register 'ruby_version', OkComputer::RubyVersionCheck.new
