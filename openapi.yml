@@ -134,8 +134,6 @@ paths:
           description: Job queued
         '400':
           description: Bad request (e.g., malformed druid)
-        '404':
-          description: Object not found
       parameters:
         - name: id
           in: path
