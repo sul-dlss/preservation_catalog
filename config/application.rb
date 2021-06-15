@@ -43,7 +43,8 @@ module PreservationCatalog
       strict: true,
       error_class: JSONAPIError,
       accept_request_filter: accept_proc,
-      parse_response_by_content_type: false
+      parse_response_by_content_type: false,
+      query_hash_key: 'action_dispatch.request.query_parameters'
     )
     # TODO: we can uncomment this at a later date to ensure we are passing back
     #       valid responses. Currently, uncommenting this line causes 24 spec
