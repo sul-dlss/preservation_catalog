@@ -11,7 +11,7 @@ describe ValidateMoabJob, type: :job do
   let(:workflow_client) { instance_double(Dor::Workflow::Client) }
 
   before do
-    allow(Moab::StorageServices).to receive(:find_storage_object).with(bare_druid).and_return(moab)
+    allow(Moab::StorageServices).to receive(:find_storage_object).with(druid).and_return(moab)
     allow(Dor::Workflow::Client).to receive(:new).and_return(workflow_client)
     allow(Settings).to receive(:workflow_services_url).and_return('http://workflow')
     allow(workflow_client).to receive(:update_status).with(a_hash_including(druid: druid,
@@ -21,6 +21,16 @@ describe ValidateMoabJob, type: :job do
   end
 
   describe '#perform' do
+    it 'uses full druid when it gets full druid' do
+      job.perform(druid)
+      expect(job.druid).to eq druid
+    end
+
+    it 'uses full druid when it gets bare druid' do
+      job.perform(bare_druid)
+      expect(job.druid).to eq druid
+    end
+
     it 'tells workflow server check has started' do
       job.perform(druid)
       exp_str = 'Started by preservation_catalog on '

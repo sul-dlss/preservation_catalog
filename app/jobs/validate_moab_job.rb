@@ -4,16 +4,14 @@
 class ValidateMoabJob < ApplicationJob
   queue_as :validate_moab
 
-  before_enqueue do |job|
-    err_msg = 'Druid param required, with druid prefix and without alpha chars aeilou'
-    raise ArgumentError, err_msg unless DruidTools::Druid.valid?(job.arguments.first, true)
-  end
-
-  attr :druid
+  attr_accessor :druid
 
   # @param [String] druid of Moab on disk to be checksum validated
   def perform(druid)
-    @druid = druid
+    log_failure('Valid druid param required') and return unless DruidTools::Druid.valid?(druid, true)
+
+    @druid = druid.start_with?('druid:') ? druid : "druid:#{druid}"
+
     start = Time.zone.now
     log_started
 
@@ -73,10 +71,7 @@ class ValidateMoabJob < ApplicationJob
 
   # @return [Moab::StorageObject] representation of a Moab's storage directory
   def moab
-    @moab ||= begin
-      bare_druid = druid.split(':').last
-      Moab::StorageServices.find_storage_object(bare_druid)
-    end
+    @moab ||= Moab::StorageServices.find_storage_object(druid)
   end
 
   def log_started
