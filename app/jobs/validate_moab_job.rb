@@ -36,15 +36,22 @@ class ValidateMoabJob < ApplicationJob
     structural_errors = structural_validator.validation_errors # Returns an array of hashes with error codes => messages
     errors << structural_errors unless structural_errors.empty?
 
-    moab.version_list.each do |version|
+    # reverse because we want to fail fast if there is a problem with the most recent version
+    moab.version_list.reverse.each do |version|
       # ensure all files in signatureCatalog.xml exist
       errors << verification_errors(version.verify_signature_catalog)
 
       # verify_version_storage includes:
       #   verify_manifest_inventory, (which computes and compares v000x/manifest file checksums)
-      #   verify_version_inventory,
+      #   verify_version_inventory, (ensures all files & signatures listed in version inventory exist)
       #   verify_version_additions (which computes v000x/data file checksums and compares them with values in signatureCatalog.xml)
-      errors << verification_errors(version.verify_version_storage)
+      # we only want to call verify_version_additions for the most recent version, as this is slow for large files
+      if moab.current_version_id == version.version_id
+        errors << verification_errors(version.verify_version_storage)
+      else
+        errors << verification_errors(version.verify_manifest_inventory)
+        errors << verification_errors(version.verify_version_inventory)
+      end
     rescue Errno::ENOENT => e
       errors << e.message # No such file or directory
     rescue Nokogiri::XML::SyntaxError => e

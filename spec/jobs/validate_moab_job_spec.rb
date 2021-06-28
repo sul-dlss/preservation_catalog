@@ -55,6 +55,8 @@ describe ValidateMoabJob, type: :job do
     end
 
     it 'reports failure to workflow server when there are validation errors' do
+      # ensure test object bj102hs9687 has expected errors
+      allow(job).to receive(:validate).and_return(job.send(:verification_errors, moab.version_list.first.verify_version_storage))
       job.perform(druid) # test object bj102hs9687 has errors
       validation_err_substring = 'druid:bj102hs9687-v0001: version_additions: file_differences'
       expected_str_regex = /^Problem with Moab validation run on .*#{validation_err_substring}.*/
@@ -67,15 +69,12 @@ describe ValidateMoabJob, type: :job do
     context 'when validation runs' do
       let(:expected_validation_err_regex) { /^Problem with Moab validation run on .*#{error_regex_str}.*/ }
 
-      before do
-        job.perform(druid)
-      end
-
       context 'when structural validation errors' do
         let(:bare_druid) { 'zz111rr1111' }
         let(:error_regex_str) { 'expected.*druid:zz111rr1111-v0001.*found.*druid:bj102hs9687-v0001' }
 
         it 'sends error to workflow client' do
+          job.perform(druid)
           expect(workflow_client).to have_received(:update_error_status).with(druid: druid,
                                                                               workflow: 'preservationIngestWF',
                                                                               process: 'validate-moab',
@@ -83,11 +82,13 @@ describe ValidateMoabJob, type: :job do
         end
       end
 
-      context 'when it fails an existence check for a manifest file' do
+      context 'when it fails an existence check for a manifest file in any version' do
         let(:bare_druid) { 'zz102hs9687' }
-        let(:error_regex_str) { 'expected.*druid:zz102hs9687.*version_inventory.*' }
+        let(:path) { 'spec/fixtures/checksum_root01/sdr2objects/zz/102/hs/9687/zz102hs9687' }
+        let(:error_regex_str) { 'expected.*druid:zz102hs9687.*found.*druid:bj102hs9687-v0001.*version_inventory.*' }
 
         it 'sends error to workflow client' do
+          job.perform(druid)
           expect(workflow_client).to have_received(:update_error_status).with(druid: druid,
                                                                               workflow: 'preservationIngestWF',
                                                                               process: 'validate-moab',
@@ -95,11 +96,19 @@ describe ValidateMoabJob, type: :job do
         end
       end
 
-      context 'when it fails an existence check for a data file' do
-        let(:bare_druid) { 'dc048cw1328' }
-        let(:error_regex_str) { 'expected.*druid:dc048cw1328.*versionMetadata.xml.*' }
+      context 'when it fails an existence check for a data file in any version' do
+        let(:bare_druid) { 'tt222tt2222' }
+        let(:path) { 'spec/fixtures/checksum_root01/sdr2objects/tt/222/tt/2222/tt222tt2222' }
+        let(:error_regex_str) { 'missing.*tt222tt2222/v0001/data/content/SC1258_FUR_032a.jpg.*' }
+        let(:erroring_version) { moab.version_list.first }
+
+        before do
+          # ensure validate encounters the proper errors
+          allow(job).to receive(:validate).and_return(job.send(:verification_errors, moab.version_list.last.verify_signature_catalog))
+        end
 
         it 'sends error to workflow client' do
+          job.perform(druid)
           expect(workflow_client).to have_received(:update_error_status).with(druid: druid,
                                                                               workflow: 'preservationIngestWF',
                                                                               process: 'validate-moab',
@@ -107,11 +116,17 @@ describe ValidateMoabJob, type: :job do
         end
       end
 
-      context 'when it fails a checksum verification for a manifest file' do
+      context 'when it fails a checksum verification for a manifest file in any version' do
         let(:bare_druid) { 'zz925bx9565' }
-        let(:error_regex_str) { 'zz925bx9565-v0001: version_additions: file_differences.*signatures.*"md5"' }
+        let(:error_regex_str) { 'zz925bx9565-v0001: version_additions: file_differences.*metadata.*versionMetadata.xml.*md5' }
+
+        before do
+          # ensure validate encounters the proper errors
+          allow(job).to receive(:validate).and_return(job.send(:verification_errors, moab.version_list.first.verify_version_storage))
+        end
 
         it 'sends error to workflow client' do
+          job.perform(druid)
           expect(workflow_client).to have_received(:update_error_status).with(druid: druid,
                                                                               workflow: 'preservationIngestWF',
                                                                               process: 'validate-moab',
@@ -119,15 +134,83 @@ describe ValidateMoabJob, type: :job do
         end
       end
 
-      context 'when it fails a checksum verification for a data file' do
-        let(:bare_druid) { 'zz925bx9565' }
-        let(:error_regex_str) { 'zz925bx9565.*versionMetadata\.xml.*signatures.*md5' }
+      context 'when it fails a checksum verification for a data file in most recent version' do
+        let(:bare_druid) { 'yg880zm4762' }
+        let(:path) { 'spec/fixtures/checksum_root01/sdr2objects/yg/880/zm/4762/yg880zm4762' }
+        let(:error_regex_str) { '.*version_additions: file_differences.*yg880zm4762.*content.*36105016577111-gb-hocr.zip.*md5' }
+
+        before do
+          # validate step only returns the error of interest
+          allow(job).to receive(:validate).and_return(job.send(:verification_errors, moab.version_list.first.verify_version_additions))
+        end
 
         it 'sends error to workflow client' do
+          job.perform(druid)
           expect(workflow_client).to have_received(:update_error_status).with(druid: druid,
                                                                               workflow: 'preservationIngestWF',
                                                                               process: 'validate-moab',
                                                                               error_msg: a_string_matching(expected_validation_err_regex))
+        end
+      end
+
+      context 'when validating versions' do
+        let(:oldest_storage_obj_version) { moab.version_list.first }
+        let(:newest_storage_obj_version) { moab.version_list.last }
+
+        before do
+          allow(oldest_storage_obj_version).to receive(:verify_signature_catalog).and_call_original
+          allow(oldest_storage_obj_version).to receive(:verify_version_storage).and_call_original
+          allow(oldest_storage_obj_version).to receive(:verify_manifest_inventory).and_call_original
+          allow(oldest_storage_obj_version).to receive(:verify_version_inventory).and_call_original
+          allow(oldest_storage_obj_version).to receive(:verify_version_additions).and_call_original
+          allow(newest_storage_obj_version).to receive(:verify_signature_catalog).and_call_original
+          allow(newest_storage_obj_version).to receive(:verify_version_storage).and_call_original
+          allow(newest_storage_obj_version).to receive(:verify_manifest_inventory).and_call_original
+          allow(newest_storage_obj_version).to receive(:verify_version_inventory).and_call_original
+          allow(newest_storage_obj_version).to receive(:verify_version_additions).and_call_original
+          allow(moab).to receive(:version_list).and_return([oldest_storage_obj_version, newest_storage_obj_version])
+          job.perform(druid) # yes, we're doing it again
+        end
+
+        it 'calls #verify_signature_catalog' do
+          expect(oldest_storage_obj_version).to have_received(:verify_signature_catalog)
+          expect(newest_storage_obj_version).to have_received(:verify_signature_catalog)
+        end
+
+        context 'when most recent version of Moab' do
+          it 'calls #verify_version_storage to include checksum validations' do
+            expect(newest_storage_obj_version).to have_received(:verify_version_storage)
+          end
+
+          it 'calls #verify_manifest_inventory (via verify_version_storage)' do
+            expect(newest_storage_obj_version).to have_received(:verify_manifest_inventory)
+          end
+
+          it 'calls #verify_version_inventory (via verify_version_storage)' do
+            expect(newest_storage_obj_version).to have_received(:verify_version_inventory)
+          end
+
+          it 'calls #verify_version_additions (via verify_version_storage)' do
+            expect(newest_storage_obj_version).to have_received(:verify_version_additions)
+          end
+        end
+
+        context 'when older version of Moab' do
+          it 'does not call #verify_version_storage' do
+            expect(oldest_storage_obj_version).not_to have_received(:verify_version_storage)
+          end
+
+          it 'calls #verify_manifest_inventory' do
+            expect(oldest_storage_obj_version).to have_received(:verify_manifest_inventory)
+          end
+
+          it 'calls #verify_version_inventory' do
+            expect(oldest_storage_obj_version).to have_received(:verify_version_inventory)
+          end
+
+          it 'does not call #verify_version_additions (no data file checksum comparisons)' do
+            expect(oldest_storage_obj_version).not_to have_received(:verify_version_additions)
+          end
         end
       end
 

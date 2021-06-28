@@ -67,6 +67,7 @@ RSpec/NamedSubject:
 RSpec/NestedGroups:
   Max: 4 # default: 3
   Exclude:
+    - 'spec/jobs/validate_moab_job_spec.rb'
     - 'spec/lib/audit/catalog_to_moab_spec.rb'
     - 'spec/lib/audit/moab_to_catalog_spec.rb'
     - 'spec/requests/objects_controller_content_diff_spec.rb'
