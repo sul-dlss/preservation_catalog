@@ -15,8 +15,8 @@ class ZipmakerJob < ApplicationJob
   end
 
   # Does queue locking on ONLY druid and version (as first and second parameters)
-  def self.lock(*args)
-    "lock:#{name}-#{args.slice(0..1)}"
+  def self.queue_lock_key(*args)
+    "lock:#{name}-#{args.slice(0..1).join(';')}"
   end
 
   # @param [String] druid
