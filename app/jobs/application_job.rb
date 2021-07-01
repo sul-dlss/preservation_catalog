@@ -51,7 +51,7 @@ class ApplicationJob < ActiveJob::Base
     # return true if we successfully acquired the lock
     # "Set key to hold string value if key does not exist" (otherwise no-op) -- https://redis.io/commands/setnx
     if Resque.redis.setnx(key, timeout)
-      Rails.logger.debug("acquired lock on #{key} (none existed)")
+      Rails.logger.info("acquired lock on #{key} (none existed)")
       return true
     end
 
@@ -59,7 +59,7 @@ class ApplicationJob < ActiveJob::Base
     # (we cannot acquire the lock during the timeout period)
     key_expires_at = Resque.redis.get(key).to_i
     if now <= key_expires_at
-      Rails.logger.debug("failed to acquire lock on #{key}, because it has not expired (#{now} <= #{key_expires_at})")
+      Rails.logger.info("failed to acquire lock on #{key}, because it has not expired (#{now} <= #{key_expires_at})")
       return false
     end
 
@@ -68,19 +68,19 @@ class ApplicationJob < ActiveJob::Base
     # "Atomically sets key to value and returns the old value stored at key." -- https://redis.io/commands/getset
     key_expires_at = Resque.redis.getset(key, timeout).to_i
     if now > key_expires_at
-      Rails.logger.debug("acquired lock on #{key} (old lock expired, #{now} > #{key_expires_at})")
+      Rails.logger.info("acquired lock on #{key} (old lock expired, #{now} > #{key_expires_at})")
       true
     else
-      Rails.logger.debug("failed to acquired lock on #{key} but updated expiry time to #{timeout} (#{now} <= #{key_expires_at})")
+      Rails.logger.info("failed to acquired lock on #{key} but updated expiry time to #{timeout} (#{now} <= #{key_expires_at})")
       false
     end
   end
 
   def self.clear_lock(*args)
     key = queue_lock_key(*args)
-    Rails.logger.debug("clearing lock for #{key}...")
+    Rails.logger.info("clearing lock for #{key}...")
     Resque.redis.del(key).tap do |del_result|
-      Rails.logger.debug("...cleared lock for #{key} (del_result=#{del_result})")
+      Rails.logger.info("...cleared lock for #{key} (del_result=#{del_result})")
     end
   end
 
