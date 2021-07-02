@@ -15,8 +15,18 @@ class ObjectsController < ApplicationController
   # queue a ValidateMoab job for a specific druid, typically called by a preservationIngestWF robot
   # GET /v1/objects/:id/validate_moab
   def validate_moab
-    ValidateMoabJob.perform_later(druid)
-    render(plain: 'ok', status: :ok)
+    # ActiveJob::Base.perform_later will return an instance of the job if it was added to the
+    # queue successfully. It will return false if the job was not enqueued.
+    # The most likely cause is a temporary queue lock for the job and its specific payload, so
+    # it is up to the caller to determine whether retrying later is appropriate.
+    if ValidateMoabJob.perform_later(druid)
+      render(plain: 'ok', status: :ok)
+    else
+      err_msg = "Failed to enqueue ValidateMoabJob for #{druid}. "\
+                'The most likely cause is that the job was already enqueued and is waiting to be picked up. '\
+                'Retry later if appropriate.'
+      render(plain: err_msg, status: :locked)
+    end
   end
 
   # return a specific file from the Moab

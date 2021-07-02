@@ -11,8 +11,8 @@ class ZipPartJobBase < ApplicationJob
   end
 
   # Does queue locking on ONLY druid, version and part (as first 3 parameters)
-  def self.lock(*args)
-    "lock:#{name}-#{args.slice(0..2)}"
+  def self.queue_lock_key(*args)
+    "lock:#{name}-#{args.slice(0..2).join(';')}"
   end
 
   # A Job subclass must implement this method:

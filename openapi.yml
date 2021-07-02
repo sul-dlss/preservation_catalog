@@ -134,6 +134,8 @@ paths:
           description: Job queued
         '400':
           description: Bad request (e.g., malformed druid)
+        '423':
+          description: Failed to enqueue the job, likely because it is a duplicate of a job already waiting in the queue. Caller may retry later if appropriate.
       parameters:
         - name: id
           in: path
