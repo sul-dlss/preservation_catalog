@@ -62,10 +62,8 @@ class ObjectsController < ApplicationController
   # note: this is deliberately allowed to be a POST to allow for a large number of druids to be passed in
   # GET OR POST /v1/objects/checksums?druids[]=druid1&druids[]=druid2&druids[]=druid3
   def checksums
-    checksum_list, missing_druids, errored_druids = generate_checksum_list
-
-    bad_recs_msg = "\nStorage object(s) not found for #{missing_druids.join(', ')}" if missing_druids.any?
-    bad_recs_msg = (bad_recs_msg || '') + "\nProblems generating checksums for #{errored_druids.join(', ')}" if errored_druids.any?
+    checksum_list, missing_druids_list, errored_druids = generate_checksum_list
+    bad_recs_msg = "\nProblems generating checksums for #{errored_druids.join(', ')}" if errored_druids.any?
     if bad_recs_msg.present?
       render(plain: "409 Conflict - #{bad_recs_msg}", status: :conflict)
       return
@@ -73,10 +71,10 @@ class ObjectsController < ApplicationController
 
     respond_to do |format|
       format.json do
-        render json: checksum_list.to_json
+        render json: (checksum_list + missing_druids_list).to_json
       end
       format.csv do
-        render plain: to_csv_checksum_list(checksum_list)
+        render plain: to_csv_checksum_list(checksum_list, missing_druids_list)
       end
       format.any { render status: :not_acceptable, plain: 'Format not acceptable' }
     end
@@ -138,25 +136,30 @@ class ObjectsController < ApplicationController
 
   def generate_checksum_list
     checksum_list = []
-    missing_druids = []
+    missing_druids_list = []
     errored_druids = []
     normalized_druids.each do |druid|
       checksum_list << { returned_druid(druid) => content_files_checksums(druid) }
     rescue Moab::ObjectNotFoundException
-      missing_druids << druid
+      missing_druids_list << { returned_druid(druid) => [message: 'object not found or not fully accessioned'] }
     rescue StandardError => e
       errored_druids << "#{druid} (#{e.inspect})"
     end
-    [checksum_list, missing_druids, errored_druids]
+    [checksum_list, missing_druids_list, errored_druids]
   end
 
-  def to_csv_checksum_list(checksum_list)
+  def to_csv_checksum_list(checksum_list, missing_druids_list)
     CSV.generate do |csv|
       checksum_list.each do |druid_checksum|
         druid_checksum.each do |druid, checksums|
           checksums.each do |checksum|
             csv << [druid, checksum[:filename], checksum[:md5], checksum[:sha1], checksum[:sha256], checksum[:filesize]]
           end
+        end
+      end
+      missing_druids_list.each do |druid_checksum|
+        druid_checksum.each do |druid, messages|
+          csv << [druid, messages.first[:message]]
         end
       end
     end

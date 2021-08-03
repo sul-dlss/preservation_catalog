@@ -6,6 +6,8 @@ RSpec.describe ObjectsController, type: :request do
   let(:prefixed_druid2) { 'druid:bz514sm9647' }
   let(:bare_druid) { 'bj102hs9687' }
   let(:bare_druid2) { 'bz514sm9647' }
+  let(:prefixed_missing_druid) { 'druid:xx123yy9999' }
+  let(:bare_missing_druid) { 'xx123yy9999' }
   let(:post_headers) { valid_auth_header.merge('Content-Type' => 'application/json') }
 
   describe 'GET #checksum' do
@@ -49,7 +51,7 @@ RSpec.describe ObjectsController, type: :request do
 
     context 'when object not found' do
       it 'returns a 404 response code' do
-        get checksum_object_url('druid:xx123yy9999', format: :json), headers: valid_auth_header
+        get checksum_object_url(prefixed_missing_druid, format: :json), headers: valid_auth_header
         expect(response).to have_http_status(:not_found)
       end
     end
@@ -160,14 +162,38 @@ RSpec.describe ObjectsController, type: :request do
     end
 
     context 'when object not found' do
-      it 'returns a 409 response code' do
-        post checksums_objects_url, params: { druids: [prefixed_druid, 'druid:xx123yy9999'], format: :json }.to_json, headers: post_headers
-        expect(response).to have_http_status(:conflict)
+      it 'returns an ok response including both the druid that was found and a message with the druid that was not found in csv format' do
+        post checksums_objects_url, params: { druids: [prefixed_druid, prefixed_missing_druid], format: :csv }.to_json, headers: post_headers
+        expected_response = CSV.generate do |csv|
+          csv << [prefixed_druid, 'eric-smith-dissertation.pdf', 'aead2f6f734355c59af2d5b2689e4fb3',
+                  '22dc6464e25dc9a7d600b1de6e3848bf63970595', 'e49957d53fb2a46e3652f4d399bd14d019600cf496b98d11ebcdf2d10a8ffd2f', '1000217']
+          csv << [prefixed_druid, 'eric-smith-dissertation-augmented.pdf', '93802f1a639bc9215c6336ff5575ee22',
+                  '32f7129a81830004f0360424525f066972865221', 'a67276820853ddd839ba614133f1acd7330ece13f1082315d40219bed10009de', '905566']
+          csv << [prefixed_missing_druid, 'object not found or not fully accessioned']
+        end
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to eq(expected_response)
       end
 
-      it 'body has additional information from the exception if available' do
-        post checksums_objects_url, params: { druids: [prefixed_druid, 'druid:xx123yy9999'], format: :json }.to_json, headers: post_headers
-        expect(response.body).to eq "409 Conflict - \nStorage object(s) not found for xx123yy9999"
+      it 'returns an ok response including both the druid that was found and a message with the druid that was not found in json format' do
+        post checksums_objects_url, params: { druids: [prefixed_druid, prefixed_missing_druid], format: :json }.to_json, headers: post_headers
+        expected_response = [
+          { "#{prefixed_druid}":
+            [{ filename: 'eric-smith-dissertation.pdf',
+               md5: 'aead2f6f734355c59af2d5b2689e4fb3',
+               sha1: '22dc6464e25dc9a7d600b1de6e3848bf63970595',
+               sha256: 'e49957d53fb2a46e3652f4d399bd14d019600cf496b98d11ebcdf2d10a8ffd2f',
+               filesize: 1_000_217 },
+             { filename: 'eric-smith-dissertation-augmented.pdf',
+               md5: '93802f1a639bc9215c6336ff5575ee22',
+               sha1: '32f7129a81830004f0360424525f066972865221',
+               sha256: 'a67276820853ddd839ba614133f1acd7330ece13f1082315d40219bed10009de',
+               filesize: 905_566 }] },
+          { "#{prefixed_missing_druid}":
+            [{ message: 'object not found or not fully accessioned' }] }
+        ]
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to eq(expected_response.to_json)
       end
     end
 
@@ -186,13 +212,11 @@ RSpec.describe ObjectsController, type: :request do
         expect(response.body).to eq "409 Conflict - \nProblems generating checksums for #{bare_druid2} (#<NoMethodError: I had a nil result>)"
       end
 
-      it 'body has information about both missing and errored druids if available' do
-        allow(MoabStorageService).to receive(:retrieve_content_file_group).with('xx123yy9999').and_call_original
+      it 'body has information about errored druids' do
         allow(MoabStorageService).to receive(:retrieve_content_file_group).with(bare_druid).and_raise(StandardError, 'I had a stderr')
         allow(MoabStorageService).to receive(:retrieve_content_file_group).with(bare_druid2).and_raise(NoMethodError, 'I had a nil result')
-        post checksums_objects_url, params: { druids: ['xx123yy9999', bare_druid, bare_druid2], format: :json }.to_json, headers: post_headers
+        post checksums_objects_url, params: { druids: [bare_druid, bare_druid2], format: :json }.to_json, headers: post_headers
         expect(response.body).to match '409 Conflict -'
-        expect(response.body).to include "\nStorage object(s) not found for xx123yy9999"
         expect(response.body).to include "\nProblems generating checksums for #{bare_druid} (#<StandardError: I had a stderr>)"
         expect(response.body).to include ", #{bare_druid2} (#<NoMethodError: I had a nil result>)"
       end
