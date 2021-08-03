@@ -63,9 +63,10 @@ class ObjectsController < ApplicationController
   # GET OR POST /v1/objects/checksums?druids[]=druid1&druids[]=druid2&druids[]=druid3
   def checksums
     checksum_list, missing_druids_list, errored_druids = generate_checksum_list
-    bad_recs_msg = "\nProblems generating checksums for #{errored_druids.join(', ')}" if errored_druids.any?
-    if bad_recs_msg.present?
-      render(plain: "409 Conflict - #{bad_recs_msg}", status: :conflict)
+
+    if errored_druids.any?
+      bad_recs_msg = "Problems (other than Moab not found) generating checksums for #{errored_druids.join(', ')}"
+      render(plain: "Unexpected Error - #{bad_recs_msg}", status: :internal_server_error)
       return
     end
 

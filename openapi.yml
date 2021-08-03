@@ -185,8 +185,8 @@ paths:
           description: Bad request (e.g., malformed druid(s))
         '406':
           description: Unsupported response format
-        '409':
-          description: Conflict - one or more missing or error-state objects
+        '500':
+          description: Unexpected error generating checksum report for one or more druids
       parameters:
         - name: druids
           in: query
