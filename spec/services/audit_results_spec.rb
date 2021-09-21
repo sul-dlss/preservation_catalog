@@ -47,19 +47,19 @@ RSpec.describe AuditResults do
       expect(audit_workflow_reporter).to have_received(:report_errors)
         .with(druid: druid, version: actual_version, storage_area: ms_root, check_name: nil,
               results: [{ invalid_moab: "Invalid Moab, validation errors: [\"Version directory name not in 'v00xx' " \
-          'format: original-v1", "Version v0005: No files present in manifest dir"]' }])
+                                        'format: original-v1", "Version v0005: No files present in manifest dir"]' }])
       expect(event_service_reporter).to have_received(:report_errors)
         .with(druid: druid, version: actual_version, storage_area: ms_root, check_name: nil,
               results: [{ invalid_moab: "Invalid Moab, validation errors: [\"Version directory name not in 'v00xx' " \
-          'format: original-v1", "Version v0005: No files present in manifest dir"]' }])
+                                        'format: original-v1", "Version v0005: No files present in manifest dir"]' }])
       expect(honeybadger_reporter).to have_received(:report_errors)
         .with(druid: druid, version: actual_version, storage_area: ms_root, check_name: nil,
               results: [{ invalid_moab: "Invalid Moab, validation errors: [\"Version directory name not in 'v00xx' " \
-          'format: original-v1", "Version v0005: No files present in manifest dir"]' }])
+                                        'format: original-v1", "Version v0005: No files present in manifest dir"]' }])
       expect(logger_reporter).to have_received(:report_errors)
         .with(druid: druid, version: actual_version, storage_area: ms_root, check_name: nil,
               results: [{ invalid_moab: "Invalid Moab, validation errors: [\"Version directory name not in 'v00xx' " \
-          'format: original-v1", "Version v0005: No files present in manifest dir"]' }])
+                                        'format: original-v1", "Version v0005: No files present in manifest dir"]' }])
 
       expect(audit_workflow_reporter).to have_received(:report_completed)
         .with(druid: druid, version: actual_version, storage_area: ms_root, check_name: nil,

@@ -27,6 +27,7 @@ gem 'druid-tools' # for druid validation and druid-tree parsing
 gem 'moab-versioning' # work with Moab Objects
 
 group :development, :test do
+  gem 'rspec-rails', '~> 4.0'
   # Ruby static code analyzer https://rubocop.readthedocs.io/en/latest/
   gem 'rubocop', '~> 1.0'
   gem 'rubocop-rails'
@@ -40,7 +41,6 @@ end
 group :test do
   gem 'factory_bot_rails', '~> 4.0'
   gem 'rails-controller-testing'
-  gem 'rspec-rails', '~> 4.0'
   gem 'shoulda-matchers'
   # Codeclimate is not compatible with 0.18+. See https://github.com/codeclimate/test-reporter/issues/413
   gem 'simplecov', '~> 0.17.1'

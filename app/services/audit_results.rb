@@ -44,11 +44,11 @@ class AuditResults
 
   RESPONSE_CODE_TO_MESSAGES = {
     ACTUAL_VERS_GT_DB_OBJ => 'actual version (%{actual_version}) greater than ' \
-      '%{db_obj_name} db version (%{db_obj_version})',
+                             '%{db_obj_name} db version (%{db_obj_version})',
     ACTUAL_VERS_LT_DB_OBJ => 'actual version (%{actual_version}) less than ' \
-      '%{db_obj_name} db version (%{db_obj_version}); ERROR!',
+                             '%{db_obj_name} db version (%{db_obj_version}); ERROR!',
     CM_PO_VERSION_MISMATCH => 'CompleteMoab online Moab version %{cm_version} ' \
-      'does not match PreservedObject current_version %{po_version}',
+                              'does not match PreservedObject current_version %{po_version}',
     CM_STATUS_CHANGED => 'CompleteMoab status changed from %{old_status} to %{new_status}',
     CREATED_NEW_OBJECT => 'added object to db as it did not exist',
     DB_OBJ_ALREADY_EXISTS => '%{addl} db object already exists',
@@ -57,33 +57,33 @@ class AuditResults
     FILE_NOT_IN_MANIFEST => 'Moab file %{file_path} was not found in Moab manifest %{manifest_file_path}',
     FILE_NOT_IN_MOAB => '%{manifest_file_path} refers to file (%{file_path}) not found in Moab',
     FILE_NOT_IN_SIGNATURE_CATALOG => 'Moab file %{file_path} was not found in ' \
-      'Moab signature catalog %{signature_catalog_path}',
+                                     'Moab signature catalog %{signature_catalog_path}',
     INVALID_ARGUMENTS => 'encountered validation error(s): %{addl}',
     INVALID_MANIFEST => 'unable to parse %{manifest_file_path} in Moab',
     INVALID_MOAB => 'Invalid Moab, validation errors: %{addl}',
     MANIFEST_NOT_IN_MOAB => '%{manifest_file_path} not found in Moab',
     MOAB_CHECKSUM_VALID => 'checksum(s) match',
     MOAB_FILE_CHECKSUM_MISMATCH => 'checksums or size for %{file_path} version ' \
-      '%{version} do not match entry in latest signatureCatalog.xml.',
+                                   '%{version} do not match entry in latest signatureCatalog.xml.',
     MOAB_NOT_FOUND => 'db CompleteMoab (created %{db_created_at}; last updated ' \
-      '%{db_updated_at}) exists but Moab not found',
+                      '%{db_updated_at}) exists but Moab not found',
     SIGNATURE_CATALOG_NOT_IN_MOAB => '%{signature_catalog_path} not found in Moab',
     UNABLE_TO_CHECK_STATUS => 'unable to validate when CompleteMoab status is %{current_status}',
     UNEXPECTED_VERSION => 'actual version (%{actual_version}) has unexpected ' \
-      'relationship to %{db_obj_name} db version (%{db_obj_version}); ERROR!',
+                          'relationship to %{db_obj_name} db version (%{db_obj_version}); ERROR!',
     VERSION_MATCHES => 'actual version (%{actual_version}) matches %{addl} db version',
     ZIP_PART_CHECKSUM_MISMATCH => 'replicated md5 mismatch on %{endpoint_name}: ' \
-      "%{s3_key} catalog md5 (%{md5}) doesn't match the replicated md5 " \
-      '(%{replicated_checksum}) on %{bucket_name}',
+                                  "%{s3_key} catalog md5 (%{md5}) doesn't match the replicated md5 " \
+                                  '(%{replicated_checksum}) on %{bucket_name}',
     ZIP_PART_NOT_FOUND => 'replicated part not found on %{endpoint_name}: ' \
-      '%{s3_key} was not found on %{bucket_name}',
+                          '%{s3_key} was not found on %{bucket_name}',
     ZIP_PARTS_COUNT_DIFFERS_FROM_ACTUAL => '%{version} on %{endpoint_name}: ' \
-      "ZippedMoabVersion stated parts count (%{db_count}) doesn't match actual " \
-      'number of zip parts rows (%{actual_count})',
+                                           "ZippedMoabVersion stated parts count (%{db_count}) doesn't match actual " \
+                                           'number of zip parts rows (%{actual_count})',
     ZIP_PARTS_COUNT_INCONSISTENCY => '%{version} on %{endpoint_name}: ' \
-      'ZippedMoabVersion has variation in child parts_counts: %{child_parts_counts}',
+                                     'ZippedMoabVersion has variation in child parts_counts: %{child_parts_counts}',
     ZIP_PARTS_NOT_ALL_REPLICATED => '%{version} on %{endpoint_name}: not all ' \
-      'ZippedMoabVersion parts are replicated yet: %{unreplicated_parts_list}',
+                                    'ZippedMoabVersion parts are replicated yet: %{unreplicated_parts_list}',
     ZIP_PARTS_NOT_CREATED => '%{version} on %{endpoint_name}: no zip_parts exist yet for this ZippedMoabVersion'
   }.freeze
 

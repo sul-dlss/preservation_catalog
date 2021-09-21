@@ -23,17 +23,17 @@ RSpec.describe Reporters::EventServiceReporter do
     context 'when INVALID_MOAB' do
       let(:result1) do
         { AuditResults::INVALID_MOAB => 'Invalid Moab, validation errors: [Version directory name not in ' \
-        "'v00xx' format: original-v1]" }
+                                        "'v00xx' format: original-v1]" }
       end
       let(:result2) do
         { AuditResults::INVALID_MOAB => 'Invalid Moab, validation errors: [Version directory name not in ' \
-        "'v00xx' format: original-v2]" }
+                                        "'v00xx' format: original-v2]" }
       end
 
       it 'creates events' do
         subject.report_errors(druid: druid, version: actual_version, storage_area: ms_root, check_name: check_name, results: [result1, result2])
         error1 = 'FooCheck (actual location: fixture_sr1; actual version: 6) || Invalid Moab, validation errors: ' \
-          "[Version directory name not in 'v00xx' format: original-v1]"
+                 "[Version directory name not in 'v00xx' format: original-v1]"
         expect(client).to have_received(:create).with(
           type: 'preservation_audit_failure',
           data: {
@@ -46,7 +46,7 @@ RSpec.describe Reporters::EventServiceReporter do
           }
         )
         error2 = 'FooCheck (actual location: fixture_sr1; actual version: 6) || Invalid Moab, validation errors: ' \
-          "[Version directory name not in 'v00xx' format: original-v2]"
+                 "[Version directory name not in 'v00xx' format: original-v2]"
         expect(client).to have_received(:create).with(
           type: 'preservation_audit_failure',
           data: {
@@ -76,7 +76,7 @@ RSpec.describe Reporters::EventServiceReporter do
             actual_version: 6,
             check_name: 'preservation-audit',
             error: 'FooCheck (actual location: fixture_sr1; actual version: 6) does not match PreservedObject ' \
-              'current_version && actual version (6) has unexpected relationship to db version'
+                   'current_version && actual version (6) has unexpected relationship to db version'
           }
         )
       end

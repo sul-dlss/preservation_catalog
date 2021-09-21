@@ -27,7 +27,7 @@ RSpec.describe Audit::CatalogToMoab do
   let(:events_client) { instance_double(Dor::Services::Client::Events) }
   let(:hb_exp_msg) do
     'check_catalog_version\\(bj102hs9687, fixture_sr1\\)' \
-    ' db CompleteMoab \\(created .*Z; last updated .*Z\\) exists but Moab not found'
+      ' db CompleteMoab \\(created .*Z; last updated .*Z\\) exists but Moab not found'
   end
   let(:audit_workflow_reporter) { instance_double(Reporters::AuditWorkflowReporter, report_errors: nil) }
   let(:event_service_reporter) { instance_double(Reporters::EventServiceReporter, report_errors: nil) }
@@ -382,7 +382,7 @@ RSpec.describe Audit::CatalogToMoab do
 
               it 'status_details updated' do
                 exp = exp_details_prefix + 'actual version: 4) Invalid Moab, validation errors: ["err msg"] && ' \
-                      "CompleteMoab status changed from #{orig_status} to invalid_moab"
+                                           "CompleteMoab status changed from #{orig_status} to invalid_moab"
                 expect(comp_moab.reload.status_details).to eq exp
               end
             end
