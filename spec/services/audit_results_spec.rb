@@ -142,6 +142,35 @@ RSpec.describe AuditResults do
     end
   end
 
+  describe 'result array subsets' do
+    let(:result_code) { AuditResults::CM_STATUS_CHANGED }
+    let(:error_status_hash) { { old_status: 'invalid_checksum', new_status: 'invalid_moab' } }
+    let(:completed_status_hash) { { old_status: 'invalid_checksum', new_status: 'ok' } }
+
+    before do
+      audit_results.add_result(result_code, completed_status_hash)
+      audit_results.add_result(result_code, error_status_hash)
+    end
+
+    describe '#error_results' do
+      it 'returns only error results' do
+        expect(audit_results.error_results.count).to eq(1)
+        expect(audit_results.error_results).to include(
+          result_code => format(AuditResults::RESPONSE_CODE_TO_MESSAGES[result_code], error_status_hash)
+        )
+      end
+    end
+
+    describe '#completed_results' do
+      it 'returns only non-error results' do
+        expect(audit_results.completed_results.count).to eq(1)
+        expect(audit_results.completed_results).to include(
+          result_code => format(AuditResults::RESPONSE_CODE_TO_MESSAGES[result_code], completed_status_hash)
+        )
+      end
+    end
+  end
+
   describe '#status_changed_to_ok?' do
     it 'returns true if the new status is ok' do
       added_code = AuditResults::CM_STATUS_CHANGED

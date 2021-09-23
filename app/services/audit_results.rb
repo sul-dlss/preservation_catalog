@@ -115,13 +115,19 @@ class AuditResults
 
   def report_results
     # Report completed
-    completed_results = result_array.select { |result| status_changed_to_ok?(result) }
     report_completed(completed_results)
 
     # Report errors
-    error_results = result_array - completed_results
     report_errors(error_results)
     result_array
+  end
+
+  def completed_results
+    result_array.select(&result_ok?)
+  end
+
+  def error_results
+    result_array.reject(&result_ok?)
   end
 
   def contains_result_code?(code)
@@ -141,6 +147,10 @@ class AuditResults
   end
 
   private
+
+  def result_ok?
+    proc { |result| status_changed_to_ok?(result) }
+  end
 
   def reporters
     @reporters ||= [
