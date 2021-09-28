@@ -415,6 +415,39 @@ druids_with_replication_issues_human = druids_with_replication_issues.map do |re
 end
 ```
 
+#### Look for orphaned zipped moab versions (i.e. replication was started and a ZippedMoabVersion was created, but no ZipPart records were created and nothing was replicated to the cloud)
+
+_**note**: might take a few minutes to run on prod_
+
+```ruby
+zmvs_with_no_zip_parts = ZippedMoabVersion.joins(:preserved_object, :zip_endpoint).left_outer_joins(:zip_parts).group(:druid, :endpoint_name, :version).having('count(zip_parts.id) = 0').order(:druid, :version, :endpoint_name).pluck(:druid, :version, :endpoint_name) ; nil
+```
+
+<details>
+ <summary>generated SQL</summary>
+
+```sql
+-- example sql produced by above AR query
+SELECT "zipped_moab_versions".* FROM "zipped_moab_versions"
+  INNER JOIN "preserved_objects" ON "preserved_objects"."id" = "zipped_moab_versions"."preserved_object_id"
+  INNER JOIN "zip_endpoints" ON "zip_endpoints"."id" = "zipped_moab_versions"."zip_endpoint_id"
+  LEFT OUTER JOIN "zip_parts" ON "zip_parts"."zipped_moab_version_id" = "zipped_moab_versions"."id"
+GROUP BY "druid", "endpoint_name", "zipped_moab_versions"."version"
+HAVING (count(zip_parts.id) = 0)
+ORDER BY "druid" ASC, "zipped_moab_versions"."version" ASC, "endpoint_name" ASC
+```
+</details>
+
+```ruby
+# example result
+[["bb003ch5585", 1, "aws_s3_east_1"],
+ ["bb003ch5585", 1, "aws_s3_west_2"],
+ ["zz804sm0716", 5, "ibm_us_south"],
+ ["zz950qq8379", 1, "aws_s3_east_1"],
+ ["zz950qq8379", 1, "aws_s3_west_2"],
+ ["zz950qq8379", 1, "ibm_us_south"]]
+```
+
 #### N random druids
 
 handy for spot checking things
