@@ -39,3 +39,5 @@ config/environments/*.local.yml
 **/.DS_Store
 
 postgres-data
+
+spec/fixtures/derivatives/
