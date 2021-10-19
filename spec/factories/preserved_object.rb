@@ -17,7 +17,7 @@ FactoryBot.define do
       locations = Settings.storage_root_map['default'].to_h.values.map { |x| File.join(x, Settings.moab.storage_trunk) }
       root_dir = locations.find do |root|
         found = false
-        Stanford::MoabStorageDirectory.find_moab_paths(root) do |druid, _path, _match|
+        MoabStorageDirectory.find_moab_paths(root) do |druid, _path, _match|
           found = true if druid && druid == po.druid
         end
         found
