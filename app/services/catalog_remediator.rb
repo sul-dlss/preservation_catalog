@@ -19,7 +19,7 @@ class CatalogRemediator
         "Destroying zip parts (#{zip_parts.pluck(:id)}) and zipped moab version (#{zipped_moab_version.id})"
       )
 
-      ActiveRecordUtils.with_transaction_and_rescue(audit_results) do
+      ApplicationRecord.transaction do
         # NOTE: The order here matters! ZipPart instances must be destroyed before the ZippedMoabVersion
         zip_parts.destroy_all
         zipped_moab_version.destroy

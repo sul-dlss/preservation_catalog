@@ -88,7 +88,7 @@ RSpec.describe CatalogRemediator do
             [zipped_moab_version_with_errors, fake_audit_results_with_errors]
           ]
         )
-      allow(ActiveRecordUtils).to receive(:with_transaction_and_rescue).and_call_original
+      allow(ApplicationRecord).to receive(:transaction).and_call_original
 
       failures
     end
@@ -98,7 +98,7 @@ RSpec.describe CatalogRemediator do
     end
 
     it 'creates a transaction' do
-      expect(ActiveRecordUtils).to have_received(:with_transaction_and_rescue).twice
+      expect(ApplicationRecord).to have_received(:transaction).at_least(:twice)
     end
 
     it 'destroys the affected zipped moab versions and related zip parts' do
