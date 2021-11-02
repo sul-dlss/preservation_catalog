@@ -3,6 +3,13 @@
 require 'csv'
 
 namespace :prescat do
+  desc 'Prune failed replication records from catalog'
+  task :prune_failed_replication, [:druid, :version] => :environment do |_task, args|
+    CatalogRemediator.prune_replication_failures(druid: args[:druid], version: args[:version]).each do |zmv_version, endpoint_name|
+      puts "pruned zipped moab version #{zmv_version} on #{endpoint_name}"
+    end
+  end
+
   namespace :cache_cleaner do
     desc 'Clean zip storage cache of empty directories'
     task empty_directories: :environment do

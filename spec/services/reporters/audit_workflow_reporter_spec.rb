@@ -36,13 +36,13 @@ RSpec.describe Reporters::AuditWorkflowReporter do
       it 'updates workflow for each error' do
         subject.report_errors(druid: druid, version: actual_version, storage_area: ms_root, check_name: check_name, results: [result1, result2])
         error_msg1 = 'FooCheck (actual location: fixture_sr1; actual version: 6) || Invalid Moab, validation errors: ' \
-          "[Version directory name not in 'v00xx' format: original-v1]"
+                     "[Version directory name not in 'v00xx' format: original-v1]"
         expect(client).to have_received(:update_error_status).with(druid: "druid:#{druid}",
                                                                    workflow: 'preservationAuditWF',
                                                                    process: 'moab-valid',
                                                                    error_msg: error_msg1)
         error_msg2 = 'FooCheck (actual location: fixture_sr1; actual version: 6) || Invalid Moab, validation errors: ' \
-          "[Version directory name not in 'v00xx' format: original-v2]"
+                     "[Version directory name not in 'v00xx' format: original-v2]"
         expect(client).to have_received(:update_error_status).with(druid: "druid:#{druid}",
                                                                    workflow: 'preservationAuditWF',
                                                                    process: 'moab-valid',
@@ -57,7 +57,7 @@ RSpec.describe Reporters::AuditWorkflowReporter do
       it 'merges errors and updates workflow' do
         subject.report_errors(druid: druid, version: actual_version, storage_area: ms_root, check_name: check_name, results: [result1, result2])
         error_msg = 'FooCheck (actual location: fixture_sr1; actual version: 6) does not match PreservedObject current_version ' \
-          '&& actual version (6) has unexpected relationship to db version'
+                    '&& actual version (6) has unexpected relationship to db version'
         expect(client).to have_received(:update_error_status).with(druid: "druid:#{druid}",
                                                                    workflow: 'preservationAuditWF',
                                                                    process: 'preservation-audit',

@@ -33,7 +33,7 @@ RSpec.describe ObjectsController, type: :request do
           get primary_moab_location_object_url(pres_obj.druid), headers: valid_auth_header
           expect(response).to have_http_status(:locked)
           expect(response.body).to include 'Cannot retrieve primary moab location because versioning ' \
-            "is locked for the preserved object with id #{pres_obj.druid}"
+                                           "is locked for the preserved object with id #{pres_obj.druid}"
         end
       end
     end

@@ -47,19 +47,19 @@ RSpec.describe AuditResults do
       expect(audit_workflow_reporter).to have_received(:report_errors)
         .with(druid: druid, version: actual_version, storage_area: ms_root, check_name: nil,
               results: [{ invalid_moab: "Invalid Moab, validation errors: [\"Version directory name not in 'v00xx' " \
-          'format: original-v1", "Version v0005: No files present in manifest dir"]' }])
+                                        'format: original-v1", "Version v0005: No files present in manifest dir"]' }])
       expect(event_service_reporter).to have_received(:report_errors)
         .with(druid: druid, version: actual_version, storage_area: ms_root, check_name: nil,
               results: [{ invalid_moab: "Invalid Moab, validation errors: [\"Version directory name not in 'v00xx' " \
-          'format: original-v1", "Version v0005: No files present in manifest dir"]' }])
+                                        'format: original-v1", "Version v0005: No files present in manifest dir"]' }])
       expect(honeybadger_reporter).to have_received(:report_errors)
         .with(druid: druid, version: actual_version, storage_area: ms_root, check_name: nil,
               results: [{ invalid_moab: "Invalid Moab, validation errors: [\"Version directory name not in 'v00xx' " \
-          'format: original-v1", "Version v0005: No files present in manifest dir"]' }])
+                                        'format: original-v1", "Version v0005: No files present in manifest dir"]' }])
       expect(logger_reporter).to have_received(:report_errors)
         .with(druid: druid, version: actual_version, storage_area: ms_root, check_name: nil,
               results: [{ invalid_moab: "Invalid Moab, validation errors: [\"Version directory name not in 'v00xx' " \
-          'format: original-v1", "Version v0005: No files present in manifest dir"]' }])
+                                        'format: original-v1", "Version v0005: No files present in manifest dir"]' }])
 
       expect(audit_workflow_reporter).to have_received(:report_completed)
         .with(druid: druid, version: actual_version, storage_area: ms_root, check_name: nil,
@@ -139,6 +139,35 @@ RSpec.describe AuditResults do
       audit_results.add_result(added_code, cm_version: 1, po_version: 2)
       expect(audit_results.contains_result_code?(added_code)).to eq true
       expect(audit_results.contains_result_code?(other_code)).to eq false
+    end
+  end
+
+  describe 'result array subsets' do
+    let(:result_code) { AuditResults::CM_STATUS_CHANGED }
+    let(:error_status_hash) { { old_status: 'invalid_checksum', new_status: 'invalid_moab' } }
+    let(:completed_status_hash) { { old_status: 'invalid_checksum', new_status: 'ok' } }
+
+    before do
+      audit_results.add_result(result_code, completed_status_hash)
+      audit_results.add_result(result_code, error_status_hash)
+    end
+
+    describe '#error_results' do
+      it 'returns only error results' do
+        expect(audit_results.error_results.count).to eq(1)
+        expect(audit_results.error_results).to include(
+          result_code => format(AuditResults::RESPONSE_CODE_TO_MESSAGES[result_code], error_status_hash)
+        )
+      end
+    end
+
+    describe '#completed_results' do
+      it 'returns only non-error results' do
+        expect(audit_results.completed_results.count).to eq(1)
+        expect(audit_results.completed_results).to include(
+          result_code => format(AuditResults::RESPONSE_CODE_TO_MESSAGES[result_code], completed_status_hash)
+        )
+      end
     end
   end
 
