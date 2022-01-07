@@ -209,7 +209,7 @@ RSpec.describe CompleteMoab, type: :model do
 
   describe 'preserved_object_id and moab_storage_root_id combination' do
     context 'at the model level' do
-      it 'must be unique ' do
+      it 'must be unique' do
         expect {
           create(:complete_moab, preserved_object_id: preserved_object.id,
                                  moab_storage_root_id: cm.moab_storage_root_id)

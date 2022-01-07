@@ -269,7 +269,7 @@ RSpec.describe ChecksumValidator do
       end
     end
 
-    context 'reports results ' do
+    context 'reports results' do
       it 'calls AuditResults.report_results' do
         expect(cv.results).to receive(:report_results)
         cv.validate_checksums

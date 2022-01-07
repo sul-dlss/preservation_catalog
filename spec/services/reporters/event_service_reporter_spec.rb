@@ -65,7 +65,7 @@ RSpec.describe Reporters::EventServiceReporter do
       let(:result1) { { AuditResults::CM_PO_VERSION_MISMATCH => 'does not match PreservedObject current_version' } }
       let(:result2) { { AuditResults::UNEXPECTED_VERSION => 'actual version (6) has unexpected relationship to db version' } }
 
-      it 'merges errors and creates single event  ' do
+      it 'merges errors and creates single event' do
         subject.report_errors(druid: druid, version: actual_version, storage_area: ms_root, check_name: check_name, results: [result1, result2])
         expect(client).to have_received(:create).with(
           type: 'preservation_audit_failure',
