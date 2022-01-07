@@ -6,6 +6,16 @@ orbs:
       node: circleci/node@3.0
       ruby: circleci/ruby@1.2.0
       browser-tools: circleci/browser-tools@1.2.3
+    executors:
+      ruby:
+        description: Ruby-only executor.
+        parameters:
+          ruby-tag:
+            default: '2.7.5'
+            description: The `cimg/ruby` Docker image version tag.
+            type: string
+        docker:
+          - image: 'cimg/ruby:<< parameters.ruby-tag >>-node'
     commands:
       gem-install-deps:
         description: Install dependencies without using deployment mode (suitable for gems)
@@ -54,6 +64,9 @@ orbs:
             default: '2.7.5'
             description: The `cimg/ruby` Docker image version tag.
             type: string
+        executor:
+          name: ruby
+          ruby-tag: << parameters.ruby-tag >>
         docker:
           - image: 'cimg/ruby:<< parameters.ruby-tag >>-node'        
         steps:
@@ -181,9 +194,9 @@ workflows:
           name: validate
       - ruby-rails/lint:
           name: lint
-      - ruby-rails/test-rails:
-          name: test
-          api-only: true
+      # - ruby-rails/test-rails:
+      #     name: test
+      #     api-only: true
       - ruby-rails/docker-publish:
           context: dlss
           name: publish-latest
@@ -191,7 +204,7 @@ workflows:
           requires:
             - validate
             - lint
-            - test
+            # - test
           filters:
             branches:
               only:
