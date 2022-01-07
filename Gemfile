@@ -28,6 +28,7 @@ gem 'moab-versioning' # work with Moab Objects
 
 group :development, :test do
   gem 'rspec-rails', '~> 4.0'
+  gem 'rspec_junit_formatter' # used by CircleCI
   # Ruby static code analyzer https://rubocop.readthedocs.io/en/latest/
   gem 'rubocop', '~> 1.0'
   gem 'rubocop-rails'

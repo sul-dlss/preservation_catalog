@@ -87,9 +87,6 @@ orbs:
             type: env_var_name
         steps:
           - run:
-              name: Install rspec_junit_formatter (in case project does not include)
-              command: gem install rspec_junit_formatter
-          - run:
               name: Setup Code Climate test-reporter
               command: |
                 curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
