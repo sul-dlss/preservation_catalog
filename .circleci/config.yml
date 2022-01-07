@@ -246,7 +246,7 @@ workflows:
           requires:
             - validate
             - lint
-            # - test
+            - test
           filters:
             branches:
               only:
