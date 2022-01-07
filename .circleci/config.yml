@@ -88,7 +88,7 @@ orbs:
         steps:
           - run:
               name: Install rspec_junit_formatter (in case project does not include)
-              command: bundle install rspec_junit_formatter
+              command: bundle add rspec_junit_formatter
           - run:
               name: Setup Code Climate test-reporter
               command: |
