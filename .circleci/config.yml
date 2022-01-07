@@ -16,6 +16,9 @@ orbs:
             type: string
         docker:
           - image: 'cimg/ruby:<< parameters.ruby-tag >>-node'
+        environment:
+          BUNDLE_JOBS: '3'
+          BUNDLE_RETRY: '3'
       ruby-postgres:
         description: Ruby and postgres-only executor.
         parameters:
@@ -29,18 +32,18 @@ orbs:
             type: string
         docker:
           - image: 'cimg/ruby:<< parameters.ruby-tag >>-node'
-            environment:
-              BUNDLE_JOBS: '3'
-              BUNDLE_RETRY: '3'
-              PGHOST: 127.0.0.1
-              PGPASSWORD: sekret
-              PGUSER: circleci
-              RAILS_ENV: test
-              PAGER: cat
           - image: 'cimg/postgres:<< parameters.postgres-tag >>'
             environment:
               POSTGRES_USER: postgres
               POSTGRES_PASSWORD: sekret
+        environment:
+            BUNDLE_JOBS: '3'
+            BUNDLE_RETRY: '3'
+            PGHOST: 127.0.0.1
+            PGPASSWORD: sekret
+            PGUSER: circleci
+            RAILS_ENV: test
+            PAGER: cat
       ruby-postgres-redis:
         description: Ruby, postgres, and redis-only executor.
         parameters:
@@ -64,7 +67,7 @@ orbs:
               PAGER: cat
           - image: 'cimg/postgres:<< parameters.postgres-tag >>'
             environment:
-              POSTGRES_USER: postgres
+              POSTGRES_USER: circleci
               POSTGRES_PASSWORD: sekret              
           - image: circleci/redis:3
     commands:
