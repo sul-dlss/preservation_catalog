@@ -390,11 +390,12 @@ GEM
     ruby_dep (1.5.0)
     shoulda-matchers (5.0.0)
       activesupport (>= 5.2.0)
-    simplecov (0.17.1)
+    simplecov (0.21.2)
       docile (~> 1.1)
-      json (>= 1.8, < 3)
-      simplecov-html (~> 0.10.0)
-    simplecov-html (0.10.2)
+      simplecov-html (~> 0.11)
+      simplecov_json_formatter (~> 0.1)
+    simplecov-html (0.12.3)
+    simplecov_json_formatter (0.1.3)
     sinatra (2.1.0)
       mustermann (~> 1.0)
       rack (~> 2.2)
@@ -465,9 +466,9 @@ DEPENDENCIES
   rubocop-rails
   rubocop-rspec
   shoulda-matchers
-  simplecov (~> 0.17.1)
+  simplecov
   webmock
   whenever
 
 BUNDLED WITH
-   2.2.15
+   2.2.27
