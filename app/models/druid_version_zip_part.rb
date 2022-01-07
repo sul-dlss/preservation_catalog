@@ -70,6 +70,6 @@ class DruidVersionZipPart
 
   # @return [String] The MD5 "7d33a80cb92b081b76aee5feb8bc4569"
   def read_md5
-    IO.read(md5_path)
+    File.read(md5_path)
   end
 end

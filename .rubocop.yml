@@ -338,3 +338,24 @@ Rails/EagerEvaluationLogMessage: # new in 2.11
   Enabled: false
 Rails/RedundantTravelBack: # new in 2.12
   Enabled: true
+
+Gemspec/RequireMFA: # new in 1.23
+  Enabled: true
+Lint/RequireRelativeSelfPath: # new in 1.22
+  Enabled: true
+Lint/UselessRuby2Keywords: # new in 1.23
+  Enabled: true
+Security/IoMethods: # new in 1.22
+  Enabled: true
+Style/NumberedParameters: # new in 1.22
+  Enabled: true
+Style/NumberedParametersLimit: # new in 1.22
+  Enabled: true
+Style/OpenStructUse: # new in 1.23
+  Enabled: true
+Style/SelectByRegexp: # new in 1.22
+  Enabled: true
+RSpec/ExcessiveDocstringSpacing: # new in 2.5
+  Enabled: true
+RSpec/SubjectDeclaration: # new in 2.5
+  Enabled: true

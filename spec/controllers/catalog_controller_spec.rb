@@ -45,7 +45,7 @@ RSpec.describe CatalogController, type: :controller do
         expect(pres_obj.druid).to eq bare_druid
       end
 
-      it 'response contains create_new_object code ' do
+      it 'response contains create_new_object code' do
         exp_msg = [{ AuditResults::CREATED_NEW_OBJECT => 'added object to db as it did not exist' }]
         expect(response.body).to include(exp_msg.to_json)
       end
@@ -116,7 +116,7 @@ RSpec.describe CatalogController, type: :controller do
       expect(response.body).to include(bare_druid)
     end
 
-    context "can take druid with or without 'druid:' prefix " do
+    context "can take druid with or without 'druid:' prefix" do
       let(:bare_druid) { 'jj925bx9565' }
       let(:prefixed_druid) { "druid:#{bare_druid}" }
 
@@ -287,7 +287,7 @@ RSpec.describe CatalogController, type: :controller do
       expect(response.body).to include(bare_druid)
     end
 
-    context "can take druid with or without 'druid:' prefix " do
+    context "can take druid with or without 'druid:' prefix" do
       before do
         post :create, params: { druid: prefixed_druid, incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
       end
