@@ -42,8 +42,7 @@ group :test do
   gem 'factory_bot_rails', '~> 4.0'
   gem 'rails-controller-testing'
   gem 'shoulda-matchers'
-  # Codeclimate is not compatible with 0.18+. See https://github.com/codeclimate/test-reporter/issues/413
-  gem 'simplecov', '~> 0.17.1'
+  gem 'simplecov'
   gem 'webmock'
 end
 
