@@ -16,6 +16,57 @@ orbs:
             type: string
         docker:
           - image: 'cimg/ruby:<< parameters.ruby-tag >>-node'
+      ruby-postgres:
+        description: Ruby and postgres-only executor.
+        parameters:
+          ruby-tag:
+            default: '2.7.5'
+            description: The `cimg/ruby` Docker image version tag.
+            type: string
+          postgres-tag:
+            default: '11.13'
+            description: The `cimg/postgres` Docker image version tag.
+            type: string
+        docker:
+          - image: 'cimg/ruby:<< parameters.ruby-tag >>-node'
+            environment:
+              BUNDLE_JOBS: '3'
+              BUNDLE_RETRY: '3'
+              PGHOST: 127.0.0.1
+              PGPASSWORD: sekret
+              PGUSER: circleci
+              RAILS_ENV: test
+              PAGER: cat
+          - image: 'cimg/postgres:<< parameters.postgres-tag >>'
+            environment:
+              POSTGRES_USER: postgres
+              POSTGRES_PASSWORD: sekret
+      ruby-postgres-redis:
+        description: Ruby, postgres, and redis-only executor.
+        parameters:
+          ruby-tag:
+            default: '2.7.5'
+            description: The `cimg/ruby` Docker image version tag.
+            type: string
+          postgres-tag:
+            default: '11.13'
+            description: The `cimg/postgres` Docker image version tag.
+            type: string
+        docker:
+          - image: 'cimg/ruby:<< parameters.ruby-tag >>-node'
+            environment:
+              BUNDLE_JOBS: '3'
+              BUNDLE_RETRY: '3'
+              PGHOST: 127.0.0.1
+              PGPASSWORD: sekret
+              PGUSER: circleci
+              RAILS_ENV: test
+              PAGER: cat
+          - image: 'cimg/postgres:<< parameters.postgres-tag >>'
+            environment:
+              POSTGRES_USER: postgres
+              POSTGRES_PASSWORD: sekret              
+          - image: circleci/redis:3
     commands:
       gem-install-deps:
         description: Install dependencies without using deployment mode (suitable for gems)
@@ -62,30 +113,20 @@ orbs:
         parameters:
           executor:
             default: ruby
-            description: Executor to use for this job, defaults to this orb's `ruby` executor
+            description: Executor to use for this job, defaults to ruby executor
             type: executor
-          # ruby-tag:
-          #   default: '2.7.5'
-          #   description: The `cimg/ruby` Docker image version tag.
-          #   type: string
         executor: <<parameters.executor>>
-        # docker:
-        #   - image: 'cimg/ruby:<< parameters.ruby-tag >>-node'        
         steps:
           - checkout
           - gem-install-deps
           - ruby/rubocop-check
       test-gem:
         parameters:
-          ruby-tag:
-            default: '2.7.5'
-            description: The `cimg/ruby` Docker image version tag.
-            type: string
-        docker:
-          - image: 'cimg/ruby:<< parameters.ruby-tag >>-node'
-        environment:
-          BUNDLE_JOBS: '3'
-          BUNDLE_RETRY: '3'
+          executor:
+            default: ruby
+            description: Executor to use for this job, defaults to ruby executor
+            type: executor
+        executor: <<parameters.executor>>
         parallelism: 3
         steps:
           - checkout
@@ -96,14 +137,10 @@ orbs:
           - test
       test-rails:
         parameters:
-          ruby-tag:
-            default: '2.7.5'
-            description: The `cimg/ruby` Docker image version tag.
-            type: string
-          postgres-tag:
-            default: '11.13'
-            description: The `cimg/postgres` Docker image version tag.
-            type: string
+          executor:
+            default: ruby-postgres
+            description: Executor to use for this job, defaults to ruby-postgres executor
+            type: executor
           api-only:
             default: false
             description: True if this is an API only Rails app.
@@ -112,20 +149,22 @@ orbs:
             default: false
             description: True to install Chrome
             type: boolean
-        docker:
-          - image: 'cimg/ruby:<< parameters.ruby-tag >>-node'
-          - image: 'cimg/postgres:<< parameters.postgres-tag >>'
-            environment:
-              POSTGRES_USER: postgres
-              POSTGRES_PASSWORD: sekret
-        environment:
-          BUNDLE_JOBS: '3'
-          BUNDLE_RETRY: '3'
-          PGHOST: 127.0.0.1
-          PGPASSWORD: sekret
-          PGUSER: circleci
-          RAILS_ENV: test
-          PAGER: cat
+        executor: <<parameters.executor>>
+
+        # docker:
+        #   - image: 'cimg/ruby:<< parameters.ruby-tag >>-node'
+        #   - image: 'cimg/postgres:<< parameters.postgres-tag >>'
+        #     environment:
+        #       POSTGRES_USER: postgres
+        #       POSTGRES_PASSWORD: sekret
+        # environment:
+        #   BUNDLE_JOBS: '3'
+        #   BUNDLE_RETRY: '3'
+        #   PGHOST: 127.0.0.1
+        #   PGPASSWORD: sekret
+        #   PGUSER: circleci
+        #   RAILS_ENV: test
+        #   PAGER: cat
         parallelism: 3
         steps:
           - checkout
@@ -196,12 +235,10 @@ workflows:
           name: validate
       - ruby-rails/lint:
           name: lint
-          executor:
-            name: ruby-rails/ruby
-            ruby-tag: "3.0"
-      # - ruby-rails/test-rails:
-      #     name: test
-      #     api-only: true
+      - ruby-rails/test-rails:
+          name: test
+          api-only: true
+          executor: ruby-rails/ruby-postgres-redis
       - ruby-rails/docker-publish:
           context: dlss
           name: publish-latest
