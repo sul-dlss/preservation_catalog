@@ -32,6 +32,7 @@ group :development, :test do
   gem 'rubocop', '~> 1.0'
   gem 'rubocop-rails'
   gem 'rubocop-rspec'
+  gem 'rspec_junit_formatter' # used by CircleCI
 end
 
 group :development do
