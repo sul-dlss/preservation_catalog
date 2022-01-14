@@ -25,14 +25,14 @@ class ApplicationController < ActionController::API
 
     unless bearer_token
       log_and_notify("no #{TOKEN_HEADER} token was provided by #{request.remote_ip}")
-      return render json: { error: 'Not Authorized' }, status: 401
+      return render json: { error: 'Not Authorized' }, status: :unauthorized
     end
 
     decoded_jwt = decode_bearer_token!
     Honeybadger.context(invoked_by: decoded_jwt[:sub])
   rescue StandardError => e
     log_and_notify("error validating bearer token #{bearer_token} provided by #{request.remote_ip}: #{e}")
-    render json: { error: 'Not Authorized' }, status: 401
+    render json: { error: 'Not Authorized' }, status: :unauthorized
   end
 
   def decode_bearer_token!

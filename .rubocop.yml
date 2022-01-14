@@ -6,7 +6,7 @@ require:
 inherit_from: .rubocop_todo.yml
 
 AllCops:
-  TargetRubyVersion: 2.7
+  TargetRubyVersion: 3.0
   DisplayCopNames: true
   Include:
     - './Rakefile'
@@ -358,4 +358,23 @@ Style/SelectByRegexp: # new in 1.22
 RSpec/ExcessiveDocstringSpacing: # new in 2.5
   Enabled: true
 RSpec/SubjectDeclaration: # new in 2.5
+  Enabled: true
+
+Naming/BlockForwarding: # new in 1.24
+  Enabled: true
+Style/FileRead: # new in 1.24
+  Enabled: true
+Style/FileWrite: # new in 1.24
+  Enabled: true
+Style/MapToHash: # new in 1.24
+  Enabled: true
+Rails/CompactBlank: # new in 2.13
+  Enabled: true
+Rails/DurationArithmetic: # new in 2.13
+  Enabled: true
+Rails/RedundantPresenceValidationOnBelongsTo: # new in 2.13
+  Enabled: true
+Rails/RootJoinChain: # new in 2.13
+  Enabled: true
+RSpec/FactoryBot/SyntaxMethods: # new in 2.7
   Enabled: true

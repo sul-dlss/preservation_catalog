@@ -93,6 +93,5 @@ RSpec.describe ZipPart, type: :model do
   it { is_expected.to validate_presence_of(:parts_count) }
   it { is_expected.to validate_presence_of(:size) }
   it { is_expected.to validate_presence_of(:suffix) }
-  it { is_expected.to validate_presence_of(:zipped_moab_version) }
   it { is_expected.to belong_to(:zipped_moab_version) }
 end

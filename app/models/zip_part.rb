@@ -16,7 +16,7 @@ class ZipPart < ApplicationRecord
     'replicated_checksum_mismatch' => 3
   }
 
-  validates :zipped_moab_version, :create_info, presence: true
+  validates :create_info, presence: true
   validates :md5, presence: true, format: { with: /\A[0-9a-f]{32}\z/ }
   validates :size, presence: true, numericality: { only_integer: true, greater_than: 0 }
   validates :suffix, presence: true, format: { with: /\A\.z(ip|[0-9]+)\z/ }

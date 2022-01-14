@@ -21,6 +21,8 @@ class CompleteMoab < ApplicationRecord
   after_update :create_zipped_moab_versions!, if: :saved_change_to_version? # an ActiveRecord dynamic method
   after_save :validate_checksums!, if: proc { |cm| cm.saved_change_to_status? && cm.validity_unknown? }
 
+  # NOTE: Since Rails 5.0, belongs_to adds the presence validator automatically, and explicit presence validation
+  #   is redundant (unless you explicitly set config.active_record.belongs_to_required_by_default to false, which we don't.)
   belongs_to :preserved_object, inverse_of: :complete_moabs
   belongs_to :moab_storage_root, inverse_of: :complete_moabs
   belongs_to :from_moab_storage_root, class_name: 'MoabStorageRoot', optional: true
@@ -29,7 +31,7 @@ class CompleteMoab < ApplicationRecord
   #  assign the other complete_moab to preserved_objects_primary_moab
   has_one :preserved_objects_primary_moab, dependent: :destroy
 
-  validates :moab_storage_root, :preserved_object, :status, :version, presence: true
+  validates :status, :version, presence: true
   validates :preserved_object_id, uniqueness: { scope: [:moab_storage_root_id] }
   # NOTE: size here is approximate and not used for fixity checking
   validates :size, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true

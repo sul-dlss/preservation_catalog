@@ -68,8 +68,6 @@ RSpec.describe CompleteMoab, type: :model do
   it { is_expected.to have_db_index(:last_checksum_validation) }
   it { is_expected.to have_db_index(:moab_storage_root_id) }
   it { is_expected.to have_db_index(:preserved_object_id) }
-  it { is_expected.to validate_presence_of(:moab_storage_root) }
-  it { is_expected.to validate_presence_of(:preserved_object) }
   it { is_expected.to validate_presence_of(:version) }
   it { is_expected.to validate_uniqueness_of(:preserved_object_id).scoped_to(:moab_storage_root_id) }
 

@@ -107,7 +107,7 @@ class DruidVersionZip
     part_paths.map { |part| part.relative_path_from(zip_storage).to_s }
   end
 
-  # note that if there is only ONE part, it will end .zip;  if there are multiple parts,
+  # NOTE: if there is only ONE part, it will end .zip;  if there are multiple parts,
   #  the last one will end .zip, so two parts is:  .z01, zip. (this agrees with zip utility)
   # @return [Array<Pathname>] Existing pathnames for zip parts based on glob (.zip, .z01, .z02, etc.)
   def part_paths
