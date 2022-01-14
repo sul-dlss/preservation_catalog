@@ -13,7 +13,8 @@ namespace :prescat do
   namespace :cache_cleaner do
     desc 'Clean zip storage cache of empty directories'
     task empty_directories: :environment do
-      `find #{Settings.zip_storage} -not -path "*/\.*" -type d -empty -delete`
+      # Setting mindepth to 1 prevents the command from wiping out the root dir if empty
+      `find #{Settings.zip_storage} -mindepth 1 -not -path "*/\.*" -type d -empty -delete`
     end
 
     desc 'Clean zip storage cache of stale checksum & zip files'
