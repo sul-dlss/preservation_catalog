@@ -12,7 +12,7 @@ class ZippedMoabVersion < ApplicationRecord
   belongs_to :zip_endpoint, inverse_of: :zipped_moab_versions
   has_many :zip_parts, dependent: :restrict_with_exception, inverse_of: :zipped_moab_version
 
-  validates :preserved_object, :version, :zip_endpoint, presence: true
+  validates :version, presence: true
 
   scope :by_druid, lambda { |druid|
     joins(:preserved_object).where(preserved_objects: { druid: druid })

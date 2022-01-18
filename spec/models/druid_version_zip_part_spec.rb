@@ -37,9 +37,7 @@ describe DruidVersionZipPart do
     end
 
     it 'writes the md5 to the md5_path' do
-      file = instance_double('some_file')
-      expect(File).to receive(:open).with(md5_path, 'w').and_yield(file)
-      expect(file).to receive(:write).with(md5)
+      expect(File).to receive(:write).with(md5_path, md5)
       part.write_md5
     end
   end

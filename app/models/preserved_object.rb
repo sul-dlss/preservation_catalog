@@ -6,7 +6,7 @@
 # represent a specific stored instance on a specific node, but aggregates
 # those instances.
 class PreservedObject < ApplicationRecord
-  PREFIX_RE = /druid:/i.freeze
+  PREFIX_RE = /druid:/i
 
   # hook for creating archive zips is here and on CompleteMoab, because version and current_version must be in sync, and
   # even though both fields will usually be updated together in a single transaction, one has to be updated first.  latter
@@ -24,7 +24,6 @@ class PreservedObject < ApplicationRecord
             length: { is: 11 },
             format: { with: /(?!#{PREFIX_RE})#{DruidTools::Druid.pattern}/ } # ?! group is a *negative* match
   validates :current_version, presence: true, numericality: { only_integer: true, greater_than: 0 }
-  validates :preservation_policy, presence: true
 
   scope :without_complete_moabs, -> { left_outer_joins(:complete_moabs).where(complete_moabs: { id: nil }) }
 
@@ -68,7 +67,7 @@ class PreservedObject < ApplicationRecord
   # Of those eligible for replication, use whichever was checksum validated most recently.
   # @return [String, nil] The storage location (storage_root/storage_trunk) where the Moab that should be replicated lives.
   def moab_replication_storage_location
-    moabs_eligible_for_replication.joins(:moab_storage_root).order(last_checksum_validation: :desc).limit(1).pluck(:storage_location).first
+    moabs_eligible_for_replication.joins(:moab_storage_root).order(last_checksum_validation: :desc).limit(1).pick(:storage_location)
   end
 
   # a moab is eligible for replication if its status is 'ok' and its version is up to date with the latest seen for the object

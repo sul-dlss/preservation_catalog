@@ -180,7 +180,7 @@ RSpec.shared_examples 'unexpected version' do |method_sym, actual_version|
     end
 
     it 'specific version results' do
-      # NOTE this is not checking that we have the CORRECT specific code
+      # NOTE: this is not checking that we have the CORRECT specific code
       codes = [
         AuditResults::VERSION_MATCHES,
         AuditResults::ACTUAL_VERS_GT_DB_OBJ,

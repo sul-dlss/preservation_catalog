@@ -58,7 +58,7 @@ describe DruidVersionZip do
     context 'there is a zip file already made, but it looks too small' do
       before do
         dvz.create_zip!
-        File.open(dvz.file_path, 'w') { |f| f.write('pretend it is too small because zip binary silently omitted versionAdditions.xml') }
+        File.write(dvz.file_path, 'pretend it is too small because zip binary silently omitted versionAdditions.xml')
       end
 
       it 'raises an error indicating that the file in the zip temp space looks too small' do
