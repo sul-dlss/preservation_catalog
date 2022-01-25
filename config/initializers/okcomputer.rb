@@ -120,8 +120,14 @@ end
 workflows_url = "#{Settings.workflow_services_url}/objects/druid:oo000oo0000/workflows"
 OkComputer::Registry.register 'external-workflow-services-url', OkComputer::HttpCheck.new(workflows_url)
 
-# Replication (only) uses zip_storage directory to build the zips to send to zip endpoints
-OkComputer::Registry.register 'feature-zip_storage_dir', OkComputer::DirectoryCheck.new(Settings.zip_storage)
+# For each deployed environment (qa, stage, prod), the host that runs the resque
+# dashboard by convention does not mount the zip-transfers directory, so this
+# check will always fail on those hosts. Instead of failing a check on these
+# hosts, only register the check on hosts that do not run the resque dashboard.
+unless Settings.resque_dashboard_hostnames.include?(Socket.gethostname)
+  # Replication (only) uses zip_storage directory to build the zips to send to zip endpoints
+  OkComputer::Registry.register 'feature-zip_storage_dir', OkComputer::DirectoryCheck.new(Settings.zip_storage)
+end
 
 # check CompleteMoab#last_version_audit to ensure it isn't too old
 class VersionAuditWindowCheck < OkComputer::Check
