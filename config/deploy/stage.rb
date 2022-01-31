@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
-server 'preservation-catalog-stage-01.stanford.edu', user: 'pres', roles: %w[app db web]
-server 'preservation-catalog-stage-02.stanford.edu', user: 'pres', roles: %w[app resque queue_populator cache_cleaner]
+server 'preservation-catalog-web-stage-01.stanford.edu', user: 'pres', roles: %w[app web]
+server 'preservation-catalog-web-stage-02.stanford.edu', user: 'pres', roles: %w[app web]
+server 'preservation-catalog-stage-02.stanford.edu', user: 'pres', roles: %w[app db resque queue_populator cache_cleaner]
 
 Capistrano::OneTimeKey.generate_one_time_key!
 set :rails_env, 'production'
