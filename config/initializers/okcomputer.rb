@@ -6,6 +6,13 @@ require Rails.root.join('config', 'initializers', 'resque.rb').to_s
 OkComputer.mount_at = 'status' # use /status or /status/all or /status/<name-of-check>
 OkComputer.check_in_parallel = true
 
+# the hosts that run the resque dashboard are considered the "web" hosts,
+# for serving API traffic, as opposed to running worker processes for handling
+# async jobs
+def cur_host_is_web_host?
+  Settings.resque_dashboard_hostnames.include?(Socket.gethostname)
+end
+
 # check models to see if at least they have some data
 class TablesHaveDataCheck < OkComputer::Check
   def check
@@ -120,11 +127,10 @@ end
 workflows_url = "#{Settings.workflow_services_url}/objects/druid:oo000oo0000/workflows"
 OkComputer::Registry.register 'external-workflow-services-url', OkComputer::HttpCheck.new(workflows_url)
 
-# For each deployed environment (qa, stage, prod), the host that runs the resque
-# dashboard by convention does not mount the zip-transfers directory, so this
-# check will always fail on those hosts. Instead of failing a check on these
-# hosts, only register the check on hosts that do not run the resque dashboard.
-unless Settings.resque_dashboard_hostnames.include?(Socket.gethostname)
+# For each deployed environment (qa, stage, prod), the "web" host, by convention, does not
+# mount the zip-transfers directory, so this check will always fail on those hosts. Instead
+# of failing a check on these hosts, only register the check on non-web hosts.
+unless cur_host_is_web_host?
   # Replication (only) uses zip_storage directory to build the zips to send to zip endpoints
   OkComputer::Registry.register 'feature-zip_storage_dir', OkComputer::DirectoryCheck.new(Settings.zip_storage)
 end
@@ -148,4 +154,6 @@ OkComputer::Registry.register 'feature-version-audit-window-check', VersionAudit
 
 # TODO: do we want anything about s3 credentials here?
 
-OkComputer.make_optional %w[feature-version-audit-window-check external-workflow-services-url feature-zip_storage_dir]
+optional_checks = %w[feature-version-audit-window-check external-workflow-services-url]
+optional_checks << 'feature-zip_storage_dir' unless cur_host_is_web_host?
+OkComputer.make_optional optional_checks
