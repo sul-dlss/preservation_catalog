@@ -5,6 +5,9 @@ server 'preservation-catalog-prod-02.stanford.edu', user: 'pres', roles: %w[app 
 server 'preservation-catalog-prod-03.stanford.edu', user: 'pres', roles: %w[app resque]
 server 'preservation-catalog-prod-04.stanford.edu', user: 'pres', roles: %w[app resque cache_cleaner]
 
+# for ubuntu to perform resque:pool:hot_swap
+set :pty, true
+
 Capistrano::OneTimeKey.generate_one_time_key!
 set :rails_env, 'production'
 set :bundle_without, 'deploy test'
