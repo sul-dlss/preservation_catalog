@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
-server 'preservation-catalog-web-prod-01.stanford.edu', user: 'pres', roles: %w[app db web]
-server 'preservation-catalog-prod-02.stanford.edu', user: 'pres', roles: %w[app resque queue_populator]
+server 'preservation-catalog-web-prod-01.stanford.edu', user: 'pres', roles: %w[app web]
+server 'preservation-catalog-web-prod-02.stanford.edu', user: 'pres', roles: %w[app web]
+server 'preservation-catalog-prod-02.stanford.edu', user: 'pres', roles: %w[app db resque queue_populator]
 server 'preservation-catalog-prod-03.stanford.edu', user: 'pres', roles: %w[app resque]
 server 'preservation-catalog-prod-04.stanford.edu', user: 'pres', roles: %w[app resque cache_cleaner]
 
