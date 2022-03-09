@@ -32,7 +32,7 @@ paths:
     post:
       tags:
         - catalog
-      summary: Add a new Moab to the catalog
+      summary: Add a new Moab to the catalog for an existing object
       responses:
         '201':
           description: Created new Moab
@@ -52,7 +52,7 @@ paths:
     put:
       tags:
         - catalog
-      summary: Update a Moab in the catalog
+      summary: Update a Moab for an existing object in the catalog for a new version
       responses:
         '200':
           description: Updated Moab
@@ -79,7 +79,7 @@ paths:
     patch:
       tags:
         - catalog
-      summary: Update a Moab in the catalog
+      summary: Update a Moab for an existing object in the catalog for a new version
       responses:
         '200':
           description: Updated Moab
@@ -107,7 +107,7 @@ paths:
     get:
       tags:
         - objects
-      summary: Render a single preserved object as JSON
+      summary: Render a single PreservedObject model as JSON
       responses:
         '200':
           description: Preserved object found
@@ -261,7 +261,7 @@ paths:
     get:
       tags:
         - objects
-      summary: Return a specific file from the Moab
+      summary: Returns a specific content, metadata, or manifest file for the object.
       responses:
         '200':
           description: OK, returns a file (of whatever type, thus not validated here)
@@ -289,6 +289,7 @@ paths:
           schema:
             type: string
         - name: category
+          description: category of file to return
           in: query
           required: true
           example: 'manifest'
@@ -309,7 +310,8 @@ paths:
     post:
       tags:
         - objects
-      summary: Return a Moab::FileInventoryDifference for contentMetadata (specific to the Moab)
+      summary: Retrieves Moab::FileInventoryDifference model from comparison of passed contentMetadata.xml with latest (or specified) version
+               in Moab for all files (default) or a specified subset.
       responses:
         '200':
           description: OK
@@ -418,13 +420,16 @@ components:
       type: object
       properties:
         incoming_version:
+          description: Version of the object
           type: integer
         incoming_size:
+          description: Size in bytes of the object on disk
           type: integer
         storage_location:
-          description: Must correspond to a real MoabStorageRoot
+          description: Storage root where the moab object is located (must correspond to a real MoabStorageRoot)
           type: string
         checksums_validated:
+          description: If the checksums for the moab object have previously been validated by caller (boolean/int as string)
           type: string
           enum:
             - 'true'
