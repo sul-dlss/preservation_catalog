@@ -64,6 +64,9 @@ after 'resque:pool:hot_swap', :prune_dead_workers do
   on roles(:resque) do
     within release_path do
       with rails_env: fetch(:rails_env) do
+        # If a Resque process doesn't stop gracefully, it may leave stale state information in Redis. This call
+        # does some garbage collection, checking the current Redis state info against the actual environment,
+        # and removing entries from Redis for any workers that aren't actually running. See Resque::Worker#prune_dead_workers
         execute :rails, 'runner', '"Resque.workers.map(&:prune_dead_workers)"'
       end
     end
