@@ -58,3 +58,14 @@ task :db_seed do
     end
   end
 end
+
+desc 'Prune dead Resque workers'
+after 'resque:pool:hot_swap', :prune_dead_workers do
+  on roles(:resque) do
+    within release_path do
+      with rails_env: fetch(:rails_env) do
+        execute :rails, 'runner', '"Resque.workers.map(&:prune_dead_workers)"'
+      end
+    end
+  end
+end
