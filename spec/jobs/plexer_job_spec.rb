@@ -42,6 +42,16 @@ describe PlexerJob, type: :job do
     let(:parts2) { po.zipped_moab_versions.second!.zip_parts }
     let(:parts3) { po.zipped_moab_versions.third!.zip_parts }
     let(:s3_key) { dvz.s3_key(metadata[:suffix]) }
+    let(:metadata_non_matching) do
+      {
+        checksum_md5: '4f98f59e877ecb84ff75ef0fab45bac5',
+        size: 145,
+        parts_count: 3,
+        suffix: '.zip',
+        zip_cmd: 'zip -xyz ...',
+        zip_version: 'Zip 3.0 (July 5th 2008)'
+      }
+    end
 
     before do
       create(:zip_endpoint, delivery_class: 2) # new 3rd endpoint, preserved_object should 3 ZMVs
@@ -77,6 +87,21 @@ describe PlexerJob, type: :job do
       expect(parts2.map(&:md5)).to eq [md5]
       expect(parts3.map(&:md5)).to eq [md5]
       expect(parts1.first!.create_info).to eq metadata.slice(:zip_cmd, :zip_version).to_s
+    end
+
+    context 'when one zip_part exists already' do
+      it 'only creates the two missing zip_parts' do
+        # create one zip_part
+        po.zipped_moab_versions.first!.zip_parts.create!({ md5: md5,
+                                                           size: 123,
+                                                           parts_count: 3,
+                                                           suffix: '.zip',
+                                                           create_info: 'zip -xyz ...Zip 3.0 (July 5th 2008)' })
+        described_class.perform_now(druid, version, s3_key, metadata_non_matching) # tries to create three zip_parts
+        expect(parts1.map(&:md5)).to eq [md5]
+        expect(parts2.map(&:md5)).to eq [metadata_non_matching[:checksum_md5]]
+        expect(parts3.map(&:md5)).to eq [metadata_non_matching[:checksum_md5]]
+      end
     end
   end
 end

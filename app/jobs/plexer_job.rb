@@ -45,17 +45,15 @@ class PlexerJob < ZipPartJobBase
   end
 
   def find_or_create_unreplicated_part(zmv, part_s3_key, metadata)
-    zmv.zip_parts.find_or_create_by(
+    zmv.zip_parts.create_with(
       create_info: metadata.slice(:zip_cmd, :zip_version).to_s,
       md5: metadata[:checksum_md5],
       parts_count: metadata[:parts_count],
       size: metadata[:size],
       suffix: File.extname(part_s3_key)
+    ).create_or_find_by(
+      suffix: File.extname(part_s3_key)
     ) { |part| part.unreplicated! }
-  rescue ActiveRecord::RecordNotUnique
-    # This catches an exception triggered by a race condition because find_or_create_by is not atomic.
-
-    retry
   end
 
   # @return [Array<Class>] target delivery worker classes
