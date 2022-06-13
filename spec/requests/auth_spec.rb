@@ -39,14 +39,14 @@ RSpec.describe 'auth' do
     it 'notifies Honeybadger' do
       get "/v1/objects/#{pres_obj.druid}", headers: invalid_auth_header
       expect(Honeybadger).to have_received(:notify).with(
-        "error validating bearer token #{invalid_jwt_value} provided by 127.0.0.1: Signature verification raised"
+        "error validating bearer token #{invalid_jwt_value} provided by 127.0.0.1: Invalid segment encoding"
       )
     end
 
     it 'logs a warning' do
       get "/v1/objects/#{pres_obj.druid}", headers: invalid_auth_header
       expect(Rails.logger).to have_received(:warn).with(
-        "error validating bearer token #{invalid_jwt_value} provided by 127.0.0.1: Signature verification raised"
+        "error validating bearer token #{invalid_jwt_value} provided by 127.0.0.1: Invalid segment encoding"
       )
     end
   end
