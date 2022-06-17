@@ -110,15 +110,18 @@ GEM
       sshkit (~> 1.2)
     capistrano-shared_configs (0.2.2)
     chronic (0.10.2)
-    cocina-models (0.81.0)
+    cocina-models (0.82.0)
       activesupport
       deprecation
       dry-struct (~> 1.0)
       dry-types (~> 1.1)
+      edtf
       equivalent-xml
+      jsonpath
       nokogiri
       openapi3_parser
       openapi_parser (>= 0.11.1, < 1.0)
+      rss
       super_diff
       thor
       zeitwerk (~> 2.1)
@@ -145,9 +148,9 @@ GEM
       capistrano-one_time_key
       capistrano-shared_configs
     docile (1.4.0)
-    dor-services-client (12.3.0)
+    dor-services-client (12.4.0)
       activesupport (>= 4.2, < 8)
-      cocina-models (~> 0.81.0)
+      cocina-models (~> 0.82.0)
       deprecation
       faraday (~> 2.0)
       faraday-retry
@@ -197,6 +200,8 @@ GEM
       dry-core (~> 0.5, >= 0.5)
       dry-initializer (~> 3.0)
       dry-schema (~> 1.8, >= 1.8.0)
+    edtf (3.0.8)
+      activesupport (>= 3.0, < 8.0)
     equivalent-xml (0.6.0)
       nokogiri (>= 1.4.3)
     erubi (1.10.0)
@@ -209,7 +214,8 @@ GEM
       faraday-net_http (~> 2.0)
       ruby2_keywords (>= 0.0.4)
     faraday-net_http (2.0.3)
-    faraday-retry (1.0.3)
+    faraday-retry (2.0.0)
+      faraday (~> 2.0)
     ffi (1.15.5)
     globalid (1.0.0)
       activesupport (>= 5.0)
@@ -224,6 +230,8 @@ GEM
     jmespath (1.6.1)
     json (2.6.2)
     json_schema (0.21.0)
+    jsonpath (1.1.2)
+      multi_json
     jwt (2.4.1)
     listen (3.7.1)
       rb-fsevent (~> 0.10, >= 0.10.3)
@@ -242,7 +250,7 @@ GEM
     method_source (1.0.0)
     mini_mime (1.1.2)
     mini_portile2 (2.8.0)
-    minitest (5.15.0)
+    minitest (5.16.0)
     moab-versioning (5.0.0)
       druid-tools (>= 1.0.0)
       json
@@ -365,6 +373,8 @@ GEM
     rspec-support (3.11.0)
     rspec_junit_formatter (0.5.1)
       rspec-core (>= 2, < 4, != 2.12.0)
+    rss (0.2.9)
+      rexml
     rubocop (1.30.1)
       parallel (~> 1.10)
       parser (>= 3.1.0.0)
@@ -427,7 +437,7 @@ GEM
     websocket-extensions (0.1.5)
     whenever (1.0.0)
       chronic (>= 0.6.3)
-    zeitwerk (2.5.4)
+    zeitwerk (2.6.0)
 
 PLATFORMS
   ruby
