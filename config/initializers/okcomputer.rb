@@ -147,7 +147,11 @@ class VersionAuditWindowCheck < OkComputer::Check
   end
 
   private def clause
-    14.days.ago
+    # currently: M2C and C2M are queued on the 1st and 15th of the month, respectively, and
+    # expiry time on CV is 3 months (those are the three audits that touch this timestamp).
+    # M2C should run at most 16 days after C2M (following a 31 day month), but give a little buffer
+    # since the queues might take a while to work down, and ordering for enqueue is uncertain.
+    21.days.ago
   end
 end
 OkComputer::Registry.register 'feature-version-audit-window-check', VersionAuditWindowCheck.new
