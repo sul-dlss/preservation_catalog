@@ -3,20 +3,24 @@
 # Use this file to easily define all of your cron jobs.
 # Learn more: http://github.com/javan/whenever
 
-# these append to existing logs
-every :tuesday, roles: [:queue_populator] do
+# these cron jobs all append to existing log files
+
+# 11 am on the 1st of every month
+every :month, at: '11:00', roles: [:queue_populator] do
   set :output, standard: nil, error: 'log/m2c-err.log'
   runner 'MoabStorageRoot.find_each(&:m2c_check!)'
+end
+
+# 11 am on the 15th of every month - the 'whenever' syntax for this is awkward and needs an ignored month
+# for the day to get parsed, so just use raw cron syntax
+every '0 11 15 * *', roles: [:queue_populator] do
+  set :output, standard: nil, error: 'log/c2m-err.log'
+  runner 'MoabStorageRoot.find_each(&:c2m_check!)'
 end
 
 every :wednesday, roles: [:queue_populator] do
   set :output, standard: nil, error: 'log/c2a-err.log'
   runner 'PreservedObject.archive_check_expired.find_each(&:audit_moab_version_replication!)'
-end
-
-every :friday, roles: [:queue_populator] do
-  set :output, standard: nil, error: 'log/c2m-err.log'
-  runner 'MoabStorageRoot.find_each(&:c2m_check!)'
 end
 
 every :sunday, at: '1am', roles: [:queue_populator] do
