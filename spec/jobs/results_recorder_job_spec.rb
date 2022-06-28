@@ -11,17 +11,13 @@ describe ResultsRecorderJob, type: :job do
   let(:zip_endpoint2) { zmv2.zip_endpoint }
   let(:zip_part_attributes) { [attributes_for(:zip_part)] }
   let(:druid_version_zip) { DruidVersionZip.new(druid, zmv.version) }
-  let(:events_client) { instance_double(Dor::Services::Client::Events, create: nil) }
 
   before do
     # creating the CompleteMoab triggers associated ZippedMoabVersion creation via AR hooks
     create(:complete_moab, preserved_object: preserved_object, version: preserved_object.current_version)
     zmv.zip_parts.create(zip_part_attributes)
     zmv2.zip_parts.create(zip_part_attributes)
-    allow(Dor::Services::Client).to receive(:object).with("druid:#{druid}").and_return(
-      instance_double(Dor::Services::Client::Object, events: events_client)
-    )
-    allow(events_client).to receive(:create)
+    allow(Dor::Event::Client).to receive(:create).and_return(true)
     allow(Socket).to receive(:gethostname).and_return('fakehost')
   end
 
@@ -52,7 +48,7 @@ describe ResultsRecorderJob, type: :job do
       end
 
       it 'does not emit an event to the event service' do
-        expect(events_client).not_to have_received(:create)
+        expect(Dor::Event::Client).not_to have_received(:create)
       end
     end
 
@@ -65,6 +61,7 @@ describe ResultsRecorderJob, type: :job do
 
       it 'emits an event to the event service with info about the replicated parts' do
         event_info = {
+          druid: "druid:#{druid}",
           type: 'druid_version_replicated',
           data: {
             host: 'fakehost',
@@ -78,7 +75,7 @@ describe ResultsRecorderJob, type: :job do
             ]
           }
         }
-        expect(events_client).to have_received(:create).with(event_info)
+        expect(Dor::Event::Client).to have_received(:create).with(event_info)
       end
     end
   end

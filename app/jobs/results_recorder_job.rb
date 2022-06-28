@@ -69,8 +69,8 @@ class ResultsRecorderJob < ApplicationJob
       { s3_key: part.s3_key, size: part.size, md5: part.md5 }
     end
 
-    events_client = Dor::Services::Client.object("druid:#{druid}").events
-    events_client.create(
+    Dor::Event::Client.create(
+      druid: "druid:#{druid}",
       type: 'druid_version_replicated',
       data: {
         host: Socket.gethostname,

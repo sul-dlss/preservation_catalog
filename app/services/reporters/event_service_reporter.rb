@@ -52,12 +52,9 @@ module Reporters
 
     private
 
-    def events_client_for(druid)
-      Dor::Services::Client.object(druid).events
-    end
-
     def create_success_event(druid, version, process_name, storage_area)
-      events_client_for(druid).create(
+      Dor::Event::Client.create(
+        druid: druid,
         type: 'preservation_audit_success',
         data: {
           host: Socket.gethostname,
@@ -70,7 +67,8 @@ module Reporters
     end
 
     def create_error_event(druid, version, process_name, storage_area, error_message)
-      events_client_for(druid).create(
+      Dor::Event::Client.create(
+        druid: druid,
         type: 'preservation_audit_failure',
         data: {
           host: Socket.gethostname,

@@ -1,7 +1,3 @@
-dor_services:
-  url: 'https://dor-services-app.example.edu'
-  token: 'not-a-real-token'
-
 # named storage roots are in the storage_root_map (see config/settings/xxx.yml for examples).
 # the storage_root_map contains lookups of storage roots per host.
 # see sul-dlss/shared_configs for the storage_root_map of all hosts we deploy to.
@@ -52,3 +48,9 @@ api_jwt:
 # we expect/hope that this will not stay around forever.  see usage for further explanation.
 hacks:
   zipmaker_delay_seconds: 0.05 # the default value is artificially low to keep test suite fast -- should override to be many seconds in prod
+
+rabbitmq:
+  hostname: localhost
+  vhost: /
+  username: guest
+  password: guest
