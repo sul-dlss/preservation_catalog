@@ -201,7 +201,7 @@ Style/SoleNestedConditional: # (new in 0.89)
 Style/StringConcatenation: # (new in 0.89)
   Enabled: true
 
-Gemspec/DateAssignment: # (new in 1.10)
+Gemspec/DeprecatedAttributeAssignment: # (new in 1.10)
   Enabled: true
 Layout/SpaceBeforeBrackets: # (new in 1.7)
   Enabled: true
