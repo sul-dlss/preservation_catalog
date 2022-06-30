@@ -45,15 +45,10 @@ RSpec.describe ChecksumValidator do
 
   describe '#validate_checksums' do
     context 'moab is missing from storage' do
-      let(:events_client) { instance_double(Dor::Services::Client::Events) }
-
       before do
         # fake a moab gone missing by updating the preserved object to use a non-existent druid
         comp_moab.preserved_object.update(druid: 'tr808sp1200')
-        allow(Dor::Services::Client).to receive(:object).with('druid:tr808sp1200').and_return(
-          instance_double(Dor::Services::Client::Object, events: events_client)
-        )
-        allow(events_client).to receive(:create).with(type: 'preservation_audit_failure', data: instance_of(Hash))
+        allow(Dor::Event::Client).to receive(:create).with(druid: 'druid:tr808sp1200', type: 'preservation_audit_failure', data: instance_of(Hash))
       end
 
       it 'sets status to online_moab_not_found and adds corresponding audit result' do
