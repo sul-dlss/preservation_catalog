@@ -6,10 +6,13 @@
 # these cron jobs all append to existing log files
 
 # 11 am on the 1st of every month
-every :month, at: '11:00', roles: [:queue_populator] do
-  set :output, standard: nil, error: 'log/m2c-err.log'
-  runner 'MoabStorageRoot.find_each(&:m2c_check!)'
-end
+# TODO: a very briefly useful hotfix to rel-2022-06-28-5, just needs to be deployed
+# at 11:00 am friday 2022-07-01, can be deployed over by rel-2022-06-28-5 or successor
+# any time after that.
+# every :month, at: '11:00', roles: [:queue_populator] do
+#   set :output, standard: nil, error: 'log/m2c-err.log'
+#   runner 'MoabStorageRoot.find_each(&:m2c_check!)'
+# end
 
 # 11 am on the 15th of every month - the 'whenever' syntax for this is awkward and needs an ignored month
 # for the day to get parsed, so just use raw cron syntax
