@@ -83,6 +83,46 @@ RSpec.describe ChecksumValidator do
       end
     end
 
+    context 'moab is empty' do
+      before do
+        # fake a moab gone missing by updating the preserved object to use a druid with an empty directory
+        comp_moab.preserved_object.update(druid: 'bh868zf9366')
+        allow(Dor::Event::Client).to receive(:create).with(druid: 'druid:bh868zf9366', type: 'preservation_audit_failure', data: instance_of(Hash))
+      end
+
+      it 'sets status to online_moab_not_found and adds corresponding audit result' do
+        expect(moab_validator.moab.object_pathname.exist?).to be true
+        expect { cv.validate_checksums }.to change(comp_moab, :status).to 'online_moab_not_found'
+        expect(comp_moab.reload.status).to eq 'online_moab_not_found'
+        expect(cv.results.result_array.first).to have_key(:moab_not_found)
+      end
+
+      it 'sends results in HONEYBADGER_REPORT_CODES errors' do
+        reason = 'db CompleteMoab \\(created .*Z; last updated .*Z\\) exists but Moab not found'
+        cv.validate_checksums
+
+        expect(honeybadger_reporter).to have_received(:report_errors)
+          .with(druid: 'bh868zf9366',
+                version: 0,
+                storage_area: ms_root,
+                check_name: 'validate_checksums',
+                results: [{ moab_not_found: match(reason) },
+                          { cm_status_changed: 'CompleteMoab status changed from validity_unknown to online_moab_not_found' }])
+        expect(event_service_reporter).to have_received(:report_errors)
+          .with(druid: 'bh868zf9366',
+                version: 0,
+                storage_area: ms_root,
+                check_name: 'validate_checksums',
+                results: [{ moab_not_found: match(reason) },
+                          { cm_status_changed: 'CompleteMoab status changed from validity_unknown to online_moab_not_found' }])
+      end
+
+      it 'calls AuditResults.report_results' do
+        expect(cv.results).to receive(:report_results)
+        cv.validate_checksums
+      end
+    end
+
     context 'passes checksum validation' do
       let(:druid) { 'bz514sm9647' }
       let(:root_name) { 'fixture_sr1' }
