@@ -63,7 +63,7 @@ class ChecksumValidator
   # return true and exit if the moab exists.  otherwise update status to missing on complete_moab, report results, and return false.
   # @return [Boolean] true and exit if the moab exists, false otherwise
   def check_file_existence!
-    return true if File.exist?(object_dir)
+    return true if File.exist?(object_dir) && latest_moab_version.present?
 
     transaction_ok = ActiveRecordUtils.with_transaction_and_rescue(results) do
       mark_moab_not_found
