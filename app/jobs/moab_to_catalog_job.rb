@@ -9,6 +9,8 @@ class MoabToCatalogJob < ApplicationJob
     raise ArgumentError, 'MoabStorageRoot param required' unless job.arguments.first.is_a?(MoabStorageRoot)
   end
 
+  include UniqueJob
+
   # @param [MoabStorageRoot] root mount containing the Moab
   # @param [String] druid
   def perform(root, druid)

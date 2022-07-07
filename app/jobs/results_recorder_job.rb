@@ -20,6 +20,8 @@ class ResultsRecorderJob < ApplicationJob
     job.zmv ||= zmvs.find_by!(zip_endpoints: { delivery_class: job.arguments.fourth })
   end
 
+  include UniqueJob
+
   # @param [String] druid
   # @param [Integer] version
   # @param [String] s3_part_key

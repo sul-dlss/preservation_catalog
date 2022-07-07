@@ -9,6 +9,8 @@ class CatalogToMoabJob < ApplicationJob
     raise ArgumentError, 'CompleteMoab param required' unless job.arguments.first.is_a?(CompleteMoab)
   end
 
+  include UniqueJob
+
   # @param [CompleteMoab] complete_moab object to C2M check
   # @see Audit::CatalogToMoab#initialize
   def perform(complete_moab)

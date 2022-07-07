@@ -14,6 +14,8 @@ class ZipmakerJob < ApplicationJob
     job.zip = DruidVersionZip.new(job.arguments.first, job.arguments.second, job.arguments.third)
   end
 
+  include UniqueJob
+
   # Does queue locking on ONLY druid and version (as first and second parameters)
   def self.queue_lock_key(*args)
     "lock:#{name}-#{args.slice(0..1).join(';')}"
