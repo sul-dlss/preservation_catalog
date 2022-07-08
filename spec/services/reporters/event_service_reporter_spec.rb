@@ -5,17 +5,12 @@ require 'rails_helper'
 RSpec.describe Reporters::EventServiceReporter do
   let(:subject) { described_class.new }
 
-  let(:client) { instance_double(Dor::Services::Client::Events) }
   let(:druid) { 'ab123cd4567' }
   let(:actual_version) { 6 }
   let(:ms_root) { MoabStorageRoot.find_by(storage_location: 'spec/fixtures/storage_root01/sdr2objects') }
   let(:check_name) { 'FooCheck' }
 
   before do
-    allow(Dor::Services::Client).to receive(:object).with("druid:#{druid}").and_return(
-      instance_double(Dor::Services::Client::Object, events: client)
-    )
-    allow(client).to receive(:create)
     allow(Socket).to receive(:gethostname).and_return('fakehost')
   end
 
