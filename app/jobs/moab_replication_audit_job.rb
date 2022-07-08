@@ -7,6 +7,8 @@
 class MoabReplicationAuditJob < ApplicationJob
   queue_as :moab_replication_audit
 
+  include UniqueJob
+
   # @param [PreservedObject] for which to verify presence of the archive zips we think we've replicated (and possibly backfill those we haven't)
   def perform(preserved_object)
     backfill_missing_zmvs if Settings.replication.audit_should_backfill

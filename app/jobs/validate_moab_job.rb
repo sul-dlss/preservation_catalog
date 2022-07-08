@@ -4,6 +4,8 @@
 class ValidateMoabJob < ApplicationJob
   queue_as :validate_moab
 
+  include UniqueJob
+
   attr_accessor :druid
 
   # @param [String] druid of Moab on disk to be checksum validated

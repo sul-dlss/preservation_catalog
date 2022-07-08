@@ -10,6 +10,8 @@ class ZipPartJobBase < ApplicationJob
     job.dvz_part = DruidVersionZipPart.new(zip, job.arguments.third)
   end
 
+  include UniqueJob
+
   # Does queue locking on ONLY druid, version and part (as first 3 parameters)
   def self.queue_lock_key(*args)
     "lock:#{name}-#{args.slice(0..2).join(';')}"

@@ -9,6 +9,8 @@ class PartReplicationAuditJob < ApplicationJob
   queue_as { "part_audit_#{arguments.second.endpoint_name}" }
   delegate :check_child_zip_part_attributes, :logger, to: Audit::CatalogToArchive
 
+  include UniqueJob
+
   # @param [PreservedObject] preserved_object
   # @param [ZipEndpoint] zip_endpoint endpoint being checked
   def perform(preserved_object, zip_endpoint)

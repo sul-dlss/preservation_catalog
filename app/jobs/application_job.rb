@@ -6,8 +6,6 @@ class ApplicationJob < ActiveJob::Base
     ActiveRecord::Base.clear_active_connections!
   end
 
-  include UniqueJob
-
   # Raises if the metadata is incomplete
   # @param [Hash<Symbol => String>] metadata
   # @option metadata [String] :checksum_md5
