@@ -24,7 +24,6 @@ RSpec.describe Audit::CatalogToMoab do
                     results_as_string: nil)
   end
   let(:exp_details_prefix) { 'check_catalog_version (actual location: fixture_sr1; ' }
-  let(:events_client) { instance_double(Dor::Services::Client::Events) }
   let(:hb_exp_msg) do
     'check_catalog_version\\(bj102hs9687, fixture_sr1\\)' \
       ' db CompleteMoab \\(created .*Z; last updated .*Z\\) exists but Moab not found'
@@ -92,11 +91,7 @@ RSpec.describe Audit::CatalogToMoab do
     end
 
     it 'calls online_moab_found?' do
-      allow(Dor::Services::Client).to receive(:object).with("druid:#{druid}").and_return(
-        instance_double(Dor::Services::Client::Object, events: events_client)
-      )
       allow(Honeybadger).to receive(:notify).with(Regexp.new(hb_exp_msg))
-      allow(events_client).to receive(:create).with(type: 'preservation_audit_failure', data: instance_of(Hash))
       expect(c2m).to receive(:online_moab_found?)
       c2m.check_catalog_version
     end
@@ -104,11 +99,7 @@ RSpec.describe Audit::CatalogToMoab do
     context 'moab is nil (exists in catalog but not online)' do
       before do
         allow(Moab::StorageObject).to receive(:new).with(druid, String).and_return(nil)
-        allow(Dor::Services::Client).to receive(:object).with("druid:#{druid}").and_return(
-          instance_double(Dor::Services::Client::Object, events: events_client)
-        )
         allow(Honeybadger).to receive(:notify).with(Regexp.new(hb_exp_msg))
-        allow(events_client).to receive(:create).with(type: 'preservation_audit_failure', data: instance_of(Hash))
       end
 
       it 'adds a MOAB_NOT_FOUND result' do

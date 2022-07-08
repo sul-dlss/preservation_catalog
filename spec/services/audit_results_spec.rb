@@ -6,7 +6,6 @@ RSpec.describe AuditResults do
   let(:actual_version) { 6 }
   let(:audit_results) { described_class.new(druid, actual_version, ms_root) }
   let(:druid) { 'ab123cd4567' }
-  let(:events_client) { instance_double(Dor::Services::Client::Events) }
   let(:ms_root) { MoabStorageRoot.find_by(storage_location: 'spec/fixtures/storage_root01/sdr2objects') }
 
   describe '#new' do
