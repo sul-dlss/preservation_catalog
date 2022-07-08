@@ -28,6 +28,7 @@ db/schema_er_diagram.svg.dot
 .railsrc
 
 coverage/*
+spec/examples.txt
 
 config/settings.local.yml
 config/settings/*.local.yml

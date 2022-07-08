@@ -67,6 +67,11 @@ module UniqueJob
       3600
     end
 
+    def redis_connection
+      # when we switch to sidekiq we can call `Sidekiq.redis(&block)`
+      yield Resque.redis
+    end
+
     # @return [String] the key for locking this job/payload combination, e.g. 'lock:MySpecificJob-bt821jk7040;1'
     def queue_lock_key(*args)
       # Changes in ActiveModel object don't result in new lock (which they do when just calling to_s).
@@ -79,39 +84,43 @@ module UniqueJob
       now = Time.now.to_i
       new_expiry_time = now + lock_timeout + 1
 
-      # return true if we successfully acquired the lock
-      # "Set key to hold string value if key does not exist" (otherwise no-op) -- https://redis.io/commands/setnx
-      if Resque.redis.setnx(key, new_expiry_time)
-        Rails.logger.info("acquired lock on #{key} (none existed)")
-        return true
-      end
+      redis_connection do |conn|
+        # return true if we successfully acquired the lock
+        # "Set key to hold string value if key does not exist" (otherwise no-op) -- https://redis.io/commands/setnx
+        if conn.setnx(key, new_expiry_time)
+          Rails.logger.info("acquired lock on #{key} (none existed)")
+          return true
+        end
 
-      # see if the existing lock is still valid and return false if it is
-      # (we cannot acquire the lock during the timeout period)
-      key_expires_at = Resque.redis.get(key).to_i
-      if now <= key_expires_at
-        Rails.logger.info("failed to acquire lock on #{key}, because it has not expired (#{now} <= #{key_expires_at})")
-        return false
-      end
+        # see if the existing lock is still valid and return false if it is
+        # (we cannot acquire the lock during the timeout period)
+        key_expires_at = conn.get(key).to_i
+        if now <= key_expires_at
+          Rails.logger.info("failed to acquire lock on #{key}, because it has not expired (#{now} <= #{key_expires_at})")
+          return false
+        end
 
-      # otherwise set the new_expiry_time and ensure that no other worker has
-      # acquired the lock, possibly pushing out the expiry time further
-      # "Atomically sets key to value and returns the old value stored at key." -- https://redis.io/commands/getset
-      key_expires_at = Resque.redis.getset(key, new_expiry_time).to_i
-      if now > key_expires_at
-        Rails.logger.info("acquired lock on #{key} (old lock expired, #{now} > #{key_expires_at})")
-        true
-      else
-        Rails.logger.info("failed to acquire lock on #{key} but updated expiry time to #{new_expiry_time} (#{now} <= #{key_expires_at})")
-        false
+        # otherwise set the new_expiry_time and ensure that no other worker has
+        # acquired the lock, possibly pushing out the expiry time further
+        # "Atomically sets key to value and returns the old value stored at key." -- https://redis.io/commands/getset
+        key_expires_at = conn.getset(key, new_expiry_time).to_i
+        if now > key_expires_at
+          Rails.logger.info("acquired lock on #{key} (old lock expired, #{now} > #{key_expires_at})")
+          true
+        else
+          Rails.logger.info("failed to acquire lock on #{key} but updated expiry time to #{new_expiry_time} (#{now} <= #{key_expires_at})")
+          false
+        end
       end
     end
 
     def clear_lock(*args)
       key = queue_lock_key(*args)
       Rails.logger.info("clearing lock for #{key}...")
-      Resque.redis.del(key).tap do |del_result|
-        Rails.logger.info("...cleared lock for #{key} (del_result=#{del_result})")
+      redis_connection do |conn|
+        conn.del(key).tap do |del_result|
+          Rails.logger.info("...cleared lock for #{key} (del_result=#{del_result})")
+        end
       end
     end
   end
