@@ -83,7 +83,7 @@ RSpec.describe Reporters::EventServiceReporter do
 
     it 'creates events' do
       subject.report_completed(druid: druid, version: actual_version, storage_area: ms_root, check_name: check_name, result: result)
-
+puts "in event service reporter. Client is #{client}"
       expect(client).to have_received(:create).with(
         type: 'preservation_audit_success',
         data: {
