@@ -5,18 +5,14 @@ require 'rails_helper'
 RSpec.describe Reporters::EventServiceReporter do
   let(:subject) { described_class.new }
 
-  let(:client) { instance_double(Dor::Services::Client::Events) }
   let(:druid) { 'ab123cd4567' }
   let(:actual_version) { 6 }
   let(:ms_root) { MoabStorageRoot.find_by(storage_location: 'spec/fixtures/storage_root01/sdr2objects') }
   let(:check_name) { 'FooCheck' }
 
   before do
-    allow(Dor::Services::Client).to receive(:object).with("druid:#{druid}").and_return(
-      instance_double(Dor::Services::Client::Object, events: client)
-    )
-    allow(client).to receive(:create)
     allow(Socket).to receive(:gethostname).and_return('fakehost')
+    allow(Dor::Event::Client).to receive(:create)
   end
 
   describe '#report_errors' do
@@ -34,7 +30,8 @@ RSpec.describe Reporters::EventServiceReporter do
         subject.report_errors(druid: druid, version: actual_version, storage_area: ms_root, check_name: check_name, results: [result1, result2])
         error1 = 'FooCheck (actual location: fixture_sr1; actual version: 6) || Invalid Moab, validation errors: ' \
                  "[Version directory name not in 'v00xx' format: original-v1]"
-        expect(client).to have_received(:create).with(
+        expect(Dor::Event::Client).to have_received(:create).with(
+          druid: "druid:#{druid}",
           type: 'preservation_audit_failure',
           data: {
             host: 'fakehost',
@@ -47,7 +44,8 @@ RSpec.describe Reporters::EventServiceReporter do
         )
         error2 = 'FooCheck (actual location: fixture_sr1; actual version: 6) || Invalid Moab, validation errors: ' \
                  "[Version directory name not in 'v00xx' format: original-v2]"
-        expect(client).to have_received(:create).with(
+        expect(Dor::Event::Client).to have_received(:create).with(
+          druid: "druid:#{druid}",
           type: 'preservation_audit_failure',
           data: {
             host: 'fakehost',
@@ -67,7 +65,8 @@ RSpec.describe Reporters::EventServiceReporter do
 
       it 'merges errors and creates single event' do
         subject.report_errors(druid: druid, version: actual_version, storage_area: ms_root, check_name: check_name, results: [result1, result2])
-        expect(client).to have_received(:create).with(
+        expect(Dor::Event::Client).to have_received(:create).with(
+          druid: "druid:#{druid}",
           type: 'preservation_audit_failure',
           data: {
             host: 'fakehost',
@@ -89,7 +88,8 @@ RSpec.describe Reporters::EventServiceReporter do
     it 'creates events' do
       subject.report_completed(druid: druid, version: actual_version, storage_area: ms_root, check_name: check_name, result: result)
 
-      expect(client).to have_received(:create).with(
+      expect(Dor::Event::Client).to have_received(:create).with(
+        druid: "druid:#{druid}",
         type: 'preservation_audit_success',
         data: {
           host: 'fakehost',
@@ -100,7 +100,8 @@ RSpec.describe Reporters::EventServiceReporter do
         }
       )
 
-      expect(client).to have_received(:create).with(
+      expect(Dor::Event::Client).to have_received(:create).with(
+        druid: "druid:#{druid}",
         type: 'preservation_audit_success',
         data: {
           host: 'fakehost',
