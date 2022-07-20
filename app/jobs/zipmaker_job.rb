@@ -33,13 +33,4 @@ class ZipmakerJob < ApplicationJob
       PlexerJob.perform_later(druid, version, part_key, DruidVersionZipPart.new(zip, part_key).metadata)
     end
   end
-
-  # sleep for a configured amount of time.
-  #
-  # BUT WHY? to prevent duplication and possible explanation drift, see Robots::SdrRepo::PreservationIngest::UpdateCatalog#wait_as_needed
-  # for more detailed explanation.  the short version is, this helps alleviate Ceph MDS write/read sync and/or contention issues that
-  # we don't yet fully understand.
-  def wait_as_needed
-    sleep(Settings.hacks.zipmaker_delay_seconds)
-  end
 end

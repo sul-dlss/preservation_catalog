@@ -21,4 +21,13 @@ class ApplicationJob < ActiveJob::Base
       raise ArgumentError, "Required metadata[:#{key}] not found" if metadata[key].blank?
     end
   end
+
+  # sleep for a configured amount of time.
+  #
+  # BUT WHY? to prevent duplication and possible explanation drift, see Robots::SdrRepo::PreservationIngest::UpdateCatalog#wait_as_needed
+  # for more detailed explanation.  the short version is, this helps alleviate Ceph MDS write/read sync and/or contention issues that
+  # we don't yet fully understand.
+  def wait_as_needed
+    sleep(Settings.filesystem_delay_seconds)
+  end
 end

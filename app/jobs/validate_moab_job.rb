@@ -9,6 +9,7 @@ class ValidateMoabJob < ApplicationJob
   attr_accessor :druid
 
   # @param [String] druid of Moab on disk to be checksum validated
+  # rubocop:disable Metrics/AbcSize
   def perform(druid)
     log_failure('Valid druid param required') and return unless DruidTools::Druid.valid?(druid, true)
 
@@ -16,6 +17,8 @@ class ValidateMoabJob < ApplicationJob
 
     start = Time.zone.now
     log_started
+
+    wait_as_needed
 
     # TODO: what if we lose connectivity while it's running in resque
     errors = validate
@@ -27,6 +30,7 @@ class ValidateMoabJob < ApplicationJob
   rescue StandardError => e
     log_failure(e.inspect)
   end
+  # rubocop:enable Metrics/AbcSize
 
   private
 
