@@ -26,6 +26,11 @@ describe ZipmakerJob, type: :job do
     described_class.perform_now(druid, version, moab_replication_storage_location)
   end
 
+  it 'sleeps' do
+    expect_any_instance_of(described_class).to receive(:sleep).with(Settings.filesystem_delay_seconds)
+    described_class.perform_now(druid, version, moab_replication_storage_location)
+  end
+
   context 'the moab version to be archived is bigger than the zip split size' do
     let(:druid) { 'bz514sm9647' }
     let(:version) { 1 }

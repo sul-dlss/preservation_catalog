@@ -66,6 +66,11 @@ describe ValidateMoabJob, type: :job do
                                                                           error_msg: a_string_matching(expected_str_regex))
     end
 
+    it 'sleeps' do
+      expect_any_instance_of(described_class).to receive(:sleep).with(Settings.filesystem_delay_seconds)
+      job.perform(druid)
+    end
+
     context 'when validation runs' do
       let(:expected_validation_err_regex) { /^Problem with Moab validation run on .*#{error_regex_str}.*/ }
 

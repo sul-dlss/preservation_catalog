@@ -46,8 +46,7 @@ api_jwt:
   hmac_secret: 'my$ecretK3y'
 
 # we expect/hope that this will not stay around forever.  see usage for further explanation.
-hacks:
-  zipmaker_delay_seconds: 0.05 # the default value is artificially low to keep test suite fast -- should override to be many seconds in prod
+filesystem_delay_seconds: 0.05 # the default value is artificially low to keep test suite fast -- should override to be many seconds in prod
 
 rabbitmq:
   hostname: localhost

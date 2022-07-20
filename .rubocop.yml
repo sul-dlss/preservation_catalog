@@ -41,6 +41,12 @@ Naming/FileName:
     - 'Capfile'
     - 'Gemfile'
 
+RSpec/AnyInstance:
+  Enabled: true
+  Exclude:
+    - 'spec/jobs/validate_moab_job_spec.rb'
+    - 'spec/jobs/zipmaker_job_spec.rb'
+
 RSpec/ContextWording:
   Enabled: false # too dogmatic
 
