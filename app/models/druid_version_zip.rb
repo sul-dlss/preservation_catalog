@@ -148,10 +148,8 @@ class DruidVersionZip
     "zip -r0X -s #{zip_split_size} #{file_path} #{druid.id}/#{v_version}"
   end
 
-  # We presume the system guts do not change underneath a given class instance.
-  # We want to avoid shelling out (forking) unnecessarily, just for the version.
   def zip_version
-    @@zip_version ||= fetch_zip_version # rubocop:disable Style/ClassVars
+    @zip_version ||= fetch_zip_version
   end
 
   # @return [Pathname]
