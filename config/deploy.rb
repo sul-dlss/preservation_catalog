@@ -16,8 +16,8 @@ set :deploy_to, "/opt/app/pres/#{fetch(:application)}"
 # These are the defaults.
 # set :format_options, command_output: true, log_file: "log/capistrano.log", color: :auto, truncate: :auto
 
-# Default value for :pty is false
-# set :pty, true
+# for ubuntu to perform resque:pool:hot_swap
+set :pty, true
 
 # Default value for :linked_files is []
 append :linked_files, 'config/database.yml', 'config/resque.yml', 'config/resque-pool.yml', 'tmp/resque-pool.lock'
