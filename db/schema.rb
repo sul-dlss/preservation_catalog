@@ -10,8 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_10_18_143200) do
-
+ActiveRecord::Schema[7.0].define(version: 2022_10_18_143200) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -19,13 +18,13 @@ ActiveRecord::Schema.define(version: 2022_10_18_143200) do
     t.integer "version", null: false
     t.bigint "preserved_object_id", null: false
     t.bigint "moab_storage_root_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.datetime "last_moab_validation"
-    t.datetime "last_checksum_validation"
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
+    t.datetime "last_moab_validation", precision: nil
+    t.datetime "last_checksum_validation", precision: nil
     t.bigint "size"
     t.integer "status", null: false
-    t.datetime "last_version_audit"
+    t.datetime "last_version_audit", precision: nil
     t.string "status_details"
     t.bigint "from_moab_storage_root_id"
     t.index ["created_at"], name: "index_complete_moabs_on_created_at"
@@ -43,8 +42,8 @@ ActiveRecord::Schema.define(version: 2022_10_18_143200) do
 
   create_table "moab_storage_roots", force: :cascade do |t|
     t.string "name", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.string "storage_location", null: false
     t.index ["name"], name: "index_moab_storage_roots_on_name", unique: true
     t.index ["storage_location"], name: "index_moab_storage_roots_on_storage_location", unique: true
@@ -74,10 +73,10 @@ ActiveRecord::Schema.define(version: 2022_10_18_143200) do
   create_table "preserved_objects", force: :cascade do |t|
     t.string "druid", null: false
     t.integer "current_version", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.bigint "preservation_policy_id", null: false
-    t.datetime "last_archive_audit"
+    t.datetime "last_archive_audit", precision: nil
     t.boolean "robot_versioning_allowed", default: true, null: false
     t.index ["created_at"], name: "index_preserved_objects_on_created_at"
     t.index ["druid"], name: "index_preserved_objects_on_druid", unique: true
@@ -89,8 +88,8 @@ ActiveRecord::Schema.define(version: 2022_10_18_143200) do
   create_table "preserved_objects_primary_moabs", force: :cascade do |t|
     t.bigint "preserved_object_id", null: false
     t.bigint "complete_moab_id", null: false
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.index ["complete_moab_id"], name: "index_preserved_objects_primary_moabs_on_complete_moab_id", unique: true
     t.index ["preserved_object_id"], name: "index_preserved_objects_primary_moabs_on_preserved_object_id", unique: true
   end
@@ -100,23 +99,23 @@ ActiveRecord::Schema.define(version: 2022_10_18_143200) do
     t.integer "delivery_class", null: false
     t.string "endpoint_node"
     t.string "storage_location"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.index ["endpoint_name"], name: "index_zip_endpoints_on_endpoint_name", unique: true
   end
 
   create_table "zip_parts", force: :cascade do |t|
     t.bigint "size"
     t.bigint "zipped_moab_version_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.string "md5", null: false
     t.string "create_info", null: false
     t.integer "parts_count", null: false
     t.string "suffix", null: false
     t.integer "status", default: 1, null: false
-    t.datetime "last_existence_check"
-    t.datetime "last_checksum_validation"
+    t.datetime "last_existence_check", precision: nil
+    t.datetime "last_checksum_validation", precision: nil
     t.index ["zipped_moab_version_id", "suffix"], name: "index_zip_parts_on_zipped_moab_version_id_and_suffix", unique: true
     t.index ["zipped_moab_version_id"], name: "index_zip_parts_on_zipped_moab_version_id"
   end
@@ -124,8 +123,8 @@ ActiveRecord::Schema.define(version: 2022_10_18_143200) do
   create_table "zipped_moab_versions", force: :cascade do |t|
     t.integer "version", null: false
     t.bigint "zip_endpoint_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.bigint "preserved_object_id", null: false
     t.index ["preserved_object_id", "zip_endpoint_id", "version"], name: "index_unique_on_zipped_moab_versions", unique: true
     t.index ["preserved_object_id"], name: "index_zipped_moab_versions_on_preserved_object_id"
