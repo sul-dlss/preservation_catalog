@@ -5,7 +5,7 @@ gem 'aws-sdk-s3', '~> 1.17'
 gem 'committee' # Validates HTTP requests/responses per OpenAPI specification
 gem 'config' # Settings to manage configs on different instances
 gem 'dor-event-client', '~> 1.0'
-gem 'dor-workflow-client', '~> 4.0' # audit errors are reported to the workflow service
+gem 'dor-workflow-client', '~> 5.0' # audit errors are reported to the workflow service
 gem 'honeybadger' # for error reporting / tracking / notifications
 gem 'jbuilder', '~> 2.5' # Build JSON APIs with ease.
 gem 'jwt' # for gating programmatic access to the application
