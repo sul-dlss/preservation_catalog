@@ -19,6 +19,7 @@ gem 'pry-rails' # use pry as the rails console shell instead of IRB
 gem 'puma', '~> 5.5' # app server
 gem 'rails', '~> 6.1.0'
 gem 'resque', '~> 1.27'
+gem 'redis', '~> 4.0' # redis 5.x has breaking changes with resque, see https://github.com/resque/resque/issues/1821
 gem 'resque-pool'
 gem 'whenever' # manage cron for audit checks
 
