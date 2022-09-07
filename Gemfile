@@ -15,7 +15,7 @@ gem 'pg' # postgres database
 gem 'postgresql_cursor' # for paging over large result sets efficiently
 # pry is useful for debugging, even in prod
 gem 'pry-byebug' # call 'binding.pry' anywhere in the code to stop execution and get a pry-byebug console
-gem 'pry-rails' # use pry as the rails console shell instead of IRB
+gem 'pry' # make it possible to use pry for IRB
 gem 'puma', '~> 5.5' # app server
 gem 'rails', '~> 6.1.0'
 gem 'resque', '~> 1.27'
