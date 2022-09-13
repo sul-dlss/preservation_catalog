@@ -27,10 +27,6 @@ append :linked_dirs, 'log', 'config/settings', 'tmp/pids'
 
 set :honeybadger_env, fetch(:stage)
 
-# the honeybadger gem should integrate automatically with capistrano-rvm but it
-# doesn't appear to do so on our new Ubuntu boxes :shrug:
-set :rvm_map_bins, fetch(:rvm_map_bins, []).push('honeybadger')
-
 set :whenever_identifier, -> { "#{fetch(:application)}_#{fetch(:stage)}" }
 
 set :resque_server_roles, :resque
