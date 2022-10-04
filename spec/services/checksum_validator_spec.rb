@@ -154,8 +154,8 @@ RSpec.describe ChecksumValidator do
       end
 
       it 'updates audit timestamps' do
-        expect(comp_moab.last_moab_validation).to be nil
-        expect(comp_moab.last_version_audit).to be nil
+        expect(comp_moab.last_moab_validation).to be_nil
+        expect(comp_moab.last_version_audit).to be_nil
         approximate_validation_time = Time.current
         cv.validate_checksums
         expect(comp_moab.last_moab_validation).to be > approximate_validation_time
@@ -329,12 +329,12 @@ RSpec.describe ChecksumValidator do
 
       it 'has a result code indicating the update failed' do
         cv.validate_checksums
-        expect(cv.results.contains_result_code?(AuditResults::DB_UPDATE_FAILED)).to eq true
+        expect(cv.results.contains_result_code?(AuditResults::DB_UPDATE_FAILED)).to be true
       end
 
       it 'does not have a result code indicating the update happened' do
         cv.validate_checksums
-        expect(cv.results.contains_result_code?(AuditResults::CM_STATUS_CHANGED)).to eq false
+        expect(cv.results.contains_result_code?(AuditResults::CM_STATUS_CHANGED)).to be false
       end
     end
   end

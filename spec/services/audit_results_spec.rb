@@ -76,7 +76,7 @@ RSpec.describe AuditResults do
   end
 
   describe '#add_result' do
-    it 'adds a hash entry to the result_array' do
+    it 'can take a single result code argument and adds a hash entry to the result_array' do
       expect(audit_results.result_array.size).to eq 0
       code = AuditResults::CM_PO_VERSION_MISMATCH
       addl_hash = { cm_version: 1, po_version: 2 }
@@ -84,10 +84,6 @@ RSpec.describe AuditResults do
       expect(audit_results.result_array.size).to eq 1
       exp_msg = AuditResults::RESPONSE_CODE_TO_MESSAGES[code] % addl_hash
       expect(audit_results.result_array.first).to eq code => exp_msg
-    end
-
-    it 'can take a single result code argument' do
-      # see above
     end
 
     it 'can take a second msg_args argument' do
@@ -136,8 +132,8 @@ RSpec.describe AuditResults do
       added_code = AuditResults::CM_PO_VERSION_MISMATCH
       other_code = AuditResults::VERSION_MATCHES
       audit_results.add_result(added_code, cm_version: 1, po_version: 2)
-      expect(audit_results.contains_result_code?(added_code)).to eq true
-      expect(audit_results.contains_result_code?(other_code)).to eq false
+      expect(audit_results.contains_result_code?(added_code)).to be true
+      expect(audit_results.contains_result_code?(other_code)).to be false
     end
   end
 
@@ -174,13 +170,13 @@ RSpec.describe AuditResults do
     it 'returns true if the new status is ok' do
       added_code = AuditResults::CM_STATUS_CHANGED
       audit_results.add_result(added_code, old_status: 'invalid_checksum', new_status: 'ok')
-      expect(audit_results.status_changed_to_ok?(audit_results.result_array.first)).to eq true
+      expect(audit_results.status_changed_to_ok?(audit_results.result_array.first)).to be true
     end
 
     it 'returns false if the new status is not ok' do
       added_code = AuditResults::CM_STATUS_CHANGED
       audit_results.add_result(added_code, old_status: 'invalid_checksum', new_status: 'invalid_moab')
-      expect(audit_results.status_changed_to_ok?(audit_results.result_array.first)).to eq false
+      expect(audit_results.status_changed_to_ok?(audit_results.result_array.first)).to be false
     end
   end
 

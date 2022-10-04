@@ -55,7 +55,7 @@ RSpec.describe MoabStorageRootReporter do
       ]
     end
 
-    let(:default_filepath) { File.join(Rails.root, 'log', 'reports') }
+    let(:default_filepath) { Rails.root.join('log', 'reports') }
 
     after do
       next unless FileTest.exist?(default_filepath)
@@ -88,7 +88,7 @@ RSpec.describe MoabStorageRootReporter do
       expect(csv_filename).to eq(alternate_filename)
       expect(CSV.read(csv_filename)).to eq(csv_lines)
     ensure
-      File.unlink(alternate_filename) if FileTest.exist?(alternate_filename)
+      File.unlink(alternate_filename)
     end
 
     it 'raises an error if the intended file name is already in use' do

@@ -83,7 +83,7 @@ class MoabStorageRootReporter
   private
 
   def default_filepath
-    File.join(Rails.root, 'log', 'reports')
+    Rails.root.join('log', 'reports')
   end
 
   def moab_storage_root_name(msr_id)
@@ -114,6 +114,6 @@ class MoabStorageRootReporter
   def ensure_containing_dir(filename)
     basename_len = File.basename(filename).length
     filepath_str = filename[0..-(basename_len + 1)] # add 1 to basename_len because ending at -1 gets the whole string
-    FileUtils.mkdir_p(filepath_str) unless FileTest.exist?(filepath_str)
+    FileUtils.mkdir_p(filepath_str)
   end
 end

@@ -26,7 +26,7 @@ RSpec.describe Audit::CatalogToMoab do
   let(:exp_details_prefix) { 'check_catalog_version (actual location: fixture_sr1; ' }
   let(:hb_exp_msg) do
     'check_catalog_version\\(bj102hs9687, fixture_sr1\\)' \
-      ' db CompleteMoab \\(created .*Z; last updated .*Z\\) exists but Moab not found'
+      'db CompleteMoab \\(created .*Z; last updated .*Z\\) exists but Moab not found'
   end
   let(:audit_workflow_reporter) { instance_double(Reporters::AuditWorkflowReporter, report_errors: nil) }
   let(:event_service_reporter) { instance_double(Reporters::EventServiceReporter, report_errors: nil) }
@@ -296,7 +296,7 @@ RSpec.describe Audit::CatalogToMoab do
           end
 
           it 'has an AuditResults entry indicating inability to check the given status' do
-            expect(c2m.results.contains_result_code?(AuditResults::UNABLE_TO_CHECK_STATUS)).to eq true
+            expect(c2m.results.contains_result_code?(AuditResults::UNABLE_TO_CHECK_STATUS)).to be true
           end
         end
       end
@@ -418,7 +418,7 @@ RSpec.describe Audit::CatalogToMoab do
 
           it 'has an AuditResults entry indicating inability to check the given status' do
             c2m.check_catalog_version
-            expect(c2m.results.contains_result_code?(AuditResults::UNABLE_TO_CHECK_STATUS)).to eq true
+            expect(c2m.results.contains_result_code?(AuditResults::UNABLE_TO_CHECK_STATUS)).to be true
           end
         end
       end
@@ -611,7 +611,7 @@ RSpec.describe Audit::CatalogToMoab do
 
           it 'has an AuditResults entry indicating inability to check the given status' do
             c2m.check_catalog_version
-            expect(c2m.results.contains_result_code?(AuditResults::UNABLE_TO_CHECK_STATUS)).to eq true
+            expect(c2m.results.contains_result_code?(AuditResults::UNABLE_TO_CHECK_STATUS)).to be true
           end
         end
       end

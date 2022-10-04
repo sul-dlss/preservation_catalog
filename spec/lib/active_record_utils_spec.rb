@@ -14,7 +14,7 @@ RSpec.describe ActiveRecordUtils do
       tx_result = described_class.with_transaction_and_rescue(audit_results) do
         MoabStorageRoot.count
       end
-      expect(tx_result).to eq true
+      expect(tx_result).to be true
     end
 
     it 'adds DB_OBJ_DOES_NOT_EXIST result and returns false when the transaction raises RecordNotFound' do
@@ -24,7 +24,7 @@ RSpec.describe ActiveRecordUtils do
       tx_result = described_class.with_transaction_and_rescue(audit_results) do
         MoabStorageRoot.find(-1)
       end
-      expect(tx_result).to eq false
+      expect(tx_result).to be false
     end
 
     it 'adds DB_UPDATE_FAILED result and returns false when the transaction raises ActiveRecordError' do
@@ -34,7 +34,7 @@ RSpec.describe ActiveRecordUtils do
       tx_result = described_class.with_transaction_and_rescue(audit_results) do
         PreservationPolicy.default_policy.delete
       end
-      expect(tx_result).to eq false
+      expect(tx_result).to be false
     end
 
     it 'lets an unexpected error bubble up' do

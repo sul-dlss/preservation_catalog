@@ -180,7 +180,7 @@ RSpec.describe PreservedObject, type: :model do
       it 'returns nil and does not attempt to replicate' do
         expect(ZipEndpoint).not_to receive(:which_need_archive_copy)
         expect(ZipmakerJob).not_to receive(:perform_later)
-        expect(preserved_object.create_zipped_moab_versions!).to eq nil
+        expect(preserved_object.create_zipped_moab_versions!).to be_nil
       end
     end
   end

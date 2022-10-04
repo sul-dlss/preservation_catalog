@@ -51,10 +51,10 @@ class CompleteMoab < ApplicationRecord
   scope :fixity_check_expired, lambda {
     joins(:preserved_object)
       .joins(
-        'INNER JOIN preservation_policies'\
-        ' ON preservation_policies.id = preserved_objects.preservation_policy_id'\
-        ' AND (last_checksum_validation + (fixity_ttl * INTERVAL \'1 SECOND\')) < CURRENT_TIMESTAMP'\
-        ' OR last_checksum_validation IS NULL'
+        'INNER JOIN preservation_policies ' \
+        'ON preservation_policies.id = preserved_objects.preservation_policy_id ' \
+        'AND (last_checksum_validation + (fixity_ttl * INTERVAL \'1 SECOND\')) < CURRENT_TIMESTAMP ' \
+        'OR last_checksum_validation IS NULL'
       )
   }
 

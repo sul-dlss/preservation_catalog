@@ -38,7 +38,7 @@ class ApplicationController < ActionController::API
   def decode_bearer_token!
     token = bearer_token
     body = JWT.decode(token, Settings.api_jwt.hmac_secret, true, algorithm: 'HS512').first
-    HashWithIndifferentAccess.new body
+    ActiveSupport::HashWithIndifferentAccess.new body
   end
 
   def bearer_token

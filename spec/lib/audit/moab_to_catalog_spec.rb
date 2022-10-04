@@ -72,8 +72,8 @@ RSpec.describe Audit::MoabToCatalog do
     end
 
     it 'calls CompleteMoabHandler.check_existence' do
-      complete_moab_handler = instance_double('CompleteMoabHandler')
-      complete_moab_handler_a = instance_double('CompleteMoabHandler')
+      complete_moab_handler = instance_double(CompleteMoabHandler)
+      complete_moab_handler_a = instance_double(CompleteMoabHandler)
       expect(CompleteMoabHandler).to receive(:new).with(
         druid,
         3, # current_version
@@ -144,7 +144,7 @@ RSpec.describe Audit::MoabToCatalog do
 
       before do
         expected_argument_list.each do |arg_hash|
-          complete_moab_handler = instance_double('CompleteMoabHandler')
+          complete_moab_handler = instance_double(CompleteMoabHandler)
           arg_hash[:complete_moab_handler] = complete_moab_handler
           allow(CompleteMoabHandler).to receive(:new).with(
             arg_hash[:druid],

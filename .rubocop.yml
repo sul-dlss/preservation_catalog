@@ -19,7 +19,6 @@ AllCops:
     - 'db/**/*'
     - 'vendor/**/*'
 
-
 # customizations
 Bundler/OrderedGems:
   Exclude:
@@ -51,8 +50,8 @@ RSpec/ContextWording:
   Enabled: false # too dogmatic
 
 RSpec/DescribeClass:
-    Exclude:
-      - 'spec/requests/auth_spec.rb' # technically testing ApplicationController, but rubocop complains even if you provide that
+  Exclude:
+    - 'spec/requests/auth_spec.rb' # technically testing ApplicationController, but rubocop complains even if you provide that
 
 RSpec/ExampleLength:
   Max: 29
@@ -107,7 +106,6 @@ Style/SymbolProc:
 
 Style/WordArray:
   Enabled: false # Naomi hates this rule;  "precious" ruby syntax
-
 
 # defaults
 Layout/BeginEndAlignment: # (new in 0.91)
@@ -383,4 +381,91 @@ Rails/RedundantPresenceValidationOnBelongsTo: # new in 2.13
 Rails/RootJoinChain: # new in 2.13
   Enabled: true
 RSpec/FactoryBot/SyntaxMethods: # new in 2.7
+  Enabled: true
+
+Layout/LineContinuationLeadingSpace: # new in 1.31
+  Enabled: true
+Layout/LineContinuationSpacing: # new in 1.31
+  Enabled: true
+Lint/ConstantOverwrittenInRescue: # new in 1.31
+  Enabled: true
+Lint/NonAtomicFileOperation: # new in 1.31
+  Enabled: true
+Lint/RefinementImportMethods: # new in 1.27
+  Enabled: true
+Lint/RequireRangeParentheses: # new in 1.32
+  Enabled: true
+Security/CompoundHash: # new in 1.28
+  Enabled: true
+Style/EmptyHeredoc: # new in 1.32
+  Enabled: true
+Style/EnvHome: # new in 1.29
+  Enabled: true
+Style/FetchEnvVar: # new in 1.28
+  Enabled: true
+Style/MagicCommentFormat: # new in 1.35
+  Enabled: true
+Style/MapCompactWithConditionalBlock: # new in 1.30
+  Enabled: true
+Style/NestedFileDirname: # new in 1.26
+  Enabled: true
+Style/ObjectThen: # new in 1.28
+  Enabled: true
+Style/RedundantInitialize: # new in 1.27
+  Enabled: true
+Rails/ActionControllerFlashBeforeRender: # new in 2.16
+  Enabled: true
+Rails/ActionControllerTestCase: # new in 2.14
+  Enabled: true
+Rails/ActiveSupportOnLoad: # new in 2.16
+  Enabled: true
+Rails/DeprecatedActiveModelErrorsMethods: # new in 2.14
+  Enabled: true
+Rails/DotSeparatedKeys: # new in 2.15
+  Enabled: true
+Rails/DuplicateAssociation: # new in 2.14
+  Enabled: true
+Rails/DuplicateScope: # new in 2.14
+  Enabled: true
+Rails/FreezeTime: # new in 2.16
+  Enabled: true
+Rails/I18nLazyLookup: # new in 2.14
+  Enabled: true
+Rails/I18nLocaleTexts: # new in 2.14
+  Enabled: true
+Rails/MigrationClassName: # new in 2.14
+  Enabled: true
+Rails/RootPathnameMethods: # new in 2.16
+  Enabled: true
+Rails/RootPublicPath: # new in 2.15
+  Enabled: true
+Rails/StripHeredoc: # new in 2.15
+  Enabled: true
+Rails/ToFormattedS: # new in 2.15
+  Enabled: true
+Rails/ToSWithArgument: # new in 2.16
+  Enabled: true
+Rails/TopLevelHashWithIndifferentAccess: # new in 2.16
+  Enabled: true
+Rails/TransactionExitStatement: # new in 2.14
+  Enabled: true
+Rails/WhereMissing: # new in 2.16
+  Enabled: true
+RSpec/BeEq: # new in 2.9.0
+  Enabled: true
+RSpec/BeNil: # new in 2.9.0
+  Enabled: true
+RSpec/ChangeByZero: # new in 2.11
+  Enabled: true
+RSpec/ClassCheck: # new in 2.13
+  Enabled: true
+RSpec/NoExpectationExample: # new in 2.13
+  Enabled: true
+RSpec/VerifiedDoubleReference: # new in 2.10.0
+  Enabled: true
+RSpec/Capybara/SpecificFinders: # new in 2.13
+  Enabled: true
+RSpec/Capybara/SpecificMatcher: # new in 2.12
+  Enabled: true
+RSpec/Rails/HaveHttpStatus: # new in 2.12
   Enabled: true
