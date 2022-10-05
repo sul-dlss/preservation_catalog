@@ -85,7 +85,7 @@ RSpec.shared_examples 's3 audit' do |provider_class, bucket_name, check_name, en
           .from(nil)
           .and change { part3.reload.last_checksum_validation }
           .from(nil)
-        expect(part1.reload.last_checksum_validation).to be nil
+        expect(part1.reload.last_checksum_validation).to be_nil
       end
 
       it 'leaves unfound unreplicated parts and found ok in their respective current statuses' do
@@ -206,8 +206,8 @@ RSpec.shared_examples 's3 audit' do |provider_class, bucket_name, check_name, en
       it 'logs the mismatches' do
         described_class.check_replicated_zipped_moab_version(zmv, results)
         zmv.zip_parts.where(suffix: ['.zip', '.z01']).each do |part|
-          msg = "replicated md5 mismatch on #{endpoint_name}: #{part.s3_key} catalog md5 (#{part.md5})"\
-                " doesn't match the replicated md5 (#{non_matching_md5}) on #{bucket_name}"
+          msg = "replicated md5 mismatch on #{endpoint_name}: #{part.s3_key} catalog md5 (#{part.md5}) " \
+                "doesn't match the replicated md5 (#{non_matching_md5}) on #{bucket_name}"
           expect(results.result_array).to include(a_hash_including(AuditResults::ZIP_PART_CHECKSUM_MISMATCH => msg))
         end
       end
@@ -305,7 +305,7 @@ RSpec.shared_examples 's3 audit' do |provider_class, bucket_name, check_name, en
 
       it 'logs the checksum mismatches' do
         part = zmv.zip_parts.second
-        msg = "replicated md5 mismatch on #{endpoint_name}: #{part.s3_key} catalog md5 (#{part.md5}) "\
+        msg = "replicated md5 mismatch on #{endpoint_name}: #{part.s3_key} catalog md5 (#{part.md5}) " \
               "doesn't match the replicated md5 (#{non_matching_md5}) on #{bucket_name}"
         described_class.check_replicated_zipped_moab_version(zmv, results)
         expect(results.result_array).to include(a_hash_including(AuditResults::ZIP_PART_CHECKSUM_MISMATCH => msg))

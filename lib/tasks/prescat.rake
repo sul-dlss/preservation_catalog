@@ -33,7 +33,7 @@ namespace :prescat do
 
     migration_service = StorageRootMigrationService.new(args[:from], args[:to])
     timestamp_str = DateTime.now.utc.iso8601.gsub(':', '') # colons are a pain to deal with on CLI, so just remove them
-    filename = File.join(Rails.root, 'log', "migrate_moabs_from_#{args[:from]}_to_#{args[:to]}_#{timestamp_str}.csv")
+    filename = Rails.root.join('log', "migrate_moabs_from_#{args[:from]}_to_#{args[:to]}_#{timestamp_str}.csv")
     count = 0
     CSV.open(filename, 'w') do |csv|
       csv << ['druid']

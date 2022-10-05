@@ -22,8 +22,8 @@ class ObjectsController < ApplicationController
     if ValidateMoabJob.perform_later(druid)
       render(plain: 'ok', status: :ok)
     else
-      err_msg = "Failed to enqueue ValidateMoabJob for #{druid}. "\
-                'The most likely cause is that the job was already enqueued and is waiting to be picked up. '\
+      err_msg = "Failed to enqueue ValidateMoabJob for #{druid}. " \
+                'The most likely cause is that the job was already enqueued and is waiting to be picked up. ' \
                 'Retry later if appropriate.'
       render(plain: err_msg, status: :locked)
     end

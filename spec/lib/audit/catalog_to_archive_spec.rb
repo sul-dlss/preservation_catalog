@@ -82,8 +82,8 @@ RSpec.describe Audit::CatalogToArchive do
 
     it 'logs the discrepancy' do
       described_class.check_child_zip_part_attributes(zmv, results)
-      msg = "#{result_prefix}: ZippedMoabVersion stated parts count"\
-            " (3) doesn't match actual number of zip parts rows (2)"
+      msg = "#{result_prefix}: ZippedMoabVersion stated parts count " \
+            "(3) doesn't match actual number of zip parts rows (2)"
       expect(results.result_array).to include(
         a_hash_including(AuditResults::ZIP_PARTS_COUNT_DIFFERS_FROM_ACTUAL => msg)
       )

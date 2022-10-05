@@ -340,7 +340,7 @@ RSpec.shared_examples 'cannot validate something with INVALID_CHECKSUM_STATUS' d
 
   it 'has an AuditResults entry indicating inability to check the given status' do
     complete_moab_handler.send(method_sym)
-    expect(complete_moab_handler.results.contains_result_code?(AuditResults::UNABLE_TO_CHECK_STATUS)).to eq true
+    expect(complete_moab_handler.results.contains_result_code?(AuditResults::UNABLE_TO_CHECK_STATUS)).to be true
   end
 end
 

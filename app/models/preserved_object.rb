@@ -25,7 +25,7 @@ class PreservedObject < ApplicationRecord
             format: { with: /(?!#{PREFIX_RE})#{DruidTools::Druid.pattern}/ } # ?! group is a *negative* match
   validates :current_version, presence: true, numericality: { only_integer: true, greater_than: 0 }
 
-  scope :without_complete_moabs, -> { left_outer_joins(:complete_moabs).where(complete_moabs: { id: nil }) }
+  scope :without_complete_moabs, -> { where.missing(:complete_moabs) }
 
   scope :archive_check_expired, lambda {
     joins(:preservation_policy)

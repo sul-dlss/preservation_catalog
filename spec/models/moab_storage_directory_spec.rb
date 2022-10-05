@@ -139,7 +139,7 @@ RSpec.describe MoabStorageDirectory do
 
     it 'passes a MatchData object as the third parameter to the block it gets' do
       described_class.find_moab_paths(storage_dir) do |_druid, _path, path_match_data|
-        expect(path_match_data).to be_a_kind_of(MatchData)
+        expect(path_match_data).to be_a(MatchData)
       end
     end
   end
