@@ -181,11 +181,11 @@ RSpec.describe CompleteMoab, type: :model do
     end
 
     describe '.least_recent_version_audit' do
-      it 'returns PreservedCopies with nils and PreservedCopies < given date (not orded by last_version_audit)' do
+      it 'returns CompleteMoabs with nils and CompleteMoabs < given date (not orded by last_version_audit)' do
         expect(described_class.least_recent_version_audit(now).sort).to eq [cm, newer_timestamp_cm, older_timestamp_cm]
       end
 
-      it 'returns no PreservedCopies with future timestamps' do
+      it 'returns no CompleteMoabs with future timestamps' do
         expect(described_class.least_recent_version_audit(now)).not_to include future_timestamp_cm
       end
     end
@@ -193,12 +193,12 @@ RSpec.describe CompleteMoab, type: :model do
     describe '.order_last_version_audit' do
       let(:least_recent_version) { described_class.least_recent_version_audit(now) }
 
-      it 'returns PreservedCopies with nils first, then old to new timestamps' do
+      it 'returns CompleteMoabs with nils first, then old to new timestamps' do
         expect(described_class.order_last_version_audit(least_recent_version))
           .to eq [cm, older_timestamp_cm, newer_timestamp_cm]
       end
 
-      it 'returns no PreservedCopies with future timestamps' do
+      it 'returns no CompleteMoabs with future timestamps' do
         expect(described_class.order_last_version_audit(least_recent_version))
           .not_to include future_timestamp_cm
       end
@@ -272,11 +272,11 @@ RSpec.describe CompleteMoab, type: :model do
     end
 
     describe '.fixity_check_expired' do
-      it 'returns PreservedCopies that need fixity check' do
+      it 'returns CompleteMoabs that need fixity check' do
         expect(described_class.fixity_check_expired.to_a.sort).to eq [cm, old_check_cm1, old_check_cm2]
       end
 
-      it 'returns no PreservedCopies with timestamps indicating still-valid fixity check' do
+      it 'returns no CompleteMoabs with timestamps indicating still-valid fixity check' do
         expect(described_class.fixity_check_expired).not_to include(recently_checked_cm1, recently_checked_cm2)
       end
     end
@@ -284,12 +284,12 @@ RSpec.describe CompleteMoab, type: :model do
     describe '.order_fixity_check_expired' do
       let(:fixity_check_expired) { described_class.fixity_check_expired }
 
-      it 'returns PreservedCopies that need fixity check, never checked first, then least-recently to most-recently' do
+      it 'returns CompleteMoabs that need fixity check, never checked first, then least-recently to most-recently' do
         expect(described_class.order_fixity_check_expired(fixity_check_expired).to_a)
           .to eq [cm, old_check_cm1, old_check_cm2]
       end
 
-      it 'returns no PreservedCopies with timestamps indicating still-valid fixity check' do
+      it 'returns no CompleteMoabs with timestamps indicating still-valid fixity check' do
         expect(described_class.order_fixity_check_expired(fixity_check_expired))
           .not_to include(recently_checked_cm1, recently_checked_cm2)
       end
