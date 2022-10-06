@@ -102,11 +102,11 @@ RSpec.describe PreservedObject, type: :model do
     end
 
     describe '.archive_check_expired' do
-      it 'returns PreservedCopies that need fixity check' do
+      it 'returns CompleteMoabs that need fixity check' do
         expect(described_class.archive_check_expired.to_a.sort).to eq [preserved_object, old_check_po1, old_check_po2]
       end
 
-      it 'returns no PreservedCopies with timestamps indicating still-valid fixity check' do
+      it 'returns no CompleteMoabs with timestamps indicating still-valid fixity check' do
         expect(described_class.archive_check_expired).not_to include(recently_checked_po1, recently_checked_po2)
       end
     end
