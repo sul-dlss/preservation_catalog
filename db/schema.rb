@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_06_29_232757) do
+ActiveRecord::Schema.define(version: 2022_10_04_215925) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -36,7 +36,7 @@ ActiveRecord::Schema.define(version: 2020_06_29_232757) do
     t.index ["moab_storage_root_id"], name: "index_complete_moabs_on_moab_storage_root_id"
     t.index ["preserved_object_id", "moab_storage_root_id", "version"], name: "index_preserved_copies_on_po_and_storage_root_and_version", unique: true
     t.index ["preserved_object_id", "moab_storage_root_id"], name: "index_complete_moab_on_po_and_storage_root_id", unique: true
-    t.index ["preserved_object_id"], name: "index_complete_moabs_on_preserved_object_id"
+    t.index ["preserved_object_id"], name: "index_complete_moabs_on_preserved_object_id", unique: true
     t.index ["status"], name: "index_complete_moabs_on_status"
     t.index ["updated_at"], name: "index_complete_moabs_on_updated_at"
   end

@@ -11,11 +11,7 @@ RSpec.describe CompleteMoabHandler do
   let!(:default_prez_policy) { PreservationPolicy.default_policy }
   let(:po) { PreservedObject.find_by(druid: druid) }
   let(:ms_root) { MoabStorageRoot.find_by(storage_location: 'spec/fixtures/storage_root01/sdr2objects') }
-  let(:cm) {
-    # Adds new complete moab with the same druid to confirm that tests pass
-    create(:complete_moab, preserved_object: po, moab_storage_root: create(:moab_storage_root))
-    CompleteMoab.find_by(preserved_object: po, moab_storage_root: ms_root)
-  }
+  let(:cm) { CompleteMoab.find_by(preserved_object: po, moab_storage_root: ms_root) }
   let(:complete_moab_handler) { described_class.new(druid, incoming_version, incoming_size, ms_root) }
   let(:logger_reporter) { instance_double(Reporters::LoggerReporter, report_errors: nil) }
   let(:honeybadger_reporter) { instance_double(Reporters::HoneybadgerReporter, report_errors: nil) }
