@@ -21,9 +21,10 @@ RSpec.describe CompleteMoab, type: :model do
   let(:now) { Time.now.utc }
 
   it 'is not valid without all required valid attributes' do
+    po = create(:preserved_object)
     expect(described_class.new).not_to be_valid
-    expect(described_class.new(preserved_object_id: preserved_object.id)).not_to be_valid
-    expect(described_class.new(args.merge(moab_storage_root_id: MoabStorageRoot.first.id, size: 1))).to be_valid
+    expect(described_class.new(preserved_object_id: po.id)).not_to be_valid
+    expect(described_class.new(args.merge(preserved_object_id: po.id, moab_storage_root_id: MoabStorageRoot.first.id, size: 1))).to be_valid
   end
 
   it 'defines a status enum with the expected values' do
@@ -132,52 +133,54 @@ RSpec.describe CompleteMoab, type: :model do
   describe '#migrate_moab' do
     let(:target_storage_root) { create(:moab_storage_root) }
     let(:yesterday) { now - 1.day }
-    let(:cm) do
+    let(:migrate_cm) do
       # pretend we're moving a nice recently validated moab
       create(
         :complete_moab,
-        args.merge(
+        {
+          preserved_object: create(:preserved_object),
           status: 'ok',
+          version: 1,
           status_details: 'status now ok',
           last_moab_validation: yesterday,
           last_checksum_validation: yesterday,
           last_version_audit: yesterday
-        )
+        }
       )
     end
 
     it 'updates the current storage root, records the old one, and clears audit info' do
-      expect(cm.from_moab_storage_root).to be_nil
-      orig_storage_root = cm.moab_storage_root
+      expect(migrate_cm.from_moab_storage_root).to be_nil
+      orig_storage_root = migrate_cm.moab_storage_root
 
-      cm.migrate_moab(target_storage_root).save!
-      cm.reload
+      migrate_cm.migrate_moab(target_storage_root).save!
+      migrate_cm.reload
 
-      expect(cm.moab_storage_root).to eq(target_storage_root)
-      expect(cm.from_moab_storage_root).to eq(orig_storage_root)
-      expect(cm.status).to eq('validity_unknown')
-      expect(cm.status_details).to be_nil
-      expect(cm.last_moab_validation).to be_nil
-      expect(cm.last_checksum_validation).to be_nil
-      expect(cm.last_version_audit).to be_nil
+      expect(migrate_cm.moab_storage_root).to eq(target_storage_root)
+      expect(migrate_cm.from_moab_storage_root).to eq(orig_storage_root)
+      expect(migrate_cm.status).to eq('validity_unknown')
+      expect(migrate_cm.status_details).to be_nil
+      expect(migrate_cm.last_moab_validation).to be_nil
+      expect(migrate_cm.last_checksum_validation).to be_nil
+      expect(migrate_cm.last_version_audit).to be_nil
     end
 
     it 'queues a checksum validation job' do
       allow(ChecksumValidationJob).to receive(:perform_later).with(cm)
-      cm.migrate_moab(target_storage_root).save!
+      migrate_cm.migrate_moab(target_storage_root).save!
       expect(ChecksumValidationJob).to have_received(:perform_later).with(cm)
     end
   end
 
   context 'ordered (by last version_audited) and unordered least_recent_version_audit' do
     let!(:newer_timestamp_cm) do
-      create(:complete_moab, args.merge(version: 6, last_version_audit: (now - 1.day)))
+      create(:complete_moab, args.merge(version: 6, last_version_audit: (now - 1.day), preserved_object: create(:preserved_object)))
     end
     let!(:older_timestamp_cm) do
-      create(:complete_moab, args.merge(version: 7, last_version_audit: (now - 2.days)))
+      create(:complete_moab, args.merge(version: 7, last_version_audit: (now - 2.days), preserved_object: create(:preserved_object)))
     end
     let!(:future_timestamp_cm) do
-      create(:complete_moab, args.merge(version: 8, last_version_audit: (now + 1.day)))
+      create(:complete_moab, args.merge(version: 8, last_version_audit: (now + 1.day), preserved_object: create(:preserved_object)))
     end
 
     describe '.least_recent_version_audit' do
@@ -259,16 +262,24 @@ RSpec.describe CompleteMoab, type: :model do
   context 'ordered (by fixity_check_expired) and unordered fixity_check_expired methods' do
     let(:fixity_ttl) { preserved_object.preservation_policy.fixity_ttl }
     let!(:old_check_cm1) do
-      create(:complete_moab, args.merge(version: 6, last_checksum_validation: now - (fixity_ttl * 2)))
+      create(:complete_moab, args.merge(version: 6,
+                                        last_checksum_validation: now - (fixity_ttl * 2),
+                                        preserved_object: create(:preserved_object)))
     end
     let!(:old_check_cm2) do
-      create(:complete_moab, args.merge(version: 7, last_checksum_validation: now - fixity_ttl - 1.second))
+      create(:complete_moab, args.merge(version: 7,
+                                        last_checksum_validation: now - fixity_ttl - 1.second,
+                                        preserved_object: create(:preserved_object)))
     end
     let!(:recently_checked_cm1) do
-      create(:complete_moab, args.merge(version: 8, last_checksum_validation: now - fixity_ttl + 1.second))
+      create(:complete_moab, args.merge(version: 8,
+                                        last_checksum_validation: now - fixity_ttl + 1.second,
+                                        preserved_object: create(:preserved_object)))
     end
     let!(:recently_checked_cm2) do
-      create(:complete_moab, args.merge(version: 9, last_checksum_validation: now - (fixity_ttl * 0.1)))
+      create(:complete_moab, args.merge(version: 9,
+                                        last_checksum_validation: now - (fixity_ttl * 0.1),
+                                        preserved_object: create(:preserved_object)))
     end
 
     describe '.fixity_check_expired' do
@@ -300,14 +311,14 @@ RSpec.describe CompleteMoab, type: :model do
     describe '.by_druid' do
       it 'returns the expected complete moabs' do
         expect(described_class.by_druid(druid).length).to eq 1
-        expect(described_class.by_druid('bj102hs9687')).to be_empty
+        expect(described_class.by_druid('bj102hs9687')).to be_empty # bj102hs9687 from preserved_object factory
       end
     end
 
     describe '.by_storage_root' do
       it 'returns the expected complete moab when chained with by_druid' do
+        expect(described_class.by_druid(druid).length).to eq 1
         expect(described_class.by_druid(druid).by_storage_root(cm.moab_storage_root).length).to eq 1
-        expect(described_class.by_druid(druid).by_storage_root(MoabStorageRoot.first)).to be_empty
       end
     end
   end
@@ -339,18 +350,6 @@ RSpec.describe CompleteMoab, type: :model do
       cm.ok! # object starts out with validity_unknown status
       expect(cm).to receive(:validate_checksums!)
       cm.validity_unknown!
-    end
-  end
-
-  describe 'Multiple moabs for a druid' do
-    let(:druid) { 'ab123cd4567' }
-    let(:preserved_object) { create(:preserved_object, druid: druid) }
-    let(:cm1) { create(:complete_moab, preserved_object: preserved_object) }
-    let(:cm2) { create(:complete_moab, preserved_object: preserved_object) }
-
-    it 'confirms multiple complete moabs have the same druid' do
-      expect(cm1).not_to equal(cm2)
-      expect(cm1.preserved_object.druid).to equal(cm2.preserved_object.druid)
     end
   end
 end

@@ -29,8 +29,6 @@ RSpec.describe CompleteMoabHandler do
       let(:cm_version) { po_current_version }
       let!(:po) { create(:preserved_object, druid: druid, current_version: po_current_version) }
       let!(:cm) do
-        # Adds new complete moab with the same druid to confirm that tests pass
-        create(:complete_moab, preserved_object: po, moab_storage_root: create(:moab_storage_root))
         create(:complete_moab, preserved_object: po, version: cm_version, moab_storage_root: ms_root) do |primary_cm|
           PreservedObjectsPrimaryMoab.create!(preserved_object: po, complete_moab: primary_cm)
         end

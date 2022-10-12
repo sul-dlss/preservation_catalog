@@ -145,10 +145,6 @@ RSpec.describe CatalogController, type: :controller do
     let(:comp_moab) do
       pres_obj.complete_moabs.find_by!(moab_storage_root: MoabStorageRoot.find_by!(name: 'fixture_sr1'))
     end
-    let!(:comp_moab_sr_a) do
-      # create a CompleteMoab record for the other moab we have for this druid, to confirm support for multiple copies of a moab
-      create(:complete_moab, preserved_object: pres_obj, version: 1, moab_storage_root: MoabStorageRoot.find_by!(name: 'fixture_srA'))
-    end
     let(:primary_moab) { comp_moab }
 
     before do
@@ -172,21 +168,6 @@ RSpec.describe CatalogController, type: :controller do
 
       it 'returns an ok response code' do
         expect(response).to have_http_status(:ok)
-      end
-
-      context 'updating a non-primary' do
-        let!(:pres_obj) { create(:preserved_object, druid: bare_druid, current_version: 1) } # as if the one on srA was always primary
-        let!(:comp_moab) { create(:complete_moab, preserved_object: pres_obj, version: 3) } # create fixture_sr1 record, not created w/ PO this case
-        let(:primary_moab) { comp_moab_sr_a } # but we're still doing PATCH on the fixture_sr1 moab
-
-        it 'updates CompleteMoab#version' do
-          pending('this is known to fail, because CMH does not update CompleteMoab if its version does not match parent PO#current_version')
-          expect(comp_moab.reload.version).to eq upd_version
-        end
-
-        it 'updates PreservedObject#current_version' do
-          expect(pres_obj.reload.current_version).to eq primary_moab.version
-        end
       end
     end
 

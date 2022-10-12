@@ -10,11 +10,7 @@ RSpec.describe CompleteMoabHandler do
   let(:incoming_size) { 9876 }
   let(:po) { PreservedObject.find_by!(druid: druid) }
   let(:ms_root) { MoabStorageRoot.find_by!(storage_location: 'spec/fixtures/storage_root01/sdr2objects') }
-  # Adds new complete moab with the same druid to confirm that tests pass
-  let(:cm) {
-    create(:complete_moab, preserved_object: po)
-    po.complete_moabs.find_by!(moab_storage_root: ms_root)
-  }
+  let(:cm) { po.complete_moabs.find_by!(moab_storage_root: ms_root) }
   let(:db_update_failed_prefix) { 'db update failed' }
   let(:complete_moab_handler) { described_class.new(druid, incoming_version, incoming_size, ms_root) }
   let(:moab_validator) { complete_moab_handler.send(:moab_validator) }
@@ -426,46 +422,6 @@ RSpec.describe CompleteMoabHandler do
           # but no associated CompleteMoab
 
           it_behaves_like 'CompleteMoab does not exist', :check_existence
-        end
-      end
-
-      context 'there are two moabs for the druid' do
-        let(:druid) { 'bz514sm9647' }
-        let(:msr_1) { MoabStorageRoot.find_by!(name: 'fixture_sr1') }
-        let(:msr_a) { MoabStorageRoot.find_by!(name: 'fixture_srA') }
-        let(:cm_1) { CompleteMoab.by_druid(druid).find_by!(moab_storage_root: msr_1) }
-        let(:cm_a) { CompleteMoab.by_druid(druid).find_by!(moab_storage_root: msr_a) }
-
-        context 'the one with the lower version is the primary' do
-          before do
-            described_class.new(druid, 3, 356, msr_1).check_existence # first added is primary by default
-            described_class.new(druid, 1, 232, msr_a).check_existence
-          end
-
-          it 'sets CompleteMoab#version to the version of the moab on that storage root' do
-            expect(cm_1.version).to eq 3
-            expect(cm_a.version).to eq 1
-          end
-
-          it 'sets PreservedObject#current_version to the highest version seen for the primary CompleteMoab' do
-            expect(po.current_version).to eq 3
-          end
-        end
-
-        context 'the one with the higher version is the primary' do
-          before do
-            described_class.new(druid, 1, 232, msr_a).check_existence # first added is primary by default
-            described_class.new(druid, 3, 356, msr_1).check_existence
-          end
-
-          it 'sets CompleteMoab#version to the version of the moab on that storage root' do
-            expect(cm_1.version).to eq 3
-            expect(cm_a.version).to eq 1
-          end
-
-          it 'sets PreservedObject#current_version to the highest version seen for the primary CompleteMoab' do
-            expect(po.current_version).to eq 1 # the copy that's behind is the primary -- this would be unusual, but just to define the behavior
-          end
         end
       end
 

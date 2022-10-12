@@ -3,7 +3,6 @@
 require 'rails_helper'
 
 RSpec.describe PreservedObject, type: :model do
-  # let!(:preservation_policy) { PreservationPolicy.default_policy }
   # let(:preservation_policy) { create(:preservation_policy, preservation_policy_name: 'large_dark_objects') }
   let(:preservation_policy) { PreservationPolicy.default_policy }
   let(:druid) { 'bc123df4567' }
@@ -116,9 +115,7 @@ RSpec.describe PreservedObject, type: :model do
     let!(:preserved_object) { create(:preserved_object, druid: druid, current_version: 3) }
     let(:current_version) { preserved_object.current_version }
     let!(:msr1) { create(:moab_storage_root) }
-    let!(:msr2) { create(:moab_storage_root) }
     let!(:cm1) { create(:complete_moab, preserved_object: preserved_object, version: current_version, moab_storage_root: msr1) }
-    let!(:cm2) { create(:complete_moab, preserved_object: preserved_object, version: current_version - 1, moab_storage_root: msr2) }
     let(:zmvs_by_druid) { ZippedMoabVersion.by_druid(druid) }
     let(:zip_endpoints) { preserved_object.preservation_policy.zip_endpoints }
     let!(:zip_ep) { zip_endpoints.first }
@@ -133,7 +130,6 @@ RSpec.describe PreservedObject, type: :model do
       expect(ZipmakerJob).to receive(:perform_later).with(preserved_object.druid, 1, cm1.moab_storage_root.storage_location)
       expect(ZipmakerJob).to receive(:perform_later).with(preserved_object.druid, 2, cm1.moab_storage_root.storage_location)
       expect(ZipmakerJob).to receive(:perform_later).with(preserved_object.druid, 3, cm1.moab_storage_root.storage_location)
-      expect(ZipmakerJob).not_to receive(:perform_later).with(anything, anything, cm2.moab_storage_root.storage_location)
       expect { preserved_object.create_zipped_moab_versions! }.to change {
         ZipEndpoint.which_need_archive_copy(druid, current_version).to_a.to_set
       }.from([zip_ep, zip_ep2].to_set).to([].to_set).and change {

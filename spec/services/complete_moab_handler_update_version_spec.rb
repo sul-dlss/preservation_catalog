@@ -12,11 +12,7 @@ RSpec.describe CompleteMoabHandler do
   let(:incoming_version) { 6 }
   let(:ms_root) { MoabStorageRoot.find_by(storage_location: 'spec/fixtures/storage_root01/sdr2objects') }
   let(:po) { PreservedObject.find_by(druid: druid) }
-  let(:cm) {
-    # Adds new complete moab with the same druid to confirm that tests pass
-    create(:complete_moab, preserved_object: po, moab_storage_root: create(:moab_storage_root))
-    complete_moab_handler.complete_moab
-  }
+  let(:cm) { complete_moab_handler.complete_moab }
   let(:complete_moab_handler) { described_class.new(druid, incoming_version, incoming_size, ms_root) }
   let(:logger_reporter) { instance_double(Reporters::LoggerReporter, report_errors: nil, report_completed: nil) }
   let(:honeybadger_reporter) { instance_double(Reporters::HoneybadgerReporter, report_errors: nil, report_completed: nil) }
@@ -34,9 +30,9 @@ RSpec.describe CompleteMoabHandler do
 
     context 'in Catalog' do
       before do
-        create(:preserved_object, druid: druid, current_version: 2, preservation_policy: default_prez_policy)
-        po.complete_moabs.create!(
-          version: po.current_version,
+        v2 = create(:preserved_object, druid: druid, current_version: 2, preservation_policy: default_prez_policy)
+        v2.complete_moabs.create!(
+          version: v2.current_version,
           size: 1,
           moab_storage_root: ms_root,
           status: 'ok', # pretending we checked for moab validation errs at create time
