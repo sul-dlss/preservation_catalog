@@ -177,12 +177,19 @@ RSpec.describe Audit::MoabToCatalog do
       expect(described_class.seed_catalog_for_dir(storage_dir).count).to eq 3
     end
 
-    it 'works even if there is already a CompleteMoab for the druid' do
+    it 'will not ingest a CompleteMoab for a druid that has already been cataloged' do
       expect(CompleteMoab.by_druid(druid).count).to eq 0
       expect(described_class.seed_catalog_for_dir(storage_dir).count).to eq 3
       expect(CompleteMoab.by_druid(druid).count).to eq 1
       expect(CompleteMoab.count).to eq 3
-      expect(described_class.seed_catalog_for_dir(storage_dir_a).count).to eq 1
+
+      storage_dir_a_seed_result_lists = described_class.seed_catalog_for_dir(storage_dir_a)
+      expect(storage_dir_a_seed_result_lists.count).to eq 1
+      extant_preserved_object_id = PreservedObject.find_by!(druid: 'bz514sm9647').id # druid on storage_rootA was already cataloged on storage_root01
+      expected_result_msg = 'db update failed: #<ActiveRecord::RecordNotUnique: PG::UniqueViolation: ERROR:  duplicate key value violates unique ' \
+                            "constraint \"index_complete_moabs_on_preserved_object_id\"\nDETAIL:  Key (preserved_object_id)=" \
+                            "(#{extant_preserved_object_id}) already exists.\n>"
+      expect(storage_dir_a_seed_result_lists.first).to eq([{ db_update_failed: expected_result_msg }])
       expect(CompleteMoab.by_druid(druid).count).to eq 1
       expect(CompleteMoab.count).to eq 3
       expect(PreservedObject.count).to eq 3
