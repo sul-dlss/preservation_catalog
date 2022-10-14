@@ -214,7 +214,7 @@ class CompleteMoabHandler
                   po.current_version = incoming_version # init to match version of the first moab for the druid
                   po.preservation_policy_id = ppid
                 end
-      this_cm = this_po.complete_moabs.create!(cm_attrs)
+      this_cm = this_po.create_complete_moab!(cm_attrs)
       # add to join table unless there is already a primary moab
       PreservedObjectsPrimaryMoab.find_or_create_by!(preserved_object: this_po) { |popm| popm.complete_moab = this_cm }
     end

@@ -15,7 +15,7 @@ RSpec.describe CompleteMoab, type: :model do
     }
   end
 
-  # some tests assume the PC and PO exist before the vars are referenced.  the eager instantiation of cm will cause
+  # some tests assume the CompleteMoab and PresevedObject exist before the vars are referenced.  the eager instantiation of cm will cause
   # instantiation of preserved_object, since cm depends on it (via args).
   let!(:cm) { create(:complete_moab, args) }
   let(:now) { Time.now.utc }

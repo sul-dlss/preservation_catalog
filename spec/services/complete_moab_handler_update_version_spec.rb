@@ -31,7 +31,7 @@ RSpec.describe CompleteMoabHandler do
     context 'in Catalog' do
       before do
         create(:preserved_object, druid: druid, current_version: 2, preservation_policy: default_prez_policy)
-        po.complete_moabs.create!(
+        po.create_complete_moab!(
           version: po.current_version,
           size: 1,
           moab_storage_root: ms_root,
@@ -231,7 +231,7 @@ RSpec.describe CompleteMoabHandler do
 
       it 'calls PreservedObject.save! and CompleteMoab.save! if the records are altered' do
         allow(complete_moab_handler).to receive(:pres_object).and_return(po)
-        allow(complete_moab_handler.pres_object.complete_moabs).to receive(:find_by!).with(moab_storage_root: ms_root).and_return(cm)
+        allow(complete_moab_handler.pres_object).to receive(:complete_moab).and_return(cm)
         expect(po).to receive(:save!)
         expect(cm).to receive(:save!)
         complete_moab_handler.update_version
@@ -242,7 +242,7 @@ RSpec.describe CompleteMoabHandler do
 
         it 'does not call PreservedObject.save when CompleteMoab only has timestamp updates' do
           allow(complete_moab_handler).to receive(:pres_object).and_return(po)
-          allow(complete_moab_handler.pres_object.complete_moabs).to receive(:find_by!).with(moab_storage_root: ms_root).and_return(cm)
+          allow(complete_moab_handler.pres_object).to receive(:complete_moab).and_return(cm)
           expect(cm).to receive(:save!)
           expect(po).not_to receive(:save!)
           complete_moab_handler.update_version
@@ -259,7 +259,7 @@ RSpec.describe CompleteMoabHandler do
     it_behaves_like 'druid not in catalog', :update_version
 
     context 'only PreservedObject exists' do
-      before { create(:preserved_object, druid: druid, complete_moabs: []) }
+      before { create(:preserved_object, druid: druid, complete_moab: nil) }
 
       it_behaves_like 'CompleteMoab does not exist', :update_version
     end
@@ -282,7 +282,7 @@ RSpec.describe CompleteMoabHandler do
       context 'when moab is valid' do
         before do
           t = Time.current
-          po.complete_moabs.create!(
+          po.create_complete_moab!(
             version: po.current_version,
             size: 1,
             moab_storage_root: ms_root,
@@ -295,7 +295,7 @@ RSpec.describe CompleteMoabHandler do
         end
 
         let(:po) { PreservedObject.create!(druid: druid, current_version: 2, preservation_policy: default_prez_policy) }
-        let(:cm) { po.complete_moabs.find_by!(moab_storage_root: ms_root) }
+        let(:cm) { po.complete_moab }
 
         context 'CompleteMoab' do
           context 'changed' do
@@ -714,7 +714,7 @@ RSpec.describe CompleteMoabHandler do
               let(:results) do
                 allow(Rails.logger).to receive(:log)
                 allow(complete_moab_handler).to receive(:pres_object).and_return(po)
-                allow(complete_moab_handler.pres_object.complete_moabs).to receive(:find_by!).with(moab_storage_root: ms_root).and_return(cm)
+                allow(complete_moab_handler.pres_object).to receive(:complete_moab).and_return(cm)
                 allow(cm).to receive(:save!).and_raise(ActiveRecord::ActiveRecordError, 'foo')
                 complete_moab_handler.update_version_after_validation
               end
@@ -742,7 +742,7 @@ RSpec.describe CompleteMoabHandler do
     it_behaves_like 'druid not in catalog', :update_version_after_validation
 
     context 'there is no CompleteMoab for the PreservedObject' do
-      before { create(:preserved_object, druid: druid, complete_moabs: []) }
+      before { create(:preserved_object, druid: druid, complete_moab: nil) }
 
       it_behaves_like 'CompleteMoab does not exist', :update_version_after_validation
     end

@@ -23,7 +23,7 @@ class CompleteMoab < ApplicationRecord
 
   # NOTE: Since Rails 5.0, belongs_to adds the presence validator automatically, and explicit presence validation
   #   is redundant (unless you explicitly set config.active_record.belongs_to_required_by_default to false, which we don't.)
-  belongs_to :preserved_object, inverse_of: :complete_moabs
+  belongs_to :preserved_object, inverse_of: :complete_moab
   belongs_to :moab_storage_root, inverse_of: :complete_moabs
   belongs_to :from_moab_storage_root, class_name: 'MoabStorageRoot', optional: true
 

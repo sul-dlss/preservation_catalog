@@ -7,9 +7,7 @@ RSpec.describe ChecksumValidator do
   let(:root_name) { 'fixture_sr3' }
   let(:moab_store_root) { MoabStorageRoot.find_by!(name: root_name) }
   let(:object_dir) { "#{moab_store_root.storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}" }
-  let(:complete_moab) do
-    create(:preserved_object_fixture, druid: druid).complete_moabs.find_by!(moab_storage_root: moab_store_root)
-  end
+  let(:complete_moab) { create(:preserved_object_fixture, druid: druid).complete_moab }
   let(:checksum_validator) { described_class.new(complete_moab) }
   let(:moab_validator) { checksum_validator.send(:moab_validator) }
   let(:results) { instance_double(AuditResults, report_results: nil, check_name: nil, :actual_version= => nil) }

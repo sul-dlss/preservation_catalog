@@ -38,7 +38,7 @@ RSpec.describe CompleteMoabHandler do
       context 'there is no CompleteMoab' do
         let(:druid) { 'nd000lm0000' } # doesn't exist among fixtures on disk
         let(:incoming_version) { 3 }
-        let!(:po) { create(:preserved_object, druid: druid, current_version: po_current_version, complete_moabs: []) }
+        let!(:po) { create(:preserved_object, druid: druid, current_version: po_current_version, complete_moab: nil) }
         let!(:cm) { nil }
 
         it 'stops processing' do
@@ -266,7 +266,7 @@ RSpec.describe CompleteMoabHandler do
     context 'there is no CompleteMoab for the PreservedObject' do
       let(:druid) { 'ab123cd4567' } # doesn't exist among fixtures on disk
 
-      before { create(:preserved_object, druid: druid, complete_moabs: []) }
+      before { create(:preserved_object, druid: druid, complete_moab: nil) }
 
       it_behaves_like 'CompleteMoab does not exist', :confirm_version
     end

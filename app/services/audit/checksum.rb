@@ -12,10 +12,10 @@ module Audit
     def self.validate_druid(druid)
       logger.info "#{Time.now.utc.iso8601} CV validate_druid starting for #{druid}"
       po = PreservedObject.find_by(druid: druid)
-      complete_moabs = po ? po.complete_moabs : []
-      logger.debug("Found #{complete_moabs.size} complete moabs.")
-      complete_moabs.map do |cm|
-        cv = ChecksumValidator.new(cm)
+      complete_moab = po&.complete_moab
+      logger.debug("#{complete_moab ? 'Found' : 'Did Not Find'} complete moab.")
+      if complete_moab
+        cv = ChecksumValidator.new(complete_moab)
         cv.validate_checksums
         logger.info "#{cv.results.result_array} for #{druid}"
         cv.results
