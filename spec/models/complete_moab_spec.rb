@@ -208,12 +208,13 @@ RSpec.describe CompleteMoab, type: :model do
     end
   end
 
-  describe 'preserved_object_id and moab_storage_root_id combination' do
+  describe 'enforcement of uniqueness on druid (PreservedObject) across all storage roots' do
     context 'at the model level' do
       it 'must be unique' do
+        pending('Need to add Rails model constraint')
         expect {
           create(:complete_moab, preserved_object_id: preserved_object.id,
-                                 moab_storage_root_id: cm.moab_storage_root_id)
+                                 moab_storage_root: create(:moab_storage_root))
         }.to raise_error(ActiveRecord::RecordInvalid)
       end
     end
@@ -221,7 +222,7 @@ RSpec.describe CompleteMoab, type: :model do
     context 'at the db level' do
       it 'must be unique' do
         dup_complete_moab = described_class.new(preserved_object_id: preserved_object.id,
-                                                moab_storage_root_id: cm.moab_storage_root_id,
+                                                moab_storage_root: create(:moab_storage_root),
                                                 status: status,
                                                 version: cm_version)
         expect { dup_complete_moab.save(validate: false) }.to raise_error(ActiveRecord::RecordNotUnique)
