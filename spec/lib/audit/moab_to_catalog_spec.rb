@@ -185,10 +185,7 @@ RSpec.describe Audit::MoabToCatalog do
 
       storage_dir_a_seed_result_lists = described_class.seed_catalog_for_dir(storage_dir_a)
       expect(storage_dir_a_seed_result_lists.count).to eq 1
-      extant_preserved_object_id = PreservedObject.find_by!(druid: 'bz514sm9647').id # druid on storage_rootA was already cataloged on storage_root01
-      expected_result_msg = 'db update failed: #<ActiveRecord::RecordNotUnique: PG::UniqueViolation: ERROR:  duplicate key value violates unique ' \
-                            "constraint \"index_complete_moabs_on_preserved_object_id\"\nDETAIL:  Key (preserved_object_id)=" \
-                            "(#{extant_preserved_object_id}) already exists.\n>"
+      expected_result_msg = 'db update failed: #<ActiveRecord::RecordInvalid: Validation failed: Preserved object has already been taken>'
       expect(storage_dir_a_seed_result_lists.first).to eq([{ db_update_failed: expected_result_msg }])
       expect(CompleteMoab.by_druid(druid).count).to eq 1
       expect(CompleteMoab.count).to eq 3

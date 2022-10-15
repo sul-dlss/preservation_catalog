@@ -70,7 +70,7 @@ RSpec.describe CompleteMoab, type: :model do
   it { is_expected.to have_db_index(:moab_storage_root_id) }
   it { is_expected.to have_db_index(:preserved_object_id) }
   it { is_expected.to validate_presence_of(:version) }
-  it { is_expected.to validate_uniqueness_of(:preserved_object_id).scoped_to(:moab_storage_root_id) }
+  it { is_expected.to validate_uniqueness_of(:preserved_object_id) }
 
   describe '#validate_checksums!' do
     it 'passes self to ChecksumValidationJob' do
@@ -211,7 +211,6 @@ RSpec.describe CompleteMoab, type: :model do
   describe 'enforcement of uniqueness on druid (PreservedObject) across all storage roots' do
     context 'at the model level' do
       it 'must be unique' do
-        pending('Need to add Rails model constraint')
         expect {
           create(:complete_moab, preserved_object_id: preserved_object.id,
                                  moab_storage_root: create(:moab_storage_root))

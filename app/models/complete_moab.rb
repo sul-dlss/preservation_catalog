@@ -32,7 +32,7 @@ class CompleteMoab < ApplicationRecord
   has_one :preserved_objects_primary_moab, dependent: :destroy
 
   validates :status, :version, presence: true
-  validates :preserved_object_id, uniqueness: { scope: [:moab_storage_root_id] }
+  validates :preserved_object_id, uniqueness: true
   # NOTE: size here is approximate and not used for fixity checking
   validates :size, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
 
