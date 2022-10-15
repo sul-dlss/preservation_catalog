@@ -35,19 +35,25 @@ RSpec.describe Audit::MoabToCatalog do
   end
 
   describe '.seed_catalog_for_all_storage_roots' do
-    before do
+    it 'calls seed_catalog_for_dir with the right argument once per root' do
       allow(described_class).to receive(:seed_catalog_for_dir).exactly(MoabStorageRoot.count).times
       MoabStorageRoot.pluck(:storage_location) do |path|
         allow(described_class).to receive(:seed_catalog_for_dir).with("#{path}/#{Settings.moab.storage_trunk}")
       end
-    end
 
-    it 'calls seed_catalog_for_dir with the right argument once per root' do
       described_class.seed_catalog_for_all_storage_roots
       expect(described_class).to have_received(:seed_catalog_for_dir).exactly(MoabStorageRoot.count).times
       MoabStorageRoot.pluck(:storage_location) do |path|
         expect(described_class).to have_received(:seed_catalog_for_dir).with("#{path}/#{Settings.moab.storage_trunk}")
       end
+    end
+
+    it 'does not ingest more than one Moab per druid (first ingested wins)' do
+      described_class.seed_catalog_for_all_storage_roots
+      expect(PreservedObject.count).to eq 17
+      expect(CompleteMoab.count).to eq 17
+      expect(CompleteMoab.by_druid('bz514sm9647').count).to eq 1
+      expect(CompleteMoab.by_druid('bz514sm9647').take!.moab_storage_root.name).to eq 'fixture_sr1'
     end
   end
 
