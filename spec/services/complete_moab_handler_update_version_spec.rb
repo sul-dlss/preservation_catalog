@@ -30,9 +30,9 @@ RSpec.describe CompleteMoabHandler do
 
     context 'in Catalog' do
       before do
-        v2 = create(:preserved_object, druid: druid, current_version: 2, preservation_policy: default_prez_policy)
-        v2.complete_moabs.create!(
-          version: v2.current_version,
+        create(:preserved_object, druid: druid, current_version: 2, preservation_policy: default_prez_policy)
+        po.complete_moabs.create!(
+          version: po.current_version,
           size: 1,
           moab_storage_root: ms_root,
           status: 'ok', # pretending we checked for moab validation errs at create time
