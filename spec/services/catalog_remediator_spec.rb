@@ -8,22 +8,6 @@ RSpec.describe CatalogRemediator do
   let(:instance) { described_class.new(druid: preserved_object.druid, version: preserved_object.current_version) }
   let!(:preserved_object) { create(:preserved_object) }
   let!(:zip_endpoint) { ZipEndpoint.find_by(endpoint_name: 'aws_s3_west_2') }
-  let!(:zipped_moab_version_new) do
-    create(:zipped_moab_version, preserved_object: preserved_object, zip_endpoint: zip_endpoint)
-  end
-  let!(:zipped_moab_version_no_errors) do
-    create(:zipped_moab_version, preserved_object: preserved_object, zip_endpoint: zip_endpoint, created_at: 3.months.ago).tap do |zmv|
-      create(:zip_part, zipped_moab_version: zmv)
-    end
-  end
-  let!(:zipped_moab_version_no_parts) do
-    create(:zipped_moab_version, preserved_object: preserved_object, zip_endpoint: zip_endpoint, created_at: 3.months.ago)
-  end
-  let!(:zipped_moab_version_with_errors) do
-    create(:zipped_moab_version, preserved_object: preserved_object, zip_endpoint: zip_endpoint, created_at: 3.months.ago).tap do |zmv|
-      create(:zip_part, zipped_moab_version: zmv)
-    end
-  end
 
   describe '.prune_replication_failures' do
     let(:instance) { instance_double(described_class, prune_replication_failures: nil) }
@@ -53,31 +37,85 @@ RSpec.describe CatalogRemediator do
       # NOTE: We are mocking out the audit-related collaborations of
       #       CatalogRemediator to avoid making e.g. AWS API calls.
       allow(instance).to receive(:endpoint_audit_class_for).and_return(fake_audit_class)
-      allow(instance).to receive(:audit_results_for).with(zipped_moab_version_new).and_return(fake_audit_results_no_errors)
-      allow(instance).to receive(:audit_results_for).with(zipped_moab_version_no_errors).and_return(fake_audit_results_no_errors)
-      allow(instance).to receive(:audit_results_for).with(zipped_moab_version_no_parts).and_return(fake_audit_results_no_errors)
-      allow(instance).to receive(:audit_results_for).with(zipped_moab_version_with_errors).and_return(fake_audit_results_with_errors)
     end
 
-    it 'ignores zipped moab versions newer then expiry timestamp' do
-      expect(zipped_moab_versions).not_to include(zipped_moab_version_new)
+    context 'with zipped moab versions newer than expiry timestamp' do
+      let(:zipped_moab_version_new) do
+        create(:zipped_moab_version, preserved_object: preserved_object, zip_endpoint: zip_endpoint)
+      end
+
+      before do
+        allow(instance).to receive(:audit_results_for).with(zipped_moab_version_new).and_return(fake_audit_results_no_errors)
+      end
+
+      it 'ignores' do
+        expect(zipped_moab_versions).not_to include(zipped_moab_version_new)
+      end
     end
 
-    it 'ignores zipped moab versions lacking errors in audit results' do
-      expect(zipped_moab_versions).not_to include(zipped_moab_version_no_errors)
+    context 'with zipped moab versions lacking errors in audit results' do
+      let(:zipped_moab_version_no_errors) do
+        create(:zipped_moab_version, preserved_object: preserved_object, zip_endpoint: zip_endpoint, created_at: 3.months.ago).tap do |zmv|
+          create(:zip_part, zipped_moab_version: zmv)
+        end
+      end
+
+      before do
+        allow(instance).to receive(:audit_results_for).with(zipped_moab_version_no_errors).and_return(fake_audit_results_no_errors)
+      end
+
+      it 'ignores' do
+        expect(zipped_moab_versions).not_to include(zipped_moab_version_no_errors)
+      end
     end
 
-    it 'includes zipped moab versions lacking zip parts' do
-      expect(zipped_moab_versions).to include(zipped_moab_version_no_parts)
+    context 'with zipped moab versions lacking zip parts' do
+      let(:zipped_moab_version_no_parts) do
+        create(:zipped_moab_version, preserved_object: preserved_object, zip_endpoint: zip_endpoint, created_at: 3.months.ago)
+      end
+
+      before do
+        allow(instance).to receive(:audit_results_for).with(zipped_moab_version_no_parts).and_return(fake_audit_results_no_errors)
+      end
+
+      it 'includes in audit results' do
+        expect(zipped_moab_versions).to include(zipped_moab_version_no_parts)
+      end
     end
 
-    it 'includes zipped moab versions with errors in audit results' do
-      expect(zipped_moab_versions).to include(zipped_moab_version_with_errors)
+    context 'with zipped moab versions with errors in audit results' do
+      let(:zipped_moab_version_with_errors) do
+        create(:zipped_moab_version, preserved_object: preserved_object, zip_endpoint: zip_endpoint, created_at: 3.months.ago).tap do |zmv|
+          create(:zip_part, zipped_moab_version: zmv)
+        end
+      end
+
+      before do
+        allow(instance).to receive(:audit_results_for).with(zipped_moab_version_with_errors).and_return(fake_audit_results_with_errors)
+      end
+
+      it 'includes in audit results' do
+        expect(zipped_moab_versions).to include(zipped_moab_version_with_errors)
+      end
     end
   end
 
   describe '#prune_replication_failures' do
     let(:failures) { instance.prune_replication_failures }
+
+    let(:zipped_moab_version_no_errors) do
+      create(:zipped_moab_version, preserved_object: preserved_object, zip_endpoint: zip_endpoint, created_at: 3.months.ago, version: 2).tap do |zmv|
+        create(:zip_part, zipped_moab_version: zmv)
+      end
+    end
+    let(:zipped_moab_version_no_parts) do
+      create(:zipped_moab_version, preserved_object: preserved_object, zip_endpoint: zip_endpoint, created_at: 3.months.ago, version: 3)
+    end
+    let(:zipped_moab_version_with_errors) do
+      create(:zipped_moab_version, preserved_object: preserved_object, zip_endpoint: zip_endpoint, created_at: 3.months.ago, version: 4).tap do |zmv|
+        create(:zip_part, zipped_moab_version: zmv)
+      end
+    end
 
     before do
       allow(Rails.logger).to receive(:info)
