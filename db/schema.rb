@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_10_07_185705) do
+ActiveRecord::Schema.define(version: 2022_10_18_143200) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -127,6 +127,7 @@ ActiveRecord::Schema.define(version: 2022_10_07_185705) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "preserved_object_id", null: false
+    t.index ["preserved_object_id", "zip_endpoint_id", "version"], name: "index_unique_on_zipped_moab_versions", unique: true
     t.index ["preserved_object_id"], name: "index_zipped_moab_versions_on_preserved_object_id"
     t.index ["zip_endpoint_id"], name: "index_zipped_moab_versions_on_zip_endpoint_id"
   end
