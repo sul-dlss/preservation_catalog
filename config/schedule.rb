@@ -18,9 +18,23 @@ every '0 11 15 * *', roles: [:queue_populator] do
   runner 'MoabStorageRoot.find_each(&:c2m_check!)'
 end
 
+# Proactivily audit to spread out load.
+# Any that are not validated but hit fixity TTL will be validated by weekly audit below.
+every :day, at: '8pm', roles: [:queue_populator] do
+  set :output, standard: nil, error: 'log/c2a-err.log'
+  runner 'PreservedObject.order(last_archive_audit: :asc).limit(PreservedObject.daily_check_count).find_each(&:audit_moab_version_replication!)'
+end
+
 every :wednesday, roles: [:queue_populator] do
   set :output, standard: nil, error: 'log/c2a-err.log'
   runner 'PreservedObject.archive_check_expired.find_each(&:audit_moab_version_replication!)'
+end
+
+# Proactivily validate to spread out load.
+# Any that are not validated but hit fixity TTL will be validated by weekly validation below.
+every :day, at: '10pm', roles: [:queue_populator] do
+  set :output, standard: nil, error: 'log/cv-err.log'
+  runner 'CompleteMoab.order(last_checksum_validation: :asc).limit(CompleteMoab.daily_check_count).find_each(&:validate_checksums!)'
 end
 
 every :sunday, at: '1am', roles: [:queue_populator] do
