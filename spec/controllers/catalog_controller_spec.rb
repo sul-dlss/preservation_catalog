@@ -9,6 +9,7 @@ RSpec.describe CatalogController, type: :controller do
   let(:prefixed_druid) { "druid:#{bare_druid}" }
   let(:storage_location) { "#{storage_location_param}/sdr2objects" }
   let(:storage_location_param) { 'spec/fixtures/storage_root01' }
+  let(:moab_storage_root) { MoabStorageRoot.find_by!(name: 'fixture_sr1') }
   let(:event_service_reporter) { instance_double(Reporters::EventServiceReporter, report_errors: nil) }
   let(:honeybadger_reporter) { instance_double(Reporters::HoneybadgerReporter, report_errors: nil) }
   let(:logger_reporter) { instance_double(Reporters::LoggerReporter, report_errors: nil) }
@@ -293,22 +294,23 @@ RSpec.describe CatalogController, type: :controller do
   describe 'parameters' do
     describe 'checksums_validated' do
       let(:results) { instance_double(AuditResults) }
-      let(:complete_moab_handler) { instance_double(CompleteMoabHandler) }
 
       before do
         allow(results).to receive(:contains_result_code?)
-        allow(complete_moab_handler).to receive(:results).and_return(results)
-        allow(CompleteMoabHandler).to receive(:new).and_return(complete_moab_handler)
+        allow(CompleteMoabService::Create).to receive(:execute).and_return(results)
+        allow(CompleteMoabService::UpdateVersion).to receive(:execute).and_return(results)
       end
 
       it 'false if not present' do
-        expect(complete_moab_handler).to receive(:create).with(false)
+        expect(CompleteMoabService::Create).to receive(:execute).with(druid: bare_druid, incoming_version: ver, incoming_size: size,
+                                                                      moab_storage_root: moab_storage_root, checksums_validated: false)
         post :create, params: { druid: bare_druid, incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
       end
 
       ['true', 'True', 'TRUE'].each do |t_val|
         it "#{t_val} evaluates to true" do
-          expect(complete_moab_handler).to receive(:create).with(true)
+          expect(CompleteMoabService::Create).to receive(:execute).with(druid: bare_druid, incoming_version: ver, incoming_size: size,
+                                                                        moab_storage_root: moab_storage_root, checksums_validated: true)
           post :create, params: { druid: bare_druid,
                                   incoming_version: ver,
                                   incoming_size: size,
@@ -318,7 +320,8 @@ RSpec.describe CatalogController, type: :controller do
       end
       ['nil', '1', 'on', 'false', 'False', 'FALSE'].each do |t_val|
         it "#{t_val} evaluates to false" do
-          expect(complete_moab_handler).to receive(:update_version).with(false)
+          expect(CompleteMoabService::UpdateVersion).to receive(:execute).with(druid: bare_druid, incoming_version: ver, incoming_size: size,
+                                                                               moab_storage_root: moab_storage_root, checksums_validated: false)
           patch :update, params: { druid: bare_druid,
                                    incoming_version: ver,
                                    incoming_size: size,

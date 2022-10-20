@@ -86,6 +86,7 @@ RSpec/NestedGroups:
     - 'spec/requests/objects_controller_file_spec.rb'
     - 'spec/services/checksum_validator_spec.rb'
     - 'spec/services/complete_moab_handler_*.rb'
+    - 'spec/services/complete_moab_service/*.rb'
 
 Style/AccessModifierDeclarations:
   Exclude:

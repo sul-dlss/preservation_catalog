@@ -79,7 +79,7 @@ module UniqueJob
       "lock:#{name}-#{queue_lock_args.join(';')}"
     end
 
-    def before_enqueue_lock(*args) # rubocop:disable Metrics/AbcSize
+    def before_enqueue_lock(*args)
       key = queue_lock_key(*args)
       now = Time.now.to_i
       new_expiry_time = now + lock_timeout + 1

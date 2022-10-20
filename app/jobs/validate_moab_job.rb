@@ -9,7 +9,6 @@ class ValidateMoabJob < ApplicationJob
   attr_accessor :druid
 
   # @param [String] druid of Moab on disk to be checksum validated
-  # rubocop:disable Metrics/AbcSize
   def perform(druid)
     log_failure('Valid druid param required') and return unless DruidTools::Druid.valid?(druid, true)
 
@@ -30,12 +29,10 @@ class ValidateMoabJob < ApplicationJob
   rescue StandardError => e
     log_failure(e.inspect)
   end
-  # rubocop:enable Metrics/AbcSize
 
   private
 
   # validate checksums of a Moab
-  # rubocop:disable Metrics/AbcSize
   def validate
     errors = []
     structural_validator = Stanford::StorageObjectValidator.new(moab)
@@ -66,7 +63,6 @@ class ValidateMoabJob < ApplicationJob
 
     errors.flatten.compact
   end
-  # rubocop:enable Metrics/AbcSize
 
   # turn the Moab::VerificationResult into something more easily consumed
   def verification_errors(verification_result, entity = '', errors = [])

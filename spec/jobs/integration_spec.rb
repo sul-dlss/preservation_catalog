@@ -97,7 +97,8 @@ describe 'the whole replication pipeline', type: :job do
       expect(Resque.redis.redis).to receive(:lpush).with('replication.results', hash.merge(version: next_version).to_json)
 
       # updating the CompleteMoab#version and its PreservedObject#current_version should trigger the replication cycle again, on the new version
-      CompleteMoabHandler.new(druid, next_version, 712, moab_storage_root).update_version(true)
+      CompleteMoabService::UpdateVersion.execute(druid: druid, incoming_version: next_version, incoming_size: 712,
+                                                 moab_storage_root: moab_storage_root, checksums_validated: true)
     end
   end
 end
