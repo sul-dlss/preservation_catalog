@@ -16,11 +16,7 @@ end
 # check models to see if at least they have some data
 class TablesHaveDataCheck < OkComputer::Check
   def check
-    msg = [
-      MoabStorageRoot,
-      PreservationPolicy
-    ].map { |klass| table_check(klass) }.join(' ')
-    mark_message msg
+    mark_message table_check(MoabStorageRoot)
   end
 
   private

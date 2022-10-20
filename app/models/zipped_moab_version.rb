@@ -4,7 +4,7 @@
 #   There will be individual parts (at least one) - see ZipPart.
 # For a fully consistent system, given a PreservedObject, the number of associated
 # ZippedMoabVersion objects should be:
-#   preserved_object.current_version * number_of_zip_endpoints_for_preservation_policy
+#   preserved_object.current_version * ZipEndpoint.count
 #
 # @note Does not have size independent of part(s), see `#total_part_size`
 class ZippedMoabVersion < ApplicationRecord

@@ -8,11 +8,10 @@
 # http://api.rubyonrails.org/classes/ActiveRecord/ConnectionAdapters/DatabaseStatements.html#method-i-transaction
 # https://www.postgresql.org/docs/current/static/transaction-iso.html
 ApplicationRecord.transaction(isolation: :serializable) do
-  MoabStorageRoot.seed_from_config([PreservationPolicy.default_policy])
-  ZipEndpoint.seed_from_config([PreservationPolicy.default_policy])
+  MoabStorageRoot.seed_from_config
+  ZipEndpoint.seed_from_config
 end
 
 puts "seeded database.  state of seeded object types after seeding:"
-puts "> PreservationPolicy.all: #{PreservationPolicy.all.to_a}"
 puts "> MoabStorageRoot.all: #{MoabStorageRoot.all.to_a}"
 puts "> ZipEndpoint.all: #{ZipEndpoint.all.to_a}"

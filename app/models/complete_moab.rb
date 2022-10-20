@@ -46,11 +46,9 @@ class CompleteMoab < ApplicationRecord
 
   scope :fixity_check_expired, lambda {
     joins(:preserved_object)
-      .joins(
-        'INNER JOIN preservation_policies ' \
-        'ON preservation_policies.id = preserved_objects.preservation_policy_id ' \
-        'AND (last_checksum_validation + (fixity_ttl * INTERVAL \'1 SECOND\')) < CURRENT_TIMESTAMP ' \
-        'OR last_checksum_validation IS NULL'
+      .where(
+        '(last_checksum_validation + (? * INTERVAL \'1 SECOND\')) < CURRENT_TIMESTAMP OR last_checksum_validation IS NULL',
+        Settings.preservation_policy.fixity_ttl
       )
   }
 
@@ -127,6 +125,6 @@ class CompleteMoab < ApplicationRecord
 
   # Number of CompleteMoabs to validate on a daily basis.
   def self.daily_check_count
-    CompleteMoab.count / (PreservationPolicy.default_policy.fixity_ttl / (60 * 60 * 24))
+    CompleteMoab.count / (Settings.preservation_policy.fixity_ttl / (60 * 60 * 24))
   end
 end

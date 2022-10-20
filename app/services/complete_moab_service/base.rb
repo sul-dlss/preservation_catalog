@@ -139,7 +139,6 @@ module CompleteMoabService
     def create_preserved_object
       PreservedObject.find_or_create_by!(druid: druid) do |preserved_object|
         preserved_object.current_version = incoming_version # init to match version of the first moab for the druid
-        preserved_object.preservation_policy_id = PreservationPolicy.default_policy.id
       end
     end
   end

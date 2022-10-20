@@ -6,7 +6,6 @@ class MoabStorageRoot < ApplicationRecord
   has_many :complete_moabs, dependent: :restrict_with_exception
   has_many :migrated_moabs, class_name: 'CompleteMoab', foreign_key: :from_moab_storage_root_id
   has_many :preserved_objects, through: :complete_moabs
-  has_and_belongs_to_many :preservation_policies
 
   validates :name, presence: true, uniqueness: true
   validates :storage_location, presence: true, uniqueness: true
@@ -42,15 +41,12 @@ class MoabStorageRoot < ApplicationRecord
 
   # Iterates over the storage roots enumerated in settings, creating a MoabStorageRoot for
   # each if it doesn't already exist.  Besides db/seeds.rb, this should be used rarely, if at all.
-  # @param preservation_policies [Enumerable<PreservationPolicy>] list of preservation policies
-  #   which any newly created moab_storage_roots implement.
   # @return [Array<MoabStorageRoot>] MoabStorageRoots for each one defined in the config (found or created)
   # @note this adds new entries from the config, and leaves existing entries alone, but won't delete anything.
-  def self.seed_from_config(preservation_policies)
+  def self.seed_from_config
     Settings.storage_root_map.default.each do |storage_root_name, storage_root_location|
       find_or_create_by!(name: storage_root_name.to_s) do |sr|
         sr.storage_location = File.join(storage_root_location, Settings.moab.storage_trunk)
-        sr.preservation_policies = preservation_policies
       end
     end
   end

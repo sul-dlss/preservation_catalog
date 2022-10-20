@@ -95,8 +95,7 @@ curl -H 'Authorization: Bearer eyJhbGcxxxxx.eyJzdWIxxxxx.lWMJ66Wxx-xx' http://lo
   "druid":"bj102hs9688",
   "current_version":3,
   "created_at":"2019-12-20T15:04:56.854Z",
-  "updated_at":"2019-12-20T15:04:56.854Z",
-  "preservation_policy_id":1
+  "updated_at":"2019-12-20T15:04:56.854Z"
 }
 ```
 

@@ -10,7 +10,7 @@ describe 'the whole replication pipeline' do
   let(:druid) { 'bz514sm9647' }
   let(:version) { 1 }
   let(:preserved_object) { create(:preserved_object, druid: druid, current_version: version) }
-  let(:zip_endpoints) { preserved_object.preservation_policy.zip_endpoints }
+  let(:zip_endpoints) { ZipEndpoint.all }
   let(:hash) do
     {
       druid: druid,

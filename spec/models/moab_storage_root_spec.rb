@@ -3,7 +3,6 @@
 require 'rails_helper'
 
 RSpec.describe MoabStorageRoot do
-  let(:default_pres_policies) { [PreservationPolicy.default_policy] }
   let(:druid) { 'ab123cd4567' }
   let!(:moab_storage_root) do
     create(
@@ -57,14 +56,13 @@ RSpec.describe MoabStorageRoot do
   it { is_expected.to have_many(:complete_moabs) }
   it { is_expected.to have_db_index(:name) }
   it { is_expected.to have_db_index(:storage_location) }
-  it { is_expected.to have_and_belong_to_many(:preservation_policies) }
   it { is_expected.to validate_presence_of(:name) }
   it { is_expected.to validate_presence_of(:storage_location) }
 
   describe '.seed_from_config' do
     # assumes seeding already ran for the suite, we run it a again
     it 'does not re-create records that already exist' do
-      expect { described_class.seed_from_config(default_pres_policies) }
+      expect { described_class.seed_from_config }
         .not_to change { described_class.pluck(:name).sort }
         .from(%w[fixture_empty fixture_sr1 fixture_sr2 fixture_sr3 fixture_srA storage-root-01])
     end
@@ -77,7 +75,7 @@ RSpec.describe MoabStorageRoot do
       )
       allow(Settings.storage_root_map).to receive(:default).and_return(storage_roots_setting)
 
-      expect { described_class.seed_from_config(default_pres_policies) }
+      expect { described_class.seed_from_config }
         .to change { described_class.pluck(:name).sort }
         .from(%w[fixture_empty fixture_sr1 fixture_sr2 fixture_sr3 fixture_srA storage-root-01])
         .to(%w[fixture_empty fixture_sr1 fixture_sr2 fixture_sr3 fixture_srA fixture_srTest storage-root-01])

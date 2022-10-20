@@ -43,17 +43,14 @@ describe MoabReplicationAuditJob do
       expect { job.perform(preserved_object) }.to change { preserved_object.reload.last_archive_audit }
     end
 
-    it 'calls PartReplicationAuditJob once per related endpoint' do
+    it 'calls PartReplicationAuditJob once per endpoint' do
       new_target_endpoint = create(:zip_endpoint)
-      new_nontarget_endpoint = create(:zip_endpoint,
-                                      preservation_policies: [create(:preservation_policy, preservation_policy_name: 'giant_datasets_policy')])
       preserved_object.create_zipped_moab_versions! # backfill to the new target endpoint, should omit the other non-default policy endpoint
 
       expect(preserved_object.zipped_moab_versions.pluck(:zip_endpoint_id).uniq).to include(new_target_endpoint.id)
-      PreservationPolicy.default_policy.zip_endpoints.each do |endpoint|
+      ZipEndpoint.all.each do |endpoint|
         expect(PartReplicationAuditJob).to receive(:perform_later).with(preserved_object, endpoint)
       end
-      expect(PartReplicationAuditJob).not_to receive(:perform_later).with(preserved_object, new_nontarget_endpoint)
       job.perform(preserved_object)
     end
   end

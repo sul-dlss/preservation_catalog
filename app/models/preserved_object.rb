@@ -13,7 +13,6 @@ class PreservedObject < ApplicationRecord
   # of the two updates will actually trigger replication.
   after_update :create_zipped_moab_versions!, if: :saved_change_to_current_version? # an ActiveRecord dynamic method
 
-  belongs_to :preservation_policy
   has_one :complete_moab, dependent: :restrict_with_exception, autosave: true
   has_many :zipped_moab_versions, dependent: :restrict_with_exception, inverse_of: :preserved_object
 
@@ -27,14 +26,16 @@ class PreservedObject < ApplicationRecord
   scope :without_complete_moab, -> { where.missing(:complete_moab) }
 
   scope :archive_check_expired, lambda {
-    joins(:preservation_policy)
-      .where('(last_archive_audit + (archive_ttl * INTERVAL \'1 SECOND\')) < CURRENT_TIMESTAMP OR last_archive_audit IS NULL')
+    where(
+      '(last_archive_audit + (? * INTERVAL \'1 SECOND\')) < CURRENT_TIMESTAMP OR last_archive_audit IS NULL',
+      Settings.preservation_policy.archive_ttl
+    )
   }
 
   # This is where we make sure we have ZMV rows for all needed ZipEndpoints and versions.
   # Endpoints may have been added, so we must check all dimensions.
-  # For *this* and *previous* versions, create any ZippedMoabVersion records which don't yet exist for
-  # ZipEndpoints on the parent PreservedObject's PreservationPolicy.
+  # For this and previous versions, create the ZippedMoabVersion records for the ZipEndpoints
+  # that don't already have the given Moab version.
   # @return [Array<ZippedMoabVersion>, nil] the ZippedMoabVersion records that were created, or nil if no moabs were in a state allowing replication
   # @todo potential optimization: fold N which_need_archive_copy queries into one new query
   def create_zipped_moab_versions!
@@ -51,7 +52,7 @@ class PreservedObject < ApplicationRecord
   end
 
   def as_json(*)
-    super.except('id', 'preservation_policy_id')
+    super.except('id')
   end
 
   # Queue a job that will check to see whether this PreservedObject has been
@@ -68,7 +69,7 @@ class PreservedObject < ApplicationRecord
 
   # Number of PreservedObjects to audit on a daily basis.
   def self.daily_check_count
-    PreservedObject.count / (PreservationPolicy.default_policy.fixity_ttl / (60 * 60 * 24))
+    PreservedObject.count / (Settings.preservation_policy.fixity_ttl / (60 * 60 * 24))
   end
 
   private

@@ -4,7 +4,6 @@ FactoryBot.define do
   factory :preserved_object do
     sequence(:druid) { |n| "bj102hs#{format('%04d', 1111 + n)}" } # start druids at bj102hs1000
     current_version { 1 }
-    preservation_policy { PreservationPolicy.default_policy }
   end
 
   # searches through fixture dirs to find the druid, creates a complete moab for the PO.
