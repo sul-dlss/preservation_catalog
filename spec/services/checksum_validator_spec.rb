@@ -27,22 +27,6 @@ RSpec.describe ChecksumValidator do
     allow(Reporters::EventServiceReporter).to receive(:new).and_return(event_service_reporter)
   end
 
-  describe '#initialize' do
-    it 'sets attributes' do
-      expect(cv.complete_moab).to eq comp_moab
-      expect(cv.bare_druid).to eq druid
-      expect(cv.moab_storage_root).to eq ms_root
-      expect(cv.results).to be_an_instance_of AuditResults
-      expect(cv.results.actual_version).to eq 3
-    end
-
-    it 'instantiates a Moab::StorageObject from druid and druid_path' do
-      expect(cv.moab).to be_an_instance_of Moab::StorageObject
-      expect(cv.moab.digital_object_id).to eq druid
-      expect(cv.moab.object_pathname.to_s).to eq object_dir
-    end
-  end
-
   describe '#validate_checksums' do
     context 'moab is missing from storage' do
       before do
