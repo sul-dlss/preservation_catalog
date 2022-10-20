@@ -19,8 +19,8 @@ describe 'the whole replication pipeline', type: :job do
     }
   end
   let(:s3_key) { 'bz/514/sm/9647/bz514sm9647.v0001.zip' }
-  let(:aws_provider) { instance_double(PreservationCatalog::AwsProvider, bucket: aws_bucket) }
-  let(:ibm_provider) { instance_double(PreservationCatalog::IbmProvider, bucket: ibm_bucket) }
+  let(:aws_provider) { instance_double(S3::AwsProvider, bucket: aws_bucket) }
+  let(:ibm_provider) { instance_double(S3::IbmProvider, bucket: ibm_bucket) }
   let(:moab_storage_root) { MoabStorageRoot.find_by!(name: 'fixture_sr1') }
 
   around do |example|
@@ -32,8 +32,8 @@ describe 'the whole replication pipeline', type: :job do
 
   before do
     allow(Settings).to receive(:zip_storage).and_return(Rails.root.join('spec', 'fixtures', 'zip_storage'))
-    allow(PreservationCatalog::AwsProvider).to receive(:new).and_return(aws_provider)
-    allow(PreservationCatalog::IbmProvider).to receive(:new).and_return(ibm_provider)
+    allow(S3::AwsProvider).to receive(:new).and_return(aws_provider)
+    allow(S3::IbmProvider).to receive(:new).and_return(ibm_provider)
     allow(Dor::Event::Client).to receive(:create)
     allow(Socket).to receive(:gethostname).and_return('fakehost')
   end

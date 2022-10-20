@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 require 'rails_helper'
-require 'lib/preservation_catalog/shared_examples_provider'
+require 'services/s3/shared_examples_provider'
 
-describe PreservationCatalog::IbmProvider do
+describe S3::IbmProvider do
   it_behaves_like 'provider', described_class,
                   Settings.zip_endpoints.ibm_us_south.storage_location,
                   Settings.zip_endpoints.ibm_us_south.region,

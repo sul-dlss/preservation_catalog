@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module PreservationCatalog
+module S3
   # The Application's configured interface to AWS S3.
   class AwsProvider
     delegate :client, to: :resource
