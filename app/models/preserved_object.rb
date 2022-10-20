@@ -61,6 +61,11 @@ class PreservedObject < ApplicationRecord
     MoabReplicationAuditJob.perform_later(self)
   end
 
+  # Number of PreservedObjects to audit on a daily basis.
+  def self.daily_check_count
+    PreservedObject.count / (PreservationPolicy.default_policy.fixity_ttl / (60 * 60 * 24))
+  end
+
   private
 
   # We need a specific copy of a moab from which to create the zip file(s) to send to the cloud.

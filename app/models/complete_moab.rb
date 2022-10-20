@@ -137,4 +137,9 @@ class CompleteMoab < ApplicationRecord
     # standard SQL doesn't have a NULLS FIRST sort built in.
     active_record_relation.order(Arel.sql('last_checksum_validation IS NOT NULL, last_checksum_validation ASC'))
   end
+
+  # Number of CompleteMoabs to validate on a daily basis.
+  def self.daily_check_count
+    CompleteMoab.count / (PreservationPolicy.default_policy.fixity_ttl / (60 * 60 * 24))
+  end
 end

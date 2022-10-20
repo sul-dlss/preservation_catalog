@@ -189,4 +189,14 @@ RSpec.describe PreservedObject, type: :model do
       preserved_object.audit_moab_version_replication!
     end
   end
+
+  describe '#daily_check_count' do
+    before do
+      allow(described_class).to receive(:count).and_return(1000)
+    end
+
+    it 'calculates the number of objects to check per day' do
+      expect(described_class.daily_check_count).to eq 11
+    end
+  end
 end
