@@ -1,13 +1,6 @@
 # frozen_string_literal: true
 
-# AuditResults allows the correct granularity of information to be reported in various contexts.
-#   By collecting all the result information in this class, we keep the audit check code cleaner, and
-#   enable an easy way to provide:
-#    - the correct HTTP response code for ReST calls routed via controller
-#    - error information reported to workflows
-#    - information to Rails log
-#    - in the future, this may also include reporting to the provenance database as well
-#
+# AuditResults allows the correct granularity of auditing information to be modeled in various contexts.
 # All results are kept in the result_array attribute, which is returned by the report_results method.
 #   result_array = [result1, result2]
 #   result1 = {response_code => msg}
@@ -92,16 +85,15 @@ class AuditResults
     CM_STATUS_CHANGED
   ].freeze
 
-  attr_reader :result_array, :druid, :storage_area, :logger
   attr_accessor :actual_version, :check_name
+  attr_reader :druid, :moab_storage_root
 
-  def initialize(druid, actual_version, storage_area, check_name = nil, logger: nil)
+  def initialize(druid:, moab_storage_root:, actual_version: nil, check_name: nil)
     @druid = druid
     @actual_version = actual_version
-    @storage_area = storage_area
+    @moab_storage_root = moab_storage_root
     @check_name = check_name
     @result_array = []
-    @logger = logger
   end
 
   def add_result(code, msg_args = nil)
@@ -113,29 +105,20 @@ class AuditResults
     result_array.delete_if { |res_hash| DB_UPDATED_CODES.include?(res_hash.keys.first) }
   end
 
-  def report_results
-    # Report completed
-    report_completed(completed_results)
-
-    # Report errors
-    report_errors(error_results)
-    result_array
+  def results
+    result_array.dup.freeze
   end
 
   def completed_results
-    result_array.select(&result_ok?)
+    result_array.select { |result| status_changed_to_ok?(result) }.freeze
   end
 
   def error_results
-    result_array.reject(&result_ok?)
+    result_array.reject { |result| status_changed_to_ok?(result) }.freeze
   end
 
   def contains_result_code?(code)
     result_array.detect { |result_hash| result_hash.key?(code) } != nil
-  end
-
-  def status_changed_to_ok?(result)
-    /to ok$/.match(result[AuditResults::CM_STATUS_CHANGED]) != nil
   end
 
   def results_as_string
@@ -143,36 +126,15 @@ class AuditResults
   end
 
   def to_json(*_args)
-    { druid: druid, result_array: result_array }.to_json
+    { druid: druid, results: result_array }.to_json
   end
 
   private
 
-  def result_ok?
-    proc { |result| status_changed_to_ok?(result) }
-  end
+  attr_reader :result_array
 
-  def reporters
-    @reporters ||= [
-      Reporters::LoggerReporter.new(logger),
-      Reporters::HoneybadgerReporter.new,
-      Reporters::AuditWorkflowReporter.new,
-      Reporters::EventServiceReporter.new
-    ].freeze
-  end
-
-  def report_errors(results)
-    reporters.each do |reporter|
-      reporter.report_errors(druid: druid, version: actual_version, storage_area: storage_area, check_name: check_name, results: results)
-    end
-  end
-
-  def report_completed(results)
-    reporters.each do |reporter|
-      results.each do |result|
-        reporter.report_completed(druid: druid, version: actual_version, storage_area: storage_area, check_name: check_name, result: result)
-      end
-    end
+  def status_changed_to_ok?(result)
+    /to ok$/.match(result[AuditResults::CM_STATUS_CHANGED]).present?
   end
 
   def result_hash(code, msg_args = nil)
@@ -191,7 +153,7 @@ class AuditResults
 
   def string_prefix
     @string_prefix ||= begin
-      location_info = "actual location: #{storage_area}" if storage_area
+      location_info = "actual location: #{moab_storage_root}" if moab_storage_root
       actual_version_info = "actual version: #{actual_version}" if actual_version
       "#{check_name} (#{location_info}; #{actual_version_info})"
     end

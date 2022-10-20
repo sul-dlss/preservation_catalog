@@ -35,7 +35,7 @@ class CompleteMoabHandler
     @incoming_version = ApplicationController.helpers.version_string_to_int(incoming_version)
     @incoming_size = ApplicationController.helpers.string_to_int(incoming_size)
     @moab_storage_root = moab_storage_root
-    @results = AuditResults.new(druid, incoming_version, moab_storage_root)
+    @results = AuditResults.new(druid: druid, actual_version: incoming_version, moab_storage_root: moab_storage_root)
     @logger = PreservationCatalog::Application.logger
   end
 
@@ -53,7 +53,7 @@ class CompleteMoabHandler
       create_db_objects('invalid_moab', checksums_validated)
     end
 
-    results.report_results
+    report_results
   end
 
   # checksums_validated may be set to true if the caller takes responsibility for having validated the checksums
@@ -69,7 +69,7 @@ class CompleteMoabHandler
       create_db_objects(creation_status, checksums_validated)
     end
 
-    results.report_results
+    report_results
   end
 
   # this is a long, complex method (shameless green); if it is refactored, revisit the exceptions in rubocop.yml
@@ -84,7 +84,7 @@ class CompleteMoabHandler
       transaction_ok = with_active_record_transaction_and_rescue do
         raise_rollback_if_cm_po_version_mismatch
 
-        return results.report_results unless can_validate_current_comp_moab_status?
+        return report_results unless can_validate_current_comp_moab_status?
 
         if incoming_version == complete_moab.version
           set_status_as_seen_on_disk(true) unless complete_moab.status == 'ok'
@@ -109,7 +109,7 @@ class CompleteMoabHandler
         create_db_objects('invalid_moab')
       end
     end
-    results.report_results
+    report_results
   end
 
   def confirm_version
@@ -122,7 +122,7 @@ class CompleteMoabHandler
       confirm_online_version
     end
 
-    results.report_results
+    report_results
   end
 
   # checksums_validated may be set to true if the caller takes responsibility for having validated the checksums
@@ -157,7 +157,7 @@ class CompleteMoabHandler
       end
     end
 
-    results.report_results
+    report_results
   end
 
   # checksums_validated may be set to true if the caller takes responsibility for having validated the checksums
@@ -173,7 +173,7 @@ class CompleteMoabHandler
       update_online_version(new_status, true, checksums_validated)
     end
 
-    results.report_results
+    report_results
   end
 
   def pres_object
@@ -181,6 +181,10 @@ class CompleteMoabHandler
   end
 
   private
+
+  def report_results
+    AuditResultsReporter.report_results(audit_results: results)
+  end
 
   def moab_validator
     @moab_validator ||= MoabValidator.new(druid: druid, storage_location: storage_location, results: results)
@@ -301,7 +305,7 @@ class CompleteMoabHandler
     transaction_ok = with_active_record_transaction_and_rescue do
       raise_rollback_if_cm_po_version_mismatch
 
-      return results.report_results unless can_validate_current_comp_moab_status?
+      return report_results unless can_validate_current_comp_moab_status?
 
       if incoming_version == complete_moab.version
         set_status_as_seen_on_disk(true) unless complete_moab.status == 'ok'

@@ -19,8 +19,7 @@ RSpec.describe Audit::CatalogToMoab do
                     add_result: nil,
                     :actual_version= => nil,
                     :check_name= => nil,
-                    report_results: nil,
-                    result_array: [],
+                    results: [],
                     results_as_string: nil)
   end
   let(:exp_details_prefix) { 'check_catalog_version (actual location: fixture_sr1; ' }
@@ -39,6 +38,7 @@ RSpec.describe Audit::CatalogToMoab do
     allow(Reporters::HoneybadgerReporter).to receive(:new).and_return(honeybadger_reporter)
     allow(Reporters::LoggerReporter).to receive(:new).and_return(logger_reporter)
     allow(c2m).to receive(:logger).and_return(logger_double) # silence log output
+    allow(AuditResultsReporter).to receive(:report_results).and_return([])
   end
 
   describe '#check_catalog_version' do
@@ -69,9 +69,9 @@ RSpec.describe Audit::CatalogToMoab do
       c2m.check_catalog_version
     end
 
-    it 'calls AuditResults.report_results' do
+    it 'calls AuditResultsReporter.report_results' do
       c2m.instance_variable_set(:@results, results_double)
-      expect(c2m.results).to receive(:report_results)
+      expect(AuditResultsReporter).to receive(:report_results).with(audit_results: c2m.results, logger: Logger)
       c2m.check_catalog_version
     end
 
@@ -132,8 +132,8 @@ RSpec.describe Audit::CatalogToMoab do
         it 'on transaction failure, completes without raising error, removes CM_STATUS_CHANGED result code' do
           allow(comp_moab).to receive(:save!).and_raise(ActiveRecord::ConnectionTimeoutError)
           c2m.check_catalog_version
-          expect(c2m.results.result_array).to include(a_hash_including(AuditResults::MOAB_NOT_FOUND))
-          expect(c2m.results.result_array).not_to include(a_hash_including(AuditResults::CM_STATUS_CHANGED))
+          expect(c2m.results.results).to include(a_hash_including(AuditResults::MOAB_NOT_FOUND))
+          expect(c2m.results.results).not_to include(a_hash_including(AuditResults::CM_STATUS_CHANGED))
           expect(comp_moab.reload.status).not_to eq 'online_moab_not_found'
         end
       end
@@ -152,7 +152,7 @@ RSpec.describe Audit::CatalogToMoab do
           cm_version: comp_moab.version,
           po_version: comp_moab.preserved_object.current_version
         )
-        allow(c2m.results).to receive(:report_results)
+        allow(AuditResultsReporter).to receive(:report_results).with(audit_results: c2m.results)
         c2m.check_catalog_version
       end
 
@@ -165,8 +165,8 @@ RSpec.describe Audit::CatalogToMoab do
         )
       end
 
-      it 'calls AuditResults.report_results' do
-        expect(c2m.results).to have_received(:report_results)
+      it 'calls AuditResultsReporter.report_results' do
+        expect(AuditResultsReporter).to have_received(:report_results).with(audit_results: c2m.results, logger: Logger)
       end
 
       it 'does NOT update status' do
@@ -452,8 +452,7 @@ RSpec.describe Audit::CatalogToMoab do
                                               add_result: nil,
                                               :actual_version= => nil,
                                               :check_name= => nil,
-                                              report_results: nil,
-                                              result_array: [],
+                                              results: [],
                                               results_as_string: 'mock results as string')
           c2m.instance_variable_set(:@results, my_results_double)
           allow(c2m.results).to receive(:add_result).with(AuditResults::MOAB_NOT_FOUND, anything)
@@ -481,8 +480,7 @@ RSpec.describe Audit::CatalogToMoab do
                                               add_result: nil,
                                               :actual_version= => nil,
                                               :check_name= => nil,
-                                              report_results: nil,
-                                              result_array: [],
+                                              results: [],
                                               results_as_string: 'mock results as string')
           c2m.instance_variable_set(:@results, my_results_double)
           allow(c2m.results).to receive(:add_result).with(AuditResults::INVALID_MOAB, anything)
@@ -615,8 +613,8 @@ RSpec.describe Audit::CatalogToMoab do
         it 'on transaction failure, completes without raising error, removes CM_STATUS_CHANGED result code' do
           allow(comp_moab).to receive(:save!).and_raise(ActiveRecord::ConnectionTimeoutError)
           c2m.check_catalog_version
-          expect(c2m.results.result_array).to include(a_hash_including(AuditResults::UNEXPECTED_VERSION))
-          expect(c2m.results.result_array).not_to include(a_hash_including(AuditResults::CM_STATUS_CHANGED))
+          expect(c2m.results.results).to include(a_hash_including(AuditResults::UNEXPECTED_VERSION))
+          expect(c2m.results.results).not_to include(a_hash_including(AuditResults::CM_STATUS_CHANGED))
           expect(comp_moab.reload.status).not_to eq 'unexpected_version_on_storage'
         end
       end

@@ -63,7 +63,7 @@ class CatalogRemediator
   end
 
   def audit_results_for(zipped_moab_version)
-    AuditResults.new(druid, version, zipped_moab_version.zip_endpoint)
+    AuditResults.new(druid: druid, actual_version: version, moab_storage_root: zipped_moab_version.zip_endpoint)
   end
 
   def endpoint_audit_class_for(zipped_moab_version)

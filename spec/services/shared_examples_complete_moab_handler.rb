@@ -56,9 +56,9 @@ RSpec.shared_examples 'calls AuditResults.report_results' do |method_sym|
     mock_results = instance_double(AuditResults,
                                    add_result: nil,
                                    :check_name= => nil,
-                                   result_array: [],
+                                   results: [],
                                    results_as_string: nil)
-    expect(mock_results).to receive(:report_results)
+    expect(AuditResultsReporter).to receive(:report_results)
     allow(complete_moab_handler).to receive(:results).and_return(mock_results)
     complete_moab_handler.send(method_sym)
   end
