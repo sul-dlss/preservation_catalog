@@ -5,13 +5,13 @@ require 'rails_helper'
 RSpec.describe ChecksumValidator do
   let(:druid) { 'zz102hs9687' }
   let(:root_name) { 'fixture_sr3' }
-  let(:ms_root) { MoabStorageRoot.find_by!(name: root_name) }
-  let(:object_dir) { "#{ms_root.storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}" }
-  let(:comp_moab) do
-    create(:preserved_object_fixture, druid: druid).complete_moabs.find_by!(moab_storage_root: ms_root)
+  let(:moab_store_root) { MoabStorageRoot.find_by!(name: root_name) }
+  let(:object_dir) { "#{moab_store_root.storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}" }
+  let(:complete_moab) do
+    create(:preserved_object_fixture, druid: druid).complete_moabs.find_by!(moab_storage_root: moab_store_root)
   end
-  let(:cv) { described_class.new(comp_moab) }
-  let(:moab_validator) { cv.send(:moab_validator) }
+  let(:checksum_validator) { described_class.new(complete_moab) }
+  let(:moab_validator) { checksum_validator.send(:moab_validator) }
   let(:results) { instance_double(AuditResults, report_results: nil, check_name: nil, :actual_version= => nil) }
   let(:logger_double) { instance_double(ActiveSupport::Logger, info: nil, error: nil, add: nil) }
   let(:audit_workflow_reporter) { instance_double(Reporters::AuditWorkflowReporter, report_errors: nil, report_completed: nil) }
@@ -31,79 +31,79 @@ RSpec.describe ChecksumValidator do
     context 'moab is missing from storage' do
       before do
         # fake a moab gone missing by updating the preserved object to use a non-existent druid
-        comp_moab.preserved_object.update(druid: 'tr808sp1200')
+        complete_moab.preserved_object.update(druid: 'tr808sp1200')
         allow(Dor::Event::Client).to receive(:create).with(druid: 'druid:tr808sp1200', type: 'preservation_audit_failure', data: instance_of(Hash))
       end
 
       it 'sets status to online_moab_not_found and adds corresponding audit result' do
-        expect { cv.validate_checksums }.to change(comp_moab, :status).to 'online_moab_not_found'
-        expect(comp_moab.reload.status).to eq 'online_moab_not_found'
-        expect(cv.results.result_array.first).to have_key(:moab_not_found)
+        expect { checksum_validator.validate_checksums }.to change(complete_moab, :status).to 'online_moab_not_found'
+        expect(complete_moab.reload.status).to eq 'online_moab_not_found'
+        expect(checksum_validator.results.result_array.first).to have_key(:moab_not_found)
       end
 
       it 'sends results in HONEYBADGER_REPORT_CODES errors' do
         reason = 'db CompleteMoab \\(created .*Z; last updated .*Z\\) exists but Moab not found'
-        cv.validate_checksums
+        checksum_validator.validate_checksums
 
         expect(honeybadger_reporter).to have_received(:report_errors)
           .with(druid: 'tr808sp1200',
                 version: 0,
-                storage_area: ms_root,
+                storage_area: moab_store_root,
                 check_name: 'validate_checksums',
                 results: [{ moab_not_found: match(reason) },
                           { cm_status_changed: 'CompleteMoab status changed from validity_unknown to online_moab_not_found' }])
         expect(event_service_reporter).to have_received(:report_errors)
           .with(druid: 'tr808sp1200',
                 version: 0,
-                storage_area: ms_root,
+                storage_area: moab_store_root,
                 check_name: 'validate_checksums',
                 results: [{ moab_not_found: match(reason) },
                           { cm_status_changed: 'CompleteMoab status changed from validity_unknown to online_moab_not_found' }])
       end
 
       it 'calls AuditResults.report_results' do
-        expect(cv.results).to receive(:report_results)
-        cv.validate_checksums
+        expect(checksum_validator.results).to receive(:report_results)
+        checksum_validator.validate_checksums
       end
     end
 
     context 'moab is empty' do
       before do
         # fake a moab gone missing by updating the preserved object to use a druid with an empty directory
-        comp_moab.preserved_object.update(druid: 'bh868zf9366')
+        complete_moab.preserved_object.update(druid: 'bh868zf9366')
         allow(Dor::Event::Client).to receive(:create).with(druid: 'druid:bh868zf9366', type: 'preservation_audit_failure', data: instance_of(Hash))
       end
 
       it 'sets status to online_moab_not_found and adds corresponding audit result' do
         expect(moab_validator.moab.object_pathname.exist?).to be true
-        expect { cv.validate_checksums }.to change(comp_moab, :status).to 'online_moab_not_found'
-        expect(comp_moab.reload.status).to eq 'online_moab_not_found'
-        expect(cv.results.result_array.first).to have_key(:moab_not_found)
+        expect { checksum_validator.validate_checksums }.to change(complete_moab, :status).to 'online_moab_not_found'
+        expect(complete_moab.reload.status).to eq 'online_moab_not_found'
+        expect(checksum_validator.results.result_array.first).to have_key(:moab_not_found)
       end
 
       it 'sends results in HONEYBADGER_REPORT_CODES errors' do
         reason = 'db CompleteMoab \\(created .*Z; last updated .*Z\\) exists but Moab not found'
-        cv.validate_checksums
+        checksum_validator.validate_checksums
 
         expect(honeybadger_reporter).to have_received(:report_errors)
           .with(druid: 'bh868zf9366',
                 version: 0,
-                storage_area: ms_root,
+                storage_area: moab_store_root,
                 check_name: 'validate_checksums',
                 results: [{ moab_not_found: match(reason) },
                           { cm_status_changed: 'CompleteMoab status changed from validity_unknown to online_moab_not_found' }])
         expect(event_service_reporter).to have_received(:report_errors)
           .with(druid: 'bh868zf9366',
                 version: 0,
-                storage_area: ms_root,
+                storage_area: moab_store_root,
                 check_name: 'validate_checksums',
                 results: [{ moab_not_found: match(reason) },
                           { cm_status_changed: 'CompleteMoab status changed from validity_unknown to online_moab_not_found' }])
       end
 
       it 'calls AuditResults.report_results' do
-        expect(cv.results).to receive(:report_results)
-        cv.validate_checksums
+        expect(checksum_validator.results).to receive(:report_results)
+        checksum_validator.validate_checksums
       end
     end
 
@@ -111,9 +111,9 @@ RSpec.describe ChecksumValidator do
       let(:druid) { 'bz514sm9647' }
       let(:root_name) { 'fixture_sr1' }
 
-      it 'returns a positive result for a comp_moab' do
-        cv.validate_checksums
-        expect(cv.results.result_array.first).to have_key(:moab_checksum_valid)
+      it 'returns a positive result for a complete_moab' do
+        checksum_validator.validate_checksums
+        expect(checksum_validator.results.result_array.first).to have_key(:moab_checksum_valid)
       end
 
       [
@@ -124,33 +124,33 @@ RSpec.describe ChecksumValidator do
         'validity_unknown'
       ].each do |initial_status|
         it "sets status to OK_STATUS if it was previously #{initial_status}" do
-          comp_moab.status = initial_status
-          comp_moab.save!
-          expect { cv.validate_checksums }.to change(comp_moab, :status).to 'ok'
-          expect(comp_moab.reload.status).to eq 'ok'
+          complete_moab.status = initial_status
+          complete_moab.save!
+          expect { checksum_validator.validate_checksums }.to change(complete_moab, :status).to 'ok'
+          expect(complete_moab.reload.status).to eq 'ok'
         end
       end
 
       it 'leaves status of OK_STATUS as-is' do
-        comp_moab.ok!
-        expect { cv.validate_checksums }.not_to(change(comp_moab, :status))
-        expect(comp_moab.reload.status).to eq 'ok'
+        complete_moab.ok!
+        expect { checksum_validator.validate_checksums }.not_to(change(complete_moab, :status))
+        expect(complete_moab.reload.status).to eq 'ok'
       end
 
       it 'updates audit timestamps' do
-        expect(comp_moab.last_moab_validation).to be_nil
-        expect(comp_moab.last_version_audit).to be_nil
+        expect(complete_moab.last_moab_validation).to be_nil
+        expect(complete_moab.last_version_audit).to be_nil
         approximate_validation_time = Time.current
-        cv.validate_checksums
-        expect(comp_moab.last_moab_validation).to be > approximate_validation_time
-        expect(comp_moab.last_version_audit).to be > approximate_validation_time
+        checksum_validator.validate_checksums
+        expect(complete_moab.last_moab_validation).to be > approximate_validation_time
+        expect(complete_moab.last_version_audit).to be > approximate_validation_time
       end
 
       context 'fails other moab validation' do
         context 'version on disk does not match expected version from catalog' do
           before do
-            comp_moab.version = 4 # this is one greater than the version on disk for bz514sm9647
-            comp_moab.save!
+            complete_moab.version = 4 # this is one greater than the version on disk for bz514sm9647
+            complete_moab.save!
           end
 
           [
@@ -161,19 +161,19 @@ RSpec.describe ChecksumValidator do
             'validity_unknown'
           ].each do |initial_status|
             it "sets status to UNEXPECTED_VERSION_ON_STORAGE_STATUS if it was previously #{initial_status}" do
-              comp_moab.status = initial_status
-              comp_moab.save!
-              expect { cv.validate_checksums }.to change(comp_moab, :status).to 'unexpected_version_on_storage'
-              expect(cv.results.contains_result_code?(AuditResults::UNEXPECTED_VERSION)).to be true
-              expect(comp_moab.reload.status).to eq 'unexpected_version_on_storage'
+              complete_moab.status = initial_status
+              complete_moab.save!
+              expect { checksum_validator.validate_checksums }.to change(complete_moab, :status).to 'unexpected_version_on_storage'
+              expect(checksum_validator.results.contains_result_code?(AuditResults::UNEXPECTED_VERSION)).to be true
+              expect(complete_moab.reload.status).to eq 'unexpected_version_on_storage'
             end
           end
 
           it 'leaves status as UNEXPECTED_VERSION_ON_STORAGE_STATUS if complete moab started in that state' do
-            comp_moab.unexpected_version_on_storage!
-            expect { cv.validate_checksums }.not_to(change(comp_moab, :status))
-            expect(cv.results.contains_result_code?(AuditResults::UNEXPECTED_VERSION)).to be true
-            expect(comp_moab.reload.status).to eq 'unexpected_version_on_storage'
+            complete_moab.unexpected_version_on_storage!
+            expect { checksum_validator.validate_checksums }.not_to(change(complete_moab, :status))
+            expect(checksum_validator.results.contains_result_code?(AuditResults::UNEXPECTED_VERSION)).to be true
+            expect(complete_moab.reload.status).to eq 'unexpected_version_on_storage'
           end
         end
 
@@ -190,26 +190,26 @@ RSpec.describe ChecksumValidator do
             'validity_unknown'
           ].each do |initial_status|
             it "sets status as INVALID_MOAB_STATUS if it was #{initial_status}" do
-              comp_moab.status = initial_status
-              comp_moab.save!
-              expect { cv.validate_checksums }.to change(comp_moab, :status).to 'invalid_moab'
-              expect(comp_moab.reload.status).to eq 'invalid_moab'
+              complete_moab.status = initial_status
+              complete_moab.save!
+              expect { checksum_validator.validate_checksums }.to change(complete_moab, :status).to 'invalid_moab'
+              expect(complete_moab.reload.status).to eq 'invalid_moab'
             end
           end
 
           it 'leaves status as INVALID_MOAB_STATUS if complete moab started in that state' do
-            comp_moab.invalid_moab!
-            expect { cv.validate_checksums }.not_to(change(comp_moab, :status))
-            expect(comp_moab.reload.status).to eq 'invalid_moab'
+            complete_moab.invalid_moab!
+            expect { checksum_validator.validate_checksums }.not_to(change(complete_moab, :status))
+            expect(complete_moab.reload.status).to eq 'invalid_moab'
           end
         end
       end
     end
 
     context 'fails checksum validation' do
-      it 'returns error codes for a comp_moab' do
-        cv.validate_checksums
-        expect(cv.results.result_array.first).to have_key(:file_not_in_manifest)
+      it 'returns error codes for a complete_moab' do
+        checksum_validator.validate_checksums
+        expect(checksum_validator.results.result_array.first).to have_key(:file_not_in_manifest)
       end
 
       [
@@ -220,21 +220,21 @@ RSpec.describe ChecksumValidator do
         'validity_unknown'
       ].each do |initial_status|
         it "sets CompleteMoab status to INVALID_CHECKSUM_STATUS if it was initially #{initial_status}" do
-          comp_moab.status = initial_status
-          expect { cv.validate_checksums }.to change(comp_moab, :status).to 'invalid_checksum'
+          complete_moab.status = initial_status
+          expect { checksum_validator.validate_checksums }.to change(complete_moab, :status).to 'invalid_checksum'
         end
       end
 
       it 'leaves CompleteMoab status as INVALID_CHECKSUM_STATUS if it already was' do
-        comp_moab.status = 'invalid_checksum'
-        expect { cv.validate_checksums }.not_to(change(comp_moab, :status))
+        complete_moab.status = 'invalid_checksum'
+        expect { checksum_validator.validate_checksums }.not_to(change(complete_moab, :status))
       end
 
       context 'fails other moab validation' do
         context 'version on disk does not match expected version from catalog' do
           before do
-            comp_moab.version = 4 # this is one greater than the version on disk for bz514sm9647
-            comp_moab.save!
+            complete_moab.version = 4 # this is one greater than the version on disk for bz514sm9647
+            complete_moab.save!
           end
 
           [
@@ -245,17 +245,17 @@ RSpec.describe ChecksumValidator do
             'unexpected_version_on_storage'
           ].each do |initial_status|
             it "sets status to INVALID_CHECKSUM_STATUS if it was previously #{initial_status}" do
-              comp_moab.status = initial_status
-              comp_moab.save!
-              expect { cv.validate_checksums }.to change(comp_moab, :status).to 'invalid_checksum'
-              expect(comp_moab.reload.status).to eq 'invalid_checksum'
+              complete_moab.status = initial_status
+              complete_moab.save!
+              expect { checksum_validator.validate_checksums }.to change(complete_moab, :status).to 'invalid_checksum'
+              expect(complete_moab.reload.status).to eq 'invalid_checksum'
             end
           end
 
           it 'leaves status as INVALID_CHECKSUM_STATUS if complete moab started in that state' do
-            comp_moab.invalid_checksum!
-            expect { cv.validate_checksums }.not_to(change(comp_moab, :status))
-            expect(comp_moab.reload.status).to eq 'invalid_checksum'
+            complete_moab.invalid_checksum!
+            expect { checksum_validator.validate_checksums }.not_to(change(complete_moab, :status))
+            expect(complete_moab.reload.status).to eq 'invalid_checksum'
           end
         end
 
@@ -272,17 +272,17 @@ RSpec.describe ChecksumValidator do
             'invalid_moab'
           ].each do |initial_status|
             it "sets status as INVALID_CHECKSUM_STATUS if it was #{initial_status}" do
-              comp_moab.status = initial_status
-              comp_moab.save!
-              expect { cv.validate_checksums }.to change(comp_moab, :status).to 'invalid_checksum'
-              expect(comp_moab.reload.status).to eq 'invalid_checksum'
+              complete_moab.status = initial_status
+              complete_moab.save!
+              expect { checksum_validator.validate_checksums }.to change(complete_moab, :status).to 'invalid_checksum'
+              expect(complete_moab.reload.status).to eq 'invalid_checksum'
             end
           end
 
           it 'leaves status as INVALID_CHECKSUM_STATUS if complete moab started in that state' do
-            comp_moab.invalid_checksum!
-            expect { cv.validate_checksums }.not_to(change(comp_moab, :status))
-            expect(comp_moab.reload.status).to eq 'invalid_checksum'
+            complete_moab.invalid_checksum!
+            expect { checksum_validator.validate_checksums }.not_to(change(complete_moab, :status))
+            expect(complete_moab.reload.status).to eq 'invalid_checksum'
           end
         end
       end
@@ -290,8 +290,8 @@ RSpec.describe ChecksumValidator do
 
     context 'reports results' do
       it 'calls AuditResults.report_results' do
-        expect(cv.results).to receive(:report_results)
-        cv.validate_checksums
+        expect(checksum_validator.results).to receive(:report_results)
+        checksum_validator.validate_checksums
       end
     end
 
@@ -301,42 +301,41 @@ RSpec.describe ChecksumValidator do
 
       before do
         # would result in a status update if the save succeeded
-        comp_moab.online_moab_not_found!
+        complete_moab.online_moab_not_found!
 
         # do this second since we save! as part of setup
-        allow(comp_moab).to receive(:save!).and_raise(ActiveRecord::ConnectionTimeoutError)
+        allow(complete_moab).to receive(:save!).and_raise(ActiveRecord::ConnectionTimeoutError)
       end
 
       it 'does not re-throw an ActiveRecord error we know how to deal with' do
-        expect { cv.validate_checksums }.not_to raise_error
+        expect { checksum_validator.validate_checksums }.not_to raise_error
       end
 
       it 'has a result code indicating the update failed' do
-        cv.validate_checksums
-        expect(cv.results.contains_result_code?(AuditResults::DB_UPDATE_FAILED)).to be true
+        checksum_validator.validate_checksums
+        expect(checksum_validator.results.contains_result_code?(AuditResults::DB_UPDATE_FAILED)).to be true
       end
 
       it 'does not have a result code indicating the update happened' do
-        cv.validate_checksums
-        expect(cv.results.contains_result_code?(AuditResults::CM_STATUS_CHANGED)).to be false
+        checksum_validator.validate_checksums
+        expect(checksum_validator.results.contains_result_code?(AuditResults::CM_STATUS_CHANGED)).to be false
       end
     end
   end
 
   describe '#validate_manifest_inventories' do
     it 'calls validate_manifest_inventory for each moab_version' do
-      sov1 = instance_double(Moab::StorageObjectVersion)
-      sov2 = instance_double(Moab::StorageObjectVersion)
-      sov3 = instance_double(Moab::StorageObjectVersion)
-      version_list = [sov1, sov2, sov3]
-      moab = instance_double(Moab::StorageObject, version_list: [sov1, sov2, sov3])
-      allow(cv).to receive(:moab).and_return(moab)
+      storage_object_version1 = instance_double(Moab::StorageObjectVersion)
+      storage_object_version2 = instance_double(Moab::StorageObjectVersion)
+      storage_object_version3 = instance_double(Moab::StorageObjectVersion)
+      version_list = [storage_object_version1, storage_object_version2, storage_object_version3]
+      moab = instance_double(Moab::StorageObject, version_list: [storage_object_version1, storage_object_version2, storage_object_version3])
+      allow(checksum_validator).to receive(:moab).and_return(moab)
+      allow(described_class::ManifestInventoryValidator).to receive(:validate)
+      checksum_validator.send(:validate_manifest_inventories)
       version_list.each do |moab_version|
-        allow(cv).to receive(:validate_manifest_inventory).with(moab_version)
-      end
-      cv.send(:validate_manifest_inventories)
-      version_list.each do |moab_version|
-        expect(cv).to have_received(:validate_manifest_inventory).with(moab_version)
+        expect(described_class::ManifestInventoryValidator).to have_received(:validate).with(moab_version: moab_version,
+                                                                                             checksum_validator: checksum_validator)
       end
     end
 
@@ -354,7 +353,7 @@ RSpec.describe ChecksumValidator do
         allow(results).to receive(:add_result).with(
           AuditResults::MOAB_FILE_CHECKSUM_MISMATCH, file_path: a_string_matching(file_path2), version: 'v2'
         )
-        cv.send(:validate_manifest_inventories)
+        checksum_validator.send(:validate_manifest_inventories)
         expect(results).to have_received(:add_result).with(
           AuditResults::MOAB_FILE_CHECKSUM_MISMATCH, file_path: a_string_matching(file_path1), version: 'v1'
         )
@@ -373,7 +372,7 @@ RSpec.describe ChecksumValidator do
         allow(results).to receive(:add_result).with(
           AuditResults::FILE_NOT_IN_MANIFEST, file_path: a_string_matching(file_path), manifest_file_path: a_string_matching(manifest_file_path)
         )
-        cv.send(:validate_manifest_inventories)
+        checksum_validator.send(:validate_manifest_inventories)
         expect(results).to have_received(:add_result).with(
           AuditResults::FILE_NOT_IN_MANIFEST, file_path: a_string_matching(file_path), manifest_file_path: a_string_matching(manifest_file_path)
         )
@@ -391,7 +390,7 @@ RSpec.describe ChecksumValidator do
         allow(results).to receive(:add_result).with(
           AuditResults::FILE_NOT_IN_MOAB, manifest_file_path: a_string_matching(manifest_file_path), file_path: a_string_matching(file_path)
         )
-        cv.send(:validate_manifest_inventories)
+        checksum_validator.send(:validate_manifest_inventories)
         expect(results).to have_received(:add_result).with(
           AuditResults::FILE_NOT_IN_MOAB, manifest_file_path: a_string_matching(manifest_file_path), file_path: a_string_matching(file_path)
         )
@@ -408,7 +407,7 @@ RSpec.describe ChecksumValidator do
         allow(results).to receive(:add_result).with(
           AuditResults::MANIFEST_NOT_IN_MOAB, manifest_file_path: manifest_file_path
         )
-        cv.send(:validate_manifest_inventories)
+        checksum_validator.send(:validate_manifest_inventories)
         expect(results).to have_received(:add_result).with(
           AuditResults::MANIFEST_NOT_IN_MOAB, manifest_file_path: manifest_file_path
         )
@@ -425,7 +424,7 @@ RSpec.describe ChecksumValidator do
         allow(results).to receive(:add_result).with(
           AuditResults::INVALID_MANIFEST, manifest_file_path: manifest_file_path
         )
-        cv.send(:validate_manifest_inventories)
+        checksum_validator.send(:validate_manifest_inventories)
         expect(results).to have_received(:add_result).with(
           AuditResults::INVALID_MANIFEST, manifest_file_path: manifest_file_path
         )
@@ -433,20 +432,21 @@ RSpec.describe ChecksumValidator do
     end
   end
 
-  describe '#validate_signature_catalog_listing' do
+  describe 'SignatureCatalogValidator#validate_signature_catalog_listing' do
     let(:druid) { 'bj102hs9687' }
     let(:root_name) { 'fixture_sr1' }
+    let(:signature_catalog_validator) { described_class::SignatureCatalogValidator.new(checksum_validator: checksum_validator) }
 
     it 'calls validate_signature_catalog_entry for each signatureCatalog entry' do
       sce01 = instance_double(Moab::SignatureCatalogEntry)
       entry_list = [sce01] + Array.new(10, sce01.dup)
       moab = instance_double(Moab::StorageObject)
-      allow(cv).to receive(:moab).and_return(moab)
-      allow(cv).to receive(:latest_signature_catalog_entries).and_return(entry_list)
+      allow(checksum_validator).to receive(:moab).and_return(moab)
+      allow(signature_catalog_validator).to receive(:latest_signature_catalog_entries).and_return(entry_list)
       entry_list.each do |entry|
-        expect(cv).to receive(:validate_signature_catalog_entry).with(entry)
+        expect(signature_catalog_validator).to receive(:validate_signature_catalog_entry).with(entry)
       end
-      cv.send(:validate_signature_catalog_listing)
+      signature_catalog_validator.send(:validate_signature_catalog_listing)
     end
 
     context 'file checksums in signatureCatalog.xml do not match' do
@@ -460,7 +460,7 @@ RSpec.describe ChecksumValidator do
         expect(results).to receive(:add_result).with(
           AuditResults::MOAB_FILE_CHECKSUM_MISMATCH, file_path: file_path, version: 1
         )
-        cv.send(:validate_signature_catalog_listing)
+        signature_catalog_validator.send(:validate_signature_catalog_listing)
       end
     end
 
@@ -476,7 +476,7 @@ RSpec.describe ChecksumValidator do
         expect(results).to receive(:add_result).with(
           AuditResults::FILE_NOT_IN_MOAB, manifest_file_path: manifest_file_path, file_path: file_path
         )
-        cv.send(:validate_signature_catalog_listing)
+        signature_catalog_validator.send(:validate_signature_catalog_listing)
       end
     end
 
@@ -490,7 +490,7 @@ RSpec.describe ChecksumValidator do
         expect(results).to receive(:add_result).with(
           AuditResults::SIGNATURE_CATALOG_NOT_IN_MOAB, signature_catalog_path: "#{object_dir}/v0002/manifests/signatureCatalog.xml"
         )
-        cv.send(:validate_signature_catalog_listing)
+        signature_catalog_validator.send(:validate_signature_catalog_listing)
       end
     end
 
@@ -506,25 +506,26 @@ RSpec.describe ChecksumValidator do
           AuditResults::INVALID_MANIFEST, hash_including(manifest_file_path: "#{object_dir}/v0001/manifests/signatureCatalog.xml",
                                                          addl: a_string_starting_with(exp_msg_start))
         )
-        cv.send(:validate_signature_catalog_listing)
+        signature_catalog_validator.send(:validate_signature_catalog_listing)
       end
     end
   end
 
-  describe '#flag_unexpected_data_files' do
+  describe 'SignatureCatalogValidator#flag_unexpected_data_files' do
     let(:druid) { 'bj102hs9687' }
     let(:root_name) { 'fixture_sr1' }
+    let(:signature_catalog_validator) { described_class::SignatureCatalogValidator.new(checksum_validator: checksum_validator) }
 
     it 'calls validate_against_signature_catalog on each of the data_files' do
       # for easier reading, we assume data_files has a smaller return value
       files = ["#{object_dir}/v0001/data/metadata/contentMetadata.xml"]
-      expect(cv).to receive(:data_files).and_return(files)
-      allow(cv).to receive(:validate_against_signature_catalog)
-      cv.send(:flag_unexpected_data_files)
+      expect(signature_catalog_validator).to receive(:data_files).and_return(files)
+      allow(signature_catalog_validator).to receive(:validate_against_signature_catalog)
+      signature_catalog_validator.send(:flag_unexpected_data_files)
       files.each do |file|
-        expect(cv).to have_received(:validate_against_signature_catalog).with(file)
+        expect(signature_catalog_validator).to have_received(:validate_against_signature_catalog).with(file)
       end
-      expect(cv).to have_received(:validate_against_signature_catalog).exactly(files.size).times
+      expect(signature_catalog_validator).to have_received(:validate_against_signature_catalog).exactly(files.size).times
     end
 
     context 'files are on disk but not present in signatureCatalog.xml' do
@@ -547,25 +548,26 @@ RSpec.describe ChecksumValidator do
         expect(results).to receive(:add_result).with(
           AuditResults::FILE_NOT_IN_SIGNATURE_CATALOG, file_path: nested_file_path, signature_catalog_path: signature_catalog_path
         )
-        cv.send(:flag_unexpected_data_files)
+        signature_catalog_validator.send(:flag_unexpected_data_files)
       end
     end
   end
 
-  describe '#validate_signature_catalog' do
+  describe 'SignatureCatalogValidator#validate' do
     let(:druid) { 'bj102hs9687' }
     let(:root_name) { 'fixture_sr1' }
+    let(:signature_catalog_validator) { described_class::SignatureCatalogValidator.new(checksum_validator: checksum_validator) }
 
     it 'calls validate_signature_catalog_listing' do
-      allow(cv).to receive(:validate_signature_catalog_listing)
-      cv.send(:validate_signature_catalog)
-      expect(cv).to have_received(:validate_signature_catalog_listing)
+      allow(signature_catalog_validator).to receive(:validate_signature_catalog_listing)
+      signature_catalog_validator.send(:validate)
+      expect(signature_catalog_validator).to have_received(:validate_signature_catalog_listing)
     end
 
     it 'calls flag_unexpected_data_content_files' do
-      allow(cv).to receive(:flag_unexpected_data_files)
-      cv.send(:validate_signature_catalog)
-      expect(cv).to have_received(:flag_unexpected_data_files)
+      allow(signature_catalog_validator).to receive(:flag_unexpected_data_files)
+      signature_catalog_validator.send(:validate)
+      expect(signature_catalog_validator).to have_received(:flag_unexpected_data_files)
     end
 
     context 'file or directory does not exist' do
@@ -574,8 +576,8 @@ RSpec.describe ChecksumValidator do
 
       it 'adds error code and continues executing' do
         allow(results).to receive(:add_result)
-        allow(cv).to receive(:results).and_return(results)
-        cv.send(:validate_signature_catalog)
+        allow(checksum_validator).to receive(:results).and_return(results)
+        checksum_validator.send(:validate_signature_catalog)
         expect(results).to have_received(:add_result).with(
           AuditResults::SIGNATURE_CATALOG_NOT_IN_MOAB, anything
         ).at_least(:once)
@@ -588,9 +590,9 @@ RSpec.describe ChecksumValidator do
 
       it 'adds an INVALID_MANIFEST error' do
         allow(results).to receive(:add_result)
-        allow(cv).to receive(:results).and_return(results)
+        allow(checksum_validator).to receive(:results).and_return(results)
         exp_msg_start = '#<Nokogiri::XML::SyntaxError: 6:28: FATAL: Opening and ending tag mismatch: signatureCatalog'
-        cv.send(:validate_signature_catalog)
+        checksum_validator.send(:validate_signature_catalog)
         expect(results).to have_received(:add_result).with(
           AuditResults::INVALID_MANIFEST, hash_including(manifest_file_path: "#{object_dir}/v0001/manifests/signatureCatalog.xml",
                                                          addl: a_string_starting_with(exp_msg_start))
@@ -604,9 +606,9 @@ RSpec.describe ChecksumValidator do
 
       it 'adds error code and continues executing' do
         allow(results).to receive(:add_result)
-        allow(cv).to receive(:results).and_return(results)
+        allow(checksum_validator).to receive(:results).and_return(results)
         exp_msg_start = '#<Nokogiri::XML::SyntaxError: 1:1: FATAL: Document is empty'
-        cv.send(:validate_signature_catalog)
+        checksum_validator.send(:validate_signature_catalog)
         expect(results).to have_received(:add_result).with(
           AuditResults::INVALID_MANIFEST, hash_including(manifest_file_path: "#{object_dir}/v0001/manifests/signatureCatalog.xml",
                                                          addl: a_string_starting_with(exp_msg_start))
@@ -621,14 +623,14 @@ RSpec.describe ChecksumValidator do
       expect(Digest::MD5).to receive(:new).and_call_original.at_least(:once)
       expect(Digest::SHA1).to receive(:new).and_call_original.at_least(:once)
       expect(Digest::SHA2).to receive(:new).and_call_original.at_least(:once)
-      cv.validate_checksums
+      checksum_validator.validate_checksums
     end
 
     it 'defaults to md5 only' do
       expect(Digest::MD5).to receive(:new).and_call_original.at_least(:once)
       expect(Digest::SHA1).not_to receive(:new).and_call_original
       expect(Digest::SHA2).not_to receive(:new).and_call_original
-      cv.validate_checksums
+      checksum_validator.validate_checksums
     end
 
     it 'sha256 only' do
@@ -636,7 +638,7 @@ RSpec.describe ChecksumValidator do
       expect(Digest::MD5).not_to receive(:new).and_call_original
       expect(Digest::SHA1).not_to receive(:new).and_call_original
       expect(Digest::SHA2).to receive(:new).and_call_original.at_least(:once)
-      cv.validate_checksums
+      checksum_validator.validate_checksums
     end
   end
 
@@ -645,47 +647,47 @@ RSpec.describe ChecksumValidator do
     let(:root_name) { 'fixture_sr1' }
 
     it 'has status changed to OK_STATUS and completes workflow' do
-      comp_moab.invalid_moab!
+      complete_moab.invalid_moab!
       expect(audit_workflow_reporter).to receive(:report_completed)
         .with(druid: druid,
               version: 3,
               check_name: 'validate_checksums',
-              storage_area: ms_root,
+              storage_area: moab_store_root,
               result: { cm_status_changed: 'CompleteMoab status changed from invalid_moab to ok' })
-      cv.validate_checksums
+      checksum_validator.validate_checksums
     end
 
     it 'has status that does not change and does not complete workflow' do
-      comp_moab.ok!
+      complete_moab.ok!
       expect(audit_workflow_reporter).not_to receive(:report_completed)
-      cv.validate_checksums
+      checksum_validator.validate_checksums
     end
 
     context 'has status changed to status other than OK_STATUS' do
       before do
-        comp_moab.version = 4 # this is one greater than the version on disk for bz514sm9647
-        comp_moab.save!
+        complete_moab.version = 4 # this is one greater than the version on disk for bz514sm9647
+        complete_moab.save!
       end
 
       it 'does not complete workflow' do
-        comp_moab.ok!
+        complete_moab.ok!
         expect(audit_workflow_reporter).not_to receive(:report_completed)
-        cv.validate_checksums
+        checksum_validator.validate_checksums
       end
     end
 
     context 'transaction is rolled back' do
       before do
         # would result in a status update if the save succeeded
-        comp_moab.online_moab_not_found!
+        complete_moab.online_moab_not_found!
 
         # do this second since we save! as part of setup
-        allow(comp_moab).to receive(:save!).and_raise(ActiveRecord::ConnectionTimeoutError)
+        allow(complete_moab).to receive(:save!).and_raise(ActiveRecord::ConnectionTimeoutError)
       end
 
       it 'does not complete workflow' do
         expect(audit_workflow_reporter).not_to receive(:report_completed)
-        cv.validate_checksums
+        checksum_validator.validate_checksums
       end
     end
   end
