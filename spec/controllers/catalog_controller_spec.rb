@@ -194,7 +194,7 @@ RSpec.describe CatalogController, type: :controller do
 
       it 'response contains error message' do
         err_regex = /#<ActiveRecord::RecordNotFound: Couldn't find (PreservedObject|CompleteMoab).*> db object does not exist/
-        exp_result = { 'result_array' => [{ AuditResults::DB_OBJ_DOES_NOT_EXIST.to_s => a_string_matching(err_regex) }] }
+        exp_result = { 'results' => [{ AuditResults::DB_OBJ_DOES_NOT_EXIST.to_s => a_string_matching(err_regex) }] }
         expect(JSON.parse(response.body)).to include(exp_result)
       end
 

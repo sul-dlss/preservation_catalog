@@ -17,7 +17,7 @@ module Audit
       complete_moabs.map do |cm|
         cv = ChecksumValidator.new(cm)
         cv.validate_checksums
-        logger.info "#{cv.results.result_array} for #{druid}"
+        logger.info "#{cv.results.results} for #{druid}"
         cv.results
       end
     ensure

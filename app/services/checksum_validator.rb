@@ -11,7 +11,7 @@ class ChecksumValidator
 
   def initialize(complete_moab)
     @complete_moab = complete_moab
-    @results = AuditResults.new(druid, nil, moab_storage_root, 'validate_checksums', logger: Audit::Checksum.logger)
+    @results = AuditResults.new(druid: druid, moab_storage_root: moab_storage_root, check_name: 'validate_checksums')
     # TODO: fix fragile interdependence, MoabValidator wants AuditResults instance, but we want MoabValidator#moab.current_version_id
     # in that AuditResults instance.  so set AuditResults#actual_version after both instances have been created.
     @results.actual_version = moab.current_version_id
@@ -27,7 +27,7 @@ class ChecksumValidator
 
     persist_db_transaction!(clear_connections: true) do
       complete_moab.last_checksum_validation = Time.current
-      if results.result_array.empty?
+      if results.results.empty?
         results.add_result(AuditResults::MOAB_CHECKSUM_VALID)
         complete_moab.update_audit_timestamps(true, true)
 
@@ -95,7 +95,7 @@ class ChecksumValidator
       complete_moab.save!
     end
     results.remove_db_updated_results unless transaction_ok
-    results.report_results
+    AuditResultsReporter.report_results(audit_results: results, logger: Audit::Checksum.logger)
   end
 
   # Validates files on disk against the manifest inventory

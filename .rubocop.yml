@@ -4,6 +4,9 @@ require:
   - rubocop-rspec
 
 inherit_from: .rubocop_todo.yml
+inherit_mode:
+  merge:
+    - Exclude
 
 AllCops:
   TargetRubyVersion: 3.0
@@ -34,6 +37,10 @@ Metrics/BlockLength:
   Exclude:
     - '**/*.rake'
     - 'spec/**/*'
+
+Metrics/ClassLength:
+  Exclude:
+    - 'app/models/audit_results.rb'
 
 Naming/FileName:
   Exclude:
