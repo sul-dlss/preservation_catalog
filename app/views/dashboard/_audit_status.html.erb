@@ -1,0 +1,57 @@
+<div class="card border border-4 border-secondary text-center">
+  <div class="card-body row" />
+    <h2 class="card-title">Audit Status</h2>
+    <span class="row row-cols-5">
+      <div class="nav-link card border border-3" id="audit-tab" data-bs-toggle="tab" data-bs-target="#audit-tab-pane" type="button" role="tab" aria-controls="audit-tab-pane" aria-selected="false">
+          <h4 class="card-title">Validate Moab Status</h4>
+          <h3>
+            <% if validate_moab_audit_ok? %>
+              <span class="badge bg-success rounded-pill">OK</span>
+            <% else %>
+              <span class="badge bg-danger">Error</span>
+            <% end %>
+          </h3>
+      </div>
+      <div class="nav-link card border border-3" id="audit-tab" data-bs-toggle="tab" data-bs-target="#audit-tab-pane" type="button" role="tab" aria-controls="audit-tab-pane" aria-selected="false">
+          <h4 class="card-title">Moab to Catalog Status</h4>
+          <h3>
+          <% if moab_to_catalog_audit_ok? %>
+            <span class="badge bg-success rounded-pill">OK</span>
+          <% else %>
+            <span class="badge bg-danger">Error</span>
+          <% end %>
+          </h3>
+      </div>
+      <div class="nav-link card border border-3 col"  id="audit-tab" data-bs-toggle="tab" data-bs-target="#audit-tab-pane" type="button" role="tab" aria-controls="audit-tab-pane" aria-selected="false">
+          <h4 class="card-title">Catalog to Moab Status</h4>
+          <h3>
+          <% if catalog_to_moab_audit_ok? %>
+            <span class="badge bg-success rounded-pill">OK</span>
+          <% else %>
+            <span class="badge bg-danger">Error</span>
+          <% end %>
+          </h3>
+      </div>
+      <div class="nav-link card border border-3 col"  id="audit-tab" data-bs-toggle="tab" data-bs-target="#audit-tab-pane" type="button" role="tab" aria-controls="audit-tab-pane" aria-selected="false">
+          <h4 class="card-title">Checksum Validation Status</h4>
+          <h3>
+          <% if checksum_validation_audit_ok? %>
+            <span class="badge bg-success rounded-pill">OK</span>
+          <% else %>
+            <span class="badge bg-danger">Error</span>
+          <% end %>
+          </h3>
+      </div>
+      <div class="nav-link card border border-3 col"  id="audit-tab" data-bs-toggle="tab" data-bs-target="#audit-tab-pane" type="button" role="tab" aria-controls="audit-tab-pane" aria-selected="false">
+          <h4 class="card-title">Catalog to Archive Status</h4>
+          <h3>
+          <% if catalog_to_archive_audit_ok? %>
+            <span class="badge bg-success rounded-pill">OK</span>
+          <% else %>
+            <span class="badge bg-danger">Error</span>
+          <% end %>
+          </h3>
+      </div>
+    </span>
+  </div>
+</div>

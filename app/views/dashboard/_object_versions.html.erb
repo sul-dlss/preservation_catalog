@@ -1,0 +1,31 @@
+<h3>Counts and Version Information</h3>
+
+<div class="col-sm-4">
+  <table class="table table-bordered table-hover table-sm">
+    <thead class="table-info">
+      <tr>
+        <th/>
+        <th>count</th>
+        <th>object version count</th>
+        <th>highest version</th>
+        <th>average version</th>
+      </tr>
+    </thead>
+    <tbody class="table-group-divider">
+      <tr>
+        <td>PreservedObject</td>
+        <td class="text-end<%= ' table-danger' if num_preserved_objects != num_complete_moabs %>"><%= num_preserved_objects %></td>
+        <td class="text-end<%= ' table-danger' if num_object_versions_per_preserved_object != num_object_versions_per_complete_moab %>"><%= num_object_versions_per_preserved_object %></td>
+        <td class="text-end<%= ' table-danger' if preserved_object_highest_version != complete_moab_highest_version %>"><%= preserved_object_highest_version %></td>
+        <td class="text-end"><%= average_version_per_preserved_object %></td>
+      </tr>
+      <tr>
+        <td>CompleteMoab</td>
+        <td class="text-end<%= ' table-danger' if num_preserved_objects != num_complete_moabs %>"><%= num_complete_moabs %></td>
+        <td class="text-end<%= ' table-danger' if num_object_versions_per_preserved_object != num_object_versions_per_complete_moab %>"><%= num_object_versions_per_complete_moab %></td>
+        <td class="text-end<%= ' table-danger' if preserved_object_highest_version != complete_moab_highest_version %>"><%= complete_moab_highest_version %></td>
+        <td class="text-end"><%= average_version_per_complete_moab %></td>
+      </tr>
+    </tbody>
+  </table>
+</div>

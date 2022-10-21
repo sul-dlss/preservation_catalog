@@ -1,0 +1,69 @@
+<h4>Replication Flow</h4>
+
+<p>See also <a href="https://github.com/sul-dlss/preservation_catalog/blob/main/app/jobs/README.md">app/jobs/README.md</a>
+for a diagram and a few words about replication queues/job flow.</p>
+
+<div>
+  <table class="table table-bordered border-dark table-hover">
+    <thead class="table-info">
+      <tr>
+        <th class="col-sm-2">job name / class or method</th>
+        <th class="col-sm-3">description</th>
+        <th class="col-sm-1">redis queue name</th>
+        <th class="col-sm-1">next job(s) called</th>
+        <th class="col-sm-3">where to find job failures</th>
+      </tr>
+    </thead>
+    <tbody class="table-group-divider">
+      <tr>
+        <td><strong>PreservedObject.update</strong> as well as <strong>CreateMoab.create and .update</strong></td>
+        <td>after_xxx hooks are used to ensure new and updated druids are replicated.</td>
+        <td class="table-secondary"/>
+        <td>PreservedObject.create_zipped_moab_versions!</td>
+        <td>Honeybadger</td>
+      </tr>
+      <tr>
+        <td class="fw-bold">PreservedObject.create_zipped_moab_versions!</td>
+        <td>ensure we have ZippedMoabVersion db table rows for <em>every ZipEndpoint for each Moab version</em> by calling ZipmakerJob for any missing moab version on a zip endpoint</td>
+        <td class="table-secondary"/>
+        <td>ZipmakerJob per missing version per endpoint</td>
+        <td>Honeybadger</td>
+      </tr>
+      <tr>
+        <td class="fw-bold">ZipmakerJob</td>
+        <td>creates a new DruidVersionZip for S3 endpoint if it doesn't exist. If needed, write zip file(s) to temporary zip storage and calculate checksum(s); otherwise, touch the file(s).</td>
+        <td>zipmaker</td>
+        <td>DruidVersionZip.find_or_create_zip!; any returned partkeys each call PlexerJob</td>
+        <td>See resque/failed.</td>
+      </tr>
+      <tr>
+        <td class="fw-bold">DruidVersionZip.find_or_create_zip!</td>
+        <td>if zip file to be replicated exists, touch it. If it doesn't exist, create it.</td>
+        <td class="table-secondary"/>
+        <td>DruidVersionZipParts.new if zip is over threshhold of 10g.</td>
+        <td>Honeybadger</td>
+      </tr>
+      <tr>
+        <td class="fw-bold">PlexerJob</td>
+        <td>If necessary, record zip part metadata info in DB. <br/>Call endpoint jobs for zip (parts)</td>
+        <td>zips_made</td>
+        <td>S3WestDeliveryJob<br/>S3EastDeliveryJob<br/>IbmSouthDeliveryJob</td>
+        <td>See resque/failed.</td>
+      </tr>
+      <tr>
+        <td>S3 endpoint jobs:<br/><strong>S3EastDeliveryJob</strong><br/><strong>S3WeDeliveryJob</strong><br/><strong>IBMSouthDeliveryJob</strong></td>
+        <td>Posts individual zip (part) to S3 endpoint if not there already.</td>
+        <td><br/>s3_us_east_1_delivery<br/>s3_us_west_2_delivery<br/>ibm_us_south_delivery</td>
+        <td>ResultsRecorderJob if zip (part) posted</td>
+        <td>See resque/failed.</td>
+      </tr>
+      <tr>
+        <td class="fw-bold">ResultsRecorderJob</td>
+        <td>If this completes the replication of a ZippedMoabVersion to an S3 endpoint, send message to event service.  If full ZippedMoabVersion is replicated to all zip_endpoints, "publish" with redis.</td>
+        <td>zip_endpoint_events</td>
+        <td class="table-secondary"/>
+        <td>See resque/failed.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

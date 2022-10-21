@@ -1,0 +1,30 @@
+<div>
+  <h4>Replication Files</h4>
+
+  <p>Zipped files for an object are split into parts of no more than 10G.</p>
+
+  <div class="col-sm-6">
+    <table class="table table-bordered table-hover">
+      <thead class="table-info">
+        <tr>
+          <th>Total ZipParts (count)</th>
+          <th>Total Size of all ZipParts</th>
+          <th class="text-center">ok</th>
+          <th class="text-center">replicated checksum mismatch</th>
+          <th class="text-center">unreplicated</th>
+          <th class="text-center">not found</th>
+        </tr>
+      </thead>
+      <tbody class="table-group-divider">
+        <tr>
+          <td><%= ZipPart.count %></td>
+          <td><%= zip_parts_total_size %></td>
+          <td class="text-end"><%= ZipPart.ok.count %></td>
+          <td class="text-end<%= ' table-danger' if ZipPart.replicated_checksum_mismatch.count != 0 %>"><%= ZipPart.replicated_checksum_mismatch.count %></td>
+          <td class="text-end<%= ' table-warning' if ZipPart.unreplicated.count != 0 %>"><%= ZipPart.unreplicated.count %></td>
+          <td class="text-end<%= ' table-danger' if ZipPart.not_found.count != 0 %>"><%= ZipPart.not_found.count %></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

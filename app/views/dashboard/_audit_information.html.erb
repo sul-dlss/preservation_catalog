@@ -1,0 +1,63 @@
+<h3>Audit Information</h3>
+
+TBD:  make the audit check description into a tooltip?
+<table class="table table-bordered border-dark table-hover table-sm">
+  <thead class="table-info">
+    <tr>
+      <th class="col-sm-2"/>
+      <th class="col-sm-1">redis queue name</th>
+      <th class="col-sm-3">expected frequency<br/>(from app/config/schedule.rb)</th>
+      <th class="col-sm-1">how many objects get queued</th>
+      <th class="col-sm-2">objects with audit timestamps older than threshold</th>
+      <th>objects with errors</th>
+      <th>expired checks</th>
+    </tr>
+  </thead>
+  <tbody class="table-group-divider">
+    <tr>
+      <td><strong>Validate Moab</strong><br/>moab-versioning integrity checks run for locally stored Moabs.</td>
+      <td>validate_moab</td>
+      <td><strong>on demand</strong></td>
+      <td><strong>one</strong>:<br/>queued by preservation robot step after updating a Moab</td>
+      <td class="text-end<%= ' table-danger' if moab_audits_older_than_threshold? %>">Moab audits older than <%= moab_audit_age_threshold %>:<hr/><%= num_moab_audits_older_than_threshold %></td>
+      <td class="text-end<%= ' table-danger' if any_complete_moab_errors? %>"><%= num_complete_moab_not_ok %></td>
+      <td class="table-secondary"/>
+    </tr>
+    <tr>
+      <td><strong>Moab to Catalog</strong><br/>moab-versioning integrity checks run for locally stored Moabs and verified against database info.</td>
+      <td>m2c</td>
+      <td><strong>Monthly</strong>: 11 am on the 1st of every month</td>
+      <td><strong>all</strong>:<br/>queued by walking directories on MoabStorageRoot.storage_location</td>
+      <td class="text-end<%= ' table-danger' if moab_audits_older_than_threshold? %>">Moab audits older than <%= moab_audit_age_threshold %>:<hr/><%= num_moab_audits_older_than_threshold %></td>
+      <td class="text-end<%= ' table-danger' if any_complete_moab_errors? %>"><%= num_complete_moab_not_ok %></td>
+      <td class="table-secondary"/>
+    </tr>
+    <tr>
+      <td><strong>Catalog to Moab</strong><br/>Database info verified against locally stored Moabs and moab-versioning integrity checks for Moabs.</td>
+      <td>c2m</td>
+      <td><strong>Monthly</strong>: 11 am on the 15th of every month</td>
+      <td><strong>all</strong>:<br/>queued by associated MoabStorageRoot</td>
+      <td class="text-end<%= ' table-danger' if moab_audits_older_than_threshold? %>">Moab audits older than <%= moab_audit_age_threshold %>:<hr/><%= num_moab_audits_older_than_threshold %></td>
+      <td class="text-end<%= ' table-danger' if any_complete_moab_errors? %>"><%= num_complete_moab_not_ok %></td>
+      <td class="table-secondary"/>
+    </tr>
+    <tr>
+      <td><strong>Checksum Validation (CV)</strong><br/>Compare checksums in Moab metadata files on local storage with computed checksums for Moab metadata and content files.</td>
+      <td>checksum_validation</td>
+      <td><strong>Weekly</strong>: 1am on Sunday<br/><em>for CompleteMoabs with expired checks</em></td>
+      <td><strong>subset</strong>:<br/>expired checksums queued by associated MoabStorageRoot</td>
+      <td class="text-end<%= ' table-danger' if moab_audits_older_than_threshold? %>">Moab audits older than <%= moab_audit_age_threshold %>:<hr/><%= num_moab_audits_older_than_threshold %></td>
+      <td class="text-end<%= ' table-danger' if CompleteMoab.invalid_checksum.count != 0 %>"><%= CompleteMoab.invalid_checksum.count %></td>
+      <td class="text-center"><%= num_expired_checksum_validation %><br/><br/>(passing checks expire 90 days after they are run)</td>
+    </tr>
+    <tr>
+      <td><strong>Catalog to Archive</strong><br/>Confirm a PreservedObject has all versions/parts replicated for each of its target endpoints and attempts to backfill missing ones</td>
+      <td>moab_replication_audit<br/>part_audit_aws_s3_east_1<br/>part_audit_aws_s3_west_2<br/>part_audit_ibm_us_south</td>
+      <td><strong>Weekly</strong>: 12am on Wednesday<br/><em>for PreservedObjects with expired checks</em></td>
+      <td><strong>subset</strong>:<br/>expired archive checks for PreservedObjects and their associated ZipParts are queued</td>
+      <td class="text-end<%= ' table-danger' if replication_audits_older_than_threshold? %>">PreservedObject replication audits older than <%= replication_audit_age_threshold %>:<hr/><%= num_replication_audits_older_than_threshold %></td>
+      <td class="text-end<%= ' table-danger' if num_replication_errors != 0 %>"><%= num_replication_errors %></td>
+      <td class="text-center"><%= PreservedObject.archive_check_expired.count %><br/><br/>(passing checks expire 90 days after they are run)</td>
+    </tr>
+  </tbody>
+</table>
