@@ -2,12 +2,12 @@
 
 require 'rails_helper'
 
-describe S3WestDeliveryJob, type: :job do
+describe IbmSouthDeliveryJob, type: :job do
   it 'descends from AbstractDeliveryJob' do
     expect(described_class.new).to be_an(AbstractDeliveryJob)
   end
 
   it 'uses its own queue' do
-    expect(described_class.new.queue_name).to eq 's3_us_west_2_delivery'
+    expect(described_class.new.queue_name).to eq 'ibm_us_south_delivery'
   end
 end

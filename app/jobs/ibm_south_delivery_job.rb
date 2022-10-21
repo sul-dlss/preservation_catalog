@@ -1,8 +1,7 @@
 # frozen_string_literal: true
 
-# Different provider than parent class
-# @note The IBM delivery job inherits from an AWS job because the mechanics only differ in bucket name lookup
-class IbmSouthDeliveryJob < S3WestDeliveryJob
+# @see PreservationCatalog::Aws for how S3 credentials and bucket are configured
+class IbmSouthDeliveryJob < AbstractDeliveryJob
   queue_as :ibm_us_south_delivery
 
   def bucket

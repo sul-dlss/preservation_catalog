@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-# Same as parent class, just a different queue.
+# @see PreservationCatalog::Aws for how S3 credentials and bucket are configured
 # @note This name is slightly misleading, as this class solely deals with AWS US East 1 endpoint
-class S3EastDeliveryJob < S3WestDeliveryJob
+class S3EastDeliveryJob < AbstractDeliveryJob
   queue_as :s3_us_east_1_delivery
 
   def bucket
