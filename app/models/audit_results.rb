@@ -134,7 +134,7 @@ class AuditResults
   attr_reader :result_array
 
   def status_changed_to_ok?(result)
-    /to ok$/.match(result[AuditResults::CM_STATUS_CHANGED]).present?
+    /to ok$/.match?(result[AuditResults::CM_STATUS_CHANGED])
   end
 
   def result_hash(code, msg_args = nil)
