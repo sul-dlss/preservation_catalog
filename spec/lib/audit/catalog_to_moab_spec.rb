@@ -41,21 +41,6 @@ RSpec.describe Audit::CatalogToMoab do
     allow(c2m).to receive(:logger).and_return(logger_double) # silence log output
   end
 
-  describe '#initialize' do
-    it 'sets attributes' do
-      expect(c2m.complete_moab).to eq comp_moab
-      expect(c2m.druid).to eq druid
-      expect(c2m.results).to be_an_instance_of AuditResults
-    end
-  end
-
-  describe '#logger' do
-    it 'returns a logger object' do
-      allow(c2m).to receive(:logger).and_call_original # undo doubling for 1 test
-      expect(c2m.logger).to be_a(Logger)
-    end
-  end
-
   describe '#check_catalog_version' do
     let(:object_dir) { "#{storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}" }
     let(:b4_details) { 'before details' }

@@ -41,12 +41,6 @@ RSpec.describe MoabStorageRootReporter do
     end
   end
 
-  describe '#initialize' do
-    it 'lets the DB error bubble up if the given storage root does not exist' do
-      expect { described_class.new(storage_root_name: 'nonexistent') }.to raise_error(ActiveRecord::RecordNotFound)
-    end
-  end
-
   describe '#write_to_csv' do
     let(:csv_lines) do
       [

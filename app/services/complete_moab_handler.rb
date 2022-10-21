@@ -32,8 +32,8 @@ class CompleteMoabHandler
 
   def initialize(druid, incoming_version, incoming_size, moab_storage_root)
     @druid = druid
-    @incoming_version = version_string_to_int(incoming_version)
-    @incoming_size = string_to_int(incoming_size)
+    @incoming_version = ApplicationController.helpers.version_string_to_int(incoming_version)
+    @incoming_size = ApplicationController.helpers.string_to_int(incoming_size)
     @moab_storage_root = moab_storage_root
     @results = AuditResults.new(druid, incoming_version, moab_storage_root)
     @logger = PreservationCatalog::Application.logger
@@ -336,20 +336,5 @@ class CompleteMoabHandler
         db_obj_name: complete_moab.class.name, db_obj_version: complete_moab.version
       )
     end
-  end
-
-  def version_string_to_int(val)
-    result = string_to_int(val)
-    return result if result.instance_of?(Integer)
-    # accommodate 'vnnn' strings from Moab version directories
-    return val[1..].to_i if val.instance_of?(String) && val.match(/^v\d+$/)
-    val
-  end
-
-  def string_to_int(val)
-    return if val.blank?
-    return val if val.instance_of?(Integer) # NOTE: negative integers caught with validation
-    return val.to_i if val.instance_of?(String) && val.scan(/\D/).empty?
-    val
   end
 end
