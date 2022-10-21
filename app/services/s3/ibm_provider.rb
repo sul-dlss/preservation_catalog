@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module PreservationCatalog
+module S3
   # The Application's configured interface to IBM's S3 compatible service.
   class IbmProvider
     delegate :client, to: :resource

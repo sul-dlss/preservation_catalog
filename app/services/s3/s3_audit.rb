@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module PreservationCatalog
+module S3
   # Base class for AWS and IBM audit classes
   class S3Audit
     delegate :bucket, :bucket_name, to: :s3_provider
@@ -41,7 +41,7 @@ module PreservationCatalog
 
     protected
 
-    # @return [PreservationCatalog::AwsProvider, PreservationCatalog::IbmProvider] class that will provide .bucket, and .bucket_name methods
+    # @return [S3::AwsProvider, S3::IbmProvider] class that will provide .bucket, and .bucket_name methods
     def s3_provider_class
       raise 'this method should be implemented by the child class'
     end
