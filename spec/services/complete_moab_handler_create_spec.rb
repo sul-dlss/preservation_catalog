@@ -27,7 +27,7 @@ RSpec.describe CompleteMoabHandler do
     it 'creates PreservedObject and CompleteMoab and PreservedObjectsPrimaryMoab in database' do
       complete_moab_handler.create
       new_po = PreservedObject.find_by(druid: druid)
-      new_cm = new_po.complete_moabs.find_by(version: incoming_version)
+      new_cm = new_po.complete_moab
       expect(new_po.current_version).to eq incoming_version
       expect(new_cm.moab_storage_root).to eq ms_root
       expect(new_cm.size).to eq incoming_size
@@ -36,7 +36,7 @@ RSpec.describe CompleteMoabHandler do
 
     it 'creates the CompleteMoab with "ok" status and validation timestamps if caller ran CV' do
       complete_moab_handler.create(true)
-      new_cm = complete_moab_handler.pres_object.complete_moabs.find_by(version: incoming_version)
+      new_cm = complete_moab_handler.pres_object.complete_moab
       expect(new_cm.status).to eq 'ok'
       expect(new_cm.last_version_audit).to be_a ActiveSupport::TimeWithZone
       expect(new_cm.last_moab_validation).to be_a ActiveSupport::TimeWithZone
@@ -72,9 +72,9 @@ RSpec.describe CompleteMoabHandler do
       end
 
       it "rolls back PreservedObject creation if the CompleteMoab can't be created (e.g. due to DB constraint violation)" do
-        po = instance_double(PreservedObject, complete_moabs: instance_double(ActiveRecord::Relation))
+        po = instance_double(PreservedObject)
         allow(PreservedObject).to receive(:create!).with(hash_including(druid: druid)).and_return(po)
-        allow(po.complete_moabs).to receive(:create!).and_raise(ActiveRecord::RecordInvalid)
+        allow(po).to receive(:create_complete_moab!).and_raise(ActiveRecord::RecordInvalid)
         complete_moab_handler.create
         expect(PreservedObject.find_by(druid: druid)).to be_nil
       end
@@ -103,7 +103,7 @@ RSpec.describe CompleteMoabHandler do
     context 'sets validation timestamps' do
       let(:t) { Time.current }
       let(:ms_root) { MoabStorageRoot.find_by(storage_location: storage_dir) }
-      let(:cm_db_obj) { complete_moab_handler.pres_object.complete_moabs.first! }
+      let(:cm_db_obj) { complete_moab_handler.pres_object.complete_moab }
 
       before { complete_moab_handler.create_after_validation }
 
@@ -121,7 +121,7 @@ RSpec.describe CompleteMoabHandler do
       complete_moab_handler.create_after_validation
       new_po = PreservedObject.find_by(druid: valid_druid, current_version: incoming_version)
       expect(new_po).not_to be_nil
-      new_cm = new_po.complete_moabs.find_by(moab_storage_root: ms_root, version: incoming_version)
+      new_cm = new_po.complete_moab
       expect(new_cm).not_to be_nil
       expect(new_cm.status).to eq 'validity_unknown'
       expect(new_po.preserved_objects_primary_moab.complete_moab_id).to eq new_cm.id
@@ -132,7 +132,7 @@ RSpec.describe CompleteMoabHandler do
       complete_moab_handler.create_after_validation(true)
       new_po = PreservedObject.find_by(druid: valid_druid, current_version: incoming_version)
       expect(new_po).not_to be_nil
-      new_cm = new_po.complete_moabs.find_by(moab_storage_root: ms_root, version: incoming_version)
+      new_cm = new_po.complete_moab
       expect(new_cm).not_to be_nil
       expect(new_cm.status).to eq 'ok'
       expect(new_cm.last_checksum_validation).to be_an ActiveSupport::TimeWithZone
@@ -163,7 +163,7 @@ RSpec.describe CompleteMoabHandler do
         complete_moab_handler.create_after_validation
         new_po = PreservedObject.find_by(druid: invalid_druid, current_version: incoming_version)
         expect(new_po).not_to be_nil
-        new_cm = new_po.complete_moabs.find_by(moab_storage_root: ms_root, version: incoming_version)
+        new_cm = new_po.complete_moab
         expect(new_cm).not_to be_nil
         expect(new_cm.status).to eq 'invalid_moab'
         expect(new_cm.last_moab_validation).to be_a ActiveSupport::TimeWithZone
@@ -175,7 +175,7 @@ RSpec.describe CompleteMoabHandler do
         complete_moab_handler.create_after_validation(true)
         new_po = PreservedObject.find_by(druid: invalid_druid, current_version: incoming_version)
         expect(new_po).not_to be_nil
-        new_cm = new_po.complete_moabs.find_by(moab_storage_root: ms_root, version: incoming_version)
+        new_cm = new_po.complete_moab
         expect(new_cm).not_to be_nil
         expect(new_cm.status).to eq 'invalid_moab'
       end

@@ -100,8 +100,8 @@ class MoabStorageRootReporter
   #   we expect druids to be unique across a given storage root.
   def complete_moabs_and_preserved_objects_in_storage_root
     PreservedObject
-      .joins(:complete_moabs)
-      .where(complete_moabs: { moab_storage_root: storage_root })
+      .joins(:complete_moab)
+      .where(complete_moab: { moab_storage_root: storage_root })
       .order(:druid)
   end
 

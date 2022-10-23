@@ -14,7 +14,7 @@ class PreservedObject < ApplicationRecord
   after_update :create_zipped_moab_versions!, if: :saved_change_to_current_version? # an ActiveRecord dynamic method
 
   belongs_to :preservation_policy
-  has_many :complete_moabs, dependent: :restrict_with_exception, autosave: true
+  has_one :complete_moab, dependent: :restrict_with_exception, autosave: true
   has_many :zipped_moab_versions, dependent: :restrict_with_exception, inverse_of: :preserved_object
   has_one :preserved_objects_primary_moab, dependent: :restrict_with_exception
 
@@ -25,7 +25,7 @@ class PreservedObject < ApplicationRecord
             format: { with: /(?!#{PREFIX_RE})#{DruidTools::Druid.pattern}/ } # ?! group is a *negative* match
   validates :current_version, presence: true, numericality: { only_integer: true, greater_than: 0 }
 
-  scope :without_complete_moabs, -> { where.missing(:complete_moabs) }
+  scope :without_complete_moab, -> { where.missing(:complete_moab) }
 
   scope :archive_check_expired, lambda {
     joins(:preservation_policy)

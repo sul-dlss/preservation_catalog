@@ -142,9 +142,7 @@ RSpec.describe CatalogController, type: :controller do
       # creates a PreservedObject, and the CompleteMoab for the first moab found for the druid (by walking the storage roots in configured order)
       create(:preserved_object_fixture, druid: bare_druid)
     end
-    let(:comp_moab) do
-      pres_obj.complete_moabs.find_by!(moab_storage_root: MoabStorageRoot.find_by!(name: 'fixture_sr1'))
-    end
+    let(:comp_moab) { pres_obj.complete_moab }
     let(:primary_moab) { comp_moab }
 
     before do

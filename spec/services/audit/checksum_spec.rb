@@ -35,24 +35,22 @@ RSpec.describe Audit::Checksum do
   describe '.validate_druid' do
     let!(:po) { create(:preserved_object_fixture, druid: 'bz514sm9647') }
 
-    it 'creates an instance ancd calls #validate_checksums for every result' do
-      po.complete_moabs.find_each do |cm|
-        cv = ChecksumValidator.new(cm)
-        allow(ChecksumValidator).to receive(:new).with(cv.complete_moab).and_return(cv)
-        expect(cv).to receive(:validate_checksums).once.and_call_original
-      end
+    it 'creates an instance ancd calls #validate_checksums for complete moab' do
+      cv = ChecksumValidator.new(po.complete_moab)
+      allow(ChecksumValidator).to receive(:new).with(cv.complete_moab).and_return(cv)
+      allow(cv).to receive(:validate_checksums).and_call_original
       described_class.validate_druid(po.druid)
+      expect(cv).to have_received(:validate_checksums)
     end
 
     it 'logs a debug message' do
-      expect(described_class.logger).to receive(:debug).with('Found 0 complete moabs.')
+      expect(described_class.logger).to receive(:debug).with('Did Not Find complete moab.')
       described_class.validate_druid('xx000xx0500')
     end
 
-    it 'returns the checksum results lists for each CompleteMoab that was checked' do
-      checksum_results_lists = described_class.validate_druid('bz514sm9647')
-      expect(checksum_results_lists.size).to eq 1 # should just be one PC for the druid
-      checksum_results = checksum_results_lists.first
+    it 'returns the checksum audit results' do
+      checksum_results = described_class.validate_druid('bz514sm9647')
+      expect(checksum_results).to be_a(AuditResults)
       expect(checksum_results.contains_result_code?(AuditResults::MOAB_CHECKSUM_VALID)).to be true
     end
   end

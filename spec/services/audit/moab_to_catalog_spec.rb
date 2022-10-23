@@ -191,7 +191,8 @@ RSpec.describe Audit::MoabToCatalog do
 
       storage_dir_a_seed_result_lists = described_class.seed_catalog_for_dir(storage_dir_a)
       expect(storage_dir_a_seed_result_lists.count).to eq 1
-      expected_result_msg = 'db update failed: #<ActiveRecord::RecordInvalid: Validation failed: Preserved object has already been taken>'
+      expected_result_msg = 'db update failed: #<ActiveRecord::RecordNotSaved: Failed to remove the existing associated complete_moab. ' \
+                            'The record failed to save after its foreign key was set to nil.>'
       expect(storage_dir_a_seed_result_lists.first).to eq([{ db_update_failed: expected_result_msg }])
       expect(CompleteMoab.by_druid(druid).count).to eq 1
       expect(CompleteMoab.count).to eq 3
@@ -210,7 +211,7 @@ RSpec.describe Audit::MoabToCatalog do
     it 're-adds objects for a dropped MoabStorageRoot' do
       ZippedMoabVersion.destroy_all
       ms_root.complete_moabs.destroy_all
-      PreservedObject.without_complete_moabs.destroy_all
+      PreservedObject.without_complete_moab.destroy_all
       expect(PreservedObject.count).to eq 14
       expect { described_class.populate_moab_storage_root('fixture_sr1') }.to change(CompleteMoab, :count).from(14).to(17)
       expect(PreservedObject.count).to eq 17

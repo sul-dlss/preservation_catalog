@@ -10,7 +10,7 @@ RSpec.describe CompleteMoabHandler do
   let(:incoming_size) { 9876 }
   let(:po) { PreservedObject.find_by!(druid: druid) }
   let(:ms_root) { MoabStorageRoot.find_by!(storage_location: 'spec/fixtures/storage_root01/sdr2objects') }
-  let(:cm) { po.complete_moabs.find_by!(moab_storage_root: ms_root) }
+  let(:cm) { CompleteMoab.find_by!(moab_storage_root: ms_root) }
   let(:db_update_failed_prefix) { 'db update failed' }
   let(:complete_moab_handler) { described_class.new(druid, incoming_version, incoming_size, ms_root) }
   let(:moab_validator) { complete_moab_handler.send(:moab_validator) }
@@ -33,7 +33,7 @@ RSpec.describe CompleteMoabHandler do
 
       before do
         create(:preserved_object, druid: druid, current_version: 2)
-        po.complete_moabs.create!(
+        po.create_complete_moab!(
           version: po.current_version,
           size: 1,
           moab_storage_root: ms_root,
@@ -224,7 +224,7 @@ RSpec.describe CompleteMoabHandler do
             # these need to be in before loop so it happens before each context below
             invalid_po = create(:preserved_object, druid: invalid_druid, current_version: 2)
             t = Time.current
-            invalid_po.complete_moabs.create!(
+            invalid_po.create_complete_moab!(
               version: invalid_po.current_version,
               size: 1,
               moab_storage_root: invalid_root,
@@ -473,8 +473,8 @@ RSpec.describe CompleteMoabHandler do
           context 'db update error (ActiveRecordError)' do
             let(:results) do
               allow(Rails.logger).to receive(:log)
-              po = instance_double(PreservedObject, complete_moabs: instance_double(ActiveRecord::Relation))
-              allow(po.complete_moabs).to receive(:create!).and_raise(ActiveRecord::ActiveRecordError, 'foo')
+              po = instance_double(PreservedObject)
+              allow(po).to receive(:create_complete_moab!).and_raise(ActiveRecord::ActiveRecordError, 'foo')
               allow(PreservedObject).to receive(:create!).with(hash_including(druid: valid_druid)).and_return(po)
               complete_moab_handler.check_existence
             end
@@ -535,8 +535,8 @@ RSpec.describe CompleteMoabHandler do
           context 'db update error (ActiveRecordError)' do
             let(:result_code) { AuditResults::DB_UPDATE_FAILED }
             let(:results) do
-              po = instance_double(PreservedObject, complete_moabs: instance_double(ActiveRecord::Relation))
-              allow(po.complete_moabs).to receive(:create!).and_raise(ActiveRecord::ActiveRecordError, 'foo')
+              po = instance_double(PreservedObject)
+              allow(po).to receive(:create_complete_moab!).and_raise(ActiveRecord::ActiveRecordError, 'foo')
               allow(PreservedObject).to receive(:create!).with(hash_including(druid: invalid_druid)).and_return(po)
               complete_moab_handler.check_existence
             end
