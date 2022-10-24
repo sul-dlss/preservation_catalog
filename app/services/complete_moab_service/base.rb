@@ -31,9 +31,19 @@ module CompleteMoabService
       @pres_object ||= PreservedObject.find_by!(druid: druid)
     end
 
-    def execute; end
-
     protected
+
+    # perform_execute wraps with common parts of the execute method for all complete moab services
+    def perform_execute
+      if invalid?
+        results.add_result(AuditResults::INVALID_ARGUMENTS, errors.full_messages)
+      elsif block_given?
+        yield
+      end
+
+      report_results!
+      results
+    end
 
     def moab_validator
       @moab_validator ||= MoabValidator.new(druid: druid, storage_location: storage_location, results: results)

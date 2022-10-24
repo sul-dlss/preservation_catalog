@@ -14,18 +14,13 @@ module CompleteMoabService
 
     # checksums_validated may be set to true if the caller takes responsibility for having validated the checksums
     def execute(checksums_validated: false)
-      if invalid?
-        results.add_result(AuditResults::INVALID_ARGUMENTS, errors.full_messages)
-      else
+      perform_execute do
         Rails.logger.debug "update_version #{druid} called"
         # only change status if checksums_validated is false
         new_status = (checksums_validated ? nil : 'validity_unknown')
         # NOTE: we deal with active record transactions in update_online_version, not here
         update_online_version(status: new_status, set_status_to_unexp_version: true, checksums_validated: checksums_validated)
       end
-
-      report_results!
-      results
     end
 
     protected
