@@ -27,8 +27,8 @@ module CompleteMoabService
       @logger = PreservationCatalog::Application.logger
     end
 
-    def pres_object
-      @pres_object ||= PreservedObject.find_by!(druid: druid)
+    def preserved_object
+      @preserved_object ||= PreservedObject.find_by!(druid: druid)
     end
 
     protected
@@ -54,16 +54,22 @@ module CompleteMoabService
       ActiveRecordUtils.with_transaction_and_rescue(results) { yield }
     end
 
-    def raise_rollback_if_cm_po_version_mismatch
+    def raise_rollback_if_version_mismatch
       return unless primary_moab?
 
       return if complete_moab.matches_po_current_version?
 
-      cm_version = complete_moab.version
-      po_version = complete_moab.preserved_object.current_version
-      res_code = AuditResults::CM_PO_VERSION_MISMATCH
-      results.add_result(res_code, cm_version: cm_version, po_version: po_version)
-      raise ActiveRecord::Rollback, "CompleteMoab version #{cm_version} != PreservedObject current_version #{po_version}"
+      result_code = AuditResults::CM_PO_VERSION_MISMATCH
+      results.add_result(result_code, cm_version: complete_moab_version, po_version: preserved_object_version)
+      raise ActiveRecord::Rollback, "CompleteMoab version #{complete_moab_version} != PreservedObject current_version #{preserved_object_version}"
+    end
+
+    def complete_moab_version
+      complete_moab.version
+    end
+
+    def preserved_object_version
+      complete_moab.preserved_object.current_version
     end
 
     def primary_moab?
@@ -73,30 +79,33 @@ module CompleteMoabService
     # Note that this may be called by running M2C on a storage root and discovering a second copy of a Moab,
     #   or maybe by calling #create_after_validation directly after copying a Moab
     def create_db_objects(status, checksums_validated: false)
-      cm_attrs = {
+      complete_moab_attrs = {
         version: incoming_version,
         size: incoming_size,
         moab_storage_root: moab_storage_root,
         status: status
-      }
-      t = Time.current
-      if moab_validator.ran_moab_validation?
-        cm_attrs[:last_version_audit] = t
-        cm_attrs[:last_moab_validation] = t
+      }.tap do |attrs|
+        time = Time.current
+        if moab_validator.ran_moab_validation?
+          attrs[:last_version_audit] = time
+          attrs[:last_moab_validation] = time
+        end
+        attrs[:last_checksum_validation] = time if checksums_validated
       end
-      cm_attrs[:last_checksum_validation] = t if checksums_validated
-      ppid = PreservationPolicy.default_policy.id
+      preservation_policy_id = PreservationPolicy.default_policy.id
 
       # TODO: remove tests' dependence on 2 "create!" calls, use single built-in AR transactionality
       transaction_ok = with_active_record_transaction_and_rescue do
-        this_po = PreservedObject
-                  .find_or_create_by!(druid: druid) do |po|
-                    po.current_version = incoming_version # init to match version of the first moab for the druid
-                    po.preservation_policy_id = ppid
-                  end
-        this_cm = this_po.create_complete_moab!(cm_attrs)
+        this_preserved_object = PreservedObject
+                                .find_or_create_by!(druid: druid) do |preserved_object|
+          preserved_object.current_version = incoming_version # init to match version of the first moab for the druid
+          preserved_object.preservation_policy_id = preservation_policy_id
+        end
+        this_complete_moab = this_preserved_object.create_complete_moab!(complete_moab_attrs)
         # add to join table unless there is already a primary moab
-        PreservedObjectsPrimaryMoab.find_or_create_by!(preserved_object: this_po) { |popm| popm.complete_moab = this_cm }
+        PreservedObjectsPrimaryMoab.find_or_create_by!(preserved_object: this_preserved_object) do |preserved_objects_primary_moab|
+          preserved_objects_primary_moab.complete_moab = this_complete_moab
+        end
       end
       results.add_result(AuditResults::CREATED_NEW_OBJECT) if transaction_ok
     end

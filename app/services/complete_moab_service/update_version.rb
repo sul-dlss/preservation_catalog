@@ -19,15 +19,15 @@ module CompleteMoabService
         # only change status if checksums_validated is false
         new_status = (checksums_validated ? nil : 'validity_unknown')
         # NOTE: we deal with active record transactions in update_online_version, not here
-        update_online_version(status: new_status, set_status_to_unexp_version: true, checksums_validated: checksums_validated)
+        update_online_version(status: new_status, set_status_to_unexpected_version: true, checksums_validated: checksums_validated)
       end
     end
 
     protected
 
-    def update_online_version(status: nil, set_status_to_unexp_version: false, checksums_validated: false)
+    def update_online_version(status: nil, set_status_to_unexpected_version: false, checksums_validated: false)
       transaction_ok = with_active_record_transaction_and_rescue do
-        raise_rollback_if_cm_po_version_mismatch
+        raise_rollback_if_version_mismatch
 
         if incoming_version > complete_moab.version
           # add results without db updates
@@ -38,18 +38,18 @@ module CompleteMoabService
           complete_moab.last_checksum_validation = Time.current if checksums_validated && complete_moab.last_checksum_validation
           moab_validator.update_status(status) if status
           complete_moab.save!
-          pres_object.current_version = incoming_version if primary_moab? # we only want to track highest seen version based on primary
-          pres_object.save!
+          preserved_object.current_version = incoming_version if primary_moab? # we only want to track highest seen version based on primary
+          preserved_object.save!
         else
-          status = 'unexpected_version_on_storage' if set_status_to_unexp_version
-          update_cm_unexpected_version(status)
+          status = 'unexpected_version_on_storage' if set_status_to_unexpected_version
+          update_complete_moab_to_unexpected_version(status)
         end
       end
 
       results.remove_db_updated_results unless transaction_ok
     end
 
-    def update_cm_unexpected_version(new_status)
+    def update_complete_moab_to_unexpected_version(new_status)
       results.add_result(AuditResults::UNEXPECTED_VERSION, db_obj_name: 'CompleteMoab', db_obj_version: complete_moab.version)
       version_comparison_results
 

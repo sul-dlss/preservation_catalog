@@ -6,15 +6,15 @@ require 'services/complete_moab_service/shared_examples'
 RSpec.describe CompleteMoabService::UpdateVersionAfterValidation do
   let(:audit_workflow_reporter) { instance_double(Reporters::AuditWorkflowReporter, report_errors: nil, report_completed: nil) }
   let(:db_update_failed_prefix) { 'db update failed' }
-  let(:default_prez_policy) { PreservationPolicy.default_policy }
+  let(:default_preservation_policy) { PreservationPolicy.default_policy }
   let(:druid) { 'ab123cd4567' }
   let(:incoming_size) { 9876 }
   let(:incoming_version) { 6 }
-  let(:ms_root) { MoabStorageRoot.find_by(storage_location: 'spec/fixtures/storage_root01/sdr2objects') }
-  let(:po) { PreservedObject.find_by(druid: druid) }
-  let(:cm) { complete_moab_handler.complete_moab }
-  let(:complete_moab_handler) do
-    described_class.new(druid: druid, incoming_version: incoming_version, incoming_size: incoming_size, moab_storage_root: ms_root)
+  let(:moab_storage_root) { MoabStorageRoot.find_by(storage_location: 'spec/fixtures/storage_root01/sdr2objects') }
+  let(:preserved_object) { PreservedObject.find_by(druid: druid) }
+  let(:complete_moab) { complete_moab_service.complete_moab }
+  let(:complete_moab_service) do
+    described_class.new(druid: druid, incoming_version: incoming_version, incoming_size: incoming_size, moab_storage_root: moab_storage_root)
   end
   let(:logger_reporter) { instance_double(Reporters::LoggerReporter, report_errors: nil, report_completed: nil) }
   let(:honeybadger_reporter) { instance_double(Reporters::HoneybadgerReporter, report_errors: nil, report_completed: nil) }
@@ -29,126 +29,126 @@ RSpec.describe CompleteMoabService::UpdateVersionAfterValidation do
 
   describe 'execute' do
     let(:druid) { 'bp628nk4868' }
-    let(:ms_root) { MoabStorageRoot.find_by(storage_location: 'spec/fixtures/storage_root02/sdr2objects') }
+    let(:moab_storage_root) { MoabStorageRoot.find_by(storage_location: 'spec/fixtures/storage_root02/sdr2objects') }
 
     it_behaves_like 'attributes validated'
 
     it 'calls Stanford::StorageObjectValidator.validation_errors for moab' do
-      mock_sov = instance_double(Stanford::StorageObjectValidator)
-      expect(mock_sov).to receive(:validation_errors).and_return([])
-      allow(Stanford::StorageObjectValidator).to receive(:new).and_return(mock_sov)
-      complete_moab_handler.execute
+      storage_object_validator = instance_double(Stanford::StorageObjectValidator)
+      expect(storage_object_validator).to receive(:validation_errors).and_return([])
+      allow(Stanford::StorageObjectValidator).to receive(:new).and_return(storage_object_validator)
+      complete_moab_service.execute
     end
 
     context 'in Catalog' do
       context 'when moab is valid' do
         before do
-          t = Time.current
-          po.create_complete_moab!(
-            version: po.current_version,
+          time = Time.current
+          preserved_object.create_complete_moab!(
+            version: preserved_object.current_version,
             size: 1,
-            moab_storage_root: ms_root,
+            moab_storage_root: moab_storage_root,
             status: 'ok', # NOTE: pretending we checked for moab validation errs at create time
-            last_version_audit: t,
-            last_moab_validation: t
-          ) do |primary_cm|
-            PreservedObjectsPrimaryMoab.create!(preserved_object: po, complete_moab: primary_cm)
+            last_version_audit: time,
+            last_moab_validation: time
+          ) do |primary_complete_moab|
+            PreservedObjectsPrimaryMoab.create!(preserved_object: preserved_object, complete_moab: primary_complete_moab)
           end
         end
 
-        let(:po) { PreservedObject.create!(druid: druid, current_version: 2, preservation_policy: default_prez_policy) }
-        let(:cm) { po.complete_moab }
+        let(:preserved_object) { PreservedObject.create!(druid: druid, current_version: 2, preservation_policy: default_preservation_policy) }
+        let(:complete_moab) { preserved_object.complete_moab }
 
         context 'CompleteMoab' do
           context 'changed' do
             it 'last_version_audit' do
-              orig = cm.last_version_audit
-              complete_moab_handler.execute
-              expect(cm.reload.last_version_audit).to be > orig
+              original_last_version_audit = complete_moab.last_version_audit
+              complete_moab_service.execute
+              expect(complete_moab.reload.last_version_audit).to be > original_last_version_audit
             end
 
             it 'last_moab_validation' do
-              orig = cm.last_moab_validation
-              complete_moab_handler.execute
-              expect(cm.reload.last_moab_validation).to be > orig
+              original_last_moab_validation = complete_moab.last_moab_validation
+              complete_moab_service.execute
+              expect(complete_moab.reload.last_moab_validation).to be > original_last_moab_validation
             end
 
             it 'version becomes incoming_version' do
-              orig = cm.version
-              complete_moab_handler.execute
-              expect(cm.reload.version).to be > orig
-              expect(cm.version).to eq incoming_version
+              original_version = complete_moab.version
+              complete_moab_service.execute
+              expect(complete_moab.reload.version).to be > original_version
+              expect(complete_moab.version).to eq incoming_version
             end
 
             it 'size if supplied' do
-              orig = cm.size
-              complete_moab_handler.execute
-              expect(cm.reload.size).to eq incoming_size
-              expect(cm.size).not_to eq orig
+              original_size = complete_moab.size
+              complete_moab_service.execute
+              expect(complete_moab.reload.size).to eq incoming_size
+              expect(complete_moab.size).not_to eq original_size
             end
           end
 
           context 'unchanged' do
             it 'size if incoming size is nil' do
-              orig = cm.size
-              complete_moab_handler = described_class.new(druid: druid, incoming_version: incoming_version, incoming_size: nil,
-                                                          moab_storage_root: ms_root)
-              complete_moab_handler.execute
-              expect(cm.reload.size).to eq orig
+              original_size = complete_moab.size
+              complete_moab_service = described_class.new(druid: druid, incoming_version: incoming_version, incoming_size: nil,
+                                                          moab_storage_root: moab_storage_root)
+              complete_moab_service.execute
+              expect(complete_moab.reload.size).to eq original_size
             end
           end
 
           context 'status' do
             context 'checksums_validated = false' do
               it 'starting status validity_unknown unchanged' do
-                cm.update(status: 'validity_unknown')
+                complete_moab.update(status: 'validity_unknown')
                 expect do
-                  complete_moab_handler.execute
-                end.not_to change { cm.reload.status }.from('validity_unknown')
+                  complete_moab_service.execute
+                end.not_to change { complete_moab.reload.status }.from('validity_unknown')
               end
 
               context 'starting status not validity_unknown' do
-                shared_examples 'CMH#update_version_after_validation changes status to "validity_unknown"' do |orig_status|
-                  before { cm.update(status: orig_status) }
+                shared_examples '#update_version_after_validation changes status to "validity_unknown"' do |orig_status|
+                  before { complete_moab.update(status: orig_status) }
 
                   it "original status #{orig_status}" do
                     expect do
-                      complete_moab_handler.execute
-                    end.to change { cm.reload.status }.from(orig_status).to('validity_unknown')
+                      complete_moab_service.execute
+                    end.to change { complete_moab.reload.status }.from(orig_status).to('validity_unknown')
                   end
                 end
 
-                it_behaves_like 'CMH#update_version_after_validation changes status to "validity_unknown"', 'ok'
-                it_behaves_like 'CMH#update_version_after_validation changes status to "validity_unknown"', 'invalid_moab'
-                it_behaves_like 'CMH#update_version_after_validation changes status to "validity_unknown"', 'invalid_checksum'
-                it_behaves_like 'CMH#update_version_after_validation changes status to "validity_unknown"', 'online_moab_not_found'
-                it_behaves_like 'CMH#update_version_after_validation changes status to "validity_unknown"', 'unexpected_version_on_storage'
+                it_behaves_like '#update_version_after_validation changes status to "validity_unknown"', 'ok'
+                it_behaves_like '#update_version_after_validation changes status to "validity_unknown"', 'invalid_moab'
+                it_behaves_like '#update_version_after_validation changes status to "validity_unknown"', 'invalid_checksum'
+                it_behaves_like '#update_version_after_validation changes status to "validity_unknown"', 'online_moab_not_found'
+                it_behaves_like '#update_version_after_validation changes status to "validity_unknown"', 'unexpected_version_on_storage'
               end
             end
 
             context 'checksums_validated = true' do
               it 'starting status ok unchanged' do
                 expect do
-                  complete_moab_handler.execute(checksums_validated: true)
-                end.not_to change { cm.reload.status }.from('ok')
+                  complete_moab_service.execute(checksums_validated: true)
+                end.not_to change { complete_moab.reload.status }.from('ok')
               end
 
               context 'starting status not ok' do
-                shared_examples 'CMH#update_version_after_validation(true) changes status to "ok"' do |orig_status|
-                  before { cm.update(status: orig_status) }
+                shared_examples '#update_version_after_validation(true) changes status to "ok"' do |orig_status|
+                  before { complete_moab.update(status: orig_status) }
 
                   it "original status #{orig_status}" do
                     expect do
-                      complete_moab_handler.execute(checksums_validated: true)
-                    end.to change { cm.reload.status }.from(orig_status).to('ok')
+                      complete_moab_service.execute(checksums_validated: true)
+                    end.to change { complete_moab.reload.status }.from(orig_status).to('ok')
                   end
                 end
 
-                it_behaves_like 'CMH#update_version_after_validation(true) changes status to "ok"', 'validity_unknown'
-                it_behaves_like 'CMH#update_version_after_validation(true) changes status to "ok"', 'invalid_moab'
-                it_behaves_like 'CMH#update_version_after_validation(true) changes status to "ok"', 'invalid_checksum'
-                it_behaves_like 'CMH#update_version_after_validation(true) changes status to "ok"', 'online_moab_not_found'
-                it_behaves_like 'CMH#update_version_after_validation(true) changes status to "ok"', 'unexpected_version_on_storage'
+                it_behaves_like '#update_version_after_validation(true) changes status to "ok"', 'validity_unknown'
+                it_behaves_like '#update_version_after_validation(true) changes status to "ok"', 'invalid_moab'
+                it_behaves_like '#update_version_after_validation(true) changes status to "ok"', 'invalid_checksum'
+                it_behaves_like '#update_version_after_validation(true) changes status to "ok"', 'online_moab_not_found'
+                it_behaves_like '#update_version_after_validation(true) changes status to "ok"', 'unexpected_version_on_storage'
               end
             end
           end
@@ -157,25 +157,25 @@ RSpec.describe CompleteMoabService::UpdateVersionAfterValidation do
         context 'PreservedObject' do
           context 'changed' do
             it 'current_version' do
-              orig = po.current_version
-              complete_moab_handler.execute
-              expect(po.reload.current_version).to eq complete_moab_handler.incoming_version
-              expect(po.current_version).to be > orig
+              orig = preserved_object.current_version
+              complete_moab_service.execute
+              expect(preserved_object.reload.current_version).to eq complete_moab_service.incoming_version
+              expect(preserved_object.current_version).to be > orig
             end
           end
         end
 
         context 'calls #update_online_version with' do
           it 'status = "validity_unknown" for checksums_validated = false' do
-            expect(complete_moab_handler).to receive(:update_online_version).with(status: 'validity_unknown',
+            expect(complete_moab_service).to receive(:update_online_version).with(status: 'validity_unknown',
                                                                                   checksums_validated: false).and_call_original
-            complete_moab_handler.execute(checksums_validated: false)
+            complete_moab_service.execute(checksums_validated: false)
             skip 'test is weak b/c we only indirectly show the effects of #update_online_version in #update_version specs'
           end
 
           it 'status = "ok" and checksums_validated = true for checksums_validated = true' do
-            expect(complete_moab_handler).to receive(:update_online_version).with(status: 'ok', checksums_validated: true).and_call_original
-            complete_moab_handler.execute(checksums_validated: true)
+            expect(complete_moab_service).to receive(:update_online_version).with(status: 'ok', checksums_validated: true).and_call_original
+            complete_moab_service.execute(checksums_validated: true)
             skip 'test is weak b/c we only indirectly show the effects of #update_online_version in #update_version specs'
           end
         end
@@ -184,24 +184,24 @@ RSpec.describe CompleteMoabService::UpdateVersionAfterValidation do
       context 'when moab is invalid' do
         let(:druid) { 'xx000xx0000' }
         let(:storage_dir) { 'spec/fixtures/bad_root01/bad_moab_storage_trunk' }
-        let(:ms_root) { MoabStorageRoot.find_by(storage_location: storage_dir) }
+        let(:moab_storage_root) { MoabStorageRoot.find_by(storage_location: storage_dir) }
 
         before do
           MoabStorageRoot.find_or_create_by!(name: 'bad_fixture_dir') do |msr|
             msr.storage_location = storage_dir
           end
-          po = PreservedObject.create!(druid: druid, current_version: 2, preservation_policy: default_prez_policy)
-          t = Time.current
+          preserved_object = PreservedObject.create!(druid: druid, current_version: 2, preservation_policy: default_preservation_policy)
+          time = Time.current
           CompleteMoab.create!(
-            preserved_object: po,
-            version: po.current_version,
+            preserved_object: preserved_object,
+            version: preserved_object.current_version,
             size: 1,
-            moab_storage_root: ms_root,
+            moab_storage_root: moab_storage_root,
             status: 'ok', # pretending we checked for moab validation errs at create time
-            last_version_audit: t,
-            last_moab_validation: t
-          ) do |primary_cm|
-            PreservedObjectsPrimaryMoab.create!(preserved_object: po, complete_moab: primary_cm)
+            last_version_audit: time,
+            last_moab_validation: time
+          ) do |primary_complete_moab|
+            PreservedObjectsPrimaryMoab.create!(preserved_object: preserved_object, complete_moab: primary_complete_moab)
           end
         end
 
@@ -209,53 +209,53 @@ RSpec.describe CompleteMoabService::UpdateVersionAfterValidation do
           context 'CompleteMoab' do
             it 'last_moab_validation updated' do
               expect do
-                complete_moab_handler.execute
-              end.to change { cm.reload.status }.from('ok').to('validity_unknown')
+                complete_moab_service.execute
+              end.to change { complete_moab.reload.status }.from('ok').to('validity_unknown')
             end
 
             it 'size updated to incoming_size' do
               expect do
-                complete_moab_handler.execute
-              end.to change { cm.reload.size }.to(incoming_size)
+                complete_moab_service.execute
+              end.to change { complete_moab.reload.size }.to(incoming_size)
             end
 
             it 'last_version_audit updated' do
               expect do
-                complete_moab_handler.execute
-              end.to change { cm.reload.last_version_audit }
+                complete_moab_service.execute
+              end.to change { complete_moab.reload.last_version_audit }
             end
 
             it 'version updated to incoming_version' do
               expect do
-                complete_moab_handler.execute
-              end.to change { cm.reload.version }.from(2).to(incoming_version)
+                complete_moab_service.execute
+              end.to change { complete_moab.reload.version }.from(2).to(incoming_version)
             end
 
             context 'status' do
               it 'starting status validity_unknown unchanged' do
-                cm.update(status: 'validity_unknown')
+                complete_moab.update(status: 'validity_unknown')
                 expect do
-                  complete_moab_handler.execute
-                end.not_to change { cm.reload.status }.from('validity_unknown')
+                  complete_moab_service.execute
+                end.not_to change { complete_moab.reload.status }.from('validity_unknown')
               end
 
               context 'starting status was not validity_unknown' do
-                shared_examples 'CMH#update_version_after_validation changes status to "validity_unknown"' do |orig_status|
-                  before { cm.update(status: orig_status) }
+                shared_examples '#update_version_after_validation changes status to "validity_unknown"' do |orig_status|
+                  before { complete_moab.update(status: orig_status) }
 
                   it "original status #{orig_status}" do
                     # (due to newer version not checksum validated)
                     expect do
-                      complete_moab_handler.execute
-                    end.to change { cm.reload.status }.from(orig_status).to('validity_unknown')
+                      complete_moab_service.execute
+                    end.to change { complete_moab.reload.status }.from(orig_status).to('validity_unknown')
                   end
                 end
 
-                it_behaves_like 'CMH#update_version_after_validation changes status to "validity_unknown"', 'ok'
-                it_behaves_like 'CMH#update_version_after_validation changes status to "validity_unknown"', 'online_moab_not_found'
-                it_behaves_like 'CMH#update_version_after_validation changes status to "validity_unknown"', 'unexpected_version_on_storage'
-                it_behaves_like 'CMH#update_version_after_validation changes status to "validity_unknown"', 'invalid_moab'
-                it_behaves_like 'CMH#update_version_after_validation changes status to "validity_unknown"', 'invalid_checksum'
+                it_behaves_like '#update_version_after_validation changes status to "validity_unknown"', 'ok'
+                it_behaves_like '#update_version_after_validation changes status to "validity_unknown"', 'online_moab_not_found'
+                it_behaves_like '#update_version_after_validation changes status to "validity_unknown"', 'unexpected_version_on_storage'
+                it_behaves_like '#update_version_after_validation changes status to "validity_unknown"', 'invalid_moab'
+                it_behaves_like '#update_version_after_validation changes status to "validity_unknown"', 'invalid_checksum'
               end
             end
           end
@@ -265,52 +265,52 @@ RSpec.describe CompleteMoabService::UpdateVersionAfterValidation do
           context 'CompleteMoab' do
             it 'last_moab_validation updated' do
               expect do
-                complete_moab_handler.execute(checksums_validated: true)
-              end.to change { cm.reload.last_moab_validation }
+                complete_moab_service.execute(checksums_validated: true)
+              end.to change { complete_moab.reload.last_moab_validation }
             end
 
             it 'size updated to incoming_size' do
               expect do
-                complete_moab_handler.execute(checksums_validated: true)
-              end.to change { cm.reload.size }.to(incoming_size)
+                complete_moab_service.execute(checksums_validated: true)
+              end.to change { complete_moab.reload.size }.to(incoming_size)
             end
 
             it 'last_version_audit updated' do
               expect do
-                complete_moab_handler.execute(checksums_validated: true)
-              end.to change { cm.reload.last_version_audit }
+                complete_moab_service.execute(checksums_validated: true)
+              end.to change { complete_moab.reload.last_version_audit }
             end
 
             it 'version updated to incoming_version' do
               expect do
-                complete_moab_handler.execute(checksums_validated: true)
-              end.to change { cm.reload.version }.from(2).to(incoming_version)
+                complete_moab_service.execute(checksums_validated: true)
+              end.to change { complete_moab.reload.version }.from(2).to(incoming_version)
             end
 
             context 'status' do
               it 'starting status invalid_moab unchanged' do
-                cm.update(status: 'invalid_moab')
+                complete_moab.update(status: 'invalid_moab')
                 expect do
-                  complete_moab_handler.execute(checksums_validated: true)
-                end.not_to change { cm.reload.status }.from('invalid_moab')
+                  complete_moab_service.execute(checksums_validated: true)
+                end.not_to change { complete_moab.reload.status }.from('invalid_moab')
               end
 
               context 'starting status was not invalid_moab' do
-                shared_examples 'CMH#update_version_after_validation(true) changes status to "invalid_moab"' do |orig_status|
-                  before { cm.update(status: orig_status) }
+                shared_examples '#update_version_after_validation(true) changes status to "invalid_moab"' do |orig_status|
+                  before { complete_moab.update(status: orig_status) }
 
                   it "original status #{orig_status}" do
                     expect do
-                      complete_moab_handler.execute(checksums_validated: true)
-                    end.to change { cm.reload.status }.from(orig_status).to('invalid_moab')
+                      complete_moab_service.execute(checksums_validated: true)
+                    end.to change { complete_moab.reload.status }.from(orig_status).to('invalid_moab')
                   end
                 end
 
-                it_behaves_like 'CMH#update_version_after_validation(true) changes status to "invalid_moab"', 'ok'
-                it_behaves_like 'CMH#update_version_after_validation(true) changes status to "invalid_moab"', 'validity_unknown'
-                it_behaves_like 'CMH#update_version_after_validation(true) changes status to "invalid_moab"', 'online_moab_not_found'
-                it_behaves_like 'CMH#update_version_after_validation(true) changes status to "invalid_moab"', 'unexpected_version_on_storage'
-                it_behaves_like 'CMH#update_version_after_validation(true) changes status to "invalid_moab"', 'invalid_checksum'
+                it_behaves_like '#update_version_after_validation(true) changes status to "invalid_moab"', 'ok'
+                it_behaves_like '#update_version_after_validation(true) changes status to "invalid_moab"', 'validity_unknown'
+                it_behaves_like '#update_version_after_validation(true) changes status to "invalid_moab"', 'online_moab_not_found'
+                it_behaves_like '#update_version_after_validation(true) changes status to "invalid_moab"', 'unexpected_version_on_storage'
+                it_behaves_like '#update_version_after_validation(true) changes status to "invalid_moab"', 'invalid_checksum'
               end
             end
           end
@@ -319,23 +319,23 @@ RSpec.describe CompleteMoabService::UpdateVersionAfterValidation do
         context 'PreservedObject' do
           context 'unchanged' do
             it 'current_version' do
-              orig = po.current_version
-              complete_moab_handler.execute
-              expect(po.current_version).to eq orig
+              original_version = preserved_object.current_version
+              complete_moab_service.execute
+              expect(preserved_object.current_version).to eq original_version
             end
           end
         end
 
         context 'calls #update_online_version with' do
           it 'status = "validity_unknown" for checksums_validated = false' do
-            expect(complete_moab_handler).to receive(:update_online_version).with(status: 'validity_unknown').and_call_original
-            complete_moab_handler.execute
+            expect(complete_moab_service).to receive(:update_online_version).with(status: 'validity_unknown').and_call_original
+            complete_moab_service.execute
             skip 'test is weak b/c we only indirectly show the effects of #update_online_version in #update_version specs'
           end
 
           it 'status = "invalid_moab" and checksums_validated = true for checksums_validated = true' do
-            expect(complete_moab_handler).to receive(:update_online_version).with(status: 'invalid_moab', checksums_validated: true).and_call_original
-            complete_moab_handler.execute(checksums_validated: true)
+            expect(complete_moab_service).to receive(:update_online_version).with(status: 'invalid_moab', checksums_validated: true).and_call_original
+            complete_moab_service.execute(checksums_validated: true)
             skip 'test is weak b/c we only indirectly show the effects of #update_online_version in #update_version specs'
           end
         end
@@ -343,45 +343,45 @@ RSpec.describe CompleteMoabService::UpdateVersionAfterValidation do
         it 'logs a debug message' do
           msg = "update_version_after_validation #{druid} called"
           allow(Rails.logger).to receive(:debug)
-          complete_moab_handler.execute
+          complete_moab_service.execute
           expect(Rails.logger).to have_received(:debug).with(msg)
         end
 
         context 'CompleteMoab and PreservedObject versions do not match' do
           before do
-            cm.version = cm.version + 1
-            cm.save!
+            complete_moab.version = complete_moab.version + 1
+            complete_moab.save!
           end
 
           context 'checksums_validated = false' do
             context 'CompleteMoab' do
               it 'last_moab_validation updated' do
-                expect { complete_moab_handler.execute }.to change { cm.reload.last_moab_validation }
+                expect { complete_moab_service.execute }.to change { complete_moab.reload.last_moab_validation }
               end
 
               it 'last_version_audit unchanged' do
-                expect { complete_moab_handler.execute }.not_to change { cm.reload.last_version_audit }
+                expect { complete_moab_service.execute }.not_to change { complete_moab.reload.last_version_audit }
               end
 
               it 'size unchanged' do
-                expect { complete_moab_handler.execute }.not_to change { cm.reload.size }
+                expect { complete_moab_service.execute }.not_to change { complete_moab.reload.size }
               end
 
               it 'version unchanged' do
-                expect { complete_moab_handler.execute }.not_to change { cm.reload.version }
+                expect { complete_moab_service.execute }.not_to change { complete_moab.reload.version }
               end
 
               it 'status becomes validity_unknown (due to newer version not checksum validated)' do
-                expect { complete_moab_handler.execute }.to change { cm.reload.status }.to('validity_unknown')
+                expect { complete_moab_service.execute }.to change { complete_moab.reload.status }.to('validity_unknown')
               end
             end
 
             it 'does not update PreservedObject' do
-              expect { complete_moab_handler.execute }.not_to change { po.reload.updated_at }
+              expect { complete_moab_service.execute }.not_to change { preserved_object.reload.updated_at }
             end
 
             context 'returns' do
-              let!(:results) { complete_moab_handler.execute.results }
+              let!(:results) { complete_moab_service.execute.results }
 
               it '3 results' do
                 expect(results).to be_an_instance_of Array
@@ -410,32 +410,32 @@ RSpec.describe CompleteMoabService::UpdateVersionAfterValidation do
           context 'checksums_validated = true' do
             context 'CompleteMoab' do
               it 'last_moab_validation updated' do
-                expect { complete_moab_handler.execute(checksums_validated: true) }.to change { cm.reload.last_moab_validation }
+                expect { complete_moab_service.execute(checksums_validated: true) }.to change { complete_moab.reload.last_moab_validation }
               end
 
               it 'last_version_audit unchanged' do
-                expect { complete_moab_handler.execute(checksums_validated: true) }.not_to change { cm.reload.last_version_audit }
+                expect { complete_moab_service.execute(checksums_validated: true) }.not_to change { complete_moab.reload.last_version_audit }
               end
 
               it 'size unchanged' do
-                expect { complete_moab_handler.execute(checksums_validated: true) }.not_to change { cm.reload.size }
+                expect { complete_moab_service.execute(checksums_validated: true) }.not_to change { complete_moab.reload.size }
               end
 
               it 'version unchanged' do
-                expect { complete_moab_handler.execute(checksums_validated: true) }.not_to change { cm.reload.version }
+                expect { complete_moab_service.execute(checksums_validated: true) }.not_to change { complete_moab.reload.version }
               end
 
               it 'status becomes invalid_moab' do
-                expect { complete_moab_handler.execute(checksums_validated: true) }.to change { cm.reload.status }.to('invalid_moab')
+                expect { complete_moab_service.execute(checksums_validated: true) }.to change { complete_moab.reload.status }.to('invalid_moab')
               end
             end
 
             it 'does not update PreservedObject' do
-              expect { complete_moab_handler.execute(checksums_validated: true) }.not_to change { po.reload.updated_at }
+              expect { complete_moab_service.execute(checksums_validated: true) }.not_to change { preserved_object.reload.updated_at }
             end
 
             context 'returns' do
-              let!(:results) { complete_moab_handler.execute(checksums_validated: true).results }
+              let!(:results) { complete_moab_service.execute(checksums_validated: true).results }
 
               it '3 results' do
                 expect(results).to be_an_instance_of Array
@@ -477,10 +477,10 @@ RSpec.describe CompleteMoabService::UpdateVersionAfterValidation do
             context 'ActiveRecordError' do
               let(:results) do
                 allow(Rails.logger).to receive(:log)
-                allow(complete_moab_handler).to receive(:pres_object).and_return(po)
-                allow(complete_moab_handler.pres_object).to receive(:complete_moab).and_return(cm)
-                allow(cm).to receive(:save!).and_raise(ActiveRecord::ActiveRecordError, 'foo')
-                complete_moab_handler.execute.results
+                allow(complete_moab_service).to receive(:preserved_object).and_return(preserved_object)
+                allow(complete_moab_service.preserved_object).to receive(:complete_moab).and_return(complete_moab)
+                allow(complete_moab).to receive(:save!).and_raise(ActiveRecord::ActiveRecordError, 'foo')
+                complete_moab_service.execute.results
               end
 
               context 'DB_UPDATE_FAILED error' do
