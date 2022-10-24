@@ -18,18 +18,20 @@ module CompleteMoabService
     delegate :storage_location, to: :moab_storage_root
     delegate :complete_moab, to: :moab_validator
 
-    def initialize(druid:, incoming_version:, incoming_size:, moab_storage_root:)
+    def initialize(druid:, incoming_version:, incoming_size:, moab_storage_root:, check_name:)
       @druid = druid
       @incoming_version = ApplicationController.helpers.version_string_to_int(incoming_version)
       @incoming_size = ApplicationController.helpers.string_to_int(incoming_size)
       @moab_storage_root = moab_storage_root
-      @results = AuditResults.new(druid: druid, actual_version: incoming_version, moab_storage_root: moab_storage_root)
+      @results = AuditResults.new(druid: druid, actual_version: incoming_version, moab_storage_root: moab_storage_root, check_name: check_name)
       @logger = PreservationCatalog::Application.logger
     end
 
     def pres_object
       @pres_object ||= PreservedObject.find_by!(druid: druid)
     end
+
+    def execute; end
 
     protected
 

@@ -8,9 +8,11 @@ module CompleteMoabService
       new(druid: druid, incoming_version: incoming_version, incoming_size: incoming_size, moab_storage_root: moab_storage_root).execute
     end
 
-    def execute
-      results.check_name = 'check_existence'
+    def initialize(druid:, incoming_version:, incoming_size:, moab_storage_root:, check_name: 'check_existence')
+      super
+    end
 
+    def execute
       if invalid?
         results.add_result(AuditResults::INVALID_ARGUMENTS, errors.full_messages)
       elsif CompleteMoab.by_druid(druid).by_storage_root(moab_storage_root).exists?

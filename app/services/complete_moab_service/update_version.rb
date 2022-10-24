@@ -8,9 +8,12 @@ module CompleteMoabService
           moab_storage_root: moab_storage_root).execute(checksums_validated: checksums_validated)
     end
 
+    def initialize(druid:, incoming_version:, incoming_size:, moab_storage_root:, check_name: 'update')
+      super
+    end
+
     # checksums_validated may be set to true if the caller takes responsibility for having validated the checksums
     def execute(checksums_validated: false)
-      results.check_name = 'update_version'
       if invalid?
         results.add_result(AuditResults::INVALID_ARGUMENTS, errors.full_messages)
       else
