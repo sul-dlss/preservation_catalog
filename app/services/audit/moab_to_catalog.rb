@@ -18,9 +18,8 @@ module Audit
       storage_trunk = Settings.moab.storage_trunk
       storage_dir = "#{moab.object_pathname.to_s.split(storage_trunk).first}#{storage_trunk}"
       ms_root = MoabStorageRoot.find_by!(storage_location: storage_dir)
-      comp_moab_handler = CompleteMoabHandler.new(druid, moab.current_version_id, moab.size, ms_root)
-      comp_moab_handler.logger = Audit::MoabToCatalog.logger
-      results = comp_moab_handler.check_existence
+      results = CompleteMoabService::CheckExistence.execute(druid: druid, incoming_version: moab.current_version_id, incoming_size: moab.size,
+                                                            moab_storage_root: ms_root).results
       logger.info "#{results} for #{druid}"
       results
     rescue TypeError
@@ -41,8 +40,8 @@ module Audit
       ms_root = MoabStorageRoot.find_by!(storage_location: storage_dir)
       MoabStorageDirectory.find_moab_paths(storage_dir) do |druid, path, _path_match_data|
         moab = Moab::StorageObject.new(druid, path)
-        comp_moab_handler = CompleteMoabHandler.new(druid, moab.current_version_id, moab.size, ms_root)
-        results << comp_moab_handler.create_after_validation
+        results << CompleteMoabService::CreateAfterValidation.execute(druid: druid, incoming_version: moab.current_version_id,
+                                                                      incoming_size: moab.size, moab_storage_root: ms_root).results
       end
       results
     ensure

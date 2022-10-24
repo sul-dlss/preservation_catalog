@@ -16,6 +16,7 @@ class MoabToCatalogJob < ApplicationJob
   def perform(root, druid)
     path = DruidTools::Druid.new(druid, root.storage_location).path.to_s
     moab = Moab::StorageObject.new(druid, path)
-    CompleteMoabHandler.new(druid, moab.current_version_id, moab.size, root).check_existence
+    CompleteMoabService::CheckExistence.execute(druid: druid, incoming_version: moab.current_version_id, incoming_size: moab.size,
+                                                moab_storage_root: root)
   end
 end

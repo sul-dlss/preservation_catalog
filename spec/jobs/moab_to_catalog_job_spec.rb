@@ -10,13 +10,16 @@ describe MoabToCatalogJob, type: :job do
   let(:moab) { instance_double(Moab::StorageObject, size: 22, current_version_id: 3) }
 
   describe '#perform' do
-    let(:handler) { instance_double(CompleteMoabHandler) }
+    before do
+      allow(CompleteMoabService::CheckExistence).to receive(:execute)
+    end
 
-    it 'builds a CompleteMoabHandler and calls #check_existence' do
+    it 'checks existence' do
       expect(Moab::StorageObject).to receive(:new).with(druid, path).and_return(moab)
-      expect(CompleteMoabHandler).to receive(:new)
-        .with(druid, moab.current_version_id, moab.size, msr).and_return(handler)
-      expect(handler).to receive(:check_existence)
+      # expect(CompleteMoabHandler).to receive(:new)
+      #   .with(druid, moab.current_version_id, moab.size, msr).and_return(handler)
+      expect(CompleteMoabService::CheckExistence).to receive(:execute).with(druid: druid, incoming_version: moab.current_version_id,
+                                                                            incoming_size: moab.size, moab_storage_root: msr)
       job.perform(msr, druid)
     end
   end

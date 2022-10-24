@@ -42,7 +42,6 @@ class TablesHaveDataCheck < OkComputer::Check
 end
 OkComputer::Registry.register 'feature-tables-have-data', TablesHaveDataCheck.new
 
-# rubocop:disable Metrics/AbcSize
 # check that directory is accessible without consideration for writability
 class DirectoryExistsCheck < OkComputer::Check
   attr_accessor :directory, :min_subfolder_count
@@ -72,8 +71,6 @@ class DirectoryExistsCheck < OkComputer::Check
     end
   end
 end
-# rubocop:enable Metrics/AbcSize
-
 Settings.storage_root_map.default.each do |name, location|
   sdrobjects_location = "#{location}/#{Settings.moab.storage_trunk}"
   OkComputer::Registry.register "feature-#{name}-sdr2objects", DirectoryExistsCheck.new(sdrobjects_location, Settings.minimum_subfolder_count)

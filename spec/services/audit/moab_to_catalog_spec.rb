@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'rails_helper'
+require 'csv'
 
 RSpec.describe Audit::MoabToCatalog do
   let(:storage_dir) { 'spec/fixtures/storage_root01/sdr2objects' }
@@ -14,6 +15,8 @@ RSpec.describe Audit::MoabToCatalog do
   let(:event_service_reporter) { instance_double(Reporters::EventServiceReporter, report_errors: nil, report_completed: nil) }
   let(:honeybadger_reporter) { instance_double(Reporters::HoneybadgerReporter, report_errors: nil, report_completed: nil) }
   let(:logger_reporter) { instance_double(Reporters::LoggerReporter, report_errors: nil, report_completed: nil) }
+  let(:audit_results) { instance_double(AuditResults, results: results) }
+  let(:results) { [] }
 
   before do
     allow(described_class.logger).to receive(:info) # silence STDOUT chatter
@@ -78,22 +81,13 @@ RSpec.describe Audit::MoabToCatalog do
       expect(CompleteMoab.find_by!(preserved_object: po, moab_storage_root: msr).version).to eq 3
     end
 
-    it 'calls CompleteMoabHandler.check_existence' do
-      complete_moab_handler = instance_double(CompleteMoabHandler)
-      allow(CompleteMoabHandler).to receive(:new).with(druid,
-                                                       3, # current_version
-                                                       instance_of(Integer), # size
-                                                       ms_root)
-                                                 .and_return(complete_moab_handler)
-      allow(complete_moab_handler).to receive(:logger=)
-      allow(complete_moab_handler).to receive(:check_existence)
+    it 'calls check_existence' do
+      allow(CompleteMoabService::CheckExistence).to receive(:execute).and_return(audit_results)
       described_class.check_existence_for_druid(druid)
-      expect(CompleteMoabHandler).to have_received(:new).with(druid,
-                                                              3, # current_version
-                                                              instance_of(Integer), # size
-                                                              ms_root)
-      expect(complete_moab_handler).to have_received(:logger=)
-      expect(complete_moab_handler).to have_received(:check_existence)
+      expect(CompleteMoabService::CheckExistence).to have_received(:execute).with(druid: druid,
+                                                                                  incoming_version: 3, # current_version
+                                                                                  incoming_size: instance_of(Integer), # size
+                                                                                  moab_storage_root: ms_root)
     end
 
     it 'returns results' do
@@ -103,10 +97,10 @@ RSpec.describe Audit::MoabToCatalog do
     context 'given a druid that does not exist' do
       let(:druid) { 'db102hs2345' }
 
-      it 'does not call CompleteMoabHandler.check_existence' do
-        allow(CompleteMoabHandler).to receive(:new)
+      it 'does not call check_existence' do
+        allow(CompleteMoabService::CheckExistence).to receive(:execute)
         described_class.check_existence_for_druid(druid)
-        expect(CompleteMoabHandler).not_to have_received(:new)
+        expect(CompleteMoabService::CheckExistence).not_to have_received(:execute)
       end
     end
   end
@@ -158,23 +152,18 @@ RSpec.describe Audit::MoabToCatalog do
       end
 
       before do
-        expected_argument_list.each do |arg_hash|
-          complete_moab_handler = instance_double(CompleteMoabHandler)
-          arg_hash[:complete_moab_handler] = complete_moab_handler
-          allow(CompleteMoabHandler).to receive(:new).with(
-            arg_hash[:druid],
-            arg_hash[:storage_root_current_version],
-            instance_of(Integer),
-            ms_root
-          ).and_return(complete_moab_handler)
-          allow(arg_hash[:complete_moab_handler]).to receive(:create_after_validation)
-        end
+        allow(CompleteMoabService::CreateAfterValidation).to receive(:execute).and_return(audit_results)
       end
 
       it 'calls #create_after_validation' do
         described_class.seed_catalog_for_dir(storage_dir)
         expected_argument_list.each do |arg_hash|
-          expect(arg_hash[:complete_moab_handler]).to have_received(:create_after_validation)
+          expect(CompleteMoabService::CreateAfterValidation).to have_received(:execute).with(
+            druid: arg_hash[:druid],
+            incoming_version: arg_hash[:storage_root_current_version],
+            incoming_size: instance_of(Integer),
+            moab_storage_root: ms_root
+          )
         end
       end
     end

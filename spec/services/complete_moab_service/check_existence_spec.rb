@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 require 'rails_helper'
-require 'services/shared_examples_complete_moab_handler'
+require 'services/complete_moab_service/shared_examples'
 
-RSpec.describe CompleteMoabHandler do
+RSpec.describe CompleteMoabService::CheckExistence do
   let(:audit_workflow_reporter) { instance_double(Reporters::AuditWorkflowReporter, report_errors: nil) }
   let(:druid) { 'ab123cd4567' }
   let(:incoming_version) { 6 }
@@ -12,7 +12,10 @@ RSpec.describe CompleteMoabHandler do
   let(:ms_root) { MoabStorageRoot.find_by!(storage_location: 'spec/fixtures/storage_root01/sdr2objects') }
   let(:cm) { CompleteMoab.find_by!(moab_storage_root: ms_root) }
   let(:db_update_failed_prefix) { 'db update failed' }
-  let(:complete_moab_handler) { described_class.new(druid, incoming_version, incoming_size, ms_root) }
+  let(:complete_moab_handler) do
+    described_class.new(druid: druid, incoming_version: incoming_version, incoming_size: incoming_size, moab_storage_root: ms_root)
+  end
+
   let(:moab_validator) { complete_moab_handler.send(:moab_validator) }
   let(:logger_reporter) { instance_double(Reporters::LoggerReporter, report_errors: nil) }
   let(:honeybadger_reporter) { instance_double(Reporters::HoneybadgerReporter, report_errors: nil) }
@@ -26,7 +29,7 @@ RSpec.describe CompleteMoabHandler do
   end
 
   describe '#check_existence' do
-    it_behaves_like 'attributes validated', :check_existence
+    it_behaves_like 'attributes validated', :execute
 
     context 'druid in db' do
       let(:druid) { 'bj102hs9687' }
@@ -44,7 +47,7 @@ RSpec.describe CompleteMoabHandler do
       end
 
       context 'incoming and db versions match' do
-        let(:complete_moab_handler) { described_class.new(druid, 2, 1, ms_root) }
+        let(:complete_moab_handler) { described_class.new(druid: druid, incoming_version: 2, incoming_size: 1, moab_storage_root: ms_root) }
         let(:version_matches_cm_msg) { 'actual version (2) matches CompleteMoab db version' }
 
         context 'CompleteMoab' do
@@ -53,13 +56,13 @@ RSpec.describe CompleteMoabHandler do
               orig = Time.current
               cm.last_version_audit = orig
               cm.save!
-              complete_moab_handler.check_existence
+              complete_moab_handler.execute
               expect(cm.reload.last_version_audit).to be > orig
             end
 
             it 'updated_at' do
               orig = cm.updated_at
-              complete_moab_handler.check_existence
+              complete_moab_handler.execute
               expect(cm.reload.updated_at).to be > orig
             end
           end
@@ -67,25 +70,25 @@ RSpec.describe CompleteMoabHandler do
           context 'unchanged' do
             it 'status' do
               orig = cm.status
-              complete_moab_handler.check_existence
+              complete_moab_handler.execute
               expect(cm.reload.status).to eq orig
             end
 
             it 'version' do
               orig = cm.version
-              complete_moab_handler.check_existence
+              complete_moab_handler.execute
               expect(cm.reload.version).to eq orig
             end
 
             it 'size' do
               orig = cm.size
-              complete_moab_handler.check_existence
+              complete_moab_handler.execute
               expect(cm.reload.size).to eq orig
             end
 
             it 'last_moab_validation' do
               orig = cm.last_moab_validation
-              complete_moab_handler.check_existence
+              complete_moab_handler.execute
               expect(cm.reload.last_moab_validation).to eq orig
             end
           end
@@ -93,21 +96,22 @@ RSpec.describe CompleteMoabHandler do
 
         it 'PreservedObject is not updated' do
           orig = po.updated_at
-          complete_moab_handler.check_existence
+          complete_moab_handler.execute
           expect(po.reload.updated_at).to eq orig
         end
 
-        it_behaves_like 'calls AuditResults.report_results', :check_existence
+        it_behaves_like 'calls AuditResultsReporter.report_results'
         it 'does not validate moab' do
           expect(moab_validator).not_to receive(:moab_validation_errors)
-          complete_moab_handler.check_existence
+          complete_moab_handler.execute
         end
 
         context 'returns' do
-          let(:results) { complete_moab_handler.check_existence }
+          let(:audit_result) { complete_moab_handler.execute }
+          let(:results) { audit_result.results }
 
           it '1 VERSION_MATCHES result' do
-            expect(results).to be_an_instance_of Array
+            expect(audit_result).to be_an_instance_of AuditResults
             expect(results.size).to eq 1
             expect(results).to include(a_hash_including(AuditResults::VERSION_MATCHES => version_matches_cm_msg))
           end
@@ -121,7 +125,7 @@ RSpec.describe CompleteMoabHandler do
           mock_sov = instance_double(Stanford::StorageObjectValidator)
           expect(mock_sov).to receive(:validation_errors).and_return([])
           allow(Stanford::StorageObjectValidator).to receive(:new).and_return(mock_sov)
-          complete_moab_handler.check_existence
+          complete_moab_handler.execute
         end
 
         context 'when moab is valid' do
@@ -129,40 +133,40 @@ RSpec.describe CompleteMoabHandler do
 
           context 'CompleteMoab' do
             context 'changed' do
-              before { allow(complete_moab_handler).to receive(:ran_moab_validation?).and_return(true) }
+              before { allow(moab_validator).to receive(:ran_moab_validation?).and_return(true) }
 
               it 'version to incoming_version' do
                 orig = cm.version
-                complete_moab_handler.check_existence
+                complete_moab_handler.execute
                 expect(cm.reload.version).to be > orig
                 expect(cm.reload.version).to eq incoming_version
               end
 
               it 'size if supplied' do
-                expect { complete_moab_handler.check_existence }.to change { complete_moab_handler.complete_moab.size }.to(incoming_size)
+                expect { complete_moab_handler.execute }.to change { complete_moab_handler.complete_moab.size }.to(incoming_size)
               end
 
               it 'last_moab_validation' do
                 complete_moab_handler.complete_moab.last_moab_validation = Time.current
                 complete_moab_handler.complete_moab.save!
-                expect { complete_moab_handler.check_existence }.to change { complete_moab_handler.complete_moab.last_moab_validation }
+                expect { complete_moab_handler.execute }.to change { complete_moab_handler.complete_moab.last_moab_validation }
               end
 
               it 'last_version_audit' do
                 complete_moab_handler.complete_moab.last_version_audit = Time.current
                 complete_moab_handler.complete_moab.save!
-                expect { complete_moab_handler.check_existence }.to change { complete_moab_handler.complete_moab.last_version_audit }
+                expect { complete_moab_handler.execute }.to change { complete_moab_handler.complete_moab.last_version_audit }
               end
 
               it 'updated_at' do
                 orig = cm.updated_at
-                complete_moab_handler.check_existence
+                complete_moab_handler.execute
                 expect(cm.reload.updated_at).to be > orig
               end
 
               it 'status becomes "ok" if it was invalid_moab (b/c after validation)' do
                 cm.invalid_moab!
-                complete_moab_handler.check_existence
+                complete_moab_handler.execute
                 expect(cm.reload.status).to eq 'validity_unknown'
               end
             end
@@ -170,13 +174,14 @@ RSpec.describe CompleteMoabHandler do
             context 'unchanged' do
               it 'status if former status was ok' do
                 complete_moab_handler.complete_moab.ok!
-                expect { complete_moab_handler.check_existence }.not_to change { complete_moab_handler.complete_moab.status }.from('ok')
+                expect { complete_moab_handler.execute }.not_to change { complete_moab_handler.complete_moab.status }.from('ok')
               end
 
               it 'size if incoming size is nil' do
                 orig = cm.size
-                complete_moab_handler = described_class.new(druid, incoming_version, nil, ms_root)
-                complete_moab_handler.check_existence
+                complete_moab_handler = described_class.new(druid: druid, incoming_version: incoming_version, incoming_size: nil,
+                                                            moab_storage_root: ms_root)
+                complete_moab_handler.execute
                 expect(cm.reload.size).to eq orig
               end
             end
@@ -184,19 +189,19 @@ RSpec.describe CompleteMoabHandler do
 
           context 'PreservedObject changed' do
             it 'current_version' do
-              expect { complete_moab_handler.check_existence }.to change { complete_moab_handler.pres_object.current_version }
+              expect { complete_moab_handler.execute }.to change { complete_moab_handler.pres_object.current_version }
                 .to(incoming_version)
             end
 
             it 'dependent CompleteMoab also updated' do
-              expect { complete_moab_handler.check_existence }.to change { complete_moab_handler.complete_moab.updated_at }
+              expect { complete_moab_handler.execute }.to change { complete_moab_handler.complete_moab.updated_at }
             end
           end
 
-          it_behaves_like 'calls AuditResults.report_results', :check_existence
+          it_behaves_like 'calls AuditResultsReporter.report_results'
 
           context 'returns' do
-            let(:results) { complete_moab_handler.check_existence }
+            let(:results) { complete_moab_handler.execute.results }
 
             before { allow(moab_validator).to receive(:moab_validation_errors).and_return([]) }
 
@@ -212,7 +217,10 @@ RSpec.describe CompleteMoabHandler do
           let(:invalid_druid) { 'xx000xx0000' }
           let(:invalid_storage_dir) { 'spec/fixtures/bad_root01/bad_moab_storage_trunk' }
           let(:invalid_root) { MoabStorageRoot.find_by(storage_location: invalid_storage_dir) }
-          let(:invalid_complete_moab_handler) { described_class.new(invalid_druid, incoming_version, incoming_size, invalid_root) }
+          let(:invalid_complete_moab_handler) do
+            described_class.new(druid: invalid_druid, incoming_version: incoming_version, incoming_size: incoming_size,
+                                moab_storage_root: invalid_root)
+          end
           let(:invalid_po) { PreservedObject.find_by(druid: invalid_druid) }
           let(:invalid_cm) { CompleteMoab.find_by(preserved_object: invalid_po) }
 
@@ -238,31 +246,31 @@ RSpec.describe CompleteMoabHandler do
             context 'changed' do
               it 'last_version_audit' do
                 orig = invalid_cm.last_version_audit
-                invalid_complete_moab_handler.check_existence
+                invalid_complete_moab_handler.execute
                 expect(invalid_cm.reload.last_version_audit).to be > orig
               end
 
               it 'last_moab_validation' do
                 orig = invalid_cm.last_moab_validation
-                invalid_complete_moab_handler.check_existence
+                invalid_complete_moab_handler.execute
                 expect(invalid_cm.reload.last_moab_validation).to be > orig
               end
 
               it 'updated_at' do
                 orig = invalid_cm.updated_at
-                invalid_complete_moab_handler.check_existence
+                invalid_complete_moab_handler.execute
                 expect(invalid_cm.reload.updated_at).to be > orig
               end
 
               it 'ensures status becomes invalid_moab from ok' do
                 invalid_cm.ok!
-                invalid_complete_moab_handler.check_existence
+                invalid_complete_moab_handler.execute
                 expect(invalid_cm.reload.status).to eq 'invalid_moab'
               end
 
               it 'ensures status becomes invalid_moab from unexpected_version_on_storage' do
                 invalid_cm.unexpected_version_on_storage!
-                invalid_complete_moab_handler.check_existence
+                invalid_complete_moab_handler.execute
                 expect(invalid_cm.reload.status).to eq 'invalid_moab'
               end
             end
@@ -270,13 +278,13 @@ RSpec.describe CompleteMoabHandler do
             context 'unchanged' do
               it 'version' do
                 orig = invalid_cm.version
-                invalid_complete_moab_handler.check_existence
+                invalid_complete_moab_handler.execute
                 expect(invalid_cm.reload.version).to eq orig
               end
 
               it 'size' do
                 orig = invalid_cm.size
-                invalid_complete_moab_handler.check_existence
+                invalid_complete_moab_handler.execute
                 expect(invalid_cm.reload.size).to eq orig
               end
             end
@@ -284,14 +292,14 @@ RSpec.describe CompleteMoabHandler do
 
           it 'PreservedObject is not updated' do
             orig_timestamp = invalid_po.updated_at
-            invalid_complete_moab_handler.check_existence
+            invalid_complete_moab_handler.execute
             expect(invalid_po.reload.updated_at).to eq orig_timestamp
           end
 
-          it_behaves_like 'calls AuditResults.report_results', :check_existence
+          it_behaves_like 'calls AuditResultsReporter.report_results'
 
           context 'returns' do
-            let(:results) { invalid_complete_moab_handler.check_existence }
+            let(:results) { invalid_complete_moab_handler.execute.results }
 
             it '3 results' do
               expect(results).to be_an_instance_of Array
@@ -318,9 +326,9 @@ RSpec.describe CompleteMoabHandler do
       end
 
       context 'CompleteMoab already has a status other than OK_STATUS' do
-        it_behaves_like 'CompleteMoab may have its status checked when incoming_version == cm.version', :check_existence
+        it_behaves_like 'CompleteMoab may have its status checked when incoming_version == cm.version'
 
-        it_behaves_like 'CompleteMoab may have its status checked when incoming_version < cm.version', :check_existence
+        it_behaves_like 'CompleteMoab may have its status checked when incoming_version < cm.version'
 
         context 'incoming_version > db version' do
           let(:incoming_version) { cm.version + 1 }
@@ -329,19 +337,19 @@ RSpec.describe CompleteMoabHandler do
 
           it 'had OK_STATUS, version increased, should still have OK_STATUS' do
             cm.ok!
-            complete_moab_handler.check_existence
+            complete_moab_handler.execute
             expect(cm.reload.status).to eq 'ok'
           end
 
           it 'had INVALID_MOAB_STATUS, was remediated, should now have VALIDITY_UNKNOWN_STATUS' do
             cm.invalid_moab!
-            complete_moab_handler.check_existence
+            complete_moab_handler.execute
             expect(cm.reload.status).to eq 'validity_unknown'
           end
 
           it 'had UNEXPECTED_VERSION_ON_STORAGE_STATUS, seems to have an acceptable version now' do
             cm.unexpected_version_on_storage!
-            complete_moab_handler.check_existence
+            complete_moab_handler.execute
             expect(cm.reload.status).to eq 'validity_unknown'
           end
         end
@@ -353,7 +361,7 @@ RSpec.describe CompleteMoabHandler do
           po.save!
         end
 
-        it_behaves_like 'PreservedObject current_version does not match online CM version', :check_existence, 3, 2, 8
+        it_behaves_like 'PreservedObject current_version does not match online CM version', 3, 2, 8
       end
 
       context 'db update error' do
@@ -366,16 +374,16 @@ RSpec.describe CompleteMoabHandler do
 
           context 'transaction is rolled back' do
             it 'CompleteMoab is not updated' do
-              expect { complete_moab_handler.check_existence }.not_to change { complete_moab_handler.complete_moab.reload.updated_at }
+              expect { complete_moab_handler.execute }.not_to change { complete_moab_handler.complete_moab.reload.updated_at }
             end
 
             it 'PreservedObject is not updated' do
-              expect { complete_moab_handler.check_existence }.not_to change { complete_moab_handler.pres_object.reload.updated_at }
+              expect { complete_moab_handler.execute }.not_to change { complete_moab_handler.pres_object.reload.updated_at }
             end
           end
 
           context 'DB_UPDATE_FAILED error' do
-            let(:results) { complete_moab_handler.check_existence }
+            let(:results) { complete_moab_handler.execute.results }
             let(:result_code) { AuditResults::DB_UPDATE_FAILED }
 
             it 'returns expected message(s)' do
@@ -391,14 +399,24 @@ RSpec.describe CompleteMoabHandler do
         druid = 'zy987xw6543'
         pres_obj = create(:preserved_object, druid: druid)
         comp_moab = create(:complete_moab, preserved_object: pres_obj, moab_storage_root: ms_root)
-        expect { described_class.new(druid, 1, 1, ms_root).check_existence }.not_to change { pres_obj.reload.updated_at }
-        expect { described_class.new(druid, 1, 1, ms_root).check_existence }.to change { comp_moab.reload.updated_at }
+        expect do
+          described_class.new(druid: druid, incoming_version: 1,
+                              incoming_size: 1, moab_storage_root: ms_root).execute
+        end.not_to change {
+                     pres_obj.reload.updated_at
+                   }
+        expect do
+          described_class.new(druid: druid, incoming_version: 1,
+                              incoming_size: 1, moab_storage_root: ms_root).execute
+        end.to change {
+                 comp_moab.reload.updated_at
+               }
       end
 
       it 'logs a debug message' do
         allow(Rails.logger).to receive(:debug)
         allow(moab_validator).to receive(:moab_validation_errors).and_return([])
-        complete_moab_handler.check_existence
+        complete_moab_handler.execute
         expect(Rails.logger).to have_received(:debug).with("check_existence #{druid} called")
       end
     end
@@ -413,7 +431,7 @@ RSpec.describe CompleteMoabHandler do
         # FIXME: if requirements change to a single message for "object does not exist" and "created object"
         #  then this will no longer be correct?
         # NOTE: this pertains to PreservedObject
-        it_behaves_like 'druid not in catalog', :check_existence
+        it_behaves_like 'druid not in catalog'
 
         # FIXME: if requirements change to a single message for "object does not exist" and "created object"
         #  then this will no longer be correct?
@@ -421,7 +439,7 @@ RSpec.describe CompleteMoabHandler do
           before { create(:preserved_object, druid: druid) }
           # but no associated CompleteMoab
 
-          it_behaves_like 'CompleteMoab does not exist', :check_existence
+          it_behaves_like 'CompleteMoab does not exist'
         end
       end
 
@@ -430,13 +448,15 @@ RSpec.describe CompleteMoabHandler do
         let(:storage_dir) { 'spec/fixtures/storage_root02/sdr2objects' }
         let(:ms_root) { MoabStorageRoot.find_by(storage_location: storage_dir) }
         let(:incoming_version) { 2 }
-        let(:complete_moab_handler) { described_class.new(valid_druid, incoming_version, incoming_size, ms_root) }
+        let(:complete_moab_handler) do
+          described_class.new(druid: valid_druid, incoming_version: incoming_version, incoming_size: incoming_size, moab_storage_root: ms_root)
+        end
 
         it 'calls Stanford::StorageObjectValidator.validation_errors for moab' do
           mock_sov = instance_double(Stanford::StorageObjectValidator)
           expect(mock_sov).to receive(:validation_errors).and_return([])
           allow(Stanford::StorageObjectValidator).to receive(:new).and_return(mock_sov)
-          complete_moab_handler.check_existence
+          complete_moab_handler.execute
         end
 
         context 'moab is valid' do
@@ -446,24 +466,25 @@ RSpec.describe CompleteMoabHandler do
               current_version: incoming_version,
               preservation_policy_id: PreservationPolicy.default_policy.id
             }
-            complete_moab_handler.check_existence
+            complete_moab_handler.execute
             expect(PreservedObject.where(po_args)).to exist
           end
 
           it 'CompleteMoab created' do
-            complete_moab_handler.check_existence
+            complete_moab_handler.execute
             new_cm = CompleteMoab.find_by(version: incoming_version, size: incoming_size, moab_storage_root: ms_root)
             expect(new_cm).not_to be_nil
             expect(new_cm.status).to eq 'validity_unknown'
           end
 
-          it_behaves_like 'calls AuditResults.report_results', :check_existence
+          it_behaves_like 'calls AuditResultsReporter.report_results'
 
           context 'returns' do
-            let(:results) { complete_moab_handler.check_existence }
+            let(:audit_result) { complete_moab_handler.execute }
+            let(:results) { audit_result.results }
 
             it 'returns 2 results including expected messages' do
-              expect(results).to be_an_instance_of Array
+              expect(audit_result).to be_an_instance_of AuditResults
               expect(results.size).to eq 2
               expect(results).to include(a_hash_including(AuditResults::DB_OBJ_DOES_NOT_EXIST => exp_cm_not_exist_msg))
               expect(results).to include(a_hash_including(AuditResults::CREATED_NEW_OBJECT => exp_obj_created_msg))
@@ -476,7 +497,7 @@ RSpec.describe CompleteMoabHandler do
               po = instance_double(PreservedObject)
               allow(po).to receive(:create_complete_moab!).and_raise(ActiveRecord::ActiveRecordError, 'foo')
               allow(PreservedObject).to receive(:create!).with(hash_including(druid: valid_druid)).and_return(po)
-              complete_moab_handler.check_existence
+              complete_moab_handler.execute.results
             end
 
             it 'transaction is rolled back' do
@@ -500,7 +521,9 @@ RSpec.describe CompleteMoabHandler do
           let(:storage_dir) { 'spec/fixtures/bad_root01/bad_moab_storage_trunk' }
           let(:ms_root) { MoabStorageRoot.find_by(storage_location: storage_dir) }
           let(:invalid_druid) { 'xx000xx0000' }
-          let(:complete_moab_handler) { described_class.new(invalid_druid, incoming_version, incoming_size, ms_root) }
+          let(:complete_moab_handler) do
+            described_class.new(druid: invalid_druid, incoming_version: incoming_version, incoming_size: incoming_size, moab_storage_root: ms_root)
+          end
 
           before do
             # add storage root with the invalid moab to the MoabStorageRoots table
@@ -510,21 +533,22 @@ RSpec.describe CompleteMoabHandler do
           end
 
           it 'creates PreservedObject; CompleteMoab with "invalid_moab" status' do
-            complete_moab_handler.check_existence
+            complete_moab_handler.execute
             new_cm = CompleteMoab.find_by(size: incoming_size, moab_storage_root: ms_root, version: incoming_version)
             expect(new_cm).to be_a(CompleteMoab)
             expect(new_cm.status).to eq('invalid_moab')
             expect(new_cm.preserved_object.druid).to eq(invalid_druid)
           end
 
-          it_behaves_like 'calls AuditResults.report_results', :check_existence
+          it_behaves_like 'calls AuditResultsReporter.report_results'
 
           context 'returns' do
-            let(:results) { complete_moab_handler.check_existence }
+            let(:audit_result) { complete_moab_handler.execute }
+            let(:results) { audit_result.results }
 
             it '3 results with expected messages' do
               exp_moab_errs_msg = 'Invalid Moab, validation errors: ["Missing directory: [\\"data\\", \\"manifests\\"] Version: v0001"]'
-              expect(results).to be_an_instance_of Array
+              expect(audit_result).to be_an_instance_of AuditResults
               expect(results.size).to eq 3
               expect(results).to include(a_hash_including(AuditResults::INVALID_MOAB => exp_moab_errs_msg))
               expect(results).to include(a_hash_including(AuditResults::DB_OBJ_DOES_NOT_EXIST => exp_cm_not_exist_msg))
@@ -538,7 +562,7 @@ RSpec.describe CompleteMoabHandler do
               po = instance_double(PreservedObject)
               allow(po).to receive(:create_complete_moab!).and_raise(ActiveRecord::ActiveRecordError, 'foo')
               allow(PreservedObject).to receive(:create!).with(hash_including(druid: invalid_druid)).and_return(po)
-              complete_moab_handler.check_existence
+              complete_moab_handler.execute.results
             end
 
             before { allow(Rails.logger).to receive(:log) }

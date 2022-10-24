@@ -79,8 +79,8 @@ module Audit
           report_results!
         elsif catalog_version < moab_version
           set_status_as_seen_on_disk(true)
-          comp_moab_handler = CompleteMoabHandler.new(druid, moab_version, moab.size, complete_moab.moab_storage_root)
-          comp_moab_handler.update_version_after_validation # results reported by this call
+          CompleteMoabService::UpdateVersionAfterValidation.execute(druid: druid, incoming_version: moab_version, incoming_size: moab.size,
+                                                                    moab_storage_root: complete_moab.moab_storage_root)
         else # catalog_version > moab_version
           set_status_as_seen_on_disk(false)
           results.add_result(
