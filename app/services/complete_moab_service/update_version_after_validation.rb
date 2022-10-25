@@ -26,11 +26,11 @@ module CompleteMoabService
             if checksums_validated
               update_online_version(status: 'invalid_moab', checksums_validated: true)
               # for case when no db updates b/c pres_obj version != complete_moab version
-              update_cm_invalid_moab unless complete_moab.invalid_moab?
+              update_complete_moab_to_invalid_moab unless complete_moab.invalid_moab?
             else
               update_online_version(status: 'validity_unknown')
               # for case when no db updates b/c pres_obj version != complete_moab version
-              update_cm_validity_unknown unless complete_moab.validity_unknown?
+              update_complete_moab_to_validity_unknown unless complete_moab.validity_unknown?
             end
           end
         else
@@ -46,7 +46,7 @@ module CompleteMoabService
 
     private
 
-    def update_cm_validity_unknown
+    def update_complete_moab_to_validity_unknown
       transaction_ok = with_active_record_transaction_and_rescue do
         moab_validator.update_status('validity_unknown')
         complete_moab.update_audit_timestamps(moab_validator.ran_moab_validation?, false)
@@ -55,7 +55,7 @@ module CompleteMoabService
       results.remove_db_updated_results unless transaction_ok
     end
 
-    def update_cm_invalid_moab
+    def update_complete_moab_to_invalid_moab
       transaction_ok = with_active_record_transaction_and_rescue do
         moab_validator.update_status('invalid_moab')
         complete_moab.update_audit_timestamps(moab_validator.ran_moab_validation?, false)

@@ -19,7 +19,7 @@ module CompleteMoabService
           Rails.logger.debug "check_existence #{druid} called"
 
           transaction_ok = with_active_record_transaction_and_rescue do
-            raise_rollback_if_cm_po_version_mismatch
+            raise_rollback_if_version_mismatch
 
             return report_results! unless moab_validator.can_validate_current_comp_moab_status?
 
@@ -29,7 +29,7 @@ module CompleteMoabService
             elsif incoming_version > complete_moab.version
               moab_validator.set_status_as_seen_on_disk(true) unless complete_moab.status == 'ok'
               results.add_result(AuditResults::ACTUAL_VERS_GT_DB_OBJ, db_obj_name: 'CompleteMoab', db_obj_version: complete_moab.version)
-              update_cm_po_set_status
+              update_complete_moab_preserved_object_or_set_status
             else # incoming_version < complete_moab.version
               moab_validator.set_status_as_seen_on_disk(false)
               results.add_result(AuditResults::ACTUAL_VERS_LT_DB_OBJ, db_obj_name: 'CompleteMoab', db_obj_version: complete_moab.version)
@@ -52,11 +52,11 @@ module CompleteMoabService
 
     private
 
-    def update_cm_po_set_status
+    def update_complete_moab_preserved_object_or_set_status
       if moab_validator.moab_validation_errors.empty?
         complete_moab.upd_audstamps_version_size(moab_validator.ran_moab_validation?, incoming_version, incoming_size)
-        pres_object.current_version = incoming_version if primary_moab? # we only want to track highest seen version based on primary
-        pres_object.save!
+        preserved_object.current_version = incoming_version if primary_moab? # we only want to track highest seen version based on primary
+        preserved_object.save!
       else
         moab_validator.update_status('invalid_moab')
       end
