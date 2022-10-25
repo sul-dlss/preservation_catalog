@@ -26,7 +26,7 @@ module CompleteMoabService
     protected
 
     def update_online_version(status: nil, set_status_to_unexpected_version: false, checksums_validated: false)
-      transaction_ok = with_active_record_transaction_and_rescue do
+      with_active_record_transaction_and_rescue do
         raise_rollback_if_version_mismatch
 
         if incoming_version > complete_moab.version
@@ -45,8 +45,6 @@ module CompleteMoabService
           update_complete_moab_to_unexpected_version(status)
         end
       end
-
-      results.remove_db_updated_results unless transaction_ok
     end
 
     def update_complete_moab_to_unexpected_version(new_status)

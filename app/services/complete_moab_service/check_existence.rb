@@ -18,7 +18,7 @@ module CompleteMoabService
         if CompleteMoab.by_druid(druid).by_storage_root(moab_storage_root).exists?
           Rails.logger.debug "check_existence #{druid} called"
 
-          transaction_ok = with_active_record_transaction_and_rescue do
+          with_active_record_transaction_and_rescue do
             raise_rollback_if_version_mismatch
 
             return report_results! unless moab_validator.can_validate_current_comp_moab_status?
@@ -37,7 +37,6 @@ module CompleteMoabService
             complete_moab.update_audit_timestamps(moab_validator.ran_moab_validation?, true)
             complete_moab.save!
           end
-          results.remove_db_updated_results unless transaction_ok
         else
           results.add_result(AuditResults::DB_OBJ_DOES_NOT_EXIST, 'CompleteMoab')
           if moab_validator.moab_validation_errors.empty?
