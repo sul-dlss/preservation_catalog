@@ -16,12 +16,11 @@ module Audit
       @complete_moab = complete_moab
       @druid = complete_moab.preserved_object.druid
       @logger = Logger.new(Rails.root.join('log', 'c2m.log'))
-      @results = AuditResults.new(druid: druid, moab_storage_root: complete_moab.moab_storage_root)
+      @results = AuditResults.new(druid: druid, moab_storage_root: complete_moab.moab_storage_root, check_name: 'check_catalog_version')
     end
 
     # shameless green implementation
     def check_catalog_version
-      results.check_name = 'check_catalog_version'
       unless complete_moab.matches_po_current_version?
         results.add_result(AuditResults::CM_PO_VERSION_MISMATCH,
                            cm_version: complete_moab.version,

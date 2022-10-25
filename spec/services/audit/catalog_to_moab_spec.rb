@@ -18,7 +18,6 @@ RSpec.describe Audit::CatalogToMoab do
     instance_double(AuditResults,
                     add_result: nil,
                     :actual_version= => nil,
-                    :check_name= => nil,
                     results: [],
                     results_as_string: nil)
   end
@@ -449,7 +448,6 @@ RSpec.describe Audit::CatalogToMoab do
           my_results_double = instance_double(AuditResults,
                                               add_result: nil,
                                               :actual_version= => nil,
-                                              :check_name= => nil,
                                               results: [],
                                               results_as_string: 'mock results as string')
           c2m.instance_variable_set(:@results, my_results_double)
@@ -477,7 +475,6 @@ RSpec.describe Audit::CatalogToMoab do
           my_results_double = instance_double(AuditResults,
                                               add_result: nil,
                                               :actual_version= => nil,
-                                              :check_name= => nil,
                                               results: [],
                                               results_as_string: 'mock results as string')
           c2m.instance_variable_set(:@results, my_results_double)

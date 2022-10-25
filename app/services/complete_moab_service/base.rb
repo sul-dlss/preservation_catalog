@@ -18,12 +18,12 @@ module CompleteMoabService
     delegate :storage_location, to: :moab_storage_root
     delegate :complete_moab, to: :moab_validator
 
-    def initialize(druid:, incoming_version:, incoming_size:, moab_storage_root:)
+    def initialize(druid:, incoming_version:, incoming_size:, moab_storage_root:, check_name:)
       @druid = druid
       @incoming_version = ApplicationController.helpers.version_string_to_int(incoming_version)
       @incoming_size = ApplicationController.helpers.string_to_int(incoming_size)
       @moab_storage_root = moab_storage_root
-      @results = AuditResults.new(druid: druid, actual_version: incoming_version, moab_storage_root: moab_storage_root)
+      @results = AuditResults.new(druid: druid, actual_version: incoming_version, moab_storage_root: moab_storage_root, check_name: check_name)
       @logger = PreservationCatalog::Application.logger
     end
 
@@ -32,6 +32,18 @@ module CompleteMoabService
     end
 
     protected
+
+    # perform_execute wraps with common parts of the execute method for all complete moab services
+    def perform_execute
+      if invalid?
+        results.add_result(AuditResults::INVALID_ARGUMENTS, errors.full_messages)
+      elsif block_given?
+        yield
+      end
+
+      report_results!
+      results
+    end
 
     def moab_validator
       @moab_validator ||= MoabValidator.new(druid: druid, storage_location: storage_location, results: results)

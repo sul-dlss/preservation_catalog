@@ -57,7 +57,6 @@ RSpec.shared_examples 'calls AuditResultsReporter.report_results' do
   it 'outputs results to Rails.logger and sends errors to WorkflowErrorReporter' do
     mock_results = instance_double(AuditResults,
                                    add_result: nil,
-                                   :check_name= => nil,
                                    results: [],
                                    results_as_string: nil)
     expect(AuditResultsReporter).to receive(:report_results).with(audit_results: mock_results)
