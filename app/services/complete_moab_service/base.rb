@@ -51,7 +51,9 @@ module CompleteMoabService
 
     # this wrapper reads a little nicer in this class, since CompleteMoabHandler is always doing this the same way
     def with_active_record_transaction_and_rescue
-      ActiveRecordUtils.with_transaction_and_rescue(results) { yield }
+      transaction_ok = ActiveRecordUtils.with_transaction_and_rescue(results) { yield }
+      results.remove_db_updated_results unless transaction_ok
+      transaction_ok
     end
 
     def raise_rollback_if_version_mismatch

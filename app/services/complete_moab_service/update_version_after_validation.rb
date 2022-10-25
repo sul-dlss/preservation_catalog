@@ -47,21 +47,19 @@ module CompleteMoabService
     private
 
     def update_complete_moab_to_validity_unknown
-      transaction_ok = with_active_record_transaction_and_rescue do
+      with_active_record_transaction_and_rescue do
         moab_validator.update_status('validity_unknown')
         complete_moab.update_audit_timestamps(moab_validator.ran_moab_validation?, false)
         complete_moab.save!
       end
-      results.remove_db_updated_results unless transaction_ok
     end
 
     def update_complete_moab_to_invalid_moab
-      transaction_ok = with_active_record_transaction_and_rescue do
+      with_active_record_transaction_and_rescue do
         moab_validator.update_status('invalid_moab')
         complete_moab.update_audit_timestamps(moab_validator.ran_moab_validation?, false)
         complete_moab.save!
       end
-      results.remove_db_updated_results unless transaction_ok
     end
   end
 end
