@@ -21,7 +21,7 @@ RSpec.describe ApplicationJob do
 
   around do |example|
     old_adapter = ActiveJob::Base.queue_adapter
-    ActiveJob::Base.queue_adapter = :resque
+    ActiveJob::Base.queue_adapter = :sidekiq
     example.run
     ActiveJob::Base.queue_adapter = old_adapter
   end
@@ -61,7 +61,7 @@ RSpec.describe ApplicationJob do
         perform_enqueued_jobs
       rescue StandardError
         # In the app code we wouldn't deal with errors directly when a job raises, because the
-        # workers are picking them up and running them async (and then the adapter, Resque,
+        # workers are picking them up and running them async (and then the adapter, Sidekiq,
         # does the appropriate error handling, e.g. moves the job to the appropriate failure queue, etc)
       end
 

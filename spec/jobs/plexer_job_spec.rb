@@ -27,14 +27,22 @@ describe PlexerJob do
     expect(described_class.new).to be_a(ZipPartJobBase)
   end
 
-  it 'raises without enqueueing if size metadata is incomplete' do
-    expect { described_class.perform_later(druid, version, 'part_key', metadata.merge(size: nil)) }
-      .to raise_error(ArgumentError, /size/)
-  end
+  describe '#perform_later' do
+    let(:redis) { instance_double(Redis, setnx: true) }
 
-  it 'raises without enqueueing if zip_cmd metadata is incomplete' do
-    expect { described_class.perform_later(druid, version, 'part_key', metadata.reject { |x| x == :zip_cmd }) }
-      .to raise_error(ArgumentError, /zip_cmd/)
+    before do
+      allow(Sidekiq).to receive(:redis).and_yield(redis)
+    end
+
+    it 'raises without enqueueing if size metadata is incomplete' do
+      expect { described_class.perform_later(druid, version, 'part_key', metadata.merge(size: nil)) }
+        .to raise_error(ArgumentError, /size/)
+    end
+
+    it 'raises without enqueueing if zip_cmd metadata is incomplete' do
+      expect { described_class.perform_later(druid, version, 'part_key', metadata.reject { |x| x == :zip_cmd }) }
+        .to raise_error(ArgumentError, /zip_cmd/)
+    end
   end
 
   describe '#perform' do

@@ -6,8 +6,9 @@ RSpec.configure do |config|
 
     ActiveJob::Base.queue_adapter = :test
     allow(ActiveJob::Base.logger).to receive(:info) # keep the default logging quiet
+
     begin
-      Resque.redis.redis.flushall # clear queues and locks
+      Sidekiq.redis(&:flushall) # clear queues and locks
     rescue Redis::CannotConnectError
       p 'we are rescuing!'
     end

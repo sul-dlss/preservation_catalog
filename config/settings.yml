@@ -31,10 +31,6 @@ checksum_algos: ['md5'] # 'sha1' 'sha256'
 zip_cache_expiry_time: '+20160' # this is UNIX `find` speak for "greater than 14 days"
 zip_storage: '/tmp' # override in #{RAILS_ENV}.yml
 
-resque_dashboard_hostnames: # tells the router where to mount the resque dashboard
-  - 'worker-hostname-01.example.com'
-  - 'worker-hostname-02.example.com'
-
 # When the backlog of unreplicated moabs is very large, e.g. when first spinning up
 # the catalog, or when adding a new ZipEndpoint after the catalog has been running, we
 # want to manually choose batches of moabs to replicate, so that we don't accidentally
@@ -47,6 +43,9 @@ replication:
 total_worker_count: 117 # for okcomputer endpoint
 minimum_subfolder_count: 1 # for okcomputer pres-cat mount check, verifies the storage_trunk has at least this many subfolders
                            # NOTE: when null, no minimum check is performed, and this can be overriden per environment as needed
+worker_hostnames: # used for OK computer checks
+  - 'worker-hostname-01.example.com'
+  - 'worker-hostname-02.example.com'
 
 api_jwt:
   hmac_secret: 'my$ecretK3y'
@@ -58,6 +57,8 @@ rabbitmq:
   vhost: /
   username: guest
   password: guest
+
+redis_url: redis://localhost:6379/
 
 honeybadger_checkins:
   moab_to_catalog: xyzzy

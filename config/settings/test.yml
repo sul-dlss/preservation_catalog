@@ -31,6 +31,3 @@ zip_endpoints:
     audit_class: 'Audit::ReplicationToIbm'
     access_key_id: 'overridden-by-env-var-in-ci'
     secret_access_key: 'overridden-by-env-var-in-ci'
-
-resque_dashboard_hostnames:
-  - 'www.example.com' # this is what the test env sees itself as.  and we want to mount the resque dashboard in test to protect non-API endpoints

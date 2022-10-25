@@ -60,7 +60,6 @@ describe 'the whole replication pipeline' do
       type: 'druid_version_replicated',
       data: a_hash_including({ host: 'fakehost', version: 1, endpoint_name: 'ibm_us_south' })
     )
-    expect(Resque.redis.redis).to receive(:lpush).with('replication.results', hash.to_json)
 
     # creating or updating a CompleteMoab should trigger its parent PreservedObject to replicate any missing versions to any target endpoints
     create(:complete_moab, preserved_object: preserved_object, version: version, moab_storage_root: moab_storage_root)
@@ -92,7 +91,6 @@ describe 'the whole replication pipeline' do
         type: 'druid_version_replicated',
         data: a_hash_including({ host: 'fakehost', version: 3, endpoint_name: 'ibm_us_south' })
       )
-      expect(Resque.redis.redis).to receive(:lpush).with('replication.results', hash.merge(version: next_version).to_json)
 
       # updating the CompleteMoab#version and its PreservedObject#current_version should trigger the replication cycle again, on the new version
       CompleteMoabService::UpdateVersion.execute(druid: druid, incoming_version: next_version, incoming_size: 712,

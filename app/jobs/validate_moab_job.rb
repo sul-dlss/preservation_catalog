@@ -19,7 +19,6 @@ class ValidateMoabJob < ApplicationJob
 
     wait_as_needed
 
-    # TODO: what if we lose connectivity while it's running in resque
     errors = validate
     if errors.empty?
       log_success(Time.zone.now - start)

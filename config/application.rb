@@ -35,7 +35,7 @@ module PreservationCatalog
     # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults 7.0
 
-    # accept_request_filter omits OKComputer & Resque routes
+    # accept_request_filter omits OKComputer & Sidekiq routes
     accept_proc = proc { |request| request.path.start_with?('/v1') }
     config.middleware.use(
       Committee::Middleware::RequestValidation,

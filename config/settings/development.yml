@@ -23,5 +23,3 @@ zip_endpoints:
     access_key_id: 'foo'
     secret_access_key: 'bar'
 workflow_services_url: 'https://sul-lyberservices-test.stanford.edu/workflow/'
-resque_dashboard_hostnames:
-  - 'localhost'

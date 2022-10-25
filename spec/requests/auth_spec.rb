@@ -67,7 +67,7 @@ RSpec.describe 'auth' do
 
   context 'when requesting an unprotected route' do
     it 'lets the request through without checking a Bearer token' do
-      get '/resque/overview'
+      get '/queues'
       expect(response).to have_http_status(:ok)
     end
   end

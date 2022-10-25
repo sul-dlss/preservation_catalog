@@ -103,7 +103,7 @@ curl -H 'Authorization: Bearer eyJhbGcxxxxx.eyJzdWIxxxxx.lWMJ66Wxx-xx' http://lo
 
 - The PostgreSQL database is the catalog of metadata about preserved SDR content, both on premises and in the cloud.  Database-level constraints are used heavily for keeping data clean and consistent.
 
-- Background jobs (using ActiveJob/Resque/Redis) perform the audit and replication work.
+- Background jobs (using ActiveJob/Sidekiq/Redis) perform the audit and replication work.
 
 - The whenever gem is used for writing and deploying cron jobs. Queueing of weekly audit jobs, temp space cleanup, etc are scheduled using the whenever gem.
 
@@ -117,7 +117,7 @@ curl -H 'Authorization: Bearer eyJhbGcxxxxx.eyJzdWIxxxxx.lWMJ66Wxx-xx' http://lo
 
 - We strongly prefer to run large numbers of validations using ActiveJob, so they can be run in parallel.
 
-- You can monitor the progress of most tasks by tailing `log/production.log` (or task specific log), checking the Resque dashboard, or by querying the database. The tasks for large storage roots can take a while -- check [the repo wiki for stats](https://github.com/sul-dlss/preservation_catalog/wiki) on the timing of past runs.
+- You can monitor the progress of most tasks by tailing `log/production.log` (or task specific log), checking the Sidekiq dashboard, or by querying the database. The tasks for large storage roots can take a while -- check [the repo wiki for stats](https://github.com/sul-dlss/preservation_catalog/wiki) on the timing of past runs.
 
 - When executing long running queries, audits, remediations, etc from the Rails console, consider using a [screen session](http://thingsilearned.com/2009/05/26/gnu-screen-super-basic-tutorial/) or `nohup` so that the process isn't killed when you log out.
 
@@ -371,9 +371,9 @@ Or:
 bundle exec cap prod deploy # for the prod servers
 ```
 
-### Resque Pool
+### Sidekiq
 
-The Resque Pool admin interface is available at `<hostname>/resque/overview`.  The wiki has advice for troubleshooting failed jobs.
+The Sidekiq admin interface is available at `<hostname>/queues`.  The wiki has advice for troubleshooting failed jobs.
 
 ## API
 

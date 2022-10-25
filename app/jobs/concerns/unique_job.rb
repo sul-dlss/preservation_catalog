@@ -72,9 +72,8 @@ module UniqueJob
       3600
     end
 
-    def redis_connection
-      # when we switch to sidekiq we can call `Sidekiq.redis(&block)`
-      yield Resque.redis
+    def redis_connection(&block)
+      Sidekiq.redis(&block)
     end
 
     # @return [String] the key for locking this job/payload combination, e.g. 'lock:MySpecificJob-bt821jk7040;1'
