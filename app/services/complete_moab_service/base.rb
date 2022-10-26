@@ -115,5 +115,22 @@ module CompleteMoabService
     def report_results!
       AuditResultsReporter.report_results(audit_results: results)
     end
+
+    def complete_moab_exists?
+      CompleteMoab.by_druid(druid).by_storage_root(moab_storage_root).exists?
+    end
+
+    def validation_errors?
+      moab_validator.moab_validation_errors.present?
+    end
+
+    def record_missing
+      results.add_result(AuditResults::DB_OBJ_DOES_NOT_EXIST, 'CompleteMoab')
+      if validation_errors?
+        create_db_objects('invalid_moab')
+      else
+        create_db_objects('validity_unknown')
+      end
+    end
   end
 end
