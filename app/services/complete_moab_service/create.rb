@@ -15,14 +15,23 @@ module CompleteMoabService
     # checksums_validated may be set to true if the caller takes responsibility for having validated the checksums
     def execute(checksums_validated: false)
       perform_execute do
-        if CompleteMoab.by_druid(druid).by_storage_root(moab_storage_root).exists?
-          results.add_result(AuditResults::DB_OBJ_ALREADY_EXISTS, 'CompleteMoab')
+        if complete_moab_exists?
+          report_already_exists
         else
-          creation_status = (checksums_validated ? 'ok' : 'validity_unknown')
           moab_validator.ran_moab_validation! if checksums_validated # ensure validation timestamps updated
-          create_db_objects(creation_status, checksums_validated: checksums_validated)
+          create_db_objects(creation_status(checksums_validated), checksums_validated: checksums_validated)
         end
       end
+    end
+
+    protected
+
+    def report_already_exists
+      results.add_result(AuditResults::DB_OBJ_ALREADY_EXISTS, 'CompleteMoab')
+    end
+
+    def creation_status(checksums_validated)
+      checksums_validated ? 'ok' : 'validity_unknown'
     end
   end
 end
