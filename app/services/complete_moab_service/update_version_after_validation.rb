@@ -15,36 +15,42 @@ module CompleteMoabService
     # checksums_validated may be set to true if the caller takes responsibility for having validated the checksums
     def execute(checksums_validated: false)
       perform_execute do
-        if CompleteMoab.by_druid(druid).by_storage_root(moab_storage_root).exists?
+        if complete_moab_exists?
           Rails.logger.debug "update_version_after_validation #{druid} called"
-          if moab_validator.moab_validation_errors.empty?
-            # NOTE: we deal with active record transactions in update_online_version, not here
-            new_status = (checksums_validated ? 'ok' : 'validity_unknown')
-            update_online_version(status: new_status, checksums_validated: checksums_validated)
-          else
+          if validation_errors?
             Rails.logger.debug "update_version_after_validation #{druid} found validation errors"
             if checksums_validated
-              update_online_version(status: 'invalid_moab', checksums_validated: true)
-              # for case when no db updates b/c pres_obj version != complete_moab version
-              update_complete_moab_to_invalid_moab unless complete_moab.invalid_moab?
+              record_invalid
             else
-              update_online_version(status: 'validity_unknown')
-              # for case when no db updates b/c pres_obj version != complete_moab version
-              update_complete_moab_to_validity_unknown unless complete_moab.validity_unknown?
+              record_validity_unknown
             end
+          else
+            record_no_validation_errors(checksums_validated)
           end
         else
-          results.add_result(AuditResults::DB_OBJ_DOES_NOT_EXIST, 'CompleteMoab')
-          if moab_validator.moab_validation_errors.empty?
-            create_db_objects('validity_unknown')
-          else
-            create_db_objects('invalid_moab')
-          end
+          create_missing_complete_moab
         end
       end
     end
 
     private
+
+    def record_no_validation_errors(checksums_validated)
+      new_status = (checksums_validated ? 'ok' : 'validity_unknown')
+      update_catalog(status: new_status, checksums_validated: checksums_validated)
+    end
+
+    def record_validity_unknown
+      update_catalog(status: 'validity_unknown')
+      # for case when no db updates b/c pres_obj version != complete_moab version
+      update_complete_moab_to_validity_unknown unless complete_moab.validity_unknown?
+    end
+
+    def record_invalid
+      update_catalog(status: 'invalid_moab', checksums_validated: true)
+      # for case when no db updates b/c pres_obj version != complete_moab version
+      update_complete_moab_to_invalid_moab unless complete_moab.invalid_moab?
+    end
 
     def update_complete_moab_to_validity_unknown
       with_active_record_transaction_and_rescue do

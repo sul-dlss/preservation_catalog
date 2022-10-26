@@ -17,7 +17,7 @@ module CompleteMoabService
         if complete_moab_exists?
           check_versions
         else
-          record_missing
+          create_missing_complete_moab
         end
       end
     end

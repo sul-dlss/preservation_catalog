@@ -165,18 +165,18 @@ RSpec.describe CompleteMoabService::UpdateVersionAfterValidation do
           end
         end
 
-        context 'calls #update_online_version with' do
+        context 'calls #update_catalog with' do
           it 'status = "validity_unknown" for checksums_validated = false' do
-            expect(complete_moab_service).to receive(:update_online_version).with(status: 'validity_unknown',
-                                                                                  checksums_validated: false).and_call_original
+            expect(complete_moab_service).to receive(:update_catalog).with(status: 'validity_unknown',
+                                                                           checksums_validated: false).and_call_original
             complete_moab_service.execute(checksums_validated: false)
-            skip 'test is weak b/c we only indirectly show the effects of #update_online_version in #update_version specs'
+            skip 'test is weak b/c we only indirectly show the effects of #update_catalog in #update_version specs'
           end
 
           it 'status = "ok" and checksums_validated = true for checksums_validated = true' do
-            expect(complete_moab_service).to receive(:update_online_version).with(status: 'ok', checksums_validated: true).and_call_original
+            expect(complete_moab_service).to receive(:update_catalog).with(status: 'ok', checksums_validated: true).and_call_original
             complete_moab_service.execute(checksums_validated: true)
-            skip 'test is weak b/c we only indirectly show the effects of #update_online_version in #update_version specs'
+            skip 'test is weak b/c we only indirectly show the effects of #update_catalog in #update_version specs'
           end
         end
       end
@@ -326,17 +326,17 @@ RSpec.describe CompleteMoabService::UpdateVersionAfterValidation do
           end
         end
 
-        context 'calls #update_online_version with' do
+        context 'calls #update_catalog with' do
           it 'status = "validity_unknown" for checksums_validated = false' do
-            expect(complete_moab_service).to receive(:update_online_version).with(status: 'validity_unknown').and_call_original
+            expect(complete_moab_service).to receive(:update_catalog).with(status: 'validity_unknown').and_call_original
             complete_moab_service.execute
-            skip 'test is weak b/c we only indirectly show the effects of #update_online_version in #update_version specs'
+            skip 'test is weak b/c we only indirectly show the effects of #update_catalog in #update_version specs'
           end
 
           it 'status = "invalid_moab" and checksums_validated = true for checksums_validated = true' do
-            expect(complete_moab_service).to receive(:update_online_version).with(status: 'invalid_moab', checksums_validated: true).and_call_original
+            expect(complete_moab_service).to receive(:update_catalog).with(status: 'invalid_moab', checksums_validated: true).and_call_original
             complete_moab_service.execute(checksums_validated: true)
-            skip 'test is weak b/c we only indirectly show the effects of #update_online_version in #update_version specs'
+            skip 'test is weak b/c we only indirectly show the effects of #update_catalog in #update_version specs'
           end
         end
 
