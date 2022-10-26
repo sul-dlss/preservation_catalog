@@ -61,8 +61,7 @@ module CompleteMoabService
 
       return if complete_moab.matches_po_current_version?
 
-      result_code = AuditResults::CM_PO_VERSION_MISMATCH
-      results.add_result(result_code, cm_version: complete_moab_version, po_version: preserved_object_version)
+      results.add_result(AuditResults::CM_PO_VERSION_MISMATCH, cm_version: complete_moab_version, po_version: preserved_object_version)
       raise ActiveRecord::Rollback, "CompleteMoab version #{complete_moab_version} != PreservedObject current_version #{preserved_object_version}"
     end
 
@@ -81,32 +80,12 @@ module CompleteMoabService
     # Note that this may be called by running M2C on a storage root and discovering a second copy of a Moab,
     #   or maybe by calling #create_after_validation directly after copying a Moab
     def create_db_objects(status, checksums_validated: false)
-      complete_moab_attrs = {
-        version: incoming_version,
-        size: incoming_size,
-        moab_storage_root: moab_storage_root,
-        status: status
-      }.tap do |attrs|
-        time = Time.current
-        if moab_validator.ran_moab_validation?
-          attrs[:last_version_audit] = time
-          attrs[:last_moab_validation] = time
-        end
-        attrs[:last_checksum_validation] = time if checksums_validated
-      end
-      preservation_policy_id = PreservationPolicy.default_policy.id
-
-      # TODO: remove tests' dependence on 2 "create!" calls, use single built-in AR transactionality
       transaction_ok = with_active_record_transaction_and_rescue do
-        this_preserved_object = PreservedObject
-                                .find_or_create_by!(druid: druid) do |preserved_object|
-          preserved_object.current_version = incoming_version # init to match version of the first moab for the druid
-          preserved_object.preservation_policy_id = preservation_policy_id
-        end
-        this_complete_moab = this_preserved_object.create_complete_moab!(complete_moab_attrs)
+        preserved_object = create_preserved_object
+        complete_moab = preserved_object.create_complete_moab!(complete_moab_attrs(status, checksums_validated))
         # add to join table unless there is already a primary moab
-        PreservedObjectsPrimaryMoab.find_or_create_by!(preserved_object: this_preserved_object) do |preserved_objects_primary_moab|
-          preserved_objects_primary_moab.complete_moab = this_complete_moab
+        PreservedObjectsPrimaryMoab.find_or_create_by!(preserved_object: preserved_object) do |preserved_objects_primary_moab|
+          preserved_objects_primary_moab.complete_moab = complete_moab
         end
       end
       results.add_result(AuditResults::CREATED_NEW_OBJECT) if transaction_ok
@@ -130,6 +109,31 @@ module CompleteMoabService
         create_db_objects('invalid_moab')
       else
         create_db_objects('validity_unknown')
+      end
+    end
+
+    private
+
+    def complete_moab_attrs(status, checksums_validated)
+      {
+        version: incoming_version,
+        size: incoming_size,
+        moab_storage_root: moab_storage_root,
+        status: status
+      }.tap do |attrs|
+        time = Time.current
+        if moab_validator.ran_moab_validation?
+          attrs[:last_version_audit] = time
+          attrs[:last_moab_validation] = time
+        end
+        attrs[:last_checksum_validation] = time if checksums_validated
+      end
+    end
+
+    def create_preserved_object
+      PreservedObject.find_or_create_by!(druid: druid) do |preserved_object|
+        preserved_object.current_version = incoming_version # init to match version of the first moab for the druid
+        preserved_object.preservation_policy_id = PreservationPolicy.default_policy.id
       end
     end
   end
