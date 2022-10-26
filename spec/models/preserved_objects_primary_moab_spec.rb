@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe PreservedObjectsPrimaryMoab, type: :model do
+RSpec.describe PreservedObjectsPrimaryMoab do
   let(:cm) { create(:complete_moab) }
   let(:po) { cm.preserved_object }
   let(:alt_po) { create(:preserved_object) }

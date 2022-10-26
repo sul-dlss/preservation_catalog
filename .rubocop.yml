@@ -59,6 +59,7 @@ RSpec/ContextWording:
 RSpec/DescribeClass:
   Exclude:
     - 'spec/requests/auth_spec.rb' # technically testing ApplicationController, but rubocop complains even if you provide that
+    - 'spec/jobs/integration_spec.rb'
 
 RSpec/ExampleLength:
   Max: 29
@@ -85,7 +86,6 @@ RSpec/NestedGroups:
     - 'spec/requests/objects_controller_content_diff_spec.rb'
     - 'spec/requests/objects_controller_file_spec.rb'
     - 'spec/services/checksum_validator_spec.rb'
-    - 'spec/services/complete_moab_handler_*.rb'
     - 'spec/services/complete_moab_service/*.rb'
 
 Style/AccessModifierDeclarations:
@@ -476,4 +476,27 @@ RSpec/Capybara/SpecificFinders: # new in 2.13
 RSpec/Capybara/SpecificMatcher: # new in 2.12
   Enabled: true
 RSpec/Rails/HaveHttpStatus: # new in 2.12
+  Enabled: true
+
+Lint/DuplicateMagicComment: # new in 1.37
+  Enabled: true
+Style/OperatorMethodCall: # new in 1.37
+  Enabled: true
+Style/RedundantStringEscape: # new in 1.37
+  Enabled: true
+Rails/ActionOrder: # new in 2.17
+  Enabled: true
+Rails/IgnoredColumnsAssignment: # new in 2.17
+  Enabled: true
+Rails/WhereNotWithMultipleConditions: # new in 2.17
+  Enabled: true
+RSpec/SortMetadata: # new in 2.14
+  Enabled: true
+RSpec/Capybara/NegationMatcher: # new in 2.14
+  Enabled: true
+RSpec/Capybara/SpecificActions: # new in 2.14
+  Enabled: true
+RSpec/FactoryBot/ConsistentParenthesesStyle: # new in 2.14
+  Enabled: true
+RSpec/Rails/InferredSpecType: # new in 2.14
   Enabled: true

@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-describe S3WestDeliveryJob, type: :job do
+describe S3WestDeliveryJob do
   it 'descends from AbstractDeliveryJob' do
     expect(described_class.new).to be_an(AbstractDeliveryJob)
   end

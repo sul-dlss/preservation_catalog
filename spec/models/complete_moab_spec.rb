@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe CompleteMoab, type: :model do
+RSpec.describe CompleteMoab do
   let(:druid) { 'ab123cd4567' }
   let(:preserved_object) { create(:preserved_object, druid: druid) }
   let(:status) { 'validity_unknown' }

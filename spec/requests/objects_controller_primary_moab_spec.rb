@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe ObjectsController, type: :request do
+RSpec.describe ObjectsController do
   let(:pres_obj) { primary_moab.preserved_object }
   let(:primary_moab) do
     create(:complete_moab) do |cm|

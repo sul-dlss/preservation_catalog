@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe MoabStorageRoot, type: :model do
+RSpec.describe MoabStorageRoot do
   let(:default_pres_policies) { [PreservationPolicy.default_policy] }
   let(:druid) { 'ab123cd4567' }
   let!(:moab_storage_root) do

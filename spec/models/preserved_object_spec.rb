@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe PreservedObject, type: :model do
+RSpec.describe PreservedObject do
   # let(:preservation_policy) { create(:preservation_policy, preservation_policy_name: 'large_dark_objects') }
   let(:preservation_policy) { PreservationPolicy.default_policy }
   let(:druid) { 'bc123df4567' }

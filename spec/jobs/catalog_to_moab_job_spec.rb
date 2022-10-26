@@ -2,9 +2,9 @@
 
 require 'rails_helper'
 
-describe CatalogToMoabJob, type: :job do
+describe CatalogToMoabJob do
   let(:job) { described_class.new(cm) }
-  let(:cm) { create :complete_moab }
+  let(:cm) { create(:complete_moab) }
 
   describe '#perform' do
     let(:validator) { instance_double(Audit::CatalogToMoab) }

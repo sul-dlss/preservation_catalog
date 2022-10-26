@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'rails_helper'
-RSpec.describe ObjectsController, type: :request do
+RSpec.describe ObjectsController do
   let(:pres_obj) { create(:preserved_object) }
 
   describe 'GET #show' do
