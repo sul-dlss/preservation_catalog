@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-describe PartReplicationAuditJob, type: :job do
+describe PartReplicationAuditJob do
   let(:preserved_object) { create(:preserved_object, current_version: 2) }
   let(:job) { described_class.new(preserved_object, endpoint) }
   let(:endpoints) { preserved_object.zipped_moab_versions.map(&:zip_endpoint).uniq }

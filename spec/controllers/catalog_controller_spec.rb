@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'rails_helper'
-RSpec.describe CatalogController, type: :controller do
+RSpec.describe CatalogController do
   let(:audit_workflow_reporter) { instance_double(Reporters::AuditWorkflowReporter, report_errors: nil) }
   let(:size) { 2342 }
   let(:ver) { 3 }

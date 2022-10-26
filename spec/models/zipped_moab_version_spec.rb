@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe ZippedMoabVersion, type: :model do
+RSpec.describe ZippedMoabVersion do
   let(:preserved_object) { create(:preserved_object) }
   let(:zmv) { create(:zipped_moab_version, preserved_object: preserved_object) }
 

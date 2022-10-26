@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-describe AbstractDeliveryJob, type: :job do
+describe AbstractDeliveryJob do
   # NOTE: Test a concrete impl of the abstract job so the call to `#bucket` does not raise
   subject(:job_implementation) do
     Class.new(described_class) do

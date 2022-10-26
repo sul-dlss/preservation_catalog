@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe PreservationPolicy, type: :model do
+RSpec.describe PreservationPolicy do
   it 'is valid with valid attributes' do
     preservation_policy = described_class.find_by(preservation_policy_name: 'default')
     expect(preservation_policy).to be_valid

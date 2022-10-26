@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe ZipPart, type: :model do
+RSpec.describe ZipPart do
   let(:zmv) { build(:zipped_moab_version) }
   let(:args) { attributes_for(:zip_part).merge(zipped_moab_version: zmv) }
 

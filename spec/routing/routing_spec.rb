@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'routes', type: :routing do
+RSpec.describe 'routes' do
   let(:id) { 'druid:ab123cd4567' }
 
   describe 'objects/:id' do

@@ -2,9 +2,9 @@
 
 require 'rails_helper'
 
-describe ChecksumValidationJob, type: :job do
+describe ChecksumValidationJob do
   let(:job) { described_class.new(cm) }
-  let(:cm) { create :complete_moab }
+  let(:cm) { create(:complete_moab) }
 
   describe '#perform' do
     let(:validator) { instance_double(ChecksumValidator) }

@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-describe ZipmakerJob, type: :job do
+describe ZipmakerJob do
   let(:druid) { 'bj102hs9687' }
   let(:dvz_part) { instance_double(DruidVersionZipPart, metadata: { fake: 1 }) }
   let(:version) { 3 }

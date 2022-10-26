@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-describe ResultsRecorderJob, type: :job do
+describe ResultsRecorderJob do
   let(:preserved_object) { create(:preserved_object) }
   let(:zmv) { preserved_object.zipped_moab_versions.first }
   let(:zmv2) { preserved_object.zipped_moab_versions.second }

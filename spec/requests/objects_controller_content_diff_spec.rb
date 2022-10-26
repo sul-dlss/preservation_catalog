@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe ObjectsController, type: :request do
+RSpec.describe ObjectsController do
   let(:prefixed_druid) { 'druid:bj102hs9687' }
   let(:bare_druid) { 'bj102hs9687' }
   let(:content_md) { '<contentMetadata>yer stuff here</contentMetadata>' }

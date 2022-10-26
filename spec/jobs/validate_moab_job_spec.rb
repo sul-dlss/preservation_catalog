@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-describe ValidateMoabJob, type: :job do
+describe ValidateMoabJob do
   let(:job) { described_class.new }
   let(:bare_druid) { 'bj102hs9687' }
   let(:druid) { "druid:#{bare_druid}" }

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'rails_helper'
-RSpec.describe ObjectsController, type: :request do
+RSpec.describe ObjectsController do
   let(:prefixed_druid) { 'druid:bj102hs9687' }
   let(:prefixed_druid2) { 'druid:bz514sm9647' }
   let(:bare_druid) { 'bj102hs9687' }

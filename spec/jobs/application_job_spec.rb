@@ -16,7 +16,7 @@ class RegularParameterJob < ApplicationJob
   end
 end
 
-RSpec.describe ApplicationJob, type: :job do
+RSpec.describe ApplicationJob do
   include ActiveJob::TestHelper
 
   around do |example|
@@ -80,8 +80,8 @@ RSpec.describe ApplicationJob, type: :job do
   end
 
   context 'a subclass that has an ActiveRecord parameter with message(s) queued' do
-    let(:cm) { create :complete_moab }
-    let(:cm2) { create :complete_moab }
+    let(:cm) { create(:complete_moab) }
+    let(:cm2) { create(:complete_moab) }
 
     before do
       CatalogToMoabJob.perform_later(cm)

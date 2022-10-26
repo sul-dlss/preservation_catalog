@@ -2,9 +2,9 @@
 
 require 'rails_helper'
 
-describe MoabToCatalogJob, type: :job do
+describe MoabToCatalogJob do
   let(:job) { described_class.new(msr, druid, path) }
-  let(:msr) { create :moab_storage_root }
+  let(:msr) { create(:moab_storage_root) }
   let(:druid) { 'bj102hs9687' }
   let(:path) { "#{msr.storage_location}/bj/102/hs/9687/bj102hs9687" }
   let(:moab) { instance_double(Moab::StorageObject, size: 22, current_version_id: 3) }

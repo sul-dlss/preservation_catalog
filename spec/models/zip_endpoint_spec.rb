@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe ZipEndpoint, type: :model do
+RSpec.describe ZipEndpoint do
   let(:default_pres_policies) { [PreservationPolicy.default_policy] }
   let(:druid) { 'ab123cd4567' }
   let!(:zip_endpoint) { create(:zip_endpoint, endpoint_name: 'zip-endpoint', endpoint_node: 'us-west-01') }
