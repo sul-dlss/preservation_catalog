@@ -166,6 +166,10 @@ class DruidVersionZip
     '10g'
   end
 
+  def moab_version_size
+    moab_version_files.sum { |f| File.size(f) }
+  end
+
   private
 
   # Throws an error if any of the files in the moab are not yet readable.  For example due to
@@ -190,10 +194,6 @@ class DruidVersionZip
 
   def total_part_size
     part_paths.sum { |part_path| File.size(part_path) }
-  end
-
-  def moab_version_size
-    moab_version_files.sum { |f| File.size(f) }
   end
 
   def moab_version_files

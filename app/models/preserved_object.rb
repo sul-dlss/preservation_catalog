@@ -61,6 +61,12 @@ class PreservedObject < ApplicationRecord
     MoabReplicationAuditJob.perform_later(self)
   end
 
+  def total_size_of_moab_version(version)
+    return 0 unless complete_moab
+
+    DruidVersionZip.new(druid, version, complete_moab.moab_storage_root.storage_location).moab_version_size
+  end
+
   # Number of PreservedObjects to audit on a daily basis.
   def self.daily_check_count
     PreservedObject.count / (PreservationPolicy.default_policy.fixity_ttl / (60 * 60 * 24))

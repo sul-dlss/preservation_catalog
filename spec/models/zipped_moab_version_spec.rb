@@ -33,6 +33,31 @@ RSpec.describe ZippedMoabVersion do
     end
   end
 
+  describe '#total_part_size' do
+    context 'there are no parts' do
+      it 'returns 0' do
+        expect(zmv.total_part_size).to eq(0)
+      end
+    end
+
+    context 'there are parts' do
+      before do
+        args = attributes_for(:zip_part)
+        zmv.zip_parts.create!(
+          [
+            args.merge(status: 'ok', parts_count: 1, suffix: '.zip', size: 1234),
+            args.merge(status: 'ok', parts_count: 1, suffix: '.z01', size: 1234),
+            args.merge(status: 'ok', parts_count: 1, suffix: '.z02', size: 1234)
+          ]
+        )
+      end
+
+      it 'returns the sum of the part sizes' do
+        expect(zmv.total_part_size).to eq(3702)
+      end
+    end
+  end
+
   describe '#child_parts_counts' do
     context 'there are no parts' do
       it 'returns an empty list' do

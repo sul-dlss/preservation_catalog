@@ -3,7 +3,7 @@
 require 'rails_helper'
 
 RSpec.describe Audit::CatalogToArchive do
-  let(:zmv) { create(:zipped_moab_version) }
+  let(:zmv) { create(:zipped_moab_version, preserved_object: create(:preserved_object_fixture, druid: 'bz514sm9647')) }
   let(:results) { AuditResults.new(druid: zmv.preserved_object.druid, moab_storage_root: zmv.zip_endpoint, check_name: 'CatalogToArchiveSpec') }
   let(:version) { zmv.version }
   let(:endpoint_name) { zmv.zip_endpoint.endpoint_name }
@@ -86,6 +86,27 @@ RSpec.describe Audit::CatalogToArchive do
             "(3) doesn't match actual number of zip parts rows (2)"
       expect(results.results).to include(
         a_hash_including(AuditResults::ZIP_PARTS_COUNT_DIFFERS_FROM_ACTUAL => msg)
+      )
+    end
+  end
+
+  context 'when total part size is less than the moab size' do
+    before do
+      args = attributes_for(:zip_part)
+      zmv.zip_parts.create!(
+        [
+          args.merge(status: 'ok', parts_count: 3, suffix: '.zip', size: 111),
+          args.merge(status: 'ok', parts_count: 3, suffix: '.z01', size: 222),
+          args.merge(status: 'ok', parts_count: 3, suffix: '.z02', size: 333)
+        ]
+      )
+    end
+
+    it 'logs the discrepancy' do
+      described_class.check_child_zip_part_attributes(zmv, results)
+      msg = "#{result_prefix}: Sum of ZippedMoabVersion child part sizes (666) is less than what is in the Moab: 202938"
+      expect(results.results).to include(
+        a_hash_including(AuditResults::ZIP_PARTS_SIZE_INCONSISTENCY => msg)
       )
     end
   end

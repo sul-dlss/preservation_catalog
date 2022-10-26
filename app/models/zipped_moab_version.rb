@@ -6,7 +6,7 @@
 # ZippedMoabVersion objects should be:
 #   preserved_object.current_version * number_of_zip_endpoints_for_preservation_policy
 #
-# @note Does not have size independent of part(s)
+# @note Does not have size independent of part(s), see `#total_part_size`
 class ZippedMoabVersion < ApplicationRecord
   belongs_to :preserved_object, inverse_of: :zipped_moab_versions
   belongs_to :zip_endpoint, inverse_of: :zipped_moab_versions
@@ -36,5 +36,9 @@ class ZippedMoabVersion < ApplicationRecord
     # initialized to 'unreplicated', as soon as the (possibly multi-part) zip file
     # has been created and completely written to disk.  see DruidVersionZip.
     zip_parts.count.positive? && zip_parts.all?(&:ok?)
+  end
+
+  def total_part_size
+    zip_parts.sum(&:size)
   end
 end

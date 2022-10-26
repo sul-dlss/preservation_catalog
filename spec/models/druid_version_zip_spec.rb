@@ -101,7 +101,7 @@ describe DruidVersionZip do
     after { FileUtils.rm_rf('/tmp/bj') } # cleanup
 
     context 'when zip size is less than the moab size' do
-      let(:moab_version_size) { dvz.send(:moab_version_size) }
+      let(:moab_version_size) { dvz.moab_version_size }
       let(:total_part_size) { moab_version_size / 2 }
 
       before do
@@ -263,6 +263,14 @@ describe DruidVersionZip do
         expect(dvz.moab_version_path)
           .to eq 'spec/fixtures/storage_root01/sdr2objects/bj/102/hs/9687/bj102hs9687/v0001'
       end
+    end
+  end
+
+  describe '#moab_version_size' do
+    let(:dvz) { described_class.new(druid, version, 'spec/fixtures/storage_root01/sdr2objects') }
+
+    it 'returns the sum of all file sizes in a moab version' do
+      expect(dvz.moab_version_size).to eq(1_928_387)
     end
   end
 
