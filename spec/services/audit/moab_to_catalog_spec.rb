@@ -184,6 +184,8 @@ RSpec.describe Audit::MoabToCatalog do
                             'The record failed to save after its foreign key was set to nil.>'
       expect(storage_dir_a_seed_result_lists.first).to eq([{ db_update_failed: expected_result_msg }])
       expect(CompleteMoab.by_druid(druid).count).to eq 1
+      # the Moab's original location should remain the location of record in the DB
+      expect(CompleteMoab.by_druid(druid).take.moab_storage_root.storage_location).to eq(storage_dir)
       expect(CompleteMoab.count).to eq 3
       expect(PreservedObject.count).to eq 3
     end
