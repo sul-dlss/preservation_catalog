@@ -57,8 +57,6 @@ module CompleteMoabService
     end
 
     def raise_rollback_if_version_mismatch
-      return unless primary_moab?
-
       return if complete_moab.matches_po_current_version?
 
       results.add_result(AuditResults::CM_PO_VERSION_MISMATCH, cm_version: complete_moab_version, po_version: preserved_object_version)
@@ -71,10 +69,6 @@ module CompleteMoabService
 
     def preserved_object_version
       complete_moab.preserved_object.current_version
-    end
-
-    def primary_moab?
-      @primary_moab ||= complete_moab.primary?
     end
 
     # Note that this may be called by running M2C on a storage root and discovering a second copy of a Moab,

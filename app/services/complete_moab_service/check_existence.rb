@@ -29,7 +29,7 @@ module CompleteMoabService
         moab_validator.update_status('invalid_moab')
       else
         complete_moab.upd_audstamps_version_size(moab_validator.ran_moab_validation?, incoming_version, incoming_size)
-        preserved_object.current_version = incoming_version if primary_moab? # we only want to track highest seen version based on primary
+        preserved_object.current_version = incoming_version
         preserved_object.save!
       end
     end

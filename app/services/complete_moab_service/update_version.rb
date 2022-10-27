@@ -47,7 +47,7 @@ module CompleteMoabService
       moab_validator.update_status(status) if status
       complete_moab.save!
 
-      preserved_object.current_version = incoming_version if primary_moab? # we only want to track highest seen version based on primary
+      preserved_object.current_version = incoming_version
       preserved_object.save!
     end
 
