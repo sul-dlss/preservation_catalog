@@ -103,13 +103,10 @@ module CompleteMoabService
       moab_validator.moab_validation_errors.present?
     end
 
-    def record_missing
+    def create_missing_complete_moab
       results.add_result(AuditResults::DB_OBJ_DOES_NOT_EXIST, 'CompleteMoab')
-      if validation_errors?
-        create_db_objects('invalid_moab')
-      else
-        create_db_objects('validity_unknown')
-      end
+      status = moab_validator.moab_validation_errors.empty? ? 'validity_unknown' : 'invalid_moab'
+      create_db_objects(status)
     end
 
     private
