@@ -42,7 +42,7 @@ To generate the updated ER diagram
 - A `MoabStorageRoot` represents a physical storage location (on premises) on which `CompleteMoabs` reside, e.g., a single Ceph or NFS mounted storage root. A `CompleteMoab` can only live on one `MoabStorageRoot` at a time, while a single `MoabStorageRoot` can store many `CompleteMoabs.`
   - `preservation_policies`: the preservation policies for which governed objects are preserved (`has_and_belongs_to_many :preservation_policies`).
 - A `PreservationPolicy` defines
-  - `moab_storage_roots`: the storage roots that are eligible to house the objects governed by the policy (`has_and_belongs_to_many :moab_storage_root`). At present, a `CompleteMoab` should only live on one `MoabStorageRoot` at a time (this will change when multi-moab per druid testing has passed, see [here](https://github.com/sul-dlss/preservation_catalog/issues/1647)).
+  - `moab_storage_roots`: the storage roots that are eligible to house the objects governed by the policy (`has_and_belongs_to_many :moab_storage_root`). At present, a `CompleteMoab` should only live on one `MoabStorageRoot` at a time.
   - `zip_endpoints`: the endpoints to which zipped versions of the Moab should be archived. In contrast to the storage roots, the a `ZippedMoabVersion` should live on _all_ `ZipEndpoints` that the policy maps to.
   - `archive_ttl`: the frequency with which the existence of the appropriate archive copies should be checked.
   - `fixity_ttl`: the frequency with which the online copies should be checked for fixity.
@@ -113,6 +113,10 @@ from /opt/app/pres/preservation_catalog/shared/bundle/ruby/2.7.0/gems/activereco
 
 You may have to wrap the offending raw SQL in an `Arel.sql` call, e.g. `Arel.sql('SUM(zip_parts.size) - max(complete_moabs.size) AS zmv_size_diff')`.
 
+per https://api.rubyonrails.org/classes/ActiveRecord/UnknownAttributeReference.html
+
+> When working around this exception, caution should be taken to avoid SQL injection vulnerabilities when passing user-provided values to query methods. _Known-safe values_ can be passed to query methods by wrapping them in `Arel.sql`.  Again, _such a workaround should **not** be used when passing user-provided values_, such as request parameters or model attributes to query methods.
+
 #### which objects aren't in a good state?
 
 ```ruby
@@ -143,7 +147,7 @@ ORDER BY complete_moabs.status ASC, moab_storage_roots.storage_location ASC
 
 ```ruby
 # example AR query
-[2] pry(main)> MoabStorageRoot.joins(:complete_moabs).group(:name).order('name asc').pluck(:name, 'min(complete_moabs.created_at)', 'max(complete_moabs.created_at)', '(max(complete_moabs.created_at)-min(complete_moabs.created_at))', 'count(complete_moabs.id)', 'round(avg(complete_moabs.size))')
+[2] pry(main)> MoabStorageRoot.joins(:complete_moabs).group(:name).order('name asc').pluck(:name, Arel.sql('min(complete_moabs.created_at)'), Arel.sql('max(complete_moabs.created_at)'), Arel.sql('(max(complete_moabs.created_at)-min(complete_moabs.created_at))'), Arel.sql('count(complete_moabs.id)'), Arel.sql('round(avg(complete_moabs.size))'))
 ```
 
 <details>
