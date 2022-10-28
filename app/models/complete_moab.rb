@@ -71,10 +71,6 @@ class CompleteMoab < ApplicationRecord
     ok?
   end
 
-  def primary?
-    PreservedObjectsPrimaryMoab.exists?(preserved_object: preserved_object, complete_moab: self)
-  end
-
   def update_audit_timestamps(moab_validated, version_audited)
     t = Time.current
     self.last_moab_validation = t if moab_validated
