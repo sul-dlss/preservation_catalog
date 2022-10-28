@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 # @see PreservationCatalog::Aws for how S3 credentials and bucket are configured
+# @note this class name appears in the configuration for the endpoints for which it delivers content.
+#   Please update the configs for the various environments if it's renamed or moved.
 class IbmSouthDeliveryJob < AbstractDeliveryJob
   queue_as :ibm_us_south_delivery
 

@@ -10,7 +10,7 @@ RSpec.describe CompleteMoabService::CheckExistence do
   let(:incoming_size) { 9876 }
   let(:preserved_object) { PreservedObject.find_by!(druid: druid) }
   let(:moab_storage_root) { MoabStorageRoot.find_by!(storage_location: 'spec/fixtures/storage_root01/sdr2objects') }
-  let(:complete_moab) { CompleteMoab.find_by!(moab_storage_root: moab_storage_root) }
+  let(:complete_moab) { CompleteMoab.by_druid(druid).take }
   let(:db_update_failed_prefix) { 'db update failed' }
   let(:complete_moab_service) do
     described_class.new(druid: druid, incoming_version: incoming_version, incoming_size: incoming_size, moab_storage_root: moab_storage_root)
