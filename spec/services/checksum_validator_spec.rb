@@ -10,7 +10,7 @@ RSpec.describe ChecksumValidator do
   let(:complete_moab) { create(:preserved_object_fixture, druid: druid).complete_moab }
   let(:checksum_validator) { described_class.new(complete_moab) }
   let(:moab_validator) { checksum_validator.send(:moab_validator) }
-  let(:results) { instance_double(AuditResults, check_name: nil, :actual_version= => nil) }
+  let(:results) { instance_double(AuditResults) }
   let(:logger_double) { instance_double(ActiveSupport::Logger, info: nil, error: nil, add: nil) }
   let(:audit_workflow_reporter) { instance_double(Reporters::AuditWorkflowReporter, report_errors: nil, report_completed: nil) }
   let(:honeybadger_reporter) { instance_double(Reporters::HoneybadgerReporter, report_errors: nil, report_completed: nil) }
@@ -73,7 +73,7 @@ RSpec.describe ChecksumValidator do
       end
 
       it 'sets status to online_moab_not_found and adds corresponding audit result' do
-        expect(moab_validator.moab.object_pathname.exist?).to be true
+        expect(checksum_validator.moab.object_pathname.exist?).to be true
         expect { checksum_validator.validate_checksums }.to change(complete_moab, :status).to 'online_moab_not_found'
         expect(complete_moab.reload.status).to eq 'online_moab_not_found'
         expect(checksum_validator.results.results.first).to have_key(:moab_not_found)

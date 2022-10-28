@@ -9,7 +9,6 @@ RSpec.describe CompleteMoabService::CreateAfterValidation do
   let(:incoming_size) { 9876 }
   let(:storage_dir) { 'spec/fixtures/storage_root01/sdr2objects' }
   let(:moab_storage_root) { MoabStorageRoot.find_by(storage_location: storage_dir) }
-  let(:complete_moab_service) { described_class.new(druid, incoming_version, incoming_size, moab_storage_root) }
   let(:expected_msg) { 'added object to db as it did not exist' }
   let(:audit_workflow_reporter) { instance_double(Reporters::AuditWorkflowReporter, report_errors: nil) }
   let(:logger_reporter) { instance_double(Reporters::LoggerReporter, report_errors: nil) }

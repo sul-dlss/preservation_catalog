@@ -17,7 +17,6 @@ RSpec.describe Audit::CatalogToMoab do
   let(:results_double) do
     instance_double(AuditResults,
                     add_result: nil,
-                    :actual_version= => nil,
                     results: [],
                     results_as_string: nil)
   end
@@ -54,7 +53,7 @@ RSpec.describe Audit::CatalogToMoab do
     it 'gets the current version on disk from the Moab::StorageObject' do
       moab = instance_double(Moab::StorageObject, object_pathname: object_dir)
       allow(Moab::StorageObject).to receive(:new).with(druid, String).and_return(moab)
-      expect(moab).to receive(:current_version_id).and_return(3)
+      expect(moab).to receive(:current_version_id).twice.and_return(3)
       c2m.check_catalog_version
     end
 
@@ -447,7 +446,6 @@ RSpec.describe Audit::CatalogToMoab do
           allow(Stanford::StorageObjectValidator).to receive(:new).and_return(mock_sov)
           my_results_double = instance_double(AuditResults,
                                               add_result: nil,
-                                              :actual_version= => nil,
                                               results: [],
                                               results_as_string: 'mock results as string')
           c2m.instance_variable_set(:@results, my_results_double)
@@ -474,7 +472,6 @@ RSpec.describe Audit::CatalogToMoab do
           allow(Stanford::StorageObjectValidator).to receive(:new).and_return(mock_sov)
           my_results_double = instance_double(AuditResults,
                                               add_result: nil,
-                                              :actual_version= => nil,
                                               results: [],
                                               results_as_string: 'mock results as string')
           c2m.instance_variable_set(:@results, my_results_double)

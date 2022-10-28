@@ -85,8 +85,7 @@ class AuditResults
     CM_STATUS_CHANGED
   ].freeze
 
-  attr_accessor :actual_version
-  attr_reader :druid, :moab_storage_root, :check_name
+  attr_reader :druid, :moab_storage_root, :check_name, :actual_version
 
   def initialize(druid:, moab_storage_root:, actual_version: nil, check_name: nil)
     @druid = druid

@@ -2,24 +2,19 @@
 
 # code for validating Moab checksums
 class ChecksumValidator
-  attr_reader :results, :complete_moab
+  attr_reader :complete_moab
 
   delegate :moab_storage_root, :preserved_object, to: :complete_moab
   delegate :storage_location, to: :moab_storage_root
   delegate :druid, to: :preserved_object
-  delegate :moab, :object_dir, to: :moab_validator
 
   def initialize(complete_moab)
     @complete_moab = complete_moab
-    @results = AuditResults.new(druid: druid, moab_storage_root: moab_storage_root, check_name: 'validate_checksums')
-    # TODO: fix fragile interdependence, MoabValidator wants AuditResults instance, but we want MoabValidator#moab.current_version_id
-    # in that AuditResults instance.  so set AuditResults#actual_version after both instances have been created.
-    @results.actual_version = moab.current_version_id
   end
 
   def validate_checksums
     # check first thing to make sure the moab is present on disk, otherwise weird errors later
-    return persist_db_transaction! { moab_validator.mark_moab_not_found } if moab_absent?
+    return persist_db_transaction! { status_handler.mark_moab_not_found } if moab_absent?
 
     # These will populate the results object
     validate_manifest_inventories
@@ -43,15 +38,13 @@ class ChecksumValidator
     @latest_moab_storage_object_version ||= moab.version_list.last
   end
 
-  private
-
   # @return [Boolean] false if the moab exists, true otherwise
   def moab_absent?
     !File.exist?(object_dir) || latest_moab_storage_object_version.nil?
   end
 
   def update_complete_moab_status(status)
-    moab_validator.update_status(status)
+    status_handler.update_status(status)
   end
 
   # Moab and complete moab versions match?
@@ -61,7 +54,8 @@ class ChecksumValidator
 
   def validate_versions
     # set_status_as_seen_on_disk will update results and complete_moab
-    moab_validator.set_status_as_seen_on_disk(versions_match?)
+    status_handler.set_status_as_seen_on_disk(found_expected_version: versions_match?, moab_validator: moab_validator,
+                                              caller_validates_checksums: true)
 
     return if versions_match?
     results.add_result(AuditResults::UNEXPECTED_VERSION,
@@ -79,11 +73,20 @@ class ChecksumValidator
   end
 
   def moab_validator
-    @moab_validator ||= MoabValidator.new(druid: druid,
-                                          storage_location: storage_location,
-                                          results: results,
-                                          complete_moab: complete_moab,
-                                          caller_validates_checksums: true)
+    @moab_validator ||= MoabValidator.new(moab: moab, audit_results: results)
+  end
+
+  def status_handler
+    @status_handler ||= StatusHandler.new(audit_results: results, complete_moab: complete_moab)
+  end
+
+  def moab
+    @moab ||= MoabUtils.moab(storage_location: storage_location, druid: druid)
+  end
+
+  def results
+    @results ||= AuditResults.new(druid: druid, moab_storage_root: moab_storage_root, actual_version: moab.current_version_id,
+                                  check_name: 'validate_checksums')
   end
 
   def persist_db_transaction!(clear_connections: false)
@@ -96,6 +99,10 @@ class ChecksumValidator
     end
     results.remove_db_updated_results unless transaction_ok
     AuditResultsReporter.report_results(audit_results: results, logger: Audit::Checksum.logger)
+  end
+
+  def object_dir
+    @object_dir ||= MoabUtils.object_dir(storage_location: storage_location, druid: druid)
   end
 
   # Validates files on disk against the manifest inventory
