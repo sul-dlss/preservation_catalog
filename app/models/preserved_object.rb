@@ -16,7 +16,7 @@ class PreservedObject < ApplicationRecord
   belongs_to :preservation_policy
   has_one :complete_moab, dependent: :restrict_with_exception, autosave: true
   has_many :zipped_moab_versions, dependent: :restrict_with_exception, inverse_of: :preserved_object
-  has_one :preserved_objects_primary_moab, dependent: :restrict_with_exception
+  has_one :preserved_objects_primary_moab, dependent: :restrict_with_exception # to be removed
 
   validates :druid,
             presence: true,

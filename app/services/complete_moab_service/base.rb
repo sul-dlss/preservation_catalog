@@ -76,11 +76,7 @@ module CompleteMoabService
     def create_db_objects(status, checksums_validated: false)
       transaction_ok = with_active_record_transaction_and_rescue do
         preserved_object = create_preserved_object
-        complete_moab = preserved_object.create_complete_moab!(complete_moab_attrs(status, checksums_validated))
-        # add to join table unless there is already a primary moab
-        PreservedObjectsPrimaryMoab.find_or_create_by!(preserved_object: preserved_object) do |preserved_objects_primary_moab|
-          preserved_objects_primary_moab.complete_moab = complete_moab
-        end
+        preserved_object.create_complete_moab!(complete_moab_attrs(status, checksums_validated))
       end
       results.add_result(AuditResults::CREATED_NEW_OBJECT) if transaction_ok
     end
