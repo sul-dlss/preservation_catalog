@@ -102,20 +102,6 @@ class ObjectsController < ApplicationController
     Honeybadger.notify(e)
   end
 
-  # Retrieves the primary complete moabs storage location for a preserved objects and returns the output in plain text
-  def primary_moab_location
-    PreservedObject.find_by!(druid: druid).tap do |preserved_object|
-      unless preserved_object.robot_versioning_allowed?
-        return render plain: "Cannot retrieve primary moab location because versioning is locked for the preserved object with id #{druid}",
-                      status: :locked
-      end
-    end
-
-    render plain: MoabStorageRoot.joins(complete_moabs: %i[preserved_object preserved_objects_primary_moab])
-                                 .find_by!(preserved_objects: { druid: druid })
-                                 .storage_location
-  end
-
   private
 
   def druid
