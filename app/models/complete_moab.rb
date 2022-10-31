@@ -27,8 +27,6 @@ class CompleteMoab < ApplicationRecord
   belongs_to :moab_storage_root, inverse_of: :complete_moabs
   belongs_to :from_moab_storage_root, class_name: 'MoabStorageRoot', optional: true
 
-  has_one :preserved_objects_primary_moab, dependent: :destroy # to be removed
-
   validates :status, :version, presence: true
   validates :preserved_object_id, uniqueness: true
   # NOTE: size here is approximate and not used for fixity checking
