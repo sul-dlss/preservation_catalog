@@ -17,7 +17,7 @@ gem 'postgresql_cursor' # for paging over large result sets efficiently
 gem 'pry-byebug' # call 'binding.pry' anywhere in the code to stop execution and get a pry-byebug console
 gem 'pry' # make it possible to use pry for IRB
 gem 'puma', '~> 5.5' # app server
-gem 'rails', '~> 6.1.0'
+gem 'rails', '~> 7.0.0'
 gem 'resque', '~> 1.27'
 gem 'redis', '~> 4.0' # redis 5.x has breaking changes with resque, see https://github.com/resque/resque/issues/1821
 gem 'resque-pool'

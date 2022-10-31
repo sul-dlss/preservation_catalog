@@ -91,8 +91,8 @@ RSpec.describe Audit::Checksum do
       end
     end
 
-    it 'with invalid status, raises StatementInvalid' do
-      expect { described_class.validate_status_root('foo', root_name) }.to raise_error(ActiveRecord::StatementInvalid)
+    it 'with invalid status, raises ArgumentError' do
+      expect { described_class.validate_status_root('foo', root_name) }.to raise_error(ArgumentError)
     end
 
     it 'with invalid root_name, raises RecordNotFound' do

@@ -34,6 +34,8 @@ module Audit
 
     # validate objects with a particular status on a particular moab_storage_root
     def self.validate_status_root(status, storage_root_name)
+      raise ArgumentError, "invalid status #{status}" unless CompleteMoab.statuses.key?(status)
+
       complete_moabs = MoabStorageRoot.find_by!(name: storage_root_name).complete_moabs.where(status: status)
       desc = "Number of Complete Moabs of status #{status} from #{storage_root_name} to be checksum validated"
       logger.info "#{desc}: #{complete_moabs.count}"
