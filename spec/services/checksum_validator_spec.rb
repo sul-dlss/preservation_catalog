@@ -456,7 +456,7 @@ RSpec.describe ChecksumValidator do
       it 'adds a MOAB_FILE_CHECKSUM_MISMATCH result' do
         file_path = "#{object_dir}/v0001/data/content/eric-smith-dissertation-augmented.pdf"
         expect(results).to receive(:add_result).with(
-          AuditResults::MOAB_FILE_CHECKSUM_MISMATCH, file_path: file_path, version: 1
+          AuditResults::MOAB_FILE_CHECKSUM_MISMATCH, { file_path: file_path, version: 1 }
         )
         signature_catalog_validator.send(:validate_signature_catalog_listing)
       end
@@ -472,7 +472,7 @@ RSpec.describe ChecksumValidator do
         manifest_file_path = "#{object_dir}/v0003/manifests/signatureCatalog.xml"
         file_path = "#{object_dir}/v0001/data/content/SC1258_FUR_032a.jpg"
         expect(results).to receive(:add_result).with(
-          AuditResults::FILE_NOT_IN_MOAB, manifest_file_path: manifest_file_path, file_path: file_path
+          AuditResults::FILE_NOT_IN_MOAB, { manifest_file_path: manifest_file_path, file_path: file_path }
         )
         signature_catalog_validator.send(:validate_signature_catalog_listing)
       end
@@ -538,13 +538,13 @@ RSpec.describe ChecksumValidator do
         nested_file_path = "#{object_dir}/v0001/data/content/unexpected/another_not_in_sigcat.txt"
         signature_catalog_path = "#{object_dir}/v0002/manifests/signatureCatalog.xml"
         expect(results).to receive(:add_result).with(
-          AuditResults::FILE_NOT_IN_SIGNATURE_CATALOG, file_path: content_file_path, signature_catalog_path: signature_catalog_path
+          AuditResults::FILE_NOT_IN_SIGNATURE_CATALOG, { file_path: content_file_path, signature_catalog_path: signature_catalog_path }
         )
         expect(results).to receive(:add_result).with(
-          AuditResults::FILE_NOT_IN_SIGNATURE_CATALOG, file_path: metadata_file_path, signature_catalog_path: signature_catalog_path
+          AuditResults::FILE_NOT_IN_SIGNATURE_CATALOG, { file_path: metadata_file_path, signature_catalog_path: signature_catalog_path }
         )
         expect(results).to receive(:add_result).with(
-          AuditResults::FILE_NOT_IN_SIGNATURE_CATALOG, file_path: nested_file_path, signature_catalog_path: signature_catalog_path
+          AuditResults::FILE_NOT_IN_SIGNATURE_CATALOG, { file_path: nested_file_path, signature_catalog_path: signature_catalog_path }
         )
         signature_catalog_validator.send(:flag_unexpected_data_files)
       end
