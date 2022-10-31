@@ -51,9 +51,7 @@ RSpec.describe CompleteMoabService::UpdateVersionAfterValidation do
             status: 'ok', # NOTE: pretending we checked for moab validation errs at create time
             last_version_audit: time,
             last_moab_validation: time
-          ) do |primary_complete_moab|
-            PreservedObjectsPrimaryMoab.create!(preserved_object: preserved_object, complete_moab: primary_complete_moab)
-          end
+          )
         end
 
         let(:preserved_object) { PreservedObject.create!(druid: druid, current_version: 2, preservation_policy: default_preservation_policy) }
@@ -200,9 +198,7 @@ RSpec.describe CompleteMoabService::UpdateVersionAfterValidation do
             status: 'ok', # pretending we checked for moab validation errs at create time
             last_version_audit: time,
             last_moab_validation: time
-          ) do |primary_complete_moab|
-            PreservedObjectsPrimaryMoab.create!(preserved_object: preserved_object, complete_moab: primary_complete_moab)
-          end
+          )
         end
 
         context 'checksums_validated = false' do

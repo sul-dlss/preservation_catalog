@@ -40,9 +40,7 @@ RSpec.describe CompleteMoabService::UpdateVersion do
           status: 'ok', # pretending we checked for moab validation errs at create time
           last_version_audit: Time.current,
           last_moab_validation: Time.current
-        ) do |primary_complete_moab|
-          PreservedObjectsPrimaryMoab.create!(preserved_object: preserved_object, complete_moab: primary_complete_moab)
-        end
+        )
       end
 
       context 'incoming version newer than catalog versions (both) (happy path)' do

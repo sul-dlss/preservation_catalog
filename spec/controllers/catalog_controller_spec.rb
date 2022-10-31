@@ -144,11 +144,6 @@ RSpec.describe CatalogController do
       create(:preserved_object_fixture, druid: bare_druid)
     end
     let(:comp_moab) { pres_obj.complete_moab }
-    let(:primary_moab) { comp_moab }
-
-    before do
-      PreservedObjectsPrimaryMoab.create!(preserved_object: pres_obj, complete_moab: primary_moab)
-    end
 
     context 'with valid params' do
       before do

@@ -50,7 +50,7 @@ RSpec.describe CompleteMoabService::CreateAfterValidation do
       end
     end
 
-    it 'creates PreservedObject and CompleteMoab and PreservedObjectsPrimaryMoab in database when there are no validation errors' do
+    it 'creates PreservedObject and CompleteMoab and in database when there are no validation errors' do
       complete_moab_service = described_class.new(druid: valid_druid, incoming_version: incoming_version, incoming_size: incoming_size,
                                                   moab_storage_root: moab_storage_root)
       complete_moab_service.execute
@@ -59,7 +59,6 @@ RSpec.describe CompleteMoabService::CreateAfterValidation do
       new_complete_moab = new_preserved_object.complete_moab
       expect(new_complete_moab).not_to be_nil
       expect(new_complete_moab.status).to eq 'validity_unknown'
-      expect(new_preserved_object.preserved_objects_primary_moab.complete_moab_id).to eq new_complete_moab.id
     end
 
     it 'creates CompleteMoab with "ok" status and validation timestamps if no validation errors and caller ran CV' do
@@ -99,7 +98,7 @@ RSpec.describe CompleteMoabService::CreateAfterValidation do
         end
       end
 
-      it 'creates PreservedObject, and CompleteMoab with "invalid_moab" status, and PreservedObjectsPrimaryMoab in database' do
+      it 'creates PreservedObject, and CompleteMoab with "invalid_moab" status in database' do
         complete_moab_service.execute
         new_preserved_object = PreservedObject.find_by(druid: invalid_druid, current_version: incoming_version)
         expect(new_preserved_object).not_to be_nil
@@ -108,7 +107,6 @@ RSpec.describe CompleteMoabService::CreateAfterValidation do
         expect(new_complete_moab.status).to eq 'invalid_moab'
         expect(new_complete_moab.last_moab_validation).to be_a ActiveSupport::TimeWithZone
         expect(new_complete_moab.last_version_audit).to be_a ActiveSupport::TimeWithZone
-        expect(new_preserved_object.preserved_objects_primary_moab.complete_moab_id).to eq new_complete_moab.id
       end
 
       it 'creates CompleteMoab with "invalid_moab" status in database even if caller ran CV' do

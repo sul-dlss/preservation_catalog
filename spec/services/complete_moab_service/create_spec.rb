@@ -26,14 +26,13 @@ RSpec.describe CompleteMoabService::Create do
   end
 
   describe '#execute' do
-    it 'creates PreservedObject and CompleteMoab and PreservedObjectsPrimaryMoab in database' do
+    it 'creates PreservedObject and CompleteMoab in database' do
       complete_moab_service.execute
       new_preserved_object = PreservedObject.find_by(druid: druid)
       new_complete_moab = new_preserved_object.complete_moab
       expect(new_preserved_object.current_version).to eq incoming_version
       expect(new_complete_moab.moab_storage_root).to eq moab_storage_root
       expect(new_complete_moab.size).to eq incoming_size
-      expect(new_preserved_object.preserved_objects_primary_moab.complete_moab_id).to eq new_complete_moab.id
     end
 
     it 'creates the CompleteMoab with "ok" status and validation timestamps if caller ran CV' do

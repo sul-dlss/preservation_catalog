@@ -41,9 +41,7 @@ RSpec.describe CompleteMoabService::CheckExistence do
           size: 1,
           moab_storage_root: moab_storage_root,
           status: 'ok' # NOTE: we are pretending we checked for moab validation errs
-        ) do |primary_complete_moab|
-          PreservedObjectsPrimaryMoab.create!(preserved_object: preserved_object, complete_moab: primary_complete_moab)
-        end
+        )
       end
 
       context 'incoming and db versions match' do
