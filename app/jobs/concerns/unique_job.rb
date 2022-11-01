@@ -5,9 +5,11 @@
 # and the lock cleanup hook wasn't getting invoked automatically in our jobs.  Inlining the code
 # reduces indirection and dependency (on both resque-lock and on Resque itself, since we use ActiveJob
 # hooks here instead of Resque hooks).
+
+# @note logic for `before_enqueue` `around_perform`/`clear_lock`, `queue_lock_key`, `before_enqueue_lock`, and
+#   `lock_timeout` from resque-lock.
+# @see [resque-lock] https://github.com/defunkt/resque-lock/blob/e06fc2bd26f96f4f3fe893caa49c1cd42c0c9423/lib/resque/plugins/lock.rb
 #
-# logic for `before_enqueue` `around_perform`/`clear_lock`, `queue_lock_key`, `before_enqueue_lock`, and
-# `lock_timeout` from resque-lock.
 # Copyright (c) Chris Wanstrath, Ray Krueger
 #
 # Permission is hereby granted, free of charge, to any person obtaining
@@ -17,10 +19,10 @@
 # distribute, sublicense, and/or sell copies of the Software, and to
 # permit persons to whom the Software is furnished to do so, subject to
 # the following conditions:
-
+#
 # The above copyright notice and this permission notice shall be
 # included in all copies or substantial portions of the Software.
-
+#
 # THE SOFTWARE IS PROVIDED AS IS, WITHOUT WARRANTY OF ANY KIND,
 # EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 # MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -33,14 +35,17 @@
 # This additional copyright statement applies solely to the code that was taken from resque-lock.
 
 # @note We abort on lock collision, preventing duplicate Jobs from enqueuing.
-# The key is specified by the `queue_lock_key` class method, by default based on job name
-# and serialized arguments (which works well for druid/version), but can be overridden
-# per job class, if needed.  Locks are stored in Redis w/ expiry dates as integers.
+#   The key is specified by the `queue_lock_key` class method, by default based on job name
+#   and serialized arguments (which works well for druid/version), but can be overridden
+#   per job class, if needed.  Locks are stored in Redis w/ expiry dates as integers.
 # @see [redis setnx] https://redis.io/commands/setnx (explains the reasoning behind the pattern)
-#
-# @note The queue locking mechanism was lifted from resque-lock. See end of file for
-# obligatory license info and rationale for inlining the gem's logic.
-# @see [resque-lock] https://github.com/defunkt/resque-lock/blob/e06fc2bd26f96f4f3fe893caa49c1cd42c0c9423/lib/resque/plugins/lock.rb
+# @note Job uniqueness is useful because it usually doesn't make sense in this app for more than one instance
+#   of the same job to be enqueued at a time. E.g. it'd be unnecessary to queue more than one checksum validation
+#   job at once for the same druid; it'd be unnecessary to queue two instances of ZipmakerJob for the same Moab version;
+#   and we wouldn't want to attempt multiple deliveries of the same zipped Moab version to a given cloud endpoint. Jobs
+#   generally check that the file they're trying to write or push doesn't yet exist, but the check and write
+#   in combination won't be transactional if via file system or REST call, so this provides some extra safeguard
+#   against such race conditions. It also gives a bit of extra safety around refactoring job invocations.
 module UniqueJob
   extend ActiveSupport::Concern
 
