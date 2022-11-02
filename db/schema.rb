@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_10_18_143200) do
+ActiveRecord::Schema[7.0].define(version: 2022_10_31_220235) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -85,15 +85,6 @@ ActiveRecord::Schema[7.0].define(version: 2022_10_18_143200) do
     t.index ["updated_at"], name: "index_preserved_objects_on_updated_at"
   end
 
-  create_table "preserved_objects_primary_moabs", force: :cascade do |t|
-    t.bigint "preserved_object_id", null: false
-    t.bigint "complete_moab_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["complete_moab_id"], name: "index_preserved_objects_primary_moabs_on_complete_moab_id", unique: true
-    t.index ["preserved_object_id"], name: "index_preserved_objects_primary_moabs_on_preserved_object_id", unique: true
-  end
-
   create_table "zip_endpoints", force: :cascade do |t|
     t.string "endpoint_name", null: false
     t.integer "delivery_class", null: false
@@ -139,8 +130,6 @@ ActiveRecord::Schema[7.0].define(version: 2022_10_18_143200) do
   add_foreign_key "preservation_policies_zip_endpoints", "preservation_policies"
   add_foreign_key "preservation_policies_zip_endpoints", "zip_endpoints"
   add_foreign_key "preserved_objects", "preservation_policies"
-  add_foreign_key "preserved_objects_primary_moabs", "complete_moabs"
-  add_foreign_key "preserved_objects_primary_moabs", "preserved_objects"
   add_foreign_key "zip_parts", "zipped_moab_versions"
   add_foreign_key "zipped_moab_versions", "preserved_objects"
   add_foreign_key "zipped_moab_versions", "zip_endpoints"
