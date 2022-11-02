@@ -16,7 +16,6 @@ module CompleteMoabService
     attr_writer :logger
 
     delegate :storage_location, to: :moab_storage_root
-    delegate :complete_moab, to: :moab_validator
 
     def initialize(druid:, incoming_version:, incoming_size:, moab_storage_root:, check_name:)
       @druid = druid
@@ -29,6 +28,18 @@ module CompleteMoabService
 
     def preserved_object
       @preserved_object ||= PreservedObject.find_by!(druid: druid)
+    end
+
+    def complete_moab
+      # There should be at most one CompleteMoab for a given druid on a given storage location:
+      # * At the DB level, there's a unique index on druid for preserved_objects, a unique index on storage_location
+      # for moab_storage_roots, and a unique index on the combo of preserved_object_id and moab_storage_root_id for
+      # complete_moabs.
+      # * A moab always lives in the druid tree path of the storage_location, so there is only one
+      # possible moab path for any given druid in a given storage root.
+      @complete_moab ||= CompleteMoab.joins(:preserved_object, :moab_storage_root).find_by!(
+        preserved_objects: { druid: druid }, moab_storage_roots: { storage_location: storage_location }
+      )
     end
 
     protected
@@ -45,8 +56,16 @@ module CompleteMoabService
       results
     end
 
+    def status_handler
+      @status_handler ||= StatusHandler.new(audit_results: results, complete_moab: complete_moab)
+    end
+
     def moab_validator
-      @moab_validator ||= MoabValidator.new(druid: druid, storage_location: storage_location, results: results)
+      @moab_validator ||= MoabValidator.new(moab: moab, audit_results: results)
+    end
+
+    def moab
+      @moab ||= MoabUtils.moab(druid: druid, storage_location: storage_location)
     end
 
     # this wrapper reads a little nicer in this class, since CompleteMoabHandler is always doing this the same way

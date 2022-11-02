@@ -26,7 +26,7 @@ module CompleteMoabService
 
     def update_complete_moab_preserved_object_or_set_status
       if validation_errors?
-        moab_validator.update_status('invalid_moab')
+        status_handler.update_status('invalid_moab')
       else
         complete_moab.upd_audstamps_version_size(moab_validator.ran_moab_validation?, incoming_version, incoming_size)
         preserved_object.current_version = incoming_version
@@ -40,17 +40,17 @@ module CompleteMoabService
       with_active_record_transaction_and_rescue do
         raise_rollback_if_version_mismatch
 
-        return report_results! unless moab_validator.can_validate_current_comp_moab_status?
+        return report_results! unless moab_validator.can_validate_current_comp_moab_status?(complete_moab: complete_moab)
 
         if incoming_version == complete_moab.version
-          moab_validator.set_status_as_seen_on_disk(true) unless complete_moab.status == 'ok'
+          status_handler.set_status_as_seen_on_disk(found_expected_version: true, moab_validator: moab_validator) unless complete_moab.status == 'ok'
           results.add_result(AuditResults::VERSION_MATCHES, 'CompleteMoab')
         elsif incoming_version > complete_moab.version
-          moab_validator.set_status_as_seen_on_disk(true) unless complete_moab.status == 'ok'
+          status_handler.set_status_as_seen_on_disk(found_expected_version: true, moab_validator: moab_validator) unless complete_moab.status == 'ok'
           results.add_result(AuditResults::ACTUAL_VERS_GT_DB_OBJ, db_obj_name: 'CompleteMoab', db_obj_version: complete_moab.version)
           update_complete_moab_preserved_object_or_set_status
         else # incoming_version < complete_moab.version
-          moab_validator.set_status_as_seen_on_disk(false)
+          status_handler.set_status_as_seen_on_disk(found_expected_version: false, moab_validator: moab_validator)
           results.add_result(AuditResults::ACTUAL_VERS_LT_DB_OBJ, db_obj_name: 'CompleteMoab', db_obj_version: complete_moab.version)
         end
         complete_moab.update_audit_timestamps(moab_validator.ran_moab_validation?, true)

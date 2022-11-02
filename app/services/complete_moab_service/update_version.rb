@@ -44,7 +44,7 @@ module CompleteMoabService
 
       complete_moab.upd_audstamps_version_size(moab_validator.ran_moab_validation?, incoming_version, incoming_size)
       complete_moab.last_checksum_validation = Time.current if checksums_validated && complete_moab.last_checksum_validation
-      moab_validator.update_status(status) if status
+      status_handler.update_status(status) if status
       complete_moab.save!
 
       preserved_object.current_version = incoming_version
@@ -55,7 +55,7 @@ module CompleteMoabService
       results.add_result(AuditResults::UNEXPECTED_VERSION, db_obj_name: 'CompleteMoab', db_obj_version: complete_moab.version)
       version_comparison_results
 
-      moab_validator.update_status(status) if status
+      status_handler.update_status(status) if status
       complete_moab.update_audit_timestamps(moab_validator.ran_moab_validation?, true)
       complete_moab.save!
     end

@@ -367,12 +367,13 @@ RSpec.describe CompleteMoabService::CheckExistence do
           let(:incoming_version) { 2 }
 
           before do
-            allow(moab_validator.complete_moab).to receive(:save!).and_raise(ActiveRecord::ActiveRecordError, 'foo')
+            allow(complete_moab_service).to receive(:complete_moab).and_return(complete_moab)
+            allow(complete_moab).to receive(:save!).and_raise(ActiveRecord::ActiveRecordError, 'foo')
           end
 
           context 'transaction is rolled back' do
             it 'CompleteMoab is not updated' do
-              expect { complete_moab_service.execute }.not_to change { complete_moab_service.complete_moab.reload.updated_at }
+              expect { complete_moab_service.execute }.not_to change { complete_moab.reload.updated_at }
             end
 
             it 'PreservedObject is not updated' do

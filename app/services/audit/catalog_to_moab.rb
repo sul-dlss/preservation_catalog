@@ -3,20 +3,12 @@
 module Audit
   # Catalog to Moab existence check code
   class CatalogToMoab
-    attr_reader :complete_moab, :druid, :results, :logger
-
-    delegate :can_validate_current_comp_moab_status?,
-             :moab,
-             :ran_moab_validation?,
-             :set_status_as_seen_on_disk,
-             :update_status,
-             to: :moab_validator
+    attr_reader :complete_moab, :druid, :logger
 
     def initialize(complete_moab)
       @complete_moab = complete_moab
       @druid = complete_moab.preserved_object.druid
       @logger = Logger.new(Rails.root.join('log', 'c2m.log'))
-      @results = AuditResults.new(druid: druid, moab_storage_root: complete_moab.moab_storage_root, check_name: 'check_catalog_version')
     end
 
     # shameless green implementation
@@ -30,7 +22,7 @@ module Audit
 
       unless online_moab_found?
         transaction_ok = ActiveRecordUtils.with_transaction_and_rescue(results) do
-          update_status('online_moab_not_found')
+          status_handler.update_status('online_moab_not_found')
           complete_moab.save!
         end
         results.remove_db_updated_results unless transaction_ok
@@ -41,9 +33,18 @@ module Audit
         return report_results!
       end
 
-      return report_results! unless can_validate_current_comp_moab_status?
+      return report_results! unless moab_validator.can_validate_current_comp_moab_status?(complete_moab: complete_moab)
 
       compare_version_and_take_action
+    end
+
+    def moab
+      @moab ||= MoabUtils.moab(druid: druid, storage_location: storage_location)
+    end
+
+    def results
+      @results ||= AuditResults.new(druid: druid, moab_storage_root: complete_moab.moab_storage_root, actual_version: moab&.current_version_id,
+                                    check_name: 'check_catalog_version')
     end
 
     private
@@ -53,7 +54,11 @@ module Audit
     end
 
     def moab_validator
-      @moab_validator ||= MoabValidator.new(druid: druid, storage_location: storage_location, results: results, complete_moab: complete_moab)
+      @moab_validator ||= MoabValidator.new(moab: moab, audit_results: results)
+    end
+
+    def status_handler
+      @status_handler ||= StatusHandler.new(audit_results: results, complete_moab: complete_moab)
     end
 
     def storage_location
@@ -69,26 +74,25 @@ module Audit
     #   report results (and return them)
     def compare_version_and_take_action
       moab_version = moab.current_version_id
-      results.actual_version = moab_version
       catalog_version = complete_moab.version
       transaction_ok = ActiveRecordUtils.with_transaction_and_rescue(results) do
         if catalog_version == moab_version
-          set_status_as_seen_on_disk(true) unless complete_moab.ok?
+          status_handler.set_status_as_seen_on_disk(found_expected_version: true, moab_validator: moab_validator) unless complete_moab.ok?
           results.add_result(AuditResults::VERSION_MATCHES, 'CompleteMoab')
           report_results!
         elsif catalog_version < moab_version
-          set_status_as_seen_on_disk(true)
+          status_handler.set_status_as_seen_on_disk(found_expected_version: true, moab_validator: moab_validator)
           CompleteMoabService::UpdateVersionAfterValidation.execute(druid: druid, incoming_version: moab_version, incoming_size: moab.size,
                                                                     moab_storage_root: complete_moab.moab_storage_root)
         else # catalog_version > moab_version
-          set_status_as_seen_on_disk(false)
+          status_handler.set_status_as_seen_on_disk(found_expected_version: false, moab_validator: moab_validator)
           results.add_result(
             AuditResults::UNEXPECTED_VERSION, db_obj_name: 'CompleteMoab', db_obj_version: complete_moab.version
           )
           report_results!
         end
 
-        complete_moab.update_audit_timestamps(ran_moab_validation?, true)
+        complete_moab.update_audit_timestamps(moab_validator.ran_moab_validation?, true)
         complete_moab.save!
       end
       results.remove_db_updated_results unless transaction_ok
