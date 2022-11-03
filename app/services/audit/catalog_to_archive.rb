@@ -15,6 +15,15 @@ module Audit
         return false # everything else relies on checking parts, nothing left to do
       end
 
+      total_part_size = zmv.total_part_size
+      moab_version_size = zmv.preserved_object.total_size_of_moab_version(zmv.version)
+      if total_part_size < moab_version_size
+        results.add_result(
+          AuditResults::ZIP_PARTS_SIZE_INCONSISTENCY,
+          base_hash.merge(total_part_size: total_part_size, moab_version_size: moab_version_size)
+        )
+      end
+
       child_parts_counts = zmv.child_parts_counts
       if child_parts_counts.length > 1
         results.add_result(
