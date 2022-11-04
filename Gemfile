@@ -13,6 +13,7 @@ gem 'lograge'
 gem 'okcomputer' # ReST endpoint with upness status
 gem 'pg' # postgres database
 gem 'postgresql_cursor' # for paging over large result sets efficiently
+gem 'propshaft'
 # pry is useful for debugging, even in prod
 gem 'pry-byebug' # call 'binding.pry' anywhere in the code to stop execution and get a pry-byebug console
 gem 'pry' # make it possible to use pry for IRB
@@ -21,11 +22,16 @@ gem 'rails', '~> 7.0.0'
 gem 'resque', '~> 1.27'
 gem 'redis', '~> 4.0' # redis 5.x has breaking changes with resque, see https://github.com/resque/resque/issues/1821
 gem 'resque-pool'
+gem 'turbo-rails'
 gem 'whenever' # manage cron for audit checks
 
 # Stanford gems
 gem 'druid-tools' # for druid validation and druid-tree parsing
 gem 'moab-versioning', '~> 5.0' # work with Moab Objects
+
+# Web tooling
+gem 'cssbundling-rails'
+gem 'jsbundling-rails'
 
 group :development, :test do
   gem 'rspec-rails', '~> 4.0'
