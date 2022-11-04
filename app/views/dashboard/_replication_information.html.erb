@@ -2,7 +2,18 @@
 
 <%= render partial: 'replication_endpoint_data' %>
 <div class="row row-cols-2">
-  <div class="column"><%= render partial: 'replicated_files' %></div>
-  <div class="column"><%= render partial: 'zip_parts_suffix_counts' %></div>
+  <div class="column">
+    <turbo-frame id="replicated_files">
+      <%= render partial: 'replicated_files' %>
+    </turbo-frame>
+  </div>
+  <div class="column">
+    <turbo-frame id="zip_parts_suffix_counts">
+      <%= render partial: 'zip_parts_suffix_counts' %>
+    </turbo-frame>
+  </div>
 </div>
-<%= render partial: 'replication_flow' %>
+
+<turbo-frame id="replication_flow">
+  <%= render partial: 'replication_flow' %>
+</turbo-frame>

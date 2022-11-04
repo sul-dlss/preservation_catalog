@@ -6,8 +6,19 @@
 <p><strong class="fs-4">CompleteMoab</strong> is about the on prem Moab.</p>
 <hr/>
 <div class="row row-cols-2">
-  <div class="column col-5"><%= render partial: 'object_versions' %></div>
-  <div class="column col-7"><%= render partial: 'complete_moab_status_counts' %></div>
+  <div class="column col-5">
+    <turbo-frame id="object_verisons">
+      <%= render partial: 'object_versions' %>
+    </turbo-frame>
+  </div>
+  <div class="column col-7">
+    <turbo-frame id="complete_moab_status">
+      <%= render partial: 'complete_moab_status_counts' %>
+    </turbo-frame>
+  </div>
 </div>
 <hr/>
-<%= render partial: 'moab_storage_root_data' %>
+
+<turbo-frame id="moab_storage_root_data">
+  <%= render partial: 'moab_storage_root_data' %>
+</turbo-frame>
