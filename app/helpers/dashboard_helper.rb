@@ -48,7 +48,7 @@ module DashboardHelper # rubocop:disable Metrics/ModuleLength
     (ZipPart.count - ZipPart.ok.count).zero?
   end
 
-  def storage_root_info
+  def storage_root_info # rubocop:disable Metrics/AbcSize
     storage_root_info = {}
     MoabStorageRoot.all.each do |storage_root|
       storage_root_info[storage_root.name] =
@@ -68,7 +68,7 @@ module DashboardHelper # rubocop:disable Metrics/ModuleLength
   #   total of counts of each CompleteMoab status (ok, invalid_checksum, etc.)
   #   total of counts of fixity_check_expired
   #   total of complete_moab counts - this is last element in array due to index shift to skip storage_location and stored size
-  def storage_root_totals
+  def storage_root_totals # rubocop:disable Metrics/AbcSize
     return [0] if storage_root_info.values.size.zero?
 
     totals = Array.new(storage_root_info.values.first.size - 3, 0)
