@@ -1,0 +1,28 @@
+<div>
+  <h4>Endpoint Data</h4>
+  <p>The database uses ZippedMoabVersion to track which versions of which Moabs have been replicated to which replication endpoints.</p>
+  <div class="col-sm-4">
+    <table class="table table-bordered table-hover">
+      <thead class="table-info">
+        <tr>
+          <th>endpoint name</th>
+          <th>ActiveJob class for replication</th>
+          <th class="text-center">ZippedMoabVersion replicated count<br/>(according to database)</th>
+          <th class="text-center">Number of Object Versions<br/>(per PreservedObject)</th>
+        </tr>
+      </thead>
+      <tbody class="table-group-divider">
+        <% replication_info.each do |endpoint_name, info| %>
+          <tr>
+            <td><%= endpoint_name %></td>
+            <td><%= info[0] %></td>
+            <% info[1..].map do |val| %>
+              <td class="text-end<%= ' table-danger' if val != num_object_versions_per_preserved_object%>"><%= val %></td>
+            <% end %>
+            <td class="text-end"><%= num_object_versions_per_preserved_object %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>

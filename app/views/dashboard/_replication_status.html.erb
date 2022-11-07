@@ -1,0 +1,12 @@
+<div class="card border border-4 border-secondary text-center">
+  <div class="card-body" />
+    <h2 class="card-title">Replication Status</h2>
+    <h1>
+      <% if replication_ok? %>
+        <span class="badge bg-success rounded-pill">OK</span>
+      <% else %>
+        <span class="badge bg-danger">Error</span>
+      <% end %>
+    </h1>
+  </div>
+</div>

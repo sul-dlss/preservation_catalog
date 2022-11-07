@@ -3,6 +3,8 @@
 ##
 # CompleteMoab represents a concrete instance of a PreservedObject across ALL versions, in physical storage.
 class CompleteMoab < ApplicationRecord
+  STATUSES = %w[ok invalid_moab invalid_checksum online_moab_not_found unexpected_version_on_storage validity_unknown].freeze
+
   # @note Hash values cannot be modified without migrating any associated persisted data.
   # @see [enum docs] http://api.rubyonrails.org/classes/ActiveRecord/Enum.html
   enum status: {

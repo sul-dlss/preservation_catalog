@@ -1,0 +1,13 @@
+<h2>Catalog Status Information</h2>
+<div>
+  <p class="lead">The Preservation Catalog database keeps track of the state of SDR objects preserved on prem and in the cloud.</p>
+</div>
+<p><strong class="fs-4">PreservedObject</strong> is where we store the druid and links to both the on prem Moab object and all the replicated instances in the cloud.</p>
+<p><strong class="fs-4">CompleteMoab</strong> is about the on prem Moab.</p>
+<hr/>
+<div class="row row-cols-2">
+  <div class="column col-5"><%= render partial: 'object_versions' %></div>
+  <div class="column col-7"><%= render partial: 'complete_moab_status_counts' %></div>
+</div>
+<hr/>
+<%= render partial: 'moab_storage_root_data' %>

@@ -38,4 +38,10 @@ RSpec.describe 'routes' do
       expect(post: content_diff_object_path(id: id)).to route_to(controller: 'objects', action: 'content_diff', id: id)
     end
   end
+
+  describe 'dashboard' do
+    it 'routes to dashboard controller index action' do
+      expect(get: dashboard_path).to route_to(controller: 'dashboard', action: 'index', format: 'html')
+    end
+  end
 end
