@@ -34,7 +34,6 @@ module CompleteMoabService
       end
     end
 
-    # rubocop:disable Metrics/AbcSize
     def check_versions
       Rails.logger.debug "check_existence #{druid} called"
 
@@ -58,6 +57,5 @@ module CompleteMoabService
         complete_moab.save!
       end
     end
-    # rubocop:enable Metrics/AbcSize
   end
 end
