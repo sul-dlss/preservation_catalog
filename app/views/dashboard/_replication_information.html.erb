@@ -1,19 +1,20 @@
 <h3>S3 Replication Information</h3>
 
-<%= render partial: 'replication_endpoint_data' %>
 <div class="row row-cols-2">
-  <div class="column">
+  <div class="column col-8">
+    <turbo-frame id="replication_endpoint_data">
+      <%= render partial: 'replication_endpoint_data' %>
+    </turbo-frame>
+  </div>
+  <div class="column col-4">
     <turbo-frame id="replicated_files">
       <%= render partial: 'replicated_files' %>
     </turbo-frame>
   </div>
-  <div class="column">
-    <turbo-frame id="zip_parts_suffix_counts">
-      <%= render partial: 'zip_parts_suffix_counts' %>
-    </turbo-frame>
-  </div>
 </div>
-
 <turbo-frame id="replication_flow">
   <%= render partial: 'replication_flow' %>
+</turbo-frame>
+<turbo-frame id="zip_parts_suffix_counts">
+  <%= render partial: 'zip_parts_suffix_counts' %>
 </turbo-frame>
