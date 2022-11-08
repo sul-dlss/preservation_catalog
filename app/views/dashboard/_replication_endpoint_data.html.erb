@@ -1,6 +1,7 @@
 <div>
   <h4>Endpoint Data</h4>
   <p>The database uses ZippedMoabVersion to track which versions of which Moabs have been replicated to which replication endpoints.</p>
+  <p>The ZippedMoabVersion replicated count for each endpoint should match the number of object versions according to PreservedObject data.</p>
   <div class="col-sm-4">
     <table class="table table-bordered table-hover">
       <thead class="table-info">
@@ -12,13 +13,12 @@
         </tr>
       </thead>
       <tbody class="table-group-divider">
-        <% replication_info.each do |endpoint_name, info| %>
+        <% endpoint_data.each do |endpoint_name, info| %>
           <tr>
             <td><%= endpoint_name %></td>
-            <td><%= info[0] %></td>
-            <% info[1..].map do |val| %>
-              <td class="text-end<%= ' table-danger' if val != num_object_versions_per_preserved_object%>"><%= val %></td>
-            <% end %>
+            <td><%= info[:delivery_class] %></td>
+            <% replication_count = info[:replication_count] %>
+            <td class="text-end<%= ' table-danger' if replication_count != num_object_versions_per_preserved_object%>"><%= replication_count %></td>
             <td class="text-end"><%= num_object_versions_per_preserved_object %></td>
           </tr>
         <% end %>

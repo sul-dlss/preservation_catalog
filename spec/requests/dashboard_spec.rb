@@ -65,7 +65,7 @@ RSpec.describe 'Dashboard Nav Bar' do
         expect(response.body).to match(/S3 Replication Information/)
       end
 
-      it 'renders _endpoint_data template' do
+      it 'renders _replication_endpoint_data template' do
         expect(response).to render_template('dashboard/_replication_endpoint_data')
         expect(response.body).to match(/Endpoint Data/)
         expect(response.body).to match(/ActiveJob class for replication/) # table header

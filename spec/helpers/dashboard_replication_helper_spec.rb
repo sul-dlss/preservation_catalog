@@ -34,17 +34,24 @@ RSpec.describe DashboardReplicationHelper do
     end
   end
 
-  describe '#replication_info' do
-    skip('FIXME: intend to change this internal structure soon; not testing yet')
-    # replication_info = {}
-    # ZipEndpoint.all.each do |zip_endpoint|
-    #   replication_info[zip_endpoint.endpoint_name] =
-    #     [
-    #       zip_endpoint.delivery_class,
-    #       ZippedMoabVersion.where(zip_endpoint_id: zip_endpoint.id).count
-    #     ].flatten
-    # end
-    # replication_info
+  describe '#endpoint_data' do
+    let(:endpoint1) { ZipEndpoint.first }
+    let(:endpoint2) { ZipEndpoint.last }
+
+    before do
+      zmv_rel1 = ZippedMoabVersion.where(zip_endpoint_id: endpoint1.id)
+      zmv_rel2 = ZippedMoabVersion.where(zip_endpoint_id: endpoint2.id)
+      allow(zmv_rel1).to receive(:count).and_return(5)
+      allow(zmv_rel2).to receive(:count).and_return(2)
+      allow(ZippedMoabVersion).to receive(:where).with(zip_endpoint_id: endpoint1.id).and_return(zmv_rel1)
+      allow(ZippedMoabVersion).to receive(:where).with(zip_endpoint_id: endpoint2.id).and_return(zmv_rel2)
+    end
+
+    it 'returns a hash with endpoint_name keys and values of Hash with delivery_class and replication_count' do
+      endpoint_data = helper.endpoint_data
+      expect(endpoint_data[endpoint1.endpoint_name]).to eq({ delivery_class: endpoint1.delivery_class, replication_count: 5 })
+      expect(endpoint_data[endpoint2.endpoint_name]).to eq({ delivery_class: endpoint2.delivery_class, replication_count: 2 })
+    end
   end
 
   describe '#zip_part_suffixes' do

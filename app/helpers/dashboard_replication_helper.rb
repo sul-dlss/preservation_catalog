@@ -3,22 +3,22 @@
 # helper methods for dashboard pertaining to replication functionality
 module DashboardReplicationHelper
   def replication_ok?
-    replication_info.each_value do |info|
-      return false if info[1] != num_object_versions_per_preserved_object
+    endpoint_data.each do |_endpoint_name, info|
+      return false if info[:replication_count] != num_object_versions_per_preserved_object
     end
     true
   end
 
-  def replication_info
-    replication_info = {}
+  def endpoint_data
+    endpoint_data = {}
     ZipEndpoint.all.each do |zip_endpoint|
-      replication_info[zip_endpoint.endpoint_name] =
-        [
-          zip_endpoint.delivery_class,
-          ZippedMoabVersion.where(zip_endpoint_id: zip_endpoint.id).count
-        ].flatten
+      endpoint_data[zip_endpoint.endpoint_name] =
+        {
+          delivery_class: zip_endpoint.delivery_class,
+          replication_count: ZippedMoabVersion.where(zip_endpoint_id: zip_endpoint.id).count
+        }
     end
-    replication_info
+    endpoint_data
   end
 
   def zip_part_suffixes
