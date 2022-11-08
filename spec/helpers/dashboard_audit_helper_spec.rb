@@ -157,7 +157,7 @@ RSpec.describe DashboardAuditHelper do
     it 'returns string version of MOAB_LAST_VERSION_AUDIT_THRESHOLD ago' do
       expect(helper.moab_audit_age_threshold).to be_a(String)
       result = DateTime.parse(helper.moab_audit_age_threshold)
-      expect(result).to be <= DateTime.now - DashboardHelper::MOAB_LAST_VERSION_AUDIT_THRESHOLD
+      expect(result).to be <= DateTime.now - DashboardAuditHelper::MOAB_LAST_VERSION_AUDIT_THRESHOLD
     end
   end
 
@@ -217,7 +217,7 @@ RSpec.describe DashboardAuditHelper do
     it 'returns string version of REPLICATION_AUDIT_THRESHOLD ago' do
       expect(helper.replication_audit_age_threshold).to be_a(String)
       result = DateTime.parse(helper.replication_audit_age_threshold)
-      expect(result).to be <= DateTime.now - DashboardHelper::REPLICATION_AUDIT_THRESHOLD
+      expect(result).to be <= DateTime.now - DashboardAuditHelper::REPLICATION_AUDIT_THRESHOLD
     end
   end
 
