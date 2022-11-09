@@ -42,6 +42,3 @@ config/environments/*.local.yml
 postgres-data
 
 spec/fixtures/derivatives/
-
-/app/assets/builds/*
-!/app/assets/builds/.keep
