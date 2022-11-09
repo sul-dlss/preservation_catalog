@@ -21,6 +21,7 @@ gem 'rails', '~> 7.0.0'
 gem 'resque', '~> 1.27'
 gem 'redis', '~> 4.0' # redis 5.x has breaking changes with resque, see https://github.com/resque/resque/issues/1821
 gem 'resque-pool'
+gem 'turbo-rails'
 gem 'whenever' # manage cron for audit checks
 
 # Stanford gems
