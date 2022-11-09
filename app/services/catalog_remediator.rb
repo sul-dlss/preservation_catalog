@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# Remediates catalog entries, e.g., failed replication records
+# Remediates catalog entries, e.g., prunes failed replication records
 class CatalogRemediator
   def self.prune_replication_failures(druid:, version:)
     new(druid: druid, version: version).prune_replication_failures
