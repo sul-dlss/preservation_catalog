@@ -4,7 +4,7 @@
 # CatalogController allows consumers to interact with the Preservation Catalog, e.g.
 # to add an existing moab object to the catalog, or to update an entry for a moab object
 # that's already in the catalog.
-class CatalogController < ApplicationController
+class CatalogController < ApiController
   # POST /v1/catalog
   def create
     results = CompleteMoabService::Create.execute(druid: bare_druid, incoming_version: incoming_version, incoming_size: incoming_size,

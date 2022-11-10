@@ -5,7 +5,7 @@ require 'csv'
 ##
 # ObjectsController allows consumers to interact with preserved objects
 #  (Note: methods will eventually be ported from sdr-services-app)
-class ObjectsController < ApplicationController
+class ObjectsController < ApiController
   # return the PreservedObject model for the druid (supplied *without* `druid:` prefix)
   # GET /v1/objects/:id.json
   def show
