@@ -9,7 +9,7 @@ _Please keep this up to date as the schema changes!_
 To generate the updated ER diagram
 
 - Make sure the `db` container is running, and that the `development` database has all migrations applied (`bin/rails db:create db:migrate`).
-- Run `docker-compose run --rm gen_er_diagram` from the project root.
+- Run `docker compose run --rm gen_er_diagram` from the project root.
 - Commit the updated copy of `db/schema_er_diagram.svg`.
 
 ###### Key:
