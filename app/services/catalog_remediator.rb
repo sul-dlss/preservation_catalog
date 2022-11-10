@@ -11,6 +11,8 @@ class CatalogRemediator
     @version = version
   end
 
+  # prunes ZipParts and ZippedMoabVersion from database for any ZippedMoabVersions that have replication errors for
+  #   the druid and version (so remediation can then be kicked off with PreservedObject.create_zipped_moab_versions!)
   def prune_replication_failures
     zipped_moab_versions_with_errors.map do |zipped_moab_version, audit_results|
       zip_parts = zipped_moab_version.zip_parts
@@ -20,7 +22,7 @@ class CatalogRemediator
       )
 
       ApplicationRecord.transaction do
-        # NOTE: The order here matters! ZipPart instances must be destroyed before the ZippedMoabVersion
+        # NOTE: ZipPart instances must be destroyed _before_ the ZippedMoabVersion
         zip_parts.destroy_all
         zipped_moab_version.destroy
       end
@@ -49,12 +51,13 @@ class CatalogRemediator
 
   def zipped_moab_versions_with_errors
     zipped_moab_versions_beyond_expiry.to_a.filter_map do |zipped_moab_version|
-      audit_results = audit_results_for(zipped_moab_version)
-      # If this check returns false, it indicates a lack of zip parts, in which
-      # case we still want to delete the ZMV, so short-circuit the rest of the
-      # block
+      audit_results = empty_audit_results(zipped_moab_version)
+      # when Audit::CatalogToArchive.check_child_zip_part_attributes() returns true, we have ZipParts for the
+      #   ZippedMoabVersion, so continue to the next check
       next [zipped_moab_version, audit_results] unless check_child_zip_part_attributes(zipped_moab_version, audit_results)
 
+      # S3Audit.check_replicated_zipped_moab_version creates audit_results.error_results if problem with existence or
+      #   checksum of replicated ZipPart files
       endpoint_audit_class_for(zipped_moab_version).check_replicated_zipped_moab_version(zipped_moab_version, audit_results, true)
       next if audit_results.error_results.empty?
 
@@ -62,7 +65,7 @@ class CatalogRemediator
     end
   end
 
-  def audit_results_for(zipped_moab_version)
+  def empty_audit_results(zipped_moab_version)
     AuditResults.new(druid: druid, actual_version: version, moab_storage_root: zipped_moab_version.zip_endpoint)
   end
 

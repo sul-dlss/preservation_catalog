@@ -3,6 +3,10 @@
 module S3
   # Base class for AWS and IBM audit classes
   class S3Audit
+    def self.check_replicated_zipped_moab_version(zmv, results, check_unreplicated_parts = false)
+      new(zmv, results, check_unreplicated_parts).check_replicated_zipped_moab_version
+    end
+
     delegate :bucket, :bucket_name, to: :s3_provider
 
     attr_reader :zmv, :results, :check_unreplicated_parts
@@ -14,11 +18,6 @@ module S3
       @zmv = zmv
       @results = results
       @check_unreplicated_parts = check_unreplicated_parts
-    end
-
-    # convenience method for instantiating the audit class and running the check in one call
-    def self.check_replicated_zipped_moab_version(zmv, results, check_unreplicated_parts = false)
-      new(zmv, results, check_unreplicated_parts).check_replicated_zipped_moab_version
     end
 
     def check_replicated_zipped_moab_version

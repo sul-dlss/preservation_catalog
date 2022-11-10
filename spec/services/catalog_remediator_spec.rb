@@ -45,7 +45,7 @@ RSpec.describe CatalogRemediator do
       end
 
       before do
-        allow(instance).to receive(:audit_results_for).with(zipped_moab_version_new).and_return(fake_audit_results_no_errors)
+        allow(instance).to receive(:empty_audit_results).with(zipped_moab_version_new).and_return(fake_audit_results_no_errors)
       end
 
       it 'ignores' do
@@ -61,7 +61,7 @@ RSpec.describe CatalogRemediator do
       end
 
       before do
-        allow(instance).to receive(:audit_results_for).with(zipped_moab_version_no_errors).and_return(fake_audit_results_no_errors)
+        allow(instance).to receive(:empty_audit_results).with(zipped_moab_version_no_errors).and_return(fake_audit_results_no_errors)
       end
 
       it 'ignores' do
@@ -75,7 +75,7 @@ RSpec.describe CatalogRemediator do
       end
 
       before do
-        allow(instance).to receive(:audit_results_for).with(zipped_moab_version_no_parts).and_return(fake_audit_results_no_errors)
+        allow(instance).to receive(:empty_audit_results).with(zipped_moab_version_no_parts).and_return(fake_audit_results_no_errors)
       end
 
       it 'includes in audit results' do
@@ -91,7 +91,7 @@ RSpec.describe CatalogRemediator do
       end
 
       before do
-        allow(instance).to receive(:audit_results_for).with(zipped_moab_version_with_errors).and_return(fake_audit_results_with_errors)
+        allow(instance).to receive(:empty_audit_results).with(zipped_moab_version_with_errors).and_return(fake_audit_results_with_errors)
       end
 
       it 'includes in audit results' do
