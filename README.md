@@ -32,9 +32,9 @@ Rails application to track, audit and replicate archival artifacts associated wi
 
 ### Installing dependencies
 
-Use `docker-compose` to start supporting services (PostgreSQL and Redis)
+Use `docker compose` to start supporting services (PostgreSQL and Redis)
 ```sh
-docker-compose up -d db redis
+docker compose up -d db redis
 ```
 
 ### Configuring The database (ensure all defined storage roots, cloud endpoints, etc have the necessary DB records)
@@ -345,19 +345,19 @@ A Dockerfile is provided in order to interact with the application in developmen
 Build the docker image:
 
 ```sh
-docker-compose build app
+docker compose build app
 ```
 
 Bring up the docker container and its dependencies:
 
 ```sh
-docker-compose up -d
+docker compose up -d
 ```
 
 Initialize the database:
 
 ```sh
-docker-compose run app bundle exec rails db:reset db:seed
+docker compose run app bundle exec rails db:reset db:seed
 ```
 
 Interact with the application via localhost:
