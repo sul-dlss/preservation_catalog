@@ -65,7 +65,6 @@ To generate the updated ER diagram
   - `status`: displays whether the `ZipPart` has been replicated or not, whether there's an error with the cloud copy of the replicated part, etc.
   - `last_existence_check`: the last time we confirmed whether the part was still on cloud storage.
   - `last_checksum_validation`: the last time our stored checksum for the part was compared against the stored checksum on the cloud provider. Eventually we'd like this (or a separate but similar field) to denote an actual fixity check, where the copy is retrieved from the cloud and the checksum on the retrieved copy is compared to our stored checksum.
-- `PreservedObjectsPrimaryMoab`: indicates the "primary" (and only) copy of a `CompleteMoab` for a `PreservedObject`. To be removed.
 
 #### Other Terminology
 
