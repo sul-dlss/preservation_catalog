@@ -55,7 +55,7 @@ RSpec.describe DashboardCatalogHelper do
     #       "#{(storage_root.complete_moabs.sum(:size) / Numeric::TERABYTE).to_f.round(2)} Tb",
     #       "#{((storage_root.complete_moabs.average(:size) || 0) / Numeric::MEGABYTE).to_f.round(2)} Mb",
     #       storage_root.complete_moabs.count,
-    #       CompleteMoab::STATUSES.map { |status| storage_root.complete_moabs.where(status: status).count },
+    #       CompleteMoab.statuses.keys.map { |status| storage_root.complete_moabs.where(status: status).count },
     #       storage_root.complete_moabs.fixity_check_expired.count
     #     ].flatten
     # end
@@ -161,7 +161,7 @@ RSpec.describe DashboardCatalogHelper do
   end
 
   describe '#status_labels' do
-    it 'returns CompleteMoab::STATUSES with blanks instead of underscores' do
+    it 'returns CompleteMoab.statuses.keys with blanks instead of underscores' do
       expect(helper.status_labels).to eq ['ok',
                                           'invalid moab',
                                           'invalid checksum',

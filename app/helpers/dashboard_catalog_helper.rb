@@ -16,7 +16,7 @@ module DashboardCatalogHelper
           "#{storage_root.complete_moabs.sum(:size).fdiv(Numeric::TERABYTE).round(2)} Tb",
           "#{(storage_root.complete_moabs.average(:size) || 0).fdiv(Numeric::MEGABYTE).round(2)} Mb",
           storage_root.complete_moabs.count,
-          CompleteMoab::STATUSES.map { |status| storage_root.complete_moabs.where(status: status).count },
+          CompleteMoab.statuses.keys.map { |status| storage_root.complete_moabs.where(status: status).count },
           storage_root.complete_moabs.fixity_check_expired.count
         ].flatten
     end
@@ -56,11 +56,11 @@ module DashboardCatalogHelper
   end
 
   def complete_moab_status_counts
-    CompleteMoab::STATUSES.map { |status| CompleteMoab.where(status: status).count }
+    CompleteMoab.statuses.keys.map { |status| CompleteMoab.where(status: status).count }
   end
 
   def status_labels
-    CompleteMoab::STATUSES.map { |status| status.tr('_', ' ') }
+    CompleteMoab.statuses.keys.map { |status| status.tr('_', ' ') }
   end
 
   def num_expired_checksum_validation
