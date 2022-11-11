@@ -26,10 +26,10 @@ module DashboardReplicationHelper
   end
 
   def zip_parts_total_size
-    "#{ZipPart.sum(:size).fdiv(Numeric::TERABYTE).round(2)} Tb"
+    number_to_human_size(ZipPart.sum(:size))
   end
 
   def num_replication_errors
-    ZipPart.count - ZipPart.ok.count
+    ZipPart.where.not(status: 'ok').count
   end
 end

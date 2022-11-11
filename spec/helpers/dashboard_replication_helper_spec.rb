@@ -74,7 +74,7 @@ RSpec.describe DashboardReplicationHelper do
     end
 
     it 'returns the total size of ZipParts in Terabytes as a string' do
-      expect(helper.zip_parts_total_size).to eq '6.49 Tb'
+      expect(helper.zip_parts_total_size).to eq '6.49 TB'
     end
   end
 

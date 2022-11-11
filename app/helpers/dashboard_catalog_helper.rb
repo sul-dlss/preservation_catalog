@@ -13,10 +13,10 @@ module DashboardCatalogHelper
       storage_root_info[storage_root.name] =
         [
           storage_root.storage_location,
-          "#{storage_root.complete_moabs.sum(:size).fdiv(Numeric::TERABYTE).round(2)} Tb",
-          "#{(storage_root.complete_moabs.average(:size) || 0).fdiv(Numeric::MEGABYTE).round(2)} Mb",
+          number_to_human_size(storage_root.complete_moabs.sum(:size)),
+          number_to_human_size(storage_root.complete_moabs.average(:size) || 0),
           storage_root.complete_moabs.count,
-          CompleteMoab::STATUSES.map { |status| storage_root.complete_moabs.where(status: status).count },
+          CompleteMoab.statuses.keys.map { |status| storage_root.complete_moabs.where(status: status).count },
           storage_root.complete_moabs.fixity_check_expired.count
         ].flatten
     end
@@ -48,19 +48,19 @@ module DashboardCatalogHelper
   end
 
   def complete_moab_total_size
-    "#{CompleteMoab.sum(:size).fdiv(Numeric::TERABYTE).round(2)} Tb"
+    number_to_human_size(CompleteMoab.sum(:size))
   end
 
   def complete_moab_average_size
-    "#{CompleteMoab.average(:size).fdiv(Numeric::MEGABYTE).round(2)} Mb" unless num_complete_moabs.zero?
+    number_to_human_size(CompleteMoab.average(:size)) unless num_complete_moabs.zero?
   end
 
   def complete_moab_status_counts
-    CompleteMoab::STATUSES.map { |status| CompleteMoab.where(status: status).count }
+    CompleteMoab.statuses.keys.map { |status| CompleteMoab.where(status: status).count }
   end
 
   def status_labels
-    CompleteMoab::STATUSES.map { |status| status.tr('_', ' ') }
+    CompleteMoab.statuses.keys.map { |status| status.tr('_', ' ') }
   end
 
   def num_expired_checksum_validation
@@ -72,7 +72,7 @@ module DashboardCatalogHelper
   end
 
   def num_complete_moab_not_ok
-    num_complete_moabs - CompleteMoab.ok.count
+    CompleteMoab.where.not(status: 'ok').count
   end
 
   def num_preserved_objects
@@ -85,11 +85,11 @@ module DashboardCatalogHelper
 
   # total number of object versions according to PreservedObject table
   def num_object_versions_per_preserved_object
-    total_version_count(preserved_object_ordered_version_counts)
+    PreservedObject.sum(:current_version)
   end
 
   def average_version_per_preserved_object
-    num_object_versions_per_preserved_object.fdiv(num_preserved_objects).to_f.round(2) unless num_preserved_objects.zero?
+    PreservedObject.pick(Arel.sql('SUM(current_version)::numeric/COUNT(id)')).round(2) unless num_preserved_objects.zero?
   end
 
   def num_complete_moabs
@@ -102,11 +102,13 @@ module DashboardCatalogHelper
 
   # total number of object versions according to CompleteMoab table
   def num_object_versions_per_complete_moab
-    total_version_count(complete_moab_ordered_version_counts)
+    CompleteMoab.sum(:version)
   end
 
   def average_version_per_complete_moab
-    num_object_versions_per_complete_moab.fdiv(num_complete_moabs).round(2) unless num_complete_moabs.zero?
+    # note, no user input to sanitize here, so ok to use Arel.sql
+    # see https://api.rubyonrails.org/v7.0.4/classes/ActiveRecord/UnknownAttributeReference.html
+    CompleteMoab.pick(Arel.sql('SUM(version)::numeric/COUNT(id)')).round(2) unless num_complete_moabs.zero?
   end
 
   private
@@ -117,11 +119,5 @@ module DashboardCatalogHelper
 
   def complete_moab_ordered_version_counts
     CompleteMoab.group(:version).count.sort.to_h
-  end
-
-  def total_version_count(version_counts)
-    result = 0
-    version_counts.each { |version, count_for_version| result += version * count_for_version }
-    result
   end
 end

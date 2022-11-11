@@ -49,7 +49,7 @@ RSpec.describe CompleteMoabService::CreateAfterValidation do
       end
     end
 
-    it 'creates PreservedObject and CompleteMoab and in database when there are no validation errors' do
+    it 'creates PreservedObject and CompleteMoab in database when there are no validation errors' do
       complete_moab_service = described_class.new(druid: valid_druid, incoming_version: incoming_version, incoming_size: incoming_size,
                                                   moab_storage_root: moab_storage_root)
       complete_moab_service.execute
