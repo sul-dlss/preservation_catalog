@@ -8,6 +8,7 @@ Rails.application.routes.draw do
         constraints: ->(req) { Settings.resque_dashboard_hostnames.include?(req.host) }
 
   get 'dashboard', to: 'dashboard#index', defaults: { format: 'html' }
+  get 'dashboard2', to: 'dashboard#index2', defaults: { format: 'html' }
 
   scope 'v1' do
     resources :catalog, param: :druid, only: %i[create update]

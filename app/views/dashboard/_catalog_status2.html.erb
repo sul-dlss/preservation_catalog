@@ -1,0 +1,19 @@
+<div class="card border-0 text-start">
+  <div class="card-body" />
+    <h3 class="card-title fs-2 fw-semibold">Catalog Status</h3>
+    <ul class="list-group border border-3 border-secondary">
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <h5>Object and Version Counts&nbsp;&nbsp;</h5>
+        <span class="badge rounded-pill <%= catalog_ok? ? 'bg-success' : 'bg-danger' %>">
+          <%= catalog_ok? ? 'OK' : 'Error' %>
+        </span>
+      </li>
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <h5>CompleteMoab Statuses</h5>
+        <span class="badge rounded-pill <%= any_complete_moab_errors? ? 'bg-danger' : 'bg-success' %>">
+          <%= any_complete_moab_errors? ? 'Error' : 'OK' %>
+        </span>
+      </li>
+    </ul>
+  </div>
+</div>
