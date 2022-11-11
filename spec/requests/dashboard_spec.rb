@@ -47,7 +47,7 @@ RSpec.describe 'Dashboard Nav Bar' do
         expect(response).to render_template('dashboard/_complete_moab_status_counts')
         expect(response.body).to match(/CompleteMoab Information/)
         expect(response.body).to match(/total size/) # table header
-        expect(response.body).to match(/Tb/)
+        expect(response.body).to match(/TB/)
       end
 
       it 'renders _moab_storage_root_data template' do
@@ -55,7 +55,7 @@ RSpec.describe 'Dashboard Nav Bar' do
         expect(response.body).to match(/MoabStorageRoot Information/)
         expect(response.body).to match(/storage location/) # table header
         expect(response.body).to match(MoabStorageRoot.first.storage_location) # table data
-        expect(response.body).to match(/Mb/) # table data
+        expect(response.body).to match(/Bytes/) # table data
       end
     end
 

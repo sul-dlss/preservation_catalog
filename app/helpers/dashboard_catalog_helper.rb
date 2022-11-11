@@ -13,8 +13,8 @@ module DashboardCatalogHelper
       storage_root_info[storage_root.name] =
         [
           storage_root.storage_location,
-          "#{storage_root.complete_moabs.sum(:size).fdiv(Numeric::TERABYTE).round(2)} Tb",
-          "#{(storage_root.complete_moabs.average(:size) || 0).fdiv(Numeric::MEGABYTE).round(2)} Mb",
+          number_to_human_size(storage_root.complete_moabs.sum(:size)),
+          number_to_human_size(storage_root.complete_moabs.average(:size) || 0),
           storage_root.complete_moabs.count,
           CompleteMoab.statuses.keys.map { |status| storage_root.complete_moabs.where(status: status).count },
           storage_root.complete_moabs.fixity_check_expired.count
@@ -48,11 +48,11 @@ module DashboardCatalogHelper
   end
 
   def complete_moab_total_size
-    "#{CompleteMoab.sum(:size).fdiv(Numeric::TERABYTE).round(2)} Tb"
+    number_to_human_size(CompleteMoab.sum(:size))
   end
 
   def complete_moab_average_size
-    "#{CompleteMoab.average(:size).fdiv(Numeric::MEGABYTE).round(2)} Mb" unless num_complete_moabs.zero?
+    number_to_human_size(CompleteMoab.average(:size)) unless num_complete_moabs.zero?
   end
 
   def complete_moab_status_counts

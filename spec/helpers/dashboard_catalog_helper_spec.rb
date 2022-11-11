@@ -111,7 +111,7 @@ RSpec.describe DashboardCatalogHelper do
     end
 
     it 'returns the total size of CompleteMoabs in Terabytes as a string' do
-      expect(helper.complete_moab_total_size).to eq '6.49 Tb'
+      expect(helper.complete_moab_total_size).to eq '6.49 TB'
     end
   end
 
@@ -125,7 +125,7 @@ RSpec.describe DashboardCatalogHelper do
       # "#{(CompleteMoab.average(:size) / Numeric::MEGABYTE).to_f.round(2)} Mb" unless num_complete_moabs.zero?
 
       it 'returns the average size of CompleteMoabs in Megabytes as a string' do
-        expect(helper.complete_moab_average_size).to eq '1.33 Mb'
+        expect(helper.complete_moab_average_size).to eq '1.33 MB'
       end
     end
 
