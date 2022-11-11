@@ -30,6 +30,6 @@ module DashboardReplicationHelper
   end
 
   def num_replication_errors
-    ZipPart.count - ZipPart.ok.count
+    ZipPart.where.not(status: 'ok').count
   end
 end

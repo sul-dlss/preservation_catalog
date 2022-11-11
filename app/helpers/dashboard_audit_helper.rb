@@ -18,7 +18,7 @@ module DashboardAuditHelper
 
   def catalog_to_moab_audit_ok?
     # NOTE: unsure if there needs to be more checking of CompleteMoab.status_details for more statuses to figure this out
-    (CompleteMoab.online_moab_not_found.count + CompleteMoab.unexpected_version_on_storage.count).zero?
+    !CompleteMoab.exists?(status: %w[online_moab_not_found unexpected_version_on_storage])
   end
 
   def moab_to_catalog_audit_ok?
@@ -33,7 +33,7 @@ module DashboardAuditHelper
   end
 
   def catalog_to_archive_audit_ok?
-    (ZipPart.count - ZipPart.ok.count).zero?
+    !ZipPart.where.not(status: 'ok').exists?
   end
 
   def moab_audit_age_threshold
