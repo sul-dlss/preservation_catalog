@@ -14,6 +14,8 @@ class ZipmakerJob < ApplicationJob
     job.zip = DruidVersionZip.new(job.arguments.first, job.arguments.second, job.arguments.third)
   end
 
+  # esp useful safeguard here, since we can't transactionally look for an existing zip file and create
+  # a new one if one isn't found.
   include UniqueJob
 
   # Does queue locking on ONLY druid and version (as first and second parameters)
