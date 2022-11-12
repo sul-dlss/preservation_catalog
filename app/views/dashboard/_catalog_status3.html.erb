@@ -1,0 +1,53 @@
+<div class="card border-0 text-start">
+  <div class="card-body" />
+    <h4 class="card-title fs-2 fw-semibold">Catalog Status</h4>
+    <ul class="list-group border border-3 border-secondary">
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <h5>Object and Version Counts&nbsp;&nbsp;</h5>
+        <span class="badge rounded-pill <%= catalog_ok? ? 'bg-success' : 'bg-danger' %>">
+          <%= catalog_ok? ? 'OK' : 'Error' %>
+        </span>
+      </li>
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <h5>CompleteMoab Statuses</h5>
+        <span class="badge rounded-pill <%= any_complete_moab_errors? ? 'bg-danger' : 'bg-success' %>">
+          <%= any_complete_moab_errors? ? 'Error' : 'OK' %>
+        </span>
+      </li>
+      <li class="list-group-item d-flex justify-content-between align-items-center bg-secondary">
+        <ul class="list-group">
+          <li class="list-group-item border-bottom border-4 d-flex justify-content-between align-items-center disabled" aria-disabled="true">
+            <h5>Catalog Audits:</h5>
+          </li>
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <h6>Validate Moab</h6>
+            <span class="badge rounded-pill <%= validate_moab_audit_ok? ? 'bg-success' : 'bg-danger' %>">
+              <%= validate_moab_audit_ok? ? 'OK' : 'Error' %>
+            </span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <h6>Moab to Catalog</h6>
+            <span class="badge rounded-pill <%= moab_to_catalog_audit_ok? ? 'bg-success' : 'bg-danger' %>">
+              <%= moab_to_catalog_audit_ok? ? 'OK' : 'Error' %>
+            </span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <h6>Catalog to Moab</h6>
+            <span class="badge rounded-pill <%= catalog_to_moab_audit_ok? ? 'bg-success' : 'bg-danger' %>">
+              <%= catalog_to_moab_audit_ok? ? 'OK' : 'Error' %>
+            </span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <h6>Checksum Validation&nbsp;&nbsp;</h6>
+            <span class="badge rounded-pill <%= checksum_validation_audit_ok? ? 'bg-success' : 'bg-danger' %>">
+              <%= checksum_validation_audit_ok? ? 'OK' : 'Error' %>
+            </span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <h6><a href="resque">Redis queues</a></h6>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </div>
+</div>

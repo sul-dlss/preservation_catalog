@@ -1,0 +1,39 @@
+<div class="card border-0 text-start">
+  <div class="card-body" />
+    <h4 class="card-title fs-2 fw-semibold">Replication Status</h4>
+    <ul class="list-group border border-3 border-secondary">
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <h5>ZipPart Statuses</h5>
+        <span class="badge rounded-pill <%= zip_parts_ok? ? 'bg-success' : 'bg-danger' %>">
+          <%= zip_parts_ok? ? 'OK' : 'Error' %>
+        </span>
+      </li>
+      <% endpoint_data.each do |endpoint_name, endpoint_info| %>
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <h5><span class="text-secondary">Endpoint: </span><%= endpoint_name %>&nbsp;&nbsp;</h5>
+          <% replication_count = endpoint_info[:replication_count] %>
+          <% endpoint_replication_ok = replication_count == num_object_versions_per_preserved_object %>
+          <span class="badge rounded-pill <%= endpoint_replication_ok ? 'bg-success' : 'bg-danger' %>">
+            <%= endpoint_replication_ok ? 'OK' : 'Error' %>
+          </span>
+        </li>
+      <% end %>
+      <li class="list-group-item d-flex justify-content-between align-items-center bg-secondary">
+        <ul class="list-group">
+          <li class="list-group-item border-bottom border-4 d-flex justify-content-between align-items-center disabled" aria-disabled="true">
+            <h5>Replication Audit:</h5>
+          </li>
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <h6>Catalog to Archive&nbsp;&nbsp;</h6>
+            <span class="badge rounded-pill <%= catalog_to_archive_audit_ok? ? 'bg-success' : 'bg-danger' %>">
+              <%= catalog_to_archive_audit_ok? ? 'OK' : 'Error' %>
+            </span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <h6><a href="resque">Redis queues</a></h6>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </div>
+</div>
