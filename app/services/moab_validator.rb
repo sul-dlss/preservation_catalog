@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 ##
-# service class with methods for running StorageObjectValidator
+# service class with methods for running Stanford::StorageObjectValidator in moab-versioning gem
 class MoabValidator
   # @param moab [Moab::StorageObject] the moab to be validated
   # @param results [AuditResults] the instance the including class is using to track findings of interest
