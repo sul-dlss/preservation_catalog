@@ -1,36 +1,47 @@
-    <div class="px-5 col-12">
-      <h1>Preservation Dashboard</h1>
-      <nav>
-        <div class="nav nav-tabs row row-cols-3" id="statusTab" role="tablist">
-          <button class="nav-link column col-2 active" id="status-tab" data-bs-toggle="tab" data-bs-target="#status-tab-pane" type="button" role="tab" aria-controls="status-tab-pane" aria-selected="true">
-            <turbo-frame id="catalog_status"><%= render partial: 'catalog_status' %></button>
-          <button class="nav-link column col-2" id="replication-tab" data-bs-toggle="tab" data-bs-target="#replication-tab-pane" type="button" role="tab" aria-controls="replication-tab-pane" aria-selected="false"><%= render partial: 'replication_status' %></button>
-          <div class="column col-8"><button class="nav-link" id="audit-tab" data-bs-toggle="tab" data-bs-target="#audit-tab-pane" type="button" role="tab" aria-controls="audit-tab-pane" aria-selected="false"><%= render partial: 'audit_status' %></button></div>
-        </div>
-      </nav>
-      <div class="tab-content" id="statusTabContent">
-        <div class="tab-pane fade show active" id="status-tab-pane" role="tabpanel" aria-labelledby="status-tab" tabindex="0">
-          <turbo-frame id="catalog_information">
-            <%= render partial: 'catalog_information' %>
-          </turbo-frame>
-        </div>
-        <div class="tab-pane fade" id="replication-tab-pane" role="tabpanel" aria-labelledby="replication-tab" tabindex="0">
-          <turbo-frame id="replication_information">
-            <%= render partial: 'replication_information' %>
-          </turbo-frame>
-        </div>
-        <div class="tab-pane fade" id="audit-tab-pane" role="tabpanel" aria-labelledby="audit-tab" tabindex="0">
-          <turbo-frame id="audit_information">
-            <%= render partial: 'audit_information' %>
-          </turbo-frame>
-        </div>
-      </div>
-      <hr style="opacity:1"/>
-      <div>
-        <h2>TBD: Forms for admins to do stuff?</h2>
-
-        <p>TBD: form for <b>checking state</b> of a particluar druid or set of druids - status, number of versions ...</p>
-        <p>TBD: form for doing <b>audit checks by druid</b> for one or more druids</p>
-        <p>TBD: form for doing <b>audit checks by storage root</b></p>
-      </div>
+<div class="px-5 col-12">
+  <h1 class="text-secondary">Preservation Dashboard - option 1</h1>
+  <nav>
+    <div class="nav nav-pills row row-cols-3" style="--bs-nav-tabs-border-width:4px;--bs-nav-tabs-border-radius:2rem;" id="statusTab" role="tablist">
+      <button class="nav-link column col-3 text-reset d-flex align-items-start active" id="catalog-tab" data-bs-toggle="pill" data-bs-target="#catalog-tab-pane" type="button" role="tab" aria-controls="catalog-tab-pane" aria-selected="true">
+        <turbo-frame id="catalog_status">
+          <%= render partial: 'catalog_status2' %>
+        </turbo-frame>
+      </button>
+      <button class="nav-link column col-3 text-reset d-flex align-items-start" id="replication-tab" data-bs-toggle="pill" data-bs-target="#replication-tab-pane" type="button" role="tab" aria-controls="replication-tab-pane" aria-selected="false">
+        <turbo-frame id="replication_status">
+          <%= render partial: 'replication_status2' %>
+        </turbo-frame>
+      </button>
+      <button class="nav-link column col-3 text-reset d-flex align-items-start" id="audit-tab" data-bs-toggle="pill" data-bs-target="#audit-tab-pane" type="button" role="tab" aria-controls="audit-tab-pane" aria-selected="false">
+        <turbo-frame id="audit_status">
+          <%= render partial: 'audit_status2' %>
+        </turbo-frame>
+      </button>
     </div>
+  </nav>
+  <div class="tab-content" id="statusTabContent">
+    <div class="tab-pane fade show active" id="catalog-tab-pane" role="tabpanel" aria-labelledby="catalog-tab" tabindex="0">
+      <turbo-frame id="catalog_information">
+        <%= render partial: 'catalog_information' %>
+      </turbo-frame>
+    </div>
+    <div class="tab-pane fade" id="replication-tab-pane" role="tabpanel" aria-labelledby="replication-tab" tabindex="0">
+      <turbo-frame id="replication_information">
+        <%= render partial: 'replication_information' %>
+      </turbo-frame>
+    </div>
+    <div class="tab-pane fade" id="audit-tab-pane" role="tabpanel" aria-labelledby="audit-tab" tabindex="0">
+      <turbo-frame id="audit_information">
+        <%= render partial: 'audit_information' %>
+      </turbo-frame>
+    </div>
+  </div>
+  <hr style="opacity:1"/>
+  <div>
+    <h2>TBD: Forms for admins to do stuff?</h2>
+
+    <p>TBD: form for <b>checking state</b> of a particluar druid or set of druids - status, number of versions ...</p>
+    <p>TBD: form for doing <b>audit checks by druid</b> for one or more druids</p>
+    <p>TBD: form for doing <b>audit checks by storage root</b></p>
+  </div>
+</div>

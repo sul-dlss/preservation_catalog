@@ -1,26 +1,34 @@
 <div class="card border-0 text-start">
   <div class="card-body" />
-    <h3 class="card-title fs-2 fw-semibold">Replication Status</h3>
-    <ul class="list-group border border-3 border-secondary">
+    <div class="card-title fs-4 fw-semibold d-flex justify-content-between">
+      Replication&nbsp;&nbsp;
+      <span class="badge rounded-pill <%= zip_parts_ok? && replication_ok? ? 'bg-success' : 'bg-danger' %>">
+        <%= zip_parts_ok? && replication_ok? ? 'OK' : 'Error' %>
+      </span>
+    </div>
+    <ul class="list-group border border-2 border-secondary">
       <li class="list-group-item d-flex justify-content-between align-items-center">
-        <h5>ZipPart Statuses</h5>
+        <h6 class="d-flex justify-content-start">ZipPart Statuses</h6>
         <% zip_parts_ok = (num_replication_errors == 0) %>
         <span class="badge rounded-pill <%= zip_parts_ok ? 'bg-success' : 'bg-danger' %>">
           <%= zip_parts_ok ? 'OK' : 'Error' %>
         </span>
       </li>
       <% endpoint_data.each do |endpoint_name, endpoint_info| %>
+        <% replication_count = endpoint_info[:replication_count] %>
+        <% endpoint_replication_ok = replication_count == num_object_versions_per_preserved_object %>
         <li class="list-group-item d-flex justify-content-between align-items-center">
-          <h5><span class="text-secondary">Endpoint: </span><%= endpoint_name %>&nbsp;&nbsp;</h5>
-          <% replication_count = endpoint_info[:replication_count] %>
-          <% endpoint_replication_ok = replication_count == num_object_versions_per_preserved_object %>
+          <h6 class="d-flex justify-content-start">
+            <span class="text-secondary">Endpoint:&nbsp;</span>
+            <%= endpoint_name %>&nbsp;&nbsp;
+          </h6>
           <span class="badge rounded-pill <%= endpoint_replication_ok ? 'bg-success' : 'bg-danger' %>">
             <%= endpoint_replication_ok ? 'OK' : 'Error' %>
           </span>
         </li>
       <% end %>
       <li class="list-group-item d-flex justify-content-between align-items-center">
-        <h5><a href="resque">Redis queues</a></h5>
+        <h6><a href="resque">Redis queues</a></h6>
       </li>
     </ul>
   </div>

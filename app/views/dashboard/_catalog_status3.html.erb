@@ -1,9 +1,14 @@
 <div class="card border-0 text-start">
   <div class="card-body" />
-    <h4 class="card-title fs-2 fw-semibold">Catalog Status</h4>
+    <div class="card-title fs-4 fw-semibold d-flex justify-content-between">
+      Catalog&nbsp;&nbsp;
+      <span class="badge rounded-pill <%= catalog_ok? && !any_complete_moab_errors? ? 'bg-success' : 'bg-danger' %>">
+        <%= catalog_ok? && !any_complete_moab_errors? ? 'OK' : 'Error' %>
+      </span>
+    </div>
     <ul class="list-group border border-3 border-secondary">
       <li class="list-group-item d-flex justify-content-between align-items-center">
-        <h5>Object and Version Counts&nbsp;&nbsp;</h5>
+        <h5>Object / Version Counts&nbsp;&nbsp;</h5>
         <span class="badge rounded-pill <%= catalog_ok? ? 'bg-success' : 'bg-danger' %>">
           <%= catalog_ok? ? 'OK' : 'Error' %>
         </span>

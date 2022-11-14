@@ -1,11 +1,6 @@
 <div class="card border-0 text-start">
   <div class="card-body" />
-    <div class="card-title fs-4 fw-semibold d-flex justify-content-between">
-      Replication&nbsp;&nbsp;
-      <span class="badge rounded-pill <%= zip_parts_ok? && replication_ok? ? 'bg-success' : 'bg-danger' %>">
-        <%= zip_parts_ok? && replication_ok? ? 'OK' : 'Error' %>
-      </span>
-    </div>
+    <h4 class="card-title fs-2 fw-semibold">Replication Status</h4>
     <ul class="list-group border border-3 border-secondary">
       <li class="list-group-item d-flex justify-content-between align-items-center">
         <h5>ZipPart Statuses</h5>

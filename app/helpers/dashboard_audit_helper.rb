@@ -11,6 +11,14 @@ module DashboardAuditHelper
 
   REPLICATION_AUDIT_THRESHOLD = 90.days # meant to be the same as PreservationPolicy.archive_ttl
 
+  def audits_ok?
+    validate_moab_audit_ok? &&
+      catalog_to_moab_audit_ok? &&
+      moab_to_catalog_audit_ok? &&
+      checksum_validation_audit_ok? &&
+      catalog_to_archive_audit_ok?
+  end
+
   def validate_moab_audit_ok?
     # NOTE: unsure if there needs to be more checking of CompleteMoab.status_details for more statuses to figure this out
     (CompleteMoab.invalid_moab.count + CompleteMoab.online_moab_not_found.count).zero?

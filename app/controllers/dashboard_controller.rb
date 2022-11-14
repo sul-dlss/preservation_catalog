@@ -7,4 +7,6 @@ class DashboardController < ApplicationController
   def index2; end
 
   def index3; end
+
+  def index4; end
 end
