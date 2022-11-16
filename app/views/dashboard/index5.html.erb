@@ -1,0 +1,41 @@
+<div class="px-5">
+  <h1 class="text-secondary">Preservation Dashboard - option 5</h1>
+  <div class="row row-cols-2">
+    <div class="col-3 col-rows-3">
+      <ul class="nav nav-pills row-3" id="dashboardTab">
+        <li class="nav-link active text-reset" id="catalog-tab" data-bs-toggle="pill" data-bs-target="#catalog-tab-pane" type="button" aria-selected="true">
+          <turbo-frame id="catalog_status">
+            <%= render partial: 'catalog_status2' %>
+          </turbo-frame>
+        </li>
+        <li class="nav-link text-reset" id="replication-tab" data-bs-toggle="pill" data-bs-target="#replication-tab-pane" type="button">
+          <turbo-frame id="replication_status">
+            <%= render partial: 'replication_status2' %>
+          </turbo-frame>
+        </li>
+        <li class="nav-link text-reset" id="audit-tab" data-bs-toggle="pill" data-bs-target="#audit-tab-pane" type="button" role="button">
+          <turbo-frame id="audit_status">
+            <%= render partial: 'audit_status2' %>
+          </turbo-frame>
+        </li>
+      </ul>
+    </div>
+    <div class="tab-content col-9" id="dashboardTabContent">
+      <div class="tab-pane fade show active" id="catalog-tab-pane" role="tabpanel" aria-selected="true" tabindex="0">
+        <turbo-frame id="catalog_information">
+          <%= render partial: 'catalog_information' %>
+        </turbo-frame>
+      </div>
+      <div class="tab-pane fade" id="replication-tab-pane" role="tabpanel" aria-labelledby="replication-tab" tabindex="0">
+        <turbo-frame id="replication_information">
+          <%= render partial: 'replication_information' %>
+        </turbo-frame>
+      </div>
+      <div class="tab-pane fade" id="audit-tab-pane" role="tabpanel" aria-labelledby="audit-tab" tabindex="0">
+        <turbo-frame id="audit_information">
+          <%= render partial: 'audit_information' %>
+        </turbo-frame>
+      </div>
+    </div>
+  </div>
+</div>
