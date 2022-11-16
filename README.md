@@ -1,3 +1,5 @@
+# preservation_catalog (aka PresCat)
+
 [![CircleCI](https://circleci.com/gh/sul-dlss/preservation_catalog.svg?style=svg)](https://circleci.com/gh/sul-dlss/preservation_catalog)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/96b330db62f304b786cb/test_coverage)](https://codeclimate.com/github/sul-dlss/preservation_catalog/test_coverage)
 [![Maintainability](https://api.codeclimate.com/v1/badges/96b330db62f304b786cb/maintainability)](https://codeclimate.com/github/sul-dlss/preservation_catalog/maintainability)
@@ -5,47 +7,110 @@
 [![Docker image](https://images.microbadger.com/badges/image/suldlss/preservation_catalog.svg)](https://microbadger.com/images/suldlss/preservation_catalog "Get your own image badge on microbadger.com")
 [![OpenAPI Validator](http://validator.swagger.io/validator?url=https://raw.githubusercontent.com/sul-dlss/preservation_catalog/main/openapi.yml)](http://validator.swagger.io/validator/debug?url=https://raw.githubusercontent.com/sul-dlss/preservation_catalog/main/openapi.yml)
 
-# README
+*preservation_catalog* is a Rails application that tracks, audits and replicates
+archival artifacts associated with SDR objects.
 
-Rails application to track, audit and replicate archival artifacts associated with SDR objects.
+## Development
 
-## Table of Contents
+Here are the steps you need to follow to get a working development instance of *preservation_catalog* running:
 
-* [Getting Started](#getting-started)
-* [Usage Instructions](#usage-instructions)
-    * [General Info](#general-info)
-    * [Moab to Catalog](#m2c) (M2C) existence/version check
-    * [Catalog to Moab](#c2m) (C2M) existence/version check
-    * [Checksum Validation](#cv) (CV)
-    * [Seed the catalog](#seed-the-catalog-with-data-about-the-moabs-on-the-storage-roots-the-catalog-tracks----presumes-rake-dbseed-already-performed)
-    * [Update the Catalog Because a Moab Moved](#migrate_moab_manually)
-* [Development](#development)
-    * [Running tests](#running-tests)
-    * [Dockerized Development](#docker)
-* [Deploying](#deploying)
-    * [Resque Pool](#resque-pool)
-* [API](#api)
-    * [Authentication/Authorization](#authn)
-    * [V1](#v1)
+### Install dependencies
 
-## Getting Started
-
-### Installing dependencies
+First get the Ruby dependencies:
+```sh
+bundle install
+```
 
 Use `docker compose` to start supporting services (PostgreSQL and Redis)
 ```sh
 docker compose up -d db redis
 ```
 
-### Configuring The database (ensure all defined storage roots, cloud endpoints, etc have the necessary DB records)
+### Configure the database 
 
-Run this script:
+Set up the database:
+
 ```sh
 ./bin/rails db:reset
+```
+
+Ensure storage roots and cloud endpoints have the necessary database records:
+
+```sh
 RAILS_ENV=test ./bin/rails db:seed
 ```
 
-# Usage Instructions
+### Run Tests
+
+To run the tests:
+
+```sh
+bundle exec rspec
+```
+
+### Run the App
+
+If you've chosen to install Ruby dependencies you can run the app locally with:
+
+```sh
+bin/dev
+```
+
+If you prefer you can also run the web app inside of a Docker container:
+
+```sh
+docker compose build app
+```
+
+Bring up the docker container and its dependencies:
+
+```sh
+docker compose up -d
+```
+
+It does the same thing as the `db:reset` and `db:seed` above, but you can
+initialize the database directly from inside in the container if you like:
+
+```sh
+docker compose run app bundle exec rails db:reset db:seed
+```
+
+All set, now you can view the app:
+
+Visit `http://localhost:3000/dashboard/`
+
+### Interact with API
+
+You can use curl to interact with the API via localhost:
+
+```sh
+curl -H 'Authorization: Bearer eyJhbGcxxxxx.eyJzdWIxxxxx.lWMJ66Wxx-xx' -F 'druid=druid:bj102hs9688' -F 'incoming_version=3' -F 'incoming_size=2070039' -F 'storage_location=spec/fixtures/storage_root01' -F 'checksums_validated=true' http://localhost:3000/v1/catalog
+```
+
+```sh
+curl -H 'Authorization: Bearer eyJhbGcxxxxx.eyJzdWIxxxxx.lWMJ66Wxx-xx' http://localhost:3000/v1/objects/druid:bj102hs9688
+
+{
+  "id":1,
+  "druid":"bj102hs9688",
+  "current_version":3,
+  "created_at":"2019-12-20T15:04:56.854Z",
+  "updated_at":"2019-12-20T15:04:56.854Z",
+  "preservation_policy_id":1
+}
+```
+
+### Publish Image
+
+Build image:
+```
+docker build -t suldlss/preservation_catalog:latest .
+```
+
+Publish:
+```
+docker push suldlss/preservation_catalog:latest
+```
 
 ## General Info
 
@@ -67,8 +132,7 @@ RAILS_ENV=test ./bin/rails db:seed
 
 - You can monitor the progress of most tasks by tailing `log/production.log` (or task specific log), checking the Resque dashboard, or by querying the database. The tasks for large storage roots can take a while -- check [the repo wiki for stats](https://github.com/sul-dlss/preservation_catalog/wiki) on the timing of past runs.
 
-- When executing long running queries, audits, remediations, etc from rails console, consider using a [screen session](http://thingsilearned.com/2009/05/26/gnu-screen-super-basic-tutorial/) in case you lose your connection.
-  - As an alternative to `screen`, you can also run tasks in the background using `nohup` so the invoked command is not killed when you exist your session. Output that would've gone to stdout is instead redirected to a file called `nohup.out`, or you can redirect the output explicitly.  For example:  `RAILS_ENV=production nohup bundle exec ...`
+- When executing long running queries, audits, remediations, etc from rails console, consider using a [screen session](http://thingsilearned.com/2009/05/26/gnu-screen-super-basic-tutorial/) in case you lose your connection. As an alternative to `screen`, you can also run tasks in the background using `nohup` so the invoked command is not killed when you exist your session. Output that would've gone to stdout is instead redirected to a file called `nohup.out`, or you can redirect the output explicitly.  For example:  `RAILS_ENV=production nohup bundle exec ...`
 
 If you are new to developing on this project, you should at least skim [the database README](db/README.md).
 It has a detailed explanation of the data model, some sample queries, and an ER diagram illustrating the
@@ -79,8 +143,7 @@ _Please keep the database README up to date as the schema changes!_
 
 You may also wish to glance at the (much shorter) [Replication README](app/jobs/README.md).
 
-
-### Rake Tasks
+## Rake Tasks
 
 - Note: If the rake task takes multiple arguments, DO NOT put a space in between the commas.
 
@@ -90,7 +153,7 @@ You may also wish to glance at the (much shorter) [Replication README](app/jobs/
 RAILS_ENV=production bundle exec rake ...
 ```
 
-### Rails Console
+## Rails Console
 
 The application's most powerful functionality is available via `rails console`.  To open it (for the appropriate environment):
 
@@ -106,7 +169,7 @@ OR
 RAILS_ENV=production bundle exec rails console
 ```
 
-## <a name="m2c"/>Moab to Catalog (M2C) existence/version check
+## Moab to Catalog (M2C) existence/version check
 
 See [Validations-for-Moabs wiki](http://github.com/sul-dlss/preservation_catalog/wiki/Validations-for-Moabs) for basic info about M2C validation.
 
@@ -154,7 +217,7 @@ Audit::MoabToCatalog.check_existence_for_druid_list('/file/path/to/your/csv/drui
 
 Note: it should not typically be necessary to serialize a list of druids to CSV.  Just iterate over them and use the "Single Druid" approach.
 
-## <a name="c2m"/>Catalog to Moab (C2M) existence/version check
+## Catalog to Moab (C2M) existence/version check
 
 See [Validations-for-Moabs wiki](http://github.com/sul-dlss/preservation_catalog/wiki/Validations-for-Moabs) for basic info about C2M validation.
 
@@ -198,7 +261,7 @@ This enqueues the checks from **all** roots similarly.
 MoabStorageRoot.find_each { |msr| msr.c2m_check!(3.days.ago) }
 ```
 
-## <a name="cv"/>Checksum Validation (CV)
+## Checksum Validation (CV)
 
 See [Validations-for-Moabs wiki](http://github.com/sul-dlss/preservation_catalog/wiki/Validations-for-Moabs) for basic info about CV validation.
 
@@ -254,7 +317,9 @@ Audit::Checksum.validate_status_root(:validity_unknown, 'services-disk15')
 
 [Valid status strings](https://github.com/sul-dlss/preservation_catalog/blob/main/app/models/complete_moab.rb#L1-L10)
 
-## Seed the catalog (with data about the Moabs on the storage roots the catalog tracks -- presumes rake db:seed already performed)
+## Seed the Catalog 
+
+Seed the Catalog with data about the Moabs on the storage roots the catalog tracks -- presumes rake db:seed already performed)
 
 _<sub>Note: "seed" might be slightly confusing terminology here, see https://github.com/sul-dlss/preservation_catalog/issues/1154</sub>_
 
@@ -273,13 +338,15 @@ Audit::MoabToCatalog.seed_catalog_for_all_storage_roots
 * Deploy the branch of the code with which you wish to seed, to the instance which you wish to seed (e.g. main to stage).
 * Reset the database for that instance.  E.g., on production or stage:  `RAILS_ENV=production bundle exec rake db:reset`
   * note that if you do this while `RAILS_ENV=production` (i.e. production or stage), you'll get a scary warning along the lines of:
-  ```
-  ActiveRecord::ProtectedEnvironmentError: You are attempting to run a destructive action against your 'production' database.
-  If you are sure you want to continue, run the same command with the environment variable:
-  DISABLE_DATABASE_ENVIRONMENT_CHECK=1
-  ```
-  Basically an especially inconvenient confirmation dialogue.  For safety's sake, the full command that skips that warning can be constructed by the user as needed, so as to prevent unintentional copy/paste dismissal when the user might be administering multiple deployment environments simultaneously.  Inadvertent database wipes are no fun.
-  * `db:reset` will make sure db is migrated and seeded.  If you want to be extra sure: `RAILS_ENV=[environment] bundle exec rake db:migrate db:seed`
+
+```
+ActiveRecord::ProtectedEnvironmentError: You are attempting to run a destructive action against your 'production' database.
+If you are sure you want to continue, run the same command with the environment variable:
+DISABLE_DATABASE_ENVIRONMENT_CHECK=1
+```
+
+Basically an especially inconvenient confirmation dialogue.  For safety's sake, the full command that skips that warning can be constructed by the user as needed, so as to prevent unintentional copy/paste dismissal when the user might be administering multiple deployment environments simultaneously.  Inadvertent database wipes are no fun.
+* `db:reset` will make sure db is migrated and seeded.  If you want to be extra sure: `RAILS_ENV=[environment] bundle exec rake db:migrate db:seed`
 
 ### run `rake db:seed` on remote servers:
 These require the same credentials and setup as a regular Capistrano deploy.
@@ -308,7 +375,7 @@ Or for all roots:
 MoabStorageRoot.find_each { |msr| Audit::MoabToCatalog.seed_catalog_for_dir(msr.storage_location) }
 ```
 
-## <a name="migrate_moab_manually"> Update the catalog when moving a Moab to a different storage root
+## Moving Moabs
 
 Sometimes it's necessary to move Moabs from one storage root to another, either in bulk as part of a storage hardware migration, or manually for a small number, as when an existing Moab might get too much additional content for the storage root it's currently on.
 
@@ -325,68 +392,7 @@ target_storage_root = MoabStorageRoot.find_by!(name: '/services-disk-with-lots-o
 cm = CompleteMoab.by_druid('ab123cd4567')
 cm.migrate_moab(target_storage_root).save! # save! is important.  migrate_moab doesn't save automatically, to allow building larger transactions.
 ```
-
 Under the assumption that the contents of the Moab were written anew in the target location, `#migrate_moab` will clear all audit timestamps related to the state of the Moab on our disks, along with `status_details`.  `status` will similarly be re-set to `validity_unknown`, and a checksum validation job will automatically be queued for the Moab.
-
-## Development
-
-### Running Tests
-
-To run the tests:
-
-```sh
-bundle exec rspec
-```
-
-### Docker
-
-A Dockerfile is provided in order to interact with the application in development.
-
-Build the docker image:
-
-```sh
-docker compose build app
-```
-
-Bring up the docker container and its dependencies:
-
-```sh
-docker compose up -d
-```
-
-Initialize the database:
-
-```sh
-docker compose run app bundle exec rails db:reset db:seed
-```
-
-Interact with the application via localhost:
-```sh
-curl -H 'Authorization: Bearer eyJhbGcxxxxx.eyJzdWIxxxxx.lWMJ66Wxx-xx' -F 'druid=druid:bj102hs9688' -F 'incoming_version=3' -F 'incoming_size=2070039' -F 'storage_location=spec/fixtures/storage_root01' -F 'checksums_validated=true' http://localhost:3000/v1/catalog
-```
-
-```sh
-curl -H 'Authorization: Bearer eyJhbGcxxxxx.eyJzdWIxxxxx.lWMJ66Wxx-xx' http://localhost:3000/v1/objects/druid:bj102hs9688
-
-{
-  "id":1,
-  "druid":"bj102hs9688",
-  "current_version":3,
-  "created_at":"2019-12-20T15:04:56.854Z",
-  "updated_at":"2019-12-20T15:04:56.854Z",
-  "preservation_policy_id":1
-}
-```
-
-Build image:
-```
-docker build -t suldlss/preservation_catalog:latest .
-```
-
-Publish:
-```
-docker push suldlss/preservation_catalog:latest
-```
 
 ## Deploying
 
