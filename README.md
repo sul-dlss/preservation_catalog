@@ -131,31 +131,7 @@ _Please keep the database README up to date as the schema changes!_
 
 You may also wish to glance at the (much shorter) [Replication README](app/jobs/README.md).
 
-## Rake Tasks
-
-- Note: If the rake task takes multiple arguments, DO NOT put a space in between the commas.
-
-- Rake tasks will have the form:
-
-```sh
-RAILS_ENV=production bundle exec rake ...
-```
-
-## Rails Console
-
-The application's most powerful functionality is available via `rails console`.  To open it (for the appropriate environment):
-
-```sh
-bundle exec rails c -e p
-```
-
-(-e is the environment flag, p is for production)
-
-OR
-
-```sh
-RAILS_ENV=production bundle exec rails console
-```
+Making modifications to the database is usually done either using the Rails console or a Rake task. Some common operations are listed below.
 
 ## Moab to Catalog (M2C) existence/version check
 
