@@ -100,18 +100,6 @@ curl -H 'Authorization: Bearer eyJhbGcxxxxx.eyJzdWIxxxxx.lWMJ66Wxx-xx' http://lo
 }
 ```
 
-### Publish Image
-
-Build image:
-```
-docker build -t suldlss/preservation_catalog:latest .
-```
-
-Publish:
-```
-docker push suldlss/preservation_catalog:latest
-```
-
 ## General Info
 
 - The PostgreSQL database is the catalog of metadata about preserved SDR content, both on premises and in the cloud.  Integrity constraints are used heavily for keeping data clean and consistent.
@@ -132,7 +120,7 @@ docker push suldlss/preservation_catalog:latest
 
 - You can monitor the progress of most tasks by tailing `log/production.log` (or task specific log), checking the Resque dashboard, or by querying the database. The tasks for large storage roots can take a while -- check [the repo wiki for stats](https://github.com/sul-dlss/preservation_catalog/wiki) on the timing of past runs.
 
-- When executing long running queries, audits, remediations, etc from rails console, consider using a [screen session](http://thingsilearned.com/2009/05/26/gnu-screen-super-basic-tutorial/) in case you lose your connection. As an alternative to `screen`, you can also run tasks in the background using `nohup` so the invoked command is not killed when you exist your session. Output that would've gone to stdout is instead redirected to a file called `nohup.out`, or you can redirect the output explicitly.  For example:  `RAILS_ENV=production nohup bundle exec ...`
+- When executing long running queries, audits, remediations, etc from the Rails console, consider using a [screen session](http://thingsilearned.com/2009/05/26/gnu-screen-super-basic-tutorial/) or `nohup` so that the process isn't killed when you log out.
 
 If you are new to developing on this project, you should at least skim [the database README](db/README.md).
 It has a detailed explanation of the data model, some sample queries, and an ER diagram illustrating the
