@@ -12,6 +12,7 @@ Rails.application.routes.draw do
   get 'dashboard3', to: 'dashboard#index3', defaults: { format: 'html' }
   get 'dashboard4', to: 'dashboard#index4', defaults: { format: 'html' }
   get 'dashboard5', to: 'dashboard#index5', defaults: { format: 'html' }
+  get 'dashboard6', to: 'dashboard#index6', defaults: { format: 'html' }
 
   scope 'v1' do
     resources :catalog, param: :druid, only: %i[create update]

@@ -1,0 +1,148 @@
+<div class="container-fluid">
+  <div class="row">
+    <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse" id="sidebarMenu">
+      <div class="position-sticky sidebar-sticky">
+        <ul class="nav navtabs flex-column">
+          <h6 class="sidebar-heading mt-4 mb-1 text-muted text-uppercase">
+            <div class="nav-link">
+              Catalog&nbsp;&nbsp;
+              <span class="badge rounded-pill <%= catalog_ok? && !any_complete_moab_errors? ? 'bg-success' : 'bg-danger' %>">
+                <%= catalog_ok? && !any_complete_moab_errors? ? 'OK' : 'Error' %>
+              </span>
+            </div>
+          </h6>
+          <li class="nav-item">
+            <div class="nav-link ps-4 d-flex justify-content-between" type="button" data-bs-target="#catalog-tab-pane">
+              Object and Version Counts&nbsp;&nbsp;
+              <span class="badge rounded-pill <%= catalog_ok? ? 'bg-success' : 'bg-danger' %>">
+                <%= catalog_ok? ? 'OK' : 'Error' %>
+              </span>
+            </div>
+          </li>
+          <li class="nav-item">
+            <div class="nav-link ps-4 d-flex justify-content-between" type="button" data-bs-target="#catalog-tab-pane">
+              CompleteMoab Statuses
+              <span class="badge rounded-pill <%= any_complete_moab_errors? ? 'bg-danger' : 'bg-success' %>">
+                <%= any_complete_moab_errors? ? 'Error' : 'OK' %>
+              </span>
+            </div>
+          </li>
+          <h6 class="sidebar-heading mt-4 mb-1 text-muted text-uppercase">
+            <div class="nav-link">
+              Replication&nbsp;&nbsp;
+              <span class="badge rounded-pill <%= zip_parts_ok? && replication_ok? ? 'bg-success' : 'bg-danger' %>">
+                <%= zip_parts_ok? && replication_ok? ? 'OK' : 'Error' %>
+              </span>
+            </div>
+          </h6>
+          <li class="nav-item">
+            <div class="nav-link ps-4 d-flex justify-content-between align-items-center active" type="button" data-bs-target="#replication-tab-pane" aria-current="true">
+              <h6 class="d-flex justify-content-start">ZipPart Statuses</h6>
+              <% zip_parts_ok = (num_replication_errors == 0) %>
+              <span class="badge rounded-pill <%= zip_parts_ok ? 'bg-success' : 'bg-danger' %>">
+                <%= zip_parts_ok ? 'OK' : 'Error' %>
+              </span>
+            </a>
+          </li>
+          <% endpoint_data.each do |endpoint_name, endpoint_info| %>
+            <% replication_count = endpoint_info[:replication_count] %>
+            <% endpoint_replication_ok = replication_count == num_object_versions_per_preserved_object %>
+            <li class="nav-item list-group-item">
+              <a class="nav-link ps-4 d-flex justify-content-between align-items-center" data-bs-target="#replication-tab-pane">
+                <h6 class="d-flex justify-content-start">
+                  <span class="text-secondary">Endpoint:&nbsp;</span>
+                  <%= endpoint_name %>&nbsp;&nbsp;
+                </h6>
+                <span class="badge rounded-pill <%= endpoint_replication_ok ? 'bg-success' : 'bg-danger' %>">
+                  <%= endpoint_replication_ok ? 'OK' : 'Error' %>
+                </span>
+              </a>
+            </li>
+          <% end %>
+          <h6 class="sidebar-heading mt-4 mb-1 text-muted text-uppercase">
+            <div class="nav-link">
+              Audit&nbsp;&nbsp;
+              <span class="badge rounded-pill <%= audits_ok? ? 'bg-success' : 'bg-danger' %>">
+                <%= audits_ok? ? 'OK' : 'Error' %>
+              </span>
+            </div>
+          </h6>
+          <ul>
+            <h6 class="sidebar-heading text-muted text-uppercase">
+              <span>Catalog Audits</span>
+            </h6>
+            <ul class="ps-0 mt-0 my-0">
+              <li class="nav-item list-group-item">
+                <span class="nav-link" type="button" data-bs-target="#audit-tab-pane">link to catalog audit</span>
+              </li>
+              <li class="nav-item list-group-item">
+                <span class="nav-link" type="button" data-bs-target="#audit-tab-pane">link to catalog audit2</span>
+              </li>
+              <li class="nav-item d-flex justify-content-between" role="pill" type="pill" data-bs-target="#audit-tab-pane" data-bs-toggle="pill">
+                <span class="nav-link">
+                  Validate Moab Audit
+                  <span class="badge rounded-pill <%= validate_moab_audit_ok? ? 'bg-success' : 'bg-danger' %>">
+                    <%= validate_moab_audit_ok? ? 'OK' : 'Error' %>
+                  </span>
+                </span>
+              </li>
+              <li class="nav-item d-flex justify-content-between" data-bs-target="#audit-tab-pane" role="pill" data-bs-toggle="tab">
+                <span class="nav-link">
+                  Moab to Catalog Audit
+                  <span class="badge rounded-pill <%= moab_to_catalog_audit_ok? ? 'bg-success' : 'bg-danger' %>">
+                    <%= moab_to_catalog_audit_ok? ? 'OK' : 'Error' %>
+                  </span>
+                </span>
+              </li>
+              <li class="nav-item" data-bs-target="#audit-tab-pane" role="pill" data-bs-toggle="tab">
+                <span class="nav-link d-flex justify-content-between" data-bs-target="#audit-tab-pane"  role="pill" data-bs-toggle="tab">
+                  Catalog to Moab Audit
+                  <span class="badge rounded-pill <%= catalog_to_moab_audit_ok? ? 'bg-success' : 'bg-danger' %>">
+                    <%= catalog_to_moab_audit_ok? ? 'OK' : 'Error' %>
+                  </span>
+                </span>
+              </li>
+              <li class="nav-item d-flex justify-content-between" data-bs-target="#audit-tab-pane" role="pill" data-bs-toggle="tab">
+                <span class="nav-link">
+                  Checksum Validation Audit&nbsp;
+                  <span class="badge rounded-pill <%= checksum_validation_audit_ok? ? 'bg-success' : 'bg-danger' %>">
+                    <%= checksum_validation_audit_ok? ? 'OK' : 'Error' %>
+                  </span>
+                </span>
+              </li>
+            </ul>
+            <h6 class="sidebar-heading ps-1 text-muted text-uppercase">
+              <span>Replication Audit</span>
+            </h6>
+            <ul>
+              <li>
+                <a class="link-secondary" href="#">link to replication audit</a>
+              </li>
+            </ul>
+            <a href="/resque">Redis queues</a>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <main class="col-md-9 ms-sm-auto col-lg-10 p-md-4">
+      <h1 class="text-secondary">Preservation Dashboard - option 1</h1>
+      <div class="tab-content" id="informationTabContent">
+        <div class="tab-pane fade show active" id="catalog-tab-pane" role="tabpanel" aria-labelledby="catalog-tab" tabindex="0">
+          <turbo-frame id="catalog_information">
+            <%= render partial: 'catalog_information' %>
+          </turbo-frame>
+        </div>
+        <div class="tab-pane fade" id="replication-tab-pane" role="tabpanel" aria-labelledby="replication-tab" tabindex="0">
+          <turbo-frame id="replication_information">
+            <%= render partial: 'replication_information' %>
+          </turbo-frame>
+        </div>
+        <div class="tab-pane fade" id="audit-tab-pane" role="tabpanel" aria-labelledby="audit-tab" tabindex="0">
+          <turbo-frame id="audit_information">
+            <%= render partial: 'audit_information' %>
+          </turbo-frame>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
