@@ -96,7 +96,10 @@ class ObjectsController < ApiController
     end
     obj_version = params[:version].to_i if params[:version]&.match?(/^[1-9]\d*$/)
     subset = params[:subset] ||= 'all'
-    render(xml: MoabStorageService.content_diff(druid, params[:content_metadata], subset, obj_version).to_xml)
+    
+    result = MoabStorageService.content_diff(druid, params[:content_metadata], subset, obj_version).to_xml
+    Rails.logger.info("Getting content diff for #{druid} version #{obj_version} subset #{subset}: #{result}")
+    render(xml: result)
   rescue Moab::MoabRuntimeError => e
     render(plain: "500 Unable to get content diff: #{e}", status: :internal_server_error)
     Honeybadger.notify(e)
