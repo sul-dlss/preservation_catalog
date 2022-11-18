@@ -115,6 +115,15 @@ GEM
       capistrano (~> 3.1)
       capistrano-bundler (>= 1.1, < 3)
     capistrano-shared_configs (0.2.2)
+    capybara (3.38.0)
+      addressable
+      matrix
+      mini_mime (>= 0.1.3)
+      nokogiri (~> 1.8)
+      rack (>= 1.6.0)
+      rack-test (>= 0.6.3)
+      regexp_parser (>= 1.5, < 3.0)
+      xpath (~> 3.2)
     chronic (0.10.2)
     coderay (1.1.3)
     committee (4.4.0)
@@ -228,6 +237,7 @@ GEM
     mail (2.7.1)
       mini_mime (>= 0.1.1)
     marcel (1.0.2)
+    matrix (0.4.2)
     method_source (1.0.0)
     mini_mime (1.1.2)
     minitest (5.16.3)
@@ -406,6 +416,10 @@ GEM
     unicode-display_width (2.3.0)
     vegas (0.1.11)
       rack (>= 1.0.0)
+    view_component (2.75.0)
+      activesupport (>= 5.0.0, < 8.0)
+      concurrent-ruby (~> 1.0)
+      method_source (~> 1.0)
     webmock (3.18.1)
       addressable (>= 2.8.0)
       crack (>= 0.3.2)
@@ -415,6 +429,8 @@ GEM
     websocket-extensions (0.1.5)
     whenever (1.0.0)
       chronic (>= 0.6.3)
+    xpath (3.2.0)
+      nokogiri (~> 1.8)
     zeitwerk (2.6.6)
 
 PLATFORMS
@@ -427,6 +443,7 @@ DEPENDENCIES
   aws-sdk-s3 (~> 1.17)
   capistrano-passenger
   capistrano-rails
+  capybara
   committee
   config
   debug
@@ -460,6 +477,7 @@ DEPENDENCIES
   shoulda-matchers
   simplecov
   turbo-rails
+  view_component
   webmock
   whenever
 

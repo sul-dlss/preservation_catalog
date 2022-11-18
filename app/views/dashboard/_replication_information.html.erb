@@ -2,13 +2,13 @@
 
 <div class="row row-cols-2">
   <div class="column col-8">
-    <turbo-frame id="replication_endpoint_data">
-      <%= render partial: 'replication_endpoint_data' %>
+    <turbo-frame id="replication_endpoints">
+      <%= render Dashboard::ReplicationEndpointsComponent.new %>
     </turbo-frame>
   </div>
   <div class="column col-4">
     <turbo-frame id="replicated_files">
-      <%= render partial: 'replicated_files' %>
+      <%= render Dashboard::ReplicationFilesComponent.new %>
     </turbo-frame>
   </div>
 </div>
@@ -16,5 +16,5 @@
   <%= render partial: 'replication_flow' %>
 </turbo-frame>
 <turbo-frame id="zip_parts_suffix_counts">
-  <%= render partial: 'zip_parts_suffix_counts' %>
+  <%= render Dashboard::ZipPartsSuffixesComponent.new %>
 </turbo-frame>

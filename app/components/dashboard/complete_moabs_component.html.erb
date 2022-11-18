@@ -1,7 +1,6 @@
 <div>
   <h3>CompleteMoab Information</h3>
   <div class="col-sm-5">
-    TBD: make tooltips for the different statuses?
     <table class="table table-bordered table-hover">
       <thead class="table-info">
         <tr>
@@ -19,11 +18,11 @@
           <td><%= num_preserved_objects %></td>
           <td><%= complete_moab_total_size %></td>
           <td><%= complete_moab_average_size %></td>
-          <td><%= complete_moab_status_counts[0] %>
+          <td><%= complete_moab_status_counts[0] %></td>
           <% complete_moab_status_counts[1..].map do |val| %>
             <td class="<%= 'table-danger' if val != 0 %>"><%= val %></td>
           <% end %>
-          <td><%= num_expired_checksum_validation %></td>
+          <td class="<%= 'table-warning' if num_expired_checksum_validation != 0 %>"><%= num_expired_checksum_validation %></td>
           </tr>
       </tbody>
     </table>

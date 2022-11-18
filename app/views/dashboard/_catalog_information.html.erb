@@ -2,23 +2,23 @@
 <div>
   <p class="lead">The Preservation Catalog database keeps track of the state of SDR objects preserved on prem and in the cloud.</p>
 </div>
-<p><strong class="fs-4">PreservedObject</strong> is where we store the druid and links to both the on prem Moab object and all the replicated instances in the cloud.</p>
-<p><strong class="fs-4">CompleteMoab</strong> is about the on prem Moab.</p>
+<p><strong class="fs-4">PreservedObject</strong> records store the druid and links to both the on prem Moab object and all the replicated instances in the cloud.</p>
+<p><strong class="fs-4">CompleteMoab</strong> records are about the on prem Moab.</p>
 <hr/>
 <div class="row row-cols-2">
   <div class="column col-5">
     <turbo-frame id="object_verisons">
-      <%= render partial: 'object_versions' %>
+      <%= render Dashboard::ObjectVersionsComponent.new %>
     </turbo-frame>
   </div>
   <div class="column col-7">
     <turbo-frame id="complete_moab_status">
-      <%= render partial: 'complete_moab_status_counts' %>
+      <%= render Dashboard::CompleteMoabsComponent.new %>
     </turbo-frame>
   </div>
 </div>
 <hr/>
 
 <turbo-frame id="moab_storage_root_data">
-  <%= render partial: 'moab_storage_root_data' %>
+  <%= render Dashboard::MoabStorageRootsComponent.new %>
 </turbo-frame>

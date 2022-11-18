@@ -45,132 +45,6 @@ RSpec.describe DashboardCatalogHelper do
     end
   end
 
-  describe '#storage_root_info' do
-    skip('FIXME: intend to change this internal structure soon; not testing yet')
-    # storage_root_info = {}
-    # MoabStorageRoot.all.each do |storage_root|
-    #   storage_root_info[storage_root.name] =
-    #     [
-    #       storage_root.storage_location,
-    #       "#{(storage_root.complete_moabs.sum(:size) / Numeric::TERABYTE).to_f.round(2)} Tb",
-    #       "#{((storage_root.complete_moabs.average(:size) || 0) / Numeric::MEGABYTE).to_f.round(2)} Mb",
-    #       storage_root.complete_moabs.count,
-    #       CompleteMoab.statuses.keys.map { |status| storage_root.complete_moabs.where(status: status).count },
-    #       storage_root.complete_moabs.fixity_check_expired.count
-    #     ].flatten
-    # end
-    # storage_root_info
-  end
-
-  # @return [Array<Integer>] totals of counts from each storage root for:
-  #   total of counts of each CompleteMoab status (ok, invalid_checksum, etc.)
-  #   total of counts of fixity_check_expired
-  #   total of complete_moab counts - this is last element in array due to index shift to skip storage_location and stored size
-  describe '#storage_root_totals' do
-    skip('FIXME: intend to change storage_root_info internal structure soon; not testing yet')
-    # return [0] if storage_root_info.values.size.zero?
-
-    # totals = Array.new(storage_root_info.values.first.size - 3, 0)
-    # storage_root_info.each_key do |root_name|
-    #   storage_root_info[root_name][3..].each_with_index do |count, index|
-    #     totals[index] += count
-    #   end
-    # end
-    # totals
-  end
-
-  describe '#storage_root_total_count' do
-    before do
-      create(:complete_moab, moab_storage_root: storage_root)
-      create(:complete_moab, moab_storage_root: storage_root, status: 'invalid_checksum')
-      create(:complete_moab, moab_storage_root: create(:moab_storage_root))
-    end
-
-    it 'returns total number of Moabs on all storage roots' do
-      expect(helper.storage_root_total_count).to eq 3
-    end
-  end
-
-  describe '#storage_root_total_ok_count' do
-    before do
-      create(:complete_moab, moab_storage_root: storage_root)
-      create(:complete_moab, moab_storage_root: storage_root, status: 'invalid_checksum')
-      create(:complete_moab, moab_storage_root: create(:moab_storage_root))
-    end
-
-    it 'returns total number of Moabs with status ok on all storage roots' do
-      expect(helper.storage_root_total_ok_count).to eq 2
-    end
-  end
-
-  describe '#complete_moab_total_size' do
-    before do
-      create(:complete_moab, size: 1 * Numeric::TERABYTE)
-      create(:complete_moab, size: (2 * Numeric::TERABYTE) + (500 * Numeric::GIGABYTE))
-      create(:complete_moab, size: (3 * Numeric::TERABYTE))
-    end
-
-    it 'returns the total size of CompleteMoabs in Terabytes as a string' do
-      expect(helper.complete_moab_total_size).to eq '6.49 TB'
-    end
-  end
-
-  describe '#complete_moab_average_size' do
-    context 'when there are CompleteMoabs' do
-      before do
-        create(:complete_moab, size: 1 * Numeric::MEGABYTE)
-        create(:complete_moab, size: (2 * Numeric::KILOBYTE))
-        create(:complete_moab, size: (3 * Numeric::MEGABYTE))
-      end
-      # "#{(CompleteMoab.average(:size) / Numeric::MEGABYTE).to_f.round(2)} Mb" unless num_complete_moabs.zero?
-
-      it 'returns the average size of CompleteMoabs in Megabytes as a string' do
-        expect(helper.complete_moab_average_size).to eq '1.33 MB'
-      end
-    end
-
-    context 'when num_complete_moabs is 0' do
-      # this avoids a divide by zero error when running locally
-      before do
-        allow(helper).to receive(:num_complete_moabs).and_return(0)
-      end
-
-      it 'returns nil' do
-        expect(helper.complete_moab_average_size).to be_nil
-      end
-    end
-  end
-
-  describe '#complete_moab_status_counts' do
-    before do
-      create(:complete_moab, status: 'ok')
-      create(:complete_moab, status: 'ok')
-      create(:complete_moab, status: 'invalid_moab')
-      create(:complete_moab, status: 'invalid_checksum')
-      create(:complete_moab, status: 'invalid_checksum')
-      create(:complete_moab, status: 'online_moab_not_found')
-      create(:complete_moab, status: 'invalid_checksum')
-      create(:complete_moab, status: 'unexpected_version_on_storage')
-      create(:complete_moab, status: 'validity_unknown')
-      create(:complete_moab, status: 'validity_unknown')
-    end
-
-    it 'returns array of counts for each CompleteMoab status' do
-      expect(helper.complete_moab_status_counts).to eq [2, 1, 3, 1, 1, 2]
-    end
-  end
-
-  describe '#status_labels' do
-    it 'returns CompleteMoab.statuses.keys with blanks instead of underscores' do
-      expect(helper.status_labels).to eq ['ok',
-                                          'invalid moab',
-                                          'invalid checksum',
-                                          'online moab not found',
-                                          'unexpected version on storage',
-                                          'validity unknown']
-    end
-  end
-
   describe '#any_complete_moab_errors?' do
     before do
       create(:complete_moab, status: 'ok')
@@ -234,18 +108,6 @@ RSpec.describe DashboardCatalogHelper do
     end
   end
 
-  describe '#preserved_object_highest_version' do
-    before do
-      create(:preserved_object, current_version: 1)
-      create(:preserved_object, current_version: 67)
-      create(:preserved_object, current_version: 3)
-    end
-
-    it 'returns the highest current_version value of any PreservedObject' do
-      expect(helper.preserved_object_highest_version).to eq 67
-    end
-  end
-
   describe '#num_object_versions_per_preserved_object' do
     before do
       create(:preserved_object, current_version: 1)
@@ -255,27 +117,6 @@ RSpec.describe DashboardCatalogHelper do
 
     it 'returns the total number of object versions according to PreservedObject table' do
       expect(helper.num_object_versions_per_preserved_object).to eq 71
-    end
-  end
-
-  describe '#average_version_per_preserved_object' do
-    context 'when there are PreservedObjects' do
-      before do
-        create(:preserved_object, current_version: 1)
-        create(:preserved_object, current_version: 67)
-        create(:preserved_object, current_version: 3)
-      end
-
-      it 'returns the average number of versions per object according to the PreservedObject table' do
-        expect(helper.average_version_per_preserved_object).to eq 23.67
-      end
-    end
-
-    context 'when there are no PreservedObjects' do
-      # this avoids a divide by zero error when running locally
-      it 'returns nil' do
-        expect(helper.average_version_per_preserved_object).to be_nil
-      end
     end
   end
 
@@ -290,18 +131,6 @@ RSpec.describe DashboardCatalogHelper do
     end
   end
 
-  describe '#complete_moab_highest_version' do
-    before do
-      create(:complete_moab, version: 1)
-      create(:complete_moab, version: 67)
-      create(:complete_moab, version: 3)
-    end
-
-    it 'returns the highest version value of any CompleteMoab' do
-      expect(helper.complete_moab_highest_version).to eq 67
-    end
-  end
-
   describe '#num_object_versions_per_complete_moab' do
     before do
       create(:complete_moab, version: 1)
@@ -311,27 +140,6 @@ RSpec.describe DashboardCatalogHelper do
 
     it 'returns the total number of object versions according to CompleteMoab table' do
       expect(helper.num_object_versions_per_complete_moab).to eq 71
-    end
-  end
-
-  describe '#average_version_per_complete_moab' do
-    context 'when there are CompleteMoabs' do
-      before do
-        create(:complete_moab, version: 1)
-        create(:complete_moab, version: 67)
-        create(:complete_moab, version: 3)
-      end
-
-      it 'returns the average number of versions per object accrding to the CompleteMoab table' do
-        expect(helper.average_version_per_complete_moab).to eq 23.67
-      end
-    end
-
-    context 'when there are no CompleteMoabs' do
-      # this avoids a divide by zero error when running locally
-      it 'returns nil' do
-        expect(helper.average_version_per_complete_moab).to be_nil
-      end
     end
   end
 end
