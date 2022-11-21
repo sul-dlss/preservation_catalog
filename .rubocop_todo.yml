@@ -46,7 +46,7 @@ Metrics/AbcSize:
     - 'app/services/checksum_validator.rb'
     - 'app/services/complete_moab_service/check_existence.rb'
     - 'app/services/complete_moab_service/update_version.rb'
-    - 'app/services/moab_storage_root_reporter.rb'
+    - 'app/services/moab_storage_root_report_service.rb'
     - 'app/services/s3/s3_audit.rb'
     - 'config/initializers/okcomputer.rb'
 
@@ -68,7 +68,7 @@ Metrics/MethodLength:
 # AllowedIdentifiers: capture3, iso8601, rfc1123_date, rfc822, rfc2822, rfc3339
 Naming/VariableNumber:
   Exclude:
-    - 'spec/services/moab_storage_root_reporter_spec.rb'
+    - 'spec/services/moab_storage_root_report_service_spec.rb'
 
 # Offense count: 1
 RSpec/BeforeAfterAll:

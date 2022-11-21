@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe MoabStorageRootReporter do
+RSpec.describe MoabStorageRootReportService do
   let!(:test_start_time) { DateTime.now.utc.iso8601 } # useful for both output cleanup and CSV filename testing
 
   let!(:msr_a) { create(:moab_storage_root) }
