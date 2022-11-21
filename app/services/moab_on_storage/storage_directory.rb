@@ -2,9 +2,10 @@
 
 require 'find'
 
+# Services for a moab on local storage (as opposed to a moab db record in the catalog or moab replicated to the cloud)
 module MoabOnStorage
   # methods for dealing with a directory which stores Moab objects
-  class MoabStorageDirectory
+  class StorageDirectory
     DRUID_TREE_REGEXP = '[[:lower:]]{2}/\\d{3}/[[:lower:]]{2}/\\d{4}'
     DRUID_REGEXP = '[[:lower:]]{2}\\d{3}[[:lower:]]{2}\\d{4}'
 

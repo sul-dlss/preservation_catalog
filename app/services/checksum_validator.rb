@@ -13,8 +13,8 @@ class ChecksumValidator
   end
 
   def validate_checksums
-    # check first thing to make sure the moab is present on disk, otherwise weird errors later
-    return persist_db_transaction! { status_handler.mark_moab_not_found } if moab_absent?
+    # check first thing to make sure the moab is present on storage, otherwise weird errors later
+    return persist_db_transaction! { status_handler.mark_moab_not_found } if moab_on_storage_absent?
 
     # These will populate the results object
     validate_manifest_inventories
@@ -35,11 +35,11 @@ class ChecksumValidator
 
   # @return [Moab::StorageObjectVersion]
   def latest_moab_storage_object_version
-    @latest_moab_storage_object_version ||= moab.version_list.last
+    @latest_moab_storage_object_version ||= moab_on_storage.version_list.last
   end
 
   # @return [Boolean] false if the moab exists, true otherwise
-  def moab_absent?
+  def moab_on_storage_absent?
     !File.exist?(object_dir) || latest_moab_storage_object_version.nil?
   end
 
@@ -47,45 +47,45 @@ class ChecksumValidator
     status_handler.update_status(status)
   end
 
-  # Moab and complete moab versions match?
+  # Moab on storage and complete moab versions match?
   def versions_match?
-    moab.current_version_id == complete_moab.version
+    moab_on_storage.current_version_id == complete_moab.version
   end
 
   def validate_versions
     # set_status_as_seen_on_disk will update results and complete_moab
-    status_handler.set_status_as_seen_on_disk(found_expected_version: versions_match?, moab_validator: moab_validator,
+    status_handler.set_status_as_seen_on_disk(found_expected_version: versions_match?, moab_on_storage_validator: moab_on_storage_validator,
                                               caller_validates_checksums: true)
 
     return if versions_match?
     results.add_result(AuditResults::UNEXPECTED_VERSION,
-                       actual_version: moab.current_version_id,
+                       actual_version: moab_on_storage.current_version_id,
                        db_obj_name: 'CompleteMoab',
                        db_obj_version: complete_moab.version)
   end
 
   def validate_manifest_inventories
-    moab.version_list.each { |moab_version| ManifestInventoryValidator.validate(moab_version: moab_version, checksum_validator: self) }
+    moab_on_storage.version_list.each { |moab_version| ManifestInventoryValidator.validate(moab_version: moab_version, checksum_validator: self) }
   end
 
   def validate_signature_catalog
     SignatureCatalogValidator.validate(checksum_validator: self)
   end
 
-  def moab_validator
-    @moab_validator ||= MoabValidator.new(moab: moab, audit_results: results)
+  def moab_on_storage_validator
+    @moab_on_storage_validator ||= MoabOnStorage::Validator.new(moab: moab_on_storage, audit_results: results)
   end
 
   def status_handler
     @status_handler ||= StatusHandler.new(audit_results: results, complete_moab: complete_moab)
   end
 
-  def moab
-    @moab ||= MoabUtils.moab(storage_location: storage_location, druid: druid)
+  def moab_on_storage
+    @moab_on_storage ||= MoabOnStorage.moab(storage_location: storage_location, druid: druid)
   end
 
   def results
-    @results ||= AuditResults.new(druid: druid, moab_storage_root: moab_storage_root, actual_version: moab.current_version_id,
+    @results ||= AuditResults.new(druid: druid, moab_storage_root: moab_storage_root, actual_version: moab_on_storage.current_version_id,
                                   check_name: 'validate_checksums')
   end
 
@@ -102,10 +102,10 @@ class ChecksumValidator
   end
 
   def object_dir
-    @object_dir ||= MoabUtils.object_dir(storage_location: storage_location, druid: druid)
+    @object_dir ||= MoabOnStorage.object_dir(storage_location: storage_location, druid: druid)
   end
 
-  # Validates files on disk against the manifest inventory
+  # Validates files on storage against the manifest inventory
   class ManifestInventoryValidator
     MANIFESTS = 'manifests'
     MANIFESTS_XML = 'manifestInventory.xml'
@@ -188,7 +188,7 @@ class ChecksumValidator
     end
   end
 
-  # Validates files on disk against the signature catalog
+  # Validates files on storage against the signature catalog
   class SignatureCatalogValidator
     MANIFESTS = 'manifests'
 
@@ -209,7 +209,7 @@ class ChecksumValidator
 
     attr_reader :checksum_validator
 
-    delegate :moab, :results, :latest_moab_storage_object_version, :object_dir, to: :checksum_validator
+    delegate :moab_on_storage, :results, :latest_moab_storage_object_version, :object_dir, to: :checksum_validator
 
     def flag_unexpected_data_files
       data_files.each { |file| validate_against_signature_catalog(file) }
@@ -224,8 +224,8 @@ class ChecksumValidator
     end
 
     def existing_data_dirs
-      possible_data_content_dirs = moab.versions.map { |sov| sov.file_category_pathname('content') }
-      possible_data_metadata_dirs = moab.versions.map { |sov| sov.file_category_pathname('metadata') }
+      possible_data_content_dirs = moab_on_storage.versions.map { |sov| sov.file_category_pathname('content') }
+      possible_data_metadata_dirs = moab_on_storage.versions.map { |sov| sov.file_category_pathname('metadata') }
       possible_data_dirs = possible_data_content_dirs + possible_data_metadata_dirs
       possible_data_dirs.select(&:exist?).map(&:to_s)
     end

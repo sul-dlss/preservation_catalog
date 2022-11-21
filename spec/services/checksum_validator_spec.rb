@@ -9,7 +9,7 @@ RSpec.describe ChecksumValidator do
   let(:object_dir) { "#{moab_store_root.storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}" }
   let(:complete_moab) { create(:preserved_object_fixture, druid: druid).complete_moab }
   let(:checksum_validator) { described_class.new(complete_moab) }
-  let(:moab_validator) { checksum_validator.send(:moab_validator) }
+  let(:moab_on_storage_validator) { checksum_validator.send(:moab_on_storage_validator) }
   let(:results) { instance_double(AuditResults) }
   let(:logger_double) { instance_double(ActiveSupport::Logger, info: nil, error: nil, add: nil) }
   let(:audit_workflow_reporter) { instance_double(Reporters::AuditWorkflowReporter, report_errors: nil, report_completed: nil) }
@@ -73,7 +73,7 @@ RSpec.describe ChecksumValidator do
       end
 
       it 'sets status to online_moab_not_found and adds corresponding audit result' do
-        expect(checksum_validator.moab.object_pathname.exist?).to be true
+        expect(checksum_validator.moab_on_storage.object_pathname.exist?).to be true
         expect { checksum_validator.validate_checksums }.to change(complete_moab, :status).to 'online_moab_not_found'
         expect(complete_moab.reload.status).to eq 'online_moab_not_found'
         expect(checksum_validator.results.results.first).to have_key(:moab_not_found)
@@ -177,7 +177,8 @@ RSpec.describe ChecksumValidator do
 
         context 'moab_validation_errors indicates there are structural errors' do
           before do
-            allow(moab_validator).to receive(:moab_validation_errors).and_return([{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }])
+            allow(moab_on_storage_validator).to receive(:moab_validation_errors)
+              .and_return([{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }])
           end
 
           [
@@ -259,7 +260,8 @@ RSpec.describe ChecksumValidator do
 
         context 'moab_validation_errors indicates there are structural errors' do
           before do
-            allow(moab_validator).to receive(:moab_validation_errors).and_return([{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }])
+            allow(moab_on_storage_validator).to receive(:moab_validation_errors)
+              .and_return([{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }])
           end
 
           [
@@ -327,8 +329,9 @@ RSpec.describe ChecksumValidator do
       storage_object_version2 = instance_double(Moab::StorageObjectVersion)
       storage_object_version3 = instance_double(Moab::StorageObjectVersion)
       version_list = [storage_object_version1, storage_object_version2, storage_object_version3]
-      moab = instance_double(Moab::StorageObject, version_list: [storage_object_version1, storage_object_version2, storage_object_version3])
-      allow(checksum_validator).to receive(:moab).and_return(moab)
+      moab_on_storage = instance_double(Moab::StorageObject,
+                                        version_list: [storage_object_version1, storage_object_version2, storage_object_version3])
+      allow(checksum_validator).to receive(:moab_on_storage).and_return(moab_on_storage)
       allow(described_class::ManifestInventoryValidator).to receive(:validate)
       checksum_validator.send(:validate_manifest_inventories)
       version_list.each do |moab_version|
@@ -438,8 +441,8 @@ RSpec.describe ChecksumValidator do
     it 'calls validate_signature_catalog_entry for each signatureCatalog entry' do
       sce01 = instance_double(Moab::SignatureCatalogEntry)
       entry_list = [sce01] + Array.new(10, sce01.dup)
-      moab = instance_double(Moab::StorageObject)
-      allow(checksum_validator).to receive(:moab).and_return(moab)
+      moab_on_storage = instance_double(Moab::StorageObject)
+      allow(checksum_validator).to receive(:moab_on_storage).and_return(moab_on_storage)
       allow(signature_catalog_validator).to receive(:latest_signature_catalog_entries).and_return(entry_list)
       entry_list.each do |entry|
         expect(signature_catalog_validator).to receive(:validate_signature_catalog_entry).with(entry)

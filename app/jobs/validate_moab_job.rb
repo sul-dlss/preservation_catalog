@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# Confirm checksums for one Moab object on disk (not in database)
+# Confirm checksums for one Moab object on storage (not in database)
 class ValidateMoabJob < ApplicationJob
   queue_as :validate_moab
 
@@ -8,7 +8,7 @@ class ValidateMoabJob < ApplicationJob
 
   attr_accessor :druid
 
-  # @param [String] druid of Moab on disk to be checksum validated
+  # @param [String] druid of Moab on storage to be checksum validated
   def perform(druid)
     log_failure('Valid druid param required') and return unless DruidTools::Druid.valid?(druid, true)
 

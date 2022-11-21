@@ -60,12 +60,12 @@ module CompleteMoabService
       @status_handler ||= StatusHandler.new(audit_results: results, complete_moab: complete_moab)
     end
 
-    def moab_validator
-      @moab_validator ||= MoabValidator.new(moab: moab, audit_results: results)
+    def moab_on_storage_validator
+      @moab_on_storage_validator ||= MoabOnStorage::Validator.new(moab: moab_on_storage, audit_results: results)
     end
 
-    def moab
-      @moab ||= MoabUtils.moab(druid: druid, storage_location: storage_location)
+    def moab_on_storage
+      @moab_on_storage ||= MoabOnStorage.moab(druid: druid, storage_location: storage_location)
     end
 
     # this wrapper reads a little nicer in this class, since CompleteMoabHandler is always doing this the same way
@@ -109,12 +109,12 @@ module CompleteMoabService
     end
 
     def validation_errors?
-      moab_validator.moab_validation_errors.present?
+      moab_on_storage_validator.moab_validation_errors.present?
     end
 
     def create_missing_complete_moab
       results.add_result(AuditResults::DB_OBJ_DOES_NOT_EXIST, 'CompleteMoab')
-      status = moab_validator.moab_validation_errors.empty? ? 'validity_unknown' : 'invalid_moab'
+      status = moab_on_storage_validator.moab_validation_errors.empty? ? 'validity_unknown' : 'invalid_moab'
       create_db_objects(status)
     end
 
@@ -128,7 +128,7 @@ module CompleteMoabService
         status: status
       }.tap do |attrs|
         time = Time.current
-        if moab_validator.ran_moab_validation?
+        if moab_on_storage_validator.ran_moab_validation?
           attrs[:last_version_audit] = time
           attrs[:last_moab_validation] = time
         end

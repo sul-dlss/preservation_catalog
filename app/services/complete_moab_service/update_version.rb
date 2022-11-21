@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module CompleteMoabService
-  # Updates CompletedMoab and associated objects based on a moab on disk.
+  # Updates CompletedMoab and associated objects based on a moab on storage.
   class UpdateVersion < Base
     def self.execute(druid:, incoming_version:, incoming_size:, moab_storage_root:, checksums_validated: false)
       new(druid: druid, incoming_version: incoming_version, incoming_size: incoming_size,
@@ -42,7 +42,7 @@ module CompleteMoabService
       # add results without db updates
       results.add_result(AuditResults::ACTUAL_VERS_GT_DB_OBJ, db_obj_name: 'CompleteMoab', db_obj_version: complete_moab.version)
 
-      complete_moab.upd_audstamps_version_size(moab_validator.ran_moab_validation?, incoming_version, incoming_size)
+      complete_moab.upd_audstamps_version_size(moab_on_storage_validator.ran_moab_validation?, incoming_version, incoming_size)
       complete_moab.last_checksum_validation = Time.current if checksums_validated && complete_moab.last_checksum_validation
       status_handler.update_status(status) if status
       complete_moab.save!
@@ -56,7 +56,7 @@ module CompleteMoabService
       version_comparison_results
 
       status_handler.update_status(status) if status
-      complete_moab.update_audit_timestamps(moab_validator.ran_moab_validation?, true)
+      complete_moab.update_audit_timestamps(moab_on_storage_validator.ran_moab_validation?, true)
       complete_moab.save!
     end
 

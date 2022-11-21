@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe MoabStorageService do
+RSpec.describe MoabOnStorage::StorageServicesWrapper do
   let(:druid) { 'jj925bx9565' }
 
   describe '.content_diff' do
@@ -28,7 +28,7 @@ RSpec.describe MoabStorageService do
     end
 
     context 'content_md param' do
-      let(:err_msg) { 'No contentMetadata provided to MoabStorageService.content_diff for druid jj925bx9565' }
+      let(:err_msg) { 'No contentMetadata provided to StorageServicesWrapper.content_diff for druid jj925bx9565' }
 
       context 'when missing' do
         it 'raises ArgumentError' do
@@ -44,7 +44,7 @@ RSpec.describe MoabStorageService do
     end
 
     context 'subset param' do
-      let(:err_msg) { "subset arg must be 'all', 'shelve', 'preserve', or 'publish' (MoabStorageService.content_diff for druid jj925bx9565)" }
+      let(:err_msg) { "subset arg must be 'all', 'shelve', 'preserve', or 'publish' (StorageServicesWrapper.content_diff for druid jj925bx9565)" }
 
       before do
         allow(Stanford::StorageServices).to receive(:compare_cm_to_version).with(content_md, druid, subset, version).and_return(result)
@@ -148,7 +148,7 @@ RSpec.describe MoabStorageService do
     end
 
     describe 'category param:' do
-      let(:err_msg) { "category arg must be 'content', 'metadata', or 'manifest' (MoabStorageService.filepath for druid jj925bx9565)" }
+      let(:err_msg) { "category arg must be 'content', 'metadata', or 'manifest' (StorageServicesWrapper.filepath for druid jj925bx9565)" }
 
       before do
         allow(Stanford::StorageServices).to receive(:retrieve_file).with(category, fname, druid, version).and_return(file_path)
@@ -199,7 +199,7 @@ RSpec.describe MoabStorageService do
       end
 
       context 'when missing' do
-        let(:err_msg) { 'No filename provided to MoabStorageService.filepath for druid jj925bx9565' }
+        let(:err_msg) { 'No filename provided to StorageServicesWrapper.filepath for druid jj925bx9565' }
 
         it 'raises ArgumentError' do
           expect { described_class.filepath(druid, 'metadata', nil) }.to raise_error(ArgumentError, err_msg)

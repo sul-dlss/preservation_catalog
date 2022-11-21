@@ -58,7 +58,7 @@ RSpec.describe ObjectsController do
         end
       end
 
-      context 'when ArgumentError from MoabStorageService' do
+      context 'when ArgumentError from MoabOnStorage::StorageServicesWrapper' do
         it 'returns 400 response code with details' do
           get file_object_url(id: prefixed_druid), params: { category: 'metadata' }, headers: valid_auth_header
           expect(response).to have_http_status(:bad_request)

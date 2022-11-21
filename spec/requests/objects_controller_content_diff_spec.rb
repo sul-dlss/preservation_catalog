@@ -69,7 +69,7 @@ RSpec.describe ObjectsController do
         end
       end
 
-      context 'when ArgumentError from MoabStorageService' do
+      context 'when ArgumentError from MoabOnStorage::StorageServicesWrapper' do
         it 'returns 400 response code with details' do
           params = { content_metadata: content_md, subset: 'unrecognized' }.to_json
           post content_diff_object_url(id: prefixed_druid),
@@ -82,7 +82,7 @@ RSpec.describe ObjectsController do
         end
       end
 
-      context 'when MoabRuntimeError from MoabStorageService' do
+      context 'when MoabRuntimeError from MoabOnStorage::StorageServicesWrapper' do
         it 'returns 500 response code; body has additional information; notifies Honeybadger' do
           emsg = 'my error'
           allow(Stanford::StorageServices).to receive(:compare_cm_to_version)
