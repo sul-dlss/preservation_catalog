@@ -5,11 +5,10 @@ require 'csv'
 ##
 # run queries and produce reports from the results, for consumption
 # by preservation catalog maintainers
-class MoabStorageRootReporter
+class MoabStorageRootReportService
   attr_reader :storage_root
 
-  # @params [Hash] params used to initialize the MoabStorageRootReporter service
-  # @return [MoabStorageRootReporter] the reporter
+  # @params [Hash] params used to initialize the MoabStorageRootReport service
   def initialize(params)
     @storage_root = MoabStorageRoot.find_by!(name: params[:storage_root_name])
     @msr_names = {}
