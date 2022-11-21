@@ -2,6 +2,7 @@
 
 ##
 # service class with methods for running Stanford::StorageObjectValidator in moab-versioning gem
+# TODO: Rename this StorageObjectValidatorWrapper or make it disappear
 class MoabValidator
   # @param moab [Moab::StorageObject] the moab to be validated
   # @param results [AuditResults] the instance the including class is using to track findings of interest
