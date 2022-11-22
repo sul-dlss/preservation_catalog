@@ -38,7 +38,7 @@ module Audit
       logger.info "#{Time.now.utc.iso8601} Seeding starting for '#{storage_dir}'"
       results = []
       ms_root = MoabStorageRoot.find_by!(storage_location: storage_dir)
-      MoabStorageDirectory.find_moab_paths(storage_dir) do |druid, path, _path_match_data|
+      MoabOnStorage::StorageDirectory.find_moab_paths(storage_dir) do |druid, path, _path_match_data|
         moab = Moab::StorageObject.new(druid, path)
         results << CompleteMoabService::CreateAfterValidation.execute(druid: druid, incoming_version: moab.current_version_id,
                                                                       incoming_size: moab.size, moab_storage_root: ms_root).results

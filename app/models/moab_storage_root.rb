@@ -31,7 +31,7 @@ class MoabStorageRoot < ApplicationRecord
 
   # Use a queue to ensure each druid on this root's directory is in the catalog database
   def m2c_check!
-    MoabStorageDirectory.find_moab_paths(storage_location) do |druid, _path, _match|
+    MoabOnStorage::StorageDirectory.find_moab_paths(storage_location) do |druid, _path, _match|
       MoabToCatalogJob.perform_later(self, druid)
     end
   end

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module CompleteMoabService
-  # Updates CompletedMoab and associated objects based on a moab on disk after validation of moab.
+  # Updates CompletedMoab and associated objects based on a moab on storage after validation of moab.
   class UpdateVersionAfterValidation < UpdateVersion
     def self.execute(druid:, incoming_version:, incoming_size:, moab_storage_root:, checksums_validated: false)
       new(druid: druid, incoming_version: incoming_version, incoming_size: incoming_size,
@@ -55,7 +55,7 @@ module CompleteMoabService
     def update_complete_moab_to_validity_unknown
       with_active_record_transaction_and_rescue do
         status_handler.update_status('validity_unknown')
-        complete_moab.update_audit_timestamps(moab_validator.ran_moab_validation?, false)
+        complete_moab.update_audit_timestamps(moab_on_storage_validator.ran_moab_validation?, false)
         complete_moab.save!
       end
     end
@@ -63,7 +63,7 @@ module CompleteMoabService
     def update_complete_moab_to_invalid_moab
       with_active_record_transaction_and_rescue do
         status_handler.update_status('invalid_moab')
-        complete_moab.update_audit_timestamps(moab_validator.ran_moab_validation?, false)
+        complete_moab.update_audit_timestamps(moab_on_storage_validator.ran_moab_validation?, false)
         complete_moab.save!
       end
     end

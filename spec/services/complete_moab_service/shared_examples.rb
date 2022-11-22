@@ -322,9 +322,9 @@ end
 
 RSpec.shared_examples 'CompleteMoab may have its status checked when incoming_version == complete_moab.version' do
   let(:incoming_version) { complete_moab.version }
-  let(:moab_validator) { complete_moab_service.send(:moab_validator) }
+  let(:moab_on_storage_validator) { complete_moab_service.send(:moab_on_storage_validator) }
 
-  before { allow(moab_validator).to receive(:moab_validation_errors).and_return([]) } # default
+  before { allow(moab_on_storage_validator).to receive(:moab_validation_errors).and_return([]) } # default
 
   it 'had OK_STATUS, keeps OK_STATUS' do
     complete_moab.ok!
@@ -340,7 +340,7 @@ RSpec.shared_examples 'CompleteMoab may have its status checked when incoming_ve
 
   it 'had UNEXPECTED_VERSION_ON_STORAGE_STATUS, but is now INVALID_MOAB_STATUS' do
     complete_moab.unexpected_version_on_storage!
-    allow(moab_validator).to receive(:moab_validation_errors).and_return([{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }])
+    allow(moab_on_storage_validator).to receive(:moab_validation_errors).and_return([{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }])
     complete_moab_service.execute
     expect(complete_moab.reload.status).to eq 'invalid_moab'
   end
@@ -359,7 +359,7 @@ RSpec.shared_examples 'CompleteMoab may have its status checked when incoming_ve
 
   it 'had VALIDITY_UNKNOWN_STATUS, but is now INVALID_MOAB_STATUS' do
     complete_moab.validity_unknown!
-    allow(moab_validator).to receive(:moab_validation_errors).and_return([{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }])
+    allow(moab_on_storage_validator).to receive(:moab_validation_errors).and_return([{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }])
     complete_moab_service.execute
     expect(complete_moab.reload.status).to eq 'invalid_moab'
   end
@@ -377,7 +377,7 @@ RSpec.shared_examples 'CompleteMoab may have its status checked when incoming_ve
 
     context 'with moab validation errors' do
       before do
-        allow(moab_validator).to receive(:moab_validation_errors).and_return([{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }])
+        allow(moab_on_storage_validator).to receive(:moab_validation_errors).and_return([{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }])
       end
 
       it_behaves_like 'cannot validate something with INVALID_CHECKSUM_STATUS'
@@ -387,9 +387,9 @@ end
 
 RSpec.shared_examples 'CompleteMoab may have its status checked when incoming_version < complete_moab.version' do
   let(:incoming_version) { complete_moab.version - 1 }
-  let(:moab_validator) { complete_moab_service.send(:moab_validator) }
+  let(:moab_on_storage_validator) { complete_moab_service.send(:moab_on_storage_validator) }
 
-  before { allow(moab_validator).to receive(:moab_validation_errors).and_return([]) } # default
+  before { allow(moab_on_storage_validator).to receive(:moab_validation_errors).and_return([]) } # default
 
   it 'had OK_STATUS, but is now UNEXPECTED_VERSION_ON_STORAGE_STATUS' do
     complete_moab.ok!
@@ -399,7 +399,7 @@ RSpec.shared_examples 'CompleteMoab may have its status checked when incoming_ve
 
   it 'had OK_STATUS, but is now INVALID_MOAB_STATUS' do
     complete_moab.ok!
-    allow(moab_validator).to receive(:moab_validation_errors).and_return([{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }])
+    allow(moab_on_storage_validator).to receive(:moab_validation_errors).and_return([{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }])
     complete_moab_service.execute
     expect(complete_moab.reload.status).to eq 'invalid_moab'
   end
@@ -418,7 +418,7 @@ RSpec.shared_examples 'CompleteMoab may have its status checked when incoming_ve
 
   it 'had VALIDITY_UNKNOWN_STATUS, but is now INVALID_MOAB_STATUS' do
     complete_moab.validity_unknown!
-    allow(moab_validator).to receive(:moab_validation_errors).and_return([{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }])
+    allow(moab_on_storage_validator).to receive(:moab_validation_errors).and_return([{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }])
     complete_moab_service.execute
     expect(complete_moab.reload.status).to eq 'invalid_moab'
   end
@@ -436,7 +436,7 @@ RSpec.shared_examples 'CompleteMoab may have its status checked when incoming_ve
 
     context 'with moab validation errors' do
       before do
-        allow(moab_validator).to receive(:moab_validation_errors).and_return([{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }])
+        allow(moab_on_storage_validator).to receive(:moab_validation_errors).and_return([{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }])
       end
 
       it_behaves_like 'cannot validate something with INVALID_CHECKSUM_STATUS'

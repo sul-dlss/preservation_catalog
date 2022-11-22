@@ -32,17 +32,17 @@ class StatusHandler
   end
 
   # found_expected_version is a boolean indicating whether the latest version of the moab
-  # on disk is the expected version according to the catalog.  NOTE: in the case of an update
-  # this might mean the on disk version is one higher than the catalog version, if the
+  # on storage is the expected version according to the catalog.  NOTE: in the case of an update
+  # this might mean the on storage version is one higher than the catalog version, if the
   # catalog hasn't been updated yet.
   # @param [Boolean] found_expected_version
-  # @params [MoabValidator] moab_validator
+  # @params [MoabOnStorage::Validator] moab_on_storage_validator
   # @caller_validates_checksums [Boolean] defaults to false.  was this called by code that re-computes checksums to confirm that they match the
   #   values listed in the manifests?
   # @return [void]
-  def set_status_as_seen_on_disk(found_expected_version:, moab_validator:, caller_validates_checksums: false)
+  def set_status_as_seen_on_disk(found_expected_version:, moab_on_storage_validator:, caller_validates_checksums: false)
     begin
-      return update_status('invalid_moab') if moab_validator.moab_validation_errors.any?
+      return update_status('invalid_moab') if moab_on_storage_validator.moab_validation_errors.any?
     rescue Errno::ENOENT
       return mark_moab_not_found
     end

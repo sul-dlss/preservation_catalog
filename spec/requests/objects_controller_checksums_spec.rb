@@ -199,8 +199,9 @@ RSpec.describe ObjectsController do
 
     context 'when object throws any StandardError during processing' do
       before do
-        allow(MoabStorageService).to receive(:retrieve_content_file_group).with(bare_druid).and_call_original
-        allow(MoabStorageService).to receive(:retrieve_content_file_group).with(bare_druid2).and_raise(NoMethodError, 'I had a nil result')
+        allow(MoabOnStorage::StorageServicesWrapper).to receive(:retrieve_content_file_group).with(bare_druid).and_call_original
+        allow(MoabOnStorage::StorageServicesWrapper).to receive(:retrieve_content_file_group).with(bare_druid2).and_raise(NoMethodError,
+                                                                                                                          'I had a nil result')
         post checksums_objects_url, params: { druids: [bare_druid, bare_druid2], format: :json }.to_json, headers: post_headers
       end
 
@@ -214,8 +215,10 @@ RSpec.describe ObjectsController do
       end
 
       it 'body has information about errored druids' do
-        allow(MoabStorageService).to receive(:retrieve_content_file_group).with(bare_druid).and_raise(StandardError, 'I had a stderr')
-        allow(MoabStorageService).to receive(:retrieve_content_file_group).with(bare_druid2).and_raise(NoMethodError, 'I had a nil result')
+        allow(MoabOnStorage::StorageServicesWrapper).to receive(:retrieve_content_file_group).with(bare_druid).and_raise(StandardError,
+                                                                                                                         'I had a stderr')
+        allow(MoabOnStorage::StorageServicesWrapper).to receive(:retrieve_content_file_group).with(bare_druid2).and_raise(NoMethodError,
+                                                                                                                          'I had a nil result')
         post checksums_objects_url, params: { druids: [bare_druid, bare_druid2], format: :json }.to_json, headers: post_headers
         expect(response.body).to match 'Unexpected Error -'
         expect(response.body).to include 'Problems (other than Moab not found) generating checksums for ' \

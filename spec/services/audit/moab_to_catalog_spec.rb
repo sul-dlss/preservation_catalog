@@ -127,9 +127,9 @@ RSpec.describe Audit::MoabToCatalog do
     let(:druid) { 'bz514sm9647' }
 
     it "calls 'find_moab_paths' with appropriate argument" do
-      allow(MoabStorageDirectory).to receive(:find_moab_paths).with(storage_dir)
+      allow(MoabOnStorage::StorageDirectory).to receive(:find_moab_paths).with(storage_dir)
       described_class.seed_catalog_for_dir(storage_dir)
-      expect(MoabStorageDirectory).to have_received(:find_moab_paths).with(storage_dir)
+      expect(MoabOnStorage::StorageDirectory).to have_received(:find_moab_paths).with(storage_dir)
     end
 
     it 'gets moab size and current version from Moab::StorageObject' do

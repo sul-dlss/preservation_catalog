@@ -42,7 +42,7 @@ class ObjectsController < ApiController
     end
 
     obj_version = params[:version].to_i if params[:version]&.match?(/^[1-9]\d*$/)
-    location = MoabStorageService.filepath(druid, params[:category], params[:filepath], obj_version)
+    location = MoabOnStorage::StorageServicesWrapper.filepath(druid, params[:category], params[:filepath], obj_version)
     if location
       send_file location
     else
@@ -96,7 +96,7 @@ class ObjectsController < ApiController
     end
     obj_version = params[:version].to_i if params[:version]&.match?(/^[1-9]\d*$/)
     subset = params[:subset] ||= 'all'
-    render(xml: MoabStorageService.content_diff(druid, params[:content_metadata], subset, obj_version).to_xml)
+    render(xml: MoabOnStorage::StorageServicesWrapper.content_diff(druid, params[:content_metadata], subset, obj_version).to_xml)
   rescue Moab::MoabRuntimeError => e
     render(plain: "500 Unable to get content diff: #{e}", status: :internal_server_error)
     Honeybadger.notify(e)
@@ -153,7 +153,7 @@ class ObjectsController < ApiController
   end
 
   def content_files_checksums(druid)
-    content_group = MoabStorageService.retrieve_content_file_group(druid)
+    content_group = MoabOnStorage::StorageServicesWrapper.retrieve_content_file_group(druid)
     content_group.path_hash.map do |file, signature|
       { filename: file, md5: signature.md5, sha1: signature.sha1, sha256: signature.sha256, filesize: signature.size }
     end

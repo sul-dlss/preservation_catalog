@@ -1,8 +1,7 @@
 # frozen_string_literal: true
 
-##
-# Utility methods for Moab::StorageObject and Druid
-class MoabUtils
+# Services for a moab on local storage (as opposed to a moab db record in the catalog or moab replicated to the cloud)
+module MoabOnStorage
   # @param druid [String]
   # @param storage_location [String] the root directory holding the druid tree (the storage root path)
   def self.object_dir(druid:, storage_location:)

@@ -20,7 +20,7 @@ module Audit
         return report_results!
       end
 
-      unless online_moab_found?
+      if moab_on_storage.nil?
         transaction_ok = ActiveRecordUtils.with_transaction_and_rescue(results) do
           status_handler.update_status('online_moab_not_found')
           complete_moab.save!
@@ -33,18 +33,18 @@ module Audit
         return report_results!
       end
 
-      return report_results! unless moab_validator.can_validate_current_comp_moab_status?(complete_moab: complete_moab)
+      return report_results! unless moab_on_storage_validator.can_validate_current_comp_moab_status?(complete_moab: complete_moab)
 
       compare_version_and_take_action
     end
 
-    def moab
-      @moab ||= MoabUtils.moab(druid: druid, storage_location: storage_location)
+    def moab_on_storage
+      @moab_on_storage ||= MoabOnStorage.moab(druid: druid, storage_location: storage_location)
     end
 
     def results
-      @results ||= AuditResults.new(druid: druid, moab_storage_root: complete_moab.moab_storage_root, actual_version: moab&.current_version_id,
-                                    check_name: 'check_catalog_version')
+      @results ||= AuditResults.new(druid: druid, moab_storage_root: complete_moab.moab_storage_root,
+                                    actual_version: moab_on_storage&.current_version_id, check_name: 'check_catalog_version')
     end
 
     private
@@ -53,8 +53,8 @@ module Audit
       AuditResultsReporter.report_results(audit_results: results, logger: @logger)
     end
 
-    def moab_validator
-      @moab_validator ||= MoabValidator.new(moab: moab, audit_results: results)
+    def moab_on_storage_validator
+      @moab_on_storage_validator ||= MoabOnStorage::Validator.new(moab: moab_on_storage, audit_results: results)
     end
 
     def status_handler
@@ -65,34 +65,32 @@ module Audit
       complete_moab.moab_storage_root.storage_location
     end
 
-    def online_moab_found?
-      return true if moab
-      false
-    end
-
-    # compare the catalog version to the actual Moab;  update the catalog version if the Moab is newer
+    # compare the catalog version to the actual Moab on storage;  update the catalog version if the Moab is newer
     #   report results (and return them)
     def compare_version_and_take_action
-      moab_version = moab.current_version_id
+      moab_version = moab_on_storage.current_version_id
       catalog_version = complete_moab.version
       transaction_ok = ActiveRecordUtils.with_transaction_and_rescue(results) do
         if catalog_version == moab_version
-          status_handler.set_status_as_seen_on_disk(found_expected_version: true, moab_validator: moab_validator) unless complete_moab.ok?
+          unless complete_moab.ok?
+            status_handler.set_status_as_seen_on_disk(found_expected_version: true,
+                                                      moab_on_storage_validator: moab_on_storage_validator)
+          end
           results.add_result(AuditResults::VERSION_MATCHES, 'CompleteMoab')
           report_results!
         elsif catalog_version < moab_version
-          status_handler.set_status_as_seen_on_disk(found_expected_version: true, moab_validator: moab_validator)
-          CompleteMoabService::UpdateVersionAfterValidation.execute(druid: druid, incoming_version: moab_version, incoming_size: moab.size,
+          status_handler.set_status_as_seen_on_disk(found_expected_version: true, moab_on_storage_validator: moab_on_storage_validator)
+          CompleteMoabService::UpdateVersionAfterValidation.execute(druid: druid, incoming_version: moab_version, incoming_size: moab_on_storage.size,
                                                                     moab_storage_root: complete_moab.moab_storage_root)
         else # catalog_version > moab_version
-          status_handler.set_status_as_seen_on_disk(found_expected_version: false, moab_validator: moab_validator)
+          status_handler.set_status_as_seen_on_disk(found_expected_version: false, moab_on_storage_validator: moab_on_storage_validator)
           results.add_result(
             AuditResults::UNEXPECTED_VERSION, db_obj_name: 'CompleteMoab', db_obj_version: complete_moab.version
           )
           report_results!
         end
 
-        complete_moab.update_audit_timestamps(moab_validator.ran_moab_validation?, true)
+        complete_moab.update_audit_timestamps(moab_on_storage_validator.ran_moab_validation?, true)
         complete_moab.save!
       end
       results.remove_db_updated_results unless transaction_ok

@@ -7,7 +7,7 @@ RSpec.describe Audit::CatalogToMoab do
   let(:storage_location) { 'spec/fixtures/storage_root01/sdr2objects' }
   let(:druid) { 'bj102hs9687' }
   let(:c2m) { described_class.new(comp_moab) }
-  let(:moab_validator) { c2m.send(:moab_validator) }
+  let(:moab_on_storage_validator) { c2m.send(:moab_on_storage_validator) }
   let(:mock_sov) { instance_double(Stanford::StorageObjectValidator) }
   let(:po) { create(:preserved_object_fixture, druid: druid) }
   let(:comp_moab) do
@@ -70,12 +70,6 @@ RSpec.describe Audit::CatalogToMoab do
     it 'calls AuditResultsReporter.report_results' do
       c2m.instance_variable_set(:@results, results_double)
       expect(AuditResultsReporter).to receive(:report_results).with(audit_results: c2m.results, logger: Logger)
-      c2m.check_catalog_version
-    end
-
-    it 'calls online_moab_found?' do
-      allow(Honeybadger).to receive(:notify).with(Regexp.new(hb_exp_msg))
-      expect(c2m).to receive(:online_moab_found?)
       c2m.check_catalog_version
     end
 
@@ -213,7 +207,7 @@ RSpec.describe Audit::CatalogToMoab do
               comp_moab.status = orig_status
               comp_moab.status_details = b4_details
               comp_moab.save!
-              allow(moab_validator).to receive(:moab_validation_errors).and_return([])
+              allow(moab_on_storage_validator).to receive(:moab_validation_errors).and_return([])
               c2m.check_catalog_version
             end
 
@@ -241,7 +235,7 @@ RSpec.describe Audit::CatalogToMoab do
               comp_moab.status = orig_status
               comp_moab.status_details = b4_details
               comp_moab.save!
-              allow(moab_validator).to receive(:moab_validation_errors).and_return(
+              allow(moab_on_storage_validator).to receive(:moab_validation_errors).and_return(
                 [{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }]
               )
               c2m.check_catalog_version
@@ -264,7 +258,7 @@ RSpec.describe Audit::CatalogToMoab do
             comp_moab.status_details = b4_details
             comp_moab.invalid_checksum!
             comp_moab.save!
-            allow(moab_validator).to receive(:moab_validation_errors).and_return(
+            allow(moab_on_storage_validator).to receive(:moab_validation_errors).and_return(
               [{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }]
             )
             c2m.check_catalog_version
@@ -513,7 +507,7 @@ RSpec.describe Audit::CatalogToMoab do
               comp_moab.status = orig_status
               comp_moab.status_details = b4_details
               comp_moab.save!
-              allow(moab_validator).to receive(:moab_validation_errors).and_return([])
+              allow(moab_on_storage_validator).to receive(:moab_validation_errors).and_return([])
               c2m.check_catalog_version
             end
 
@@ -543,7 +537,7 @@ RSpec.describe Audit::CatalogToMoab do
               comp_moab.status = orig_status
               comp_moab.status_details = b4_details
               comp_moab.save!
-              allow(moab_validator).to receive(:moab_validation_errors).and_return(
+              allow(moab_on_storage_validator).to receive(:moab_validation_errors).and_return(
                 [{ Moab::StorageObjectValidator::MISSING_DIR => 'err msg' }]
               )
               c2m.check_catalog_version

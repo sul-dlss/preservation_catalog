@@ -2,14 +2,14 @@
 
 require 'rails_helper'
 
-RSpec.describe MoabStorageDirectory do
+RSpec.describe MoabOnStorage::StorageDirectory do
   let(:storage_dir) { @fixtures.join('storage_root01/moab_storage_trunk') }
 
   before(:all) do
-    @temp = Pathname.new(File.dirname(__FILE__)).join('temp')
+    @temp = Pathname.new('spec').join('temp')
     @temp.mkpath
     @temp = @temp.realpath
-    @fixtures = Pathname.new(File.dirname(__FILE__)).join('..', 'fixtures')
+    @fixtures = Pathname.new('spec/fixtures')
     @fixtures.mkpath
     @fixtures = @fixtures.realpath
     @obj = 'jq937jp0017'
