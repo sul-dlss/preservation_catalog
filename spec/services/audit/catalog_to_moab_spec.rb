@@ -588,7 +588,7 @@ RSpec.describe Audit::CatalogToMoab do
 
     context 'moab found on disk' do
       # use the same setup as 'catalog version > moab version', since we know that should
-      # lead to an update_status('unexpected_version_on_storage') call
+      # lead to an update_complete_moab_status('unexpected_version_on_storage') call
       before do
         moab = instance_double(Moab::StorageObject, size: 666, object_pathname: object_dir)
         allow(Moab::StorageObject).to receive(:new).with(druid, instance_of(String)).and_return(moab)

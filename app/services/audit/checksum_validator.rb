@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Audit
-  # code for validating Moab checksums on storage, updating the complete moab db record, and reporting results.
+  # Service for validating Moab checksums on storage, updating the complete moab db record, and reporting results.
   class ChecksumValidator
     attr_reader :complete_moab
 
@@ -30,7 +30,7 @@ module Audit
 
           validate_versions
         else
-          update_complete_moab_status('invalid_checksum')
+          status_handler.update_complete_moab_status('invalid_checksum')
         end
       end
     end
@@ -45,19 +45,15 @@ module Audit
       !File.exist?(object_dir) || latest_moab_storage_object_version.nil?
     end
 
-    def update_complete_moab_status(status)
-      status_handler.update_status(status)
-    end
-
     # Moab on storage and complete moab versions match?
     def versions_match?
       moab_on_storage.current_version_id == complete_moab.version
     end
 
     def validate_versions
-      # set_status_as_seen_on_disk will update results and complete_moab
-      status_handler.set_status_as_seen_on_disk(found_expected_version: versions_match?, moab_on_storage_validator: moab_on_storage_validator,
-                                                caller_validates_checksums: true)
+      # validate_moab_on_storage_and_set_status will update results and complete_moab
+      status_handler.validate_moab_on_storage_and_set_status(found_expected_version: versions_match?,
+                                                             moab_on_storage_validator: moab_on_storage_validator, caller_validates_checksums: true)
 
       return if versions_match?
       results.add_result(AuditResults::UNEXPECTED_VERSION,
