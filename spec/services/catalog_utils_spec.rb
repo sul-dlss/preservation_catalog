@@ -3,7 +3,7 @@
 require 'rails_helper'
 require 'csv'
 
-RSpec.describe Audit::MoabToCatalog do
+RSpec.describe CatalogUtils do
   let(:storage_dir) { 'spec/fixtures/storage_root01/sdr2objects' }
   let(:ms_root) { MoabStorageRoot.find_by!(storage_location: storage_dir) }
   let(:moab) do
