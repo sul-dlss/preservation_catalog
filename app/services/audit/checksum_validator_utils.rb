@@ -1,21 +1,24 @@
 # frozen_string_literal: true
 
+require 'csv'
+
 module Audit
-  # Checksum validator code
-  class Checksum
+  # Helper methods for invoking Audit::ChecksumValidator.
+  # These are for use from the Rails console; they are not called from the app.
+  class ChecksumValidatorUtils
     def self.logger
       @logger ||= Logger.new($stdout)
                         .extend(ActiveSupport::Logger.broadcast(Logger.new(Rails.root.join('log', 'cv.log'))))
     end
 
-    # @return [Array<AuditResults>] results from ChecksumValidator runs
+    # @return [Array<AuditResults>] results from Audit::ChecksumValidator runs
     def self.validate_druid(druid)
       logger.info "#{Time.now.utc.iso8601} CV validate_druid starting for #{druid}"
       po = PreservedObject.find_by(druid: druid)
       complete_moab = po&.complete_moab
       logger.debug("#{complete_moab ? 'Found' : 'Did Not Find'} complete moab.")
       if complete_moab
-        cv = ChecksumValidator.new(complete_moab)
+        cv = Audit::ChecksumValidator.new(complete_moab)
         cv.validate_checksums
         logger.info "#{cv.results.results} for #{druid}"
         cv.results
@@ -28,7 +31,7 @@ module Audit
     # assumes that the list of druids is in column 1, and has no header.
     def self.validate_list_of_druids(druid_list_file_path)
       CSV.foreach(druid_list_file_path) do |row|
-        Checksum.validate_druid(row.first)
+        validate_druid(row.first)
       end
     end
 

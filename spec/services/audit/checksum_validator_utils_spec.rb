@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe Audit::Checksum do
+RSpec.describe Audit::ChecksumValidatorUtils do
   let(:root_name) { 'fixture_sr1' }
   let(:logger_double) { instance_double(ActiveSupport::Logger, info: nil, add: nil, debug: nil, warn: nil) }
   let(:audit_workflow_reporter) { instance_double(Reporters::AuditWorkflowReporter, report_errors: nil, report_completed: nil) }
@@ -36,8 +36,8 @@ RSpec.describe Audit::Checksum do
     let!(:po) { create(:preserved_object_fixture, druid: 'bz514sm9647') }
 
     it 'creates an instance ancd calls #validate_checksums for complete moab' do
-      cv = ChecksumValidator.new(po.complete_moab)
-      allow(ChecksumValidator).to receive(:new).with(cv.complete_moab).and_return(cv)
+      cv = Audit::ChecksumValidator.new(po.complete_moab)
+      allow(Audit::ChecksumValidator).to receive(:new).with(cv.complete_moab).and_return(cv)
       allow(cv).to receive(:validate_checksums).and_call_original
       described_class.validate_druid(po.druid)
       expect(cv).to have_received(:validate_checksums)

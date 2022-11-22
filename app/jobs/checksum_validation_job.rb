@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Confirm checksum for one (online) CompleteMoab, updating database
-# @see ChecksumValidator
+# @see Audit::ChecksumValidator
 class ChecksumValidationJob < ApplicationJob
   queue_as :checksum_validation
 
@@ -13,6 +13,6 @@ class ChecksumValidationJob < ApplicationJob
 
   # @param [CompleteMoab] complete_moab object to checksum
   def perform(complete_moab)
-    ChecksumValidator.new(complete_moab).validate_checksums
+    Audit::ChecksumValidator.new(complete_moab).validate_checksums
   end
 end
