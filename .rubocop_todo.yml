@@ -12,7 +12,7 @@
 # URISchemes: http, https
 Layout/LineLength:
   Exclude:
-    - 'app/models/druid_version_zip.rb'
+    - 'app/models/replication/druid_version_zip.rb'
 
 # Offense count: 27
 # Configuration parameters: AllowedMethods, AllowedPatterns, IgnoredMethods.
@@ -37,7 +37,7 @@ Metrics/AbcSize:
     - 'app/controllers/objects_controller.rb'
     - 'app/jobs/concerns/unique_job.rb'
     - 'app/jobs/validate_moab_job.rb'
-    - 'app/models/druid_version_zip.rb'
+    - 'app/models/replication/druid_version_zip.rb'
     - 'app/models/preserved_object.rb'
     - 'app/services/audit/catalog_to_archive.rb'
     - 'app/services/audit/catalog_to_moab.rb'
@@ -55,7 +55,7 @@ Metrics/AbcSize:
 Metrics/ClassLength:
   Exclude:
     - 'app/controllers/objects_controller.rb'
-    - 'app/models/druid_version_zip.rb'
+    - 'app/models/replication/druid_version_zip.rb'
 
 # Offense count: 37
 # Configuration parameters: CountComments, CountAsOne, ExcludedMethods, AllowedMethods, AllowedPatterns, IgnoredMethods.

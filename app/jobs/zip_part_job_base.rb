@@ -6,8 +6,8 @@ class ZipPartJobBase < ApplicationJob
   attr_accessor :dvz_part, :zip
 
   before_perform do |job|
-    job.zip = DruidVersionZip.new(job.arguments.first, job.arguments.second)
-    job.dvz_part = DruidVersionZipPart.new(zip, job.arguments.third)
+    job.zip = Replication::DruidVersionZip.new(job.arguments.first, job.arguments.second)
+    job.dvz_part = Replication::DruidVersionZipPart.new(zip, job.arguments.third)
   end
 
   include UniqueJob

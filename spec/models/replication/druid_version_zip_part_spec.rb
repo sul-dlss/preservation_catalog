@@ -2,8 +2,8 @@
 
 require 'rails_helper'
 
-describe DruidVersionZipPart do
-  let(:dvz) { DruidVersionZip.new(druid, version) }
+describe Replication::DruidVersionZipPart do
+  let(:dvz) { Replication::DruidVersionZip.new(druid, version) }
   let(:part) { described_class.new(dvz, 'bj/102/hs/9687/bj102hs9687.v0001.z02') }
   let(:druid) { 'bj102hs9687' }
   let(:version) { 1 }

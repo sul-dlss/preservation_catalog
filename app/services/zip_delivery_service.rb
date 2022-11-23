@@ -7,7 +7,7 @@ class ZipDeliveryService
   end
 
   # @param [Aws::S3::Object] s3_part
-  # @param [DruidVersionZipPart] dvz_part
+  # @param [Replication::DruidVersionZipPart] dvz_part
   # @param [Hash<Symbol => String, Integer>] metadata Zip info
   def initialize(s3_part:, dvz_part:, metadata:)
     @s3_part = s3_part

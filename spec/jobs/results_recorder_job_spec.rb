@@ -10,7 +10,7 @@ describe ResultsRecorderJob do
   let(:zip_endpoint) { zmv.zip_endpoint }
   let(:zip_endpoint2) { zmv2.zip_endpoint }
   let(:zip_part_attributes) { [attributes_for(:zip_part)] }
-  let(:druid_version_zip) { DruidVersionZip.new(druid, zmv.version) }
+  let(:druid_version_zip) { Replication::DruidVersionZip.new(druid, zmv.version) }
 
   before do
     # creating the CompleteMoab triggers associated ZippedMoabVersion creation via AR hooks

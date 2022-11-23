@@ -4,16 +4,16 @@ require 'rails_helper'
 
 describe ZipmakerJob do
   let(:druid) { 'bj102hs9687' }
-  let(:dvz_part) { instance_double(DruidVersionZipPart, metadata: { fake: 1 }) }
+  let(:dvz_part) { instance_double(Replication::DruidVersionZipPart, metadata: { fake: 1 }) }
   let(:version) { 3 }
   let(:zip_path) { "spec/fixtures/zip_storage/bj/102/hs/9687/#{druid}#{format('.v%04d.zip', version)}" }
-  let(:druid_version_zip) { DruidVersionZip.new(druid, version, moab_replication_storage_location) }
+  let(:druid_version_zip) { Replication::DruidVersionZip.new(druid, version, moab_replication_storage_location) }
   let(:moab_replication_storage_location) { 'spec/fixtures/storage_root01/sdr2objects' }
 
   before do
     allow(PlexerJob).to receive(:perform_later).with(any_args)
     allow(Settings).to receive(:zip_storage).and_return(Rails.root.join('spec', 'fixtures', 'zip_storage'))
-    allow(DruidVersionZip).to receive(:new).with(druid, version, moab_replication_storage_location).and_return(druid_version_zip)
+    allow(Replication::DruidVersionZip).to receive(:new).with(druid, version, moab_replication_storage_location).and_return(druid_version_zip)
   end
 
   after do
@@ -84,7 +84,7 @@ describe ZipmakerJob do
   context 'zip is not yet in zip storage' do
     let(:version) { 3 }
 
-    before { allow(DruidVersionZipPart).to receive(:new).and_return(dvz_part) }
+    before { allow(Replication::DruidVersionZipPart).to receive(:new).and_return(dvz_part) }
 
     it 'creates the zip' do
       expect(File).not_to exist(zip_path)

@@ -45,8 +45,8 @@ RSpec.shared_examples 'provider' do |provider_class, bucket_name, region, access
       subject(:s3_object) { bucket.object("test_key_#{test_key_id}") }
 
       let(:test_key_id) { ENV.fetch('CIRCLE_SHA1', '000')[0..6] }
-      let(:dvz) { DruidVersionZip.new('bj102hs9687', 2) }
-      let(:dvz_part) { DruidVersionZipPart.new(dvz, dvz.s3_key('.zip')) }
+      let(:dvz) { Replication::DruidVersionZip.new('bj102hs9687', 2) }
+      let(:dvz_part) { Replication::DruidVersionZipPart.new(dvz, dvz.s3_key('.zip')) }
       let(:digest) { dvz_part.base64digest }
       let(:now) { Time.zone.now.iso8601 }
       let(:get_response) { s3_object.get }

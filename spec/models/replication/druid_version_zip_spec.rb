@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-describe DruidVersionZip do
+describe Replication::DruidVersionZip do
   # Some tests below will use the constructor that takes storage_location, because they are
   # testing behavior where a zip is being created from a Moab on disk.  For tests that don't
   # exercise that behavior, the parameter is omitted to test that it isn't needed.
@@ -62,9 +62,9 @@ describe DruidVersionZip do
       end
 
       it 'raises an error indicating that the file in the zip temp space looks too small' do
-        expect {
+        expect do
           dvz.find_or_create_zip!
-        }.to raise_error(RuntimeError, 'zip already exists, but size (80) is smaller than the moab version size (1928387)!')
+        end.to raise_error(RuntimeError, 'zip already exists, but size (80) is smaller than the moab version size (1928387)!')
       end
     end
 
@@ -78,11 +78,11 @@ describe DruidVersionZip do
       it 'updates atime and mtime on the zip file that is already there' do
         sleep(0.1) # sorta hate this, but sleep for a 1/10 s, to give a moment before checking atime/mtime (to prevent flappy test in CI).
         expect { dvz.find_or_create_zip! }.to(
-          (change {
+          (change do
             File.stat(dvz.file_path).atime
-          }).and(change {
+          end).and(change do
             File.stat(dvz.file_path).mtime
-          })
+          end)
         )
       end
 

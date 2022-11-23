@@ -3,7 +3,7 @@
 require 'rails_helper'
 
 describe PlexerJob do
-  let(:dvz) { DruidVersionZip.new(druid, version) }
+  let(:dvz) { Replication::DruidVersionZip.new(druid, version) }
   let(:druid) { 'bj102hs9687' }
   let(:version) { 1 }
   let(:md5) { 'd41d8cd98f00b204e9800998ecf8427e' }
@@ -20,7 +20,7 @@ describe PlexerJob do
   let(:po) { create(:preserved_object, druid: druid, current_version: version) }
 
   before do
-    allow(DruidVersionZip).to receive(:new).with(druid, version).and_return(dvz)
+    allow(Replication::DruidVersionZip).to receive(:new).with(druid, version).and_return(dvz)
   end
 
   it 'descends from ZipPartJobBase' do

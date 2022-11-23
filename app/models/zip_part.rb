@@ -38,7 +38,7 @@ class ZipPart < ApplicationRecord
   end
 
   def druid_version_zip
-    @druid_version_zip ||= DruidVersionZip.new(preserved_object.druid, zipped_moab_version.version)
+    @druid_version_zip ||= Replication::DruidVersionZip.new(preserved_object.druid, zipped_moab_version.version)
   end
 
   def s3_key
