@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-module S3
+module Audit
   # Base class for AWS and IBM audit classes
-  class S3Audit
+  class ReplicationToEndpointBase
     def self.check_replicated_zipped_moab_version(zmv, results, check_unreplicated_parts = false)
       new(zmv, results, check_unreplicated_parts).check_replicated_zipped_moab_version
     end

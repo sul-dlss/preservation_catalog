@@ -8,7 +8,7 @@ describe MoabReplicationAuditJob do
   let(:logger) { instance_double(Logger) }
 
   before do
-    allow(Audit::CatalogToArchive).to receive(:logger).and_return(logger)
+    allow(Audit::ReplicationSupport).to receive(:logger).and_return(logger)
     allow(Settings.replication).to receive(:audit_should_backfill).and_return(true) # enable for tests
     # creation of complete moab triggers archive zip creation, as archive zips are created from moabs
     create(:complete_moab, preserved_object: preserved_object, version: preserved_object.current_version)

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.shared_examples 's3 audit' do |provider_class, bucket_name, check_name, endpoint_name, region|
+RSpec.shared_examples 'replication to endpoint' do |provider_class, bucket_name, check_name, endpoint_name, region|
   let(:zip_endpoint) do
     ZipEndpoint.find_by(endpoint_name: endpoint_name)
   end

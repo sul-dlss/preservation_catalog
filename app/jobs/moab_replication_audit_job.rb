@@ -26,7 +26,7 @@ class MoabReplicationAuditJob < ApplicationJob
     preserved_object = arguments.first
     zmvs = preserved_object.create_zipped_moab_versions!
     return if zmvs.empty?
-    Audit::CatalogToArchive.logger.warn(
+    Audit::ReplicationSupport.logger.warn(
       "#{self.class}: #{preserved_object.druid} backfilled #{zmvs.count} ZippedMoabVersions: #{format_zmvs(zmvs)}"
     )
   end
