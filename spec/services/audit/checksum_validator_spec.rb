@@ -2,13 +2,13 @@
 
 require 'rails_helper'
 
-RSpec.describe ChecksumValidator do
+RSpec.describe Audit::ChecksumValidator do
   let(:druid) { 'zz102hs9687' }
   let(:root_name) { 'fixture_sr3' }
   let(:moab_store_root) { MoabStorageRoot.find_by!(name: root_name) }
   let(:object_dir) { "#{moab_store_root.storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}" }
   let(:complete_moab) { create(:preserved_object_fixture, druid: druid).complete_moab }
-  let(:checksum_validator) { described_class.new(complete_moab) }
+  let(:checksum_validator) { described_class.new(complete_moab, logger: logger_double) }
   let(:moab_on_storage_validator) { checksum_validator.send(:moab_on_storage_validator) }
   let(:results) { instance_double(AuditResults) }
   let(:logger_double) { instance_double(ActiveSupport::Logger, info: nil, error: nil, add: nil) }
@@ -18,7 +18,6 @@ RSpec.describe ChecksumValidator do
   let(:logger_reporter) { instance_double(Reporters::LoggerReporter, report_errors: nil, report_completed: nil) }
 
   before do
-    allow(Audit::Checksum).to receive(:logger).and_return(logger_double) # silence log output
     allow(Reporters::LoggerReporter).to receive(:new).and_return(logger_reporter)
     allow(Reporters::AuditWorkflowReporter).to receive(:new).and_return(audit_workflow_reporter)
     allow(Reporters::HoneybadgerReporter).to receive(:new).and_return(honeybadger_reporter)
@@ -60,7 +59,7 @@ RSpec.describe ChecksumValidator do
       end
 
       it 'calls AuditResults.report_results' do
-        expect(AuditResultsReporter).to receive(:report_results).with(audit_results: AuditResults, logger: Audit::Checksum.logger)
+        expect(AuditResultsReporter).to receive(:report_results).with(audit_results: AuditResults, logger: logger_double)
         checksum_validator.validate_checksums
       end
     end
@@ -100,7 +99,7 @@ RSpec.describe ChecksumValidator do
       end
 
       it 'calls AuditResultReporter.report_results' do
-        expect(AuditResultsReporter).to receive(:report_results).with(audit_results: AuditResults, logger: Audit::Checksum.logger)
+        expect(AuditResultsReporter).to receive(:report_results).with(audit_results: AuditResults, logger: logger_double)
         checksum_validator.validate_checksums
       end
     end
@@ -290,7 +289,7 @@ RSpec.describe ChecksumValidator do
 
     context 'reports results' do
       it 'calls AuditResults.report_results' do
-        expect(AuditResultsReporter).to receive(:report_results).with(audit_results: AuditResults, logger: Audit::Checksum.logger)
+        expect(AuditResultsReporter).to receive(:report_results).with(audit_results: AuditResults, logger: logger_double)
         checksum_validator.validate_checksums
       end
     end

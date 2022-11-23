@@ -7,11 +7,11 @@ describe ChecksumValidationJob do
   let(:cm) { create(:complete_moab) }
 
   describe '#perform' do
-    let(:validator) { instance_double(ChecksumValidator) }
+    let(:validator) { instance_double(Audit::ChecksumValidator) }
 
     it 'calls ChecksumValidator#validate_checksums' do
       expect(validator).to receive(:validate_checksums)
-      expect(ChecksumValidator).to receive(:new).with(cm).and_return(validator)
+      expect(Audit::ChecksumValidator).to receive(:new).with(cm).and_return(validator)
       job.perform(cm)
     end
   end
