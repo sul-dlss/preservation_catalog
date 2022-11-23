@@ -135,7 +135,7 @@ end
 # check CompleteMoab#last_version_audit to ensure it isn't too old
 class VersionAuditWindowCheck < OkComputer::Check
   def check
-    if CompleteMoab.least_recent_version_audit(clause).first
+    if CompleteMoab.version_audit_expired(clause).first
       mark_message "CompleteMoab#last_version_audit older than #{clause}. "
       mark_failure
     else
