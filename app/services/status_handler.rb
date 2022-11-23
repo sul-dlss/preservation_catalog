@@ -12,7 +12,7 @@ class StatusHandler
     @complete_moab = complete_moab
   end
 
-  def update_status(new_status)
+  def update_complete_moab_status(new_status)
     complete_moab.status = new_status
 
     if complete_moab.status_changed?
@@ -28,7 +28,7 @@ class StatusHandler
     add_result(AuditResults::MOAB_NOT_FOUND,
                db_created_at: complete_moab.created_at.iso8601,
                db_updated_at: complete_moab.updated_at.iso8601)
-    update_status('online_moab_not_found')
+    update_complete_moab_status('online_moab_not_found')
   end
 
   # found_expected_version is a boolean indicating whether the latest version of the moab
@@ -40,24 +40,24 @@ class StatusHandler
   # @caller_validates_checksums [Boolean] defaults to false.  was this called by code that re-computes checksums to confirm that they match the
   #   values listed in the manifests?
   # @return [void]
-  def set_status_as_seen_on_disk(found_expected_version:, moab_on_storage_validator:, caller_validates_checksums: false)
+  def validate_moab_on_storage_and_set_status(found_expected_version:, moab_on_storage_validator:, caller_validates_checksums: false)
     begin
-      return update_status('invalid_moab') if moab_on_storage_validator.moab_validation_errors.any?
+      return update_complete_moab_status('invalid_moab') if moab_on_storage_validator.moab_validation_errors.any?
     rescue Errno::ENOENT
       return mark_moab_not_found
     end
 
-    return update_status('unexpected_version_on_storage') unless found_expected_version
+    return update_complete_moab_status('unexpected_version_on_storage') unless found_expected_version
 
     # NOTE: subclasses which override this method should NOT perform checksum validation inside of this method!
     # CV is expensive, and can run a while, and this method should likely be called from within a DB transaction,
     # but CV definitely shouldn't happen inside a DB transaction.
     if audit_results.contains_result_code?(AuditResults::MOAB_CHECKSUM_VALID)
-      update_status('ok')
+      update_complete_moab_status('ok')
     elsif caller_validates_checksums
-      update_status('invalid_checksum')
+      update_complete_moab_status('invalid_checksum')
     else
-      update_status('validity_unknown')
+      update_complete_moab_status('validity_unknown')
     end
   end
 
