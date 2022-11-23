@@ -62,11 +62,6 @@ class CompleteMoab < ApplicationRecord
     ChecksumValidationJob.perform_later(self)
   end
 
-  # TODO: may become obsolete
-  def replicatable_status?
-    ok?
-  end
-
   def update_audit_timestamps(moab_validated, version_audited)
     t = Time.current
     self.last_moab_validation = t if moab_validated

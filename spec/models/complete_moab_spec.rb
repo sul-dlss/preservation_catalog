@@ -51,17 +51,6 @@ RSpec.describe CompleteMoab do
     end
   end
 
-  describe '#replicatable_status?' do
-    it 'reponds true IFF status should allow replication' do
-      # validity_unknown initial status implicitly tested (otherwise assignment wouldn't change the reponse)
-      expect { cm.status = 'ok'                            }.to change(cm, :replicatable_status?).to(true)
-      expect { cm.status = 'invalid_checksum'              }.to change(cm, :replicatable_status?).to(false)
-      expect { cm.status = 'invalid_moab'                  }.not_to change(cm, :replicatable_status?).from(false)
-      expect { cm.status = 'online_moab_not_found'         }.not_to change(cm, :replicatable_status?).from(false)
-      expect { cm.status = 'unexpected_version_on_storage' }.not_to change(cm, :replicatable_status?).from(false)
-    end
-  end
-
   it { is_expected.to belong_to(:moab_storage_root) }
   it { is_expected.to belong_to(:preserved_object) }
   it { is_expected.to have_db_index(:last_version_audit) }
