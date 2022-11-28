@@ -6,8 +6,8 @@ describe ZipDeliveryService do
   let(:instance) { described_class.new(s3_part: s3_part, dvz_part: dvz_part, metadata: metadata) }
   let(:druid) { 'bj102hs9687' }
   let(:version) { 1 }
-  let(:dvz) { DruidVersionZip.new(druid, version) }
-  let(:dvz_part) { DruidVersionZipPart.new(dvz, part_s3_key) }
+  let(:dvz) { Replication::DruidVersionZip.new(druid, version) }
+  let(:dvz_part) { Replication::DruidVersionZipPart.new(dvz, part_s3_key) }
   let(:s3_part) { instance_double(::Aws::S3::Object, exists?: part_exists, upload_file: true, key: part_s3_key) }
   let(:part_exists) { false }
   let(:md5) { '4f98f59e877ecb84ff75ef0fab45bac5' }

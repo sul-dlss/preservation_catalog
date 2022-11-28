@@ -11,7 +11,7 @@ class ZipmakerJob < ApplicationJob
   attr_accessor :zip
 
   before_perform do |job|
-    job.zip = DruidVersionZip.new(job.arguments.first, job.arguments.second, job.arguments.third)
+    job.zip = Replication::DruidVersionZip.new(job.arguments.first, job.arguments.second, job.arguments.third)
   end
 
   # esp useful safeguard here, since we can't transactionally look for an existing zip file and create
@@ -32,7 +32,7 @@ class ZipmakerJob < ApplicationJob
 
     find_or_create_zip!
     part_keys.each do |part_key|
-      PlexerJob.perform_later(druid, version, part_key, DruidVersionZipPart.new(zip, part_key).metadata)
+      PlexerJob.perform_later(druid, version, part_key, Replication::DruidVersionZipPart.new(zip, part_key).metadata)
     end
   end
 end

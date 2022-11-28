@@ -16,8 +16,8 @@ describe AbstractDeliveryJob do
 
   let(:druid) { 'bj102hs9687' }
   let(:version) { 1 }
-  let(:dvz) { DruidVersionZip.new(druid, version) }
-  let(:dvz_part) { DruidVersionZipPart.new(dvz, part_s3_key) }
+  let(:dvz) { Replication::DruidVersionZip.new(druid, version) }
+  let(:dvz_part) { Replication::DruidVersionZipPart.new(dvz, part_s3_key) }
   let(:metadata) { dvz_part.metadata.merge(zip_version: 'Zip 3.0 (July 5th 2008)') }
   let(:part_s3_key) { dvz.s3_key('.zip') }
   let(:delivery_result) { true }

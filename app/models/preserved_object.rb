@@ -63,7 +63,7 @@ class PreservedObject < ApplicationRecord
   def total_size_of_moab_version(version)
     return 0 unless complete_moab
 
-    DruidVersionZip.new(druid, version, complete_moab.moab_storage_root.storage_location).moab_version_size
+    Replication::DruidVersionZip.new(druid, version, complete_moab.moab_storage_root.storage_location).moab_version_size
   end
 
   # Number of PreservedObjects to audit on a daily basis.
