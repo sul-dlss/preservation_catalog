@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'Dashboard Nav Bar' do
+RSpec.describe 'Dashboard' do
   describe 'GET #index' do
     before do
       get dashboard_url
@@ -37,21 +37,18 @@ RSpec.describe 'Dashboard Nav Bar' do
         expect(response.body).to match(/Catalog Status Information/)
       end
 
-      it 'renders _object_versions template' do
-        expect(response).to render_template('dashboard/_object_versions')
+      it 'renders object version data' do
         expect(response.body).to match(/Counts and Version Information/)
         expect(response.body).to match(/highest version/) # table header
       end
 
-      it 'renders _complete_moab_status_counts template' do
-        expect(response).to render_template('dashboard/_complete_moab_status_counts')
+      it 'renders CompletMoab data' do
         expect(response.body).to match(/CompleteMoab Information/)
         expect(response.body).to match(/total size/) # table header
         expect(response.body).to match(/TB/)
       end
 
-      it 'renders _moab_storage_root_data template' do
-        expect(response).to render_template('dashboard/_moab_storage_root_data')
+      it 'renders MoabStorageRoot data' do
         expect(response.body).to match(/MoabStorageRoot Information/)
         expect(response.body).to match(/storage location/) # table header
         expect(response.body).to match(MoabStorageRoot.first.storage_location) # table data
@@ -65,15 +62,13 @@ RSpec.describe 'Dashboard Nav Bar' do
         expect(response.body).to match(/S3 Replication Information/)
       end
 
-      it 'renders _replication_endpoint_data template' do
-        expect(response).to render_template('dashboard/_replication_endpoint_data')
+      it 'renders replication endpoint data' do
         expect(response.body).to match(/Endpoint Data/)
         expect(response.body).to match(/ActiveJob class for replication/) # table header
         expect(response.body).to match(/S3WestDeliveryJob/) # table data
       end
 
-      it 'renders _replicated_files template' do
-        expect(response).to render_template('dashboard/_replicated_files')
+      it 'renders replication files data' do
         expect(response.body).to match(/Replication Files/)
         expect(response.body).to match(/Total ZipParts/) # table header
       end
@@ -83,14 +78,19 @@ RSpec.describe 'Dashboard Nav Bar' do
         expect(response.body).to match(/Replication Flow/)
         # all content is static, so no need to check for specific content
       end
+
+      it 'renders ZipPart suffixes data' do
+        expect(response.body).to match(/ZipPart/)
+        expect(response.body).to match(/suffix/) # table header
+        expect(response.body).to match(/.zip/) # table content
+      end
     end
 
     describe 'audit information' do
-      it 'renders _audit_information template' do
-        expect(response).to render_template('dashboard/_audit_information')
+      it 'renders audit information data' do
         expect(response.body).to match(/Audit Information/)
         expect(response.body).to match(/objects with errors/) # table header
-        expect(response.body).to match(/0/) # table data
+        expect(response.body).to match('<td>0</td>') # table data
       end
     end
   end

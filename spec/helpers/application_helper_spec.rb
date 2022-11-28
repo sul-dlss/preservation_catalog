@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'rails_helper'
+
 RSpec.describe ApplicationHelper do
   describe '#version_string_to_int' do
     { # passed value => expected parsed value

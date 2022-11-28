@@ -4,8 +4,6 @@ source 'https://rubygems.org'
 gem 'aws-sdk-s3', '~> 1.17'
 gem 'committee' # Validates HTTP requests/responses per OpenAPI specification
 gem 'config' # Settings to manage configs on different instances
-gem 'dor-event-client', '~> 1.0'
-gem 'dor-workflow-client', '~> 5.0' # audit errors are reported to the workflow service
 gem 'honeybadger' # for error reporting / tracking / notifications
 gem 'jbuilder', '~> 2.5' # Build JSON APIs with ease.
 gem 'jwt' # for gating programmatic access to the application
@@ -22,9 +20,12 @@ gem 'resque', '~> 1.27'
 gem 'redis', '~> 4.0' # redis 5.x has breaking changes with resque, see https://github.com/resque/resque/issues/1821
 gem 'resque-pool'
 gem 'turbo-rails'
+gem 'view_component'
 gem 'whenever' # manage cron for audit checks
 
 # Stanford gems
+gem 'dor-event-client', '~> 1.0'
+gem 'dor-workflow-client', '~> 5.0' # audit errors are reported to the workflow service
 gem 'druid-tools' # for druid validation and druid-tree parsing
 gem 'moab-versioning', '~> 5.0' # work with Moab Objects
 
@@ -42,6 +43,7 @@ group :development do
 end
 
 group :test do
+  gem 'capybara'
   gem 'debug'
   gem 'factory_bot_rails', '~> 4.0'
   gem 'rails-controller-testing'

@@ -4,7 +4,6 @@
   <p><strong class="fs-5">MoabStorageRoot</strong> represents an on prem storage location for a Moab.</p>
 
   <div class="col-sm-11">
-    TBD: make tooltips for the different statuses?
     <table class="table table-bordered table-hover table-sm">
       <thead class="table-info">
         <tr>
@@ -28,13 +27,15 @@
             <td><%= info[2] %></td><%# average size %>
             <td class="text-end"><%= info[3] %></td><%# moab count %>
             <td class="text-end"><%= info[4] %></td><%# ok status %>
-            <% info[5..].map do |val| %>
+            <% info[5..-2].map do |val| %>
               <td class="text-end<%= ' table-danger' if val != 0 %>"><%= val %></td>
             <% end %>
+            <% num_expired_checksum = info[10] %>
+            <td class="text-end<%= ' table-warning' if num_expired_checksum != 0 %>"><%= num_expired_checksum %></td>
           </tr>
         <% end %>
       </tbody>
-      <tfoot  class="table-group-divider">
+      <tfoot class="table-group-divider">
         <tr>
           <th>totals</th>
           <td class="table-secondary"/>
@@ -42,9 +43,11 @@
           <td class="table-secondary"/>
           <td class="text-end<%= ' table-danger' if storage_root_total_count != num_complete_moabs %>"><%= storage_root_total_count %></td>
           <td class="text-end"><%= storage_root_total_ok_count %></td>
-          <% storage_root_totals[2..]&.each do |count| %>
+          <% storage_root_totals[2..-2]&.each do |count| %>
             <td class="text-end<%= ' table-danger' if count != 0 %>"><%= count %></td>
           <% end %>
+          <% total_num_expired_checksum = storage_root_totals[7] %>
+          <td class="text-end<%= ' table-warning' if total_num_expired_checksum != 0 %>"><%= total_num_expired_checksum %></td>
         </tr>
       </tfoot>
     </table>
