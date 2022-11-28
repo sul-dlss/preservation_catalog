@@ -5,7 +5,7 @@ require 'action_view' # for number_to_human_size
 # services for dashboard
 module Dashboard
   # methods pertaining to PreservedObject and CompleteMoab database data for dashboard
-  module MoabOnStorageService
+  module MoabOnStorageService # rubocop:disable Metrics/ModuleLength
     include ActionView::Helpers::NumberHelper # for number_to_human_size
 
     def moabs_on_storage_ok?
@@ -13,8 +13,8 @@ module Dashboard
     end
 
     def moab_on_storage_counts_ok?
-      num_preserved_objects == num_complete_moabs &&
-        num_object_versions_per_preserved_object == num_object_versions_per_complete_moab
+      preserved_object_complete_moab_counts_match? &&
+        num_object_versions_preserved_object_complete_moab_match?
     end
 
     def storage_root_info # rubocop:disable Metrics/AbcSize
@@ -77,6 +77,10 @@ module Dashboard
       CompleteMoab.fixity_check_expired.count
     end
 
+    def moabs_with_expired_checksum_validation?
+      num_expired_checksum_validation.positive?
+    end
+
     def any_complete_moab_errors?
       num_complete_moab_not_ok.positive?
     end
@@ -119,6 +123,18 @@ module Dashboard
       # note, no user input to sanitize here, so ok to use Arel.sql
       # see https://api.rubyonrails.org/v7.0.4/classes/ActiveRecord/UnknownAttributeReference.html
       CompleteMoab.pick(Arel.sql('SUM(version)::numeric/COUNT(id)')).round(2) unless num_complete_moabs.zero?
+    end
+
+    def preserved_object_complete_moab_counts_match?
+      num_preserved_objects == num_complete_moabs
+    end
+
+    def num_object_versions_preserved_object_complete_moab_match?
+      num_object_versions_per_preserved_object == num_object_versions_per_complete_moab
+    end
+
+    def highest_version_preserved_object_complete_moab_match?
+      preserved_object_highest_version == complete_moab_highest_version
     end
 
     private

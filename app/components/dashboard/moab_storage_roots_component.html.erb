@@ -28,10 +28,10 @@
             <td class="text-end"><%= info[3] %></td><%# moab count %>
             <td class="text-end"><%= info[4] %></td><%# ok status %>
             <% info[5..-2].map do |val| %>
-              <td class="text-end<%= ' table-danger' if val != 0 %>"><%= val %></td>
+              <td class="text-end<%= ' table-danger' if val.positive? %>"><%= val %></td>
             <% end %>
             <% num_expired_checksum = info[10] %>
-            <td class="text-end<%= ' table-warning' if num_expired_checksum != 0 %>"><%= num_expired_checksum %></td>
+            <td class="text-end<%= ' table-warning' if num_expired_checksum.positive? %>"><%= num_expired_checksum %></td>
           </tr>
         <% end %>
       </tbody>
@@ -44,10 +44,10 @@
           <td class="text-end<%= ' table-danger' if storage_root_total_count != num_complete_moabs %>"><%= storage_root_total_count %></td>
           <td class="text-end"><%= storage_root_total_ok_count %></td>
           <% storage_root_totals[2..-2]&.each do |count| %>
-            <td class="text-end<%= ' table-danger' if count != 0 %>"><%= count %></td>
+            <td class="text-end<%= ' table-danger' if count.positive? %>"><%= count %></td>
           <% end %>
           <% total_num_expired_checksum = storage_root_totals[7] %>
-          <td class="text-end<%= ' table-warning' if total_num_expired_checksum != 0 %>"><%= total_num_expired_checksum %></td>
+          <td class="text-end<%= ' table-warning' if total_num_expired_checksum.positive? %>"><%= total_num_expired_checksum %></td>
         </tr>
       </tfoot>
     </table>

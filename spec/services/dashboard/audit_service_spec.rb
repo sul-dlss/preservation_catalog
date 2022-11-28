@@ -109,7 +109,7 @@ RSpec.describe Dashboard::AuditService do
     end
   end
 
-  describe '#checksum_validation_audit_ok?' do
+  describe '#moab_checksum_validation_audit_ok?' do
     context 'when there are CompleteMoabs with online_moab_not_found status' do
       before do
         create(:complete_moab, status: 'ok')
@@ -118,7 +118,7 @@ RSpec.describe Dashboard::AuditService do
       end
 
       it 'returns false' do
-        expect(outer_class.new.checksum_validation_audit_ok?).to be false
+        expect(outer_class.new.moab_checksum_validation_audit_ok?).to be false
       end
     end
 
@@ -130,7 +130,7 @@ RSpec.describe Dashboard::AuditService do
       end
 
       it 'returns true' do
-        expect(outer_class.new.checksum_validation_audit_ok?).to be true
+        expect(outer_class.new.moab_checksum_validation_audit_ok?).to be true
       end
     end
   end

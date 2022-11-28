@@ -15,9 +15,13 @@ module Dashboard
 
     def replication_ok?
       endpoint_data.each do |_endpoint_name, info|
-        return false if info[:replication_count] != num_object_versions_per_preserved_object
+        return false unless endpoint_replication_count_ok?(info[:replication_count])
       end
       true
+    end
+
+    def endpoint_replication_count_ok?(endpoint_replication_count)
+      endpoint_replication_count == num_object_versions_per_preserved_object
     end
 
     def endpoint_data
@@ -46,6 +50,18 @@ module Dashboard
 
     def zip_parts_ok?
       num_replication_errors.zero?
+    end
+
+    def zip_parts_unreplicated?
+      ZipPart.unreplicated.count.positive?
+    end
+
+    def zip_parts_not_found?
+      ZipPart.not_found.count.positive?
+    end
+
+    def zip_parts_replicated_checksum_mismatch?
+      ZipPart.replicated_checksum_mismatch.count.positive?
     end
   end
 end
