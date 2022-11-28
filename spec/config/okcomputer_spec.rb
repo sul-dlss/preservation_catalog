@@ -19,7 +19,7 @@ describe 'OkComputer custom checks' do # rubocop:disable RSpec/DescribeClass
     it { is_expected.to be_successful }
 
     context 'with old data' do
-      before { allow(CompleteMoab).to receive(:least_recent_version_audit).with(any_args).and_return([double]) }
+      before { allow(CompleteMoab).to receive(:version_audit_expired).with(any_args).and_return([double]) }
 
       it { is_expected.not_to be_successful }
     end

@@ -40,8 +40,8 @@ class CompleteMoab < ApplicationRecord
     joins(:moab_storage_root).where(moab_storage_root: moab_storage_root)
   }
 
-  scope :least_recent_version_audit, lambda { |last_checked_b4_date|
-    where('last_version_audit IS NULL or last_version_audit < ?', normalize_date(last_checked_b4_date))
+  scope :version_audit_expired, lambda { |expired_date|
+    where('last_version_audit IS NULL or last_version_audit < ?', normalize_date(expired_date))
   }
 
   scope :fixity_check_expired, lambda {

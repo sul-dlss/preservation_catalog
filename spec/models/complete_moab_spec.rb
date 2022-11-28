@@ -161,7 +161,7 @@ RSpec.describe CompleteMoab do
     end
   end
 
-  context 'ordered (by last version_audited) and unordered least_recent_version_audit' do
+  context 'ordered (by last version_audited) and unordered version_audit_expired' do
     let!(:newer_timestamp_cm) do
       create(:complete_moab, args.merge(version: 6, last_version_audit: (now - 1.day), preserved_object: create(:preserved_object)))
     end
@@ -172,26 +172,26 @@ RSpec.describe CompleteMoab do
       create(:complete_moab, args.merge(version: 8, last_version_audit: (now + 1.day), preserved_object: create(:preserved_object)))
     end
 
-    describe '.least_recent_version_audit' do
+    describe '.version_audit_expired' do
       it 'returns CompleteMoabs with nils and CompleteMoabs < given date (not orded by last_version_audit)' do
-        expect(described_class.least_recent_version_audit(now).sort).to eq [cm, newer_timestamp_cm, older_timestamp_cm]
+        expect(described_class.version_audit_expired(now).sort).to eq [cm, newer_timestamp_cm, older_timestamp_cm]
       end
 
       it 'returns no CompleteMoabs with future timestamps' do
-        expect(described_class.least_recent_version_audit(now)).not_to include future_timestamp_cm
+        expect(described_class.version_audit_expired(now)).not_to include future_timestamp_cm
       end
     end
 
     describe '.order_last_version_audit' do
-      let(:least_recent_version) { described_class.least_recent_version_audit(now) }
+      let(:version_audit_expired) { described_class.version_audit_expired(now) }
 
       it 'returns CompleteMoabs with nils first, then old to new timestamps' do
-        expect(described_class.order_last_version_audit(least_recent_version))
+        expect(described_class.order_last_version_audit(version_audit_expired))
           .to eq [cm, older_timestamp_cm, newer_timestamp_cm]
       end
 
       it 'returns no CompleteMoabs with future timestamps' do
-        expect(described_class.order_last_version_audit(least_recent_version))
+        expect(described_class.order_last_version_audit(version_audit_expired))
           .not_to include future_timestamp_cm
       end
     end

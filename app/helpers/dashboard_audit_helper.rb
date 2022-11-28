@@ -41,7 +41,7 @@ module DashboardAuditHelper
   end
 
   def num_moab_audits_older_than_threshold
-    CompleteMoab.least_recent_version_audit(moab_audit_age_threshold).count
+    CompleteMoab.version_audit_expired(moab_audit_age_threshold).count
   end
 
   def moab_audits_older_than_threshold?
