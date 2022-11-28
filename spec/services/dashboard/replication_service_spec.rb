@@ -3,6 +3,12 @@
 require 'rails_helper'
 
 RSpec.describe Dashboard::ReplicationService do
+  let(:outer_class) do
+    Class.new do
+      include Dashboard::ReplicationService
+    end
+  end
+
   describe '#replication_ok?' do
     let(:po1) { create(:preserved_object, current_version: 2) }
     let(:po2) { create(:preserved_object, current_version: 1) }
@@ -17,7 +23,7 @@ RSpec.describe Dashboard::ReplicationService do
 
     context 'when a ZipEndpoint count does not match num_object_versions_per_preserved_object' do
       it 'returns false' do
-        expect(described_class.new.replication_ok?).to be false
+        expect(outer_class.new.replication_ok?).to be false
       end
     end
 
@@ -29,7 +35,7 @@ RSpec.describe Dashboard::ReplicationService do
       end
 
       it 'returns true' do
-        expect(described_class.new.replication_ok?).to be true
+        expect(outer_class.new.replication_ok?).to be true
       end
     end
   end
@@ -48,7 +54,7 @@ RSpec.describe Dashboard::ReplicationService do
     end
 
     it 'returns a hash with endpoint_name keys and values of Hash with delivery_class and replication_count' do
-      endpoint_data = described_class.new.endpoint_data
+      endpoint_data = outer_class.new.endpoint_data
       expect(endpoint_data[endpoint1.endpoint_name]).to eq({ delivery_class: endpoint1.delivery_class, replication_count: 5 })
       expect(endpoint_data[endpoint2.endpoint_name]).to eq({ delivery_class: endpoint2.delivery_class, replication_count: 2 })
     end
@@ -62,7 +68,7 @@ RSpec.describe Dashboard::ReplicationService do
     end
 
     it 'returns a hash of suffies as keys and values as counts' do
-      expect(described_class.new.zip_part_suffixes).to eq('.zip' => 3)
+      expect(outer_class.new.zip_part_suffixes).to eq('.zip' => 3)
     end
   end
 
@@ -74,7 +80,7 @@ RSpec.describe Dashboard::ReplicationService do
     end
 
     it 'returns the total size of ZipParts in Terabytes as a string' do
-      expect(described_class.new.zip_parts_total_size).to eq '6.49 TB'
+      expect(outer_class.new.zip_parts_total_size).to eq '6.49 TB'
     end
   end
 
@@ -89,7 +95,7 @@ RSpec.describe Dashboard::ReplicationService do
 
     it 'returns ZipPart.count - ZipPart.ok.count' do
       expect(ZipPart.count).to eq 5
-      expect(described_class.new.num_replication_errors).to eq 3
+      expect(outer_class.new.num_replication_errors).to eq 3
     end
   end
 end

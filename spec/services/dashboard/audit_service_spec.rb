@@ -4,6 +4,11 @@ require 'rails_helper'
 
 RSpec.describe Dashboard::AuditService do
   let(:storage_root) { create(:moab_storage_root) }
+  let(:outer_class) do
+    Class.new do
+      include Dashboard::AuditService
+    end
+  end
 
   describe '#validate_moab_audit_ok?' do
     context 'when there are CompleteMoabs with invalid_moab status' do
@@ -14,7 +19,7 @@ RSpec.describe Dashboard::AuditService do
       end
 
       it 'returns false' do
-        expect(described_class.new.validate_moab_audit_ok?).to be false
+        expect(outer_class.new.validate_moab_audit_ok?).to be false
       end
     end
 
@@ -26,7 +31,7 @@ RSpec.describe Dashboard::AuditService do
       end
 
       it 'returns false' do
-        expect(described_class.new.validate_moab_audit_ok?).to be false
+        expect(outer_class.new.validate_moab_audit_ok?).to be false
       end
     end
 
@@ -38,7 +43,7 @@ RSpec.describe Dashboard::AuditService do
       end
 
       it 'returns true' do
-        expect(described_class.new.validate_moab_audit_ok?).to be true
+        expect(outer_class.new.validate_moab_audit_ok?).to be true
       end
     end
   end
@@ -52,7 +57,7 @@ RSpec.describe Dashboard::AuditService do
       end
 
       it 'returns false' do
-        expect(described_class.new.catalog_to_moab_audit_ok?).to be false
+        expect(outer_class.new.catalog_to_moab_audit_ok?).to be false
       end
     end
 
@@ -64,7 +69,7 @@ RSpec.describe Dashboard::AuditService do
       end
 
       it 'returns false' do
-        expect(described_class.new.catalog_to_moab_audit_ok?).to be false
+        expect(outer_class.new.catalog_to_moab_audit_ok?).to be false
       end
     end
 
@@ -76,7 +81,7 @@ RSpec.describe Dashboard::AuditService do
       end
 
       it 'returns true' do
-        expect(described_class.new.catalog_to_moab_audit_ok?).to be true
+        expect(outer_class.new.catalog_to_moab_audit_ok?).to be true
       end
     end
   end
@@ -93,13 +98,13 @@ RSpec.describe Dashboard::AuditService do
       end
 
       it 'returns false' do
-        expect(described_class.new.moab_to_catalog_audit_ok?).to be false
+        expect(outer_class.new.moab_to_catalog_audit_ok?).to be false
       end
     end
 
     context 'when all CompleteMoabs have status ok' do
       it 'returns true' do
-        expect(described_class.new.moab_to_catalog_audit_ok?).to be true
+        expect(outer_class.new.moab_to_catalog_audit_ok?).to be true
       end
     end
   end
@@ -113,7 +118,7 @@ RSpec.describe Dashboard::AuditService do
       end
 
       it 'returns false' do
-        expect(described_class.new.checksum_validation_audit_ok?).to be false
+        expect(outer_class.new.checksum_validation_audit_ok?).to be false
       end
     end
 
@@ -125,7 +130,7 @@ RSpec.describe Dashboard::AuditService do
       end
 
       it 'returns true' do
-        expect(described_class.new.checksum_validation_audit_ok?).to be true
+        expect(outer_class.new.checksum_validation_audit_ok?).to be true
       end
     end
   end
@@ -138,7 +143,7 @@ RSpec.describe Dashboard::AuditService do
 
     context 'when all ZipParts have ok status' do
       it 'is true' do
-        expect(described_class.new.catalog_to_archive_audit_ok?).to be true
+        expect(outer_class.new.catalog_to_archive_audit_ok?).to be true
       end
     end
 
@@ -148,15 +153,15 @@ RSpec.describe Dashboard::AuditService do
       end
 
       it 'is false' do
-        expect(described_class.new.catalog_to_archive_audit_ok?).to be false
+        expect(outer_class.new.catalog_to_archive_audit_ok?).to be false
       end
     end
   end
 
   describe '#moab_audit_age_threshold' do
     it 'returns string version of MOAB_LAST_VERSION_AUDIT_THRESHOLD ago' do
-      expect(described_class.new.moab_audit_age_threshold).to be_a(String)
-      result = DateTime.parse(described_class.new.moab_audit_age_threshold)
+      expect(outer_class.new.moab_audit_age_threshold).to be_a(String)
+      result = DateTime.parse(outer_class.new.moab_audit_age_threshold)
       expect(result).to be <= DateTime.now - described_class::MOAB_LAST_VERSION_AUDIT_THRESHOLD
     end
   end
@@ -171,14 +176,14 @@ RSpec.describe Dashboard::AuditService do
 
     describe '#num_moab_audits_older_than_threshold' do
       it 'returns a number greater than 0' do
-        expect(described_class.new.num_moab_audits_older_than_threshold).to be > 0
-        expect(described_class.new.num_moab_audits_older_than_threshold).to eq 2
+        expect(outer_class.new.num_moab_audits_older_than_threshold).to be > 0
+        expect(outer_class.new.num_moab_audits_older_than_threshold).to eq 2
       end
     end
 
     describe '#moab_audits_older_than_threshold?' do
       it 'is true' do
-        expect(described_class.new.moab_audits_older_than_threshold?).to be true
+        expect(outer_class.new.moab_audits_older_than_threshold?).to be true
       end
     end
   end
@@ -190,21 +195,21 @@ RSpec.describe Dashboard::AuditService do
 
     describe '#num_moab_audits_older_than_threshold' do
       it 'returns 0' do
-        expect(described_class.new.num_moab_audits_older_than_threshold).to eq 0
+        expect(outer_class.new.num_moab_audits_older_than_threshold).to eq 0
       end
     end
 
     describe '#moab_audits_older_than_threshold?' do
       it 'is false' do
-        expect(described_class.new.moab_audits_older_than_threshold?).to be false
+        expect(outer_class.new.moab_audits_older_than_threshold?).to be false
       end
     end
   end
 
   describe '#replication_audit_age_threshold' do
     it 'returns string version of REPLICATION_AUDIT_THRESHOLD ago' do
-      expect(described_class.new.replication_audit_age_threshold).to be_a(String)
-      result = DateTime.parse(described_class.new.replication_audit_age_threshold)
+      expect(outer_class.new.replication_audit_age_threshold).to be_a(String)
+      result = DateTime.parse(outer_class.new.replication_audit_age_threshold)
       expect(result).to be <= DateTime.now - described_class::REPLICATION_AUDIT_THRESHOLD
     end
   end
@@ -219,14 +224,14 @@ RSpec.describe Dashboard::AuditService do
 
     describe '#num_replication_audits_older_than_threshold' do
       it 'returns a number greater than 0' do
-        expect(described_class.new.num_replication_audits_older_than_threshold).to be > 0
-        expect(described_class.new.num_replication_audits_older_than_threshold).to eq 3
+        expect(outer_class.new.num_replication_audits_older_than_threshold).to be > 0
+        expect(outer_class.new.num_replication_audits_older_than_threshold).to eq 3
       end
     end
 
     describe '#replication_audits_older_than_threshold?' do
       it 'is true' do
-        expect(described_class.new.replication_audits_older_than_threshold?).to be true
+        expect(outer_class.new.replication_audits_older_than_threshold?).to be true
       end
     end
   end
@@ -239,13 +244,13 @@ RSpec.describe Dashboard::AuditService do
 
     describe '#num_replication_audits_older_than_threshold' do
       it 'returns 0' do
-        expect(described_class.new.num_replication_audits_older_than_threshold).to eq 0
+        expect(outer_class.new.num_replication_audits_older_than_threshold).to eq 0
       end
     end
 
     describe '#replication_audits_older_than_threshold?' do
       it 'is false' do
-        expect(described_class.new.replication_audits_older_than_threshold?).to be false
+        expect(outer_class.new.replication_audits_older_than_threshold?).to be false
       end
     end
   end

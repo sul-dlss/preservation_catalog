@@ -4,6 +4,11 @@ require 'rails_helper'
 
 RSpec.describe Dashboard::CatalogService do
   let(:storage_root) { create(:moab_storage_root) }
+  let(:outer_class) do
+    Class.new do
+      include Dashboard::CatalogService
+    end
+  end
 
   describe '#catalog_ok?' do
     context 'when PreservedObject and CompleteMoab counts are different' do
@@ -14,7 +19,7 @@ RSpec.describe Dashboard::CatalogService do
       end
 
       it 'returns false' do
-        expect(described_class.new.catalog_ok?).to be false
+        expect(outer_class.new.catalog_ok?).to be false
       end
     end
 
@@ -27,7 +32,7 @@ RSpec.describe Dashboard::CatalogService do
       end
 
       it 'returns false' do
-        expect(described_class.new.catalog_ok?).to be false
+        expect(outer_class.new.catalog_ok?).to be false
       end
     end
 
@@ -40,7 +45,7 @@ RSpec.describe Dashboard::CatalogService do
       end
 
       it 'returns true' do
-        expect(described_class.new.catalog_ok?).to be true
+        expect(outer_class.new.catalog_ok?).to be true
       end
     end
   end
@@ -87,7 +92,7 @@ RSpec.describe Dashboard::CatalogService do
     end
 
     it 'returns total number of Moabs on all storage roots' do
-      expect(described_class.new.storage_root_total_count).to eq 3
+      expect(outer_class.new.storage_root_total_count).to eq 3
     end
   end
 
@@ -99,7 +104,7 @@ RSpec.describe Dashboard::CatalogService do
     end
 
     it 'returns total number of Moabs with status ok on all storage roots' do
-      expect(described_class.new.storage_root_total_ok_count).to eq 2
+      expect(outer_class.new.storage_root_total_ok_count).to eq 2
     end
   end
 
@@ -111,7 +116,7 @@ RSpec.describe Dashboard::CatalogService do
     end
 
     it 'returns the total size of CompleteMoabs in Terabytes as a string' do
-      expect(described_class.new.complete_moab_total_size).to eq '6.49 TB'
+      expect(outer_class.new.complete_moab_total_size).to eq '6.49 TB'
     end
   end
 
@@ -125,18 +130,18 @@ RSpec.describe Dashboard::CatalogService do
       # "#{(CompleteMoab.average(:size) / Numeric::MEGABYTE).to_f.round(2)} Mb" unless num_complete_moabs.zero?
 
       it 'returns the average size of CompleteMoabs in Megabytes as a string' do
-        expect(described_class.new.complete_moab_average_size).to eq '1.33 MB'
+        expect(outer_class.new.complete_moab_average_size).to eq '1.33 MB'
       end
     end
 
     context 'when num_complete_moabs is 0' do
       # this avoids a divide by zero error when running locally
       before do
-        allow(described_class.new).to receive(:num_complete_moabs).and_return(0)
+        allow(outer_class.new).to receive(:num_complete_moabs).and_return(0)
       end
 
       it 'returns nil' do
-        expect(described_class.new.complete_moab_average_size).to be_nil
+        expect(outer_class.new.complete_moab_average_size).to be_nil
       end
     end
   end
@@ -156,18 +161,18 @@ RSpec.describe Dashboard::CatalogService do
     end
 
     it 'returns array of counts for each CompleteMoab status' do
-      expect(described_class.new.complete_moab_status_counts).to eq [2, 1, 3, 1, 1, 2]
+      expect(outer_class.new.complete_moab_status_counts).to eq [2, 1, 3, 1, 1, 2]
     end
   end
 
   describe '#status_labels' do
     it 'returns CompleteMoab.statuses.keys with blanks instead of underscores' do
-      expect(described_class.new.status_labels).to eq ['ok',
-                                                       'invalid moab',
-                                                       'invalid checksum',
-                                                       'online moab not found',
-                                                       'unexpected version on storage',
-                                                       'validity unknown']
+      expect(outer_class.new.status_labels).to eq ['ok',
+                                                   'invalid moab',
+                                                   'invalid checksum',
+                                                   'online moab not found',
+                                                   'unexpected version on storage',
+                                                   'validity unknown']
     end
   end
 
@@ -179,7 +184,7 @@ RSpec.describe Dashboard::CatalogService do
 
     context 'when there are no errors' do
       it 'returns false' do
-        expect(described_class.new.any_complete_moab_errors?).to be false
+        expect(outer_class.new.any_complete_moab_errors?).to be false
       end
     end
 
@@ -189,7 +194,7 @@ RSpec.describe Dashboard::CatalogService do
       end
 
       it 'returns true' do
-        expect(described_class.new.any_complete_moab_errors?).to be true
+        expect(outer_class.new.any_complete_moab_errors?).to be true
       end
     end
   end
@@ -202,7 +207,7 @@ RSpec.describe Dashboard::CatalogService do
 
     context 'when all CompleteMoabs are status ok' do
       it 'is 0' do
-        expect(described_class.new.num_complete_moab_not_ok).to eq 0
+        expect(outer_class.new.num_complete_moab_not_ok).to eq 0
       end
     end
 
@@ -218,7 +223,7 @@ RSpec.describe Dashboard::CatalogService do
       end
 
       it 'is not 0' do
-        expect(described_class.new.num_complete_moab_not_ok).to eq 5
+        expect(outer_class.new.num_complete_moab_not_ok).to eq 5
       end
     end
   end
@@ -229,8 +234,8 @@ RSpec.describe Dashboard::CatalogService do
     end
 
     it 'returns PreservedObject.count' do
-      expect(described_class.new.num_preserved_objects).to eq(PreservedObject.count)
-      expect(described_class.new.num_preserved_objects).to eq 2
+      expect(outer_class.new.num_preserved_objects).to eq(PreservedObject.count)
+      expect(outer_class.new.num_preserved_objects).to eq 2
     end
   end
 
@@ -242,7 +247,7 @@ RSpec.describe Dashboard::CatalogService do
     end
 
     it 'returns the highest current_version value of any PreservedObject' do
-      expect(described_class.new.preserved_object_highest_version).to eq 67
+      expect(outer_class.new.preserved_object_highest_version).to eq 67
     end
   end
 
@@ -254,7 +259,7 @@ RSpec.describe Dashboard::CatalogService do
     end
 
     it 'returns the total number of object versions according to PreservedObject table' do
-      expect(described_class.new.num_object_versions_per_preserved_object).to eq 71
+      expect(outer_class.new.num_object_versions_per_preserved_object).to eq 71
     end
   end
 
@@ -267,14 +272,14 @@ RSpec.describe Dashboard::CatalogService do
       end
 
       it 'returns the average number of versions per object according to the PreservedObject table' do
-        expect(described_class.new.average_version_per_preserved_object).to eq 23.67
+        expect(outer_class.new.average_version_per_preserved_object).to eq 23.67
       end
     end
 
     context 'when there are no PreservedObjects' do
       # this avoids a divide by zero error when running locally
       it 'returns nil' do
-        expect(described_class.new.average_version_per_preserved_object).to be_nil
+        expect(outer_class.new.average_version_per_preserved_object).to be_nil
       end
     end
   end
@@ -285,8 +290,8 @@ RSpec.describe Dashboard::CatalogService do
     end
 
     it 'returns CompleteMoab.count' do
-      expect(described_class.new.num_complete_moabs).to eq(CompleteMoab.count)
-      expect(described_class.new.num_complete_moabs).to eq 2
+      expect(outer_class.new.num_complete_moabs).to eq(CompleteMoab.count)
+      expect(outer_class.new.num_complete_moabs).to eq 2
     end
   end
 
@@ -298,7 +303,7 @@ RSpec.describe Dashboard::CatalogService do
     end
 
     it 'returns the highest version value of any CompleteMoab' do
-      expect(described_class.new.complete_moab_highest_version).to eq 67
+      expect(outer_class.new.complete_moab_highest_version).to eq 67
     end
   end
 
@@ -310,7 +315,7 @@ RSpec.describe Dashboard::CatalogService do
     end
 
     it 'returns the total number of object versions according to CompleteMoab table' do
-      expect(described_class.new.num_object_versions_per_complete_moab).to eq 71
+      expect(outer_class.new.num_object_versions_per_complete_moab).to eq 71
     end
   end
 
@@ -323,14 +328,14 @@ RSpec.describe Dashboard::CatalogService do
       end
 
       it 'returns the average number of versions per object accrding to the CompleteMoab table' do
-        expect(described_class.new.average_version_per_complete_moab).to eq 23.67
+        expect(outer_class.new.average_version_per_complete_moab).to eq 23.67
       end
     end
 
     context 'when there are no CompleteMoabs' do
       # this avoids a divide by zero error when running locally
       it 'returns nil' do
-        expect(described_class.new.average_version_per_complete_moab).to be_nil
+        expect(outer_class.new.average_version_per_complete_moab).to be_nil
       end
     end
   end
@@ -343,7 +348,7 @@ RSpec.describe Dashboard::CatalogService do
     end
 
     it 'returns CompleteMoab.fixity_check_expired.count and includes nil in the count' do
-      expect(described_class.new.num_expired_checksum_validation).to eq(2)
+      expect(outer_class.new.num_expired_checksum_validation).to eq(2)
     end
   end
 end
