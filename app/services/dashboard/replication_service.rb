@@ -5,12 +5,13 @@ require 'action_view' # for number_to_human_size
 # services for dashboard
 module Dashboard
   # methods pertaining to replication functionality for dashboard
-  class ReplicationService
+  module ReplicationService
     include ActionView::Helpers::NumberHelper # for number_to_human_size
+    include CatalogService
 
     def replication_ok?
       endpoint_data.each do |_endpoint_name, info|
-        return false if info[:replication_count] != CatalogService.new.num_object_versions_per_preserved_object
+        return false if info[:replication_count] != num_object_versions_per_preserved_object
       end
       true
     end

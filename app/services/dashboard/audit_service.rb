@@ -3,7 +3,9 @@
 # services for dashboard
 module Dashboard
   # methods pertaining to audit functionality for dashboard
-  class AuditService
+  module AuditService
+    include CatalogService
+
     # CompleteMoab.last_version_audit is the most recent of 3 separate audits:
     #   moab_to_catalog - all CompleteMoabs are queued for this on the 1st of the month
     #   catalog_to_moab - all CompleteMoabs are queued for this on the 15th of the month
@@ -34,7 +36,7 @@ module Dashboard
     def moab_to_catalog_audit_ok?
       # NOTE: unsure if there needs to be more checking of CompleteMoab.status_details for more statuses to figure this out
       # I believe if there's a moab that's not in the catalog, it is added by this audit.
-      !CatalogService.new.any_complete_moab_errors?
+      !any_complete_moab_errors?
     end
 
     def checksum_validation_audit_ok?

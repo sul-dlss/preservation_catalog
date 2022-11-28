@@ -5,7 +5,7 @@ require 'action_view' # for number_to_human_size
 # services for dashboard
 module Dashboard
   # methods pertaining to catalog functionality for dashboard
-  class CatalogService
+  module CatalogService
     include ActionView::Helpers::NumberHelper # for number_to_human_size
 
     def catalog_ok?
