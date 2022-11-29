@@ -1,12 +1,35 @@
-<div class="card border border-4 border-secondary text-center">
+<div class="card border-0 text-start">
   <div class="card-body" />
-    <h2 class="card-title">Replication Status</h2>
-    <h1>
-      <% if replication_ok? %>
-        <span class="badge bg-success rounded-pill">OK</span>
-      <% else %>
-        <span class="badge bg-danger">Error</span>
+    <div class="card-title fs-4 fw-semibold d-flex justify-content-between">
+      Replication Zips
+      <span class="badge rounded-pill <%= zip_parts_ok? && replication_ok? ? 'bg-success' : 'bg-danger' %>">
+        <%= zip_parts_ok? && replication_ok? ? 'OK' : 'Error' %>
+      </span>
+    </div>
+    <ul class="list-group border border-2 border-secondary">
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <h6 class="d-flex justify-content-start">ZipPart Statuses</h6>
+        <% zip_parts_ok = (num_replication_errors == 0) %>
+        <span class="badge rounded-pill <%= zip_parts_ok ? 'bg-success' : 'bg-danger' %>">
+          <%= zip_parts_ok ? 'OK' : 'Error' %>
+        </span>
+      </li>
+      <% endpoint_data.each do |endpoint_name, endpoint_info| %>
+        <% replication_count = endpoint_info[:replication_count] %>
+        <% endpoint_replication_ok = replication_count == num_object_versions_per_preserved_object %>
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <h6 class="d-flex justify-content-start">
+            <span class="text-secondary">Endpoint:&nbsp;</span>
+            <%= endpoint_name %>&nbsp;&nbsp;
+          </h6>
+          <span class="badge rounded-pill <%= endpoint_replication_ok ? 'bg-success' : 'bg-danger' %>">
+            <%= endpoint_replication_ok ? 'OK' : 'Error' %>
+          </span>
+        </li>
       <% end %>
-    </h1>
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <h6><a href="resque">Redis queues</a></h6>
+      </li>
+    </ul>
   </div>
 </div>
