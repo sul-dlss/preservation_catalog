@@ -4,7 +4,7 @@ require 'action_view' # for number_to_human_size
 
 # services for dashboard
 module Dashboard
-  # methods pertaining to catalog functionality for dashboard
+  # methods pertaining to catalog (on prem storage) functionality for dashboard
   module CatalogService
     include ActionView::Helpers::NumberHelper # for number_to_human_size
 
