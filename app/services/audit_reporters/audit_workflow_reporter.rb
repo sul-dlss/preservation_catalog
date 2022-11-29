@@ -25,14 +25,13 @@ module AuditReporters
         Audit::Results::MOAB_NOT_FOUND,
         Audit::Results::SIGNATURE_CATALOG_NOT_IN_MOAB,
         Audit::Results::UNABLE_TO_CHECK_STATUS,
-        Audit::Results::UNEXPECTED_VERSION
-        # Temporary fix for workflow-service throwing exceptions
-        # because some error reports from MoabReplicationAudit are too long
-        # ZIP_PART_CHECKSUM_MISMATCH,
-        # ZIP_PART_NOT_FOUND,
-        # ZIP_PARTS_COUNT_DIFFERS_FROM_ACTUAL,
-        # ZIP_PARTS_COUNT_INCONSISTENCY,
-        # ZIP_PARTS_NOT_ALL_REPLICATED
+        Audit::Results::UNEXPECTED_VERSION,
+        Audit::Results::ZIP_PART_CHECKSUM_MISMATCH,
+        Audit::Results::ZIP_PART_NOT_FOUND,
+        Audit::Results::ZIP_PARTS_COUNT_DIFFERS_FROM_ACTUAL,
+        Audit::Results::ZIP_PARTS_COUNT_INCONSISTENCY,
+        Audit::Results::ZIP_PARTS_SIZE_INCONSISTENCY,
+        Audit::Results::ZIP_PARTS_NOT_ALL_REPLICATED
       ].freeze
     end
 
