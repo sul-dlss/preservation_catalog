@@ -1,15 +1,15 @@
 <div class="card border-0 text-start">
   <div class="card-body" />
     <div class="card-title fs-4 fw-semibold d-flex justify-content-between">
-        Audit&nbsp;&nbsp;
+        Audit
         <span class="badge rounded-pill <%= audits_ok? ? 'bg-success' : 'bg-danger' %>">
           <%= audits_ok? ? 'OK' : 'Error' %>
         </span>
     </div>
     <ul class="list-group border border-2 border-secondary">
       <li class="list-group-item d-flex justify-content-between align-items-center">
-        <h6 class="d-flex justify-content-start">
-          <span class="text-secondary">Moabs&nbsp;</span>
+        <h6 class="d-flex justify-content-start pe-2">
+          <span class="text-secondary pe-2">Moabs</span>
           Validate Moab
         </h6>
         <span class="badge rounded-pill <%= validate_moab_audit_ok? ? 'bg-success' : 'bg-danger' %>">
@@ -17,8 +17,8 @@
         </span>
       </li>
       <li class="list-group-item d-flex justify-content-between align-items-center">
-        <h6 class="d-flex justify-content-start">
-          <span class="text-secondary">Moabs&nbsp;</span>
+        <h6 class="d-flex justify-content-start pe-2">
+          <span class="text-secondary pe-2">Moabs</span>
           Moab to Catalog
         </h6>
         <span class="badge rounded-pill <%= moab_to_catalog_audit_ok? ? 'bg-success' : 'bg-danger' %>">
@@ -26,8 +26,8 @@
         </span>
       </li>
       <li class="list-group-item d-flex justify-content-between align-items-center">
-        <h6 class="d-flex justify-content-start">
-          <span class="text-secondary">Moabs&nbsp;</span>
+        <h6 class="d-flex justify-content-start pe-2">
+          <span class="text-secondary pe-2">Moabs</span>
           Catalog to Moab
         </h6>
         <span class="badge rounded-pill <%= catalog_to_moab_audit_ok? ? 'bg-success' : 'bg-danger' %>">
@@ -35,8 +35,8 @@
         </span>
       </li>
       <li class="list-group-item d-flex justify-content-between align-items-center">
-        <h6 class="d-flex justify-content-start">
-          <span class="text-secondary">Moabs&nbsp;</span>
+        <h6 class="d-flex justify-content-start pe-2">
+          <span class="text-secondary pe-2">Moabs</span>
           Checksum Validation
         </h6>
         <span class="badge rounded-pill <%= checksum_validation_audit_ok? ? 'bg-success' : 'bg-danger' %>">
@@ -44,9 +44,9 @@
         </span>
       </li>
       <li class="list-group-item d-flex justify-content-between align-items-center">
-        <h6 class="d-flex justify-content-start">
-          <span class="text-secondary">Zips&nbsp;</span>
-          Catalog to Archive&nbsp;&nbsp;
+        <h6 class="d-flex justify-content-start pe-2">
+          <span class="text-secondary pe-2">Zips</span>
+          Catalog to Archive
         </h6>
         <span class="badge rounded-pill <%= catalog_to_archive_audit_ok? ? 'bg-success' : 'bg-danger' %>">
           <%= catalog_to_archive_audit_ok? ? 'OK' : 'Error' %>

@@ -1,21 +1,42 @@
 <div class="px-5">
   <h1 class="text-secondary">Preservation Dashboard</h1>
+  <button class="btn btn-outline-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#about" aria-expanded="false" aria-controls="about">
+    About PreservationCatalog
+  </button>
+  <div class="collapse" id="about">
+    <p><span class="fs-4">Preservation Catalog</span> is both a "catalog" and services:</p>
+    <ul>
+      <li><strong>Database</strong> (i.e. "catalog")
+        <ul>
+          <li>tracks the state of SDR objects preserved in both on premises storage and the cloud. </li>
+        </ul>
+      <li><strong>Services</strong>:
+        <ul>
+          <li><strong>API</strong> - add to, update, and query the database</li>
+          <li><strong>Replication</strong> - when Moabs on storage are created or updated via the API, zipped Moab versions are sent to cloud endpoints.</li>
+          <li><strong>Audits</strong> - ensure all is well with Moabs on storage and with zipped files in the cloud, and that the database is accurate.</li>
+          <li>this dashboard</li>
+        </ul>
+      </li>
+    </ul>
+  </div>
+  <hr/>
   <div class="row row-cols-2">
     <div class="col-3 col-rows-3">
       <ul class="nav nav-pills row-3" id="dashboardTab">
         <li class="nav-link active text-reset" id="catalog-tab" data-bs-toggle="pill" data-bs-target="#catalog-tab-pane" type="button" aria-selected="true">
           <turbo-frame id="catalog_status">
-            <%= render partial: 'catalog_status' %>
+            <%= render Dashboard::MoabOnStorageStatusComponent.new %>
           </turbo-frame>
         </li>
         <li class="nav-link text-reset" id="replication-tab" data-bs-toggle="pill" data-bs-target="#replication-tab-pane" type="button">
           <turbo-frame id="replication_status">
-            <%= render partial: 'replication_status' %>
+            <%= render Dashboard::ReplicationStatusComponent.new %>
           </turbo-frame>
         </li>
         <li class="nav-link text-reset" id="audit-tab" data-bs-toggle="pill" data-bs-target="#audit-tab-pane" type="button" role="button">
           <turbo-frame id="audit_status">
-            <%= render partial: 'audit_status' %>
+            <%= render Dashboard::AuditStatusComponent.new %>
           </turbo-frame>
         </li>
       </ul>
