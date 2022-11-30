@@ -18,7 +18,7 @@
             <td><%= endpoint_name %></td>
             <td><%= info[:delivery_class] %></td>
             <% replication_count = info[:replication_count] %>
-            <td class="text-end<%= ' table-danger' if replication_count != num_object_versions_per_preserved_object%>"><%= replication_count %></td>
+            <td class="text-end<%= ' table-danger' unless endpoint_replication_count_ok?(replication_count) %>"><%= replication_count %></td>
             <td class="text-end"><%= num_object_versions_per_preserved_object %></td>
           </tr>
         <% end %>

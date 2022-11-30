@@ -75,6 +75,25 @@ RSpec.describe Dashboard::ReplicationService do
     end
   end
 
+  describe '#endpoint_replication_count_ok?' do
+    before do
+      create(:preserved_object, current_version: 2)
+      create(:preserved_object, current_version: 3)
+    end
+
+    context 'when parameter matches num_object_versions_per_preserved_object' do
+      it 'returns true' do
+        expect(outer_class.new.endpoint_replication_count_ok?(5)).to be true
+      end
+    end
+
+    context 'when parameter does not match num_object_versions_per_preserved_object' do
+      it 'returns false' do
+        expect(outer_class.new.endpoint_replication_count_ok?(4)).to be false
+      end
+    end
+  end
+
   describe '#endpoint_data' do
     let(:endpoint1) { ZipEndpoint.first }
     let(:endpoint2) { ZipEndpoint.last }
@@ -152,6 +171,60 @@ RSpec.describe Dashboard::ReplicationService do
 
       it 'returns false' do
         expect(outer_class.new.zip_parts_ok?).to be false
+      end
+    end
+  end
+
+  describe '#zip_parts_unreplicated?' do
+    context 'when no ZipPart with status unreplicated' do
+      it 'returns false' do
+        expect(outer_class.new.zip_parts_unreplicated?).to be false
+      end
+    end
+
+    context 'when at least one ZipPart has status unreplicated' do
+      before do
+        create(:zip_part, status: :unreplicated)
+      end
+
+      it 'returns true' do
+        expect(outer_class.new.zip_parts_unreplicated?).to be true
+      end
+    end
+  end
+
+  describe '#zip_parts_not_found?' do
+    context 'when no ZipPart with status not_found' do
+      it 'returns false' do
+        expect(outer_class.new.zip_parts_not_found?).to be false
+      end
+    end
+
+    context 'when at least one ZipPart has status not_found' do
+      before do
+        create(:zip_part, status: :not_found)
+      end
+
+      it 'returns true' do
+        expect(outer_class.new.zip_parts_not_found?).to be true
+      end
+    end
+  end
+
+  describe '#zip_parts_replicated_checksum_mismatch?' do
+    context 'when no ZipPart with status replicated_checksum_mismatch' do
+      it 'returns false' do
+        expect(outer_class.new.zip_parts_replicated_checksum_mismatch?).to be false
+      end
+    end
+
+    context 'when at least one ZipPart has status replicated_checksum_mismatch' do
+      before do
+        create(:zip_part, status: :replicated_checksum_mismatch)
+      end
+
+      it 'returns true' do
+        expect(outer_class.new.zip_parts_replicated_checksum_mismatch?).to be true
       end
     end
   end

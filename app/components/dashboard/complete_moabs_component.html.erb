@@ -22,7 +22,7 @@
           <% complete_moab_status_counts[1..].map do |val| %>
             <td class="<%= 'table-danger' if val != 0 %>"><%= val %></td>
           <% end %>
-          <td class="<%= 'table-warning' if num_expired_checksum_validation != 0 %>"><%= num_expired_checksum_validation %></td>
+          <td class="<%= 'table-warning' if moabs_with_expired_checksum_validation? %>"><%= num_expired_checksum_validation %></td>
           </tr>
       </tbody>
     </table>

@@ -20,9 +20,9 @@
           <td><%= ZipPart.count %></td>
           <td><%= zip_parts_total_size %></td>
           <td class="text-end"><%= ZipPart.ok.count %></td>
-          <td class="text-end<%= ' table-danger' if ZipPart.replicated_checksum_mismatch.count != 0 %>"><%= ZipPart.replicated_checksum_mismatch.count %></td>
-          <td class="text-end<%= ' table-warning' if ZipPart.unreplicated.count != 0 %>"><%= ZipPart.unreplicated.count %></td>
-          <td class="text-end<%= ' table-danger' if ZipPart.not_found.count != 0 %>"><%= ZipPart.not_found.count %></td>
+          <td class="text-end<%= ' table-danger' if zip_parts_replicated_checksum_mismatch? %>"><%= ZipPart.replicated_checksum_mismatch.count %></td>
+          <td class="text-end<%= ' table-warning' if zip_parts_unreplicated? %>"><%= ZipPart.unreplicated.count %></td>
+          <td class="text-end<%= ' table-danger' if zip_parts_not_found? %>"><%= ZipPart.not_found.count %></td>
         </tr>
       </tbody>
     </table>

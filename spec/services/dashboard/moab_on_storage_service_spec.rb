@@ -383,4 +383,98 @@ RSpec.describe Dashboard::MoabOnStorageService do
       expect(outer_class.new.num_expired_checksum_validation).to eq(2)
     end
   end
+
+  describe '#moabs_with_expired_checksum_validation?' do
+    context 'when there are no expired checksum validations' do
+      before do
+        create(:complete_moab, moab_storage_root: storage_root, last_checksum_validation: Time.zone.now)
+      end
+
+      it 'returns false' do
+        expect(outer_class.new.moabs_with_expired_checksum_validation?).to be false
+      end
+    end
+
+    context 'when there are expired checksum validations' do
+      before do
+        create(:complete_moab, moab_storage_root: storage_root, last_checksum_validation: 4.months.ago)
+      end
+
+      it 'returns true' do
+        expect(outer_class.new.moabs_with_expired_checksum_validation?).to be true
+      end
+    end
+  end
+
+  describe 'preserved_object_complete_moab_counts_match?' do
+    before do
+      storage_root.complete_moabs = build_list(:complete_moab, 2)
+    end
+
+    context 'when the counts match' do
+      it 'returns true' do
+        expect(outer_class.new.preserved_object_complete_moab_counts_match?).to be true
+      end
+    end
+
+    context 'when the counts do not match' do
+      before do
+        create(:preserved_object, current_version: 1)
+      end
+
+      it 'returns false' do
+        expect(outer_class.new.preserved_object_complete_moab_counts_match?).to be false
+      end
+    end
+  end
+
+  describe '#num_object_versions_preserved_object_complete_moab_match?' do
+    let!(:preserved_object) { create(:preserved_object, current_version: 2) }
+
+    before do
+      create(:complete_moab, preserved_object: preserved_object, version: 2)
+    end
+
+    context 'when the number of object versions match' do
+      it 'returns true' do
+        expect(outer_class.new.num_object_versions_preserved_object_complete_moab_match?).to be true
+      end
+    end
+
+    context 'when the number of object versions do not match' do
+      before do
+        preserved_object.current_version = 1 # pretend it wasn't updated to version 2
+        preserved_object.save!
+      end
+
+      it 'returns false' do
+        expect(outer_class.new.num_object_versions_preserved_object_complete_moab_match?).to be false
+      end
+    end
+  end
+
+  describe '#highest_version_preserved_object_complete_moab_match?' do
+    let!(:preserved_object) { create(:preserved_object, current_version: 2) }
+
+    before do
+      create(:complete_moab, preserved_object: preserved_object, version: 2)
+    end
+
+    context 'when the highest versions match' do
+      it 'returns true' do
+        expect(outer_class.new.highest_version_preserved_object_complete_moab_match?).to be true
+      end
+    end
+
+    context 'when the highest versions do not match' do
+      before do
+        preserved_object.current_version = 1 # pretend it wasn't updated to version 2
+        preserved_object.save!
+      end
+
+      it 'returns false' do
+        expect(outer_class.new.highest_version_preserved_object_complete_moab_match?).to be false
+      end
+    end
+  end
 end
