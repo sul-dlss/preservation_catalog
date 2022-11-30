@@ -4,7 +4,7 @@
 module Dashboard
   # methods pertaining to audit functionality for dashboard
   module AuditService
-    include CatalogService
+    include MoabOnStorageService
 
     # CompleteMoab.last_version_audit is the most recent of 3 separate audits:
     #   moab_to_catalog - all CompleteMoabs are queued for this on the 1st of the month

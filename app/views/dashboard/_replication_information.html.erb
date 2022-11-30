@@ -1,5 +1,11 @@
 <h2>Version Zips - Replication Status Information</h2>
-
+<div>
+  <p class="lead">Preservation Catalog replicates zipped versions of SDR objects (Moabs on storage) to multiple endpoints in cloud.</p>
+</div>
+<p><strong class="fs-4">PreservedObject</strong> records store the druid and links to db records about both the Moab on local storage and all the replicated instances in the cloud.</p>
+<p><strong class="fs-4">ZippedMoabVersion</strong> records are about a single version of the Moab that is archived as zip file(s) on a particular cloud endpoint.</p>
+<p><strong class="fs-4">ZipPart</strong> records represent the individual zip segments for a ZippedMoabVersion (zips larger than 10g are split into segments) that are replicated to the particular cloud endpoint.</p>
+<hr/>
 <div class="row row-cols-2">
   <div class="column col-8">
     <turbo-frame id="replication_endpoints">
@@ -12,9 +18,11 @@
     </turbo-frame>
   </div>
 </div>
+<hr/>
 <turbo-frame id="replication_flow">
   <%= render partial: 'replication_flow' %>
 </turbo-frame>
+<hr/>
 <turbo-frame id="zip_parts_suffix_counts">
   <%= render Dashboard::ZipPartsSuffixesComponent.new %>
 </turbo-frame>

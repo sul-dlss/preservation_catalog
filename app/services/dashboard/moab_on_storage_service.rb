@@ -4,8 +4,8 @@ require 'action_view' # for number_to_human_size
 
 # services for dashboard
 module Dashboard
-  # methods pertaining to catalog functionality for dashboard
-  module CatalogService
+  # methods pertaining to PreservedObject and CompleteMoab database data for dashboard
+  module MoabOnStorageService
     include ActionView::Helpers::NumberHelper # for number_to_human_size
 
     def moabs_on_storage_ok?

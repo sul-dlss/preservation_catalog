@@ -4,10 +4,10 @@ require 'action_view' # for number_to_human_size
 
 # services for dashboard
 module Dashboard
-  # methods pertaining to replication functionality for dashboard
+  # methods pertaining to replication (cloud storage) tables in database for dashboard
   module ReplicationService
     include ActionView::Helpers::NumberHelper # for number_to_human_size
-    include CatalogService
+    include MoabOnStorageService
 
     def replication_and_zip_parts_ok?
       zip_parts_ok? && replication_ok?
