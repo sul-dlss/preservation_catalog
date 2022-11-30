@@ -3,6 +3,6 @@
 module Dashboard
   # methods for dashboard pertaining to MoabStorageRootsComponent
   class MoabStorageRootsComponent < ViewComponent::Base
-    include Dashboard::CatalogService
+    include Dashboard::MoabOnStorageService
   end
 end

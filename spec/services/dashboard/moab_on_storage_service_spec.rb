@@ -2,11 +2,11 @@
 
 require 'rails_helper'
 
-RSpec.describe Dashboard::CatalogService do
+RSpec.describe Dashboard::MoabOnStorageService do
   let(:storage_root) { create(:moab_storage_root) }
   let(:outer_class) do
     Class.new do
-      include Dashboard::CatalogService
+      include Dashboard::MoabOnStorageService
     end
   end
 

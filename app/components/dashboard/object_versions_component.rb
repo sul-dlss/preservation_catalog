@@ -3,6 +3,6 @@
 module Dashboard
   # methods for dashboard pertaining to ObjectVersionsComponent
   class ObjectVersionsComponent < ViewComponent::Base
-    include Dashboard::CatalogService
+    include Dashboard::MoabOnStorageService
   end
 end

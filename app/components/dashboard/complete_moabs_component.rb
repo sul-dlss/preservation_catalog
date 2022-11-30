@@ -3,6 +3,6 @@
 module Dashboard
   # methods for dashboard pertaining to CompleteMoabsComponent
   class CompleteMoabsComponent < ViewComponent::Base
-    include Dashboard::CatalogService
+    include Dashboard::MoabOnStorageService
   end
 end
