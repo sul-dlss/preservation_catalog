@@ -36,8 +36,8 @@ RSpec.describe 'Dashboard' do
     end
 
     describe 'moabs on storage information' do
-      it 'renders _catalog_information template' do
-        expect(response).to render_template('dashboard/_catalog_information')
+      it 'renders _moab_information template' do
+        expect(response).to render_template('dashboard/_moab_information')
         expect(response.body).to match(/Moabs on Storage - Status Information/)
       end
 
