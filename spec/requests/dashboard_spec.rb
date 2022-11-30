@@ -14,27 +14,31 @@ RSpec.describe 'Dashboard' do
       expect(response.body).to match(/Preservation Dashboard/)
     end
 
-    describe 'nav bar' do
-      it 'renders _catalog_status template' do
-        expect(response).to render_template('dashboard/_catalog_status')
-        expect(response.body).to match(/Catalog Status/)
+    describe 'nav side bar' do
+      it 'renders Dashboard::MoabOnStorageStatusComponent' do
+        expect(response.body).to match(/Moabs on Storage/)
+        expect(response.body).to match(%r{Object / Version Counts})
+        expect(response.body).to match(/CompleteMoab Statuses/)
+        expect(response.body).to match(/OK/)
       end
 
-      it 'renders _audit_status template' do
-        expect(response).to render_template('dashboard/_audit_status')
-        expect(response.body).to match(/Audit Status/)
+      it 'renders Dashboard::ReplicationStatusComponent' do
+        expect(response.body).to match(/Replication Zips/)
+        expect(response.body).to match(/Endpoint/)
+        expect(response.body).to match(/Redis queues/)
       end
 
-      it 'renders _replication_status template' do
-        expect(response).to render_template('dashboard/_replication_status')
-        expect(response.body).to match(/Replication Status/)
+      it 'renders Dashboard::AuditStatusComponent' do
+        expect(response.body).to match(/Audit/)
+        expect(response.body).to match(/Catalog to Moab/)
+        expect(response.body).to match(/Catalog to Archive/)
       end
     end
 
-    describe 'catalog information' do
+    describe 'moabs on storage information' do
       it 'renders _catalog_information template' do
         expect(response).to render_template('dashboard/_catalog_information')
-        expect(response.body).to match(/Catalog Status Information/)
+        expect(response.body).to match(/Moabs on Storage - Status Information/)
       end
 
       it 'renders object version data' do
@@ -42,10 +46,10 @@ RSpec.describe 'Dashboard' do
         expect(response.body).to match(/highest version/) # table header
       end
 
-      it 'renders CompletMoab data' do
+      it 'renders CompleteMoab data' do
         expect(response.body).to match(/CompleteMoab Information/)
         expect(response.body).to match(/total size/) # table header
-        expect(response.body).to match(/TB/)
+        expect(response.body).to match(/0/) # table data
       end
 
       it 'renders MoabStorageRoot data' do
@@ -56,10 +60,10 @@ RSpec.describe 'Dashboard' do
       end
     end
 
-    describe 'replication information' do
+    describe 'replication zip information' do
       it 'renders _replication_information template' do
         expect(response).to render_template('dashboard/_replication_information')
-        expect(response.body).to match(/S3 Replication Information/)
+        expect(response.body).to match(/Version Zips - Replication Status Information/)
       end
 
       it 'renders replication endpoint data' do

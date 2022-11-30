@@ -8,7 +8,11 @@ module Dashboard
   module CatalogService
     include ActionView::Helpers::NumberHelper # for number_to_human_size
 
-    def catalog_ok?
+    def moabs_on_storage_ok?
+      moab_on_storage_counts_ok? && !any_complete_moab_errors?
+    end
+
+    def moab_on_storage_counts_ok?
       num_preserved_objects == num_complete_moabs &&
         num_object_versions_per_preserved_object == num_object_versions_per_complete_moab
     end

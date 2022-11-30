@@ -10,7 +10,39 @@ RSpec.describe Dashboard::CatalogService do
     end
   end
 
-  describe '#catalog_ok?' do
+  describe '#moabs_on_storage_ok?' do
+    context 'when moab_on_storage_counts_ok? is false' do
+      before do
+        create(:preserved_object) # create a preserved object without a complete moab
+      end
+
+      it 'returns false' do
+        expect(outer_class.new.moabs_on_storage_ok?).to be false
+      end
+    end
+
+    context 'when any_complete_moab_errors? is true' do
+      before do
+        create(:complete_moab, status: :invalid_moab, moab_storage_root: storage_root)
+      end
+
+      it 'returns false' do
+        expect(outer_class.new.moabs_on_storage_ok?).to be false
+      end
+    end
+
+    context 'when moab_on_storage_counts_ok? is true and any_complete_moab_errors? is false' do
+      before do
+        create(:complete_moab, status: :ok, moab_storage_root: storage_root)
+      end
+
+      it 'returns true' do
+        expect(outer_class.new.moabs_on_storage_ok?).to be true
+      end
+    end
+  end
+
+  describe '#moab_on_storage_counts_ok?' do
     context 'when PreservedObject and CompleteMoab counts are different' do
       before do
         po1 = create(:preserved_object)
@@ -19,7 +51,7 @@ RSpec.describe Dashboard::CatalogService do
       end
 
       it 'returns false' do
-        expect(outer_class.new.catalog_ok?).to be false
+        expect(outer_class.new.moab_on_storage_counts_ok?).to be false
       end
     end
 
@@ -32,7 +64,7 @@ RSpec.describe Dashboard::CatalogService do
       end
 
       it 'returns false' do
-        expect(outer_class.new.catalog_ok?).to be false
+        expect(outer_class.new.moab_on_storage_counts_ok?).to be false
       end
     end
 
@@ -45,7 +77,7 @@ RSpec.describe Dashboard::CatalogService do
       end
 
       it 'returns true' do
-        expect(outer_class.new.catalog_ok?).to be true
+        expect(outer_class.new.moab_on_storage_counts_ok?).to be true
       end
     end
   end

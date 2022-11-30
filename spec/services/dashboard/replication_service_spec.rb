@@ -9,6 +9,41 @@ RSpec.describe Dashboard::ReplicationService do
     end
   end
 
+  describe '#replication_and_zip_parts_ok?' do
+    let(:test_class) { outer_class.new }
+
+    context 'when replication_ok? is false' do
+      before do
+        allow(test_class).to receive(:replication_ok?).and_return(false)
+      end
+
+      it 'returns false' do
+        expect(test_class.replication_and_zip_parts_ok?).to be false
+      end
+    end
+
+    context 'when zip_parts_ok? is false' do
+      before do
+        allow(test_class).to receive(:zip_parts_ok?).and_return(false)
+      end
+
+      it 'returns false' do
+        expect(test_class.replication_and_zip_parts_ok?).to be false
+      end
+    end
+
+    context 'when replication_ok? and zip_parts_ok? are both true' do
+      before do
+        allow(test_class).to receive(:replication_ok?).and_return(true)
+        allow(test_class).to receive(:zip_parts_ok?).and_return(true)
+      end
+
+      it 'returns true' do
+        expect(test_class.replication_and_zip_parts_ok?).to be true
+      end
+    end
+  end
+
   describe '#replication_ok?' do
     let(:po1) { create(:preserved_object, current_version: 2) }
     let(:po2) { create(:preserved_object, current_version: 1) }
@@ -96,6 +131,28 @@ RSpec.describe Dashboard::ReplicationService do
     it 'returns ZipPart.count - ZipPart.ok.count' do
       expect(ZipPart.count).to eq 5
       expect(outer_class.new.num_replication_errors).to eq 3
+    end
+  end
+
+  describe '#zip_parts_ok?' do
+    before do
+      create(:zip_part, status: 'ok')
+    end
+
+    context 'when no zip_parts with status other than ok' do
+      it 'returns true' do
+        expect(outer_class.new.zip_parts_ok?).to be true
+      end
+    end
+
+    context 'when zip_part has status other than ok' do
+      before do
+        create(:zip_part, status: 'not_found')
+      end
+
+      it 'returns false' do
+        expect(outer_class.new.zip_parts_ok?).to be false
+      end
     end
   end
 end

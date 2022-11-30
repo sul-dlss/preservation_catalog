@@ -9,6 +9,10 @@ module Dashboard
     include ActionView::Helpers::NumberHelper # for number_to_human_size
     include CatalogService
 
+    def replication_and_zip_parts_ok?
+      zip_parts_ok? && replication_ok?
+    end
+
     def replication_ok?
       endpoint_data.each do |_endpoint_name, info|
         return false if info[:replication_count] != num_object_versions_per_preserved_object
@@ -38,6 +42,10 @@ module Dashboard
 
     def num_replication_errors
       ZipPart.where.not(status: 'ok').count
+    end
+
+    def zip_parts_ok?
+      num_replication_errors.zero?
     end
   end
 end
