@@ -22,40 +22,34 @@
   </div>
   <hr/>
   <div class="row row-cols-2">
-    <div class="col-3 col-rows-3">
+    <div class="col-3 col-rows-3 sidenav">
       <ul class="nav nav-pills row-3" id="dashboardTab">
         <li class="nav-link active text-reset" id="catalog-tab" data-bs-toggle="pill" data-bs-target="#catalog-tab-pane" type="button" aria-selected="true">
-          <turbo-frame id="catalog_status">
-            <%= render Dashboard::MoabOnStorageStatusComponent.new %>
+          <turbo-frame id="moab-status" src="<%= dashboard_moab_storage_status_path %>" loading="lazy">
+            <%= render Spinner.new %>
           </turbo-frame>
         </li>
         <li class="nav-link text-reset" id="replication-tab" data-bs-toggle="pill" data-bs-target="#replication-tab-pane" type="button">
-          <turbo-frame id="replication_status">
-            <%= render Dashboard::ReplicationStatusComponent.new %>
+          <turbo-frame id="replication-status" src="<%= dashboard_replication_status_path %>" loading="lazy">
+            <%= render Spinner.new %>
           </turbo-frame>
         </li>
         <li class="nav-link text-reset" id="audit-tab" data-bs-toggle="pill" data-bs-target="#audit-tab-pane" type="button" role="button">
-          <turbo-frame id="audit_status">
-            <%= render Dashboard::AuditStatusComponent.new %>
+          <turbo-frame id="audit-status" src="<%= dashboard_audit_status_path %>" loading="lazy">
+            <%= render Spinner.new %>
           </turbo-frame>
         </li>
       </ul>
     </div>
-    <div class="tab-content col-9" id="dashboardTabContent">
+    <div class="tab-content col-9" id="main">
       <div class="tab-pane fade show active" id="catalog-tab-pane" role="tabpanel" aria-selected="true" tabindex="0">
-        <turbo-frame id="moab_information">
-          <%= render partial: 'moab_information' %>
-        </turbo-frame>
+        <%= render partial: 'moab_information' %>
       </div>
       <div class="tab-pane fade" id="replication-tab-pane" role="tabpanel" aria-labelledby="replication-tab" tabindex="0">
-        <turbo-frame id="replication_information">
-          <%= render partial: 'replication_information' %>
-        </turbo-frame>
+        <%= render partial: 'replication_information' %>
       </div>
       <div class="tab-pane fade" id="audit-tab-pane" role="tabpanel" aria-labelledby="audit-tab" tabindex="0">
-        <turbo-frame id="audit_information">
-          <%= render Dashboard::AuditInformationComponent.new %>
-        </turbo-frame>
+        <%= render partial: 'audit_info' %>
       </div>
     </div>
   </div>

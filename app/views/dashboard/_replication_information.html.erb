@@ -8,21 +8,19 @@
 <hr/>
 <div class="row row-cols-2">
   <div class="column col-8">
-    <turbo-frame id="replication_endpoints">
-      <%= render Dashboard::ReplicationEndpointsComponent.new %>
+    <turbo-frame id="replication-endpoints" src="<%= dashboard_replication_endpoints_path %>" loading="lazy">
+      <%= render Spinner.new %>
     </turbo-frame>
   </div>
   <div class="column col-4">
-    <turbo-frame id="replicated_files">
-      <%= render Dashboard::ReplicationFilesComponent.new %>
+    <turbo-frame id="replicated-files" src="<%= dashboard_replicated_files_path %>" loading="lazy">
+      <%= render Spinner.new %>
     </turbo-frame>
   </div>
 </div>
 <hr/>
-<turbo-frame id="replication_flow">
-  <%= render partial: 'replication_flow' %>
-</turbo-frame>
+<%= render partial: 'replication_flow' %>
 <hr/>
-<turbo-frame id="zip_parts_suffix_counts">
-  <%= render Dashboard::ZipPartsSuffixesComponent.new %>
+<turbo-frame id="zip-part-suffix-counts" src="<%= dashboard_zip_part_suffix_counts_path %>" loading="lazy">
+  <%= render Spinner.new %>
 </turbo-frame>

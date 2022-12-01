@@ -44,4 +44,64 @@ RSpec.describe 'routes' do
       expect(get: dashboard_path).to route_to(controller: 'dashboard', action: 'index', format: 'html')
     end
   end
+
+  describe 'dashboard/moab_storage_status' do
+    it 'routes to dashboard controller moab_storage_status action' do
+      expect(get: dashboard_moab_storage_status_path).to route_to(controller: 'dashboard', action: 'moab_storage_status', format: 'html')
+    end
+  end
+
+  describe 'dashboard/complete_moab_versions' do
+    it 'routes to dashboard controller complete_moab_versions action' do
+      expect(get: dashboard_complete_moab_versions_path).to route_to(controller: 'dashboard', action: 'complete_moab_versions', format: 'html')
+    end
+  end
+
+  describe 'dashboard/complete_moab_info' do
+    it 'routes to dashboard controller complete_moab_info action' do
+      expect(get: dashboard_complete_moab_info_path).to route_to(controller: 'dashboard', action: 'complete_moab_info', format: 'html')
+    end
+  end
+
+  describe 'dashboard/storage_root_data' do
+    it 'routes to dashboard controller storage_root_data action' do
+      expect(get: dashboard_storage_root_data_path).to route_to(controller: 'dashboard', action: 'storage_root_data', format: 'html')
+    end
+  end
+
+  describe 'dashboard/replication_status' do
+    it 'routes to dashboard controller replication_status action' do
+      expect(get: dashboard_replication_status_path).to route_to(controller: 'dashboard', action: 'replication_status', format: 'html')
+    end
+  end
+
+  describe 'dashboard/replication_endpoints' do
+    it 'routes to dashboard controller replication_endpoints action' do
+      expect(get: dashboard_replication_endpoints_path).to route_to(controller: 'dashboard', action: 'replication_endpoints', format: 'html')
+    end
+  end
+
+  describe 'dashboard/replicated_files' do
+    it 'routes to dashboard controller replicated_files action' do
+      expect(get: dashboard_replicated_files_path).to route_to(controller: 'dashboard', action: 'replicated_files', format: 'html')
+    end
+  end
+
+  describe 'dashboard/zip_part_suffix_counts' do
+    it 'routes to dashboard controller zip_part_suffix_counts action' do
+      expect(get: dashboard_zip_part_suffix_counts_path).to route_to(controller: 'dashboard', action: 'zip_part_suffix_counts', format: 'html')
+    end
+  end
+
+  describe 'dashboard/audit_status' do
+    it 'routes to dashboard controller audit_status action' do
+      expect(get: dashboard_audit_status_path).to route_to(controller: 'dashboard', action: 'audit_status', format: 'html')
+    end
+  end
+
+  describe 'dashboard/audit_info' do
+    it 'routes to dashboard controller audit_info action' do
+      expect(get: dashboard_audit_info_path).to route_to(controller: 'dashboard', action: 'audit_info', format: 'html')
+    end
+  end
 end
