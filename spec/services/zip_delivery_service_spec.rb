@@ -8,7 +8,8 @@ describe ZipDeliveryService do
   let(:version) { 1 }
   let(:dvz) { Replication::DruidVersionZip.new(druid, version) }
   let(:dvz_part) { Replication::DruidVersionZipPart.new(dvz, part_s3_key) }
-  let(:s3_part) { instance_double(::Aws::S3::Object, exists?: part_exists, upload_file: true, key: part_s3_key) }
+  let(:bucket_name) { 's3-bucket-shop' }
+  let(:s3_part) { instance_double(::Aws::S3::Object, exists?: part_exists, upload_file: true, key: part_s3_key, bucket_name: bucket_name) }
   let(:part_exists) { false }
   let(:md5) { '4f98f59e877ecb84ff75ef0fab45bac5' }
   let(:base64) { dvz.hex_to_base64(md5) }
@@ -33,12 +34,20 @@ describe ZipDeliveryService do
   end
 
   describe '#deliver' do
+    before do
+      allow(Honeybadger).to receive(:notify)
+    end
+
     context 'when s3 part exists' do
       let(:part_exists) { true }
 
-      it 'returns nil and does not upload the file' do
+      it 'returns nil, does not upload the file, and notifies Honeybadger' do
         expect(instance.deliver).to be_nil
         expect(s3_part).not_to have_received(:upload_file)
+        expect(Honeybadger).to have_received(:notify).with(
+          a_string_matching(/^WARNING: S3 location already has content./),
+          context: a_hash_including(druid: "druid:#{druid}", version: version, endpoint: bucket_name)
+        )
       end
     end
 
