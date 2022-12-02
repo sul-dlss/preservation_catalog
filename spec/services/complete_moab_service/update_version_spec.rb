@@ -6,7 +6,6 @@ require 'services/complete_moab_service/shared_examples'
 RSpec.describe CompleteMoabService::UpdateVersion do
   let(:audit_workflow_reporter) { instance_double(Reporters::AuditWorkflowReporter, report_errors: nil, report_completed: nil) }
   let(:db_update_failed_prefix) { 'db update failed' }
-  let(:default_preservation_policy) { PreservationPolicy.default_policy }
   let(:druid) { 'ab123cd4567' }
   let(:incoming_size) { 9876 }
   let(:incoming_version) { 6 }
@@ -32,7 +31,7 @@ RSpec.describe CompleteMoabService::UpdateVersion do
 
     context 'in Catalog' do
       before do
-        create(:preserved_object, druid: druid, current_version: 2, preservation_policy: default_preservation_policy)
+        create(:preserved_object, druid: druid, current_version: 2)
         preserved_object.create_complete_moab!(
           version: preserved_object.current_version,
           size: 1,

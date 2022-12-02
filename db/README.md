@@ -25,8 +25,6 @@ To generate the updated ER diagram
   - <sub> E.g., a row in `zipped_moab_versions` (a `ZippedMoabVersion`) may have many corresponding rows in `zip_parts` (retrievable as `ZipPart` objects).</sub>
 - <sub>The "o" at the end of a connection indicates there may be zero of the referent (e.g. there may not be any `zipped_moab_versions` yet for a new `zip_endpoints` entry).</sub>
 
-- <sub>We have two thin "join tables", `moab_storage_roots_preservation_policies` and `preservation_policies_zip_endpoints`. They have no corresponding ActiveRecord classes. ActiveRecord is made aware of the mapping between the `moab_storage_roots` and `preservation_policies` tables by way of `has_and_belongs_to_many` relationship declarations -- on `MoabStorageRoot` (to `preservation_policies`) and `PreservationPolicy` (to `moab_storage_roots`). There are similar `has_and_belongs_to_many` declarations on `ZipEndpoint` and `PreservationPolicy` for that relationship.</sub>
-  - <sub>Semantically, the idea is that a moab_storage_root may be used by more than one preservation policy, and a preservation policy may be implemented by multiple moab_storage_roots. Typically, this sort of many-to-many relationship is expressed in a relational database schema by way of an intermediary table that maps related rows in the two tables. This is more structured and easier to query/update than, e.g., a list field on a row in one table enumerating all the related row IDs in the other table.</sub>
   </details>
 
 #### What do these table rows (ActiveRecord objects) represent in the "real" world? (a list of the ActiveRecord subclasses, and a (non-exhaustive) list of their fields)
@@ -34,18 +32,11 @@ To generate the updated ER diagram
 - A `PreservedObject` represents the master record for a druid, tying together its `complete_moab` and `zipped_moab_versions`. It also holds some high level summary info.
   - `druid` is the digital resource unique identifier
   - `current_version` is current latest version we've seen for the druid.
-  - `preservation_policy_id` points to the policy governing how the object should be preserved.
 - A `CompleteMoab` represents a physical copy of a `PreservedObject`, stored on premises as a Moab (containing all versions for the druid) and accessed via Ceph mount. There is only one instance of `CompleteMoab` for a `PreservedObject` (= druid) across the storage roots. (Note: Ceph can be configured to store the one logical copy with some internal redundancy, without the need to expose that at the POSIX file system level.)
   - `size`: is approximate, and given in bytes. It's intended to be used for things like allocating storage. It should _not_ be treated as an exact value for fixity checking.
   - `status`: a high-level summary of the copy's current state. This is just a reflection of what we last saw on disk, and does not capture history, nor does it necessarily enumerate all errors for a copy that needs remediation.
   - `version`: should be the same as `PreservedObject` current version.
 - A `MoabStorageRoot` represents a physical storage location (on premises) on which `CompleteMoabs` reside, e.g., a single Ceph or NFS mounted storage root. A `CompleteMoab` can only live on one `MoabStorageRoot` at a time, while a single `MoabStorageRoot` can store many `CompleteMoabs.`
-  - `preservation_policies`: the preservation policies for which governed objects are preserved (`has_and_belongs_to_many :preservation_policies`).
-- A `PreservationPolicy` defines
-  - `moab_storage_roots`: the storage roots that are eligible to house the objects governed by the policy (`has_and_belongs_to_many :moab_storage_root`). At present, a `CompleteMoab` should only live on one `MoabStorageRoot` at a time.
-  - `zip_endpoints`: the endpoints to which zipped versions of the Moab should be archived. In contrast to the storage roots, the a `ZippedMoabVersion` should live on _all_ `ZipEndpoints` that the policy maps to.
-  - `archive_ttl`: the frequency with which the existence of the appropriate archive copies should be checked.
-  - `fixity_ttl`: the frequency with which the online copies should be checked for fixity.
 - `ZipEndpoint` represents an endpoint to which the `zipped_moab_version` is (or is being) replicated.
   - `endpoint_name`: the human readable name of the endpoint (e.g. `aws_s3_us_east_1`)
   - `delivery_class`: the name of the class that does the delivery (e.g `S3WestDeliveryJob`)
@@ -334,7 +325,7 @@ _**note**: might take a few minutes to run on prod_
 
 ```ruby
 # example AR query
-[48] pry(main)> PreservedObject.joins(preservation_policy: [:zip_endpoints]).left_outer_joins(:zipped_moab_versions).where('zip_endpoints.id = zipped_moab_versions.zip_endpoint_id').group(:druid, :current_version, :endpoint_name).having('count(zipped_moab_versions.id) < current_version').pluck(:druid, :current_version, :endpoint_name, 'count(zipped_moab_versions.id)')
+[48] pry(main)> PreservedObject.left_outer_joins(zipped_moab_versions: [:zip_endpoint]).where('zip_endpoints.id = zipped_moab_versions.zip_endpoint_id').group(:druid, :current_version, :endpoint_name).having('count(zipped_moab_versions.id) < current_version').pluck(:druid, :current_version, :endpoint_name, 'count(zipped_moab_versions.id)')
 ```
 
 <details>
@@ -342,12 +333,10 @@ _**note**: might take a few minutes to run on prod_
 
 ```sql
 -- example sql produced by above AR query
-SELECT "preserved_objects"."druid", "preserved_objects"."current_version", "endpoint_name", count(zipped_moab_versions.id)
+SELECT "preserved_objects".*
 FROM "preserved_objects"
-  INNER JOIN "preservation_policies" ON "preservation_policies"."id" = "preserved_objects"."preservation_policy_id"
-  INNER JOIN "preservation_policies_zip_endpoints" ON "preservation_policies_zip_endpoints"."preservation_policy_id" = "preservation_policies"."id"
-  INNER JOIN "zip_endpoints" ON "zip_endpoints"."id" = "preservation_policies_zip_endpoints"."zip_endpoint_id"
   LEFT OUTER JOIN "zipped_moab_versions" ON "zipped_moab_versions"."preserved_object_id" = "preserved_objects"."id"
+  LEFT OUTER JOIN "zip_endpoints" ON "zip_endpoints"."id" = "zipped_moab_versions"."zip_endpoint_id"
 WHERE (zip_endpoints.id = zipped_moab_versions.zip_endpoint_id)
 GROUP BY "preserved_objects"."druid", "preserved_objects"."current_version", "endpoint_name"
 HAVING (count(zipped_moab_versions.id) < current_version)
@@ -365,6 +354,8 @@ HAVING (count(zipped_moab_versions.id) < current_version)
 ##### which have _none_ of the expected versions?
 
 _**note**: might take a few minutes to run on prod_
+
+TODO: Figure out how to replace this.
 
 ```ruby
 [53] PreservedObject.joins(preservation_policy: [:zip_endpoints]).left_outer_joins(:zipped_moab_versions).group(:druid, :current_version, :endpoint_name).having('count(zipped_moab_versions.id) = 0').pluck(:druid, :current_version, :endpoint_name, 'count(zipped_moab_versions.id)')

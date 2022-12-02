@@ -463,8 +463,7 @@ RSpec.describe CompleteMoabService::CheckExistence do
           it 'PreservedObject created' do
             po_args = {
               druid: valid_druid,
-              current_version: incoming_version,
-              preservation_policy_id: PreservationPolicy.default_policy.id
+              current_version: incoming_version
             }
             complete_moab_service.execute
             expect(PreservedObject.where(po_args)).to exist

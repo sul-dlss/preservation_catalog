@@ -24,20 +24,10 @@ RSpec.describe ActiveRecordUtils do
       expect(tx_result).to be false
     end
 
-    it 'adds DB_UPDATE_FAILED result and returns false when the transaction raises ActiveRecordError' do
-      expect(audit_results).to receive(:add_result).with(
-        AuditResults::DB_UPDATE_FAILED, a_string_matching('ActiveRecord::InvalidForeignKey')
-      )
-      tx_result = described_class.with_transaction_and_rescue(audit_results) do
-        PreservationPolicy.default_policy.delete
-      end
-      expect(tx_result).to be false
-    end
-
     it 'lets an unexpected error bubble up' do
       expect do
         described_class.with_transaction_and_rescue(audit_results) do
-          PreservationPolicy.not_a_real_method
+          MoabStorageRoot.not_a_real_method
         end
       end.to raise_error(NoMethodError)
     end

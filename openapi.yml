@@ -563,16 +563,12 @@ components:
           type: string
           format: date-time
           example: '2020-02-21T16:36:28.075Z'
-        preservation_policy_id:
-          type: integer
-          example: 5
       required:
         - id
         - druid
         - current_version
         - created_at
         - updated_at
-        - preservation_policy_id
     AuditResult:
       description: A single audit result
       type: object

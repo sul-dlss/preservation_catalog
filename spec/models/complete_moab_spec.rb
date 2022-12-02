@@ -249,7 +249,7 @@ RSpec.describe CompleteMoab do
   end
 
   context 'ordered (by fixity_check_expired) and unordered fixity_check_expired methods' do
-    let(:fixity_ttl) { preserved_object.preservation_policy.fixity_ttl }
+    let(:fixity_ttl) { Settings.preservation_policy.fixity_ttl }
     let!(:old_check_cm1) do
       create(:complete_moab, args.merge(version: 6,
                                         last_checksum_validation: now - (fixity_ttl * 2),

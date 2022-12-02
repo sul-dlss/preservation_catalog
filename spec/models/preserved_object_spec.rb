@@ -3,23 +3,18 @@
 require 'rails_helper'
 
 RSpec.describe PreservedObject do
-  # let(:preservation_policy) { create(:preservation_policy, preservation_policy_name: 'large_dark_objects') }
-  let(:preservation_policy) { PreservationPolicy.default_policy }
   let(:druid) { 'bc123df4567' }
   let(:now) { Time.now.utc }
 
   let(:required_attributes) do
     {
       druid: druid,
-      current_version: 1,
-      preservation_policy: preservation_policy
+      current_version: 1
     }
   end
 
-  it { is_expected.to belong_to(:preservation_policy) }
   it { is_expected.to have_one(:complete_moab) }
   it { is_expected.to have_db_index(:druid) }
-  it { is_expected.to have_db_index(:preservation_policy_id) }
   it { is_expected.to have_db_index(:last_archive_audit) }
   it { is_expected.to validate_presence_of(:druid) }
   it { is_expected.to validate_presence_of(:current_version) }
@@ -35,9 +30,8 @@ RSpec.describe PreservedObject do
     context 'when returning json' do
       subject { valid_obj.to_json }
 
-      it 'does not include id and preservation_policy_id' do
+      it 'does not include id' do
         expect(subject).not_to include '"id"'
-        expect(subject).not_to include '"preservation_policy_id"'
       end
     end
 
@@ -66,7 +60,7 @@ RSpec.describe PreservedObject do
       end
 
       it 'at db level' do
-        dup_po = described_class.new(druid: druid, current_version: 2, preservation_policy: preservation_policy)
+        dup_po = described_class.new(druid: druid, current_version: 2)
         expect { dup_po.save(validate: false) }.to raise_error(ActiveRecord::RecordNotUnique)
       end
     end
@@ -86,7 +80,7 @@ RSpec.describe PreservedObject do
 
   describe '.archive_check_expired' do
     let!(:preserved_object) { create(:preserved_object, druid: druid) }
-    let(:archive_ttl) { preserved_object.preservation_policy.archive_ttl }
+    let(:archive_ttl) { Settings.preservation_policy.archive_ttl }
     let!(:old_check_po1) do
       create(:preserved_object, current_version: 6, last_archive_audit: now - (archive_ttl * 2))
     end
@@ -117,7 +111,7 @@ RSpec.describe PreservedObject do
     let!(:msr1) { create(:moab_storage_root) }
     let!(:cm1) { create(:complete_moab, preserved_object: preserved_object, version: current_version, moab_storage_root: msr1) }
     let(:zmvs_by_druid) { ZippedMoabVersion.by_druid(druid) }
-    let(:zip_endpoints) { preserved_object.preservation_policy.zip_endpoints }
+    let(:zip_endpoints) { ZipEndpoint.all }
     let!(:zip_ep) { zip_endpoints.first }
     let!(:zip_ep2) { zip_endpoints.second }
 

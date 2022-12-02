@@ -6,7 +6,6 @@ require 'services/complete_moab_service/shared_examples'
 RSpec.describe CompleteMoabService::UpdateVersionAfterValidation do
   let(:audit_workflow_reporter) { instance_double(Reporters::AuditWorkflowReporter, report_errors: nil, report_completed: nil) }
   let(:db_update_failed_prefix) { 'db update failed' }
-  let(:default_preservation_policy) { PreservationPolicy.default_policy }
   let(:druid) { 'ab123cd4567' }
   let(:incoming_size) { 9876 }
   let(:incoming_version) { 6 }
@@ -54,7 +53,7 @@ RSpec.describe CompleteMoabService::UpdateVersionAfterValidation do
           )
         end
 
-        let(:preserved_object) { PreservedObject.create!(druid: druid, current_version: 2, preservation_policy: default_preservation_policy) }
+        let(:preserved_object) { PreservedObject.create!(druid: druid, current_version: 2) }
         let(:complete_moab) { preserved_object.complete_moab }
 
         context 'CompleteMoab' do
@@ -188,7 +187,7 @@ RSpec.describe CompleteMoabService::UpdateVersionAfterValidation do
           MoabStorageRoot.find_or_create_by!(name: 'bad_fixture_dir') do |msr|
             msr.storage_location = storage_dir
           end
-          preserved_object = PreservedObject.create!(druid: druid, current_version: 2, preservation_policy: default_preservation_policy)
+          preserved_object = PreservedObject.create!(druid: druid, current_version: 2)
           time = Time.current
           CompleteMoab.create!(
             preserved_object: preserved_object,

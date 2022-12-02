@@ -49,39 +49,16 @@ ActiveRecord::Schema[7.0].define(version: 2022_10_31_220235) do
     t.index ["storage_location"], name: "index_moab_storage_roots_on_storage_location", unique: true
   end
 
-  create_table "moab_storage_roots_preservation_policies", force: :cascade do |t|
-    t.bigint "preservation_policy_id", null: false
-    t.bigint "moab_storage_root_id", null: false
-    t.index ["moab_storage_root_id"], name: "index_moab_storage_roots_pres_policies_on_moab_storage_root_id"
-    t.index ["preservation_policy_id"], name: "index_moab_storage_roots_pres_policies_on_pres_policy_id"
-  end
-
-  create_table "preservation_policies", force: :cascade do |t|
-    t.string "preservation_policy_name", null: false
-    t.integer "archive_ttl", null: false
-    t.integer "fixity_ttl", null: false
-    t.index ["preservation_policy_name"], name: "index_preservation_policies_on_preservation_policy_name", unique: true
-  end
-
-  create_table "preservation_policies_zip_endpoints", force: :cascade do |t|
-    t.bigint "preservation_policy_id", null: false
-    t.bigint "zip_endpoint_id", null: false
-    t.index ["preservation_policy_id"], name: "index_pres_policies_zip_endpoints_on_pres_policy_id"
-    t.index ["zip_endpoint_id"], name: "index_pres_policies_zip_endpoints_on_zip_endpoint_id"
-  end
-
   create_table "preserved_objects", force: :cascade do |t|
     t.string "druid", null: false
     t.integer "current_version", null: false
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
-    t.bigint "preservation_policy_id", null: false
     t.datetime "last_archive_audit", precision: nil
     t.boolean "robot_versioning_allowed", default: true, null: false
     t.index ["created_at"], name: "index_preserved_objects_on_created_at"
     t.index ["druid"], name: "index_preserved_objects_on_druid", unique: true
     t.index ["last_archive_audit"], name: "index_preserved_objects_on_last_archive_audit"
-    t.index ["preservation_policy_id"], name: "index_preserved_objects_on_preservation_policy_id"
     t.index ["updated_at"], name: "index_preserved_objects_on_updated_at"
   end
 
@@ -125,11 +102,6 @@ ActiveRecord::Schema[7.0].define(version: 2022_10_31_220235) do
   add_foreign_key "complete_moabs", "moab_storage_roots"
   add_foreign_key "complete_moabs", "moab_storage_roots", column: "from_moab_storage_root_id"
   add_foreign_key "complete_moabs", "preserved_objects"
-  add_foreign_key "moab_storage_roots_preservation_policies", "moab_storage_roots"
-  add_foreign_key "moab_storage_roots_preservation_policies", "preservation_policies"
-  add_foreign_key "preservation_policies_zip_endpoints", "preservation_policies"
-  add_foreign_key "preservation_policies_zip_endpoints", "zip_endpoints"
-  add_foreign_key "preserved_objects", "preservation_policies"
   add_foreign_key "zip_parts", "zipped_moab_versions"
   add_foreign_key "zipped_moab_versions", "preserved_objects"
   add_foreign_key "zipped_moab_versions", "zip_endpoints"

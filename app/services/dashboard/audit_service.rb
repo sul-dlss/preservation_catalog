@@ -13,7 +13,7 @@ module Dashboard
     # 18 days gives a little slop for either of the first 2 audit queues to die down.
     MOAB_LAST_VERSION_AUDIT_THRESHOLD = 18.days
 
-    REPLICATION_AUDIT_THRESHOLD = 90.days # meant to be the same as PreservationPolicy.archive_ttl
+    REPLICATION_AUDIT_THRESHOLD = 90.days # meant to be the same as Settings.preservation_policy.archive_ttl
 
     def audits_ok?
       validate_moab_audit_ok? &&

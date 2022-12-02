@@ -9,7 +9,7 @@ describe 'OkComputer custom checks' do # rubocop:disable RSpec/DescribeClass
     it { is_expected.to be_successful }
 
     context 'without data' do
-      before { allow(PreservationPolicy).to receive(:select).with(:id).and_return([]) }
+      before { allow(MoabStorageRoot).to receive(:select).with(:id).and_return([]) }
 
       it { is_expected.not_to be_successful }
     end
