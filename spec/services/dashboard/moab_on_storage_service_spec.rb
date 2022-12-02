@@ -372,7 +372,7 @@ RSpec.describe Dashboard::MoabOnStorageService do
     end
   end
 
-  describe '#num_expired_checksum_validation' do
+  describe '#num_moab_expired_checksum_validation' do
     before do
       create(:complete_moab, moab_storage_root: storage_root, last_checksum_validation: Time.zone.now)
       create(:complete_moab, preserved_object: create(:preserved_object), last_checksum_validation: 4.months.ago)
@@ -380,7 +380,7 @@ RSpec.describe Dashboard::MoabOnStorageService do
     end
 
     it 'returns CompleteMoab.fixity_check_expired.count and includes nil in the count' do
-      expect(outer_class.new.num_expired_checksum_validation).to eq(2)
+      expect(outer_class.new.num_moab_expired_checksum_validation).to eq(2)
     end
   end
 
