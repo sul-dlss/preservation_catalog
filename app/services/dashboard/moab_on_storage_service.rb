@@ -73,12 +73,12 @@ module Dashboard
       CompleteMoab.statuses.keys.map { |status| status.tr('_', ' ') }
     end
 
-    def num_expired_checksum_validation
-      CompleteMoab.fixity_check_expired.count
+    def num_moab_expired_checksum_validation
+      @num_moab_expired_checksum_validation ||= CompleteMoab.fixity_check_expired.count
     end
 
     def moabs_with_expired_checksum_validation?
-      num_expired_checksum_validation.positive?
+      num_moab_expired_checksum_validation.positive?
     end
 
     def any_complete_moab_errors?
