@@ -58,3 +58,9 @@ rabbitmq:
   vhost: /
   username: guest
   password: guest
+
+honeybadger_checkins:
+  moab_to_catalog: xyzzy
+  catalog_to_moab: xyzzy
+  checksum_validation: xyzzy
+  audit_replication: xyzzy
