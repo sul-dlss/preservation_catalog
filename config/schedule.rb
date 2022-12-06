@@ -11,7 +11,7 @@ Config.load_and_set_settings(Config.setting_files('config', 'production'))
 
 # These define jobs that checkin with Honeybadger.
 # If changing the schedule of one of these jobs, also update at https://app.honeybadger.io/projects/54415/check_ins
-job_type :rake, "cd :path && :environment_variable=:environment bundle exec rake :task --silent :output && curl 'https://api.honeybadger.io/v1/check_in/:check_in"
+job_type :rake, "cd :path && :environment_variable=:environment bundle exec rake :task --silent :output && curl 'https://api.honeybadger.io/v1/check_in/:check_in'"
 job_type :runner_hb, "cd :path && bin/rails runner -e :environment ':task' && curl 'https://api.honeybadger.io/v1/check_in/:check_in' :output"
 
 # 11 am on the 1st of every month
