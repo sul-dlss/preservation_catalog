@@ -2,12 +2,25 @@
 
 require 'resque/server'
 
-Rails.application.routes.draw do
+Rails.application.routes.draw do # rubocop:disable Metrics/BlockLength
   mount Resque::Server.new,
         at: '/resque',
         constraints: ->(req) { Settings.resque_dashboard_hostnames.include?(req.host) }
 
   get 'dashboard', to: 'dashboard#index', defaults: { format: 'html' }
+  namespace :dashboard do
+    # routes for turbo-frame partials
+    get 'moab_storage_status', to: '/dashboard#moab_storage_status', defaults: { format: 'html' }
+    get 'complete_moab_versions', to: '/dashboard#complete_moab_versions', defaults: { format: 'html' }
+    get 'complete_moab_info', to: '/dashboard#complete_moab_info', defaults: { format: 'html' }
+    get 'storage_root_data', to: '/dashboard#storage_root_data', defaults: { format: 'html' }
+    get 'replication_status', to: '/dashboard#replication_status', defaults: { format: 'html' }
+    get 'replication_endpoints', to: '/dashboard#replication_endpoints', defaults: { format: 'html' }
+    get 'replicated_files', to: '/dashboard#replicated_files', defaults: { format: 'html' }
+    get 'zip_part_suffix_counts', to: '/dashboard#zip_part_suffix_counts', defaults: { format: 'html' }
+    get 'audit_status', to: '/dashboard#audit_status', defaults: { format: 'html' }
+    get 'audit_info', to: '/dashboard#audit_info', defaults: { format: 'html' }
+  end
 
   scope 'v1' do
     resources :catalog, param: :druid, only: %i[create update]

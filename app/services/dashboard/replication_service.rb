@@ -45,7 +45,7 @@ module Dashboard
     end
 
     def num_replication_errors
-      ZipPart.where.not(status: 'ok').count
+      @num_replication_errors ||= ZipPart.where.not(status: 'ok').count
     end
 
     def zip_parts_ok?

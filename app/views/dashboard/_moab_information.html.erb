@@ -4,18 +4,18 @@
 <hr/>
 <div class="row row-cols-2">
   <div class="column col-5">
-    <turbo-frame id="object_verisons">
-      <%= render Dashboard::ObjectVersionsComponent.new %>
+    <turbo-frame id="complete-moab-versions" src="<%= dashboard_complete_moab_versions_path %>" loading="lazy">
+      <%= render Spinner.new %>
     </turbo-frame>
   </div>
   <div class="column col-7">
-    <turbo-frame id="complete_moab_status">
-      <%= render Dashboard::CompleteMoabsComponent.new %>
+    <turbo-frame id="complete-moab-info" src="<%= dashboard_complete_moab_info_path %>" loading="lazy">
+      <%= render Spinner.new %>
     </turbo-frame>
   </div>
 </div>
 <hr/>
 
-<turbo-frame id="moab_storage_root_data">
-  <%= render Dashboard::MoabStorageRootsComponent.new %>
+<turbo-frame id="storage-root-data" src="<%= dashboard_storage_root_data_path %>" loading="lazy">
+  <%= render Spinner.new %>
 </turbo-frame>
