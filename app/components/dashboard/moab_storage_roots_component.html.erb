@@ -22,16 +22,17 @@
         <% storage_root_info.each do |root_name, info| %>
           <tr>
             <td><%= root_name %></td>
-            <td><%= info[0] %></td><%# storage location %>
-            <td><%= info[1] %></td><%# total size %>
-            <td><%= info[2] %></td><%# average size %>
-            <td class="text-end"><%= info[3] %></td><%# moab count %>
-            <td class="text-end"><%= info[4] %></td><%# ok status %>
-            <% info[5..-2].map do |val| %>
-              <td class="text-end<%= ' table-danger' if val.positive? %>"><%= val %></td>
-            <% end %>
-            <% num_expired_checksum = info[10] %>
-            <td class="text-end<%= ' table-warning' if num_expired_checksum.positive? %>"><%= num_expired_checksum %></td>
+            <td><%= info[:storage_location] %></td>
+            <td><%= info[:total_size] %></td>
+            <td><%= info[:average_size] %></td>
+            <td class="text-end"><%= info[:moab_count] %></td>
+            <td class="text-end"><%= info[:ok_count] %></td>
+            <td class="text-end<%= ' table-danger' if info[:invalid_moab_count].positive? %>"><%= info[:invalid_moab_count] %></td>
+            <td class="text-end<%= ' table-danger' if info[:invalid_checksum_count].positive? %>"><%= info[:invalid_checksum_count] %></td>
+            <td class="text-end<%= ' table-danger' if info[:moab_not_found_count].positive? %>"><%= info[:moab_not_found_count] %></td>
+            <td class="text-end<%= ' table-danger' if info[:unexpected_version_count].positive? %>"><%= info[:unexpected_version_count] %></td>
+            <td class="text-end<%= ' table-danger' if info[:validity_unknown_count].positive? %>"><%= info[:validity_unknown_count] %></td>
+            <td class="text-end<%= ' table-warning' if info[:fixity_check_expired_count].positive? %>"><%= info[:fixity_check_expired_count] %></td>
           </tr>
         <% end %>
       </tbody>
@@ -41,13 +42,14 @@
           <td class="table-secondary"/>
           <td class="table-secondary"/>
           <td class="table-secondary"/>
-          <td class="text-end<%= ' table-danger' if storage_root_total_count != num_complete_moabs %>"><%= storage_root_total_count %></td>
-          <td class="text-end"><%= storage_root_total_ok_count %></td>
-          <% storage_root_totals[2..-2]&.each do |count| %>
-            <td class="text-end<%= ' table-danger' if count.positive? %>"><%= count %></td>
-          <% end %>
-          <% total_num_expired_checksum = storage_root_totals[7] %>
-          <td class="text-end<%= ' table-warning' if total_num_expired_checksum.positive? %>"><%= total_num_expired_checksum %></td>
+          <td class="text-end<%= ' table-danger' unless storage_roots_moab_count_ok? %>"><%= storage_roots_moab_count %></td>
+          <td class="text-end<%= ' table-danger' unless storage_roots_ok_count_ok? %>"><%= storage_roots_ok_count %></td>
+          <td class="text-end<%= ' table-danger' unless storage_roots_invalid_moab_count_ok? %>"><%= storage_roots_invalid_moab_count %></td>
+          <td class="text-end<%= ' table-danger' unless storage_roots_invalid_checksum_count_ok? %>"><%= storage_roots_invalid_checksum_count %></td>
+          <td class="text-end<%= ' table-danger' unless storage_roots_moab_not_found_count_ok? %>"><%= storage_roots_moab_not_found_count %></td>
+          <td class="text-end<%= ' table-danger' unless storage_roots_unexpected_version_count_ok? %>"><%= storage_roots_unexpected_version_count %></td>
+          <td class="text-end<%= ' table-danger' unless storage_roots_validity_unknown_count_ok? %>"><%= storage_roots_validity_unknown_count %></td>
+          <td class="text-end<%= ' table-warning' unless storage_roots_fixity_check_expired_count_ok? %>"><%= storage_roots_fixity_check_expired_count %></td>
         </tr>
       </tfoot>
     </table>

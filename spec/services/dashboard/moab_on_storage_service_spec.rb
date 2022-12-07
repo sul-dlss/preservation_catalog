@@ -83,60 +83,350 @@ RSpec.describe Dashboard::MoabOnStorageService do
   end
 
   describe '#storage_root_info' do
-    skip('FIXME: intend to change this internal structure soon; not testing yet')
-    # storage_root_info = {}
-    # MoabStorageRoot.all.each do |storage_root|
-    #   storage_root_info[storage_root.name] =
-    #     [
-    #       storage_root.storage_location,
-    #       "#{(storage_root.complete_moabs.sum(:size) / Numeric::TERABYTE).to_f.round(2)} Tb",
-    #       "#{((storage_root.complete_moabs.average(:size) || 0) / Numeric::MEGABYTE).to_f.round(2)} Mb",
-    #       storage_root.complete_moabs.count,
-    #       CompleteMoab.statuses.keys.map { |status| storage_root.complete_moabs.where(status: status).count },
-    #       storage_root.complete_moabs.fixity_check_expired.count
-    #     ].flatten
-    # end
-    # storage_root_info
-  end
+    let(:storage_root2) { create(:moab_storage_root) }
+    let(:expected_average_size) { '231 Bytes' }
+    let(:expected_total_size) { '462 Bytes' }
 
-  # @return [Array<Integer>] totals of counts from each storage root for:
-  #   total of counts of each CompleteMoab status (ok, invalid_checksum, etc.)
-  #   total of counts of fixity_check_expired
-  #   total of complete_moab counts - this is last element in array due to index shift to skip storage_location and stored size
-  describe '#storage_root_totals' do
-    skip('FIXME: intend to change storage_root_info internal structure soon; not testing yet')
-    # return [0] if storage_root_info.values.size.zero?
-
-    # totals = Array.new(storage_root_info.values.first.size - 3, 0)
-    # storage_root_info.each_key do |root_name|
-    #   storage_root_info[root_name][3..].each_with_index do |count, index|
-    #     totals[index] += count
-    #   end
-    # end
-    # totals
-  end
-
-  describe '#storage_root_total_count' do
     before do
       create(:complete_moab, moab_storage_root: storage_root)
       create(:complete_moab, moab_storage_root: storage_root, status: 'invalid_checksum')
-      create(:complete_moab, moab_storage_root: create(:moab_storage_root))
+      create(:complete_moab, moab_storage_root: storage_root2)
     end
 
-    it 'returns total number of Moabs on all storage roots' do
-      expect(outer_class.new.storage_root_total_count).to eq 3
+    it 'has the expected data' do
+      expect(outer_class.new.storage_root_info).to include(
+        storage_root.name => {
+          storage_location: storage_root.storage_location,
+          total_size: expected_total_size,
+          average_size: expected_average_size,
+          moab_count: 2,
+          ok_count: 1,
+          invalid_moab_count: 0,
+          invalid_checksum_count: 1,
+          moab_not_found_count: 0,
+          unexpected_version_count: 0,
+          validity_unknown_count: 0,
+          fixity_check_expired_count: 2
+        },
+        storage_root2.name => {
+          storage_location: storage_root2.storage_location,
+          total_size: expected_average_size,
+          average_size: expected_average_size,
+          moab_count: 1,
+          ok_count: 1,
+          invalid_moab_count: 0,
+          invalid_checksum_count: 0,
+          moab_not_found_count: 0,
+          unexpected_version_count: 0,
+          validity_unknown_count: 0,
+          fixity_check_expired_count: 1
+        }
+      )
     end
   end
 
-  describe '#storage_root_total_ok_count' do
+  describe 'storage roots (total) xx_count and xx_count_ok?' do
+    let(:storage_root2) { create(:moab_storage_root) }
+
     before do
-      create(:complete_moab, moab_storage_root: storage_root)
-      create(:complete_moab, moab_storage_root: storage_root, status: 'invalid_checksum')
-      create(:complete_moab, moab_storage_root: create(:moab_storage_root))
+      create(:complete_moab, moab_storage_root: storage_root, last_checksum_validation: 1.day.ago)
+      create(:complete_moab, moab_storage_root: storage_root, status: 'invalid_checksum', last_checksum_validation: 1.day.ago)
+      create(:complete_moab, moab_storage_root: storage_root2, status: 'ok', last_checksum_validation: 1.day.ago)
     end
 
-    it 'returns total number of Moabs with status ok on all storage roots' do
-      expect(outer_class.new.storage_root_total_ok_count).to eq 2
+    describe '#storage_roots_moab_count' do
+      it 'is the number of complete_moabs on each storage root, totalled' do
+        expect(outer_class.new.storage_roots_moab_count).to eq 3
+      end
+    end
+
+    describe '#storage_roots_moab_count_ok?' do
+      context 'when storage_roots_moab_count matches CompleteMoab.count' do
+        it 'true' do
+          expect(outer_class.new.storage_roots_moab_count_ok?).to be true
+        end
+      end
+
+      context 'when storage_roots_moab_count does not match CompleteMoab.count' do
+        before do
+          allow(CompleteMoab).to receive(:count).and_return(4)
+        end
+
+        it 'false' do
+          expect(outer_class.new.storage_roots_moab_count_ok?).to be false
+        end
+      end
+
+      context 'when storage_roots_moab_count does not match num_preserved_objects' do
+        before do
+          allow_any_instance_of(outer_class).to receive(:num_preserved_objects).and_return(5) # rubocop:disable RSpec/AnyInstance
+        end
+
+        it 'false' do
+          expect(outer_class.new.storage_roots_moab_count_ok?).to be false
+        end
+      end
+    end
+
+    describe '#storage_roots_ok_count' do
+      it 'is the number of complete_moabs with ok status on each storage root, totalled' do
+        expect(outer_class.new.storage_roots_ok_count).to eq 2
+      end
+    end
+
+    describe '#storage_roots_ok_count_ok?' do
+      context 'when storage_roots_ok_count matches CompleteMoab.ok.count' do
+        it 'true' do
+          expect(outer_class.new.storage_roots_ok_count_ok?).to be true
+        end
+      end
+
+      context 'when storage_roots_ok_count does not match CompleteMoab.ok.count' do
+        before do
+          allow_any_instance_of(outer_class).to receive(:storage_roots_ok_count).and_return(5) # rubocop:disable RSpec/AnyInstance
+        end
+
+        it 'false' do
+          expect(outer_class.new.storage_roots_ok_count_ok?).to be false
+        end
+      end
+    end
+
+    describe '#storage_roots_invalid_moab_count' do
+      before do
+        create(:complete_moab, moab_storage_root: storage_root, status: 'invalid_moab')
+      end
+
+      it 'is the number of complete_moabs with invalid_moab status on each storage root, totalled' do
+        expect(outer_class.new.storage_roots_invalid_moab_count).to eq 1
+      end
+    end
+
+    describe '#storage_roots_invalid_moab_count_ok?' do
+      context 'when storage_roots_invalid_moab_count is not zero' do
+        before do
+          create(:complete_moab, moab_storage_root: storage_root, status: 'invalid_moab')
+        end
+
+        it 'false' do
+          expect(outer_class.new.storage_roots_invalid_moab_count_ok?).to be false
+        end
+      end
+
+      context 'when storage_roots_invalid_moab_count is zero' do
+        context 'when CompleteMoab.invalid_moab.count is zero' do
+          before do
+            relation = CompleteMoab.where(status: 'invalid_moab')
+            allow(relation).to receive(:[]).and_return([CompleteMoab.new])
+            allow(CompleteMoab).to receive(:where).with(status: 'invalid_moab').and_return(relation)
+            allow_any_instance_of(outer_class).to receive(:storage_roots_invalid_moab_count).and_return(0) # rubocop:disable RSpec/AnyInstance
+          end
+
+          it 'true' do
+            expect(outer_class.new.storage_roots_invalid_moab_count_ok?).to be true
+          end
+        end
+
+        context 'when CompleteMoab.invalid_moab.count is not zero' do
+          before do
+            create(:complete_moab, moab_storage_root: storage_root, status: 'invalid_moab')
+            allow(outer_class.new).to receive(:storage_roots_invalid_moab_count).and_return(0)
+          end
+
+          it 'false' do
+            expect(outer_class.new.storage_roots_invalid_moab_count_ok?).to be false
+          end
+        end
+      end
+    end
+
+    describe '#storage_roots_invalid_checksum_count' do
+      it 'is the number of complete_moabs with invalid_checksum status on each storage root, totalled' do
+        expect(outer_class.new.storage_roots_invalid_checksum_count).to eq 1
+      end
+    end
+
+    describe '#storage_roots_invalid_checksum_count_ok?' do
+      context 'when storage_roots_invalid_checksum_count is not zero' do
+        it 'false' do
+          expect(outer_class.new.storage_roots_invalid_checksum_count_ok?).to be false
+        end
+      end
+
+      context 'when storage_roots_invalid_checksum_count is zero' do
+        context 'when CompleteMoab.invalid_checksum.count is zero' do
+          before do
+            CompleteMoab.invalid_checksum.delete_all
+            allow_any_instance_of(outer_class).to receive(:storage_roots_invalid_checksum_count).and_return(0) # rubocop:disable RSpec/AnyInstance
+          end
+
+          it 'true' do
+            expect(outer_class.new.storage_roots_invalid_checksum_count_ok?).to be true
+          end
+        end
+
+        context 'when CompleteMoab.invalid_checksum.count is not zero' do
+          before do
+            create(:complete_moab, moab_storage_root: storage_root, status: 'invalid_checksum')
+            allow_any_instance_of(outer_class).to receive(:storage_roots_invalid_checksum_count).and_return(0) # rubocop:disable RSpec/AnyInstance
+          end
+
+          it 'false' do
+            expect(outer_class.new.storage_roots_invalid_checksum_count_ok?).to be false
+          end
+        end
+      end
+    end
+
+    describe '#storage_roots_moab_not_found_count' do
+      before do
+        create(:complete_moab, moab_storage_root: storage_root, status: 'online_moab_not_found')
+      end
+
+      it 'is the number of complete_moabs with online_moab_not_found status on each storage root, totalled' do
+        expect(outer_class.new.storage_roots_moab_not_found_count).to eq 1
+      end
+    end
+
+    describe '#storage_roots_moab_not_found_count_ok?' do
+      context 'when storage_roots_moab_not_found_count is not zero' do
+        before do
+          create(:complete_moab, moab_storage_root: storage_root, status: 'online_moab_not_found')
+        end
+
+        it 'false' do
+          expect(outer_class.new.storage_roots_moab_not_found_count_ok?).to be false
+        end
+      end
+
+      context 'when storage_roots_moab_not_found_count is zero' do
+        context 'when CompleteMoab.online_moab_not_found.count is zero' do
+          it 'true' do
+            expect(outer_class.new.storage_roots_moab_not_found_count_ok?).to be true
+          end
+        end
+
+        context 'when CompleteMoab.online_moab_not_found.count is not zero' do
+          before do
+            create(:complete_moab, moab_storage_root: storage_root, status: 'online_moab_not_found')
+            allow(outer_class.new).to receive(:storage_roots_moab_not_found_count).and_return(0)
+          end
+
+          it 'false' do
+            expect(outer_class.new.storage_roots_moab_not_found_count_ok?).to be false
+          end
+        end
+      end
+    end
+
+    describe '#storage_roots_unexpected_version_count' do
+      before do
+        create(:complete_moab, moab_storage_root: storage_root, status: 'unexpected_version_on_storage')
+      end
+
+      it 'is the number of complete_moabs with unexpected_version_on_storage status on each storage root, totalled' do
+        expect(outer_class.new.storage_roots_unexpected_version_count).to eq 1
+      end
+    end
+
+    describe '#storage_roots_unexpected_version_count_ok?' do
+      context 'when storage_roots_unexpected_version_count is not zero' do
+        before do
+          create(:complete_moab, moab_storage_root: storage_root, status: 'unexpected_version_on_storage')
+        end
+
+        it 'false' do
+          expect(outer_class.new.storage_roots_unexpected_version_count_ok?).to be false
+        end
+      end
+
+      context 'when storage_roots_unexpected_version_count is zero' do
+        context 'when CompleteMoab.unexpected_version_on_storage.count is zero' do
+          it 'true' do
+            expect(outer_class.new.storage_roots_unexpected_version_count_ok?).to be true
+          end
+        end
+
+        context 'when CompleteMoab.unexpected_version_on_storage.count is not zero' do
+          before do
+            create(:complete_moab, moab_storage_root: storage_root, status: 'unexpected_version_on_storage')
+            allow(outer_class.new).to receive(:storage_roots_unexpected_version_count).and_return(0)
+          end
+
+          it 'false' do
+            expect(outer_class.new.storage_roots_unexpected_version_count_ok?).to be false
+          end
+        end
+      end
+    end
+
+    describe '#storage_roots_validity_unknown_count' do
+      before do
+        create(:complete_moab, moab_storage_root: storage_root2, status: 'validity_unknown')
+      end
+
+      it 'is the number of complete_moabs with validity_unknown status on each storage root, totalled' do
+        expect(outer_class.new.storage_roots_validity_unknown_count).to eq 1
+      end
+    end
+
+    describe '#storage_roots_validity_unknown_count_ok?' do
+      context 'when storage_roots_validity_unknown_count is not zero' do
+        before do
+          create(:complete_moab, moab_storage_root: storage_root, status: 'validity_unknown')
+        end
+
+        it 'false' do
+          expect(outer_class.new.storage_roots_validity_unknown_count_ok?).to be false
+        end
+      end
+
+      context 'when storage_roots_validity_unknown_count is zero' do
+        context 'when CompleteMoab.storage_roots_validity_unknown_count is zero' do
+          it 'true' do
+            expect(outer_class.new.storage_roots_validity_unknown_count_ok?).to be true
+          end
+        end
+
+        context 'when CompleteMoab.validity_unknown.count is not zero' do
+          before do
+            create(:complete_moab, moab_storage_root: storage_root, status: 'validity_unknown')
+            allow(outer_class.new).to receive(:storage_roots_invalid_moab_count).and_return(0)
+          end
+
+          it 'false' do
+            expect(outer_class.new.storage_roots_validity_unknown_count_ok?).to be false
+          end
+        end
+      end
+    end
+
+    describe '#storage_roots_fixity_check_expired_count' do
+      before do
+        create(:complete_moab, moab_storage_root: storage_root2, last_checksum_validation: 4.months.ago)
+      end
+
+      it 'is the number of complete_moabs with fixity_check_expired on each storage root, totalled' do
+        expect(outer_class.new.storage_roots_fixity_check_expired_count).to eq 1
+      end
+    end
+
+    describe '#storage_roots_fixity_check_expired_count_ok?' do
+      context 'when storage_roots_fixity_check_expired_count matches CompleteMoab.fixity_check_expired.count' do
+        it 'true' do
+          expect(outer_class.new.storage_roots_fixity_check_expired_count_ok?).to be true
+        end
+      end
+
+      context 'when storage_roots_fixity_check_expired_count does not match CompleteMoab.fixity_check_expired.count' do
+        before do
+          allow_any_instance_of(outer_class).to receive(:storage_roots_fixity_check_expired_count).and_return(5) # rubocop:disable RSpec/AnyInstance
+        end
+
+        it 'false' do
+          expect(outer_class.new.storage_roots_fixity_check_expired_count_ok?).to be false
+        end
+      end
     end
   end
 

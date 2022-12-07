@@ -10,7 +10,6 @@ RSpec.describe Dashboard::MoabStorageRootsComponent, type: :component do
   it 'renders MoabStorageRoot Information' do
     expect(rendered).to match(/MoabStorageRoot Information/)
     expect(rendered).to match(/storage location/) # table header
-    expect(rendered_html).to match('spec/fixtures/storage_root01/sdr2objects') # table data
   end
 
   it 'renders CompleteMoab statuses with blanks instead of underscores' do

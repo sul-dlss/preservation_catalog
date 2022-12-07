@@ -18,43 +18,91 @@ module Dashboard
     end
 
     def storage_root_info # rubocop:disable Metrics/AbcSize
-      storage_root_info = {}
-      MoabStorageRoot.all.each do |storage_root|
-        storage_root_info[storage_root.name] =
-          [
-            storage_root.storage_location,
-            number_to_human_size(storage_root.complete_moabs.sum(:size)),
-            number_to_human_size(storage_root.complete_moabs.average(:size) || 0),
-            storage_root.complete_moabs.count,
-            CompleteMoab.statuses.keys.map { |status| storage_root.complete_moabs.where(status: status).count },
-            storage_root.complete_moabs.fixity_check_expired.count
-          ].flatten
-      end
-      storage_root_info
-    end
-
-    # @return [Array<Integer>] totals of counts from each storage root for:
-    #   total of counts of each CompleteMoab status (ok, invalid_checksum, etc.)
-    #   total of counts of fixity_check_expired
-    #   total of complete_moab counts - this is last element in array due to index shift to skip storage_location and stored size
-    def storage_root_totals # rubocop:disable Metrics/AbcSize
-      return [0] if storage_root_info.values.size.zero?
-
-      totals = Array.new(storage_root_info.values.first.size - 3, 0)
-      storage_root_info.each_key do |root_name|
-        storage_root_info[root_name][3..].each_with_index do |count, index|
-          totals[index] += count
+      @storage_root_info ||= begin
+        storage_root_info = {}
+        MoabStorageRoot.all.each do |storage_root|
+          storage_root_info[storage_root.name] =
+            {
+              storage_location: storage_root.storage_location,
+              total_size: number_to_human_size(storage_root.complete_moabs.sum(:size)),
+              average_size: number_to_human_size(storage_root.complete_moabs.average(:size) || 0),
+              moab_count: storage_root.complete_moabs.count,
+              ok_count: storage_root.complete_moabs.where(status: :ok).count,
+              invalid_moab_count: storage_root.complete_moabs.where(status: :invalid_moab).count,
+              invalid_checksum_count: storage_root.complete_moabs.where(status: :invalid_checksum).count,
+              moab_not_found_count: storage_root.complete_moabs.where(status: :online_moab_not_found).count,
+              unexpected_version_count: storage_root.complete_moabs.where(status: :unexpected_version_on_storage).count,
+              validity_unknown_count: storage_root.complete_moabs.where(status: :validity_unknown).count,
+              fixity_check_expired_count: storage_root.complete_moabs.fixity_check_expired.count
+            }
         end
+        storage_root_info
       end
-      totals
     end
 
-    def storage_root_total_count
-      storage_root_totals.first
+    def storage_roots_moab_count
+      storage_root_totals[:moab_count]
     end
 
-    def storage_root_total_ok_count
-      storage_root_totals[1]
+    def storage_roots_moab_count_ok?
+      storage_root_totals[:moab_count] == CompleteMoab.count &&
+        storage_root_totals[:moab_count] == num_preserved_objects
+    end
+
+    def storage_roots_ok_count
+      storage_root_totals[:ok_count]
+    end
+
+    def storage_roots_ok_count_ok?
+      storage_roots_ok_count == CompleteMoab.ok.count
+    end
+
+    def storage_roots_invalid_moab_count
+      storage_root_totals[:invalid_moab_count]
+    end
+
+    def storage_roots_invalid_moab_count_ok?
+      storage_roots_invalid_moab_count&.zero? && CompleteMoab.invalid_moab.count.zero?
+    end
+
+    def storage_roots_invalid_checksum_count
+      storage_root_totals[:invalid_checksum_count]
+    end
+
+    def storage_roots_invalid_checksum_count_ok?
+      storage_roots_invalid_checksum_count&.zero? && CompleteMoab.invalid_checksum.count.zero?
+    end
+
+    def storage_roots_moab_not_found_count
+      storage_root_totals[:moab_not_found_count]
+    end
+
+    def storage_roots_moab_not_found_count_ok?
+      storage_roots_moab_not_found_count&.zero? && CompleteMoab.online_moab_not_found.count.zero?
+    end
+
+    def storage_roots_unexpected_version_count
+      storage_root_totals[:unexpected_version_count]
+    end
+
+    def storage_roots_unexpected_version_count_ok?
+      storage_roots_unexpected_version_count&.zero? && CompleteMoab.unexpected_version_on_storage.count.zero?
+    end
+
+    def storage_roots_validity_unknown_count
+      storage_root_totals[:validity_unknown_count]
+    end
+
+    def storage_roots_validity_unknown_count_ok?
+      storage_roots_validity_unknown_count&.zero? && CompleteMoab.validity_unknown.count.zero?
+    end
+
+    def storage_roots_fixity_check_expired_count
+      storage_root_totals[:fixity_check_expired_count]
+    end
+
+    def storage_roots_fixity_check_expired_count_ok?
+      storage_roots_fixity_check_expired_count == CompleteMoab.fixity_check_expired.count
     end
 
     def complete_moab_total_size
@@ -145,6 +193,45 @@ module Dashboard
 
     def complete_moab_ordered_version_counts
       CompleteMoab.group(:version).count.sort.to_h
+    end
+
+    # create this hash so we don't need to loop through storage_root_info multiple times
+    def storage_root_totals # rubocop:disable Metrics/AbcSize
+      @storage_root_totals ||=
+        if storage_root_info.values.size.zero?
+          {}
+        else
+          moab_count = 0
+          ok_count = 0
+          invalid_moab_count = 0
+          invalid_checksum_count = 0
+          moab_not_found_count = 0
+          unexpected_version_count = 0
+          validity_unknown_count = 0
+          fixity_check_expired_count = 0
+
+          storage_root_info.each_key do |root_name|
+            moab_count += storage_root_info[root_name][:moab_count]
+            ok_count += storage_root_info[root_name][:ok_count]
+            invalid_moab_count += storage_root_info[root_name][:invalid_moab_count]
+            invalid_checksum_count += storage_root_info[root_name][:invalid_checksum_count]
+            moab_not_found_count += storage_root_info[root_name][:moab_not_found_count]
+            unexpected_version_count += storage_root_info[root_name][:unexpected_version_count]
+            validity_unknown_count += storage_root_info[root_name][:validity_unknown_count]
+            fixity_check_expired_count += storage_root_info[root_name][:fixity_check_expired_count]
+          end
+
+          {
+            moab_count: moab_count,
+            ok_count: ok_count,
+            invalid_moab_count: invalid_moab_count,
+            invalid_checksum_count: invalid_checksum_count,
+            moab_not_found_count: moab_not_found_count,
+            unexpected_version_count: unexpected_version_count,
+            validity_unknown_count: validity_unknown_count,
+            fixity_check_expired_count: fixity_check_expired_count
+          }
+        end
     end
   end
 end
