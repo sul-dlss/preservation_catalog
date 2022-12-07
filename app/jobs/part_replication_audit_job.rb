@@ -7,7 +7,7 @@
 #  PartReplicationAuditJob.perform_later(po, endpoint)
 class PartReplicationAuditJob < ApplicationJob
   queue_as { "part_audit_#{arguments.second.endpoint_name}" }
-  delegate :check_child_zip_part_attributes, :logger, to: Audit::CatalogToArchive
+  delegate :check_child_zip_part_attributes, :logger, to: Audit::ReplicationSupport
 
   include UniqueJob
 

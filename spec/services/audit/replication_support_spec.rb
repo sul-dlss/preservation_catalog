@@ -2,9 +2,9 @@
 
 require 'rails_helper'
 
-RSpec.describe Audit::CatalogToArchive do
+RSpec.describe Audit::ReplicationSupport do
   let(:zmv) { create(:zipped_moab_version, preserved_object: create(:preserved_object_fixture, druid: 'bz514sm9647')) }
-  let(:results) { AuditResults.new(druid: zmv.preserved_object.druid, moab_storage_root: zmv.zip_endpoint, check_name: 'CatalogToArchiveSpec') }
+  let(:results) { AuditResults.new(druid: zmv.preserved_object.druid, moab_storage_root: zmv.zip_endpoint, check_name: 'ReplicationSupportSpec') }
   let(:version) { zmv.version }
   let(:endpoint_name) { zmv.zip_endpoint.endpoint_name }
   let(:result_prefix) { "#{version} on #{endpoint_name}" }

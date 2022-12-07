@@ -25,7 +25,7 @@ describe AbstractDeliveryJob do
   before do
     allow(Settings).to receive(:zip_storage).and_return(Rails.root.join('spec', 'fixtures', 'zip_storage'))
     allow(ResultsRecorderJob).to receive(:perform_later)
-    allow(ZipDeliveryService).to receive(:deliver).and_return(delivery_result)
+    allow(Replication::ZipDeliveryService).to receive(:deliver).and_return(delivery_result)
 
     job_implementation.perform_now(druid, version, part_s3_key, metadata)
   end

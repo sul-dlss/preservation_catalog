@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe CatalogRemediator do
+RSpec.describe Replication::FailureRemediator do
   let(:fake_audit_results_no_errors) { instance_double(AuditResults, error_results: [], add_result: nil) }
   let(:fake_audit_results_with_errors) { instance_double(AuditResults, error_results: [{ this_is: 'an error' }], add_result: nil) }
   let(:instance) { described_class.new(druid: preserved_object.druid, version: preserved_object.current_version) }
@@ -31,7 +31,7 @@ RSpec.describe CatalogRemediator do
   describe '#zipped_moab_versions_with_errors' do
     subject(:zipped_moab_versions) { instance.send(:zipped_moab_versions_with_errors).map(&:first) }
 
-    let(:fake_audit_class) { class_double(S3::S3Audit, check_replicated_zipped_moab_version: nil) }
+    let(:fake_audit_class) { class_double(Audit::ReplicationToAws, check_replicated_zipped_moab_version: nil) }
 
     before do
       # NOTE: We are mocking out the audit-related collaborations of

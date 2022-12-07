@@ -35,8 +35,8 @@ RSpec.describe ZipEndpoint do
 
   describe '#audit_class' do
     it 'returns the right audit class when one is configured' do
-      expect(described_class.find_by(endpoint_name: 'aws_s3_west_2').audit_class).to be(S3::Aws::Audit)
-      expect(described_class.find_by(endpoint_name: 'ibm_us_south').audit_class).to be(S3::Ibm::Audit)
+      expect(described_class.find_by(endpoint_name: 'aws_s3_west_2').audit_class).to be(Audit::ReplicationToAws)
+      expect(described_class.find_by(endpoint_name: 'ibm_us_south').audit_class).to be(Audit::ReplicationToIbm)
     end
 
     it 'raises a helpful error when no audit class is configured' do

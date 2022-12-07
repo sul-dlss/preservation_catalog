@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-describe ZipDeliveryService do
+describe Replication::ZipDeliveryService do
   let(:instance) { described_class.new(s3_part: s3_part, dvz_part: dvz_part, metadata: metadata) }
   let(:druid) { 'bj102hs9687' }
   let(:version) { 1 }

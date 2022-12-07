@@ -11,7 +11,7 @@ describe PartReplicationAuditJob do
   let(:logger) { instance_double(Logger) }
 
   before do
-    allow(Audit::CatalogToArchive).to receive(:logger).and_return(logger)
+    allow(Audit::ReplicationSupport).to receive(:logger).and_return(logger)
     # creation of complete moab triggers archive zip creation, as archive zips are created from moabs
     create(:complete_moab, preserved_object: preserved_object, version: preserved_object.current_version)
   end

@@ -19,7 +19,7 @@ zip_endpoints:
     endpoint_node: 'localhost'
     storage_location: 'bucket_name'
     delivery_class: 'S3WestDeliveryJob'
-    audit_class: 'S3::Aws::Audit'
+    audit_class: 'Audit::ReplicationToAws'
     access_key_id: 'foo'
     secret_access_key: 'bar'
 workflow_services_url: 'https://sul-lyberservices-test.stanford.edu/workflow/'
