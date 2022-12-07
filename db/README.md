@@ -65,7 +65,7 @@ To generate the updated ER diagram
 
 ### Basic database advice / pres cat specific guidelines
 
-Preservation Catalog uses PostgreSQL to store metadata about the last known state of all known copies of preserved SDR objects. It relies heavily on DB-level integrity constraints for keeping data consistent.
+Preservation Catalog uses PostgreSQL to store metadata about the last known state of all known copies of preserved SDR objects. It relies heavily on DB-level constraints for keeping data consistent.
 
 The Rails API docs: http://api.rubyonrails.org/classes/ActiveRecord/Transactions/ClassMethods.html
 

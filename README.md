@@ -101,7 +101,7 @@ curl -H 'Authorization: Bearer eyJhbGcxxxxx.eyJzdWIxxxxx.lWMJ66Wxx-xx' http://lo
 
 ## General Info
 
-- The PostgreSQL database is the catalog of metadata about preserved SDR content, both on premises and in the cloud.  Integrity constraints are used heavily for keeping data clean and consistent.
+- The PostgreSQL database is the catalog of metadata about preserved SDR content, both on premises and in the cloud.  Database-level constraints are used heavily for keeping data clean and consistent.
 
 - Background jobs (using ActiveJob/Resque/Redis) perform the audit and replication work.
 
