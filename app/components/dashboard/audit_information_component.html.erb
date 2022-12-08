@@ -14,7 +14,7 @@
   </thead>
   <tbody class="table-group-divider">
     <tr>
-      <td><strong>Validate Moab</strong><br/>moab-versioning integrity checks run for locally stored Moabs.</td>
+      <td><strong>Validate Moab</strong><br/>moab-versioning gem validation for well-formedness (not checksums) run for locally stored Moabs.</td>
       <td>validate_moab</td>
       <td><strong>on demand</strong></td>
       <td><strong>one</strong>:<br/>queued by preservation robot step after updating a Moab</td>
@@ -23,7 +23,7 @@
       <td class="table-secondary"/>
     </tr>
     <tr>
-      <td><strong>Moab to Catalog</strong><br/>moab-versioning integrity checks run for locally stored Moabs and verified against database info.</td>
+      <td><strong>Moab to Catalog</strong><br/>moab-versioning gem validation for well-formedness (not checksums) run for locally stored Moabs and verified against database info.</td>
       <td>m2c</td>
       <td><strong>Monthly</strong>: 11 am on the 1st of every month</td>
       <td><strong>all</strong>:<br/>queued by walking directories on MoabStorageRoot.storage_location</td>
