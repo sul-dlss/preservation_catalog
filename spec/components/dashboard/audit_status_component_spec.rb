@@ -11,6 +11,6 @@ RSpec.describe Dashboard::AuditStatusComponent, type: :component do
     expect(rendered).to match(/Moab to Catalog/) # sub status
     expect(rendered).to match(/Catalog to Archive/) # sub status
     expect(rendered_html).to match('OK') # actual status data
-    expect(rendered_html).to match(%r{<a href="resque">Redis queues</a>}) # link to redis
+    expect(rendered_html).to match(%r{<a href="queues">Redis queues</a>}) # link to redis
   end
 end
