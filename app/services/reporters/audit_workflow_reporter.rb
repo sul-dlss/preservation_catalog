@@ -14,9 +14,9 @@ module Reporters
     def handled_merge_codes
       [
         AuditResults::ACTUAL_VERS_LT_DB_OBJ,
-        AuditResults::CM_PO_VERSION_MISMATCH,
         AuditResults::DB_OBJ_ALREADY_EXISTS,
         AuditResults::DB_UPDATE_FAILED,
+        AuditResults::DB_VERSIONS_DISAGREE,
         AuditResults::FILE_NOT_IN_MANIFEST,
         AuditResults::FILE_NOT_IN_MOAB,
         AuditResults::FILE_NOT_IN_SIGNATURE_CATALOG,

@@ -11,11 +11,11 @@ RSpec.describe Dashboard::AuditService do
   end
 
   describe '#validate_moab_audit_ok?' do
-    context 'when there are CompleteMoabs with invalid_moab status' do
+    context 'when there are MoabRecords with invalid_moab status' do
       before do
-        create(:complete_moab, status: 'ok')
-        create(:complete_moab, status: 'invalid_moab')
-        create(:complete_moab, status: 'ok')
+        create(:moab_record, status: 'ok')
+        create(:moab_record, status: 'invalid_moab')
+        create(:moab_record, status: 'ok')
       end
 
       it 'returns false' do
@@ -23,11 +23,11 @@ RSpec.describe Dashboard::AuditService do
       end
     end
 
-    context 'when there are CompleteMoabs with online_moab_not_found status' do
+    context 'when there are MoabRecords with moab_on_storage_not_found status' do
       before do
-        create(:complete_moab, status: 'ok')
-        create(:complete_moab, status: 'ok')
-        create(:complete_moab, status: 'online_moab_not_found')
+        create(:moab_record, status: 'ok')
+        create(:moab_record, status: 'ok')
+        create(:moab_record, status: 'moab_on_storage_not_found')
       end
 
       it 'returns false' do
@@ -35,11 +35,11 @@ RSpec.describe Dashboard::AuditService do
       end
     end
 
-    context 'when there are no CompleteMoabs with either online_moab_not_found or invalid_moab status' do
+    context 'when there are no MoabRecords with either moab_on_storage_not_found or invalid_moab status' do
       before do
-        create(:complete_moab, status: 'ok')
-        create(:complete_moab, status: 'ok')
-        create(:complete_moab, status: 'invalid_checksum')
+        create(:moab_record, status: 'ok')
+        create(:moab_record, status: 'ok')
+        create(:moab_record, status: 'invalid_checksum')
       end
 
       it 'returns true' do
@@ -49,11 +49,11 @@ RSpec.describe Dashboard::AuditService do
   end
 
   describe '#catalog_to_moab_audit_ok?' do
-    context 'when there are CompleteMoabs with unexpected_version_on_storage status' do
+    context 'when there are MoabRecords with unexpected_version_on_storage status' do
       before do
-        create(:complete_moab, status: 'ok')
-        create(:complete_moab, status: 'unexpected_version_on_storage')
-        create(:complete_moab, status: 'ok')
+        create(:moab_record, status: 'ok')
+        create(:moab_record, status: 'unexpected_version_on_storage')
+        create(:moab_record, status: 'ok')
       end
 
       it 'returns false' do
@@ -61,11 +61,11 @@ RSpec.describe Dashboard::AuditService do
       end
     end
 
-    context 'when there are CompleteMoabs with online_moab_not_found status' do
+    context 'when there are MoabRecords with moab_on_storage_not_found status' do
       before do
-        create(:complete_moab, status: 'ok')
-        create(:complete_moab, status: 'ok')
-        create(:complete_moab, status: 'online_moab_not_found')
+        create(:moab_record, status: 'ok')
+        create(:moab_record, status: 'ok')
+        create(:moab_record, status: 'moab_on_storage_not_found')
       end
 
       it 'returns false' do
@@ -73,11 +73,11 @@ RSpec.describe Dashboard::AuditService do
       end
     end
 
-    context 'when there are no CompleteMoabs with either online_moab_not_found or unexpected_version_on_storage status' do
+    context 'when there are no MoabRecords with either moab_on_storage_not_found or unexpected_version_on_storage status' do
       before do
-        create(:complete_moab, status: 'ok')
-        create(:complete_moab, status: 'ok')
-        create(:complete_moab, status: 'invalid_checksum')
+        create(:moab_record, status: 'ok')
+        create(:moab_record, status: 'ok')
+        create(:moab_record, status: 'invalid_checksum')
       end
 
       it 'returns true' do
@@ -88,13 +88,13 @@ RSpec.describe Dashboard::AuditService do
 
   describe '#moab_to_catalog_audit_ok?' do
     before do
-      create(:complete_moab, status: 'ok')
-      create(:complete_moab, status: 'ok')
+      create(:moab_record, status: 'ok')
+      create(:moab_record, status: 'ok')
     end
 
-    context 'when status other than ok for at least one CompleteMoab' do
+    context 'when status other than ok for at least one MoabRecord' do
       before do
-        create(:complete_moab, status: 'unexpected_version_on_storage')
+        create(:moab_record, status: 'unexpected_version_on_storage')
       end
 
       it 'returns false' do
@@ -102,7 +102,7 @@ RSpec.describe Dashboard::AuditService do
       end
     end
 
-    context 'when all CompleteMoabs have status ok' do
+    context 'when all MoabRecords have status ok' do
       it 'returns true' do
         expect(outer_class.new.moab_to_catalog_audit_ok?).to be true
       end
@@ -110,11 +110,11 @@ RSpec.describe Dashboard::AuditService do
   end
 
   describe '#moab_checksum_validation_audit_ok?' do
-    context 'when there are CompleteMoabs with online_moab_not_found status' do
+    context 'when there are MoabRecords with moab_on_storage_not_found status' do
       before do
-        create(:complete_moab, status: 'ok')
-        create(:complete_moab, status: 'ok')
-        create(:complete_moab, status: 'invalid_checksum')
+        create(:moab_record, status: 'ok')
+        create(:moab_record, status: 'ok')
+        create(:moab_record, status: 'invalid_checksum')
       end
 
       it 'returns false' do
@@ -122,11 +122,11 @@ RSpec.describe Dashboard::AuditService do
       end
     end
 
-    context 'when there are no CompleteMoabs with either online_moab_not_found or unexpected_version_on_storage status' do
+    context 'when there are no MoabRecords with either moab_on_storage_not_found or unexpected_version_on_storage status' do
       before do
-        create(:complete_moab, status: 'ok')
-        create(:complete_moab, status: 'ok')
-        create(:complete_moab, status: 'unexpected_version_on_storage')
+        create(:moab_record, status: 'ok')
+        create(:moab_record, status: 'ok')
+        create(:moab_record, status: 'unexpected_version_on_storage')
       end
 
       it 'returns true' do
@@ -166,12 +166,12 @@ RSpec.describe Dashboard::AuditService do
     end
   end
 
-  context 'when at least one CompleteMoab has last_version_audit older than MOAB_LAST_VERSION_AUDIT_THRESHOLD' do
+  context 'when at least one MoabRecord has last_version_audit older than MOAB_LAST_VERSION_AUDIT_THRESHOLD' do
     before do
-      create(:complete_moab, last_version_audit: 45.days.ago)
-      create(:complete_moab, last_version_audit: 1.day.ago)
-      create(:complete_moab, last_version_audit: 2.days.ago)
-      create(:complete_moab, last_version_audit: 30.days.ago)
+      create(:moab_record, last_version_audit: 45.days.ago)
+      create(:moab_record, last_version_audit: 1.day.ago)
+      create(:moab_record, last_version_audit: 2.days.ago)
+      create(:moab_record, last_version_audit: 30.days.ago)
     end
 
     describe '#num_moab_audits_older_than_threshold' do
@@ -188,9 +188,9 @@ RSpec.describe Dashboard::AuditService do
     end
   end
 
-  context 'when no CompleteMoabs have last_version_audit older than MOAB_LAST_VERSION_AUDIT_THRESHOLD' do
+  context 'when no MoabRecords have last_version_audit older than MOAB_LAST_VERSION_AUDIT_THRESHOLD' do
     before do
-      create(:complete_moab, last_version_audit: 5.days.ago)
+      create(:moab_record, last_version_audit: 5.days.ago)
     end
 
     describe '#num_moab_audits_older_than_threshold' do

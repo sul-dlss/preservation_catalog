@@ -25,7 +25,7 @@ RSpec.describe AuditResultsReporter do
                                  "Version directory name not in 'v00xx' format: original-v1",
                                  'Version v0005: No files present in manifest dir'
                                ])
-      audit_results.add_result(AuditResults::CM_STATUS_CHANGED, old_status: 'invalid_checksum', new_status: 'ok')
+      audit_results.add_result(AuditResults::MOAB_RECORD_STATUS_CHANGED, old_status: 'invalid_checksum', new_status: 'ok')
     end
 
     it 'invokes the reporters' do
@@ -49,16 +49,16 @@ RSpec.describe AuditResultsReporter do
 
       expect(audit_workflow_reporter).to have_received(:report_completed)
         .with(druid: druid, version: actual_version, storage_area: ms_root, check_name: nil,
-              result: { cm_status_changed: 'CompleteMoab status changed from invalid_checksum to ok' })
+              result: { moab_record_status_changed: 'MoabRecord status changed from invalid_checksum to ok' })
       expect(event_service_reporter).to have_received(:report_completed)
         .with(druid: druid, version: actual_version, storage_area: ms_root, check_name: nil,
-              result: { cm_status_changed: 'CompleteMoab status changed from invalid_checksum to ok' })
+              result: { moab_record_status_changed: 'MoabRecord status changed from invalid_checksum to ok' })
       expect(honeybadger_reporter).to have_received(:report_completed)
         .with(druid: druid, version: actual_version, storage_area: ms_root, check_name: nil,
-              result: { cm_status_changed: 'CompleteMoab status changed from invalid_checksum to ok' })
+              result: { moab_record_status_changed: 'MoabRecord status changed from invalid_checksum to ok' })
       expect(logger_reporter).to have_received(:report_completed)
         .with(druid: druid, version: actual_version, storage_area: ms_root, check_name: nil,
-              result: { cm_status_changed: 'CompleteMoab status changed from invalid_checksum to ok' })
+              result: { moab_record_status_changed: 'MoabRecord status changed from invalid_checksum to ok' })
     end
   end
 end

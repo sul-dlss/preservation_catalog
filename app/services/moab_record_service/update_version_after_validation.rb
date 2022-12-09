@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-module CompleteMoabService
-  # Updates CompletedMoab and associated objects based on a moab on storage after validation of moab.
+module MoabRecordService
+  # Updates MoabRecord and associated objects based on a moab on storage after validation of moab.
   class UpdateVersionAfterValidation < UpdateVersion
     def self.execute(druid:, incoming_version:, incoming_size:, moab_storage_root:, checksums_validated: false)
       new(druid: druid, incoming_version: incoming_version, incoming_size: incoming_size,
@@ -15,7 +15,7 @@ module CompleteMoabService
     # checksums_validated may be set to true if the caller takes responsibility for having validated the checksums
     def execute(checksums_validated: false)
       perform_execute do
-        if complete_moab_exists?
+        if moab_record_exists?
           Rails.logger.debug "update_version_after_validation #{druid} called"
           if validation_errors?
             Rails.logger.debug "update_version_after_validation #{druid} found validation errors"
@@ -28,7 +28,7 @@ module CompleteMoabService
             record_no_validation_errors(checksums_validated)
           end
         else
-          create_missing_complete_moab
+          create_missing_moab_record
         end
       end
     end
@@ -42,29 +42,29 @@ module CompleteMoabService
 
     def record_validity_unknown
       update_catalog(status: 'validity_unknown')
-      # for case when no db updates b/c pres_obj version != complete_moab version
-      update_complete_moab_to_validity_unknown unless complete_moab.validity_unknown?
+      # for case when no db updates b/c pres_obj version != moab_record version
+      update_moab_record_to_validity_unknown unless moab_record.validity_unknown?
     end
 
     def record_invalid
       update_catalog(status: 'invalid_moab', checksums_validated: true)
-      # for case when no db updates b/c pres_obj version != complete_moab version
-      update_complete_moab_to_invalid_moab unless complete_moab.invalid_moab?
+      # for case when no db updates b/c pres_obj version != moab_record version
+      update_moab_record_to_invalid_moab unless moab_record.invalid_moab?
     end
 
-    def update_complete_moab_to_validity_unknown
+    def update_moab_record_to_validity_unknown
       with_active_record_transaction_and_rescue do
-        status_handler.update_complete_moab_status('validity_unknown')
-        complete_moab.update_audit_timestamps(moab_on_storage_validator.ran_moab_validation?, false)
-        complete_moab.save!
+        status_handler.update_moab_record_status('validity_unknown')
+        moab_record.update_audit_timestamps(moab_on_storage_validator.ran_moab_validation?, false)
+        moab_record.save!
       end
     end
 
-    def update_complete_moab_to_invalid_moab
+    def update_moab_record_to_invalid_moab
       with_active_record_transaction_and_rescue do
-        status_handler.update_complete_moab_status('invalid_moab')
-        complete_moab.update_audit_timestamps(moab_on_storage_validator.ran_moab_validation?, false)
-        complete_moab.save!
+        status_handler.update_moab_record_status('invalid_moab')
+        moab_record.update_audit_timestamps(moab_on_storage_validator.ran_moab_validation?, false)
+        moab_record.save!
       end
     end
   end

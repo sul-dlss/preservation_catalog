@@ -63,7 +63,7 @@ describe PlexerJob do
 
     before do
       create(:zip_endpoint, delivery_class: 2) # new 3rd endpoint, preserved_object should 3 ZMVs
-      create(:complete_moab, preserved_object: po, version: po.current_version)
+      create(:moab_record, preserved_object: po, version: po.current_version)
     end
 
     it 'splits the message out to endpoints' do

@@ -7,8 +7,8 @@
 class CatalogController < ApiController
   # POST /v1/catalog
   def create
-    results = CompleteMoabService::Create.execute(druid: bare_druid, incoming_version: incoming_version, incoming_size: incoming_size,
-                                                  moab_storage_root: moab_storage_root, checksums_validated: checksums_validated)
+    results = MoabRecordService::Create.execute(druid: bare_druid, incoming_version: incoming_version, incoming_size: incoming_size,
+                                                moab_storage_root: moab_storage_root, checksums_validated: checksums_validated)
     status_code =
       if results.contains_result_code?(:created_new_object)
         :created # 201
@@ -25,8 +25,8 @@ class CatalogController < ApiController
   # PUT/PATCH /v1/catalog/:id
   # User can only update a partial record (application controls what can be updated)
   def update
-    results = CompleteMoabService::UpdateVersion.execute(druid: bare_druid, incoming_version: incoming_version, incoming_size: incoming_size,
-                                                         moab_storage_root: moab_storage_root, checksums_validated: checksums_validated)
+    results = MoabRecordService::UpdateVersion.execute(druid: bare_druid, incoming_version: incoming_version, incoming_size: incoming_size,
+                                                       moab_storage_root: moab_storage_root, checksums_validated: checksums_validated)
     status_code =
       if results.contains_result_code?(:actual_vers_gt_db_obj)
         :ok # 200
@@ -37,7 +37,7 @@ class CatalogController < ApiController
       elsif results.contains_result_code?(:actual_vers_lt_db_obj)
         :bad_request # 400
       else
-        :internal_server_error # 500 including  :unexpected_version, :cm_po_version_mismatch, :db_update_failed
+        :internal_server_error # 500 including  :unexpected_version, :db_versions_disagree, :db_update_failed
       end
     render status: status_code, json: results.to_json
   end

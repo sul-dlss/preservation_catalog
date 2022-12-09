@@ -51,7 +51,7 @@ RSpec.describe Reporters::AuditWorkflowReporter do
     end
 
     context 'when other errors' do
-      let(:result1) { { AuditResults::CM_PO_VERSION_MISMATCH => 'does not match PreservedObject current_version' } }
+      let(:result1) { { AuditResults::DB_VERSIONS_DISAGREE => 'does not match PreservedObject current_version' } }
       let(:result2) { { AuditResults::UNEXPECTED_VERSION => 'actual version (6) has unexpected relationship to db version' } }
 
       it 'merges errors and updates workflow' do
@@ -66,7 +66,7 @@ RSpec.describe Reporters::AuditWorkflowReporter do
     end
 
     context 'when workflow does not exist' do
-      let(:result) { { AuditResults::CM_PO_VERSION_MISMATCH => 'does not match PreservedObject current_version' } }
+      let(:result) { { AuditResults::DB_VERSIONS_DISAGREE => 'does not match PreservedObject current_version' } }
 
       before do
         call_count = 0
@@ -99,7 +99,7 @@ RSpec.describe Reporters::AuditWorkflowReporter do
   end
 
   describe '#report_completed' do
-    let(:result) { { AuditResults::CM_STATUS_CHANGED => 'CompleteMoab status changed from invalid_moab' } }
+    let(:result) { { AuditResults::MOAB_RECORD_STATUS_CHANGED => 'MoabRecord status changed from invalid_moab' } }
 
     it 'updates workflow' do
       subject.report_completed(druid: druid, version: actual_version, storage_area: ms_root, check_name: check_name, result: result)

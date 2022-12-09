@@ -10,11 +10,11 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_10_31_220235) do
+ActiveRecord::Schema[7.0].define(version: 2022_12_14_121216) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
-  create_table "complete_moabs", force: :cascade do |t|
+  create_table "moab_records", force: :cascade do |t|
     t.integer "version", null: false
     t.bigint "preserved_object_id", null: false
     t.bigint "moab_storage_root_id", null: false
@@ -27,17 +27,17 @@ ActiveRecord::Schema[7.0].define(version: 2022_10_31_220235) do
     t.datetime "last_version_audit", precision: nil
     t.string "status_details"
     t.bigint "from_moab_storage_root_id"
-    t.index ["created_at"], name: "index_complete_moabs_on_created_at"
-    t.index ["from_moab_storage_root_id"], name: "index_complete_moabs_on_from_moab_storage_root_id"
-    t.index ["last_checksum_validation"], name: "index_complete_moabs_on_last_checksum_validation"
-    t.index ["last_moab_validation"], name: "index_complete_moabs_on_last_moab_validation"
-    t.index ["last_version_audit"], name: "index_complete_moabs_on_last_version_audit"
-    t.index ["moab_storage_root_id"], name: "index_complete_moabs_on_moab_storage_root_id"
-    t.index ["preserved_object_id", "moab_storage_root_id", "version"], name: "index_complete_moabs_on_po_and_storage_root_and_version", unique: true
-    t.index ["preserved_object_id", "moab_storage_root_id"], name: "index_complete_moab_on_po_and_storage_root_id", unique: true
-    t.index ["preserved_object_id"], name: "index_complete_moabs_on_preserved_object_id", unique: true
-    t.index ["status"], name: "index_complete_moabs_on_status"
-    t.index ["updated_at"], name: "index_complete_moabs_on_updated_at"
+    t.index ["created_at"], name: "index_moab_records_on_created_at"
+    t.index ["from_moab_storage_root_id"], name: "index_moab_records_on_from_moab_storage_root_id"
+    t.index ["last_checksum_validation"], name: "index_moab_records_on_last_checksum_validation"
+    t.index ["last_moab_validation"], name: "index_moab_records_on_last_moab_validation"
+    t.index ["last_version_audit"], name: "index_moab_records_on_last_version_audit"
+    t.index ["moab_storage_root_id"], name: "index_moab_records_on_moab_storage_root_id"
+    t.index ["preserved_object_id", "moab_storage_root_id", "version"], name: "index_moab_record_on_po_and_storage_root_and_version", unique: true
+    t.index ["preserved_object_id", "moab_storage_root_id"], name: "index_moab_record_on_po_and_storage_root_id", unique: true
+    t.index ["preserved_object_id"], name: "index_moab_records_on_preserved_object_id", unique: true
+    t.index ["status"], name: "index_moab_records_on_status"
+    t.index ["updated_at"], name: "index_moab_records_on_updated_at"
   end
 
   create_table "moab_storage_roots", force: :cascade do |t|
@@ -99,9 +99,9 @@ ActiveRecord::Schema[7.0].define(version: 2022_10_31_220235) do
     t.index ["zip_endpoint_id"], name: "index_zipped_moab_versions_on_zip_endpoint_id"
   end
 
-  add_foreign_key "complete_moabs", "moab_storage_roots"
-  add_foreign_key "complete_moabs", "moab_storage_roots", column: "from_moab_storage_root_id"
-  add_foreign_key "complete_moabs", "preserved_objects"
+  add_foreign_key "moab_records", "moab_storage_roots"
+  add_foreign_key "moab_records", "moab_storage_roots", column: "from_moab_storage_root_id"
+  add_foreign_key "moab_records", "preserved_objects"
   add_foreign_key "zip_parts", "zipped_moab_versions"
   add_foreign_key "zipped_moab_versions", "preserved_objects"
   add_foreign_key "zipped_moab_versions", "zip_endpoints"

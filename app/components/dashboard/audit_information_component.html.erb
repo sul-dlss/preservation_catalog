@@ -19,7 +19,7 @@
       <td><strong>on demand</strong></td>
       <td><strong>one</strong>:<br/>queued by preservation robot step after updating a Moab</td>
       <td class="text-end<%= ' table-warning' if moab_audits_older_than_threshold? %>">Moab audits older than <%= moab_audit_age_threshold %>:<hr/><%= num_moab_audits_older_than_threshold %></td>
-      <td class="text-end<%= ' table-danger' if any_complete_moab_errors? %>"><%= num_complete_moab_not_ok %></td>
+      <td class="text-end<%= ' table-danger' if any_moab_record_errors? %>"><%= num_moab_record_not_ok %></td>
       <td class="table-secondary"/>
     </tr>
     <tr>
@@ -28,7 +28,7 @@
       <td><strong>Monthly</strong>: 11 am on the 1st of every month</td>
       <td><strong>all</strong>:<br/>queued by walking directories on MoabStorageRoot.storage_location</td>
       <td class="text-end<%= ' table-warning' if moab_audits_older_than_threshold? %>">Moab audits older than <%= moab_audit_age_threshold %>:<hr/><%= num_moab_audits_older_than_threshold %></td>
-      <td class="text-end<%= ' table-danger' if any_complete_moab_errors? %>"><%= num_complete_moab_not_ok %></td>
+      <td class="text-end<%= ' table-danger' if any_moab_record_errors? %>"><%= num_moab_record_not_ok %></td>
       <td class="table-secondary"/>
     </tr>
     <tr>
@@ -37,16 +37,16 @@
       <td><strong>Monthly</strong>: 11 am on the 15th of every month</td>
       <td><strong>all</strong>:<br/>queued by associated MoabStorageRoot</td>
       <td class="text-end<%= ' table-warning' if moab_audits_older_than_threshold? %>">Moab audits older than <%= moab_audit_age_threshold %>:<hr/><%= num_moab_audits_older_than_threshold %></td>
-      <td class="text-end<%= ' table-danger' if any_complete_moab_errors? %>"><%= num_complete_moab_not_ok %></td>
+      <td class="text-end<%= ' table-danger' if any_moab_record_errors? %>"><%= num_moab_record_not_ok %></td>
       <td class="table-secondary"/>
     </tr>
     <tr>
       <td><strong>Checksum Validation (CV)</strong><br/>Compare checksums in Moab metadata files on local storage with computed checksums for Moab metadata and content files.</td>
       <td>checksum_validation</td>
-      <td><strong>Weekly</strong>: 1am on Sunday<br/><em>for CompleteMoabs with expired checks</em></td>
+      <td><strong>Weekly</strong>: 1am on Sunday<br/><em>for MoabRecords with expired checks</em></td>
       <td><strong>subset</strong>:<br/>expired checksums queued by associated MoabStorageRoot</td>
       <td class="text-end<%= ' table-warning' if moab_audits_older_than_threshold? %>">Moab audits older than <%= moab_audit_age_threshold %>:<hr/><%= num_moab_audits_older_than_threshold %></td>
-      <td class="text-end<%= ' table-danger' unless moab_checksum_validation_audit_ok? %>"><%= CompleteMoab.invalid_checksum.count %></td>
+      <td class="text-end<%= ' table-danger' unless moab_checksum_validation_audit_ok? %>"><%= MoabRecord.invalid_checksum.count %></td>
       <td class="text-center<%= ' table-warning' if moabs_with_expired_checksum_validation? %>"><%= num_moab_expired_checksum_validation %><br/><br/>(passing checks expire 90 days after they are run)</td>
     </tr>
     <tr>

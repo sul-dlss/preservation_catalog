@@ -8,12 +8,12 @@ class DashboardController < ApplicationController
     render 'dashboard/_moab_storage_status'
   end
 
-  def complete_moab_versions
-    render 'dashboard/_complete_moab_versions'
+  def moab_record_versions
+    render 'dashboard/_moab_record_versions'
   end
 
-  def complete_moab_info
-    render 'dashboard/_complete_moab_info'
+  def moab_record_info
+    render 'dashboard/_moab_record_info'
   end
 
   def storage_root_data

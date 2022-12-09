@@ -15,7 +15,7 @@ moab:
 preservation_policy:
   # the frequency with which the existence of the appropriate archive copies should be checked.
   archive_ttl: 7_776_000 # 90 days
-  # the frequency with which the online copies should be checked for fixity.
+  # the frequency with which the Moabs on storage should be checked for fixity.
   fixity_ttl: 7_776_000 # 90 days
 
 provlog:

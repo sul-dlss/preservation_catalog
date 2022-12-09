@@ -12,12 +12,12 @@ RSpec.describe Dashboard::AuditInformationComponent, type: :component do
     expect(rendered).to match(/0/) # table data
   end
 
-  context 'when at least one CompleteMoab has last_version_audit older than MOAB_LAST_VERSION_AUDIT_THRESHOLD' do
+  context 'when at least one MoabRecord has last_version_audit older than MOAB_LAST_VERSION_AUDIT_THRESHOLD' do
     before do
-      create(:complete_moab, last_version_audit: 45.days.ago)
-      create(:complete_moab, last_version_audit: 1.day.ago)
-      create(:complete_moab, last_version_audit: 2.days.ago)
-      create(:complete_moab, last_version_audit: 30.days.ago)
+      create(:moab_record, last_version_audit: 45.days.ago)
+      create(:moab_record, last_version_audit: 1.day.ago)
+      create(:moab_record, last_version_audit: 2.days.ago)
+      create(:moab_record, last_version_audit: 30.days.ago)
     end
 
     it 'renders Moab audits older than threshold with warning styling' do
@@ -26,9 +26,9 @@ RSpec.describe Dashboard::AuditInformationComponent, type: :component do
     end
   end
 
-  context 'when no CompleteMoabs have last_version_audit older than MOAB_LAST_VERSION_AUDIT_THRESHOLD' do
+  context 'when no MoabRecords have last_version_audit older than MOAB_LAST_VERSION_AUDIT_THRESHOLD' do
     before do
-      create(:complete_moab, last_version_audit: 5.days.ago)
+      create(:moab_record, last_version_audit: 5.days.ago)
     end
 
     it 'renders Moab audits older than threshold without warning styling' do
@@ -36,14 +36,14 @@ RSpec.describe Dashboard::AuditInformationComponent, type: :component do
     end
   end
 
-  describe 'when CompleteMoabs have expired checksums' do
+  describe 'when MoabRecords have expired checksums' do
     before do
-      create(:complete_moab, moab_storage_root: storage_root, last_checksum_validation: Time.zone.now)
-      create(:complete_moab, preserved_object: create(:preserved_object), last_checksum_validation: 4.months.ago)
-      create(:complete_moab, moab_storage_root: storage_root)
+      create(:moab_record, moab_storage_root: storage_root, last_checksum_validation: Time.zone.now)
+      create(:moab_record, preserved_object: create(:preserved_object), last_checksum_validation: 4.months.ago)
+      create(:moab_record, moab_storage_root: storage_root)
     end
 
-    it 'renders CompleteMoab.fixity_check_expired.count with warning styling' do
+    it 'renders MoabRecord.fixity_check_expired.count with warning styling' do
       expired_checksums_node = rendered.css('.table-warning').find { |node| node.text =~ /passing checks expire 90 days after they are run\)$/ }
       expect(expired_checksums_node.content).to match(/^2/)
     end

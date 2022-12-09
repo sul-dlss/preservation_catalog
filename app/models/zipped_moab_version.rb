@@ -21,7 +21,7 @@ class ZippedMoabVersion < ApplicationRecord
   # ideally, there should be only one distinct parts_count value among a set of sibling
   # zip_parts.  if there's variation in the count, that implies the zip was remade, and that
   # the part count differed between the zip invocations (which may imply a zip implementation
-  # change, bitrot in the online Moab being archived, or some other unknown cause of drift).
+  # change, bitrot in the Moab on storage being archived, or some other unknown cause of drift).
   # hopefully this happens rarely or not at all, but an example scenario would be:
   # 1) zips get lost from cloud provider, 2) druid is re-queued for replication, no cached
   # zips available, 3) multi-part zip is remade, number of parts is fewer than prior zip/push,

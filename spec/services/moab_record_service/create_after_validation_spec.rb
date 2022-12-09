@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 require 'rails_helper'
-require 'services/complete_moab_service/shared_examples'
+require 'services/moab_record_service/shared_examples'
 
-RSpec.describe CompleteMoabService::CreateAfterValidation do
+RSpec.describe MoabRecordService::CreateAfterValidation do
   let(:druid) { 'ab123cd4567' }
   let(:incoming_version) { 6 }
   let(:incoming_size) { 9876 }
@@ -25,7 +25,7 @@ RSpec.describe CompleteMoabService::CreateAfterValidation do
   describe '#execute' do
     let(:valid_druid) { 'bp628nk4868' }
     let(:storage_dir) { 'spec/fixtures/storage_root02/sdr2objects' }
-    let(:complete_moab_service) do
+    let(:moab_record_service) do
       described_class.new(druid: valid_druid, incoming_version: incoming_version, incoming_size: incoming_size, moab_storage_root: moab_storage_root)
     end
 
@@ -36,56 +36,56 @@ RSpec.describe CompleteMoabService::CreateAfterValidation do
     context 'sets validation timestamps' do
       let(:t) { Time.current }
       let(:moab_storage_root) { MoabStorageRoot.find_by(storage_location: storage_dir) }
-      let(:complete_moab) { complete_moab_service.preserved_object.complete_moab }
+      let(:moab_record) { moab_record_service.preserved_object.moab_record }
 
-      before { complete_moab_service.execute }
+      before { moab_record_service.execute }
 
       it 'sets last_moab_validation with current time' do
-        expect(complete_moab.last_moab_validation).to be_within(10).of(t)
+        expect(moab_record.last_moab_validation).to be_within(10).of(t)
       end
 
       it 'sets last_version_audit with current time' do
-        expect(complete_moab.last_version_audit).to be_within(10).of(t)
+        expect(moab_record.last_version_audit).to be_within(10).of(t)
       end
     end
 
-    it 'creates PreservedObject and CompleteMoab in database when there are no validation errors' do
-      complete_moab_service = described_class.new(druid: valid_druid, incoming_version: incoming_version, incoming_size: incoming_size,
-                                                  moab_storage_root: moab_storage_root)
-      complete_moab_service.execute
+    it 'creates PreservedObject and MoabRecord in database when there are no validation errors' do
+      moab_record_service = described_class.new(druid: valid_druid, incoming_version: incoming_version, incoming_size: incoming_size,
+                                                moab_storage_root: moab_storage_root)
+      moab_record_service.execute
       new_preserved_object = PreservedObject.find_by(druid: valid_druid, current_version: incoming_version)
       expect(new_preserved_object).not_to be_nil
-      new_complete_moab = new_preserved_object.complete_moab
-      expect(new_complete_moab).not_to be_nil
-      expect(new_complete_moab.status).to eq 'validity_unknown'
+      new_moab_record = new_preserved_object.moab_record
+      expect(new_moab_record).not_to be_nil
+      expect(new_moab_record.status).to eq 'validity_unknown'
     end
 
-    it 'creates CompleteMoab with "ok" status and validation timestamps if no validation errors and caller ran CV' do
-      complete_moab_service = described_class.new(druid: valid_druid, incoming_version: incoming_version, incoming_size: incoming_size,
-                                                  moab_storage_root: moab_storage_root)
-      complete_moab_service.execute(checksums_validated: true)
+    it 'creates MoabRecord with "ok" status and validation timestamps if no validation errors and caller ran CV' do
+      moab_record_service = described_class.new(druid: valid_druid, incoming_version: incoming_version, incoming_size: incoming_size,
+                                                moab_storage_root: moab_storage_root)
+      moab_record_service.execute(checksums_validated: true)
       new_preserved_object = PreservedObject.find_by(druid: valid_druid, current_version: incoming_version)
       expect(new_preserved_object).not_to be_nil
-      new_complete_moab = new_preserved_object.complete_moab
-      expect(new_complete_moab).not_to be_nil
-      expect(new_complete_moab.status).to eq 'ok'
-      expect(new_complete_moab.last_checksum_validation).to be_an ActiveSupport::TimeWithZone
+      new_moab_record = new_preserved_object.moab_record
+      expect(new_moab_record).not_to be_nil
+      expect(new_moab_record.status).to eq 'ok'
+      expect(new_moab_record.last_checksum_validation).to be_an ActiveSupport::TimeWithZone
     end
 
     it 'calls moab-versioning Stanford::StorageObjectValidator.validation_errors' do
       storage_object_validator = instance_double(Stanford::StorageObjectValidator)
       expect(storage_object_validator).to receive(:validation_errors).and_return([])
       allow(Stanford::StorageObjectValidator).to receive(:new).and_return(storage_object_validator)
-      complete_moab_service = described_class.new(druid: valid_druid, incoming_version: incoming_version, incoming_size: incoming_size,
-                                                  moab_storage_root: moab_storage_root)
-      complete_moab_service.execute
+      moab_record_service = described_class.new(druid: valid_druid, incoming_version: incoming_version, incoming_size: incoming_size,
+                                                moab_storage_root: moab_storage_root)
+      moab_record_service.execute
     end
 
     context 'when moab is invalid' do
       let(:storage_dir) { 'spec/fixtures/bad_root01/bad_moab_storage_trunk' }
       let(:moab_storage_root) { MoabStorageRoot.find_by(storage_location: storage_dir) }
       let(:invalid_druid) { 'xx000xx0000' }
-      let(:complete_moab_service) do
+      let(:moab_record_service) do
         described_class.new(druid: invalid_druid, incoming_version: incoming_version, incoming_size: incoming_size,
                             moab_storage_root: moab_storage_root)
       end
@@ -97,28 +97,28 @@ RSpec.describe CompleteMoabService::CreateAfterValidation do
         end
       end
 
-      it 'creates PreservedObject, and CompleteMoab with "invalid_moab" status in database' do
-        complete_moab_service.execute
+      it 'creates PreservedObject, and MoabRecord with "invalid_moab" status in database' do
+        moab_record_service.execute
         new_preserved_object = PreservedObject.find_by(druid: invalid_druid, current_version: incoming_version)
         expect(new_preserved_object).not_to be_nil
-        new_complete_moab = new_preserved_object.complete_moab
-        expect(new_complete_moab).not_to be_nil
-        expect(new_complete_moab.status).to eq 'invalid_moab'
-        expect(new_complete_moab.last_moab_validation).to be_a ActiveSupport::TimeWithZone
-        expect(new_complete_moab.last_version_audit).to be_a ActiveSupport::TimeWithZone
+        new_moab_record = new_preserved_object.moab_record
+        expect(new_moab_record).not_to be_nil
+        expect(new_moab_record.status).to eq 'invalid_moab'
+        expect(new_moab_record.last_moab_validation).to be_a ActiveSupport::TimeWithZone
+        expect(new_moab_record.last_version_audit).to be_a ActiveSupport::TimeWithZone
       end
 
-      it 'creates CompleteMoab with "invalid_moab" status in database even if caller ran CV' do
-        complete_moab_service.execute(checksums_validated: true)
+      it 'creates MoabRecord with "invalid_moab" status in database even if caller ran CV' do
+        moab_record_service.execute(checksums_validated: true)
         new_preserved_object = PreservedObject.find_by(druid: invalid_druid, current_version: incoming_version)
         expect(new_preserved_object).not_to be_nil
-        new_complete_moab = new_preserved_object.complete_moab
-        expect(new_complete_moab).not_to be_nil
-        expect(new_complete_moab.status).to eq 'invalid_moab'
+        new_moab_record = new_preserved_object.moab_record
+        expect(new_moab_record).not_to be_nil
+        expect(new_moab_record.status).to eq 'invalid_moab'
       end
 
       it 'includes invalid moab result' do
-        results = complete_moab_service.execute.results
+        results = moab_record_service.execute.results
         expect(results).to include(a_hash_including(AuditResults::INVALID_MOAB => /Invalid Moab, validation errors:/))
       end
 
@@ -127,9 +127,9 @@ RSpec.describe CompleteMoabService::CreateAfterValidation do
           let(:results) do
             allow(PreservedObject).to receive(:create!).with(hash_including(druid: invalid_druid))
                                                        .and_raise(ActiveRecord::ActiveRecordError, 'foo')
-            complete_moab_service = described_class.new(druid: invalid_druid, incoming_version: incoming_version, incoming_size: incoming_size,
-                                                        moab_storage_root: moab_storage_root)
-            complete_moab_service.execute.results
+            moab_record_service = described_class.new(druid: invalid_druid, incoming_version: incoming_version, incoming_size: incoming_size,
+                                                      moab_storage_root: moab_storage_root)
+            moab_record_service.execute.results
           end
 
           it 'DB_UPDATE_FAILED result' do
@@ -141,18 +141,18 @@ RSpec.describe CompleteMoabService::CreateAfterValidation do
           end
         end
 
-        it "rolls back PreservedObject creation if the CompleteMoab can't be created (e.g. due to DB constraint violation)" do
-          allow(CompleteMoab).to receive(:create!).and_raise(ActiveRecord::RecordInvalid)
-          complete_moab_service = described_class.new(druid: invalid_druid, incoming_version: incoming_version, incoming_size: incoming_size,
-                                                      moab_storage_root: moab_storage_root)
-          complete_moab_service.execute
+        it "rolls back PreservedObject creation if the MoabRecord can't be created (e.g. due to DB constraint violation)" do
+          allow(MoabRecord).to receive(:create!).and_raise(ActiveRecord::RecordInvalid)
+          moab_record_service = described_class.new(druid: invalid_druid, incoming_version: incoming_version, incoming_size: incoming_size,
+                                                    moab_storage_root: moab_storage_root)
+          moab_record_service.execute
           expect(PreservedObject.where(druid: druid)).not_to exist
         end
       end
     end
 
     context 'returns' do
-      let(:audit_result) { complete_moab_service.execute }
+      let(:audit_result) { moab_record_service.execute }
       let(:results) { audit_result.results }
 
       it '1 CREATED_NEW_OBJECT result' do

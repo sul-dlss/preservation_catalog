@@ -4,17 +4,17 @@ require 'action_view' # for number_to_human_size
 
 # services for dashboard
 module Dashboard
-  # methods pertaining to PreservedObject and CompleteMoab database data for dashboard
+  # methods pertaining to PreservedObject and MoabRecord database data for dashboard
   module MoabOnStorageService # rubocop:disable Metrics/ModuleLength
     include ActionView::Helpers::NumberHelper # for number_to_human_size
 
     def moabs_on_storage_ok?
-      moab_on_storage_counts_ok? && !any_complete_moab_errors?
+      moab_on_storage_counts_ok? && !any_moab_record_errors?
     end
 
     def moab_on_storage_counts_ok?
-      preserved_object_complete_moab_counts_match? &&
-        num_object_versions_preserved_object_complete_moab_match?
+      preserved_object_moab_record_counts_match? &&
+        num_object_versions_preserved_object_moab_record_match?
     end
 
     def storage_root_info # rubocop:disable Metrics/AbcSize
@@ -24,16 +24,16 @@ module Dashboard
           storage_root_info[storage_root.name] =
             {
               storage_location: storage_root.storage_location,
-              total_size: number_to_human_size(storage_root.complete_moabs.sum(:size)),
-              average_size: number_to_human_size(storage_root.complete_moabs.average(:size) || 0),
-              moab_count: storage_root.complete_moabs.count,
-              ok_count: storage_root.complete_moabs.where(status: :ok).count,
-              invalid_moab_count: storage_root.complete_moabs.where(status: :invalid_moab).count,
-              invalid_checksum_count: storage_root.complete_moabs.where(status: :invalid_checksum).count,
-              moab_not_found_count: storage_root.complete_moabs.where(status: :online_moab_not_found).count,
-              unexpected_version_count: storage_root.complete_moabs.where(status: :unexpected_version_on_storage).count,
-              validity_unknown_count: storage_root.complete_moabs.where(status: :validity_unknown).count,
-              fixity_check_expired_count: storage_root.complete_moabs.fixity_check_expired.count
+              total_size: number_to_human_size(storage_root.moab_records.sum(:size)),
+              average_size: number_to_human_size(storage_root.moab_records.average(:size) || 0),
+              moab_count: storage_root.moab_records.count,
+              ok_count: storage_root.moab_records.where(status: :ok).count,
+              invalid_moab_count: storage_root.moab_records.where(status: :invalid_moab).count,
+              invalid_checksum_count: storage_root.moab_records.where(status: :invalid_checksum).count,
+              moab_not_found_count: storage_root.moab_records.where(status: :moab_on_storage_not_found).count,
+              unexpected_version_count: storage_root.moab_records.where(status: :unexpected_version_on_storage).count,
+              validity_unknown_count: storage_root.moab_records.where(status: :validity_unknown).count,
+              fixity_check_expired_count: storage_root.moab_records.fixity_check_expired.count
             }
         end
         storage_root_info
@@ -45,7 +45,7 @@ module Dashboard
     end
 
     def storage_roots_moab_count_ok?
-      storage_root_totals[:moab_count] == num_complete_moabs &&
+      storage_root_totals[:moab_count] == num_moab_records &&
         storage_root_totals[:moab_count] == num_preserved_objects
     end
 
@@ -54,7 +54,7 @@ module Dashboard
     end
 
     def storage_roots_ok_count_ok?
-      storage_roots_ok_count == CompleteMoab.ok.count
+      storage_roots_ok_count == MoabRecord.ok.count
     end
 
     def storage_roots_invalid_moab_count
@@ -62,7 +62,7 @@ module Dashboard
     end
 
     def storage_roots_invalid_moab_count_ok?
-      storage_roots_invalid_moab_count&.zero? && CompleteMoab.invalid_moab.count.zero?
+      storage_roots_invalid_moab_count&.zero? && MoabRecord.invalid_moab.count.zero?
     end
 
     def storage_roots_invalid_checksum_count
@@ -70,7 +70,7 @@ module Dashboard
     end
 
     def storage_roots_invalid_checksum_count_ok?
-      storage_roots_invalid_checksum_count&.zero? && CompleteMoab.invalid_checksum.count.zero?
+      storage_roots_invalid_checksum_count&.zero? && MoabRecord.invalid_checksum.count.zero?
     end
 
     def storage_roots_moab_not_found_count
@@ -78,7 +78,7 @@ module Dashboard
     end
 
     def storage_roots_moab_not_found_count_ok?
-      storage_roots_moab_not_found_count&.zero? && CompleteMoab.online_moab_not_found.count.zero?
+      storage_roots_moab_not_found_count&.zero? && MoabRecord.moab_on_storage_not_found.count.zero?
     end
 
     def storage_roots_unexpected_version_count
@@ -86,7 +86,7 @@ module Dashboard
     end
 
     def storage_roots_unexpected_version_count_ok?
-      storage_roots_unexpected_version_count&.zero? && CompleteMoab.unexpected_version_on_storage.count.zero?
+      storage_roots_unexpected_version_count&.zero? && MoabRecord.unexpected_version_on_storage.count.zero?
     end
 
     def storage_roots_validity_unknown_count
@@ -94,7 +94,7 @@ module Dashboard
     end
 
     def storage_roots_validity_unknown_count_ok?
-      storage_roots_validity_unknown_count&.zero? && CompleteMoab.validity_unknown.count.zero?
+      storage_roots_validity_unknown_count&.zero? && MoabRecord.validity_unknown.count.zero?
     end
 
     def storage_roots_fixity_check_expired_count
@@ -105,40 +105,40 @@ module Dashboard
       storage_roots_fixity_check_expired_count == num_moab_expired_checksum_validation
     end
 
-    def complete_moab_total_size
-      number_to_human_size(CompleteMoab.sum(:size))
+    def moab_record_total_size
+      number_to_human_size(MoabRecord.sum(:size))
     end
 
-    def complete_moab_average_size
-      number_to_human_size(CompleteMoab.average(:size)) unless num_complete_moabs.zero?
+    def moab_record_average_size
+      number_to_human_size(MoabRecord.average(:size)) unless num_moab_records.zero?
     end
 
-    def complete_moab_status_counts
+    def moab_record_status_counts
       # called multiple times, so memoize to avoid db queries
-      @complete_moab_status_counts ||= CompleteMoab.statuses.keys.map { |status| CompleteMoab.where(status: status).count }
+      @moab_record_status_counts ||= MoabRecord.statuses.keys.map { |status| MoabRecord.where(status: status).count }
     end
 
     def status_labels
       # called multiple times, so memoize to avoid db queries
-      @status_labels ||= CompleteMoab.statuses.keys.map { |status| status.tr('_', ' ') }
+      @status_labels ||= MoabRecord.statuses.keys.map { |status| status.tr('_', ' ') }
     end
 
     def num_moab_expired_checksum_validation
       # used multiple times, so memoize to avoid db queries
-      @num_moab_expired_checksum_validation ||= CompleteMoab.fixity_check_expired.count
+      @num_moab_expired_checksum_validation ||= MoabRecord.fixity_check_expired.count
     end
 
     def moabs_with_expired_checksum_validation?
       num_moab_expired_checksum_validation.positive?
     end
 
-    def any_complete_moab_errors?
-      num_complete_moab_not_ok.positive?
+    def any_moab_record_errors?
+      num_moab_record_not_ok.positive?
     end
 
-    def num_complete_moab_not_ok
+    def num_moab_record_not_ok
       # used multiple times, so memoize to avoid db queries
-      @num_complete_moab_not_ok ||= CompleteMoab.count - CompleteMoab.ok.count
+      @num_moab_record_not_ok ||= MoabRecord.count - MoabRecord.ok.count
     end
 
     def num_preserved_objects
@@ -160,37 +160,37 @@ module Dashboard
       PreservedObject.pick(Arel.sql('SUM(current_version)::numeric/COUNT(id)')).round(2) unless num_preserved_objects.zero?
     end
 
-    def num_complete_moabs
+    def num_moab_records
       # used multiple times; memoizing to avoid multiple db queries
-      @num_complete_moabs ||= CompleteMoab.count
+      @num_moab_records ||= MoabRecord.count
     end
 
-    def complete_moab_highest_version
-      complete_moab_ordered_version_counts.keys.last
+    def moab_record_highest_version
+      moab_record_ordered_version_counts.keys.last
     end
 
-    # total number of object versions according to CompleteMoab table
-    def num_object_versions_per_complete_moab
+    # total number of object versions according to MoabRecord table
+    def num_object_versions_per_moab_record
       # used multiple times, so memoize to avoid multiple db queries
-      @num_object_versions_per_complete_moab ||= CompleteMoab.sum(:version)
+      @num_object_versions_per_moab_record ||= MoabRecord.sum(:version)
     end
 
-    def average_version_per_complete_moab
+    def average_version_per_moab_record
       # note, no user input to sanitize here, so ok to use Arel.sql
       # see https://api.rubyonrails.org/v7.0.4/classes/ActiveRecord/UnknownAttributeReference.html
-      CompleteMoab.pick(Arel.sql('SUM(version)::numeric/COUNT(id)')).round(2) unless num_complete_moabs.zero?
+      MoabRecord.pick(Arel.sql('SUM(version)::numeric/COUNT(id)')).round(2) unless num_moab_records.zero?
     end
 
-    def preserved_object_complete_moab_counts_match?
-      num_preserved_objects == num_complete_moabs
+    def preserved_object_moab_record_counts_match?
+      num_preserved_objects == num_moab_records
     end
 
-    def num_object_versions_preserved_object_complete_moab_match?
-      num_object_versions_per_preserved_object == num_object_versions_per_complete_moab
+    def num_object_versions_preserved_object_moab_record_match?
+      num_object_versions_per_preserved_object == num_object_versions_per_moab_record
     end
 
-    def highest_version_preserved_object_complete_moab_match?
-      preserved_object_highest_version == complete_moab_highest_version
+    def highest_version_preserved_object_moab_record_match?
+      preserved_object_highest_version == moab_record_highest_version
     end
 
     private
@@ -200,9 +200,9 @@ module Dashboard
       @preserved_object_ordered_version_counts ||= PreservedObject.group(:current_version).count.sort.to_h
     end
 
-    def complete_moab_ordered_version_counts
+    def moab_record_ordered_version_counts
       # called multiple times, so memoize to avoid db queries
-      @complete_moab_ordered_version_counts ||= CompleteMoab.group(:version).count.sort.to_h
+      @moab_record_ordered_version_counts ||= MoabRecord.group(:version).count.sort.to_h
     end
 
     # create this hash so we don't need to loop through storage_root_info multiple times

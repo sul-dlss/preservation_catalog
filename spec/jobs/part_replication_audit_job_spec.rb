@@ -12,8 +12,8 @@ describe PartReplicationAuditJob do
 
   before do
     allow(Audit::ReplicationSupport).to receive(:logger).and_return(logger)
-    # creation of complete moab triggers archive zip creation, as archive zips are created from moabs
-    create(:complete_moab, preserved_object: preserved_object, version: preserved_object.current_version)
+    # creation of MoabRecord triggers archive zip creation, as archive zips are created from moabs
+    create(:moab_record, preserved_object: preserved_object, version: preserved_object.current_version)
   end
 
   describe '#queue_as' do
@@ -49,7 +49,7 @@ describe PartReplicationAuditJob do
 
     it 'only checks parts for one endpoint' do
       other_ep = create(:zip_endpoint)
-      preserved_object.create_zipped_moab_versions! # backfill endpoint added since CompleteMoab was created (triggering replication) in before block
+      preserved_object.create_zipped_moab_versions! # backfill endpoint added since MoabRecord was created (triggering replication) in before block
       other_zmv = preserved_object.zipped_moab_versions.find_by!(zip_endpoint: other_ep)
       count = preserved_object.zipped_moab_versions.where(zip_endpoint: endpoint).count
       expect(job).to receive(:check_child_zip_part_attributes).with(ZippedMoabVersion, AuditResults).exactly(count).times

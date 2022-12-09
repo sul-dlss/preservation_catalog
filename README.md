@@ -188,7 +188,7 @@ See [Validations-for-Moabs wiki](http://github.com/sul-dlss/preservation_catalog
 
 - You need to know the MoabStorageRoot name, available from settings.yml (shared_configs for deployments)
 - You do NOT need quotes for the root name.
-- You cannot provide a date threshold:  it will perform the validation for every CompleteMoab prescat has for the root.
+- You cannot provide a date threshold:  it will perform the validation for every MoabRecord prescat has for the root.
 - Checks will be run asynchronously via CatalogToMoabJob
 
 ```sh
@@ -197,7 +197,7 @@ RAILS_ENV=production bundle exec rake prescat:audit:c2m[root_name]
 
 ### Via Rails Console
 
-In console, first locate a `MoabStorageRoot`, then call `c2m_check!` to enqueue asynchronous executions for the CompleteMoabs associated with that root via CatalogToMoabJob. Storage root information is available from settings.yml (shared_configs for deployments).
+In console, first locate a `MoabStorageRoot`, then call `c2m_check!` to enqueue asynchronous executions for the MoabRecords associated with that root via CatalogToMoabJob. Storage root information is available from settings.yml (shared_configs for deployments).
 
 - The (date/timestamp) argument is a threshold: it will run the check on all catalog entries which last had a version check BEFORE the argument. You can use string format like '2018-01-22 22:54:48 UTC' or ActiveRecord Date/Time expressions like `1.week.ago`.  The default is anything not checked since **right now**.
 
@@ -232,7 +232,7 @@ See [Validations-for-Moabs wiki](http://github.com/sul-dlss/preservation_catalog
 
 - You need to know the MoabStorageRoot name, available from settings.yml (shared_configs for deployments)
 - You do NOT need quotes for the root name.
-- It will perform checksum validation for *every* CompleteMoab prescat has for the root, ignoring the "only older than fixity_ttl threshold" (which is currently 90 days)
+- It will perform checksum validation for *every* MoabRecord prescat has for the root, ignoring the "only older than fixity_ttl threshold" (which is currently 90 days)
 - Checks will be run asynchronously via ChecksumValidationJob
 
 ```sh
@@ -241,7 +241,7 @@ RAILS_ENV=production bundle exec rake prescat:audit:cv[root_name]
 
 ### Via Rails Console
 
-In console, first locate a `MoabStorageRoot`, then call `validate_expired_checksums!` to enqueue asynchronous executions for the CompleteMoabs associated with that root via ChecksumValidationJob.  Storage root information is available from settings.yml (shared_configs for deployments).
+In console, first locate a `MoabStorageRoot`, then call `validate_expired_checksums!` to enqueue asynchronous executions for the MoabRecords associated with that root via ChecksumValidationJob.  Storage root information is available from settings.yml (shared_configs for deployments).
 
 #### Single Root
 From console, this queues objects on the named storage root for asynchronous CV:
@@ -278,7 +278,7 @@ For example, if you wish to run CV on all the "validity_unknown" druids on stora
 Audit::ChecksumValidatorUtils.validate_status_root(:validity_unknown, 'services-disk15')
 ```
 
-[Valid status strings](https://github.com/sul-dlss/preservation_catalog/blob/main/app/models/complete_moab.rb#L1-L10)
+[Valid status strings](https://github.com/sul-dlss/preservation_catalog/blob/main/app/models/moab_record.rb#L1-L10)
 
 ## Seed the Catalog 
 
@@ -352,8 +352,8 @@ When the need for moving a single Moab arises, the repository manager or a devel
 Updating Preservation Catalog to reflect the Moab's new location can be done using Rails console, like so:
 ```ruby
 target_storage_root = MoabStorageRoot.find_by!(name: '/services-disk-with-lots-of-free-space')
-cm = CompleteMoab.by_druid('ab123cd4567')
-cm.migrate_moab(target_storage_root).save! # save! is important.  migrate_moab doesn't save automatically, to allow building larger transactions.
+moab_rec = MoabRecord.by_druid('ab123cd4567')
+moab_rec.migrate_moab(target_storage_root).save! # save! is important.  migrate_moab doesn't save automatically, to allow building larger transactions.
 ```
 Under the assumption that the contents of the Moab were written anew in the target location, `#migrate_moab` will clear all audit timestamps related to the state of the Moab on our disks, along with `status_details`.  `status` will similarly be re-set to `validity_unknown`, and a checksum validation job will automatically be queued for the Moab.
 

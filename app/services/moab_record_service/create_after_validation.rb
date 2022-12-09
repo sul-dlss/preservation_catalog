@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-module CompleteMoabService
-  # Creates CompletedMoab and associated objects based on a moab on storage after validation of moab.
+module MoabRecordService
+  # Creates MoabRecord and associated objects based on a moab on storage after validation of moab.
   class CreateAfterValidation < Create
     def self.execute(druid:, incoming_version:, incoming_size:, moab_storage_root:, checksums_validated: false)
       new(druid: druid, incoming_version: incoming_version, incoming_size: incoming_size,

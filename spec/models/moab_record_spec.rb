@@ -2,22 +2,22 @@
 
 require 'rails_helper'
 
-RSpec.describe CompleteMoab do
+RSpec.describe MoabRecord do
   let(:druid) { 'ab123cd4567' }
   let(:preserved_object) { create(:preserved_object, druid: druid) }
   let(:status) { 'validity_unknown' }
-  let(:cm_version) { 1 }
+  let(:moab_record_version) { 1 }
   let(:args) do # default constructor params
     {
       preserved_object: preserved_object,
-      version: cm_version,
+      version: moab_record_version,
       status: status
     }
   end
 
-  # some tests assume the CompleteMoab and PresevedObject exist before the vars are referenced.  the eager instantiation of cm will cause
-  # instantiation of preserved_object, since cm depends on it (via args).
-  let!(:cm) { create(:complete_moab, args) }
+  # some tests assume the MoabRecord and PresevedObject exist before the vars are referenced.  the eager instantiation of moab_record will cause
+  # instantiation of preserved_object, since moab_record depends on it (via args).
+  let!(:moab_record) { create(:moab_record, args) }
   let(:now) { Time.now.utc }
 
   it 'is not valid without all required valid attributes' do
@@ -32,7 +32,7 @@ RSpec.describe CompleteMoab do
       'ok' => 0,
       'invalid_moab' => 1,
       'invalid_checksum' => 2,
-      'online_moab_not_found' => 3,
+      'moab_on_storage_not_found' => 3,
       'unexpected_version_on_storage' => 4,
       'validity_unknown' => 6
     )
@@ -63,69 +63,69 @@ RSpec.describe CompleteMoab do
 
   describe '#validate_checksums!' do
     it 'passes self to ChecksumValidationJob' do
-      expect(ChecksumValidationJob).to receive(:perform_later).with(cm)
-      cm.validate_checksums!
+      expect(ChecksumValidationJob).to receive(:perform_later).with(moab_record)
+      moab_record.validate_checksums!
     end
   end
 
   describe '#update_audit_timestamps' do
     it 'updates last_moab_validation time if moab_validated is true' do
-      expect { cm.update_audit_timestamps(true, false) }.to change(cm, :last_moab_validation).from(nil)
+      expect { moab_record.update_audit_timestamps(true, false) }.to change(moab_record, :last_moab_validation).from(nil)
     end
 
     it 'does not update last_moab_validation time if moab_validated is false' do
-      expect { cm.update_audit_timestamps(false, false) }.not_to change(cm, :last_moab_validation).from(nil)
+      expect { moab_record.update_audit_timestamps(false, false) }.not_to change(moab_record, :last_moab_validation).from(nil)
     end
 
     it 'updates last_version_audit time if version_audited is true' do
-      expect { cm.update_audit_timestamps(false, true) }.to change(cm, :last_version_audit).from(nil)
+      expect { moab_record.update_audit_timestamps(false, true) }.to change(moab_record, :last_version_audit).from(nil)
     end
 
     it 'does not update last_version_audit time if version_audited is false' do
-      expect { cm.update_audit_timestamps(false, false) }.not_to change(cm, :last_version_audit).from(nil)
+      expect { moab_record.update_audit_timestamps(false, false) }.not_to change(moab_record, :last_version_audit).from(nil)
     end
   end
 
   describe '#upd_audstamps_version_size' do
     it 'updates version' do
-      expect { cm.upd_audstamps_version_size(false, 3, nil) }.to change(cm, :version).to(3)
+      expect { moab_record.upd_audstamps_version_size(false, 3, nil) }.to change(moab_record, :version).to(3)
     end
 
     it 'updates size if size is not nil' do
-      expect { cm.upd_audstamps_version_size(false, 0, 123) }.to change(cm, :size).to(123)
+      expect { moab_record.upd_audstamps_version_size(false, 0, 123) }.to change(moab_record, :size).to(123)
     end
 
     it 'does not update size if size is nil' do
-      expect { cm.upd_audstamps_version_size(false, 0, nil) }.not_to change(cm, :size)
+      expect { moab_record.upd_audstamps_version_size(false, 0, nil) }.not_to change(moab_record, :size)
     end
 
     it 'calls update_audit_timestamps with the appropriate params' do
-      expect(cm).to receive(:update_audit_timestamps).with(false, true)
-      cm.upd_audstamps_version_size(false, 3, nil)
+      expect(moab_record).to receive(:update_audit_timestamps).with(false, true)
+      moab_record.upd_audstamps_version_size(false, 3, nil)
     end
   end
 
   describe '#matches_po_current_version?' do
-    before { cm.version = 666 }
+    before { moab_record.version = 666 }
 
     it 'returns true when its version matches its preserved objects current version' do
-      cm.preserved_object.current_version = 666
-      expect(cm.matches_po_current_version?).to be true
+      moab_record.preserved_object.current_version = 666
+      expect(moab_record.matches_po_current_version?).to be true
     end
 
     it 'returns false when its version does not match its preserved objects current version' do
-      cm.preserved_object.current_version = 777
-      expect(cm.matches_po_current_version?).to be false
+      moab_record.preserved_object.current_version = 777
+      expect(moab_record.matches_po_current_version?).to be false
     end
   end
 
   describe '#migrate_moab' do
     let(:target_storage_root) { create(:moab_storage_root) }
     let(:yesterday) { now - 1.day }
-    let(:migrate_cm) do
+    let(:migrating_moab_record) do
       # pretend we're moving a nice recently validated moab
       create(
-        :complete_moab,
+        :moab_record,
         {
           preserved_object: create(:preserved_object),
           status: 'ok',
@@ -139,60 +139,60 @@ RSpec.describe CompleteMoab do
     end
 
     it 'updates the current storage root, records the old one, and clears audit info' do
-      expect(migrate_cm.from_moab_storage_root).to be_nil
-      orig_storage_root = migrate_cm.moab_storage_root
+      expect(migrating_moab_record.from_moab_storage_root).to be_nil
+      orig_storage_root = migrating_moab_record.moab_storage_root
 
-      migrate_cm.migrate_moab(target_storage_root).save!
-      migrate_cm.reload
+      migrating_moab_record.migrate_moab(target_storage_root).save!
+      migrating_moab_record.reload
 
-      expect(migrate_cm.moab_storage_root).to eq(target_storage_root)
-      expect(migrate_cm.from_moab_storage_root).to eq(orig_storage_root)
-      expect(migrate_cm.status).to eq('validity_unknown')
-      expect(migrate_cm.status_details).to be_nil
-      expect(migrate_cm.last_moab_validation).to be_nil
-      expect(migrate_cm.last_checksum_validation).to be_nil
-      expect(migrate_cm.last_version_audit).to be_nil
+      expect(migrating_moab_record.moab_storage_root).to eq(target_storage_root)
+      expect(migrating_moab_record.from_moab_storage_root).to eq(orig_storage_root)
+      expect(migrating_moab_record.status).to eq('validity_unknown')
+      expect(migrating_moab_record.status_details).to be_nil
+      expect(migrating_moab_record.last_moab_validation).to be_nil
+      expect(migrating_moab_record.last_checksum_validation).to be_nil
+      expect(migrating_moab_record.last_version_audit).to be_nil
     end
 
     it 'queues a checksum validation job' do
-      allow(ChecksumValidationJob).to receive(:perform_later).with(cm)
-      migrate_cm.migrate_moab(target_storage_root).save!
-      expect(ChecksumValidationJob).to have_received(:perform_later).with(cm)
+      allow(ChecksumValidationJob).to receive(:perform_later).with(moab_record)
+      migrating_moab_record.migrate_moab(target_storage_root).save!
+      expect(ChecksumValidationJob).to have_received(:perform_later).with(moab_record)
     end
   end
 
   context 'ordered (by last version_audited) and unordered version_audit_expired' do
-    let!(:newer_timestamp_cm) do
-      create(:complete_moab, args.merge(version: 6, last_version_audit: (now - 1.day), preserved_object: create(:preserved_object)))
+    let!(:newer_timestamp_moab_rec) do
+      create(:moab_record, args.merge(version: 6, last_version_audit: (now - 1.day), preserved_object: create(:preserved_object)))
     end
-    let!(:older_timestamp_cm) do
-      create(:complete_moab, args.merge(version: 7, last_version_audit: (now - 2.days), preserved_object: create(:preserved_object)))
+    let!(:older_timestamp_moab_rec) do
+      create(:moab_record, args.merge(version: 7, last_version_audit: (now - 2.days), preserved_object: create(:preserved_object)))
     end
-    let!(:future_timestamp_cm) do
-      create(:complete_moab, args.merge(version: 8, last_version_audit: (now + 1.day), preserved_object: create(:preserved_object)))
+    let!(:future_timestamp_moab_rec) do
+      create(:moab_record, args.merge(version: 8, last_version_audit: (now + 1.day), preserved_object: create(:preserved_object)))
     end
 
     describe '.version_audit_expired' do
-      it 'returns CompleteMoabs with nils and CompleteMoabs < given date (not orded by last_version_audit)' do
-        expect(described_class.version_audit_expired(now).sort).to eq [cm, newer_timestamp_cm, older_timestamp_cm]
+      it 'returns MoabRecords with nils and MoabRecords < given date (not orded by last_version_audit)' do
+        expect(described_class.version_audit_expired(now).sort).to eq [moab_record, newer_timestamp_moab_rec, older_timestamp_moab_rec]
       end
 
-      it 'returns no CompleteMoabs with future timestamps' do
-        expect(described_class.version_audit_expired(now)).not_to include future_timestamp_cm
+      it 'returns no MoabRecords with future timestamps' do
+        expect(described_class.version_audit_expired(now)).not_to include future_timestamp_moab_rec
       end
     end
 
     describe '.order_last_version_audit' do
       let(:version_audit_expired) { described_class.version_audit_expired(now) }
 
-      it 'returns CompleteMoabs with nils first, then old to new timestamps' do
+      it 'returns MoabRecords with nils first, then old to new timestamps' do
         expect(described_class.order_last_version_audit(version_audit_expired))
-          .to eq [cm, older_timestamp_cm, newer_timestamp_cm]
+          .to eq [moab_record, older_timestamp_moab_rec, newer_timestamp_moab_rec]
       end
 
-      it 'returns no CompleteMoabs with future timestamps' do
+      it 'returns no MoabRecords with future timestamps' do
         expect(described_class.order_last_version_audit(version_audit_expired))
-          .not_to include future_timestamp_cm
+          .not_to include future_timestamp_moab_rec
       end
     end
   end
@@ -201,19 +201,19 @@ RSpec.describe CompleteMoab do
     context 'at the model level' do
       it 'must be unique' do
         expect {
-          create(:complete_moab, preserved_object_id: preserved_object.id,
-                                 moab_storage_root: create(:moab_storage_root))
+          create(:moab_record, preserved_object_id: preserved_object.id,
+                               moab_storage_root: create(:moab_storage_root))
         }.to raise_error(ActiveRecord::RecordInvalid)
       end
     end
 
     context 'at the db level' do
       it 'must be unique' do
-        dup_complete_moab = described_class.new(preserved_object_id: preserved_object.id,
-                                                moab_storage_root: create(:moab_storage_root),
-                                                status: status,
-                                                version: cm_version)
-        expect { dup_complete_moab.save(validate: false) }.to raise_error(ActiveRecord::RecordNotUnique)
+        dup_moab_record = described_class.new(preserved_object_id: preserved_object.id,
+                                              moab_storage_root: create(:moab_storage_root),
+                                              status: status,
+                                              version: moab_record_version)
+        expect { dup_moab_record.save(validate: false) }.to raise_error(ActiveRecord::RecordNotUnique)
       end
     end
   end
@@ -250,79 +250,79 @@ RSpec.describe CompleteMoab do
 
   context 'ordered (by fixity_check_expired) and unordered fixity_check_expired methods' do
     let(:fixity_ttl) { Settings.preservation_policy.fixity_ttl }
-    let!(:old_check_cm1) do
-      create(:complete_moab, args.merge(version: 6,
-                                        last_checksum_validation: now - (fixity_ttl * 2),
-                                        preserved_object: create(:preserved_object)))
+    let!(:fixity_expired_moab_rec1) do
+      create(:moab_record, args.merge(version: 6,
+                                      last_checksum_validation: now - (fixity_ttl * 2),
+                                      preserved_object: create(:preserved_object)))
     end
-    let!(:old_check_cm2) do
-      create(:complete_moab, args.merge(version: 7,
-                                        last_checksum_validation: now - fixity_ttl - 1.second,
-                                        preserved_object: create(:preserved_object)))
+    let!(:fixity_expired_moab_rec2) do
+      create(:moab_record, args.merge(version: 7,
+                                      last_checksum_validation: now - fixity_ttl - 1.second,
+                                      preserved_object: create(:preserved_object)))
     end
-    let!(:recently_checked_cm1) do
-      create(:complete_moab, args.merge(version: 8,
-                                        last_checksum_validation: now - fixity_ttl + 1.second,
-                                        preserved_object: create(:preserved_object)))
+    let!(:recently_checked_moab_rec1) do
+      create(:moab_record, args.merge(version: 8,
+                                      last_checksum_validation: now - fixity_ttl + 1.second,
+                                      preserved_object: create(:preserved_object)))
     end
-    let!(:recently_checked_cm2) do
-      create(:complete_moab, args.merge(version: 9,
-                                        last_checksum_validation: now - (fixity_ttl * 0.1),
-                                        preserved_object: create(:preserved_object)))
+    let!(:recently_checked_moab_rec2) do
+      create(:moab_record, args.merge(version: 9,
+                                      last_checksum_validation: now - (fixity_ttl * 0.1),
+                                      preserved_object: create(:preserved_object)))
     end
 
     describe '.fixity_check_expired' do
-      it 'returns CompleteMoabs that need fixity check' do
-        expect(described_class.fixity_check_expired.to_a.sort).to eq [cm, old_check_cm1, old_check_cm2]
+      it 'returns MoabRecords that need fixity check' do
+        expect(described_class.fixity_check_expired.to_a.sort).to eq [moab_record, fixity_expired_moab_rec1, fixity_expired_moab_rec2]
       end
 
-      it 'returns no CompleteMoabs with timestamps indicating still-valid fixity check' do
-        expect(described_class.fixity_check_expired).not_to include(recently_checked_cm1, recently_checked_cm2)
+      it 'returns no MoabRecords with timestamps indicating still-valid fixity check' do
+        expect(described_class.fixity_check_expired).not_to include(recently_checked_moab_rec1, recently_checked_moab_rec2)
       end
     end
 
     describe '.order_fixity_check_expired' do
       let(:fixity_check_expired) { described_class.fixity_check_expired }
 
-      it 'returns CompleteMoabs that need fixity check, never checked first, then least-recently to most-recently' do
+      it 'returns MoabRecords that need fixity check, never checked first, then least-recently to most-recently' do
         expect(described_class.order_fixity_check_expired(fixity_check_expired).to_a)
-          .to eq [cm, old_check_cm1, old_check_cm2]
+          .to eq [moab_record, fixity_expired_moab_rec1, fixity_expired_moab_rec2]
       end
 
-      it 'returns no CompleteMoabs with timestamps indicating still-valid fixity check' do
+      it 'returns no MoabRecords with timestamps indicating still-valid fixity check' do
         expect(described_class.order_fixity_check_expired(fixity_check_expired))
-          .not_to include(recently_checked_cm1, recently_checked_cm2)
+          .not_to include(recently_checked_moab_rec1, recently_checked_moab_rec2)
       end
     end
   end
 
   context 'with a persisted object' do
     describe '.by_druid' do
-      it 'returns the expected complete moabs' do
+      it 'returns the expected MoabRecords' do
         expect(described_class.by_druid(druid).length).to eq 1
         expect(described_class.by_druid('bj102hs9687')).to be_empty # bj102hs9687 from preserved_object factory
       end
     end
 
     describe '.by_storage_root' do
-      it 'returns the expected complete moab when chained with by_druid' do
+      it 'returns the expected MoabRecord when chained with by_druid' do
         expect(described_class.by_druid(druid).length).to eq 1
-        expect(described_class.by_druid(druid).by_storage_root(cm.moab_storage_root).length).to eq 1
+        expect(described_class.by_druid(druid).by_storage_root(moab_record.moab_storage_root).length).to eq 1
       end
     end
   end
 
   describe '.after_update callback' do
     it 'does not call create_zipped_moab_versions when version is unchanged' do
-      cm.size = 234
-      expect(cm).not_to receive(:create_zipped_moab_versions!)
-      cm.save!
+      moab_record.size = 234
+      expect(moab_record).not_to receive(:create_zipped_moab_versions!)
+      moab_record.save!
     end
 
     it 'calls create_zipped_moab_versions when version was changed' do
-      cm.version = 55
-      expect(cm).to receive(:create_zipped_moab_versions!)
-      cm.save!
+      moab_record.version = 55
+      expect(moab_record).to receive(:create_zipped_moab_versions!)
+      moab_record.save!
     end
   end
 
@@ -330,15 +330,15 @@ RSpec.describe CompleteMoab do
     before { allow(ChecksumValidationJob).to receive(:perform_later).and_call_original } # undo rails_helper block
 
     it 'does not call validate_checksums when status is unchanged' do
-      cm.size = 234
-      expect(cm).not_to receive(:validate_checksums!)
-      cm.save!
+      moab_record.size = 234
+      expect(moab_record).not_to receive(:validate_checksums!)
+      moab_record.save!
     end
 
     it 'does calls validate_checksums when status is validity_unknown' do
-      cm.ok! # object starts out with validity_unknown status
-      expect(cm).to receive(:validate_checksums!)
-      cm.validity_unknown!
+      moab_record.ok! # object starts out with validity_unknown status
+      expect(moab_record).to receive(:validate_checksums!)
+      moab_record.validity_unknown!
     end
   end
 

@@ -17,7 +17,7 @@ RSpec.describe Reporters::LoggerReporter do
   end
 
   describe '#report_errors' do
-    let(:result1) { { AuditResults::CM_PO_VERSION_MISMATCH => version_not_matched_str } }
+    let(:result1) { { AuditResults::DB_VERSIONS_DISAGREE => version_not_matched_str } }
     let(:version_not_matched_str) { 'does not match PreservedObject current_version' }
 
     it 'logs to Rails logger' do
@@ -40,18 +40,18 @@ RSpec.describe Reporters::LoggerReporter do
   end
 
   describe '#report_completed' do
-    let(:result) { { AuditResults::CM_STATUS_CHANGED => 'CompleteMoab status changed from invalid_moab' } }
+    let(:result) { { AuditResults::MOAB_RECORD_STATUS_CHANGED => 'MoabRecord status changed from invalid_moab' } }
 
     it 'logs to Rails logger' do
       subject.report_completed(druid: druid, version: actual_version, storage_area: ms_root, check_name: check_name, result: result)
       expect(Rails.logger).to have_received(:add)
-        .with(Logger::INFO, 'FooCheck(ab123cd4567, fixture_sr1) CompleteMoab status changed from invalid_moab')
+        .with(Logger::INFO, 'FooCheck(ab123cd4567, fixture_sr1) MoabRecord status changed from invalid_moab')
     end
   end
 
   describe '.logger_severity_level' do
-    it 'CM_PO_VERSION_MISMATCH is an ERROR' do
-      expect(subject.send(:logger_severity_level, AuditResults::CM_PO_VERSION_MISMATCH)).to eq Logger::ERROR
+    it 'DB_VERSIONS_DISAGREE is an ERROR' do
+      expect(subject.send(:logger_severity_level, AuditResults::DB_VERSIONS_DISAGREE)).to eq Logger::ERROR
     end
 
     it 'DB_OBJ_DOES_NOT_EXIST is WARN' do

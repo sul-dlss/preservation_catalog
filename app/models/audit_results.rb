@@ -8,12 +8,11 @@
 class AuditResults
   ACTUAL_VERS_GT_DB_OBJ = :actual_vers_gt_db_obj
   ACTUAL_VERS_LT_DB_OBJ = :actual_vers_lt_db_obj
-  CM_PO_VERSION_MISMATCH = :cm_po_version_mismatch
-  CM_STATUS_CHANGED = :cm_status_changed
   CREATED_NEW_OBJECT = :created_new_object
   DB_OBJ_ALREADY_EXISTS = :db_obj_already_exists
   DB_OBJ_DOES_NOT_EXIST = :db_obj_does_not_exist
   DB_UPDATE_FAILED = :db_update_failed
+  DB_VERSIONS_DISAGREE = :db_versions_disagree
   FILE_NOT_IN_MANIFEST = :file_not_in_manifest
   FILE_NOT_IN_MOAB = :file_not_in_moab
   FILE_NOT_IN_SIGNATURE_CATALOG = :file_not_in_signature_catalog
@@ -24,6 +23,7 @@ class AuditResults
   MOAB_CHECKSUM_VALID = :moab_checksum_valid
   MOAB_FILE_CHECKSUM_MISMATCH = :moab_file_checksum_mismatch
   MOAB_NOT_FOUND = :moab_not_found
+  MOAB_RECORD_STATUS_CHANGED = :moab_record_status_changed
   SIGNATURE_CATALOG_NOT_IN_MOAB = :signature_catalog_not_in_moab
   UNABLE_TO_CHECK_STATUS = :unable_to_check_status
   UNEXPECTED_VERSION = :unexpected_version
@@ -41,13 +41,12 @@ class AuditResults
                              '%{db_obj_name} db version (%{db_obj_version})',
     ACTUAL_VERS_LT_DB_OBJ => 'actual version (%{actual_version}) less than ' \
                              '%{db_obj_name} db version (%{db_obj_version}); ERROR!',
-    CM_PO_VERSION_MISMATCH => 'CompleteMoab online Moab version %{cm_version} ' \
-                              'does not match PreservedObject current_version %{po_version}',
-    CM_STATUS_CHANGED => 'CompleteMoab status changed from %{old_status} to %{new_status}',
     CREATED_NEW_OBJECT => 'added object to db as it did not exist',
     DB_OBJ_ALREADY_EXISTS => '%{addl} db object already exists',
     DB_OBJ_DOES_NOT_EXIST => '%{addl} db object does not exist',
     DB_UPDATE_FAILED => 'db update failed: %{addl}',
+    DB_VERSIONS_DISAGREE => 'MoabRecord version %{moab_record_version} does not match ' \
+                            'PreservedObject current_version %{po_version}',
     FILE_NOT_IN_MANIFEST => 'Moab file %{file_path} was not found in Moab manifest %{manifest_file_path}',
     FILE_NOT_IN_MOAB => '%{manifest_file_path} refers to file (%{file_path}) not found in Moab',
     FILE_NOT_IN_SIGNATURE_CATALOG => 'Moab file %{file_path} was not found in ' \
@@ -59,10 +58,11 @@ class AuditResults
     MOAB_CHECKSUM_VALID => 'checksum(s) match',
     MOAB_FILE_CHECKSUM_MISMATCH => 'checksums or size for %{file_path} version ' \
                                    '%{version} do not match entry in latest signatureCatalog.xml.',
-    MOAB_NOT_FOUND => 'db CompleteMoab (created %{db_created_at}; last updated ' \
+    MOAB_NOT_FOUND => 'db MoabRecord (created %{db_created_at}; last updated ' \
                       '%{db_updated_at}) exists but Moab not found',
+    MOAB_RECORD_STATUS_CHANGED => 'MoabRecord status changed from %{old_status} to %{new_status}',
     SIGNATURE_CATALOG_NOT_IN_MOAB => '%{signature_catalog_path} not found in Moab',
-    UNABLE_TO_CHECK_STATUS => 'unable to validate when CompleteMoab status is %{current_status}',
+    UNABLE_TO_CHECK_STATUS => 'unable to validate when MoabRecord status is %{current_status}',
     UNEXPECTED_VERSION => 'actual version (%{actual_version}) has unexpected ' \
                           'relationship to %{db_obj_name} db version (%{db_obj_version}); ERROR!',
     VERSION_MATCHES => 'actual version (%{actual_version}) matches %{addl} db version',
@@ -86,7 +86,7 @@ class AuditResults
 
   DB_UPDATED_CODES = [
     CREATED_NEW_OBJECT,
-    CM_STATUS_CHANGED
+    MOAB_RECORD_STATUS_CHANGED
   ].freeze
 
   attr_reader :druid, :moab_storage_root, :check_name, :actual_version
@@ -137,7 +137,7 @@ class AuditResults
   attr_reader :result_array
 
   def status_changed_to_ok?(result)
-    /to ok$/.match?(result[AuditResults::CM_STATUS_CHANGED])
+    /to ok$/.match?(result[AuditResults::MOAB_RECORD_STATUS_CHANGED])
   end
 
   def result_hash(code, msg_args = nil)

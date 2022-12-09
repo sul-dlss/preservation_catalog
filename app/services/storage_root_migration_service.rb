@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# Migrates Complete Moab records to a new Moab Storate Root.
+# Migrates MoabRecord records to a new Moab Storate Root.
 class StorageRootMigrationService
   def initialize(from_name, to_name)
     @from_name = from_name
@@ -10,9 +10,9 @@ class StorageRootMigrationService
   # @return [Array<String>] druids of migrated moabs
   def migrate
     druids = []
-    from_root.complete_moabs.find_each do |complete_moab|
-      complete_moab.migrate_moab(to_root).save!
-      druids << complete_moab.preserved_object.druid
+    from_root.moab_records.find_each do |moab_record|
+      moab_record.migrate_moab(to_root).save!
+      druids << moab_record.preserved_object.druid
     end
     druids
   end

@@ -11,7 +11,7 @@ RSpec.describe Audit::CatalogToMoab do
   let(:mock_sov) { instance_double(Stanford::StorageObjectValidator) }
   let(:po) { create(:preserved_object_fixture, druid: druid) }
   let(:comp_moab) do
-    MoabStorageRoot.find_by!(storage_location: storage_location).complete_moabs.find_by!(preserved_object: po)
+    MoabStorageRoot.find_by!(storage_location: storage_location).moab_records.find_by!(preserved_object: po)
   end
   let(:logger_double) { instance_double(Logger, info: nil, error: nil, add: nil) }
   let(:results_double) do
@@ -23,7 +23,7 @@ RSpec.describe Audit::CatalogToMoab do
   let(:exp_details_prefix) { 'check_catalog_version (actual location: fixture_sr1; ' }
   let(:hb_exp_msg) do
     'check_catalog_version\\(bj102hs9687, fixture_sr1\\)' \
-      'db CompleteMoab \\(created .*Z; last updated .*Z\\) exists but Moab not found'
+      'db MoabRecord \\(created .*Z; last updated .*Z\\) exists but Moab not found'
   end
   let(:audit_workflow_reporter) { instance_double(Reporters::AuditWorkflowReporter, report_errors: nil) }
   let(:event_service_reporter) { instance_double(Reporters::EventServiceReporter, report_errors: nil) }
@@ -57,12 +57,12 @@ RSpec.describe Audit::CatalogToMoab do
       c2m.check_catalog_version
     end
 
-    it 'calls CompleteMoab.update_audit_timestamps' do
+    it 'calls MoabRecord.update_audit_timestamps' do
       expect(comp_moab).to receive(:update_audit_timestamps).with(anything, true)
       c2m.check_catalog_version
     end
 
-    it 'calls CompleteMoab.save!' do
+    it 'calls MoabRecord.save!' do
       expect(comp_moab).to receive(:save!)
       c2m.check_catalog_version
     end
@@ -73,7 +73,7 @@ RSpec.describe Audit::CatalogToMoab do
       c2m.check_catalog_version
     end
 
-    context 'moab is nil (exists in catalog but not online)' do
+    context 'moab is nil (exists in catalog but not on storage)' do
       before do
         allow(Moab::StorageObject).to receive(:new).with(druid, String).and_return(nil)
         allow(Honeybadger).to receive(:notify).with(Regexp.new(hb_exp_msg))
@@ -85,7 +85,7 @@ RSpec.describe Audit::CatalogToMoab do
           AuditResults::MOAB_NOT_FOUND, db_created_at: anything, db_updated_at: anything
         )
         expect(c2m.results).to receive(:add_result).with(
-          AuditResults::CM_STATUS_CHANGED, old_status: 'ok', new_status: 'online_moab_not_found'
+          AuditResults::MOAB_RECORD_STATUS_CHANGED, old_status: 'ok', new_status: 'moab_on_storage_not_found'
         )
         c2m.check_catalog_version
       end
@@ -94,7 +94,7 @@ RSpec.describe Audit::CatalogToMoab do
         [
           'validity_unknown',
           'ok',
-          'online_moab_not_found',
+          'moab_on_storage_not_found',
           'invalid_moab',
           'unexpected_version_on_storage',
           'invalid_checksum'
@@ -107,13 +107,13 @@ RSpec.describe Audit::CatalogToMoab do
               c2m.check_catalog_version
             end
 
-            it "status becomes 'online_moab_not_found'" do
-              expect(comp_moab.reload.status).to eq 'online_moab_not_found'
+            it "status becomes 'moab_on_storage_not_found'" do
+              expect(comp_moab.reload.status).to eq 'moab_on_storage_not_found'
             end
 
             it 'status_details updated' do
               exp = "#{exp_details_prefix}) "
-              exp += "CompleteMoab status changed from #{orig_status} to online_moab_not_found" unless orig_status == 'online_moab_not_found'
+              exp += "MoabRecord status changed from #{orig_status} to moab_on_storage_not_found" unless orig_status == 'moab_on_storage_not_found'
               expect(comp_moab.reload.status_details).to eq exp
             end
           end
@@ -121,17 +121,17 @@ RSpec.describe Audit::CatalogToMoab do
       end
 
       context 'DB transaction handling' do
-        it 'on transaction failure, completes without raising error, removes CM_STATUS_CHANGED result code' do
+        it 'on transaction failure, completes without raising error, removes MOAB_RECORD_STATUS_CHANGED result code' do
           allow(comp_moab).to receive(:save!).and_raise(ActiveRecord::ConnectionTimeoutError)
           c2m.check_catalog_version
           expect(c2m.results.results).to include(a_hash_including(AuditResults::MOAB_NOT_FOUND))
-          expect(c2m.results.results).not_to include(a_hash_including(AuditResults::CM_STATUS_CHANGED))
-          expect(comp_moab.reload.status).not_to eq 'online_moab_not_found'
+          expect(c2m.results.results).not_to include(a_hash_including(AuditResults::MOAB_RECORD_STATUS_CHANGED))
+          expect(comp_moab.reload.status).not_to eq 'moab_on_storage_not_found'
         end
       end
     end
 
-    context 'complete_moab version != current_version of preserved_object' do
+    context 'moab_record version != current_version of preserved_object' do
       # database is inconsistent with itself!
       before do
         comp_moab.version = 666
@@ -140,19 +140,19 @@ RSpec.describe Audit::CatalogToMoab do
         allow(Moab::StorageObject).to receive(:new).with(druid, a_string_matching(object_dir))
         c2m.instance_variable_set(:@results, results_double)
         allow(c2m.results).to receive(:add_result).with(
-          AuditResults::CM_PO_VERSION_MISMATCH,
-          cm_version: comp_moab.version,
+          AuditResults::DB_VERSIONS_DISAGREE,
+          moab_record_version: comp_moab.version,
           po_version: comp_moab.preserved_object.current_version
         )
         allow(AuditResultsReporter).to receive(:report_results).with(audit_results: c2m.results)
         c2m.check_catalog_version
       end
 
-      it 'adds a CM_PO_VERSION_MISMATCH result and finishes processing' do
+      it 'adds a DB_VERSIONS_DISAGREE result and finishes processing' do
         expect(Moab::StorageObject).not_to have_received(:new).with(druid, a_string_matching(object_dir))
         expect(c2m.results).to have_received(:add_result).with(
-          AuditResults::CM_PO_VERSION_MISMATCH,
-          cm_version: comp_moab.version,
+          AuditResults::DB_VERSIONS_DISAGREE,
+          moab_record_version: comp_moab.version,
           po_version: comp_moab.preserved_object.current_version
         )
       end
@@ -173,14 +173,14 @@ RSpec.describe Audit::CatalogToMoab do
     context 'catalog version == moab version (happy path)' do
       it 'adds a VERSION_MATCHES result' do
         c2m.instance_variable_set(:@results, results_double)
-        expect(c2m.results).to receive(:add_result).with(AuditResults::VERSION_MATCHES, 'CompleteMoab')
+        expect(c2m.results).to receive(:add_result).with(AuditResults::VERSION_MATCHES, 'MoabRecord')
         c2m.check_catalog_version
       end
 
       context "starts with status 'ok'" do
         before do
           c2m.instance_variable_set(:@results, results_double)
-          allow(c2m.results).to receive(:add_result).with(AuditResults::VERSION_MATCHES, 'CompleteMoab')
+          allow(c2m.results).to receive(:add_result).with(AuditResults::VERSION_MATCHES, 'MoabRecord')
           comp_moab.status_details = b4_details
           comp_moab.ok!
           c2m.check_catalog_version
@@ -195,10 +195,10 @@ RSpec.describe Audit::CatalogToMoab do
         end
       end
 
-      context "re-check when CompleteMoab does not start with status 'ok'" do
+      context "re-check when MoabRecord does not start with status 'ok'" do
         [
           'validity_unknown',
-          'online_moab_not_found',
+          'moab_on_storage_not_found',
           'invalid_moab',
           'unexpected_version_on_storage'
         ].each do |orig_status|
@@ -217,7 +217,7 @@ RSpec.describe Audit::CatalogToMoab do
 
             it 'updates status_details' do
               exp = "#{exp_details_prefix}actual version: 3) "
-              exp += "CompleteMoab status changed from #{orig_status} to validity_unknown" unless orig_status == 'validity_unknown'
+              exp += "MoabRecord status changed from #{orig_status} to validity_unknown" unless orig_status == 'validity_unknown'
               expect(comp_moab.reload.status_details).to eq exp
             end
           end
@@ -226,7 +226,7 @@ RSpec.describe Audit::CatalogToMoab do
         # 'ok' intentionally omitted, since we don't check status on disk if versions match
         [
           'validity_unknown',
-          'online_moab_not_found',
+          'moab_on_storage_not_found',
           'invalid_moab',
           'unexpected_version_on_storage'
         ].each do |orig_status|
@@ -247,7 +247,7 @@ RSpec.describe Audit::CatalogToMoab do
 
             it 'updates status_details' do
               exp = "#{exp_details_prefix}actual version: 3) "
-              exp += "CompleteMoab status changed from #{orig_status} to invalid_moab" unless orig_status == 'invalid_moab'
+              exp += "MoabRecord status changed from #{orig_status} to invalid_moab" unless orig_status == 'invalid_moab'
               expect(comp_moab.reload.status_details).to eq exp
             end
           end
@@ -287,7 +287,7 @@ RSpec.describe Audit::CatalogToMoab do
       end
 
       it 'calls update_version_after_validation' do
-        expect(CompleteMoabService::UpdateVersionAfterValidation).to receive(:execute)
+        expect(MoabRecordService::UpdateVersionAfterValidation).to receive(:execute)
         c2m.check_catalog_version
       end
 
@@ -296,7 +296,7 @@ RSpec.describe Audit::CatalogToMoab do
           [
             'validity_unknown',
             'ok',
-            'online_moab_not_found',
+            'moab_on_storage_not_found',
             'invalid_moab',
             'unexpected_version_on_storage'
           ].each do |orig_status|
@@ -316,7 +316,7 @@ RSpec.describe Audit::CatalogToMoab do
 
               it 'status_details updated' do
                 exp = "#{exp_details_prefix}actual version: 4) "
-                exp += "CompleteMoab status changed from #{orig_status} to validity_unknown" unless orig_status == 'validity_unknown'
+                exp += "MoabRecord status changed from #{orig_status} to validity_unknown" unless orig_status == 'validity_unknown'
                 expect(comp_moab.reload.status_details).to eq exp
               end
             end
@@ -327,7 +327,7 @@ RSpec.describe Audit::CatalogToMoab do
           [
             'validity_unknown',
             'ok',
-            'online_moab_not_found',
+            'moab_on_storage_not_found',
             'unexpected_version_on_storage'
           ].each do |orig_status|
             context "had #{orig_status}" do
@@ -348,7 +348,7 @@ RSpec.describe Audit::CatalogToMoab do
 
               it 'status_details updated' do
                 exp = exp_details_prefix + 'actual version: 4) Invalid Moab, validation errors: ["err msg"] && ' \
-                                           "CompleteMoab status changed from #{orig_status} to invalid_moab"
+                                           "MoabRecord status changed from #{orig_status} to invalid_moab"
                 expect(comp_moab.reload.status_details).to eq exp
               end
             end
@@ -408,7 +408,7 @@ RSpec.describe Audit::CatalogToMoab do
       it 'adds an UNEXPECTED_VERSION result' do
         c2m.instance_variable_set(:@results, results_double)
         expect(c2m.results).to receive(:add_result).with(
-          AuditResults::UNEXPECTED_VERSION, db_obj_name: 'CompleteMoab', db_obj_version: comp_moab.version
+          AuditResults::UNEXPECTED_VERSION, db_obj_name: 'MoabRecord', db_obj_version: comp_moab.version
         )
         c2m.check_catalog_version
       end
@@ -430,7 +430,7 @@ RSpec.describe Audit::CatalogToMoab do
 
       it 'valid moab updates status_details' do
         c2m.check_catalog_version
-        exp = "#{exp_details_prefix}actual version: 2) CompleteMoab status changed from ok to unexpected_version_on_storage"
+        exp = "#{exp_details_prefix}actual version: 2) MoabRecord status changed from ok to unexpected_version_on_storage"
         expect(comp_moab.reload.status_details).to eq exp
       end
 
@@ -447,8 +447,8 @@ RSpec.describe Audit::CatalogToMoab do
           c2m.check_catalog_version
         end
 
-        it 'sets status to online_moab_not_found' do
-          expect(comp_moab.reload.status).to eq 'online_moab_not_found'
+        it 'sets status to moab_on_storage_not_found' do
+          expect(comp_moab.reload.status).to eq 'moab_on_storage_not_found'
         end
 
         it 'updates status_details' do
@@ -486,19 +486,19 @@ RSpec.describe Audit::CatalogToMoab do
         end
       end
 
-      it 'adds a CM_STATUS_CHANGED result' do
+      it 'adds a MOAB_RECORD_STATUS_CHANGED result' do
         c2m.instance_variable_set(:@results, results_double)
         expect(c2m.results).to receive(:add_result).with(
-          AuditResults::CM_STATUS_CHANGED, a_hash_including(:old_status, :new_status)
+          AuditResults::MOAB_RECORD_STATUS_CHANGED, a_hash_including(:old_status, :new_status)
         )
         c2m.check_catalog_version
       end
 
-      context 'check whether CompleteMoab already has a status other than OK_STATUS, re-check status if possible' do
+      context 'check whether MoabRecord already has a status other than OK_STATUS, re-check status if possible' do
         [
           'validity_unknown',
           'ok',
-          'online_moab_not_found',
+          'moab_on_storage_not_found',
           'invalid_moab',
           'unexpected_version_on_storage'
         ].each do |orig_status|
@@ -518,7 +518,7 @@ RSpec.describe Audit::CatalogToMoab do
             it 'status_details updated' do
               exp = "#{exp_details_prefix}actual version: 2) "
               unless orig_status == 'unexpected_version_on_storage'
-                exp += "CompleteMoab status changed from #{orig_status} to unexpected_version_on_storage"
+                exp += "MoabRecord status changed from #{orig_status} to unexpected_version_on_storage"
               end
               expect(comp_moab.reload.status_details).to eq exp
             end
@@ -528,7 +528,7 @@ RSpec.describe Audit::CatalogToMoab do
         [
           'validity_unknown',
           'ok',
-          'online_moab_not_found',
+          'moab_on_storage_not_found',
           'invalid_moab',
           'unexpected_version_on_storage'
         ].each do |orig_status|
@@ -549,7 +549,7 @@ RSpec.describe Audit::CatalogToMoab do
 
             it 'status_details updated' do
               exp = "#{exp_details_prefix}actual version: 2) "
-              exp += "CompleteMoab status changed from #{orig_status} to invalid_moab" unless orig_status == 'invalid_moab'
+              exp += "MoabRecord status changed from #{orig_status} to invalid_moab" unless orig_status == 'invalid_moab'
               expect(comp_moab.reload.status_details).to eq exp
             end
           end
@@ -588,7 +588,7 @@ RSpec.describe Audit::CatalogToMoab do
 
     context 'moab found on disk' do
       # use the same setup as 'catalog version > moab version', since we know that should
-      # lead to an update_complete_moab_status('unexpected_version_on_storage') call
+      # lead to an update_moab_record_status('unexpected_version_on_storage') call
       before do
         moab = instance_double(Moab::StorageObject, size: 666, object_pathname: object_dir)
         allow(Moab::StorageObject).to receive(:new).with(druid, instance_of(String)).and_return(moab)
@@ -596,11 +596,11 @@ RSpec.describe Audit::CatalogToMoab do
       end
 
       context 'DB transaction handling' do
-        it 'on transaction failure, completes without raising error, removes CM_STATUS_CHANGED result code' do
+        it 'on transaction failure, completes without raising error, removes MOAB_RECORD_STATUS_CHANGED result code' do
           allow(comp_moab).to receive(:save!).and_raise(ActiveRecord::ConnectionTimeoutError)
           c2m.check_catalog_version
           expect(c2m.results.results).to include(a_hash_including(AuditResults::UNEXPECTED_VERSION))
-          expect(c2m.results.results).not_to include(a_hash_including(AuditResults::CM_STATUS_CHANGED))
+          expect(c2m.results.results).not_to include(a_hash_including(AuditResults::MOAB_RECORD_STATUS_CHANGED))
           expect(comp_moab.reload.status).not_to eq 'unexpected_version_on_storage'
         end
       end

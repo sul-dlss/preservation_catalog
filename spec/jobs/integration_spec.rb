@@ -61,8 +61,8 @@ describe 'the whole replication pipeline' do
       data: a_hash_including({ host: 'fakehost', version: 1, endpoint_name: 'ibm_us_south' })
     )
 
-    # creating or updating a CompleteMoab should trigger its parent PreservedObject to replicate any missing versions to any target endpoints
-    create(:complete_moab, preserved_object: preserved_object, version: version, moab_storage_root: moab_storage_root)
+    # creating or updating a MoabRecord should trigger its parent PreservedObject to replicate any missing versions to any target endpoints
+    create(:moab_record, preserved_object: preserved_object, version: version, moab_storage_root: moab_storage_root)
   end
 
   context 'updating an existing moab' do
@@ -72,7 +72,7 @@ describe 'the whole replication pipeline' do
 
     it 'gets from zipmaker queue to replication result message for the new version when the moab is updated' do
       # pretend catalog is on version 2 before update call from robots
-      create(:complete_moab, preserved_object: preserved_object, version: version, moab_storage_root: moab_storage_root)
+      create(:moab_record, preserved_object: preserved_object, version: version, moab_storage_root: moab_storage_root)
 
       expect(ZipmakerJob).to receive(:perform_later).with(druid, next_version, moab_storage_root.storage_location).and_call_original
       expect(PlexerJob).to receive(:perform_later).with(druid, next_version, s3_key, Hash).and_call_original
@@ -92,9 +92,9 @@ describe 'the whole replication pipeline' do
         data: a_hash_including({ host: 'fakehost', version: 3, endpoint_name: 'ibm_us_south' })
       )
 
-      # updating the CompleteMoab#version and its PreservedObject#current_version should trigger the replication cycle again, on the new version
-      CompleteMoabService::UpdateVersion.execute(druid: druid, incoming_version: next_version, incoming_size: 712,
-                                                 moab_storage_root: moab_storage_root, checksums_validated: true)
+      # updating the MoabRecord#version and its PreservedObject#current_version should trigger the replication cycle again, on the new version
+      MoabRecordService::UpdateVersion.execute(druid: druid, incoming_version: next_version, incoming_size: 712,
+                                               moab_storage_root: moab_storage_root, checksums_validated: true)
     end
   end
 end

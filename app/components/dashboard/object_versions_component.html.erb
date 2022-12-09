@@ -14,17 +14,17 @@
     <tbody class="table-group-divider">
       <tr>
         <td>PreservedObject</td>
-        <td class="text-end<%= ' table-danger' unless preserved_object_complete_moab_counts_match? %>"><%= num_preserved_objects %></td>
-        <td class="text-end<%= ' table-danger' unless num_object_versions_preserved_object_complete_moab_match? %>"><%= num_object_versions_per_preserved_object %></td>
-        <td class="text-end<%= ' table-danger' unless highest_version_preserved_object_complete_moab_match? %>"><%= preserved_object_highest_version %></td>
+        <td class="text-end<%= ' table-danger' unless preserved_object_moab_record_counts_match? %>"><%= num_preserved_objects %></td>
+        <td class="text-end<%= ' table-danger' unless num_object_versions_preserved_object_moab_record_match? %>"><%= num_object_versions_per_preserved_object %></td>
+        <td class="text-end<%= ' table-danger' unless highest_version_preserved_object_moab_record_match? %>"><%= preserved_object_highest_version %></td>
         <td class="text-end"><%= average_version_per_preserved_object %></td>
       </tr>
       <tr>
-        <td>CompleteMoab</td>
-        <td class="text-end<%= ' table-danger' unless preserved_object_complete_moab_counts_match? %>"><%= num_complete_moabs %></td>
-        <td class="text-end<%= ' table-danger' unless num_object_versions_preserved_object_complete_moab_match? %>"><%= num_object_versions_per_complete_moab %></td>
-        <td class="text-end<%= ' table-danger' unless highest_version_preserved_object_complete_moab_match? %>"><%= complete_moab_highest_version %></td>
-        <td class="text-end"><%= average_version_per_complete_moab %></td>
+        <td>MoabRecord</td>
+        <td class="text-end<%= ' table-danger' unless preserved_object_moab_record_counts_match? %>"><%= num_moab_records %></td>
+        <td class="text-end<%= ' table-danger' unless num_object_versions_preserved_object_moab_record_match? %>"><%= num_object_versions_per_moab_record %></td>
+        <td class="text-end<%= ' table-danger' unless highest_version_preserved_object_moab_record_match? %>"><%= moab_record_highest_version %></td>
+        <td class="text-end"><%= average_version_per_moab_record %></td>
       </tr>
     </tbody>
   </table>

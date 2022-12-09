@@ -11,9 +11,9 @@ module MoabOnStorage
       @audit_results = audit_results
     end
 
-    def can_validate_current_comp_moab_status?(complete_moab:, caller_validates_checksums: false)
-      can_do = caller_validates_checksums || complete_moab.status != 'invalid_checksum'
-      audit_results.add_result(AuditResults::UNABLE_TO_CHECK_STATUS, current_status: complete_moab.status) unless can_do
+    def can_validate_current_comp_moab_status?(moab_record:, caller_validates_checksums: false)
+      can_do = caller_validates_checksums || moab_record.status != 'invalid_checksum'
+      audit_results.add_result(AuditResults::UNABLE_TO_CHECK_STATUS, current_status: moab_record.status) unless can_do
       can_do
     end
 

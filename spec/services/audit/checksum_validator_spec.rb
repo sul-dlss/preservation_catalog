@@ -7,8 +7,8 @@ RSpec.describe Audit::ChecksumValidator do
   let(:root_name) { 'fixture_sr3' }
   let(:moab_store_root) { MoabStorageRoot.find_by!(name: root_name) }
   let(:object_dir) { "#{moab_store_root.storage_location}/#{DruidTools::Druid.new(druid).tree.join('/')}" }
-  let(:complete_moab) { create(:preserved_object_fixture, druid: druid).complete_moab }
-  let(:checksum_validator) { described_class.new(complete_moab, logger: logger_double) }
+  let(:moab_record) { create(:preserved_object_fixture, druid: druid).moab_record }
+  let(:checksum_validator) { described_class.new(moab_record, logger: logger_double) }
   let(:moab_on_storage_validator) { checksum_validator.send(:moab_on_storage_validator) }
   let(:results) { instance_double(AuditResults) }
   let(:logger_double) { instance_double(ActiveSupport::Logger, info: nil, error: nil, add: nil) }
@@ -28,18 +28,18 @@ RSpec.describe Audit::ChecksumValidator do
     context 'moab is missing from storage' do
       before do
         # fake a moab gone missing by updating the preserved object to use a non-existent druid
-        complete_moab.preserved_object.update(druid: 'tr808sp1200')
+        moab_record.preserved_object.update(druid: 'tr808sp1200')
         allow(Dor::Event::Client).to receive(:create).with(druid: 'druid:tr808sp1200', type: 'preservation_audit_failure', data: instance_of(Hash))
       end
 
-      it 'sets status to online_moab_not_found and adds corresponding audit result' do
-        expect { checksum_validator.validate_checksums }.to change(complete_moab, :status).to 'online_moab_not_found'
-        expect(complete_moab.reload.status).to eq 'online_moab_not_found'
+      it 'sets status to moab_on_storage_not_found and adds corresponding audit result' do
+        expect { checksum_validator.validate_checksums }.to change(moab_record, :status).to 'moab_on_storage_not_found'
+        expect(moab_record.reload.status).to eq 'moab_on_storage_not_found'
         expect(checksum_validator.results.results.first).to have_key(:moab_not_found)
       end
 
       it 'sends results in HONEYBADGER_REPORT_CODES errors' do
-        reason = 'db CompleteMoab \\(created .*Z; last updated .*Z\\) exists but Moab not found'
+        reason = 'db MoabRecord \\(created .*Z; last updated .*Z\\) exists but Moab not found'
         checksum_validator.validate_checksums
 
         expect(honeybadger_reporter).to have_received(:report_errors)
@@ -48,14 +48,14 @@ RSpec.describe Audit::ChecksumValidator do
                 storage_area: moab_store_root,
                 check_name: 'validate_checksums',
                 results: [{ moab_not_found: match(reason) },
-                          { cm_status_changed: 'CompleteMoab status changed from validity_unknown to online_moab_not_found' }])
+                          { moab_record_status_changed: 'MoabRecord status changed from validity_unknown to moab_on_storage_not_found' }])
         expect(event_service_reporter).to have_received(:report_errors)
           .with(druid: 'tr808sp1200',
                 version: 0,
                 storage_area: moab_store_root,
                 check_name: 'validate_checksums',
                 results: [{ moab_not_found: match(reason) },
-                          { cm_status_changed: 'CompleteMoab status changed from validity_unknown to online_moab_not_found' }])
+                          { moab_record_status_changed: 'MoabRecord status changed from validity_unknown to moab_on_storage_not_found' }])
       end
 
       it 'calls AuditResults.report_results' do
@@ -67,19 +67,19 @@ RSpec.describe Audit::ChecksumValidator do
     context 'moab is empty' do
       before do
         # fake a moab gone missing by updating the preserved object to use a druid with an empty directory
-        complete_moab.preserved_object.update(druid: 'bh868zf9366')
+        moab_record.preserved_object.update(druid: 'bh868zf9366')
         allow(Dor::Event::Client).to receive(:create).with(druid: 'druid:bh868zf9366', type: 'preservation_audit_failure', data: instance_of(Hash))
       end
 
-      it 'sets status to online_moab_not_found and adds corresponding audit result' do
+      it 'sets status to moab_on_storage_not_found and adds corresponding audit result' do
         expect(checksum_validator.moab_on_storage.object_pathname.exist?).to be true
-        expect { checksum_validator.validate_checksums }.to change(complete_moab, :status).to 'online_moab_not_found'
-        expect(complete_moab.reload.status).to eq 'online_moab_not_found'
+        expect { checksum_validator.validate_checksums }.to change(moab_record, :status).to 'moab_on_storage_not_found'
+        expect(moab_record.reload.status).to eq 'moab_on_storage_not_found'
         expect(checksum_validator.results.results.first).to have_key(:moab_not_found)
       end
 
       it 'sends results in HONEYBADGER_REPORT_CODES errors' do
-        reason = 'db CompleteMoab \\(created .*Z; last updated .*Z\\) exists but Moab not found'
+        reason = 'db MoabRecord \\(created .*Z; last updated .*Z\\) exists but Moab not found'
         checksum_validator.validate_checksums
 
         expect(honeybadger_reporter).to have_received(:report_errors)
@@ -88,14 +88,14 @@ RSpec.describe Audit::ChecksumValidator do
                 storage_area: moab_store_root,
                 check_name: 'validate_checksums',
                 results: [{ moab_not_found: match(reason) },
-                          { cm_status_changed: 'CompleteMoab status changed from validity_unknown to online_moab_not_found' }])
+                          { moab_record_status_changed: 'MoabRecord status changed from validity_unknown to moab_on_storage_not_found' }])
         expect(event_service_reporter).to have_received(:report_errors)
           .with(druid: 'bh868zf9366',
                 version: 0,
                 storage_area: moab_store_root,
                 check_name: 'validate_checksums',
                 results: [{ moab_not_found: match(reason) },
-                          { cm_status_changed: 'CompleteMoab status changed from validity_unknown to online_moab_not_found' }])
+                          { moab_record_status_changed: 'MoabRecord status changed from validity_unknown to moab_on_storage_not_found' }])
       end
 
       it 'calls AuditResultReporter.report_results' do
@@ -108,69 +108,69 @@ RSpec.describe Audit::ChecksumValidator do
       let(:druid) { 'bz514sm9647' }
       let(:root_name) { 'fixture_sr1' }
 
-      it 'returns a positive result for a complete_moab' do
+      it 'returns a positive result for a moab_record' do
         checksum_validator.validate_checksums
         expect(checksum_validator.results.results.first).to have_key(:moab_checksum_valid)
       end
 
       [
-        'online_moab_not_found',
+        'moab_on_storage_not_found',
         'invalid_moab',
         'unexpected_version_on_storage',
         'invalid_checksum',
         'validity_unknown'
       ].each do |initial_status|
         it "sets status to OK_STATUS if it was previously #{initial_status}" do
-          complete_moab.status = initial_status
-          complete_moab.save!
-          expect { checksum_validator.validate_checksums }.to change(complete_moab, :status).to 'ok'
-          expect(complete_moab.reload.status).to eq 'ok'
+          moab_record.status = initial_status
+          moab_record.save!
+          expect { checksum_validator.validate_checksums }.to change(moab_record, :status).to 'ok'
+          expect(moab_record.reload.status).to eq 'ok'
         end
       end
 
       it 'leaves status of OK_STATUS as-is' do
-        complete_moab.ok!
-        expect { checksum_validator.validate_checksums }.not_to(change(complete_moab, :status))
-        expect(complete_moab.reload.status).to eq 'ok'
+        moab_record.ok!
+        expect { checksum_validator.validate_checksums }.not_to(change(moab_record, :status))
+        expect(moab_record.reload.status).to eq 'ok'
       end
 
       it 'updates audit timestamps' do
-        expect(complete_moab.last_moab_validation).to be_nil
-        expect(complete_moab.last_version_audit).to be_nil
+        expect(moab_record.last_moab_validation).to be_nil
+        expect(moab_record.last_version_audit).to be_nil
         approximate_validation_time = Time.current
         checksum_validator.validate_checksums
-        expect(complete_moab.last_moab_validation).to be > approximate_validation_time
-        expect(complete_moab.last_version_audit).to be > approximate_validation_time
+        expect(moab_record.last_moab_validation).to be > approximate_validation_time
+        expect(moab_record.last_version_audit).to be > approximate_validation_time
       end
 
       context 'fails other moab validation' do
         context 'version on disk does not match expected version from catalog' do
           before do
-            complete_moab.version = 4 # this is one greater than the version on disk for bz514sm9647
-            complete_moab.save!
+            moab_record.version = 4 # this is one greater than the version on disk for bz514sm9647
+            moab_record.save!
           end
 
           [
             'ok',
-            'online_moab_not_found',
+            'moab_on_storage_not_found',
             'invalid_moab',
             'invalid_checksum',
             'validity_unknown'
           ].each do |initial_status|
             it "sets status to UNEXPECTED_VERSION_ON_STORAGE_STATUS if it was previously #{initial_status}" do
-              complete_moab.status = initial_status
-              complete_moab.save!
-              expect { checksum_validator.validate_checksums }.to change(complete_moab, :status).to 'unexpected_version_on_storage'
+              moab_record.status = initial_status
+              moab_record.save!
+              expect { checksum_validator.validate_checksums }.to change(moab_record, :status).to 'unexpected_version_on_storage'
               expect(checksum_validator.results.contains_result_code?(AuditResults::UNEXPECTED_VERSION)).to be true
-              expect(complete_moab.reload.status).to eq 'unexpected_version_on_storage'
+              expect(moab_record.reload.status).to eq 'unexpected_version_on_storage'
             end
           end
 
-          it 'leaves status as UNEXPECTED_VERSION_ON_STORAGE_STATUS if complete moab started in that state' do
-            complete_moab.unexpected_version_on_storage!
-            expect { checksum_validator.validate_checksums }.not_to(change(complete_moab, :status))
+          it 'leaves status as UNEXPECTED_VERSION_ON_STORAGE_STATUS if MoabRecord started in that state' do
+            moab_record.unexpected_version_on_storage!
+            expect { checksum_validator.validate_checksums }.not_to(change(moab_record, :status))
             expect(checksum_validator.results.contains_result_code?(AuditResults::UNEXPECTED_VERSION)).to be true
-            expect(complete_moab.reload.status).to eq 'unexpected_version_on_storage'
+            expect(moab_record.reload.status).to eq 'unexpected_version_on_storage'
           end
         end
 
@@ -182,78 +182,78 @@ RSpec.describe Audit::ChecksumValidator do
 
           [
             'ok',
-            'online_moab_not_found',
+            'moab_on_storage_not_found',
             'unexpected_version_on_storage',
             'invalid_checksum',
             'validity_unknown'
           ].each do |initial_status|
             it "sets status as INVALID_MOAB_STATUS if it was #{initial_status}" do
-              complete_moab.status = initial_status
-              complete_moab.save!
-              expect { checksum_validator.validate_checksums }.to change(complete_moab, :status).to 'invalid_moab'
-              expect(complete_moab.reload.status).to eq 'invalid_moab'
+              moab_record.status = initial_status
+              moab_record.save!
+              expect { checksum_validator.validate_checksums }.to change(moab_record, :status).to 'invalid_moab'
+              expect(moab_record.reload.status).to eq 'invalid_moab'
             end
           end
 
-          it 'leaves status as INVALID_MOAB_STATUS if complete moab started in that state' do
-            complete_moab.invalid_moab!
-            expect { checksum_validator.validate_checksums }.not_to(change(complete_moab, :status))
-            expect(complete_moab.reload.status).to eq 'invalid_moab'
+          it 'leaves status as INVALID_MOAB_STATUS if MoabRecord started in that state' do
+            moab_record.invalid_moab!
+            expect { checksum_validator.validate_checksums }.not_to(change(moab_record, :status))
+            expect(moab_record.reload.status).to eq 'invalid_moab'
           end
         end
       end
     end
 
     context 'fails checksum validation' do
-      it 'returns error codes for a complete_moab' do
+      it 'returns error codes for a moab_record' do
         checksum_validator.validate_checksums
         expect(checksum_validator.results.results.first).to have_key(:file_not_in_manifest)
       end
 
       [
         'ok',
-        'online_moab_not_found',
+        'moab_on_storage_not_found',
         'invalid_moab',
         'unexpected_version_on_storage',
         'validity_unknown'
       ].each do |initial_status|
-        it "sets CompleteMoab status to INVALID_CHECKSUM_STATUS if it was initially #{initial_status}" do
-          complete_moab.status = initial_status
-          expect { checksum_validator.validate_checksums }.to change(complete_moab, :status).to 'invalid_checksum'
+        it "sets MoabRecord status to INVALID_CHECKSUM_STATUS if it was initially #{initial_status}" do
+          moab_record.status = initial_status
+          expect { checksum_validator.validate_checksums }.to change(moab_record, :status).to 'invalid_checksum'
         end
       end
 
-      it 'leaves CompleteMoab status as INVALID_CHECKSUM_STATUS if it already was' do
-        complete_moab.status = 'invalid_checksum'
-        expect { checksum_validator.validate_checksums }.not_to(change(complete_moab, :status))
+      it 'leaves MoabRecord status as INVALID_CHECKSUM_STATUS if it already was' do
+        moab_record.status = 'invalid_checksum'
+        expect { checksum_validator.validate_checksums }.not_to(change(moab_record, :status))
       end
 
       context 'fails other moab validation' do
         context 'version on disk does not match expected version from catalog' do
           before do
-            complete_moab.version = 4 # this is one greater than the version on disk for bz514sm9647
-            complete_moab.save!
+            moab_record.version = 4 # this is one greater than the version on disk for bz514sm9647
+            moab_record.save!
           end
 
           [
             'ok',
-            'online_moab_not_found',
+            'moab_on_storage_not_found',
             'invalid_moab',
             'validity_unknown',
             'unexpected_version_on_storage'
           ].each do |initial_status|
             it "sets status to INVALID_CHECKSUM_STATUS if it was previously #{initial_status}" do
-              complete_moab.status = initial_status
-              complete_moab.save!
-              expect { checksum_validator.validate_checksums }.to change(complete_moab, :status).to 'invalid_checksum'
-              expect(complete_moab.reload.status).to eq 'invalid_checksum'
+              moab_record.status = initial_status
+              moab_record.save!
+              expect { checksum_validator.validate_checksums }.to change(moab_record, :status).to 'invalid_checksum'
+              expect(moab_record.reload.status).to eq 'invalid_checksum'
             end
           end
 
-          it 'leaves status as INVALID_CHECKSUM_STATUS if complete moab started in that state' do
-            complete_moab.invalid_checksum!
-            expect { checksum_validator.validate_checksums }.not_to(change(complete_moab, :status))
-            expect(complete_moab.reload.status).to eq 'invalid_checksum'
+          it 'leaves status as INVALID_CHECKSUM_STATUS if MoabRecord started in that state' do
+            moab_record.invalid_checksum!
+            expect { checksum_validator.validate_checksums }.not_to(change(moab_record, :status))
+            expect(moab_record.reload.status).to eq 'invalid_checksum'
           end
         end
 
@@ -265,23 +265,23 @@ RSpec.describe Audit::ChecksumValidator do
 
           [
             'ok',
-            'online_moab_not_found',
+            'moab_on_storage_not_found',
             'unexpected_version_on_storage',
             'validity_unknown',
             'invalid_moab'
           ].each do |initial_status|
             it "sets status as INVALID_CHECKSUM_STATUS if it was #{initial_status}" do
-              complete_moab.status = initial_status
-              complete_moab.save!
-              expect { checksum_validator.validate_checksums }.to change(complete_moab, :status).to 'invalid_checksum'
-              expect(complete_moab.reload.status).to eq 'invalid_checksum'
+              moab_record.status = initial_status
+              moab_record.save!
+              expect { checksum_validator.validate_checksums }.to change(moab_record, :status).to 'invalid_checksum'
+              expect(moab_record.reload.status).to eq 'invalid_checksum'
             end
           end
 
-          it 'leaves status as INVALID_CHECKSUM_STATUS if complete moab started in that state' do
-            complete_moab.invalid_checksum!
-            expect { checksum_validator.validate_checksums }.not_to(change(complete_moab, :status))
-            expect(complete_moab.reload.status).to eq 'invalid_checksum'
+          it 'leaves status as INVALID_CHECKSUM_STATUS if MoabRecord started in that state' do
+            moab_record.invalid_checksum!
+            expect { checksum_validator.validate_checksums }.not_to(change(moab_record, :status))
+            expect(moab_record.reload.status).to eq 'invalid_checksum'
           end
         end
       end
@@ -300,10 +300,10 @@ RSpec.describe Audit::ChecksumValidator do
 
       before do
         # would result in a status update if the save succeeded
-        complete_moab.online_moab_not_found!
+        moab_record.moab_on_storage_not_found!
 
         # do this second since we save! as part of setup
-        allow(complete_moab).to receive(:save!).and_raise(ActiveRecord::ConnectionTimeoutError)
+        allow(moab_record).to receive(:save!).and_raise(ActiveRecord::ConnectionTimeoutError)
       end
 
       it 'does not re-throw an ActiveRecord error we know how to deal with' do
@@ -317,7 +317,7 @@ RSpec.describe Audit::ChecksumValidator do
 
       it 'does not have a result code indicating the update happened' do
         checksum_validator.validate_checksums
-        expect(checksum_validator.results.contains_result_code?(AuditResults::CM_STATUS_CHANGED)).to be false
+        expect(checksum_validator.results.contains_result_code?(AuditResults::MOAB_RECORD_STATUS_CHANGED)).to be false
       end
     end
   end
@@ -647,30 +647,30 @@ RSpec.describe Audit::ChecksumValidator do
     let(:root_name) { 'fixture_sr1' }
 
     it 'has status changed to OK_STATUS and completes workflow' do
-      complete_moab.invalid_moab!
+      moab_record.invalid_moab!
       expect(audit_workflow_reporter).to receive(:report_completed)
         .with(druid: druid,
               version: 3,
               check_name: 'validate_checksums',
               storage_area: moab_store_root,
-              result: { cm_status_changed: 'CompleteMoab status changed from invalid_moab to ok' })
+              result: { moab_record_status_changed: 'MoabRecord status changed from invalid_moab to ok' })
       checksum_validator.validate_checksums
     end
 
     it 'has status that does not change and does not complete workflow' do
-      complete_moab.ok!
+      moab_record.ok!
       expect(audit_workflow_reporter).not_to receive(:report_completed)
       checksum_validator.validate_checksums
     end
 
     context 'has status changed to status other than OK_STATUS' do
       before do
-        complete_moab.version = 4 # this is one greater than the version on disk for bz514sm9647
-        complete_moab.save!
+        moab_record.version = 4 # this is one greater than the version on disk for bz514sm9647
+        moab_record.save!
       end
 
       it 'does not complete workflow' do
-        complete_moab.ok!
+        moab_record.ok!
         expect(audit_workflow_reporter).not_to receive(:report_completed)
         checksum_validator.validate_checksums
       end
@@ -679,10 +679,10 @@ RSpec.describe Audit::ChecksumValidator do
     context 'transaction is rolled back' do
       before do
         # would result in a status update if the save succeeded
-        complete_moab.online_moab_not_found!
+        moab_record.moab_on_storage_not_found!
 
         # do this second since we save! as part of setup
-        allow(complete_moab).to receive(:save!).and_raise(ActiveRecord::ConnectionTimeoutError)
+        allow(moab_record).to receive(:save!).and_raise(ActiveRecord::ConnectionTimeoutError)
       end
 
       it 'does not complete workflow' do

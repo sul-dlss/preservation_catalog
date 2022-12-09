@@ -1,15 +1,15 @@
 <h2>Moabs on Storage - Status Information</h2>
 <p><strong class="fs-4">PreservedObject</strong> records store the druid and links to db records about both the Moab on local storage and all the replicated instances in the cloud.</p>
-<p><strong class="fs-4">CompleteMoab</strong> records are about the Moab on storage.</p>
+<p><strong class="fs-4">MoabRecord</strong> records are about the Moab on storage.</p>
 <hr/>
 <div class="row row-cols-2">
   <div class="column col-5">
-    <turbo-frame id="complete-moab-versions" src="<%= dashboard_complete_moab_versions_path %>" loading="lazy">
+    <turbo-frame id="moab-record-versions" src="<%= dashboard_moab_record_versions_path %>" loading="lazy">
       <%= render Spinner.new %>
     </turbo-frame>
   </div>
   <div class="column col-7">
-    <turbo-frame id="complete-moab-info" src="<%= dashboard_complete_moab_info_path %>" loading="lazy">
+    <turbo-frame id="moab-record-info" src="<%= dashboard_moab_record_info_path %>" loading="lazy">
       <%= render Spinner.new %>
     </turbo-frame>
   </div>

@@ -6,7 +6,7 @@ FactoryBot.define do
     current_version { 1 }
   end
 
-  # searches through fixture dirs to find the druid, creates a complete moab for the PO.
+  # searches through fixture dirs to find the druid, creates a MoabRecord for the PreservedObject.
   # if there is more than one moab among the storage roots for the druid, the one from the
   # storage root listed first in the configs will be used.
   factory :preserved_object_fixture, parent: :preserved_object do
@@ -21,7 +21,7 @@ FactoryBot.define do
         end
         found
       end
-      create_list(:complete_moab, 1,
+      create_list(:moab_record, 1,
                   preserved_object: po,
                   moab_storage_root: MoabStorageRoot.find_by!(storage_location: root_dir),
                   version: po.current_version,

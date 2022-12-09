@@ -8,7 +8,7 @@ RSpec.describe Dashboard::MoabOnStorageStatusComponent, type: :component do
 
   it 'renders Moabs on Storage Status' do
     expect(rendered).to match(/Moabs on Storage/) # top level status
-    expect(rendered).to match(/CompleteMoab Statuses/) # sub status
+    expect(rendered).to match(/MoabRecord Statuses/) # sub status
     expect(rendered_html).to match('OK') # actual status
   end
 end

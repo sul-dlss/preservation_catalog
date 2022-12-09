@@ -108,7 +108,7 @@ RSpec.describe ZipEndpoint do
     let!(:other_ep2) { other_eps.second }
 
     describe '.which_have_archive_copy' do
-      it 'returns the zip endpoints which have a complete moab for the druid version' do
+      it 'returns the zip endpoints which have a MoabRecord for the druid version' do
         expect(described_class.which_have_archive_copy(druid, version).pluck(:endpoint_name)).to eq []
         expect { po.zipped_moab_versions.create!(version: version, zip_endpoint: other_ep1) }.not_to change {
           [
@@ -138,7 +138,7 @@ RSpec.describe ZipEndpoint do
     describe '.which_need_archive_copy' do
       let(:names) { [other_ep1.endpoint_name, other_ep2.endpoint_name, zip_endpoint.endpoint_name] }
 
-      it "returns the zip endpoints which should have a complete moab for the druid/version, but which don't yet" do
+      it "returns the zip endpoints which should have a MoabRecord for the druid/version, but which don't yet" do
         expect(described_class.which_need_archive_copy(druid, version).pluck(:endpoint_name).sort).to eq names
         expect(described_class.which_need_archive_copy(druid, version - 1).pluck(:endpoint_name).sort).to eq names
         expect(described_class.which_need_archive_copy(other_druid, version).pluck(:endpoint_name).sort).to eq names

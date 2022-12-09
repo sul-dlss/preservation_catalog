@@ -16,7 +16,7 @@ module MoabOnStorage
       raise(ArgumentError, "No contentMetadata provided to StorageServicesWrapper.content_diff for druid #{druid}") if content_md.blank?
       err_msg = "subset arg must be 'all', 'shelve', 'preserve', or 'publish' (StorageServicesWrapper.content_diff for druid #{druid})"
       raise(ArgumentError, err_msg) unless ['all', 'shelve', 'preserve', 'publish'].include?(subset)
-      Stanford::StorageServices.compare_cm_to_version(content_md, druid, subset, version)
+      Stanford::StorageServices.compare_cm_to_version(content_md, druid, subset, version) # a method from the moab-versioning gem
     end
 
     # @return [Pathname] Pathname object containing the full path for the specified file
