@@ -1,11 +1,8 @@
 # frozen_string_literal: true
 
-require 'resque/server'
-
-Rails.application.routes.draw do # rubocop:disable Metrics/BlockLength
-  mount Resque::Server.new,
-        at: '/resque',
-        constraints: ->(req) { Settings.resque_dashboard_hostnames.include?(req.host) }
+Rails.application.routes.draw do
+  require 'sidekiq/web'
+  mount Sidekiq::Web => '/queues'
 
   get 'dashboard', to: 'dashboard#index', defaults: { format: 'html' }
   namespace :dashboard do

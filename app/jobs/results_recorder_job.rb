@@ -57,13 +57,13 @@ class ResultsRecorderJob < ApplicationJob
     }
   end
 
-  # Currently using the Resque's underlying Redis instance, but we likely would
+  # Currently using the Sidekiq's underlying Redis instance, but we likely would
   # want something more durable like RabbitMQ for production.
   # @param [String] message JSON
   def publish_result(message)
     # Example: RabbitMQ using `connection` from the gem "Bunny":
     # connection.create_channel.fanout('replication.results').publish(message)
-    Resque.redis.redis.lpush('replication.results', message)
+    Sidekiq.redis { |redis| redis.lpush('replication.results', message) }
   end
 
   def create_zmv_replicated_event(druid)

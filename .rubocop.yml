@@ -37,6 +37,7 @@ Metrics/BlockLength:
   Exclude:
     - '**/*.rake'
     - 'spec/**/*'
+    - 'config/routes.rb'
 
 Metrics/ClassLength:
   Exclude:

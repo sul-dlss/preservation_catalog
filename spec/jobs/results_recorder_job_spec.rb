@@ -81,9 +81,15 @@ describe ResultsRecorderJob do
   end
 
   context 'when all zip_endpoints are fulfilled' do
+    let(:redis) { instance_double(Redis, del: nil) }
+
+    before do
+      allow(Sidekiq).to receive(:redis).and_yield(redis)
+    end
+
     it 'posts a message to replication.results queue' do
       hash = { druid: druid, version: zmv.version, zip_endpoints: [zip_endpoint.endpoint_name, zip_endpoint2.endpoint_name].sort }
-      expect(Resque.redis.redis).to receive(:lpush).with('replication.results', hash.to_json)
+      expect(redis).to receive(:lpush).with('replication.results', hash.to_json)
       described_class.perform_now(druid, zmv.version, druid_version_zip.s3_key, zip_endpoint.delivery_class.to_s)
       described_class.perform_now(druid, zmv2.version, druid_version_zip.s3_key, zip_endpoint2.delivery_class.to_s)
     end
@@ -91,13 +97,15 @@ describe ResultsRecorderJob do
 
   context 'when other endpoints remain unreplicated' do
     let(:other_ep) { create(:zip_endpoint, delivery_class: 2) }
+    let(:redis) { instance_double(Redis, del: nil) }
 
     before do
+      allow(Sidekiq).to receive(:redis).and_yield(redis)
       preserved_object.zipped_moab_versions.create!(version: zmv.version, zip_endpoint: other_ep)
     end
 
     it 'does not send to replication.results queue' do
-      expect(Resque.redis.redis).not_to receive(:lpush)
+      expect(redis).not_to receive(:lpush)
       described_class.perform_now(druid, zmv.version, druid_version_zip.s3_key, zip_endpoint.delivery_class.to_s)
     end
   end

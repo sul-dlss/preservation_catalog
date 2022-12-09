@@ -18,7 +18,9 @@
 class PlexerJob < ZipPartJobBase
   queue_as :zips_made
 
-  before_enqueue { |job| job.zip_info_check!(job.arguments.fourth) }
+  before_enqueue do |job|
+    job.zip_info_check!(job.arguments.fourth)
+  end
 
   # @param [String] druid
   # @param [Integer] version
