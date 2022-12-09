@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-# Q: Why copy the logic out of resque-lock instead of using the gem?
-# A: It's a small amount of (MIT licensed) code, the gem is and unmaintained (last updated in 2012),
-# and the lock cleanup hook wasn't getting invoked automatically in our jobs.  Inlining the code
-# reduces indirection and dependency (on both resque-lock and on Resque itself, since we use ActiveJob
-# hooks here instead of Resque hooks).
+# Q: Why copy the logic out of resque-lock instead of using the gem?  This app doesn't even use Resque anymore!
+# A: It's a small amount of (MIT licensed) code, it uses a general Redis pattern that still works with Sidekiq,
+# resque-lock is unmaintained (last updated in 2012), and even before switching to Sidekiq, resque-lock's cleanup
+# hook wasn't getting invoked in our jobs.  Inlining the code fixed that bug, reduced indirection, and removed
+# dependency on both resque-lock and Resque itself (as the inlined code uses ActiveJob hooks instead of Resque hooks).
 
 # @note logic for `before_enqueue` `around_perform`/`clear_lock`, `queue_lock_key`, `before_enqueue_lock`, and
 #   `lock_timeout` from resque-lock.
