@@ -11,6 +11,6 @@ RSpec.describe Dashboard::ReplicationStatusComponent, type: :component do
     expect(rendered).to match(/ZipPart Statuses/) # sub status
     expect(rendered).to match(/Endpoint:/) # sub status
     expect(rendered_html).to match('OK') # actual status data
-    expect(rendered_html).to match(%r{<a href="resque">Redis queues</a>}) # link to redis
+    expect(rendered_html).to match(%r{<a href="queues">Redis queues</a>}) # link to redis
   end
 end

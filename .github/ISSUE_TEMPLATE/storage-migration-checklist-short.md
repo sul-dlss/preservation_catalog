@@ -16,7 +16,7 @@ assignees: ''
 - More info is available here _(please read before proceeding)_: https://github.com/sul-dlss/preservation_catalog/wiki/Storage-Migration---Additional-Information
 
 - Keep an eye out for Honeybadger errors from preservation_catalog and from preservation_robots.
-- Keep an eye out for failed prescat resque worker jobs.
+- Keep an eye out for failed prescat sidekiq (redis) worker jobs.
 
 ## Audit Reports Before Cutover Weekend
 
@@ -24,7 +24,7 @@ Run all validation checks on Moabs and generate reports.  Note that error detail
 
 ### M2C (moab to catalog -- ensure everything on the disk is currently in the catalog)
 - [ ] run on storage root: ```RAILS_ENV=production bundle exec rake prescat:audit:m2c[stor_root_name]```
-  - [ ] requeue failed jobs / ensure no jobs failed via resque GUI https://preservation-catalog-prod-01.stanford.edu/resque/overview
+  - [ ] requeue failed jobs / ensure no jobs failed via sidekiq GUI https://preservation-catalog-prod-01.stanford.edu/queues
   - [ ] the run should be finished when all jobs in the `m2c` queue have been worked (queue is back down to 0)
 - [ ] after M2C finishes, generate report for objects with error status ```RAILS_ENV=production bundle exec rake prescat:reports:msr_moab_audit_errors[stor_root_name,m2c_b4]```
 - [ ] note druids for each existing M2C error (from report in /opt/app/pres/preservation_catalog/current/log/reports)
@@ -32,7 +32,7 @@ Run all validation checks on Moabs and generate reports.  Note that error detail
 
 ### C2M (catalog to moab -- ensure everything in the catalog for that disk actually exists on the disk)
 - [ ] run on storage root ```RAILS_ENV=production bundle exec rake prescat:audit:c2m[stor_root_name]```
-  - [ ] requeue failed jobs / ensure no jobs failed via resque GUI https://preservation-catalog-prod-01.stanford.edu/resque/overview
+  - [ ] requeue failed jobs / ensure no jobs failed via sidekiq GUI https://preservation-catalog-prod-01.stanford.edu/queues
   - [ ] the run should be finished when all jobs in the `c2m` queue have been worked (queue is back down to 0)
 - [ ] after C2M finishes, generate report for objects with error status ```RAILS_ENV=production bundle exec rake prescat:reports:msr_moab_audit_errors[stor_root_name,c2m_b4]```
 - [ ] note druids for each existing C2M error (from report in /opt/app/pres/preservation_catalog/current/log/reports)

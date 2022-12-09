@@ -18,7 +18,7 @@ class ApiController < ActionController::API
   # appropritaly small workgroup.
   def non_api_route?
     # no need to list /status (okcomputer) URLs here, because those aren't handled by ApplicationController
-    request.fullpath.match(%r{^/(resque)|(dashboard)(/.*)?$})
+    request.fullpath.match(%r{^/(queues)|(dashboard)(/.*)?$})
   end
 
   def check_auth_token!
