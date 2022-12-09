@@ -34,7 +34,7 @@ for a diagram and a few words about replication queues/job flow.</p>
         <td>Creates a new DruidVersionZip for S3 endpoint if it doesn't exist. If needed, write zip file(s) to zip cache and calculate checksum(s); otherwise, touch the file(s).</td>
         <td>zipmaker</td>
         <td>DruidVersionZip.find_or_create_zip!; any returned partkeys each call PlexerJob</td>
-        <td>See resque/failed.</td>
+        <td>See sidekiq queues</td>
       </tr>
       <tr>
         <td class="fw-bold">DruidVersionZip.find_or_create_zip!</td>
@@ -48,21 +48,21 @@ for a diagram and a few words about replication queues/job flow.</p>
         <td>If necessary, record zip part metadata info in DB. <br/>Call endpoint jobs for zip (parts)</td>
         <td>zips_made</td>
         <td>S3WestDeliveryJob<br/>S3EastDeliveryJob<br/>IbmSouthDeliveryJob</td>
-        <td>See resque/failed.</td>
+        <td>See sidekiq queues</td>
       </tr>
       <tr>
         <td>S3 endpoint jobs:<br/><strong>S3EastDeliveryJob</strong><br/><strong>S3WeDeliveryJob</strong><br/><strong>IBMSouthDeliveryJob</strong></td>
         <td>Posts individual zip (part) to S3 endpoint if not there already.</td>
         <td><br/>s3_us_east_1_delivery<br/>s3_us_west_2_delivery<br/>ibm_us_south_delivery</td>
         <td>ResultsRecorderJob if zip (part) posted</td>
-        <td>See resque/failed.</td>
+        <td>See sidekiq queues</td>
       </tr>
       <tr>
         <td class="fw-bold">ResultsRecorderJob</td>
         <td>If this completes the replication of a ZippedMoabVersion to an S3 endpoint, send message to event service.  If full ZippedMoabVersion is replicated to all zip_endpoints, "publish" with redis.</td>
         <td>zip_endpoint_events</td>
         <td class="table-secondary"/>
-        <td>See resque/failed.</td>
+        <td>See sidekiq queues</td>
       </tr>
     </tbody>
   </table>
