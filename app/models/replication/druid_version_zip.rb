@@ -13,6 +13,9 @@ module Replication
 
     delegate :base64digest, :hexdigest, to: :md5
 
+    # the size used with "zip -s" to break up the zip into parts
+    ZIP_SPLIT_SIZE = '10g'
+
     # @param [String] druid
     # @param [Integer] version
     # @param [String] storage_location The path of storage_root/storage_trunk with the druid tree from which the zipped version should be
@@ -146,7 +149,7 @@ module Replication
     # @see #work_dir
     # @return [String] shell command to create this zip
     def zip_command
-      "zip -r0X -s #{zip_split_size} #{file_path} #{druid.id}/#{v_version}"
+      "zip -r0X -s #{ZIP_SPLIT_SIZE} #{file_path} #{druid.id}/#{v_version}"
     end
 
     def zip_version
@@ -160,11 +163,6 @@ module Replication
 
     def zip_size_ok?
       total_part_size > moab_version_size
-    end
-
-    # @return [String] the option included with "zip -s"
-    def zip_split_size
-      '10g'
     end
 
     def moab_version_size

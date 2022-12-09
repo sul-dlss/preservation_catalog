@@ -181,7 +181,7 @@ describe Replication::DruidVersionZip do
 
     context 'for every part' do
       before do
-        allow(dvz).to receive(:zip_split_size).and_return('1m')
+        stub_const('ZIP_SPLIT_SIZE', '1m')
         allow(dvz).to receive(:zip_size_ok?).and_return(true)
       end
 
@@ -200,7 +200,7 @@ describe Replication::DruidVersionZip do
       before { allow(dvz).to receive(:zip_command).and_return(zip_command) }
 
       context 'when inpath is incorrect' do
-        let(:zip_command) { "zip -r0X -s 10g #{zip_path} /wrong/path" }
+        let(:zip_command) { "zip -r0X -s #{Replication::DruidVersionZip::ZIP_SPLIT_SIZE} #{zip_path} /wrong/path" }
 
         it 'raises error' do
           expect { dvz.create_zip! }.to raise_error(RuntimeError, %r{zipmaker failure.*/wrong/path}m)
@@ -216,7 +216,7 @@ describe Replication::DruidVersionZip do
       end
 
       context 'if the utility "moved"' do
-        let(:zip_command) { "zap -r0X -s 10g #{zip_path} #{druid}/v0003" }
+        let(:zip_command) { "zap -r0X -s #{Replication::DruidVersionZip::ZIP_SPLIT_SIZE} #{zip_path} #{druid}/v0003" }
 
         it 'raises error' do
           expect { dvz.create_zip! }.to raise_error(Errno::ENOENT, /No such file/)
@@ -305,7 +305,7 @@ describe Replication::DruidVersionZip do
     let(:dvz) { described_class.new(druid, version, 'spec/fixtures/storage_root02/sdr2objects') }
 
     before do
-      allow(dvz).to receive(:zip_split_size).and_return('1m')
+      stub_const('Replication::DruidVersionZip::ZIP_SPLIT_SIZE', '1m')
       FileUtils.rm_rf('/tmp/dc') # prep clean dir
     end
 
