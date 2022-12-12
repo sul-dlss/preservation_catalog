@@ -13,6 +13,7 @@ Rails.application.routes.draw do
     get 'storage_root_data', to: '/dashboard#storage_root_data', defaults: { format: 'html' }
     get 'replication_status', to: '/dashboard#replication_status', defaults: { format: 'html' }
     get 'replication_endpoints', to: '/dashboard#replication_endpoints', defaults: { format: 'html' }
+    get 'replication_flow', to: '/dashboard#replication_flow', defaults: { format: 'html' }
     get 'replicated_files', to: '/dashboard#replicated_files', defaults: { format: 'html' }
     get 'zip_part_suffix_counts', to: '/dashboard#zip_part_suffix_counts', defaults: { format: 'html' }
     get 'audit_status', to: '/dashboard#audit_status', defaults: { format: 'html' }

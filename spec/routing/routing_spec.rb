@@ -81,6 +81,12 @@ RSpec.describe 'routes' do
     end
   end
 
+  describe 'dashboard/replication_flow' do
+    it 'routes to dashboard controller replication_flow action' do
+      expect(get: dashboard_replication_flow_path).to route_to(controller: 'dashboard', action: 'replication_flow', format: 'html')
+    end
+  end
+
   describe 'dashboard/replicated_files' do
     it 'routes to dashboard controller replicated_files action' do
       expect(get: dashboard_replicated_files_path).to route_to(controller: 'dashboard', action: 'replicated_files', format: 'html')

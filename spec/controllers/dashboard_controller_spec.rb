@@ -55,18 +55,16 @@ RSpec.describe DashboardController do
         expect(response.body).to match(/Version Zips - Replication Status Information/)
       end
 
-      it 'renders _replication_flow template' do
-        expect(response).to render_template('dashboard/_replication_flow')
-        expect(response.body).to match(/Replication Flow/)
-        # all content is static, so no need to check for specific data
-      end
-
       it 'has turbo-frame for replication_endpoints path' do
         expect(response.body).to match(/<turbo-frame id="replication-endpoints" src="#{dashboard_replication_endpoints_path}" loading="lazy">/)
       end
 
       it 'has turbo-frame for replicated_files path' do
         expect(response.body).to match(/<turbo-frame id="replicated-files" src="#{dashboard_replicated_files_path}" loading="lazy">/)
+      end
+
+      it 'has turbo-frame for replication_flow path' do
+        expect(response.body).to match(/<turbo-frame id="replication-flow" src="#{dashboard_replication_flow_path}" loading="lazy">/)
       end
 
       it 'has turbo frame for zip_part_suffix_counts path' do
