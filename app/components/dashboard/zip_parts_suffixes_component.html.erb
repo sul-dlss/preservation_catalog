@@ -1,6 +1,6 @@
 <div>
   <h4>ZipPart suffix counts</h4>
-  <p>The first ZipPart suffix will always be .zip. If a zip is over 10g, the suffixes of the parts will be .zip, .z01, .z02, etc.</p>
+  <p>The first ZipPart suffix will always be .zip. If a zip is over <%= Replication::DruidVersionZip::ZIP_SPLIT_SIZE %>, the suffixes of the parts will be .zip, .z01, .z02, etc.</p>
   <div class="col-sm-2">
     <table class="table table-bordered table-hover table-sm">
       <thead class="table-info">

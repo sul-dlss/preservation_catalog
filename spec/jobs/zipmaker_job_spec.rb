@@ -35,7 +35,7 @@ describe ZipmakerJob do
     let(:druid) { 'bz514sm9647' }
     let(:version) { 1 }
 
-    before { allow(druid_version_zip).to receive(:zip_split_size).and_return('64k') }
+    before { stub_const('Replication::DruidVersionZip::ZIP_SPLIT_SIZE', '64k') }
 
     after { FileUtils.rm_rf(File.join(Settings.zip_storage, 'bz/514/sm/9647')) }
 

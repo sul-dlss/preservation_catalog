@@ -4,7 +4,7 @@
 </div>
 <p><strong class="fs-4">PreservedObject</strong> records store the druid and links to db records about both the Moab on local storage and all the replicated instances in the cloud.</p>
 <p><strong class="fs-4">ZippedMoabVersion</strong> records are about a single version of the Moab that is archived as zip file(s) on a particular cloud endpoint.</p>
-<p><strong class="fs-4">ZipPart</strong> records represent the individual zip segments for a ZippedMoabVersion (zips larger than 10g are split into segments) that are replicated to the particular cloud endpoint.</p>
+<p><strong class="fs-4">ZipPart</strong> records represent the individual zip segments for a ZippedMoabVersion (zips larger than <%= Replication::DruidVersionZip::ZIP_SPLIT_SIZE %> are split into segments) that are replicated to the particular cloud endpoint.</p>
 <hr/>
 <div class="row row-cols-2">
   <div class="column col-8">
