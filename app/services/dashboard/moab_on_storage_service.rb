@@ -45,7 +45,7 @@ module Dashboard
     end
 
     def storage_roots_moab_count_ok?
-      storage_root_totals[:moab_count] == CompleteMoab.count &&
+      storage_root_totals[:moab_count] == num_complete_moabs &&
         storage_root_totals[:moab_count] == num_preserved_objects
     end
 
@@ -102,7 +102,7 @@ module Dashboard
     end
 
     def storage_roots_fixity_check_expired_count_ok?
-      storage_roots_fixity_check_expired_count == CompleteMoab.fixity_check_expired.count
+      storage_roots_fixity_check_expired_count == num_moab_expired_checksum_validation
     end
 
     def complete_moab_total_size
@@ -114,14 +114,17 @@ module Dashboard
     end
 
     def complete_moab_status_counts
-      CompleteMoab.statuses.keys.map { |status| CompleteMoab.where(status: status).count }
+      # called multiple times, so memoize to avoid db queries
+      @complete_moab_status_counts ||= CompleteMoab.statuses.keys.map { |status| CompleteMoab.where(status: status).count }
     end
 
     def status_labels
-      CompleteMoab.statuses.keys.map { |status| status.tr('_', ' ') }
+      # called multiple times, so memoize to avoid db queries
+      @status_labels ||= CompleteMoab.statuses.keys.map { |status| status.tr('_', ' ') }
     end
 
     def num_moab_expired_checksum_validation
+      # used multiple times, so memoize to avoid db queries
       @num_moab_expired_checksum_validation ||= CompleteMoab.fixity_check_expired.count
     end
 
@@ -134,11 +137,13 @@ module Dashboard
     end
 
     def num_complete_moab_not_ok
-      CompleteMoab.where.not(status: 'ok').count
+      # used multiple times, so memoize to avoid db queries
+      @num_complete_moab_not_ok ||= CompleteMoab.count - CompleteMoab.ok.count
     end
 
     def num_preserved_objects
-      PreservedObject.count
+      # used multiple times, so memoize to avoid db queries
+      @num_preserved_objects ||= PreservedObject.count
     end
 
     def preserved_object_highest_version
@@ -147,7 +152,8 @@ module Dashboard
 
     # total number of object versions according to PreservedObject table
     def num_object_versions_per_preserved_object
-      PreservedObject.sum(:current_version)
+      # used multiple times, so memoize to avoid db queries
+      @num_object_versions_per_preserved_object ||= PreservedObject.sum(:current_version)
     end
 
     def average_version_per_preserved_object
@@ -155,7 +161,8 @@ module Dashboard
     end
 
     def num_complete_moabs
-      CompleteMoab.count
+      # used multiple times; memoizing to avoid multiple db queries
+      @num_complete_moabs ||= CompleteMoab.count
     end
 
     def complete_moab_highest_version
@@ -164,7 +171,8 @@ module Dashboard
 
     # total number of object versions according to CompleteMoab table
     def num_object_versions_per_complete_moab
-      CompleteMoab.sum(:version)
+      # used multiple times, so memoize to avoid multiple db queries
+      @num_object_versions_per_complete_moab ||= CompleteMoab.sum(:version)
     end
 
     def average_version_per_complete_moab
@@ -188,11 +196,13 @@ module Dashboard
     private
 
     def preserved_object_ordered_version_counts
-      PreservedObject.group(:current_version).count.sort.to_h
+      # called multiple times, so memoize to avoid db queries
+      @preserved_object_ordered_version_counts ||= PreservedObject.group(:current_version).count.sort.to_h
     end
 
     def complete_moab_ordered_version_counts
-      CompleteMoab.group(:version).count.sort.to_h
+      # called multiple times, so memoize to avoid db queries
+      @complete_moab_ordered_version_counts ||= CompleteMoab.group(:version).count.sort.to_h
     end
 
     # create this hash so we don't need to loop through storage_root_info multiple times

@@ -6,8 +6,8 @@ require 'action_view' # for number_to_human_size
 module Dashboard
   # methods pertaining to replication (cloud storage) tables in database for dashboard
   module ReplicationService
-    include ActionView::Helpers::NumberHelper # for number_to_human_size
     include MoabOnStorageService
+    include ActionView::Helpers::NumberHelper # for number_to_human_size
 
     def replication_and_zip_parts_ok?
       zip_parts_ok? && replication_ok?
@@ -25,19 +25,21 @@ module Dashboard
     end
 
     def endpoint_data
-      endpoint_data = {}
-      ZipEndpoint.all.each do |zip_endpoint|
-        endpoint_data[zip_endpoint.endpoint_name] =
-          {
-            delivery_class: zip_endpoint.delivery_class,
-            replication_count: ZippedMoabVersion.where(zip_endpoint_id: zip_endpoint.id).count
-          }
+      # called multiple times, so memoize to avoid db queries
+      @endpoint_data ||= {}.tap do |endpoint_data|
+        ZipEndpoint.all.each do |zip_endpoint|
+          endpoint_data[zip_endpoint.endpoint_name] =
+            {
+              delivery_class: zip_endpoint.delivery_class,
+              replication_count: ZippedMoabVersion.where(zip_endpoint_id: zip_endpoint.id).count
+            }
+        end
       end
-      endpoint_data
     end
 
     def zip_part_suffixes
-      ZipPart.group(:suffix).count
+      # called multiple times, so memoize to avoid db queries
+      @zip_part_suffixes ||= ZipPart.group(:suffix).count
     end
 
     def zip_parts_total_size
