@@ -3,10 +3,10 @@
 require 'rails_helper'
 
 describe 'the whole replication pipeline' do
-  let(:aws_s3_object) { instance_double(::Aws::S3::Object, exists?: false, upload_file: true) }
-  let(:ibm_s3_object) { instance_double(::Aws::S3::Object, exists?: false, upload_file: true) }
-  let(:aws_bucket) { instance_double(::Aws::S3::Bucket, object: aws_s3_object) }
-  let(:ibm_bucket) { instance_double(::Aws::S3::Bucket, object: ibm_s3_object) }
+  let(:aws_s3_object) { instance_double(Aws::S3::Object, exists?: false, upload_file: true) }
+  let(:ibm_s3_object) { instance_double(Aws::S3::Object, exists?: false, upload_file: true) }
+  let(:aws_bucket) { instance_double(Aws::S3::Bucket, object: aws_s3_object) }
+  let(:ibm_bucket) { instance_double(Aws::S3::Bucket, object: ibm_s3_object) }
   let(:druid) { 'bz514sm9647' }
   let(:version) { 1 }
   let(:preserved_object) { create(:preserved_object, druid: druid, current_version: version) }

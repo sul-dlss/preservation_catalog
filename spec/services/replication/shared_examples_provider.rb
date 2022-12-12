@@ -22,7 +22,7 @@ RSpec.shared_examples 'provider' do |provider_class, bucket_name, region, access
 
     it 'injects client configuration' do
       expect(config.region).to eq region
-      expect(config.credentials).to be_an(::Aws::Credentials)
+      expect(config.credentials).to be_an(Aws::Credentials)
       expect(config.credentials).to be_set
       expect(config.credentials.access_key_id).to eq 'some_key'
     end
@@ -59,7 +59,7 @@ RSpec.shared_examples 'provider' do |provider_class, bucket_name, region, access
         resp = nil
         expect { s3_object.upload_file(dvz_part.file_path, metadata: { our_time: now }) }.not_to raise_error
         expect { resp = s3_object.get }.not_to raise_error
-        expect(resp).to be_a(::Aws::S3::Types::GetObjectOutput)
+        expect(resp).to be_a(Aws::S3::Types::GetObjectOutput)
         expect(resp.metadata.symbolize_keys).to eq(our_time: now)
         expect(resp.body.read).to eq("FOOOOBAR\n")
       end
