@@ -9,7 +9,7 @@ describe Replication::ZipDeliveryService do
   let(:dvz) { Replication::DruidVersionZip.new(druid, version) }
   let(:dvz_part) { Replication::DruidVersionZipPart.new(dvz, part_s3_key) }
   let(:bucket_name) { 's3-bucket-shop' }
-  let(:s3_part) { instance_double(::Aws::S3::Object, exists?: part_exists, upload_file: true, key: part_s3_key, bucket_name: bucket_name) }
+  let(:s3_part) { instance_double(Aws::S3::Object, exists?: part_exists, upload_file: true, key: part_s3_key, bucket_name: bucket_name) }
   let(:part_exists) { false }
   let(:md5) { '4f98f59e877ecb84ff75ef0fab45bac5' }
   let(:base64) { dvz.hex_to_base64(md5) }

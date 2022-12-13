@@ -7,7 +7,7 @@ RSpec.shared_examples 'replication to endpoint' do |provider_class, bucket_name,
   let(:zmv) do
     create(:zipped_moab_version, zip_endpoint: zip_endpoint)
   end
-  let(:bucket) { instance_double(::Aws::S3::Bucket) }
+  let(:bucket) { instance_double(Aws::S3::Bucket) }
   let(:bucket_name) { bucket_name }
   let(:matching_md5) { attributes_for(:zip_part)[:md5] }
   let(:non_matching_md5) { 'asdfasdfb43t347l;x5px54xx6549;f4' }
@@ -35,7 +35,7 @@ RSpec.shared_examples 'replication to endpoint' do |provider_class, bucket_name,
 
       # fine to assume existence and matching checksum for all parts for this test case
       allow(bucket).to receive(:object).and_return(
-        instance_double(::Aws::S3::Object, exists?: true, metadata: { 'checksum_md5' => args[:md5] })
+        instance_double(Aws::S3::Object, exists?: true, metadata: { 'checksum_md5' => args[:md5] })
       )
     end
 
@@ -43,7 +43,7 @@ RSpec.shared_examples 'replication to endpoint' do |provider_class, bucket_name,
       part1 = zmv.zip_parts.find_by(suffix: '.zip')
       part3 = zmv.zip_parts.find_by(suffix: '.z02')
       ok_part = zmv.zip_parts.find_by(suffix: '.z01')
-      s3_obj = instance_double(::Aws::S3::Object, exists?: true)
+      s3_obj = instance_double(Aws::S3::Object, exists?: true)
 
       expect(bucket).to receive(:object).with(ok_part.s3_key).and_return(s3_obj)
       expect(s3_obj).to receive(:metadata).and_return('checksum_md5' => ok_part.md5)
@@ -60,9 +60,9 @@ RSpec.shared_examples 'replication to endpoint' do |provider_class, bucket_name,
       let(:part1) { zmv.zip_parts.find_by(suffix: '.zip') }
       let(:part2) { zmv.zip_parts.find_by(suffix: '.z01') }
       let(:part3) { zmv.zip_parts.find_by(suffix: '.z02') }
-      let(:s3_obj_part1) { instance_double(::Aws::S3::Object, exists?: false) }
-      let(:s3_obj_part2) { instance_double(::Aws::S3::Object, exists?: true) }
-      let(:s3_obj_part3) { instance_double(::Aws::S3::Object, exists?: true) }
+      let(:s3_obj_part1) { instance_double(Aws::S3::Object, exists?: false) }
+      let(:s3_obj_part2) { instance_double(Aws::S3::Object, exists?: true) }
+      let(:s3_obj_part3) { instance_double(Aws::S3::Object, exists?: true) }
 
       before do
         allow(bucket).to receive(:object).with(part1.s3_key).and_return(s3_obj_part1)
@@ -128,7 +128,7 @@ RSpec.shared_examples 'replication to endpoint' do |provider_class, bucket_name,
 
       # fine to assume non-existence (and thus checksum irrelevance) for all parts for this test case
       allow(bucket).to receive(:object).and_return(
-        instance_double(::Aws::S3::Object, exists?: false)
+        instance_double(Aws::S3::Object, exists?: false)
       )
     end
 
@@ -157,7 +157,7 @@ RSpec.shared_examples 'replication to endpoint' do |provider_class, bucket_name,
 
       zmv.zip_parts.each_with_index do |part, idx|
         allow(bucket).to receive(:object).with(part.s3_key).and_return(
-          instance_double(::Aws::S3::Object, exists?: true, metadata: { 'checksum_md5' => replicated_checksums[idx] })
+          instance_double(Aws::S3::Object, exists?: true, metadata: { 'checksum_md5' => replicated_checksums[idx] })
         )
       end
     end
@@ -257,16 +257,16 @@ RSpec.shared_examples 'replication to endpoint' do |provider_class, bucket_name,
       )
 
       allow(bucket).to receive(:object).with(zmv.zip_parts.first.s3_key).and_return(
-        instance_double(::Aws::S3::Object, exists?: false)
+        instance_double(Aws::S3::Object, exists?: false)
       )
       allow(bucket).to receive(:object).with(zmv.zip_parts.second.s3_key).and_return(
-        instance_double(::Aws::S3::Object, exists?: true, metadata: { 'checksum_md5' => replicated_checksums.second })
+        instance_double(Aws::S3::Object, exists?: true, metadata: { 'checksum_md5' => replicated_checksums.second })
       )
       allow(bucket).to receive(:object).with(zmv.zip_parts.third.s3_key).and_return(
-        instance_double(::Aws::S3::Object, exists?: true, metadata: { 'checksum_md5' => replicated_checksums.third })
+        instance_double(Aws::S3::Object, exists?: true, metadata: { 'checksum_md5' => replicated_checksums.third })
       )
       allow(bucket).to receive(:object).with(zmv.zip_parts.fourth.s3_key).and_return(
-        instance_double(::Aws::S3::Object, exists?: false)
+        instance_double(Aws::S3::Object, exists?: false)
       )
     end
 
