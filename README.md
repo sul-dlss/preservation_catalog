@@ -7,8 +7,36 @@
 [![Docker image](https://images.microbadger.com/badges/image/suldlss/preservation_catalog.svg)](https://microbadger.com/images/suldlss/preservation_catalog "Get your own image badge on microbadger.com")
 [![OpenAPI Validator](http://validator.swagger.io/validator?url=https://raw.githubusercontent.com/sul-dlss/preservation_catalog/main/openapi.yml)](http://validator.swagger.io/validator/debug?url=https://raw.githubusercontent.com/sul-dlss/preservation_catalog/main/openapi.yml)
 
-*preservation_catalog* is a Rails application that tracks, audits and replicates
-archival artifacts associated with SDR objects.
+## Overview
+
+*preservation_catalog* (aka *prescat*) is a Rails application that tracks, audits and replicates
+archival artifacts associated with SDR objects. Unlike many SDR services, prescat is directly dependent on external, third party Internet services. As a result prescat can also be uniquely subject to intermittent network and service failures.
+
+prescat works in concert with [preservation_robots](https://github.com/sul-dlss/preservation_robots) (aka *presrobots*) to ensure that all versions of SDR objects are stored on disk using the [Moab](https://searchworks.stanford.edu/view/vt105qd7230) packaging standard. Moab directories are zipped and then stored in three, geographically distributed, architecturally heterogeneous, cloud storage platforms. These storage architectures include [Amazon S3](https://aws.amazon.com/s3/), [IBM Cloud Object Storage](https://cloud.ibm.com/docs/cloud-object-storage) and a [Ceph](https://ceph.io/en/) cluster being run on premises. The storage systems operate in northern California, northern Virginia and central Texas.
+
+The *prescat* application has several modes of operation, that are either self-managed (cron) or initiated externally via its [REST API](https://sul-dlss.github.io/preservation_catalog/) using  the [preservation-client](https://github.com/sul-dlss/preservation-client) gem.
+
+1. As part of the *preservation-ingest* workflow *presrobots* notifies *prescat* about a new or updated Moab using the prescat REST API. After the [PreservedObject](https://github.com/sul-dlss/preservation_catalog/blob/main/app/models/preserved_object.rb) is created or updated in the database, asynchronous [queues](https://preservation-catalog-web-prod-01.stanford.edu/queues/) are used to create a zip for the Moab version, which is then replicated to each of the storage endpoints (AWS S3 and IBM Cloud).
+
+2. *prescat* has an internal schedule of cron jobs which perform periodic [audits](https://github.com/sul-dlss/preservation_catalog/wiki/Validations-for-Moabs) that compare the Moabs that are on disk, with what is in the database (and vice-versa), and also verify that data has been replicated to the cloud. These audits ensure that files are present with the expected content (fixity). When these audits succeed or fail they generate events using the [DOR Services API](https://sul-dlss.github.io/dor-services-app/#operation/events#create), and (if they fail) Honey Badger alerts.
+
+3. Both [Argo](https://github.com/sul-dlss/argo) and [HappyHeron](https://github.com/sul-dlss/happy-heron) allow users to fetch preserved files using the *prescat* REST API.
+
+4. [DOR Services](https://github.com/sul-dlss/dor-services-app) uses the *prescat* REST API in order to determine what files are in need of replication during shelving to [Stacks](https://github.com/sul-dlss/stacks).
+
+```mermaid
+flowchart LR;
+  H2 --> PresCat;
+  Argo --> PresCat;
+  DSA <--> PresCat;
+  PresRobots --> PresCat;
+  PresCat <--> S3[(AWS)];
+  PresCat <--> IBM[(IBM)];
+  Ceph --> PresCat;
+  PresRobots <--> Ceph[(Ceph)];
+```
+
+For more detailed information please see the [General Info](#general-info) section below.
 
 ## Development
 
@@ -111,7 +139,7 @@ curl -H 'Authorization: Bearer eyJhbGcxxxxx.eyJzdWIxxxxx.lWMJ66Wxx-xx' http://lo
 
 - Most human/manual interaction happens via Rails console and rake tasks.
 
-- There's troubleshooting advice in the wiki.  If you debug or clean something up in prod, consider documenting in a wiki entry (and please update entries that you use that are out of date).
+- There's troubleshooting advice in the wiki. If you debug or clean something up in prod, consider documenting in a wiki entry (and please update entries that you use that are out of date).
 
 - Tasks that use asynchronous workers will execute on any of the eligible worker pool VM.  Therefore, do not expect all the results to show in the logs of the machine that enqueued the jobs!
 
