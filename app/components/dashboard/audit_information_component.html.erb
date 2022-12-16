@@ -1,5 +1,13 @@
 <h3>Audit Information</h3>
 
+<p>See <a href="https://github.com/sul-dlss/preservation_catalog/wiki/Audits-(basic-info)">Audits (basic info)</a> wiki page for additional information about the different audits.</p>
+
+Note also:
+<ul>
+  <li>MoabRecord.last_moab_validation field indicates the last time catalog_to_moab or checksum_validation was run, NOT the last time the object was found to be valid.</li>
+  <li>If a checksum validation fails for a MoabRecord, other MoabRecord status checks won't run until the status is no longer invalid_checksum.</li>
+</ul>
+
 <table class="table table-bordered border-dark table-hover table-sm">
   <thead class="table-info">
     <tr>
