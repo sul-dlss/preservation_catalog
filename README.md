@@ -164,7 +164,7 @@ MoabStorageRoot.find_each { |msr| msr.m2c_check! }
 #### Single Druid
 To M2C a single druid synchronously, in console:
 ```ruby
-Audit::MoabToCatalog.check_existence_for_druid('jj925bx9565')
+CatalogUtils.check_existence_for_druid('jj925bx9565')
 ```
 
 #### Druid List
@@ -175,7 +175,7 @@ For a predetermined list of druids, a convenience wrapper for the above command 
   - File should not contain headers.
 
 ```ruby
-Audit::MoabToCatalog.check_existence_for_druid_list('/file/path/to/your/csv/druid_list.csv')
+CatalogUtils.check_existence_for_druid_list('/file/path/to/your/csv/druid_list.csv')
 ```
 
 Note: it should not typically be necessary to serialize a list of druids to CSV.  Just iterate over them and use the "Single Druid" approach.
