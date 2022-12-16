@@ -88,14 +88,14 @@ if worker_host?
   OkComputer::Registry.register 'feature-zip_storage_dir', OkComputer::DirectoryCheck.new(Settings.zip_storage)
 end
 
-# check CompleteMoab#last_version_audit to ensure it isn't too old
+# check MoabRecord#last_version_audit to ensure it isn't too old
 class VersionAuditWindowCheck < OkComputer::Check
   def check
-    if CompleteMoab.version_audit_expired(clause).first
-      mark_message "CompleteMoab#last_version_audit older than #{clause}. "
+    if MoabRecord.version_audit_expired(clause).first
+      mark_message "MoabRecord#last_version_audit older than #{clause}. "
       mark_failure
     else
-      mark_message "CompleteMoab#last_version_audit all newer than #{clause}. "
+      mark_message "MoabRecord#last_version_audit all newer than #{clause}. "
     end
   end
 

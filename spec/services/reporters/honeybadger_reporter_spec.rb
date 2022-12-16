@@ -16,12 +16,12 @@ RSpec.describe Reporters::HoneybadgerReporter do
 
   describe '#report_errors' do
     context 'when handled error' do
-      let(:result1) { { AuditResults::MOAB_NOT_FOUND => 'db CompleteMoab exists but Moab not found' } }
+      let(:result1) { { AuditResults::MOAB_NOT_FOUND => 'db MoabRecord exists but Moab not found' } }
       let(:result2) { { AuditResults::ZIP_PART_NOT_FOUND => 'replicated part not found' } }
 
       it 'notifies for each error' do
         subject.report_errors(druid: druid, version: actual_version, storage_area: ms_root, check_name: check_name, results: [result1, result2])
-        expect(Honeybadger).to have_received(:notify).with('FooCheck(druid:ab123cd4567, fixture_sr1) db CompleteMoab exists but Moab not found')
+        expect(Honeybadger).to have_received(:notify).with('FooCheck(druid:ab123cd4567, fixture_sr1) db MoabRecord exists but Moab not found')
         expect(Honeybadger).to have_received(:notify).with('FooCheck(druid:ab123cd4567, fixture_sr1) replicated part not found')
       end
     end
@@ -37,7 +37,7 @@ RSpec.describe Reporters::HoneybadgerReporter do
   end
 
   describe '#report_completed' do
-    let(:result) { { AuditResults::CM_STATUS_CHANGED => 'CompleteMoab status changed from invalid_moab' } }
+    let(:result) { { AuditResults::MOAB_RECORD_STATUS_CHANGED => 'MoabRecord status changed from invalid_moab' } }
 
     it 'does not notify' do
       subject.report_completed(druid: druid, version: actual_version, storage_area: ms_root, check_name: check_name, result: result)

@@ -35,16 +35,16 @@ RSpec.describe Audit::ChecksumValidatorUtils do
   describe '.validate_druid' do
     let!(:po) { create(:preserved_object_fixture, druid: 'bz514sm9647') }
 
-    it 'creates an instance ancd calls #validate_checksums for complete moab' do
-      cv = Audit::ChecksumValidator.new(po.complete_moab)
-      allow(Audit::ChecksumValidator).to receive(:new).with(cv.complete_moab).and_return(cv)
+    it 'creates an instance ancd calls #validate_checksums for MoabRecord' do
+      cv = Audit::ChecksumValidator.new(po.moab_record)
+      allow(Audit::ChecksumValidator).to receive(:new).with(cv.moab_record).and_return(cv)
       allow(cv).to receive(:validate_checksums).and_call_original
       described_class.validate_druid(po.druid)
       expect(cv).to have_received(:validate_checksums)
     end
 
     it 'logs a debug message' do
-      expect(described_class.logger).to receive(:debug).with('Did Not Find complete moab.')
+      expect(described_class.logger).to receive(:debug).with('Did Not Find MoabRecord in database.')
       described_class.validate_druid('xx000xx0500')
     end
 
@@ -66,7 +66,7 @@ RSpec.describe Audit::ChecksumValidatorUtils do
   end
 
   describe '.validate_status_root' do
-    context 'when there are CompleteMoabs to check' do
+    context 'when there are MoabRecords to check' do
       before do
         create(:preserved_object_fixture, druid: 'bj102hs9687')
         create(:preserved_object_fixture, druid: 'bz514sm9647')
@@ -75,16 +75,16 @@ RSpec.describe Audit::ChecksumValidatorUtils do
 
       it 'queues a ChecksumValidationJob for each result' do
         msr = MoabStorageRoot.find_by!(name: root_name)
-        cm_list = msr.complete_moabs.validity_unknown
-        expect(cm_list.size).to eq 3
-        cm_list.each do |cm|
-          expect(ChecksumValidationJob).to receive(:perform_later).with(cm).once
+        moab_records = msr.moab_records.validity_unknown
+        expect(moab_records.size).to eq 3
+        moab_records.each do |moab_record|
+          expect(ChecksumValidationJob).to receive(:perform_later).with(moab_record).once
         end
         described_class.validate_status_root('validity_unknown', root_name)
       end
     end
 
-    context 'when there are no CompleteMoabs to check' do
+    context 'when there are no MoabRecords to check' do
       it 'will not create an instance of ChecksumValidator' do
         expect(ChecksumValidationJob).not_to receive(:perform_later)
         described_class.validate_status_root('ok', root_name)

@@ -64,7 +64,7 @@ We have a list of druids that were on this root, and of objects from this root t
 - [ ] did the post-migration C2M run indicate that any moabs which were expected on the target storage root were actually missing?  [Query the database for non-`ok` moabs](https://github.com/sul-dlss/preservation_catalog/blob/main/db/README.md#how-many-moabs-on-each-storage-root-are-status--ok) and examine the c2m_after error report.
 
   - [ ] if so, work with ops to copy them manually to the target storage root
-    - [ ] run C2M manually for any such remediated druid on the new storage.  e.g.: `Audit::CatalogToMoab.new(CompleteMoab.by_druid('somedruid').first).check_catalog_version # .first because the .by_druid relation will be coerced to an array, though there should only be one CM per druid`
+    - [ ] run C2M manually for any such remediated druid on the new storage.  e.g.: `Audit::CatalogToMoab.new(MoabRecord.by_druid('somedruid').first).check_catalog_version # .first because the .by_druid relation will be coerced to an array, though there should only be one CM per druid`
       - [ ] if C2M detected no error, and the moab is small enough to be checksum validated while you wait (say, under 10 GB), run CV synchronously on it.  Otherwise, spot check files in the moab by hand, comparing target storage contents to origin.  The moved moab will have been queued for checksum validation later anyway.
       - [ ] if the C2M detected that the moab is still missing, panic?
 

@@ -1,15 +1,15 @@
 # frozen_string_literal: true
 
 ##
-# CompleteMoab represents a concrete instance of a PreservedObject across ALL versions, in physical storage.
-class CompleteMoab < ApplicationRecord
+# MoabRecord represents a concrete instance of a PreservedObject across ALL versions, in physical storage.
+class MoabRecord < ApplicationRecord
   # @note Hash values cannot be modified without migrating any associated persisted data.
   # @see [enum docs] http://api.rubyonrails.org/classes/ActiveRecord/Enum.html
   enum status: {
     'ok' => 0,
     'invalid_moab' => 1,
     'invalid_checksum' => 2,
-    'online_moab_not_found' => 3,
+    'moab_on_storage_not_found' => 3,
     'unexpected_version_on_storage' => 4,
     'validity_unknown' => 6
   }
@@ -19,12 +19,12 @@ class CompleteMoab < ApplicationRecord
   # even though both fields will usually be updated together in a single transaction, one has to be updated first.  latter
   # of the two updates will actually trigger replication.
   after_update :create_zipped_moab_versions!, if: :saved_change_to_version? # an ActiveRecord dynamic method
-  after_save :validate_checksums!, if: proc { |cm| cm.saved_change_to_status? && cm.validity_unknown? }
+  after_save :validate_checksums!, if: proc { |moab_record| moab_record.saved_change_to_status? && moab_record.validity_unknown? }
 
   # NOTE: Since Rails 5.0, belongs_to adds the presence validator automatically, and explicit presence validation
   #   is redundant (unless you explicitly set config.active_record.belongs_to_required_by_default to false, which we don't.)
-  belongs_to :preserved_object, inverse_of: :complete_moab
-  belongs_to :moab_storage_root, inverse_of: :complete_moabs
+  belongs_to :preserved_object, inverse_of: :moab_record
+  belongs_to :moab_storage_root, inverse_of: :moab_records
   belongs_to :from_moab_storage_root, class_name: 'MoabStorageRoot', optional: true
 
   validates :status, :version, presence: true
@@ -79,7 +79,7 @@ class CompleteMoab < ApplicationRecord
     version == preserved_object.current_version
   end
 
-  # This method can be used to update the CompleteMoab record in Preservation Catalog when the
+  # This method can be used to update the MoabRecord record in Preservation Catalog when the
   # corresponding Moab directory on the file system has moved from its old storage root to a new
   # one (e.g. when migrating off of old storage hardware in bulk, or when manually moving a Moab
   # that's growing to a storage root with more space).
@@ -90,7 +90,7 @@ class CompleteMoab < ApplicationRecord
   # Like other update methods in this class, it leaves saving to the caller.
   #
   # @param [MoabStorageRoot] to_root the storage root to which the Moab's been moved on the file system
-  # @return [CompleteMoab] the instance on which the method was called
+  # @return [MoabRecord] the instance on which the method was called
   def migrate_moab(to_root)
     self.from_moab_storage_root = moab_storage_root
     self.moab_storage_root = to_root
@@ -123,8 +123,8 @@ class CompleteMoab < ApplicationRecord
     active_record_relation.order(Arel.sql('last_checksum_validation IS NOT NULL, last_checksum_validation ASC'))
   end
 
-  # Number of CompleteMoabs to validate on a daily basis.
+  # Number of MoabRecords to validate on a daily basis.
   def self.daily_check_count
-    CompleteMoab.count / (Settings.preservation_policy.fixity_ttl / (60 * 60 * 24))
+    MoabRecord.count / (Settings.preservation_policy.fixity_ttl / (60 * 60 * 24))
   end
 end

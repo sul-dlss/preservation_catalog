@@ -54,9 +54,9 @@ RSpec.describe CatalogUtils do
     it 'does not ingest more than one Moab per druid (first ingested wins)' do
       described_class.seed_catalog_for_all_storage_roots
       expect(PreservedObject.count).to eq 17
-      expect(CompleteMoab.count).to eq 17
-      expect(CompleteMoab.by_druid('bz514sm9647').count).to eq 1
-      expect(CompleteMoab.by_druid('bz514sm9647').take!.moab_storage_root.name).to eq 'fixture_sr1'
+      expect(MoabRecord.count).to eq 17
+      expect(MoabRecord.by_druid('bz514sm9647').count).to eq 1
+      expect(MoabRecord.by_druid('bz514sm9647').take!.moab_storage_root.name).to eq 'fixture_sr1'
     end
   end
 
@@ -64,30 +64,30 @@ RSpec.describe CatalogUtils do
     let(:druid) { 'bz514sm9647' }
     let(:storage_dir_a) { 'spec/fixtures/storage_rootA/sdr2objects' }
     let(:results) do
-      [{ db_obj_does_not_exist: 'CompleteMoab db object does not exist' },
+      [{ db_obj_does_not_exist: 'MoabRecord db object does not exist' },
        { created_new_object: 'added object to db as it did not exist' }]
     end
     let(:po) { PreservedObject.find_by!(druid: druid) }
     let(:msr) { MoabStorageRoot.find_by!(storage_location: storage_dir) }
 
     it 'finds and catalogs the relevant moab' do
-      expect(CompleteMoab.by_druid(druid).by_storage_root(msr)).not_to exist
+      expect(MoabRecord.by_druid(druid).by_storage_root(msr)).not_to exist
       described_class.check_existence_for_druid(druid)
-      expect(CompleteMoab.by_druid(druid).by_storage_root(msr)).to exist
+      expect(MoabRecord.by_druid(druid).by_storage_root(msr)).to exist
     end
 
-    it 'creates the CompleteMoab records, each with its respective version' do
+    it 'creates the MoabRecord records, each with its respective version' do
       described_class.check_existence_for_druid(druid)
-      expect(CompleteMoab.find_by!(preserved_object: po, moab_storage_root: msr).version).to eq 3
+      expect(MoabRecord.find_by!(preserved_object: po, moab_storage_root: msr).version).to eq 3
     end
 
     it 'calls check_existence' do
-      allow(CompleteMoabService::CheckExistence).to receive(:execute).and_return(audit_results)
+      allow(MoabRecordService::CheckExistence).to receive(:execute).and_return(audit_results)
       described_class.check_existence_for_druid(druid)
-      expect(CompleteMoabService::CheckExistence).to have_received(:execute).with(druid: druid,
-                                                                                  incoming_version: 3, # current_version
-                                                                                  incoming_size: instance_of(Integer), # size
-                                                                                  moab_storage_root: ms_root)
+      expect(MoabRecordService::CheckExistence).to have_received(:execute).with(druid: druid,
+                                                                                incoming_version: 3, # current_version
+                                                                                incoming_size: instance_of(Integer), # size
+                                                                                moab_storage_root: ms_root)
     end
 
     it 'returns results' do
@@ -98,9 +98,9 @@ RSpec.describe CatalogUtils do
       let(:druid) { 'db102hs2345' }
 
       it 'does not call check_existence' do
-        allow(CompleteMoabService::CheckExistence).to receive(:execute)
+        allow(MoabRecordService::CheckExistence).to receive(:execute)
         described_class.check_existence_for_druid(druid)
-        expect(CompleteMoabService::CheckExistence).not_to have_received(:execute)
+        expect(MoabRecordService::CheckExistence).not_to have_received(:execute)
       end
     end
   end
@@ -152,13 +152,13 @@ RSpec.describe CatalogUtils do
       end
 
       before do
-        allow(CompleteMoabService::CreateAfterValidation).to receive(:execute).and_return(audit_results)
+        allow(MoabRecordService::CreateAfterValidation).to receive(:execute).and_return(audit_results)
       end
 
       it 'calls #create_after_validation' do
         described_class.seed_catalog_for_dir(storage_dir)
         expected_argument_list.each do |arg_hash|
-          expect(CompleteMoabService::CreateAfterValidation).to have_received(:execute).with(
+          expect(MoabRecordService::CreateAfterValidation).to have_received(:execute).with(
             druid: arg_hash[:druid],
             incoming_version: arg_hash[:storage_root_current_version],
             incoming_size: instance_of(Integer),
@@ -172,21 +172,21 @@ RSpec.describe CatalogUtils do
       expect(described_class.seed_catalog_for_dir(storage_dir).count).to eq 3
     end
 
-    it 'will not ingest a CompleteMoab for a druid that has already been cataloged' do
-      expect(CompleteMoab.by_druid(druid).count).to eq 0
+    it 'will not ingest a MoabRecord for a druid that has already been cataloged' do
+      expect(MoabRecord.by_druid(druid).count).to eq 0
       expect(described_class.seed_catalog_for_dir(storage_dir).count).to eq 3
-      expect(CompleteMoab.by_druid(druid).count).to eq 1
-      expect(CompleteMoab.count).to eq 3
+      expect(MoabRecord.by_druid(druid).count).to eq 1
+      expect(MoabRecord.count).to eq 3
 
       storage_dir_a_seed_result_lists = described_class.seed_catalog_for_dir(storage_dir_a)
       expect(storage_dir_a_seed_result_lists.count).to eq 1
-      expected_result_msg = 'db update failed: #<ActiveRecord::RecordNotSaved: Failed to remove the existing associated complete_moab. ' \
+      expected_result_msg = 'db update failed: #<ActiveRecord::RecordNotSaved: Failed to remove the existing associated moab_record. ' \
                             'The record failed to save after its foreign key was set to nil.>'
       expect(storage_dir_a_seed_result_lists.first).to eq([{ db_update_failed: expected_result_msg }])
-      expect(CompleteMoab.by_druid(druid).count).to eq 1
+      expect(MoabRecord.by_druid(druid).count).to eq 1
       # the Moab's original location should remain the location of record in the DB
-      expect(CompleteMoab.by_druid(druid).take.moab_storage_root.storage_location).to eq(storage_dir)
-      expect(CompleteMoab.count).to eq 3
+      expect(MoabRecord.by_druid(druid).take.moab_storage_root.storage_location).to eq(storage_dir)
+      expect(MoabRecord.count).to eq 3
       expect(PreservedObject.count).to eq 3
     end
   end
@@ -195,16 +195,16 @@ RSpec.describe CatalogUtils do
     before { described_class.seed_catalog_for_all_storage_roots }
 
     it "won't change objects in a fully seeded db" do
-      expect { described_class.populate_moab_storage_root('fixture_sr1') }.not_to change(CompleteMoab, :count).from(17)
+      expect { described_class.populate_moab_storage_root('fixture_sr1') }.not_to change(MoabRecord, :count).from(17)
       expect(PreservedObject.count).to eq 17
     end
 
     it 're-adds objects for a dropped MoabStorageRoot' do
       ZippedMoabVersion.destroy_all
-      ms_root.complete_moabs.destroy_all
-      PreservedObject.without_complete_moab.destroy_all
+      ms_root.moab_records.destroy_all
+      PreservedObject.without_moab_record.destroy_all
       expect(PreservedObject.count).to eq 14
-      expect { described_class.populate_moab_storage_root('fixture_sr1') }.to change(CompleteMoab, :count).from(14).to(17)
+      expect { described_class.populate_moab_storage_root('fixture_sr1') }.to change(MoabRecord, :count).from(14).to(17)
       expect(PreservedObject.count).to eq 17
     end
   end

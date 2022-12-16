@@ -8,8 +8,8 @@ Rails.application.routes.draw do
   namespace :dashboard do
     # routes for turbo-frame partials
     get 'moab_storage_status', to: '/dashboard#moab_storage_status', defaults: { format: 'html' }
-    get 'complete_moab_versions', to: '/dashboard#complete_moab_versions', defaults: { format: 'html' }
-    get 'complete_moab_info', to: '/dashboard#complete_moab_info', defaults: { format: 'html' }
+    get 'moab_record_versions', to: '/dashboard#moab_record_versions', defaults: { format: 'html' }
+    get 'moab_record_info', to: '/dashboard#moab_record_info', defaults: { format: 'html' }
     get 'storage_root_data', to: '/dashboard#storage_root_data', defaults: { format: 'html' }
     get 'replication_status', to: '/dashboard#replication_status', defaults: { format: 'html' }
     get 'replication_endpoints', to: '/dashboard#replication_endpoints', defaults: { format: 'html' }

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 FactoryBot.define do
-  factory :complete_moab do
+  factory :moab_record do
     version { 1 }
     status { 'ok' }
     size { 231 }

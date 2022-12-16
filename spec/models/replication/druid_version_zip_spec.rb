@@ -190,7 +190,7 @@ describe Replication::DruidVersionZip do
       let(:version) { 1 }
 
       it 'creates md5' do
-        dvz.part_paths.each { |path| expect(File).not_to exist(path) }
+        dvz.part_paths.each { |path| expect(File).not_to exist(path) } # flaky?
         expect { dvz.create_zip! }.not_to raise_error
         dvz.part_paths.each { |path| expect(File).to exist(path) }
       end

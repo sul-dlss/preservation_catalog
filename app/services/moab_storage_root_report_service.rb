@@ -17,7 +17,7 @@ class MoabStorageRootReportService
   # @return [Array<Array>] an array of arrays; each inner array represents a CSV row w/ a druid from the storage root. includes a header row.
   def druid_csv_list
     druid_array = [['druid']]
-    complete_moabs_and_preserved_objects_in_storage_root
+    moab_records_and_preserved_objects_in_storage_root
       .select(:druid)
       .each_row do |po_hash|
         druid_array << [po_hash['druid']]
@@ -30,9 +30,9 @@ class MoabStorageRootReportService
   def moab_detail_csv_list(errors_only: false)
     query =
       if errors_only
-        complete_moabs_and_preserved_objects_in_storage_root.where.not(complete_moabs: { status: 'ok' })
+        moab_records_and_preserved_objects_in_storage_root.where.not(moab_records: { status: 'ok' })
       else
-        complete_moabs_and_preserved_objects_in_storage_root
+        moab_records_and_preserved_objects_in_storage_root
       end
 
     header_row = ['druid',
@@ -44,14 +44,14 @@ class MoabStorageRootReportService
                   'status details']
 
     cols = ['druid', 'from_moab_storage_root_id', 'last_checksum_validation', 'last_moab_validation', 'status AS status_code', 'status_details']
-    data_rows = query.select(cols).each_row.map do |po_cm_hash|
-      [po_cm_hash['druid'],
-       moab_storage_root_name(po_cm_hash['from_moab_storage_root_id']),
+    data_rows = query.select(cols).each_row.map do |row_result_hash|
+      [row_result_hash['druid'],
+       moab_storage_root_name(row_result_hash['from_moab_storage_root_id']),
        storage_root.name,
-       po_cm_hash['last_checksum_validation'],
-       po_cm_hash['last_moab_validation'],
-       status_text_from_code(po_cm_hash['status_code']), # must translate underlying status enum value since we're not instantiating AR objects
-       po_cm_hash['status_details']]
+       row_result_hash['last_checksum_validation'],
+       row_result_hash['last_moab_validation'],
+       status_text_from_code(row_result_hash['status_code']), # must translate underlying status enum value since we're not instantiating AR objects
+       row_result_hash['status_details']]
     end
     [header_row] + data_rows # wrap header_row in a list to combine with data_rows list
   end
@@ -92,15 +92,15 @@ class MoabStorageRootReportService
 
   # TODO: make methods like this and #write_csv that don't leverage internal state into class methods
   def status_text_from_code(status_code)
-    CompleteMoab.statuses.key(status_code)
+    MoabRecord.statuses.key(status_code)
   end
 
-  # @return [ActiveRecord::Relation] an AR Relation listing the CompleteMoabs (and some associated info) on a MoabStorageRoot, sorted by druid.
+  # @return [ActiveRecord::Relation] an AR Relation listing the MoabRecords (and some associated info) on a MoabStorageRoot, sorted by druid.
   #   we expect druids to be unique across a given storage root.
-  def complete_moabs_and_preserved_objects_in_storage_root
+  def moab_records_and_preserved_objects_in_storage_root
     PreservedObject
-      .joins(:complete_moab)
-      .where(complete_moab: { moab_storage_root: storage_root })
+      .joins(:moab_record)
+      .where(moab_record: { moab_storage_root: storage_root })
       .order(:druid)
   end
 

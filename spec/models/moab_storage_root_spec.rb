@@ -53,7 +53,7 @@ RSpec.describe MoabStorageRoot do
     end
   end
 
-  it { is_expected.to have_many(:complete_moabs) }
+  it { is_expected.to have_many(:moab_records) }
   it { is_expected.to have_db_index(:name) }
   it { is_expected.to have_db_index(:storage_location) }
   it { is_expected.to validate_presence_of(:name) }
@@ -87,21 +87,21 @@ RSpec.describe MoabStorageRoot do
 
     before do
       allow(Rails.logger).to receive(:info)
-      msr.complete_moabs = build_list(:complete_moab, 2)
+      msr.moab_records = build_list(:moab_record, 2)
     end
 
     describe '#validate_expired_checksums!' do
-      it 'calls ChecksumValidationJob for each eligible CompleteMoab' do
-        expect(ChecksumValidationJob).to receive(:perform_later).with(msr.complete_moabs.first)
-        expect(ChecksumValidationJob).to receive(:perform_later).with(msr.complete_moabs.second)
+      it 'calls ChecksumValidationJob for each eligible MoabRecord' do
+        expect(ChecksumValidationJob).to receive(:perform_later).with(msr.moab_records.first)
+        expect(ChecksumValidationJob).to receive(:perform_later).with(msr.moab_records.second)
         msr.validate_expired_checksums!
       end
     end
 
     describe '#c2m_check!' do
-      it 'calls CatalogToMoabJob for each eligible CompleteMoab' do
-        expect(CatalogToMoabJob).to receive(:perform_later).with(msr.complete_moabs.first)
-        expect(CatalogToMoabJob).to receive(:perform_later).with(msr.complete_moabs.second)
+      it 'calls CatalogToMoabJob for each eligible MoabRecord' do
+        expect(CatalogToMoabJob).to receive(:perform_later).with(msr.moab_records.first)
+        expect(CatalogToMoabJob).to receive(:perform_later).with(msr.moab_records.second)
         msr.c2m_check!
       end
     end

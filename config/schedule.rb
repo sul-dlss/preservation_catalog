@@ -47,7 +47,7 @@ end
 # Any that are not validated but hit fixity TTL will be validated by weekly validation below.
 every :day, at: '10pm', roles: [:queue_populator] do
   set :output, standard: nil, error: 'log/cv-err.log'
-  runner 'CompleteMoab.order(last_checksum_validation: :asc).limit(CompleteMoab.daily_check_count).find_each(&:validate_checksums!)'
+  runner 'MoabRecord.order(last_checksum_validation: :asc).limit(MoabRecord.daily_check_count).find_each(&:validate_checksums!)'
 end
 
 every :sunday, at: '1am', roles: [:queue_populator] do

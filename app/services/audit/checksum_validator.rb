@@ -1,16 +1,16 @@
 # frozen_string_literal: true
 
 module Audit
-  # Service for validating Moab checksums on storage, updating the complete moab db record, and reporting results.
+  # Service for validating Moab checksums on storage, updating the MoabRecord db record, and reporting results.
   class ChecksumValidator
-    attr_reader :complete_moab
+    attr_reader :moab_record
 
-    delegate :moab_storage_root, :preserved_object, to: :complete_moab
+    delegate :moab_storage_root, :preserved_object, to: :moab_record
     delegate :storage_location, to: :moab_storage_root
     delegate :druid, to: :preserved_object
 
-    def initialize(complete_moab, logger: nil)
-      @complete_moab = complete_moab
+    def initialize(moab_record, logger: nil)
+      @moab_record = moab_record
       @logger = logger
     end
 
@@ -23,14 +23,14 @@ module Audit
       validate_signature_catalog
 
       persist_db_transaction!(clear_connections: true) do
-        complete_moab.last_checksum_validation = Time.current
+        moab_record.last_checksum_validation = Time.current
         if results.results.empty?
           results.add_result(AuditResults::MOAB_CHECKSUM_VALID)
-          complete_moab.update_audit_timestamps(true, true)
+          moab_record.update_audit_timestamps(true, true)
 
           validate_versions
         else
-          status_handler.update_complete_moab_status('invalid_checksum')
+          status_handler.update_moab_record_status('invalid_checksum')
         end
       end
     end
@@ -45,21 +45,20 @@ module Audit
       !File.exist?(object_dir) || latest_moab_storage_object_version.nil?
     end
 
-    # Moab on storage and complete moab versions match?
     def versions_match?
-      moab_on_storage.current_version_id == complete_moab.version
+      moab_on_storage.current_version_id == moab_record.version
     end
 
     def validate_versions
-      # validate_moab_on_storage_and_set_status will update results and complete_moab
+      # validate_moab_on_storage_and_set_status will update results and moab_record
       status_handler.validate_moab_on_storage_and_set_status(found_expected_version: versions_match?,
                                                              moab_on_storage_validator: moab_on_storage_validator, caller_validates_checksums: true)
 
       return if versions_match?
       results.add_result(AuditResults::UNEXPECTED_VERSION,
                          actual_version: moab_on_storage.current_version_id,
-                         db_obj_name: 'CompleteMoab',
-                         db_obj_version: complete_moab.version)
+                         db_obj_name: 'MoabRecord',
+                         db_obj_version: moab_record.version)
     end
 
     def validate_manifest_inventories
@@ -75,7 +74,7 @@ module Audit
     end
 
     def status_handler
-      @status_handler ||= StatusHandler.new(audit_results: results, complete_moab: complete_moab)
+      @status_handler ||= StatusHandler.new(audit_results: results, moab_record: moab_record)
     end
 
     def moab_on_storage
@@ -93,7 +92,7 @@ module Audit
 
       transaction_ok = ActiveRecordUtils.with_transaction_and_rescue(results) do
         yield if block_given?
-        complete_moab.save!
+        moab_record.save!
       end
       results.remove_db_updated_results unless transaction_ok
       AuditResultsReporter.report_results(audit_results: results, logger: logger)

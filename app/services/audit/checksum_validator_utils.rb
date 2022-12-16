@@ -14,17 +14,17 @@ module Audit
     # @return [Array<AuditResults>] results from Audit::ChecksumValidator runs
     def self.validate_druid(druid)
       logger.info "#{Time.now.utc.iso8601} CV validate_druid starting for #{druid}"
-      po = PreservedObject.find_by(druid: druid)
-      complete_moab = po&.complete_moab
-      logger.debug("#{complete_moab ? 'Found' : 'Did Not Find'} complete moab.")
-      if complete_moab
-        cv = Audit::ChecksumValidator.new(complete_moab)
+      preserved_object = PreservedObject.find_by(druid: druid)
+      moab_record = preserved_object&.moab_record
+      logger.debug("#{moab_record ? 'Found' : 'Did Not Find'} MoabRecord in database.")
+      if moab_record
+        cv = Audit::ChecksumValidator.new(moab_record)
         cv.validate_checksums
         logger.info "#{cv.results.results} for #{druid}"
         cv.results
       end
     ensure
-      logger.warn("No PreservedObject found for #{druid}") unless po
+      logger.warn("No PreservedObject found for #{druid}") unless preserved_object
       logger.info "#{Time.now.utc.iso8601} CV validate_druid ended for #{druid}"
     end
 
@@ -37,13 +37,13 @@ module Audit
 
     # validate objects with a particular status on a particular moab_storage_root
     def self.validate_status_root(status, storage_root_name)
-      raise ArgumentError, "invalid status #{status}" unless CompleteMoab.statuses.key?(status)
+      raise ArgumentError, "invalid status #{status}" unless MoabRecord.statuses.key?(status)
 
-      complete_moabs = MoabStorageRoot.find_by!(name: storage_root_name).complete_moabs.where(status: status)
-      desc = "Number of Complete Moabs of status #{status} from #{storage_root_name} to be checksum validated"
-      logger.info "#{desc}: #{complete_moabs.count}"
-      complete_moabs.find_each do |cm|
-        ChecksumValidationJob.perform_later(cm)
+      moab_records = MoabStorageRoot.find_by!(name: storage_root_name).moab_records.where(status: status)
+      desc = "Number of MoabRecords of status #{status} from #{storage_root_name} to be checksum validated"
+      logger.info "#{desc}: #{moab_records.count}"
+      moab_records.find_each do |moab_record|
+        ChecksumValidationJob.perform_later(moab_record)
       end
     end
   end

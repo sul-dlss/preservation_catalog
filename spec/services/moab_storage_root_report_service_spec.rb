@@ -6,18 +6,18 @@ RSpec.describe MoabStorageRootReportService do
   let!(:test_start_time) { DateTime.now.utc.iso8601 } # useful for both output cleanup and CSV filename testing
 
   let!(:msr_a) { create(:moab_storage_root) }
-  let!(:complete_moab_1) { create(:complete_moab, moab_storage_root: msr_a) }
-  let!(:complete_moab_2) { create(:complete_moab, moab_storage_root: msr_a) }
-  let!(:complete_moab_3) { create(:complete_moab, moab_storage_root: msr_a) }
+  let!(:moab_record_1) { create(:moab_record, moab_storage_root: msr_a) }
+  let!(:moab_record_2) { create(:moab_record, moab_storage_root: msr_a) }
+  let!(:moab_record_3) { create(:moab_record, moab_storage_root: msr_a) }
 
   let(:reporter) { described_class.new(storage_root_name: msr_a.name) }
 
   describe '#druid_csv_list' do
     let(:druid_csv_list) {
       [['druid'],
-       [complete_moab_1.preserved_object.druid],
-       [complete_moab_2.preserved_object.druid],
-       [complete_moab_3.preserved_object.druid]]
+       [moab_record_1.preserved_object.druid],
+       [moab_record_2.preserved_object.druid],
+       [moab_record_3.preserved_object.druid]]
     }
 
     it 'returns a list of druids on a storage_root' do
@@ -30,8 +30,8 @@ RSpec.describe MoabStorageRootReportService do
       header_row = [
         ['druid', 'previous storage root', 'current storage root', 'last checksum validation', 'last moab validation', 'status', 'status details']
       ]
-      data_rows = [complete_moab_1, complete_moab_2, complete_moab_3].map do |cm|
-        [cm.preserved_object.druid, nil, cm.moab_storage_root.name, nil, nil, 'ok', nil]
+      data_rows = [moab_record_1, moab_record_2, moab_record_3].map do |moab_record|
+        [moab_record.preserved_object.druid, nil, moab_record.moab_storage_root.name, nil, nil, 'ok', nil]
       end
       header_row + data_rows
     end

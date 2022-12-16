@@ -6,14 +6,14 @@ class CatalogToMoabJob < ApplicationJob
   queue_as :c2m
 
   before_enqueue do |job|
-    raise ArgumentError, 'CompleteMoab param required' unless job.arguments.first.is_a?(CompleteMoab)
+    raise ArgumentError, 'MoabRecord param required' unless job.arguments.first.is_a?(MoabRecord)
   end
 
   include UniqueJob
 
-  # @param [CompleteMoab] complete_moab object to C2M check
+  # @param [MoabRecord] moab_record object to C2M check
   # @see Audit::CatalogToMoab#initialize
-  def perform(complete_moab)
-    Audit::CatalogToMoab.new(complete_moab).check_catalog_version
+  def perform(moab_record)
+    Audit::CatalogToMoab.new(moab_record).check_catalog_version
   end
 end

@@ -3,28 +3,28 @@
 ##
 # Metadata about a Moab storage root (a POSIX file system which contains Moab objects).
 class MoabStorageRoot < ApplicationRecord
-  has_many :complete_moabs, dependent: :restrict_with_exception
-  has_many :migrated_moabs, class_name: 'CompleteMoab', foreign_key: :from_moab_storage_root_id
-  has_many :preserved_objects, through: :complete_moabs
+  has_many :moab_records, dependent: :restrict_with_exception
+  has_many :migrated_moabs, class_name: 'MoabRecord', foreign_key: :from_moab_storage_root_id
+  has_many :preserved_objects, through: :moab_records
 
   validates :name, presence: true, uniqueness: true
   validates :storage_location, presence: true, uniqueness: true
 
   scope :preserved_objects, lambda {
-    joins(complete_moabs: [:preserved_object])
+    joins(moab_records: [:preserved_object])
   }
 
-  # Use a queue to validate CompleteMoab objects
+  # Use a queue to validate MoabRecord objects
   def validate_expired_checksums!
-    cms = complete_moabs.fixity_check_expired
-    Rails.logger.info "MoabStorageRoot #{id} (#{name}), # of complete_moabs to be checksum validated: #{cms.count}"
-    cms.find_each(&:validate_checksums!)
+    moab_recs = moab_records.fixity_check_expired
+    Rails.logger.info "MoabStorageRoot #{id} (#{name}), # of moab_records to be checksum validated: #{moab_recs.count}"
+    moab_recs.find_each(&:validate_checksums!)
   end
 
-  # Use a queue to check all associated CompleteMoab objects for C2M
+  # Use a queue to check all associated MoabRecord objects for C2M
   def c2m_check!(last_checked_b4_date = Time.current)
-    complete_moabs.version_audit_expired(last_checked_b4_date).find_each do |cm|
-      CatalogToMoabJob.perform_later(cm)
+    moab_records.version_audit_expired(last_checked_b4_date).find_each do |moab_rec|
+      CatalogToMoabJob.perform_later(moab_rec)
     end
   end
 

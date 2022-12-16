@@ -1,15 +1,15 @@
 # frozen_string_literal: true
 
 require 'rails_helper'
-require 'services/complete_moab_service/shared_examples'
+require 'services/moab_record_service/shared_examples'
 
-RSpec.describe CompleteMoabService::Create do
+RSpec.describe MoabRecordService::Create do
   let(:druid) { 'ab123cd4567' }
   let(:incoming_version) { 6 }
   let(:incoming_size) { 9876 }
   let(:storage_dir) { 'spec/fixtures/storage_root01/sdr2objects' }
   let(:moab_storage_root) { MoabStorageRoot.find_by(storage_location: storage_dir) }
-  let(:complete_moab_service) do
+  let(:moab_record_service) do
     described_class.new(druid: druid, incoming_version: incoming_version, incoming_size: incoming_size, moab_storage_root: moab_storage_root)
   end
   let(:expected_msg) { 'added object to db as it did not exist' }
@@ -26,33 +26,33 @@ RSpec.describe CompleteMoabService::Create do
   end
 
   describe '#execute' do
-    it 'creates PreservedObject and CompleteMoab in database' do
-      complete_moab_service.execute
+    it 'creates PreservedObject and MoabRecord in database' do
+      moab_record_service.execute
       new_preserved_object = PreservedObject.find_by(druid: druid)
-      new_complete_moab = new_preserved_object.complete_moab
+      new_moab_record = new_preserved_object.moab_record
       expect(new_preserved_object.current_version).to eq incoming_version
-      expect(new_complete_moab.moab_storage_root).to eq moab_storage_root
-      expect(new_complete_moab.size).to eq incoming_size
+      expect(new_moab_record.moab_storage_root).to eq moab_storage_root
+      expect(new_moab_record.size).to eq incoming_size
     end
 
-    it 'creates the CompleteMoab with "ok" status and validation timestamps if caller ran CV' do
-      complete_moab_service.execute(checksums_validated: true)
-      new_complete_moab = complete_moab_service.preserved_object.complete_moab
-      expect(new_complete_moab.status).to eq 'ok'
-      expect(new_complete_moab.last_version_audit).to be_a ActiveSupport::TimeWithZone
-      expect(new_complete_moab.last_moab_validation).to be_a ActiveSupport::TimeWithZone
-      expect(new_complete_moab.last_checksum_validation).to be_a ActiveSupport::TimeWithZone
+    it 'creates the MoabRecord with "ok" status and validation timestamps if caller ran CV' do
+      moab_record_service.execute(checksums_validated: true)
+      new_moab_record = moab_record_service.preserved_object.moab_record
+      expect(new_moab_record.status).to eq 'ok'
+      expect(new_moab_record.last_version_audit).to be_a ActiveSupport::TimeWithZone
+      expect(new_moab_record.last_moab_validation).to be_a ActiveSupport::TimeWithZone
+      expect(new_moab_record.last_checksum_validation).to be_a ActiveSupport::TimeWithZone
     end
 
     it_behaves_like 'attributes validated'
 
     it 'object already exists' do
-      complete_moab_service.execute
-      new_complete_moab_service = described_class.new(druid: druid, incoming_version: incoming_version, incoming_size: incoming_size,
-                                                      moab_storage_root: moab_storage_root)
-      audit_results = new_complete_moab_service.execute
+      moab_record_service.execute
+      new_moab_record_service = described_class.new(druid: druid, incoming_version: incoming_version, incoming_size: incoming_size,
+                                                    moab_storage_root: moab_storage_root)
+      audit_results = new_moab_record_service.execute
       code = AuditResults::DB_OBJ_ALREADY_EXISTS
-      expect(audit_results.results).to include(a_hash_including(code => a_string_matching('CompleteMoab db object already exists')))
+      expect(audit_results.results).to include(a_hash_including(code => a_string_matching('MoabRecord db object already exists')))
     end
 
     it_behaves_like 'calls AuditResultsReporter.report_results'
@@ -65,25 +65,25 @@ RSpec.describe CompleteMoabService::Create do
         end
 
         it 'DB_UPDATE_FAILED result' do
-          expect(complete_moab_service.execute.results).to include(a_hash_including(AuditResults::DB_UPDATE_FAILED))
+          expect(moab_record_service.execute.results).to include(a_hash_including(AuditResults::DB_UPDATE_FAILED))
         end
 
         it 'does NOT get CREATED_NEW_OBJECT result' do
-          expect(complete_moab_service.execute.results).not_to include(hash_including(AuditResults::CREATED_NEW_OBJECT))
+          expect(moab_record_service.execute.results).not_to include(hash_including(AuditResults::CREATED_NEW_OBJECT))
         end
       end
 
-      it "rolls back PreservedObject creation if the CompleteMoab can't be created (e.g. due to DB constraint violation)" do
+      it "rolls back PreservedObject creation if the MoabRecord can't be created (e.g. due to DB constraint violation)" do
         preserved_object = instance_double(PreservedObject)
         allow(PreservedObject).to receive(:create!).with(hash_including(druid: druid)).and_return(preserved_object)
-        allow(preserved_object).to receive(:create_complete_moab!).and_raise(ActiveRecord::RecordInvalid)
-        complete_moab_service.execute
+        allow(preserved_object).to receive(:create_moab_record!).and_raise(ActiveRecord::RecordInvalid)
+        moab_record_service.execute
         expect(PreservedObject.find_by(druid: druid)).to be_nil
       end
     end
 
     context 'returns' do
-      let(:audit_result) { complete_moab_service.execute }
+      let(:audit_result) { moab_record_service.execute }
 
       it '1 result of CREATED_NEW_OBJECT' do
         expect(audit_result).to be_an_instance_of AuditResults

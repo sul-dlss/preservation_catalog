@@ -36,7 +36,7 @@ module Reporters
       when AuditResults::DB_OBJ_DOES_NOT_EXIST, AuditResults::ZIP_PARTS_NOT_CREATED, AuditResults::ZIP_PARTS_NOT_ALL_REPLICATED
         Logger::WARN
       when AuditResults::VERSION_MATCHES, AuditResults::ACTUAL_VERS_GT_DB_OBJ, AuditResults::CREATED_NEW_OBJECT,
-          AuditResults::CM_STATUS_CHANGED, AuditResults::MOAB_CHECKSUM_VALID
+          AuditResults::MOAB_RECORD_STATUS_CHANGED, AuditResults::MOAB_CHECKSUM_VALID
         Logger::INFO
       else
         Logger::ERROR

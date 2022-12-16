@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-module CompleteMoabService
-  # Updates CompletedMoab and associated objects based on a moab on storage.
+module MoabRecordService
+  # Updates MoabRecord and associated objects based on a moab on storage.
   class UpdateVersion < Base
     def self.execute(druid:, incoming_version:, incoming_size:, moab_storage_root:, checksums_validated: false)
       new(druid: druid, incoming_version: incoming_version, incoming_size: incoming_size,
@@ -29,50 +29,50 @@ module CompleteMoabService
       with_active_record_transaction_and_rescue do
         raise_rollback_if_version_mismatch
 
-        if incoming_version > complete_moab.version
-          update_complete_moab_to_expected_version(status: status, checksums_validated: checksums_validated)
+        if incoming_version > moab_record.version
+          update_moab_record_to_expected_version(status: status, checksums_validated: checksums_validated)
         else
           status = 'unexpected_version_on_storage' if set_status_to_unexpected_version
-          update_complete_moab_to_unexpected_version(status: status)
+          update_moab_record_to_unexpected_version(status: status)
         end
       end
     end
 
-    def update_complete_moab_to_expected_version(status:, checksums_validated:)
+    def update_moab_record_to_expected_version(status:, checksums_validated:)
       # add results without db updates
-      results.add_result(AuditResults::ACTUAL_VERS_GT_DB_OBJ, db_obj_name: 'CompleteMoab', db_obj_version: complete_moab.version)
+      results.add_result(AuditResults::ACTUAL_VERS_GT_DB_OBJ, db_obj_name: 'MoabRecord', db_obj_version: moab_record.version)
 
-      complete_moab.upd_audstamps_version_size(moab_on_storage_validator.ran_moab_validation?, incoming_version, incoming_size)
-      complete_moab.last_checksum_validation = Time.current if checksums_validated && complete_moab.last_checksum_validation
-      status_handler.update_complete_moab_status(status) if status
-      complete_moab.save!
+      moab_record.upd_audstamps_version_size(moab_on_storage_validator.ran_moab_validation?, incoming_version, incoming_size)
+      moab_record.last_checksum_validation = Time.current if checksums_validated && moab_record.last_checksum_validation
+      status_handler.update_moab_record_status(status) if status
+      moab_record.save!
 
       preserved_object.current_version = incoming_version
       preserved_object.save!
     end
 
-    def update_complete_moab_to_unexpected_version(status:)
-      results.add_result(AuditResults::UNEXPECTED_VERSION, db_obj_name: 'CompleteMoab', db_obj_version: complete_moab.version)
+    def update_moab_record_to_unexpected_version(status:)
+      results.add_result(AuditResults::UNEXPECTED_VERSION, db_obj_name: 'MoabRecord', db_obj_version: moab_record.version)
       version_comparison_results
 
-      status_handler.update_complete_moab_status(status) if status
-      complete_moab.update_audit_timestamps(moab_on_storage_validator.ran_moab_validation?, true)
-      complete_moab.save!
+      status_handler.update_moab_record_status(status) if status
+      moab_record.update_audit_timestamps(moab_on_storage_validator.ran_moab_validation?, true)
+      moab_record.save!
     end
 
     # expects @incoming_version to be numeric
     def version_comparison_results
-      if incoming_version == complete_moab.version
-        results.add_result(AuditResults::VERSION_MATCHES, complete_moab.class.name)
-      elsif incoming_version < complete_moab.version
+      if incoming_version == moab_record.version
+        results.add_result(AuditResults::VERSION_MATCHES, moab_record.class.name)
+      elsif incoming_version < moab_record.version
         results.add_result(
           AuditResults::ACTUAL_VERS_LT_DB_OBJ,
-          db_obj_name: complete_moab.class.name, db_obj_version: complete_moab.version
+          db_obj_name: moab_record.class.name, db_obj_version: moab_record.version
         )
-      elsif incoming_version > complete_moab.version
+      elsif incoming_version > moab_record.version
         results.add_result(
           AuditResults::ACTUAL_VERS_GT_DB_OBJ,
-          db_obj_name: complete_moab.class.name, db_obj_version: complete_moab.version
+          db_obj_name: moab_record.class.name, db_obj_version: moab_record.version
         )
       end
     end

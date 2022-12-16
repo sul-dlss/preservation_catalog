@@ -25,7 +25,7 @@ namespace :prescat do
 
   desc 'Migrate storage root, returning druids of all migrated moabs'
   task :migrate_storage_root, [:from, :to] => :environment do |_task, args|
-    puts 'This will move all complete_moabs from the old storage root to a new storage root.'
+    puts 'This will move all moab_records from the old storage root to a new storage root.'
     puts 'WARNING: expects that "from" storage root is no longer being written to (no Moabs being created or modified)!'
     print 'Enter YES to continue: '
     input = $stdin.gets.chomp
@@ -42,7 +42,7 @@ namespace :prescat do
         count += 1
       end
     end
-    puts "migrated #{count} CompleteMoab records from #{args[:from]} to #{args[:to]}, druid list available at #{filename}"
+    puts "migrated #{count} MoabRecord records from #{args[:from]} to #{args[:to]}, druid list available at #{filename}"
   end
 
   namespace :reports do
@@ -85,7 +85,7 @@ namespace :prescat do
 
     desc 'run CV (checksum validation) for all druids on a storage root'
     task :cv, [:storage_root_name] => [:environment] do |_task, args|
-      MoabStorageRoot.find_by!(name: args[:storage_root_name]).complete_moabs.find_each(&:validate_checksums!)
+      MoabStorageRoot.find_by!(name: args[:storage_root_name]).moab_records.find_each(&:validate_checksums!)
     end
   end
 end

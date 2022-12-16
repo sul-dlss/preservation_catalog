@@ -80,26 +80,26 @@ RSpec.describe ApplicationJob do
   end
 
   context 'a subclass that has an ActiveRecord parameter with message(s) queued' do
-    let(:cm) { create(:complete_moab) }
-    let(:cm2) { create(:complete_moab) }
+    let(:moab_rec) { create(:moab_record) }
+    let(:moab_rec2) { create(:moab_record) }
 
     before do
-      CatalogToMoabJob.perform_later(cm)
+      CatalogToMoabJob.perform_later(moab_rec)
     end
 
     it 'does not add duplicate messages' do
-      expect { CatalogToMoabJob.perform_later(cm) }
+      expect { CatalogToMoabJob.perform_later(moab_rec) }
         .not_to change(enqueued_jobs, :size).from(1)
 
-      # Change complete_moab
-      cm.size = 1000
+      # Change moab_record
+      moab_rec.size = 1000
 
-      expect { CatalogToMoabJob.perform_later(cm) }
+      expect { CatalogToMoabJob.perform_later(moab_rec) }
         .not_to change(enqueued_jobs, :size).from(1)
     end
 
     it 'but adds novel messages' do
-      expect { CatalogToMoabJob.perform_later(cm2) }
+      expect { CatalogToMoabJob.perform_later(moab_rec2) }
         .to change(enqueued_jobs, :size).from(1).to(2)
     end
   end

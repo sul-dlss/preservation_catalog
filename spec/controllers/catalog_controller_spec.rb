@@ -26,20 +26,20 @@ RSpec.describe CatalogController do
   describe 'POST #create' do
     context 'with valid params' do
       let(:pres_obj) { PreservedObject.find_by(druid: bare_druid) }
-      let(:comp_moab) { CompleteMoab.find_by(preserved_object: pres_obj) }
+      let(:comp_moab) { MoabRecord.find_by(preserved_object: pres_obj) }
 
       before do
         post :create, params: { druid: prefixed_druid, incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
       end
 
-      it 'saves PreservedObject and CompleteMoab in db' do
+      it 'saves PreservedObject and MoabRecord in db' do
         po = PreservedObject.find_by(druid: bare_druid)
-        cm = CompleteMoab.find_by(preserved_object: po)
+        moab_record = MoabRecord.find_by(preserved_object: po)
         expect(po).to be_an_instance_of PreservedObject
-        expect(cm).to be_an_instance_of CompleteMoab
+        expect(moab_record).to be_an_instance_of MoabRecord
       end
 
-      it 'CompleteMoab and PreservedObject have correct attributes' do
+      it 'MoabRecord and PreservedObject have correct attributes' do
         expect(comp_moab.moab_storage_root.storage_location).to eq storage_location
         expect(comp_moab.version).to eq ver
         expect(comp_moab.size).to eq size
@@ -61,11 +61,11 @@ RSpec.describe CatalogController do
         post :create, params: { druid: nil, incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
       end
 
-      it 'does not save PreservedObject or CompleteMoab in db' do
+      it 'does not save PreservedObject or MoabRecord in db' do
         po = PreservedObject.find_by(druid: prefixed_druid)
-        cm = CompleteMoab.find_by(preserved_object: po)
+        moab_record = MoabRecord.find_by(preserved_object: po)
         expect(po).to be_nil
-        expect(cm).to be_nil
+        expect(moab_record).to be_nil
       end
 
       it 'response contains error message' do
@@ -86,7 +86,7 @@ RSpec.describe CatalogController do
       end
 
       it 'response contains error message' do
-        exp_msg = [{ AuditResults::DB_OBJ_ALREADY_EXISTS => 'CompleteMoab db object already exists' }]
+        exp_msg = [{ AuditResults::DB_OBJ_ALREADY_EXISTS => 'MoabRecord db object already exists' }]
         expect(response.body).to include(exp_msg.to_json)
       end
 
@@ -140,10 +140,10 @@ RSpec.describe CatalogController do
   describe 'PATCH #update' do
     let(:bare_druid) { 'bz514sm9647' }
     let!(:pres_obj) do
-      # creates a PreservedObject, and the CompleteMoab for the first moab found for the druid (by walking the storage roots in configured order)
+      # creates a PreservedObject, and the MoabRecord for the first moab found for the druid (by walking the storage roots in configured order)
       create(:preserved_object_fixture, druid: bare_druid)
     end
-    let(:comp_moab) { pres_obj.complete_moab }
+    let(:comp_moab) { pres_obj.moab_record }
 
     context 'with valid params' do
       before do
@@ -152,7 +152,7 @@ RSpec.describe CatalogController do
 
       let(:upd_version) { 4 }
 
-      it 'updates CompleteMoab#version' do
+      it 'updates MoabRecord#version' do
         expect(comp_moab.reload.version).to eq upd_version
       end
 
@@ -187,7 +187,7 @@ RSpec.describe CatalogController do
       end
 
       it 'response contains error message' do
-        err_regex = /#<ActiveRecord::RecordNotFound: Couldn't find (PreservedObject|CompleteMoab).*> db object does not exist/
+        err_regex = /#<ActiveRecord::RecordNotFound: Couldn't find (PreservedObject|MoabRecord).*> db object does not exist/
         exp_result = { 'results' => [{ AuditResults::DB_OBJ_DOES_NOT_EXIST.to_s => a_string_matching(err_regex) }] }
         expect(JSON.parse(response.body)).to include(exp_result)
       end
@@ -197,7 +197,7 @@ RSpec.describe CatalogController do
       end
     end
 
-    context 'cm po version mismatch' do
+    context 'MoabRecord PreservedObject versions disagree' do
       before do
         comp_moab.version = comp_moab.version + 1
         comp_moab.save!
@@ -205,7 +205,7 @@ RSpec.describe CatalogController do
       end
 
       it 'response contains error message' do
-        exp_msg = [{ AuditResults::CM_PO_VERSION_MISMATCH => 'CompleteMoab online Moab version 4 does not match PreservedObject current_version 3' }]
+        exp_msg = [{ AuditResults::DB_VERSIONS_DISAGREE => 'MoabRecord version 4 does not match PreservedObject current_version 3' }]
         expect(response.body).to include(exp_msg.to_json)
       end
 
@@ -220,13 +220,13 @@ RSpec.describe CatalogController do
       end
 
       it 'response contains error message' do
-        unexp_ver = 'actual version (1) has unexpected relationship to CompleteMoab db version (3); ERROR!'
-        ver_lt_db = 'actual version (1) less than CompleteMoab db version (3); ERROR!'
-        status_change = 'CompleteMoab status changed from validity_unknown to unexpected_version_on_storage'
+        unexp_ver = 'actual version (1) has unexpected relationship to MoabRecord db version (3); ERROR!'
+        ver_lt_db = 'actual version (1) less than MoabRecord db version (3); ERROR!'
+        status_change = 'MoabRecord status changed from validity_unknown to unexpected_version_on_storage'
         exp_msg = [
           { AuditResults::UNEXPECTED_VERSION => unexp_ver.to_s },
           { AuditResults::ACTUAL_VERS_LT_DB_OBJ => ver_lt_db.to_s },
-          { AuditResults::CM_STATUS_CHANGED => status_change.to_s }
+          { AuditResults::MOAB_RECORD_STATUS_CHANGED => status_change.to_s }
         ]
         expect(response.body).to include(exp_msg.to_json)
       end
@@ -242,7 +242,7 @@ RSpec.describe CatalogController do
         # specifically for DB update failure bubbling up
         pres_obj.update(current_version: pres_obj.current_version - 1)
         comp_moab.update(version: comp_moab.version - 1)
-        allow(CompleteMoab).to receive(:joins).and_raise(ActiveRecord::ActiveRecordError, 'connection error foo')
+        allow(MoabRecord).to receive(:joins).and_raise(ActiveRecord::ActiveRecordError, 'connection error foo')
       end
 
       it 'response contains error message' do
@@ -292,20 +292,20 @@ RSpec.describe CatalogController do
 
       before do
         allow(results).to receive(:contains_result_code?)
-        allow(CompleteMoabService::Create).to receive(:execute).and_return(results)
-        allow(CompleteMoabService::UpdateVersion).to receive(:execute).and_return(results)
+        allow(MoabRecordService::Create).to receive(:execute).and_return(results)
+        allow(MoabRecordService::UpdateVersion).to receive(:execute).and_return(results)
       end
 
       it 'false if not present' do
-        expect(CompleteMoabService::Create).to receive(:execute).with(druid: bare_druid, incoming_version: ver, incoming_size: size,
-                                                                      moab_storage_root: moab_storage_root, checksums_validated: false)
+        expect(MoabRecordService::Create).to receive(:execute).with(druid: bare_druid, incoming_version: ver, incoming_size: size,
+                                                                    moab_storage_root: moab_storage_root, checksums_validated: false)
         post :create, params: { druid: bare_druid, incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
       end
 
       ['true', 'True', 'TRUE'].each do |t_val|
         it "#{t_val} evaluates to true" do
-          expect(CompleteMoabService::Create).to receive(:execute).with(druid: bare_druid, incoming_version: ver, incoming_size: size,
-                                                                        moab_storage_root: moab_storage_root, checksums_validated: true)
+          expect(MoabRecordService::Create).to receive(:execute).with(druid: bare_druid, incoming_version: ver, incoming_size: size,
+                                                                      moab_storage_root: moab_storage_root, checksums_validated: true)
           post :create, params: { druid: bare_druid,
                                   incoming_version: ver,
                                   incoming_size: size,
@@ -315,8 +315,8 @@ RSpec.describe CatalogController do
       end
       ['nil', '1', 'on', 'false', 'False', 'FALSE'].each do |t_val|
         it "#{t_val} evaluates to false" do
-          expect(CompleteMoabService::UpdateVersion).to receive(:execute).with(druid: bare_druid, incoming_version: ver, incoming_size: size,
-                                                                               moab_storage_root: moab_storage_root, checksums_validated: false)
+          expect(MoabRecordService::UpdateVersion).to receive(:execute).with(druid: bare_druid, incoming_version: ver, incoming_size: size,
+                                                                             moab_storage_root: moab_storage_root, checksums_validated: false)
           patch :update, params: { druid: bare_druid,
                                    incoming_version: ver,
                                    incoming_size: size,

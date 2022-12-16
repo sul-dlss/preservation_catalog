@@ -51,15 +51,15 @@ RSpec.describe 'routes' do
     end
   end
 
-  describe 'dashboard/complete_moab_versions' do
-    it 'routes to dashboard controller complete_moab_versions action' do
-      expect(get: dashboard_complete_moab_versions_path).to route_to(controller: 'dashboard', action: 'complete_moab_versions', format: 'html')
+  describe 'dashboard/moab_record_versions' do
+    it 'routes to dashboard controller moab_record_versions action' do
+      expect(get: dashboard_moab_record_versions_path).to route_to(controller: 'dashboard', action: 'moab_record_versions', format: 'html')
     end
   end
 
-  describe 'dashboard/complete_moab_info' do
-    it 'routes to dashboard controller complete_moab_info action' do
-      expect(get: dashboard_complete_moab_info_path).to route_to(controller: 'dashboard', action: 'complete_moab_info', format: 'html')
+  describe 'dashboard/moab_record_info' do
+    it 'routes to dashboard controller moab_record_info action' do
+      expect(get: dashboard_moab_record_info_path).to route_to(controller: 'dashboard', action: 'moab_record_info', format: 'html')
     end
   end
 

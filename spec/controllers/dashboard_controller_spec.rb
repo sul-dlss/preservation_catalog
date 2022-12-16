@@ -36,12 +36,12 @@ RSpec.describe DashboardController do
         expect(response.body).to match(/are about the Moab on storage./)
       end
 
-      it 'has turbo-frame for complete_moab_versions path' do
-        expect(response.body).to match(/<turbo-frame id="complete-moab-versions" src="#{dashboard_complete_moab_versions_path}" loading="lazy">/)
+      it 'has turbo-frame for moab_record_versions path' do
+        expect(response.body).to match(/<turbo-frame id="moab-record-versions" src="#{dashboard_moab_record_versions_path}" loading="lazy">/)
       end
 
-      it 'has turbo-frame for complete_moab_info path' do
-        expect(response.body).to match(/<turbo-frame id="complete-moab-info" src="#{dashboard_complete_moab_info_path}" loading="lazy">/)
+      it 'has turbo-frame for moab_record_info path' do
+        expect(response.body).to match(/<turbo-frame id="moab-record-info" src="#{dashboard_moab_record_info_path}" loading="lazy">/)
       end
 
       it 'has turbo-frame for storage_root_data path' do
@@ -94,14 +94,14 @@ RSpec.describe DashboardController do
     it 'renders Dashboard::MoabOnStorageStatusComponent' do
       expect(response.body).to match(/Moabs on Storage/)
       expect(response.body).to match(%r{Object / Version Counts})
-      expect(response.body).to match(/CompleteMoab Statuses/)
+      expect(response.body).to match(/MoabRecord Statuses/)
       expect(response.body).to match(/OK/)
     end
   end
 
-  describe 'GET dashboard/complete_moab_versions' do
+  describe 'GET dashboard/moab_record_versions' do
     before do
-      get :complete_moab_versions
+      get :moab_record_versions
     end
 
     it 'returns a success response with html content' do
@@ -109,19 +109,19 @@ RSpec.describe DashboardController do
       expect(response.content_type).to eq('text/html; charset=utf-8')
     end
 
-    it 'renders _complete_moab_versions template' do
-      expect(response).to render_template('dashboard/_complete_moab_versions')
+    it 'renders _moab_record_versions template' do
+      expect(response).to render_template('dashboard/_moab_record_versions')
     end
 
-    it 'renders CompleteMoab version data' do
+    it 'renders MoabRecord version data' do
       expect(response.body).to match(/Counts and Version Information/)
       expect(response.body).to match(/highest version/) # table header
     end
   end
 
-  describe 'GET dashboard/complete_moab_info' do
+  describe 'GET dashboard/moab_record_info' do
     before do
-      get :complete_moab_info
+      get :moab_record_info
     end
 
     it 'returns a success response with html content' do
@@ -129,12 +129,12 @@ RSpec.describe DashboardController do
       expect(response.content_type).to eq('text/html; charset=utf-8')
     end
 
-    it 'renders _complete_moab_info template' do
-      expect(response).to render_template('dashboard/_complete_moab_info')
+    it 'renders _moab_record_info template' do
+      expect(response).to render_template('dashboard/_moab_record_info')
     end
 
-    it 'renders CompleteMoab Information' do
-      expect(response.body).to match(/CompleteMoab Information/)
+    it 'renders MoabRecord Information' do
+      expect(response.body).to match(/MoabRecord Information/)
       expect(response.body).to match(/total size/) # table header
       expect(response.body).to match(/0/) # table data
     end

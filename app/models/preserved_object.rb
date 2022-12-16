@@ -8,12 +8,12 @@
 class PreservedObject < ApplicationRecord
   PREFIX_RE = /druid:/i
 
-  # hook for creating archive zips is here and on CompleteMoab, because version and current_version must be in sync, and
+  # hook for creating archive zips is here and on MoabRecord, because version and current_version must be in sync, and
   # even though both fields will usually be updated together in a single transaction, one has to be updated first.  latter
   # of the two updates will actually trigger replication.
   after_update :create_zipped_moab_versions!, if: :saved_change_to_current_version? # an ActiveRecord dynamic method
 
-  has_one :complete_moab, dependent: :restrict_with_exception, autosave: true
+  has_one :moab_record, dependent: :restrict_with_exception, autosave: true
   has_many :zipped_moab_versions, dependent: :restrict_with_exception, inverse_of: :preserved_object
 
   validates :druid,
@@ -23,7 +23,7 @@ class PreservedObject < ApplicationRecord
             format: { with: /(?!#{PREFIX_RE})#{DruidTools::Druid.pattern}/ } # ?! group is a *negative* match
   validates :current_version, presence: true, numericality: { only_integer: true, greater_than: 0 }
 
-  scope :without_complete_moab, -> { where.missing(:complete_moab) }
+  scope :without_moab_record, -> { where.missing(:moab_record) }
 
   scope :archive_check_expired, lambda {
     where(
@@ -62,9 +62,9 @@ class PreservedObject < ApplicationRecord
   end
 
   def total_size_of_moab_version(version)
-    return 0 unless complete_moab
+    return 0 unless moab_record
 
-    Replication::DruidVersionZip.new(druid, version, complete_moab.moab_storage_root.storage_location).moab_version_size
+    Replication::DruidVersionZip.new(druid, version, moab_record.moab_storage_root.storage_location).moab_version_size
   end
 
   # Number of PreservedObjects to audit on a daily basis.
@@ -83,6 +83,6 @@ class PreservedObject < ApplicationRecord
 
   # a moab is eligible for replication if its status is 'ok' and its version is up to date with the latest seen for the object
   def moabs_eligible_for_replication
-    CompleteMoab.joins(:preserved_object).where(preserved_object: self, complete_moabs: { status: 'ok', version: current_version })
+    MoabRecord.joins(:preserved_object).where(preserved_object: self, moab_records: { status: 'ok', version: current_version })
   end
 end

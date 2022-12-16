@@ -3,16 +3,16 @@
 require 'rails_helper'
 
 describe ChecksumValidationJob do
-  let(:job) { described_class.new(cm) }
-  let(:cm) { create(:complete_moab) }
+  let(:job) { described_class.new(moab_record) }
+  let(:moab_record) { create(:moab_record) }
 
   describe '#perform' do
     let(:validator) { instance_double(Audit::ChecksumValidator) }
 
     it 'calls ChecksumValidator#validate_checksums' do
       expect(validator).to receive(:validate_checksums)
-      expect(Audit::ChecksumValidator).to receive(:new).with(cm).and_return(validator)
-      job.perform(cm)
+      expect(Audit::ChecksumValidator).to receive(:new).with(moab_record).and_return(validator)
+      job.perform(moab_record)
     end
   end
 
@@ -38,8 +38,8 @@ describe ChecksumValidationJob do
     before { allow(described_class).to receive(:perform_later).and_call_original } # undo rails_helper block
 
     it 'does not add duplicate messages' do
-      described_class.perform_later(cm)
-      expect { described_class.perform_later(cm) }
+      described_class.perform_later(moab_record)
+      expect { described_class.perform_later(moab_record) }
         .not_to change(stats, :enqueued).from(1)
     end
   end
