@@ -7,6 +7,7 @@ require 'webmock/rspec'
 SimpleCov.start :rails do
   add_filter '/spec/'
   add_filter '/vendor/'
+  add_filter '/lib/'
 end
 
 RSpec.configure do |config|

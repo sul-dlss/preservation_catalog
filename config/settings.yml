@@ -65,3 +65,7 @@ honeybadger_checkins:
   catalog_to_moab: xyzzy
   checksum_validation: xyzzy
   audit_replication: xyzzy
+
+slow_queries:
+  enable: false
+  threshold: 500

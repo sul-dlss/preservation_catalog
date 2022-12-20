@@ -5,6 +5,7 @@ module Dashboard
   # methods pertaining to audit functionality for dashboard
   module AuditService
     include MoabOnStorageService
+    include InstrumentationSupport
 
     # MoabRecord.last_version_audit is the most recent of 3 separate audits:
     #   moab_to_catalog - all MoabRecords are queued for this on the 1st of the month
@@ -25,12 +26,12 @@ module Dashboard
 
     def validate_moab_audit_ok?
       # NOTE: unsure if there needs to be more checking of MoabRecord.status_details for more statuses to figure this out
-      (MoabRecord.invalid_moab.count + MoabRecord.moab_on_storage_not_found.count).zero?
+      (MoabRecord.invalid_moab.annotate(caller).count + MoabRecord.moab_on_storage_not_found.annotate(caller).count).zero?
     end
 
     def catalog_to_moab_audit_ok?
       # NOTE: unsure if there needs to be more checking of MoabRecord.status_details for more statuses to figure this out
-      !MoabRecord.exists?(status: %w[moab_on_storage_not_found unexpected_version_on_storage])
+      !MoabRecord.all.annotate(caller).exists?(status: %w[moab_on_storage_not_found unexpected_version_on_storage])
     end
 
     def moab_to_catalog_audit_ok?
@@ -41,11 +42,11 @@ module Dashboard
 
     def moab_checksum_validation_audit_ok?
       # NOTE: unsure if there needs to be more checking of MoabRecord.status_details for more statuses to figure this out
-      MoabRecord.invalid_checksum.count.zero?
+      MoabRecord.invalid_checksum.annotate(caller).count.zero?
     end
 
     def catalog_to_archive_audit_ok?
-      !ZipPart.where.not(status: 'ok').exists?
+      !ZipPart.where.not(status: 'ok').annotate(caller).exists?
     end
 
     def moab_audit_age_threshold
@@ -53,7 +54,7 @@ module Dashboard
     end
 
     def num_moab_audits_older_than_threshold
-      MoabRecord.version_audit_expired(moab_audit_age_threshold).count
+      MoabRecord.version_audit_expired(moab_audit_age_threshold).annotate(caller).count
     end
 
     def moab_audits_older_than_threshold?
@@ -65,7 +66,7 @@ module Dashboard
     end
 
     def num_replication_audits_older_than_threshold
-      PreservedObject.archive_check_expired.count
+      PreservedObject.archive_check_expired.annotate(caller).count
     end
 
     def replication_audits_older_than_threshold?
