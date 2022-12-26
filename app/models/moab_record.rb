@@ -45,11 +45,7 @@ class MoabRecord < ApplicationRecord
   }
 
   scope :fixity_check_expired, lambda {
-    joins(:preserved_object)
-      .where(
-        '(last_checksum_validation + (? * INTERVAL \'1 SECOND\')) < CURRENT_TIMESTAMP OR last_checksum_validation IS NULL',
-        Settings.preservation_policy.fixity_ttl
-      )
+    where('last_checksum_validation < ? or last_checksum_validation IS NULL', Time.zone.now - Settings.preservation_policy.fixity_ttl.seconds)
   }
 
   # TODO: create_missing_zipped_moab_versions! would be a better name
