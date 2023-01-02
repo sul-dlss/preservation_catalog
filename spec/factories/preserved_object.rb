@@ -2,7 +2,7 @@
 
 FactoryBot.define do
   factory :preserved_object do
-    sequence(:druid) { |n| "bj102hs#{format('%04d', 1111 + n)}" } # start druids at bj102hs1000
+    sequence(:druid) { |n| "bj102hs#{format('%04d', n + 1111)}" } # start druids at bj102hs1000
     current_version { 1 }
   end
 

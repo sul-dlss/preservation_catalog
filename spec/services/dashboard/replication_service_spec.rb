@@ -118,9 +118,9 @@ RSpec.describe Dashboard::ReplicationService do
 
   describe '#zip_part_suffixes' do
     before do
-      create(:zip_part, size: 1 * Numeric::TERABYTE)
-      create(:zip_part, size: (2 * Numeric::TERABYTE))
-      create(:zip_part, size: (3 * Numeric::TERABYTE))
+      create(:zip_part, size: Numeric::TERABYTE * 1)
+      create(:zip_part, size: (Numeric::TERABYTE * 2))
+      create(:zip_part, size: (Numeric::TERABYTE * 3))
     end
 
     it 'returns a hash of suffies as keys and values as counts' do
@@ -130,9 +130,9 @@ RSpec.describe Dashboard::ReplicationService do
 
   describe '#zip_parts_total_size' do
     before do
-      create(:zip_part, size: 1 * Numeric::TERABYTE)
-      create(:zip_part, size: ((2 * Numeric::TERABYTE) + (500 * Numeric::GIGABYTE)))
-      create(:zip_part, size: (3 * Numeric::TERABYTE))
+      create(:zip_part, size: Numeric::TERABYTE * 1)
+      create(:zip_part, size: ((Numeric::TERABYTE * 2) + (Numeric::GIGABYTE * 500)))
+      create(:zip_part, size: (Numeric::TERABYTE * 3))
     end
 
     it 'returns the total size of ZipParts in Terabytes as a string' do
