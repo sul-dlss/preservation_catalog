@@ -208,7 +208,7 @@ module Dashboard
     # create this hash so we don't need to loop through storage_root_info multiple times
     def storage_root_totals # rubocop:disable Metrics/AbcSize
       @storage_root_totals ||=
-        if storage_root_info.values.size.zero?
+        if storage_root_info.values.empty?
           {}
         else
           moab_count = 0

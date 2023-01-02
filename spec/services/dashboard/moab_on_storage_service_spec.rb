@@ -432,9 +432,9 @@ RSpec.describe Dashboard::MoabOnStorageService do
 
   describe '#moab_record_total_size' do
     before do
-      create(:moab_record, size: 1 * Numeric::TERABYTE)
-      create(:moab_record, size: (2 * Numeric::TERABYTE) + (500 * Numeric::GIGABYTE))
-      create(:moab_record, size: (3 * Numeric::TERABYTE))
+      create(:moab_record, size: Numeric::TERABYTE * 1)
+      create(:moab_record, size: (Numeric::TERABYTE * 2) + (Numeric::GIGABYTE * 500))
+      create(:moab_record, size: (Numeric::TERABYTE * 3))
     end
 
     it 'returns the total size of MoabRecords in Terabytes as a string' do
@@ -445,9 +445,9 @@ RSpec.describe Dashboard::MoabOnStorageService do
   describe '#moab_record_average_size' do
     context 'when there are MoabRecords' do
       before do
-        create(:moab_record, size: 1 * Numeric::MEGABYTE)
-        create(:moab_record, size: (2 * Numeric::KILOBYTE))
-        create(:moab_record, size: (3 * Numeric::MEGABYTE))
+        create(:moab_record, size: Numeric::MEGABYTE * 1)
+        create(:moab_record, size: (Numeric::KILOBYTE * 2))
+        create(:moab_record, size: (Numeric::MEGABYTE * 3))
       end
       # "#{(MoabRecord.average(:size) / Numeric::MEGABYTE).to_f.round(2)} Mb" unless num_moab_records.zero?
 
