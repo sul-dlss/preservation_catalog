@@ -54,7 +54,9 @@ module Dashboard
     end
 
     def num_moab_audits_older_than_threshold
-      MoabRecord.version_audit_expired(moab_audit_age_threshold).annotate(caller).count
+      # This is faster than MoabRecord.version_audit_expired(moab_audit_age_threshold).count
+      MoabRecord.where(last_version_audit: nil).annotate(caller).count + \
+        MoabRecord.where('last_version_audit < ?', moab_audit_age_threshold).annotate(caller).count
     end
 
     def moab_audits_older_than_threshold?
