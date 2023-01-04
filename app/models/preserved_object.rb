@@ -27,7 +27,7 @@ class PreservedObject < ApplicationRecord
 
   scope :archive_check_expired, lambda {
     where(
-      '(last_archive_audit + (? * INTERVAL \'1 SECOND\')) < CURRENT_TIMESTAMP OR last_archive_audit IS NULL',
+      'last_archive_audit < (CURRENT_TIMESTAMP - (? * INTERVAL \'1 SECOND\')) OR last_archive_audit IS NULL',
       Settings.preservation_policy.archive_ttl
     )
   }
