@@ -67,7 +67,7 @@ describe PlexerJob do
     end
 
     it 'splits the message out to endpoints' do
-      expect(S3WestDeliveryJob).to receive(:perform_later)
+      expect(AwsWestDeliveryJob).to receive(:perform_later)
         .with(druid, version, s3_key, a_hash_including(:checksum_md5, :size, :zip_cmd, :zip_version))
       expect(AwsEastDeliveryJob).to receive(:perform_later)
         .with(druid, version, s3_key, a_hash_including(:checksum_md5, :size, :zip_cmd, :zip_version))
@@ -78,7 +78,7 @@ describe PlexerJob do
 
     it 'ensures zip_part exists with status unreplicated before queueing for delivery' do
       # intercept the jobs that'd try to deliver and mark 'ok'
-      allow(S3WestDeliveryJob).to receive(:perform_later)
+      allow(AwsWestDeliveryJob).to receive(:perform_later)
       allow(AwsEastDeliveryJob).to receive(:perform_later)
       allow(IbmSouthDeliveryJob).to receive(:perform_later)
 

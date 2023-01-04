@@ -25,7 +25,7 @@ RSpec.describe ZipEndpoint do
   end
 
   it 'has multiple delivery_classes' do
-    expect(described_class.delivery_classes).to include('S3WestDeliveryJob', 'AwsEastDeliveryJob')
+    expect(described_class.delivery_classes).to include('AwsWestDeliveryJob', 'AwsEastDeliveryJob')
   end
 
   it { is_expected.to have_many(:zipped_moab_versions) }
@@ -50,7 +50,7 @@ RSpec.describe ZipEndpoint do
           Config::Options.new(
             endpoint_node: 'endpoint_node',
             storage_location: 'storage_location',
-            delivery_class: 'S3WestDeliveryJob',
+            delivery_class: 'AwsWestDeliveryJob',
             audit_class: 'S3::Hal::Audit'
           )
       )
@@ -86,7 +86,7 @@ RSpec.describe ZipEndpoint do
           Config::Options.new(
             endpoint_node: 'endpoint_node',
             storage_location: 'storage_location',
-            delivery_class: 'S3WestDeliveryJob'
+            delivery_class: 'AwsWestDeliveryJob'
           )
       )
       allow(Settings).to receive(:zip_endpoints).and_return(zip_endpoints_setting)

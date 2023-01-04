@@ -45,10 +45,10 @@ describe 'the whole replication pipeline' do
   it 'gets from zipmaker queue to replication result message upon initial moab creation' do
     expect(ZipmakerJob).to receive(:perform_later).with(druid, version, moab_storage_root.storage_location).and_call_original
     expect(PlexerJob).to receive(:perform_later).with(druid, version, s3_key, Hash).and_call_original
-    expect(S3WestDeliveryJob).to receive(:perform_later).with(druid, version, s3_key, Hash).and_call_original
+    expect(AwsWestDeliveryJob).to receive(:perform_later).with(druid, version, s3_key, Hash).and_call_original
     expect(IbmSouthDeliveryJob).to receive(:perform_later).with(druid, version, s3_key, Hash).and_call_original
     # other endpoints as added...
-    expect(ResultsRecorderJob).to receive(:perform_later).with(druid, version, s3_key, 'S3WestDeliveryJob').and_call_original
+    expect(ResultsRecorderJob).to receive(:perform_later).with(druid, version, s3_key, 'AwsWestDeliveryJob').and_call_original
     expect(ResultsRecorderJob).to receive(:perform_later).with(druid, version, s3_key, 'IbmSouthDeliveryJob').and_call_original
     expect(Dor::Event::Client).to receive(:create).with(
       druid: "druid:#{druid}",
@@ -76,10 +76,10 @@ describe 'the whole replication pipeline' do
 
       expect(ZipmakerJob).to receive(:perform_later).with(druid, next_version, moab_storage_root.storage_location).and_call_original
       expect(PlexerJob).to receive(:perform_later).with(druid, next_version, s3_key, Hash).and_call_original
-      expect(S3WestDeliveryJob).to receive(:perform_later).with(druid, next_version, s3_key, Hash).and_call_original
+      expect(AwsWestDeliveryJob).to receive(:perform_later).with(druid, next_version, s3_key, Hash).and_call_original
       expect(IbmSouthDeliveryJob).to receive(:perform_later).with(druid, next_version, s3_key, Hash).and_call_original
       # other endpoints as added...
-      expect(ResultsRecorderJob).to receive(:perform_later).with(druid, next_version, s3_key, 'S3WestDeliveryJob').and_call_original
+      expect(ResultsRecorderJob).to receive(:perform_later).with(druid, next_version, s3_key, 'AwsWestDeliveryJob').and_call_original
       expect(ResultsRecorderJob).to receive(:perform_later).with(druid, next_version, s3_key, 'IbmSouthDeliveryJob').and_call_original
       expect(Dor::Event::Client).to receive(:create).with(
         druid: "druid:#{druid}",

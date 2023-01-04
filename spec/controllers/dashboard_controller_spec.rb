@@ -204,7 +204,7 @@ RSpec.describe DashboardController do
     it 'renders replication endpoints data' do
       expect(response.body).to match(/Endpoint Data/)
       expect(response.body).to match(/ActiveJob class for replication/) # table header
-      expect(response.body).to match(/S3WestDeliveryJob/) # table data
+      expect(response.body).to match(/AwsWestDeliveryJob/) # table data
     end
   end
 
