@@ -48,11 +48,16 @@ module Dashboard
     end
 
     def num_replication_errors
-      @num_replication_errors ||= ZipPart.where.not(status: 'ok').annotate(caller).count
+      # This is faster than querying .where.not(status: 'ok')
+      ZipPart.where(status: replication_error_statuses).annotate(caller).count
+    end
+
+    def replication_error_statuses
+      ZipPart.statuses.keys.excluding('ok')
     end
 
     def zip_parts_ok?
-      num_replication_errors.zero?
+      !ZipPart.where(status: replication_error_statuses).annotate(caller).exists?
     end
 
     def zip_parts_unreplicated?
