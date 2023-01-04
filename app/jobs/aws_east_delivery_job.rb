@@ -4,7 +4,7 @@
 # @note this class name appears in the configuration for the endpoints for which it delivers content.
 #   Please update the configs for the various environments if it's renamed or moved.
 # @note This name is slightly misleading, as this class solely deals with AWS US East 1 endpoint
-class S3EastDeliveryJob < AbstractDeliveryJob
+class AwsEastDeliveryJob < AbstractDeliveryJob
   queue_as :s3_us_east_1_delivery
 
   def bucket

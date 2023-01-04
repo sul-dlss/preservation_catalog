@@ -47,11 +47,11 @@ for a diagram and a few words about replication queues/job flow.</p>
         <td class="fw-bold">PlexerJob</td>
         <td>If necessary, record zip part metadata info in DB. <br/>Call endpoint jobs for zip (parts)</td>
         <td>zips_made</td>
-        <td>S3WestDeliveryJob<br/>S3EastDeliveryJob<br/>IbmSouthDeliveryJob</td>
+        <td>S3WestDeliveryJob<br/>AwsEastDeliveryJob<br/>IbmSouthDeliveryJob</td>
         <td>See sidekiq queues</td>
       </tr>
       <tr>
-        <td>S3 endpoint jobs:<br/><strong>S3EastDeliveryJob</strong><br/><strong>S3WeDeliveryJob</strong><br/><strong>IBMSouthDeliveryJob</strong></td>
+        <td>S3 endpoint jobs:<br/><strong>AwsEastDeliveryJob</strong><br/><strong>S3WeDeliveryJob</strong><br/><strong>IBMSouthDeliveryJob</strong></td>
         <td>Posts individual zip (part) to S3 endpoint if not there already.</td>
         <td><br/>s3_us_east_1_delivery<br/>s3_us_west_2_delivery<br/>ibm_us_south_delivery</td>
         <td>ResultsRecorderJob if zip (part) posted</td>

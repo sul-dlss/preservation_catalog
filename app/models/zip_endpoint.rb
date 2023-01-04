@@ -9,7 +9,7 @@ class ZipEndpoint < ApplicationRecord
   # @see [enum docs] http://api.rubyonrails.org/classes/ActiveRecord/Enum.html
   enum delivery_class: {
     'S3WestDeliveryJob' => 1,
-    'S3EastDeliveryJob' => 2,
+    'AwsEastDeliveryJob' => 2,
     'IbmSouthDeliveryJob' => 3
   }
 
