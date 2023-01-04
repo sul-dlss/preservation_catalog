@@ -35,7 +35,8 @@ describe MoabReplicationAuditJob do
         expect(preserved_object).to receive(:create_zipped_moab_versions!).and_call_original
         expect(logger).to receive(:warn)
           .with(/backfilled 4 ZippedMoabVersions: 1 to aws_s3_west_2; 1 to ibm_us_south; 2 to aws_s3_west_2; 2 to ibm_us_south/)
-        job.perform(preserved_object)
+        expect(PartReplicationAuditJob).not_to receive(:perform_later)
+        expect { job.perform(preserved_object) }.not_to change { preserved_object.reload.last_archive_audit }
       end
     end
 
