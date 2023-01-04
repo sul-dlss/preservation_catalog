@@ -23,3 +23,7 @@ zip_endpoints:
     access_key_id: 'foo'
     secret_access_key: 'bar'
 workflow_services_url: 'https://sul-lyberservices-test.stanford.edu/workflow/'
+
+slow_queries:
+  enable: true
+  threshold: 1

@@ -7,6 +7,7 @@ module Dashboard
   # methods pertaining to PreservedObject and MoabRecord database data for dashboard
   module MoabOnStorageService # rubocop:disable Metrics/ModuleLength
     include ActionView::Helpers::NumberHelper # for number_to_human_size
+    include InstrumentationSupport
 
     def moabs_on_storage_ok?
       moab_on_storage_counts_ok? && !any_moab_record_errors?
@@ -24,16 +25,16 @@ module Dashboard
           storage_root_info[storage_root.name] =
             {
               storage_location: storage_root.storage_location,
-              total_size: number_to_human_size(storage_root.moab_records.sum(:size)),
-              average_size: number_to_human_size(storage_root.moab_records.average(:size) || 0),
-              moab_count: storage_root.moab_records.count,
-              ok_count: storage_root.moab_records.where(status: :ok).count,
-              invalid_moab_count: storage_root.moab_records.where(status: :invalid_moab).count,
-              invalid_checksum_count: storage_root.moab_records.where(status: :invalid_checksum).count,
-              moab_not_found_count: storage_root.moab_records.where(status: :moab_on_storage_not_found).count,
-              unexpected_version_count: storage_root.moab_records.where(status: :unexpected_version_on_storage).count,
-              validity_unknown_count: storage_root.moab_records.where(status: :validity_unknown).count,
-              fixity_check_expired_count: storage_root.moab_records.fixity_check_expired.count
+              total_size: number_to_human_size(storage_root.moab_records.annotate(caller).sum(:size)),
+              average_size: number_to_human_size(storage_root.moab_records.annotate(caller).average(:size) || 0),
+              moab_count: storage_root.moab_records.annotate(caller).count,
+              ok_count: storage_root.moab_records.annotate(caller).where(status: :ok).count,
+              invalid_moab_count: storage_root.moab_records.annotate(caller).where(status: :invalid_moab).count,
+              invalid_checksum_count: storage_root.moab_records.annotate(caller).where(status: :invalid_checksum).count,
+              moab_not_found_count: storage_root.moab_records.annotate(caller).where(status: :moab_on_storage_not_found).count,
+              unexpected_version_count: storage_root.moab_records.annotate(caller).where(status: :unexpected_version_on_storage).count,
+              validity_unknown_count: storage_root.moab_records.annotate(caller).where(status: :validity_unknown).count,
+              fixity_check_expired_count: storage_root.moab_records.fixity_check_expired.annotate(caller).count
             }
         end
         storage_root_info
@@ -54,7 +55,7 @@ module Dashboard
     end
 
     def storage_roots_ok_count_ok?
-      storage_roots_ok_count == MoabRecord.ok.count
+      storage_roots_ok_count == MoabRecord.ok.annotate(caller).count
     end
 
     def storage_roots_invalid_moab_count
@@ -62,7 +63,7 @@ module Dashboard
     end
 
     def storage_roots_invalid_moab_count_ok?
-      storage_roots_invalid_moab_count&.zero? && MoabRecord.invalid_moab.count.zero?
+      storage_roots_invalid_moab_count&.zero? && MoabRecord.invalid_moab.annotate(caller).count.zero?
     end
 
     def storage_roots_invalid_checksum_count
@@ -70,7 +71,7 @@ module Dashboard
     end
 
     def storage_roots_invalid_checksum_count_ok?
-      storage_roots_invalid_checksum_count&.zero? && MoabRecord.invalid_checksum.count.zero?
+      storage_roots_invalid_checksum_count&.zero? && MoabRecord.invalid_checksum.annotate(caller).count.zero?
     end
 
     def storage_roots_moab_not_found_count
@@ -78,7 +79,7 @@ module Dashboard
     end
 
     def storage_roots_moab_not_found_count_ok?
-      storage_roots_moab_not_found_count&.zero? && MoabRecord.moab_on_storage_not_found.count.zero?
+      storage_roots_moab_not_found_count&.zero? && MoabRecord.moab_on_storage_not_found.annotate(caller).count.zero?
     end
 
     def storage_roots_unexpected_version_count
@@ -86,7 +87,7 @@ module Dashboard
     end
 
     def storage_roots_unexpected_version_count_ok?
-      storage_roots_unexpected_version_count&.zero? && MoabRecord.unexpected_version_on_storage.count.zero?
+      storage_roots_unexpected_version_count&.zero? && MoabRecord.unexpected_version_on_storage.annotate(caller).count.zero?
     end
 
     def storage_roots_validity_unknown_count
@@ -94,7 +95,7 @@ module Dashboard
     end
 
     def storage_roots_validity_unknown_count_ok?
-      storage_roots_validity_unknown_count&.zero? && MoabRecord.validity_unknown.count.zero?
+      storage_roots_validity_unknown_count&.zero? && MoabRecord.validity_unknown.annotate(caller).count.zero?
     end
 
     def storage_roots_fixity_check_expired_count
@@ -106,16 +107,16 @@ module Dashboard
     end
 
     def moab_record_total_size
-      number_to_human_size(MoabRecord.sum(:size))
+      number_to_human_size(MoabRecord.all.annotate(caller).sum(:size))
     end
 
     def moab_record_average_size
-      number_to_human_size(MoabRecord.average(:size)) unless num_moab_records.zero?
+      number_to_human_size(MoabRecord.all.annotate(caller).average(:size)) unless num_moab_records.zero?
     end
 
     def moab_record_status_counts
       # called multiple times, so memoize to avoid db queries
-      @moab_record_status_counts ||= MoabRecord.statuses.keys.map { |status| MoabRecord.where(status: status).count }
+      @moab_record_status_counts ||= MoabRecord.statuses.keys.map { |status| MoabRecord.where(status: status).annotate(caller).count }
     end
 
     def status_labels
@@ -125,7 +126,7 @@ module Dashboard
 
     def num_moab_expired_checksum_validation
       # used multiple times, so memoize to avoid db queries
-      @num_moab_expired_checksum_validation ||= MoabRecord.fixity_check_expired.count
+      @num_moab_expired_checksum_validation ||= MoabRecord.fixity_check_expired.annotate(caller).count
     end
 
     def moabs_with_expired_checksum_validation?
@@ -143,7 +144,7 @@ module Dashboard
 
     def num_preserved_objects
       # used multiple times, so memoize to avoid db queries
-      @num_preserved_objects ||= PreservedObject.count
+      @num_preserved_objects ||= PreservedObject.all.annotate(caller).count
     end
 
     def preserved_object_highest_version
@@ -153,16 +154,16 @@ module Dashboard
     # total number of object versions according to PreservedObject table
     def num_object_versions_per_preserved_object
       # used multiple times, so memoize to avoid db queries
-      @num_object_versions_per_preserved_object ||= PreservedObject.sum(:current_version)
+      @num_object_versions_per_preserved_object ||= PreservedObject.all.annotate(caller).sum(:current_version)
     end
 
     def average_version_per_preserved_object
-      PreservedObject.pick(Arel.sql('SUM(current_version)::numeric/COUNT(id)')).round(2) unless num_preserved_objects.zero?
+      PreservedObject.all.annotate(caller).pick(Arel.sql('SUM(current_version)::numeric/COUNT(id)')).round(2) unless num_preserved_objects.zero?
     end
 
     def num_moab_records
       # used multiple times; memoizing to avoid multiple db queries
-      @num_moab_records ||= MoabRecord.count
+      @num_moab_records ||= MoabRecord.all.annotate(caller).count
     end
 
     def moab_record_highest_version
@@ -172,13 +173,13 @@ module Dashboard
     # total number of object versions according to MoabRecord table
     def num_object_versions_per_moab_record
       # used multiple times, so memoize to avoid multiple db queries
-      @num_object_versions_per_moab_record ||= MoabRecord.sum(:version)
+      @num_object_versions_per_moab_record ||= MoabRecord.all.annotate(caller).sum(:version)
     end
 
     def average_version_per_moab_record
       # note, no user input to sanitize here, so ok to use Arel.sql
       # see https://api.rubyonrails.org/v7.0.4/classes/ActiveRecord/UnknownAttributeReference.html
-      MoabRecord.pick(Arel.sql('SUM(version)::numeric/COUNT(id)')).round(2) unless num_moab_records.zero?
+      MoabRecord.all.annotate(caller).pick(Arel.sql('SUM(version)::numeric/COUNT(id)')).round(2) unless num_moab_records.zero?
     end
 
     def preserved_object_moab_record_counts_match?
@@ -197,12 +198,12 @@ module Dashboard
 
     def preserved_object_ordered_version_counts
       # called multiple times, so memoize to avoid db queries
-      @preserved_object_ordered_version_counts ||= PreservedObject.group(:current_version).count.sort.to_h
+      @preserved_object_ordered_version_counts ||= PreservedObject.group(:current_version).annotate(caller).count.sort.to_h
     end
 
     def moab_record_ordered_version_counts
       # called multiple times, so memoize to avoid db queries
-      @moab_record_ordered_version_counts ||= MoabRecord.group(:version).count.sort.to_h
+      @moab_record_ordered_version_counts ||= MoabRecord.group(:version).annotate(caller).count.sort.to_h
     end
 
     # create this hash so we don't need to loop through storage_root_info multiple times

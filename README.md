@@ -432,3 +432,33 @@ Cron check-ins are configured in the following locations:
 2. `config/settings.yml`: Stubs out a check-in key for each cron job. Since we may not want to have a check-in for all environments, this stub key will be used and produce a null check-in.
 3. `config/settings/production.yml` in shared_configs: This contains the actual check-in keys.
 4. HB notification page: Check-ins are configured per project in HB. To configure a check-in, the cron schedule will be needed, which can be found with `bundle exec whenever`. After a check-in is created, the check-in key will be available. (If the URL is `https://api.honeybadger.io/v1/check_in/rkIdpB` then the check-in key will be `rkIdpB`).
+
+## Query Performance Instrumentation
+To log slow queries to `logs/slow_query.log`, enable the slow query instrumentation in `config/setting/production.yml`:
+```
+slow_queries:
+  enable: true
+  threshold: 500 # milliseconds
+```
+
+To instrument a query, include `InstrumentationSupport` and then annotate the query. For example:
+```
+module ReplicationService
+  include InstrumentationSupport
+
+  def num_replication_errors
+    ZipPart.where.not(status: 'ok').annotate(caller).count
+  end
+  ...
+```
+
+Note that `.annotate(caller)` should be placed where it receives and returns an `ActiveRecord::Relation`.
+```
+# Good
+ZipPart.where.not(status: 'ok').annotate(caller).count
+ZipPart.all.annotate(caller).where.not(status: 'ok').count
+
+# Bad
+ZipPart.annotate(caller).where.not(status: 'ok').count
+ZipPart.where.not(status: 'ok').count.annotate(caller)
+```

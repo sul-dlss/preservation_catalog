@@ -149,7 +149,7 @@ RSpec.describe Dashboard::MoabOnStorageService do
 
       context 'when storage_roots_moab_count does not match MoabRecord.count' do
         before do
-          allow(MoabRecord).to receive(:count).and_return(4)
+          allow_any_instance_of(outer_class).to receive(:num_moab_records).and_return(4) # rubocop:disable RSpec/AnyInstance
         end
 
         it 'false' do
