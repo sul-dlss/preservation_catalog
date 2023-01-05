@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-describe AbstractDeliveryJob do
+describe Replication::AbstractDeliveryJob do
   # NOTE: Test a concrete impl of the abstract job so the call to `#bucket` does not raise
   subject(:job_implementation) do
     Class.new(described_class) do
@@ -24,15 +24,15 @@ describe AbstractDeliveryJob do
 
   before do
     allow(Settings).to receive(:zip_storage).and_return(Rails.root.join('spec', 'fixtures', 'zip_storage'))
-    allow(ResultsRecorderJob).to receive(:perform_later)
+    allow(Replication::ResultsRecorderJob).to receive(:perform_later)
     allow(Replication::ZipDeliveryService).to receive(:deliver).and_return(delivery_result)
 
     job_implementation.perform_now(druid, version, part_s3_key, metadata)
   end
 
   context 'when zip delivery succeeds' do
-    it 'invokes ResultsRecorderJob' do
-      expect(ResultsRecorderJob).to have_received(:perform_later).with(druid, version, part_s3_key, job_implementation.to_s)
+    it 'invokes Replication::ResultsRecorderJob' do
+      expect(Replication::ResultsRecorderJob).to have_received(:perform_later).with(druid, version, part_s3_key, job_implementation.to_s)
     end
   end
 
@@ -40,7 +40,7 @@ describe AbstractDeliveryJob do
     let(:delivery_result) { nil }
 
     it 'does nothing' do
-      expect(ResultsRecorderJob).not_to have_received(:perform_later)
+      expect(Replication::ResultsRecorderJob).not_to have_received(:perform_later)
     end
   end
 

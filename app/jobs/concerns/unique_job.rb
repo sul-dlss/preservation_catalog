@@ -41,7 +41,7 @@
 # @see [redis setnx] https://redis.io/commands/setnx (explains the reasoning behind the pattern)
 # @note Job uniqueness is useful because it usually doesn't make sense in this app for more than one instance
 #   of the same job to be enqueued at a time. E.g. it'd be unnecessary to queue more than one checksum validation
-#   job at once for the same druid; it'd be unnecessary to queue two instances of ZipmakerJob for the same Moab version;
+#   job at once for the same druid; it'd be unnecessary to queue two instances of Replication::ZipmakerJob for the same Moab version;
 #   and we wouldn't want to attempt multiple deliveries of the same zipped Moab version to a given cloud endpoint. Jobs
 #   generally check that the file they're trying to write or push doesn't yet exist, but the check and write
 #   in combination won't be transactional if via file system or REST call, so this provides some extra safeguard

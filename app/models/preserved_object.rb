@@ -47,7 +47,7 @@ class PreservedObject < ApplicationRecord
     end.flatten.compact.uniq
 
     zipped_moab_versions.create!(params).tap do |zmvs|
-      zmvs.pluck(:version).uniq.each { |version| ZipmakerJob.perform_later(druid, version, storage_location) }
+      zmvs.pluck(:version).uniq.each { |version| Replication::ZipmakerJob.perform_later(druid, version, storage_location) }
     end
   end
 
