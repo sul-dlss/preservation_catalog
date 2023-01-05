@@ -112,18 +112,6 @@ RSpec.describe Dashboard::ReplicationService do
     end
   end
 
-  describe '#zip_part_suffixes' do
-    before do
-      create(:zip_part, size: Numeric::TERABYTE * 1)
-      create(:zip_part, size: (Numeric::TERABYTE * 2))
-      create(:zip_part, size: (Numeric::TERABYTE * 3))
-    end
-
-    it 'returns a hash of suffies as keys and values as counts' do
-      expect(outer_class.new.zip_part_suffixes).to eq('.zip' => 3)
-    end
-  end
-
   describe '#num_replication_errors' do
     before do
       create(:zip_part, status: 'unreplicated')

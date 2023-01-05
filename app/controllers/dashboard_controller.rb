@@ -36,10 +36,6 @@ class DashboardController < ApplicationController
     render 'dashboard/_replicated_files'
   end
 
-  def zip_part_suffix_counts
-    render 'dashboard/_zip_part_suffix_counts'
-  end
-
   def audit_status
     render 'dashboard/_audit_status'
   end
