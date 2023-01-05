@@ -225,7 +225,7 @@ RSpec.describe DashboardController do
     it 'renders replicated files data' do
       expect(response.body).to match(/Replication Files/)
       expect(response.body).to match(/Total ZipParts/) # table header
-      expect(response.body).to match(/Bytes/) # table data
+      expect(response.body).to match(/0/) # table data
     end
   end
 

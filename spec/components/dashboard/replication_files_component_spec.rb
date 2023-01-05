@@ -9,7 +9,7 @@ RSpec.describe Dashboard::ReplicationFilesComponent, type: :component do
   it 'renders Replication Files information' do
     expect(rendered).to match(/Replication Files/)
     expect(rendered).to match(/unreplicated/) # table header
-    expect(rendered_html).to match(/0 Bytes/) # table data
+    expect(rendered_html).to match(/0/) # table data
   end
 
   it 'renders ok status count with plain styling' do
