@@ -8,7 +8,6 @@
       <thead class="table-info">
         <tr>
           <th>Total ZipParts (count)</th>
-          <th>Total Size of all ZipParts</th>
           <th class="text-center">ok</th>
           <th class="text-center">replicated checksum mismatch</th>
           <th class="text-center">unreplicated</th>
@@ -18,7 +17,6 @@
       <tbody class="table-group-divider">
         <tr>
           <td><%= ZipPart.count %></td>
-          <td><%= zip_parts_total_size %></td>
           <td class="text-end"><%= ZipPart.ok.count %></td>
           <td class="text-end<%= ' table-danger' if zip_parts_replicated_checksum_mismatch? %>"><%= ZipPart.replicated_checksum_mismatch.count %></td>
           <td class="text-end<%= ' table-warning' if zip_parts_unreplicated? %>"><%= ZipPart.unreplicated.count %></td>

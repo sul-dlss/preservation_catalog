@@ -124,18 +124,6 @@ RSpec.describe Dashboard::ReplicationService do
     end
   end
 
-  describe '#zip_parts_total_size' do
-    before do
-      create(:zip_part, size: Numeric::TERABYTE * 1)
-      create(:zip_part, size: ((Numeric::TERABYTE * 2) + (Numeric::GIGABYTE * 500)))
-      create(:zip_part, size: (Numeric::TERABYTE * 3))
-    end
-
-    it 'returns the total size of ZipParts in Terabytes as a string' do
-      expect(outer_class.new.zip_parts_total_size).to eq '6.49 TB'
-    end
-  end
-
   describe '#num_replication_errors' do
     before do
       create(:zip_part, status: 'unreplicated')
