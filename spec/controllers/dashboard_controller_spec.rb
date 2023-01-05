@@ -66,10 +66,6 @@ RSpec.describe DashboardController do
       it 'has turbo-frame for replication_flow path' do
         expect(response.body).to match(/<turbo-frame id="replication-flow" src="#{dashboard_replication_flow_path}" loading="lazy">/)
       end
-
-      it 'has turbo frame for zip_part_suffix_counts path' do
-        expect(response.body).to match(/<turbo-frame id="zip-part-suffix-counts" src="#{dashboard_zip_part_suffix_counts_path}" loading="lazy">/)
-      end
     end
 
     it 'renders _audit_info template' do
@@ -226,30 +222,6 @@ RSpec.describe DashboardController do
       expect(response.body).to match(/Replication Files/)
       expect(response.body).to match(/Total ZipParts/) # table header
       expect(response.body).to match(/0/) # table data
-    end
-  end
-
-  describe 'GET dashboard/zip_part_suffix_counts' do
-    before do
-      create(:zip_part)
-      get :zip_part_suffix_counts
-    end
-
-    it 'returns a success response with html content' do
-      expect(response).to have_http_status(:success)
-      expect(response.content_type).to eq('text/html; charset=utf-8')
-    end
-
-    it 'renders _zip_part_suffix_counts template' do
-      expect(response).to render_template('dashboard/_zip_part_suffix_counts')
-      expect(response.body).to match(/ZipPart suffix counts/)
-      expect(response.body).to match(/.zip/)
-    end
-
-    it 'renders ZipPart suffixes data' do
-      expect(response.body).to match(/ZipPart/)
-      expect(response.body).to match(/suffix/) # table header
-      expect(response.body).to match(/.zip/) # table content
     end
   end
 

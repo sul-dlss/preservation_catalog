@@ -93,12 +93,6 @@ RSpec.describe 'routes' do
     end
   end
 
-  describe 'dashboard/zip_part_suffix_counts' do
-    it 'routes to dashboard controller zip_part_suffix_counts action' do
-      expect(get: dashboard_zip_part_suffix_counts_path).to route_to(controller: 'dashboard', action: 'zip_part_suffix_counts', format: 'html')
-    end
-  end
-
   describe 'dashboard/audit_status' do
     it 'routes to dashboard controller audit_status action' do
       expect(get: dashboard_audit_status_path).to route_to(controller: 'dashboard', action: 'audit_status', format: 'html')

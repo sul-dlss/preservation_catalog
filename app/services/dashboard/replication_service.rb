@@ -39,11 +39,6 @@ module Dashboard
       end
     end
 
-    def zip_part_suffixes
-      # called multiple times, so memoize to avoid db queries
-      @zip_part_suffixes ||= ZipPart.group(:suffix).annotate(caller).count
-    end
-
     def num_replication_errors
       # This is faster than querying .where.not(status: 'ok')
       ZipPart.where(status: replication_error_statuses).annotate(caller).count
