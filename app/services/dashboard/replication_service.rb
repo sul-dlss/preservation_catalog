@@ -6,7 +6,6 @@ require 'action_view' # for number_to_human_size
 module Dashboard
   # methods pertaining to replication (cloud storage) tables in database for dashboard
   module ReplicationService
-    include MoabOnStorageService
     include ActionView::Helpers::NumberHelper # for number_to_human_size
     include InstrumentationSupport
 
@@ -15,24 +14,29 @@ module Dashboard
     end
 
     def replication_ok?
-      endpoint_data.each do |_endpoint_name, info|
-        return false unless endpoint_replication_count_ok?(info[:replication_count])
+      @replication_ok ||= endpoint_data.values.all? do |info|
+        endpoint_replication_count_ok?(info[:replication_count])
       end
-      true
     end
 
     def endpoint_replication_count_ok?(endpoint_replication_count)
       endpoint_replication_count == num_object_versions_per_preserved_object
     end
 
+    # total number of object versions according to PreservedObject table
+    def num_object_versions_per_preserved_object
+      PreservedObject.all.annotate(caller).sum(:current_version)
+    end
+
     def endpoint_data
       # called multiple times, so memoize to avoid db queries
       @endpoint_data ||= {}.tap do |endpoint_data|
+        replication_counts = ZippedMoabVersion.group(:zip_endpoint_id).annotate(caller).count
         ZipEndpoint.all.each do |zip_endpoint|
           endpoint_data[zip_endpoint.endpoint_name] =
             {
               delivery_class: zip_endpoint.delivery_class,
-              replication_count: ZippedMoabVersion.where(zip_endpoint_id: zip_endpoint.id).annotate(caller).count
+              replication_count: replication_counts.fetch(zip_endpoint.id, 0)
             }
         end
       end

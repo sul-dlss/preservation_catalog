@@ -101,12 +101,8 @@ RSpec.describe Dashboard::ReplicationService do
     let(:endpoint2) { ZipEndpoint.last }
 
     before do
-      zmv_rel1 = ZippedMoabVersion.where(zip_endpoint_id: endpoint1.id)
-      zmv_rel2 = ZippedMoabVersion.where(zip_endpoint_id: endpoint2.id)
-      allow(zmv_rel1).to receive(:count).and_return(5)
-      allow(zmv_rel2).to receive(:count).and_return(2)
-      allow(ZippedMoabVersion).to receive(:where).with(zip_endpoint_id: endpoint1.id).and_return(zmv_rel1)
-      allow(ZippedMoabVersion).to receive(:where).with(zip_endpoint_id: endpoint2.id).and_return(zmv_rel2)
+      5.times { create(:zipped_moab_version, zip_endpoint: endpoint1) }
+      2.times { create(:zipped_moab_version, zip_endpoint: endpoint2) }
     end
 
     it 'returns a hash with endpoint_name keys and values of Hash with delivery_class and replication_count' do
