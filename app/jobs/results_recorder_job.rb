@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Preconditions:
-# PlexerJob has made a matching ZipPart row
+# DeliveryDispatcherJob has made a matching ZipPart row
 #
 # Responsibilities:
 # Update DB per event info.

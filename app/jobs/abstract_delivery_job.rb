@@ -9,7 +9,7 @@ class AbstractDeliveryJob < ZipPartJobBase
   # @param [Integer] version
   # @param [String] part_s3_key
   # @param [Hash<Symbol => String, Integer>] metadata Zip info
-  # @see PlexerJob#perform warning about why metadata must be passed
+  # @see DeliveryDispatcherJob#perform warning about why metadata must be passed
   def perform(druid, version, part_s3_key, metadata)
     return unless Replication::ZipDeliveryService.deliver(
       s3_part: bucket.object(part_s3_key),

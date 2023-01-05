@@ -2,7 +2,7 @@
 
 # We chunk archives of Moab versions into multiple files, so we don't get
 # completely unwieldy file sizes.  This represents metadata for one such part.
-# This model's data is populated by PlexerJob.
+# This model's data is populated by DeliveryDispatcherJob.
 class ZipPart < ApplicationRecord
   belongs_to :zipped_moab_version, inverse_of: :zip_parts
   delegate :zip_endpoint, :preserved_object, to: :zipped_moab_version
