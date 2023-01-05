@@ -44,7 +44,7 @@ describe 'the whole replication pipeline' do
 
   it 'gets from zipmaker queue to replication result message upon initial moab creation' do
     expect(ZipmakerJob).to receive(:perform_later).with(druid, version, moab_storage_root.storage_location).and_call_original
-    expect(PlexerJob).to receive(:perform_later).with(druid, version, s3_key, Hash).and_call_original
+    expect(DeliveryDispatcherJob).to receive(:perform_later).with(druid, version, s3_key, Hash).and_call_original
     expect(S3WestDeliveryJob).to receive(:perform_later).with(druid, version, s3_key, Hash).and_call_original
     expect(IbmSouthDeliveryJob).to receive(:perform_later).with(druid, version, s3_key, Hash).and_call_original
     # other endpoints as added...
@@ -75,7 +75,7 @@ describe 'the whole replication pipeline' do
       create(:moab_record, preserved_object: preserved_object, version: version, moab_storage_root: moab_storage_root)
 
       expect(ZipmakerJob).to receive(:perform_later).with(druid, next_version, moab_storage_root.storage_location).and_call_original
-      expect(PlexerJob).to receive(:perform_later).with(druid, next_version, s3_key, Hash).and_call_original
+      expect(DeliveryDispatcherJob).to receive(:perform_later).with(druid, next_version, s3_key, Hash).and_call_original
       expect(S3WestDeliveryJob).to receive(:perform_later).with(druid, next_version, s3_key, Hash).and_call_original
       expect(IbmSouthDeliveryJob).to receive(:perform_later).with(druid, next_version, s3_key, Hash).and_call_original
       # other endpoints as added...

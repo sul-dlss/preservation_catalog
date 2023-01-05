@@ -11,7 +11,7 @@ describe ZipmakerJob do
   let(:moab_replication_storage_location) { 'spec/fixtures/storage_root01/sdr2objects' }
 
   before do
-    allow(PlexerJob).to receive(:perform_later).with(any_args)
+    allow(DeliveryDispatcherJob).to receive(:perform_later).with(any_args)
     allow(Settings).to receive(:zip_storage).and_return(Rails.root.join('spec', 'fixtures', 'zip_storage'))
     allow(Replication::DruidVersionZip).to receive(:new).with(druid, version, moab_replication_storage_location).and_return(druid_version_zip)
   end
@@ -21,8 +21,8 @@ describe ZipmakerJob do
     FileUtils.rm_rf(File.join(Settings.zip_storage, 'bj/102/hs/9687/bj102hs9687.v0003.zip.md5'))
   end
 
-  it 'invokes PlexerJob (single part zip)' do
-    expect(PlexerJob).to receive(:perform_later).with(druid, version, 'bj/102/hs/9687/bj102hs9687.v0003.zip', Hash)
+  it 'invokes DeliveryDispatcherJob (single part zip)' do
+    expect(DeliveryDispatcherJob).to receive(:perform_later).with(druid, version, 'bj/102/hs/9687/bj102hs9687.v0003.zip', Hash)
     described_class.perform_now(druid, version, moab_replication_storage_location)
   end
 
@@ -39,12 +39,12 @@ describe ZipmakerJob do
 
     after { FileUtils.rm_rf(File.join(Settings.zip_storage, 'bz/514/sm/9647')) }
 
-    it 'handles segmented zips, invokes PlexerJob per part' do
+    it 'handles segmented zips, invokes DeliveryDispatcherJob per part' do
       # v1 of bz514sm9647 is 232kB, so we'd expect 4 segments if we split at 64k
-      expect(PlexerJob).to receive(:perform_later).with(druid, version, 'bz/514/sm/9647/bz514sm9647.v0001.zip', Hash)
-      expect(PlexerJob).to receive(:perform_later).with(druid, version, 'bz/514/sm/9647/bz514sm9647.v0001.z01', Hash)
-      expect(PlexerJob).to receive(:perform_later).with(druid, version, 'bz/514/sm/9647/bz514sm9647.v0001.z02', Hash)
-      expect(PlexerJob).to receive(:perform_later).with(druid, version, 'bz/514/sm/9647/bz514sm9647.v0001.z03', Hash)
+      expect(DeliveryDispatcherJob).to receive(:perform_later).with(druid, version, 'bz/514/sm/9647/bz514sm9647.v0001.zip', Hash)
+      expect(DeliveryDispatcherJob).to receive(:perform_later).with(druid, version, 'bz/514/sm/9647/bz514sm9647.v0001.z01', Hash)
+      expect(DeliveryDispatcherJob).to receive(:perform_later).with(druid, version, 'bz/514/sm/9647/bz514sm9647.v0001.z02', Hash)
+      expect(DeliveryDispatcherJob).to receive(:perform_later).with(druid, version, 'bz/514/sm/9647/bz514sm9647.v0001.z03', Hash)
       described_class.perform_now(druid, version, moab_replication_storage_location)
     end
   end

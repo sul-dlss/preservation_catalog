@@ -15,7 +15,7 @@
 # Do not assume we can just get metadata from (the DruidVersionZip) zip.
 # Jobs are not run at the same time or on the same system, so the info may not match.
 # Therefore, we receive the info passed by the process that was there when the file was created.
-class PlexerJob < ZipPartJobBase
+class DeliveryDispatcherJob < ZipPartJobBase
   queue_as :zips_made
 
   before_enqueue do |job|
@@ -53,9 +53,7 @@ class PlexerJob < ZipPartJobBase
       parts_count: metadata[:parts_count],
       size: metadata[:size],
       suffix: File.extname(part_s3_key)
-    ).create_or_find_by(
-      suffix: File.extname(part_s3_key)
-    ) { |part| part.unreplicated! }
+    ).create_or_find_by(suffix: File.extname(part_s3_key), &:unreplicated!)
   end
 
   # @return [Array<Class>] target delivery worker classes

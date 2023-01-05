@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-describe PlexerJob do
+describe DeliveryDispatcherJob do
   let(:dvz) { Replication::DruidVersionZip.new(druid, version) }
   let(:druid) { 'bj102hs9687' }
   let(:version) { 1 }
