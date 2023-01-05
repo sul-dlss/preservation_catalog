@@ -20,20 +20,22 @@ module Dashboard
 
     def storage_root_info # rubocop:disable Metrics/AbcSize
       @storage_root_info ||= begin
+        moab_counts = MoabRecord.group(:moab_storage_root_id).annotate(caller).count
         storage_root_info = {}
         MoabStorageRoot.all.each do |storage_root|
+          status_counts = MoabRecord.where(moab_storage_root: storage_root).group(:status).annotate(caller).count
           storage_root_info[storage_root.name] =
             {
               storage_location: storage_root.storage_location,
               total_size: number_to_human_size(storage_root.moab_records.annotate(caller).sum(:size)),
               average_size: number_to_human_size(storage_root.moab_records.annotate(caller).average(:size) || 0),
-              moab_count: storage_root.moab_records.annotate(caller).count,
-              ok_count: storage_root.moab_records.annotate(caller).where(status: :ok).count,
-              invalid_moab_count: storage_root.moab_records.annotate(caller).where(status: :invalid_moab).count,
-              invalid_checksum_count: storage_root.moab_records.annotate(caller).where(status: :invalid_checksum).count,
-              moab_not_found_count: storage_root.moab_records.annotate(caller).where(status: :moab_on_storage_not_found).count,
-              unexpected_version_count: storage_root.moab_records.annotate(caller).where(status: :unexpected_version_on_storage).count,
-              validity_unknown_count: storage_root.moab_records.annotate(caller).where(status: :validity_unknown).count,
+              moab_count: moab_counts.fetch(storage_root.id, 0),
+              ok_count: status_counts.fetch('ok', 0),
+              invalid_moab_count: status_counts.fetch('invalid_moab', 0),
+              invalid_checksum_count: status_counts.fetch('invalid_checksum', 0),
+              moab_not_found_count: status_counts.fetch('moab_on_storage_not_found', 0),
+              unexpected_version_count: status_counts.fetch('unexpected_version_on_storage', 0),
+              validity_unknown_count: status_counts.fetch('validity_unknown', 0),
               fixity_check_expired_count: storage_root.moab_records.fixity_check_expired.annotate(caller).count
             }
         end
