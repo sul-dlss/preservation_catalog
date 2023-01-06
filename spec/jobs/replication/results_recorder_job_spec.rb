@@ -26,20 +26,17 @@ describe Replication::ResultsRecorderJob do
   end
 
   it 'sets part status to ok' do
-    expect {
-      described_class.perform_now(druid, zmv.version, druid_version_zip.s3_key, zip_endpoint.delivery_class.to_s)
-    }.to change {
-      zmv.zip_parts.first.status
-    }.from('unreplicated').to('ok')
+    expect { described_class.perform_now(druid, zmv.version, druid_version_zip.s3_key, zip_endpoint.delivery_class.to_s) }
+      .to change { zmv.zip_parts.first.status }.from('unreplicated').to('ok')
   end
 
   context 'when there are multiple parts' do
-    let(:zip_part_attributes) {
+    let(:zip_part_attributes) do
       base_attrs = attributes_for(:zip_part, parts_count: 3)
       [base_attrs.merge({ suffix: '.z01' }),
        base_attrs.merge({ suffix: '.z02' }),
        base_attrs.merge({ suffix: '.zip' })]
-    }
+    end
 
     context 'when there are parts that are not yet replicated' do
       before do

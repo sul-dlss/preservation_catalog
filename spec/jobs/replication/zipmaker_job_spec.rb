@@ -27,7 +27,7 @@ describe Replication::ZipmakerJob do
   end
 
   it 'sleeps' do
-    expect_any_instance_of(described_class).to receive(:sleep).with(Settings.filesystem_delay_seconds)
+    expect_any_instance_of(described_class).to receive(:sleep).with(Settings.filesystem_delay_seconds) # rubocop:disable RSpec/AnyInstance
     described_class.perform_now(druid, version, moab_replication_storage_location)
   end
 
@@ -59,11 +59,8 @@ describe Replication::ZipmakerJob do
       expect do
         described_class.perform_now(druid, version, moab_replication_storage_location)
       end.to(
-        (change {
-          File.stat(druid_version_zip.file_path).atime
-        }).and(change {
-          File.stat(druid_version_zip.file_path).mtime
-        })
+        (change { File.stat(druid_version_zip.file_path).atime })
+          .and(change { File.stat(druid_version_zip.file_path).mtime })
       )
     end
   end

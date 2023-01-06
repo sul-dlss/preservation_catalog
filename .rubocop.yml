@@ -53,7 +53,6 @@ RSpec/AnyInstance:
   Enabled: true
   Exclude:
     - 'spec/jobs/validate_moab_job_spec.rb'
-    - 'spec/jobs/zipmaker_job_spec.rb'
 
 RSpec/ContextWording:
   Enabled: false # too dogmatic
@@ -61,7 +60,6 @@ RSpec/ContextWording:
 RSpec/DescribeClass:
   Exclude:
     - 'spec/requests/auth_spec.rb' # technically testing ApplicationController, but rubocop complains even if you provide that
-    - 'spec/jobs/integration_spec.rb'
 
 RSpec/ExampleLength:
   Max: 29
@@ -101,10 +99,6 @@ Style/SymbolArray:
     - 'Rakefile' # because [:spec, :rubocop] isn't a big deal
     - '**/*.rake'
     - 'config/deploy/*'
-
-Style/SymbolProc:
-  Exclude:
-    - app/jobs/plexer_job.rb # "Pass &:unreplicated! as an argument to find_or_create_by" - um, no.
 
 Style/WordArray:
   Enabled: false # Naomi hates this rule;  "precious" ruby syntax
