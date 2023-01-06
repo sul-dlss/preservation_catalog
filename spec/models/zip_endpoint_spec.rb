@@ -62,7 +62,9 @@ RSpec.describe ZipEndpoint do
   end
 
   describe '.seed_from_config' do
-    it 'creates an endpoints entry for each zip endpoint' do
+    # NOTE: .seed_from_config has already been run or we wouldn't be able to run tests
+
+    it 'creates a ZipEndpoint record for each Settings.zip_endpoint' do
       Settings.zip_endpoints.each do |endpoint_name, endpoint_config|
         zip_endpoint_attrs = {
           endpoint_node: endpoint_config.endpoint_node,
@@ -73,18 +75,18 @@ RSpec.describe ZipEndpoint do
       end
     end
 
-    it 'does not re-create records that already exist' do
+    it 'does not add ZipEndpoint records when Settings.zip_endpoint key names that already exist' do
       # run it a second time
       expect { described_class.seed_from_config }
         .not_to change { described_class.pluck(:endpoint_name).sort }
         .from(%w[aws_s3_west_2 ibm_us_south zip-endpoint])
     end
 
-    it 'adds new records if there are additions to Settings since the last run' do
+    it 'adds new ZipEndpoint record if there are new Settings.zip_endpoint key names' do
       zip_endpoints_setting = Config::Options.new(
         fixture_archiveTest:
           Config::Options.new(
-            endpoint_node: 'endpoint_node',
+            endpoint_node: 'new_endpoint_node',
             storage_location: 'storage_location',
             delivery_class: 'Replication::S3WestDeliveryJob'
           )
@@ -96,6 +98,8 @@ RSpec.describe ZipEndpoint do
       expected_ep_names = %w[aws_s3_west_2 fixture_archiveTest ibm_us_south zip-endpoint]
       expect(described_class.pluck(:endpoint_name).sort).to eq expected_ep_names
     end
+
+    # TODO: add a test for Settings.zip_endpoint changing an attribute other than the endpoint_name
   end
 
   context 'ZippedMoabVersion presence on ZipEndpoint' do
