@@ -52,16 +52,28 @@ module Dashboard
       !ZipPart.where(status: replication_error_statuses).annotate(caller).exists?
     end
 
+    def zip_parts_unreplicated_count
+      ZipPart.unreplicated.annotate(caller).count
+    end
+
     def zip_parts_unreplicated?
-      ZipPart.unreplicated.annotate(caller).count.positive?
+      zip_parts_unreplicated_count.positive?
+    end
+
+    def zip_parts_not_found_count
+      ZipPart.not_found.annotate(caller).count
     end
 
     def zip_parts_not_found?
-      ZipPart.not_found.annotate(caller).count.positive?
+      zip_parts_not_found_count.positive?
+    end
+
+    def zip_parts_replicated_checksum_mismatch_count
+      ZipPart.replicated_checksum_mismatch.annotate(caller).count
     end
 
     def zip_parts_replicated_checksum_mismatch?
-      ZipPart.replicated_checksum_mismatch.annotate(caller).count.positive?
+      zip_parts_replicated_checksum_mismatch_count.positive?
     end
   end
 end
