@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-describe 'the whole replication pipeline' do
+describe 'the whole replication pipeline' do # rubocop:disable RSpec/DescribeClass
   let(:aws_s3_object) { instance_double(Aws::S3::Object, exists?: false, upload_file: true) }
   let(:ibm_s3_object) { instance_double(Aws::S3::Object, exists?: false, upload_file: true) }
   let(:aws_bucket) { instance_double(Aws::S3::Bucket, object: aws_s3_object) }
@@ -43,13 +43,16 @@ describe 'the whole replication pipeline' do
   end
 
   it 'gets from zipmaker queue to replication result message upon initial moab creation' do
-    expect(ZipmakerJob).to receive(:perform_later).with(druid, version, moab_storage_root.storage_location).and_call_original
-    expect(DeliveryDispatcherJob).to receive(:perform_later).with(druid, version, s3_key, Hash).and_call_original
-    expect(S3WestDeliveryJob).to receive(:perform_later).with(druid, version, s3_key, Hash).and_call_original
-    expect(IbmSouthDeliveryJob).to receive(:perform_later).with(druid, version, s3_key, Hash).and_call_original
+    expect(Replication::ZipmakerJob).to receive(:perform_later)
+      .with(druid, version, moab_storage_root.storage_location).and_call_original
+    expect(Replication::DeliveryDispatcherJob).to receive(:perform_later).with(druid, version, s3_key, Hash).and_call_original
+    expect(Replication::S3WestDeliveryJob).to receive(:perform_later).with(druid, version, s3_key, Hash).and_call_original
+    expect(Replication::IbmSouthDeliveryJob).to receive(:perform_later).with(druid, version, s3_key, Hash).and_call_original
     # other endpoints as added...
-    expect(ResultsRecorderJob).to receive(:perform_later).with(druid, version, s3_key, 'S3WestDeliveryJob').and_call_original
-    expect(ResultsRecorderJob).to receive(:perform_later).with(druid, version, s3_key, 'IbmSouthDeliveryJob').and_call_original
+    expect(Replication::ResultsRecorderJob).to receive(:perform_later)
+      .with(druid, version, s3_key, 'Replication::S3WestDeliveryJob').and_call_original
+    expect(Replication::ResultsRecorderJob).to receive(:perform_later)
+      .with(druid, version, s3_key, 'Replication::IbmSouthDeliveryJob').and_call_original
     expect(Dor::Event::Client).to receive(:create).with(
       druid: "druid:#{druid}",
       type: 'druid_version_replicated',
@@ -74,13 +77,16 @@ describe 'the whole replication pipeline' do
       # pretend catalog is on version 2 before update call from robots
       create(:moab_record, preserved_object: preserved_object, version: version, moab_storage_root: moab_storage_root)
 
-      expect(ZipmakerJob).to receive(:perform_later).with(druid, next_version, moab_storage_root.storage_location).and_call_original
-      expect(DeliveryDispatcherJob).to receive(:perform_later).with(druid, next_version, s3_key, Hash).and_call_original
-      expect(S3WestDeliveryJob).to receive(:perform_later).with(druid, next_version, s3_key, Hash).and_call_original
-      expect(IbmSouthDeliveryJob).to receive(:perform_later).with(druid, next_version, s3_key, Hash).and_call_original
+      expect(Replication::ZipmakerJob).to receive(:perform_later)
+        .with(druid, next_version, moab_storage_root.storage_location).and_call_original
+      expect(Replication::DeliveryDispatcherJob).to receive(:perform_later).with(druid, next_version, s3_key, Hash).and_call_original
+      expect(Replication::S3WestDeliveryJob).to receive(:perform_later).with(druid, next_version, s3_key, Hash).and_call_original
+      expect(Replication::IbmSouthDeliveryJob).to receive(:perform_later).with(druid, next_version, s3_key, Hash).and_call_original
       # other endpoints as added...
-      expect(ResultsRecorderJob).to receive(:perform_later).with(druid, next_version, s3_key, 'S3WestDeliveryJob').and_call_original
-      expect(ResultsRecorderJob).to receive(:perform_later).with(druid, next_version, s3_key, 'IbmSouthDeliveryJob').and_call_original
+      expect(Replication::ResultsRecorderJob).to receive(:perform_later)
+        .with(druid, next_version, s3_key, 'Replication::S3WestDeliveryJob').and_call_original
+      expect(Replication::ResultsRecorderJob).to receive(:perform_later)
+        .with(druid, next_version, s3_key, 'Replication::IbmSouthDeliveryJob').and_call_original
       expect(Dor::Event::Client).to receive(:create).with(
         druid: "druid:#{druid}",
         type: 'druid_version_replicated',

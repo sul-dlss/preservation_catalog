@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-describe DeliveryDispatcherJob do
+describe Replication::DeliveryDispatcherJob do
   let(:dvz) { Replication::DruidVersionZip.new(druid, version) }
   let(:druid) { 'bj102hs9687' }
   let(:version) { 1 }
@@ -23,8 +23,8 @@ describe DeliveryDispatcherJob do
     allow(Replication::DruidVersionZip).to receive(:new).with(druid, version).and_return(dvz)
   end
 
-  it 'descends from ZipPartJobBase' do
-    expect(described_class.new).to be_a(ZipPartJobBase)
+  it 'descends from Replication::ZipPartJobBase' do
+    expect(described_class.new).to be_a(Replication::ZipPartJobBase)
   end
 
   describe '#perform_later' do
@@ -67,20 +67,20 @@ describe DeliveryDispatcherJob do
     end
 
     it 'splits the message out to endpoints' do
-      expect(S3WestDeliveryJob).to receive(:perform_later)
+      expect(Replication::S3WestDeliveryJob).to receive(:perform_later)
         .with(druid, version, s3_key, a_hash_including(:checksum_md5, :size, :zip_cmd, :zip_version))
-      expect(S3EastDeliveryJob).to receive(:perform_later)
+      expect(Replication::S3EastDeliveryJob).to receive(:perform_later)
         .with(druid, version, s3_key, a_hash_including(:checksum_md5, :size, :zip_cmd, :zip_version))
-      expect(IbmSouthDeliveryJob).to receive(:perform_later)
+      expect(Replication::IbmSouthDeliveryJob).to receive(:perform_later)
         .with(druid, version, s3_key, a_hash_including(:checksum_md5, :size, :zip_cmd, :zip_version))
       described_class.perform_now(druid, version, s3_key, metadata)
     end
 
     it 'ensures zip_part exists with status unreplicated before queueing for delivery' do
       # intercept the jobs that'd try to deliver and mark 'ok'
-      allow(S3WestDeliveryJob).to receive(:perform_later)
-      allow(S3EastDeliveryJob).to receive(:perform_later)
-      allow(IbmSouthDeliveryJob).to receive(:perform_later)
+      allow(Replication::S3WestDeliveryJob).to receive(:perform_later)
+      allow(Replication::S3EastDeliveryJob).to receive(:perform_later)
+      allow(Replication::IbmSouthDeliveryJob).to receive(:perform_later)
 
       described_class.perform_now(druid, version, s3_key, metadata)
       expect(parts1.map(&:status)).to eq ['unreplicated']
