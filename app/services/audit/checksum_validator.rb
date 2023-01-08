@@ -95,7 +95,7 @@ module Audit
         moab_record.save!
       end
       results.remove_db_updated_results unless transaction_ok
-      AuditResultsReporter.report_results(audit_results: results, logger: logger)
+      Reporters::AuditResultsReporter.report_results(audit_results: results, logger: logger)
     end
 
     def object_dir

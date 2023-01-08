@@ -53,13 +53,13 @@ RSpec.shared_examples 'attributes validated' do
   end
 end
 
-RSpec.shared_examples 'calls AuditResultsReporter.report_results' do
+RSpec.shared_examples 'calls Reporters::AuditResultsReporter.report_results' do
   it 'outputs results to Rails.logger and sends errors to WorkflowErrorReporter' do
     mock_results = instance_double(AuditResults,
                                    add_result: nil,
                                    results: [],
                                    results_as_string: nil)
-    expect(AuditResultsReporter).to receive(:report_results).with(audit_results: mock_results)
+    expect(Reporters::AuditResultsReporter).to receive(:report_results).with(audit_results: mock_results)
     allow(moab_record_service).to receive(:results).and_return(mock_results)
     moab_record_service.execute
   end

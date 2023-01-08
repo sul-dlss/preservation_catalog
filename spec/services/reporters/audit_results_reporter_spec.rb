@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe AuditResultsReporter do
+RSpec.describe Reporters::AuditResultsReporter do
   let(:reporter) { described_class.new(audit_results: audit_results) }
   let(:actual_version) { 6 }
   let(:audit_results) { AuditResults.new(druid: druid, actual_version: actual_version, moab_storage_root: ms_root) }

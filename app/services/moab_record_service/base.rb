@@ -101,7 +101,7 @@ module MoabRecordService
     end
 
     def report_results!
-      AuditResultsReporter.report_results(audit_results: results)
+      Reporters::AuditResultsReporter.report_results(audit_results: results)
     end
 
     def moab_record_exists?

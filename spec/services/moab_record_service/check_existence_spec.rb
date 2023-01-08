@@ -98,7 +98,7 @@ RSpec.describe MoabRecordService::CheckExistence do
           expect(preserved_object.reload.updated_at).to eq original_time
         end
 
-        it_behaves_like 'calls AuditResultsReporter.report_results'
+        it_behaves_like 'calls Reporters::AuditResultsReporter.report_results'
         it 'does not validate moab' do
           expect(moab_on_storage_validator).not_to receive(:moab_validation_errors)
           moab_record_service.execute
@@ -196,7 +196,7 @@ RSpec.describe MoabRecordService::CheckExistence do
             end
           end
 
-          it_behaves_like 'calls AuditResultsReporter.report_results'
+          it_behaves_like 'calls Reporters::AuditResultsReporter.report_results'
 
           context 'returns' do
             let(:results) { moab_record_service.execute.results }
@@ -294,7 +294,7 @@ RSpec.describe MoabRecordService::CheckExistence do
             expect(invalid_preserved_object.reload.updated_at).to eq original_updated_at
           end
 
-          it_behaves_like 'calls AuditResultsReporter.report_results'
+          it_behaves_like 'calls Reporters::AuditResultsReporter.report_results'
 
           context 'returns' do
             let(:results) { invalid_moab_record_service.execute.results }
@@ -476,7 +476,7 @@ RSpec.describe MoabRecordService::CheckExistence do
             expect(new_moab_record.status).to eq 'validity_unknown'
           end
 
-          it_behaves_like 'calls AuditResultsReporter.report_results'
+          it_behaves_like 'calls Reporters::AuditResultsReporter.report_results'
 
           context 'returns' do
             let(:audit_result) { moab_record_service.execute }
@@ -540,7 +540,7 @@ RSpec.describe MoabRecordService::CheckExistence do
             expect(new_moab_record.preserved_object.druid).to eq(invalid_druid)
           end
 
-          it_behaves_like 'calls AuditResultsReporter.report_results'
+          it_behaves_like 'calls Reporters::AuditResultsReporter.report_results'
 
           context 'returns' do
             let(:audit_result) { moab_record_service.execute }

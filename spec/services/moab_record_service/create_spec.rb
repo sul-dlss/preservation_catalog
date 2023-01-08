@@ -55,7 +55,7 @@ RSpec.describe MoabRecordService::Create do
       expect(audit_results.results).to include(a_hash_including(code => a_string_matching('MoabRecord db object already exists')))
     end
 
-    it_behaves_like 'calls AuditResultsReporter.report_results'
+    it_behaves_like 'calls Reporters::AuditResultsReporter.report_results'
 
     context 'db update error' do
       context 'ActiveRecordError' do

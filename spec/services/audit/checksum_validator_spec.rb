@@ -59,7 +59,7 @@ RSpec.describe Audit::ChecksumValidator do
       end
 
       it 'calls AuditResults.report_results' do
-        expect(AuditResultsReporter).to receive(:report_results).with(audit_results: AuditResults, logger: logger_double)
+        expect(Reporters::AuditResultsReporter).to receive(:report_results).with(audit_results: AuditResults, logger: logger_double)
         checksum_validator.validate_checksums
       end
     end
@@ -99,7 +99,7 @@ RSpec.describe Audit::ChecksumValidator do
       end
 
       it 'calls AuditResultReporter.report_results' do
-        expect(AuditResultsReporter).to receive(:report_results).with(audit_results: AuditResults, logger: logger_double)
+        expect(Reporters::AuditResultsReporter).to receive(:report_results).with(audit_results: AuditResults, logger: logger_double)
         checksum_validator.validate_checksums
       end
     end
@@ -289,7 +289,7 @@ RSpec.describe Audit::ChecksumValidator do
 
     context 'reports results' do
       it 'calls AuditResults.report_results' do
-        expect(AuditResultsReporter).to receive(:report_results).with(audit_results: AuditResults, logger: logger_double)
+        expect(Reporters::AuditResultsReporter).to receive(:report_results).with(audit_results: AuditResults, logger: logger_double)
         checksum_validator.validate_checksums
       end
     end

@@ -36,7 +36,7 @@ RSpec.describe Audit::CatalogToMoab do
     allow(Reporters::HoneybadgerReporter).to receive(:new).and_return(honeybadger_reporter)
     allow(Reporters::LoggerReporter).to receive(:new).and_return(logger_reporter)
     allow(c2m).to receive(:logger).and_return(logger_double) # silence log output
-    allow(AuditResultsReporter).to receive(:report_results).and_return([])
+    allow(Reporters::AuditResultsReporter).to receive(:report_results).and_return([])
   end
 
   describe '#check_catalog_version' do
@@ -67,9 +67,9 @@ RSpec.describe Audit::CatalogToMoab do
       c2m.check_catalog_version
     end
 
-    it 'calls AuditResultsReporter.report_results' do
+    it 'calls Reporters::AuditResultsReporter.report_results' do
       c2m.instance_variable_set(:@results, results_double)
-      expect(AuditResultsReporter).to receive(:report_results).with(audit_results: c2m.results, logger: Logger)
+      expect(Reporters::AuditResultsReporter).to receive(:report_results).with(audit_results: c2m.results, logger: Logger)
       c2m.check_catalog_version
     end
 
@@ -144,7 +144,7 @@ RSpec.describe Audit::CatalogToMoab do
           moab_record_version: comp_moab.version,
           po_version: comp_moab.preserved_object.current_version
         )
-        allow(AuditResultsReporter).to receive(:report_results).with(audit_results: c2m.results)
+        allow(Reporters::AuditResultsReporter).to receive(:report_results).with(audit_results: c2m.results)
         c2m.check_catalog_version
       end
 
@@ -157,8 +157,8 @@ RSpec.describe Audit::CatalogToMoab do
         )
       end
 
-      it 'calls AuditResultsReporter.report_results' do
-        expect(AuditResultsReporter).to have_received(:report_results).with(audit_results: c2m.results, logger: Logger)
+      it 'calls Reporters::AuditResultsReporter.report_results' do
+        expect(Reporters::AuditResultsReporter).to have_received(:report_results).with(audit_results: c2m.results, logger: Logger)
       end
 
       it 'does NOT update status' do

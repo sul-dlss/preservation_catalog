@@ -64,7 +64,7 @@ describe PartReplicationAuditJob do
       expect(audit_class).to receive(:check_replicated_zipped_moab_version).with(zmv1, AuditResults)
       expect(audit_class).not_to receive(:check_replicated_zipped_moab_version).with(zmv2, AuditResults)
       expect(audit_class2).not_to receive(:check_replicated_zipped_moab_version)
-      expect(AuditResultsReporter).to receive(:report_results).with(audit_results: results, logger: logger)
+      expect(Reporters::AuditResultsReporter).to receive(:report_results).with(audit_results: results, logger: logger)
       job.perform(preserved_object, endpoint)
     end
 

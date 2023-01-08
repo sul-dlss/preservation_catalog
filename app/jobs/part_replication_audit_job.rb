@@ -19,7 +19,7 @@ class PartReplicationAuditJob < ApplicationJob
       next unless check_child_zip_part_attributes(zmv, results)
       zip_endpoint.audit_class.check_replicated_zipped_moab_version(zmv, results)
     end
-    AuditResultsReporter.report_results(audit_results: results, logger: logger)
+    Reporters::AuditResultsReporter.report_results(audit_results: results, logger: logger)
   end
 
   private

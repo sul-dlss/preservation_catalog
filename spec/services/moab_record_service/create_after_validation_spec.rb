@@ -31,7 +31,7 @@ RSpec.describe MoabRecordService::CreateAfterValidation do
 
     it_behaves_like 'attributes validated'
 
-    it_behaves_like 'calls AuditResultsReporter.report_results'
+    it_behaves_like 'calls Reporters::AuditResultsReporter.report_results'
 
     context 'sets validation timestamps' do
       let(:t) { Time.current }

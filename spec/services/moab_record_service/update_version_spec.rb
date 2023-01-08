@@ -143,7 +143,7 @@ RSpec.describe MoabRecordService::UpdateVersion do
           end
         end
 
-        it_behaves_like 'calls AuditResultsReporter.report_results'
+        it_behaves_like 'calls Reporters::AuditResultsReporter.report_results'
 
         context 'returns' do
           let!(:results) { moab_record_service.execute(checksums_validated: true).results }

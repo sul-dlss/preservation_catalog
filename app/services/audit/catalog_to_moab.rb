@@ -68,7 +68,7 @@ module Audit
     end
 
     def report_results!
-      AuditResultsReporter.report_results(audit_results: results, logger: @logger)
+      Reporters::AuditResultsReporter.report_results(audit_results: results, logger: @logger)
     end
 
     def moab_on_storage_validator
