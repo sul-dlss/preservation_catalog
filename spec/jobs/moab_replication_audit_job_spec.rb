@@ -10,15 +10,25 @@ describe MoabReplicationAuditJob do
   before do
     allow(Audit::ReplicationSupport).to receive(:logger).and_return(logger)
     allow(Settings.replication).to receive(:audit_should_backfill).and_return(true) # enable for tests
+    allow(Audit::Replication).to receive(:results).and_return([])
     # creation of MoabRecord triggers archive zip creation, as archive zips are created from moabs
     create(:moab_record, preserved_object: preserved_object, version: preserved_object.current_version)
   end
 
   describe '#perform' do
+    let(:audit_results) { instance_double(AuditResults) }
+
     context 'when there are no zipped moab versions to backfill' do
-      it 'does not log a warning' do
+      before do
+        allow(Audit::Replication).to receive(:results).and_return([audit_results])
+        allow(AuditResultsReporter).to receive(:report_results)
+      end
+
+      it 'calls Audit::Replication and reports results' do
         expect(logger).not_to receive(:warn)
         expect { job.perform(preserved_object) }.not_to change(ZippedMoabVersion, :count)
+        expect(Audit::Replication).to have_received(:results).with(preserved_object)
+        expect(AuditResultsReporter).to have_received(:report_results).with(audit_results: audit_results, logger: logger)
       end
     end
 
@@ -31,28 +41,13 @@ describe MoabReplicationAuditJob do
         expect { job.perform(preserved_object) }.not_to change(ZippedMoabVersion, :count)
       end
 
-      it 'creates missing ZMVs and logs a warning' do
+      it 'creates missing zipped moab versions and logs a warning' do
         expect(preserved_object).to receive(:create_zipped_moab_versions!).and_call_original
         expect(logger).to receive(:warn)
           .with(/backfilled 4 ZippedMoabVersions: 1 to aws_s3_west_2; 1 to ibm_us_south; 2 to aws_s3_west_2; 2 to ibm_us_south/)
-        expect(PartReplicationAuditJob).not_to receive(:perform_later)
-        expect { job.perform(preserved_object) }.not_to change { preserved_object.reload.last_archive_audit }
+        expect(Audit::Replication).not_to receive(:results)
+        job.perform(preserved_object)
       end
-    end
-
-    it 'updates last_archive_audit timestamp' do
-      expect { job.perform(preserved_object) }.to change { preserved_object.reload.last_archive_audit }
-    end
-
-    it 'calls PartReplicationAuditJob once per endpoint' do
-      new_target_endpoint = create(:zip_endpoint)
-      preserved_object.create_zipped_moab_versions! # backfill to the new target endpoint, should omit the other non-default policy endpoint
-
-      expect(preserved_object.zipped_moab_versions.pluck(:zip_endpoint_id).uniq).to include(new_target_endpoint.id)
-      ZipEndpoint.all.each do |endpoint|
-        expect(PartReplicationAuditJob).to receive(:perform_later).with(preserved_object, endpoint)
-      end
-      job.perform(preserved_object)
     end
   end
 end
