@@ -10,16 +10,16 @@ RSpec.describe AuditResultsReporter do
   let(:ms_root) { MoabStorageRoot.find_by(storage_location: 'spec/fixtures/storage_root01/sdr2objects') }
 
   describe '#report_results' do
-    let(:audit_workflow_reporter) { instance_double(Reporters::AuditWorkflowReporter, report_errors: nil, report_completed: nil) }
-    let(:event_service_reporter) { instance_double(Reporters::EventServiceReporter, report_errors: nil, report_completed: nil) }
-    let(:honeybadger_reporter) { instance_double(Reporters::HoneybadgerReporter, report_errors: nil, report_completed: nil) }
-    let(:logger_reporter) { instance_double(Reporters::LoggerReporter, report_errors: nil, report_completed: nil) }
+    let(:audit_workflow_reporter) { instance_double(AuditReporters::AuditWorkflowReporter, report_errors: nil, report_completed: nil) }
+    let(:event_service_reporter) { instance_double(AuditReporters::EventServiceReporter, report_errors: nil, report_completed: nil) }
+    let(:honeybadger_reporter) { instance_double(AuditReporters::HoneybadgerReporter, report_errors: nil, report_completed: nil) }
+    let(:logger_reporter) { instance_double(AuditReporters::LoggerReporter, report_errors: nil, report_completed: nil) }
 
     before do
-      allow(Reporters::AuditWorkflowReporter).to receive(:new).and_return(audit_workflow_reporter)
-      allow(Reporters::EventServiceReporter).to receive(:new).and_return(event_service_reporter)
-      allow(Reporters::HoneybadgerReporter).to receive(:new).and_return(honeybadger_reporter)
-      allow(Reporters::LoggerReporter).to receive(:new).and_return(logger_reporter)
+      allow(AuditReporters::AuditWorkflowReporter).to receive(:new).and_return(audit_workflow_reporter)
+      allow(AuditReporters::EventServiceReporter).to receive(:new).and_return(event_service_reporter)
+      allow(AuditReporters::HoneybadgerReporter).to receive(:new).and_return(honeybadger_reporter)
+      allow(AuditReporters::LoggerReporter).to receive(:new).and_return(logger_reporter)
 
       audit_results.add_result(AuditResults::INVALID_MOAB, [
                                  "Version directory name not in 'v00xx' format: original-v1",

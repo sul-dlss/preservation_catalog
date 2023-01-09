@@ -11,19 +11,19 @@ RSpec.describe CatalogUtils do
     allow(Moab::StorageObject).to receive(:new).and_return(moab)
     moab
   end
-  let(:audit_workflow_reporter) { instance_double(Reporters::AuditWorkflowReporter, report_errors: nil, report_completed: nil) }
-  let(:event_service_reporter) { instance_double(Reporters::EventServiceReporter, report_errors: nil, report_completed: nil) }
-  let(:honeybadger_reporter) { instance_double(Reporters::HoneybadgerReporter, report_errors: nil, report_completed: nil) }
-  let(:logger_reporter) { instance_double(Reporters::LoggerReporter, report_errors: nil, report_completed: nil) }
+  let(:audit_workflow_reporter) { instance_double(AuditReporters::AuditWorkflowReporter, report_errors: nil, report_completed: nil) }
+  let(:event_service_reporter) { instance_double(AuditReporters::EventServiceReporter, report_errors: nil, report_completed: nil) }
+  let(:honeybadger_reporter) { instance_double(AuditReporters::HoneybadgerReporter, report_errors: nil, report_completed: nil) }
+  let(:logger_reporter) { instance_double(AuditReporters::LoggerReporter, report_errors: nil, report_completed: nil) }
   let(:audit_results) { instance_double(AuditResults, results: results) }
   let(:results) { [] }
 
   before do
     allow(described_class.logger).to receive(:info) # silence STDOUT chatter
-    allow(Reporters::AuditWorkflowReporter).to receive(:new).and_return(audit_workflow_reporter)
-    allow(Reporters::EventServiceReporter).to receive(:new).and_return(event_service_reporter)
-    allow(Reporters::HoneybadgerReporter).to receive(:new).and_return(honeybadger_reporter)
-    allow(Reporters::LoggerReporter).to receive(:new).and_return(logger_reporter)
+    allow(AuditReporters::AuditWorkflowReporter).to receive(:new).and_return(audit_workflow_reporter)
+    allow(AuditReporters::EventServiceReporter).to receive(:new).and_return(event_service_reporter)
+    allow(AuditReporters::HoneybadgerReporter).to receive(:new).and_return(honeybadger_reporter)
+    allow(AuditReporters::LoggerReporter).to receive(:new).and_return(logger_reporter)
   end
 
   describe '.logger' do

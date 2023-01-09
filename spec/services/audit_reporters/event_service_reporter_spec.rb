@@ -2,9 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe Reporters::EventServiceReporter do
-  let(:subject) { described_class.new }
-
+RSpec.describe AuditReporters::EventServiceReporter do
   let(:druid) { 'ab123cd4567' }
   let(:actual_version) { 6 }
   let(:ms_root) { MoabStorageRoot.find_by(storage_location: 'spec/fixtures/storage_root01/sdr2objects') }
@@ -26,8 +24,12 @@ RSpec.describe Reporters::EventServiceReporter do
                                         "'v00xx' format: original-v2]" }
       end
 
-      it 'creates events' do
-        subject.report_errors(druid: druid, version: actual_version, storage_area: ms_root, check_name: check_name, results: [result1, result2])
+      it 'creates events' do # rubocop:disable RSpec/ExampleLength
+        described_class.new.report_errors(druid: druid,
+                                          version: actual_version,
+                                          storage_area: ms_root,
+                                          check_name: check_name,
+                                          results: [result1, result2])
         error1 = 'FooCheck (actual location: fixture_sr1; actual version: 6) || Invalid Moab, validation errors: ' \
                  "[Version directory name not in 'v00xx' format: original-v1]"
         expect(Dor::Event::Client).to have_received(:create).with(
@@ -64,7 +66,11 @@ RSpec.describe Reporters::EventServiceReporter do
       let(:result2) { { AuditResults::UNEXPECTED_VERSION => 'actual version (6) has unexpected relationship to db version' } }
 
       it 'merges errors and creates single event' do
-        subject.report_errors(druid: druid, version: actual_version, storage_area: ms_root, check_name: check_name, results: [result1, result2])
+        described_class.new.report_errors(druid: druid,
+                                          version: actual_version,
+                                          storage_area: ms_root,
+                                          check_name: check_name,
+                                          results: [result1, result2])
         expect(Dor::Event::Client).to have_received(:create).with(
           druid: "druid:#{druid}",
           type: 'preservation_audit_failure',
@@ -86,7 +92,7 @@ RSpec.describe Reporters::EventServiceReporter do
     let(:result) { { AuditResults::MOAB_RECORD_STATUS_CHANGED => 'MoabRecord status changed from invalid_moab' } }
 
     it 'creates events' do
-      subject.report_completed(druid: druid, version: actual_version, storage_area: ms_root, check_name: check_name, result: result)
+      described_class.new.report_completed(druid: druid, version: actual_version, storage_area: ms_root, check_name: check_name, result: result)
 
       expect(Dor::Event::Client).to have_received(:create).with(
         druid: "druid:#{druid}",

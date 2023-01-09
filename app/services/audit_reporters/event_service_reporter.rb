@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module Reporters
+module AuditReporters
   # Reports to DOR Event Service.
   class EventServiceReporter < BaseReporter
     protected
