@@ -12,7 +12,12 @@ class ObjectsController < ApiController
     render json: PreservedObject.find_by!(druid: druid).to_json
   end
 
-  # queue a ValidateMoab job for a specific druid, typically called by a preservationIngestWF robot
+  # queue a ValidateMoab job for a specific druid, typically called by a preservationIngestWF robot.
+  #   This guarantees that we are testing the content on PresCat, not the content before it is transferred AND it also
+  #   guarantees that, for the first time the robot step is run for a version, that we are checking the files on disk,
+  #   and are NOT checking file that are not yet fully written to storage.
+  #   In the past, checking the files within the pres-robots code was done before the files were fully flushed to disk,
+  #   and thus failures were not caught.
   # GET /v1/objects/:id/validate_moab
   def validate_moab
     # ActiveJob::Base.perform_later will return an instance of the job if it was added to the
