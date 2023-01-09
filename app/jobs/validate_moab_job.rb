@@ -1,6 +1,9 @@
 # frozen_string_literal: true
 
 # Confirm checksums for one Moab object on storage (not in database)
+# Called from ObjectsController, which is typically called by preservation-robots
+#   in validate-moab step of preservationIngestWF step
+# (https://github.com/sul-dlss/workflow-server-rails/blob/main/config/workflows/preservationIngestWF.xml#L18) -
 class ValidateMoabJob < ApplicationJob
   queue_as :validate_moab
 
