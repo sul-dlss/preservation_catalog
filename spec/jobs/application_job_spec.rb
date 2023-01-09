@@ -84,22 +84,22 @@ RSpec.describe ApplicationJob do
     let(:moab_rec2) { create(:moab_record) }
 
     before do
-      CatalogToMoabJob.perform_later(moab_rec)
+      Audit::CatalogToMoabJob.perform_later(moab_rec)
     end
 
     it 'does not add duplicate messages' do
-      expect { CatalogToMoabJob.perform_later(moab_rec) }
+      expect { Audit::CatalogToMoabJob.perform_later(moab_rec) }
         .not_to change(enqueued_jobs, :size).from(1)
 
       # Change moab_record
       moab_rec.size = 1000
 
-      expect { CatalogToMoabJob.perform_later(moab_rec) }
+      expect { Audit::CatalogToMoabJob.perform_later(moab_rec) }
         .not_to change(enqueued_jobs, :size).from(1)
     end
 
     it 'but adds novel messages' do
-      expect { CatalogToMoabJob.perform_later(moab_rec2) }
+      expect { Audit::CatalogToMoabJob.perform_later(moab_rec2) }
         .to change(enqueued_jobs, :size).from(1).to(2)
     end
   end

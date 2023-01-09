@@ -58,7 +58,7 @@ class PreservedObject < ApplicationRecord
   # Queue a job that will check to see whether this PreservedObject has been
   # fully replicated to all target ZipEndpoints
   def audit_moab_version_replication!
-    MoabReplicationAuditJob.perform_later(self)
+    Audit::MoabReplicationAuditJob.perform_later(self)
   end
 
   def total_size_of_moab_version(version)

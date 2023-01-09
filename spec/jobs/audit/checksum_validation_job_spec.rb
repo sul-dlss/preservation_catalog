@@ -2,17 +2,21 @@
 
 require 'rails_helper'
 
-describe ChecksumValidationJob do
+describe Audit::ChecksumValidationJob do
   let(:job) { described_class.new(moab_record) }
   let(:moab_record) { create(:moab_record) }
 
   describe '#perform' do
     let(:validator) { instance_double(Audit::ChecksumValidator) }
 
+    before do
+      allow(Audit::ChecksumValidator).to receive(:new).with(moab_record).and_return(validator)
+      allow(validator).to receive(:validate_checksums)
+    end
+
     it 'calls ChecksumValidator#validate_checksums' do
-      expect(validator).to receive(:validate_checksums)
-      expect(Audit::ChecksumValidator).to receive(:new).with(moab_record).and_return(validator)
       job.perform(moab_record)
+      expect(validator).to have_received(:validate_checksums)
     end
   end
 

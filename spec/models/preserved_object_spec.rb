@@ -179,7 +179,7 @@ RSpec.describe PreservedObject do
     let!(:preserved_object) { create(:preserved_object, druid: druid, current_version: 3) }
 
     it 'queues a replication audit job for its MoabRecord' do
-      expect(MoabReplicationAuditJob).to receive(:perform_later).with(preserved_object)
+      expect(Audit::MoabReplicationAuditJob).to receive(:perform_later).with(preserved_object)
       preserved_object.audit_moab_version_replication!
     end
   end

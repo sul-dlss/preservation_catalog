@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-describe MoabReplicationAuditJob do
+describe Audit::MoabReplicationAuditJob do
   let(:preserved_object) { create(:preserved_object, current_version: 2) }
   let(:job) { described_class.new(preserved_object) }
   let(:logger) { instance_double(Logger) }

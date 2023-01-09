@@ -62,8 +62,8 @@ RSpec.describe MoabRecord do
   it { is_expected.to validate_uniqueness_of(:preserved_object_id) }
 
   describe '#validate_checksums!' do
-    it 'passes self to ChecksumValidationJob' do
-      expect(ChecksumValidationJob).to receive(:perform_later).with(moab_record)
+    it 'passes self to Audit::ChecksumValidationJob' do
+      expect(Audit::ChecksumValidationJob).to receive(:perform_later).with(moab_record)
       moab_record.validate_checksums!
     end
   end
@@ -155,9 +155,9 @@ RSpec.describe MoabRecord do
     end
 
     it 'queues a checksum validation job' do
-      allow(ChecksumValidationJob).to receive(:perform_later).with(moab_record)
+      allow(Audit::ChecksumValidationJob).to receive(:perform_later).with(moab_record)
       migrating_moab_record.migrate_moab(target_storage_root).save!
-      expect(ChecksumValidationJob).to have_received(:perform_later).with(moab_record)
+      expect(Audit::ChecksumValidationJob).to have_received(:perform_later).with(moab_record)
     end
   end
 
@@ -327,7 +327,7 @@ RSpec.describe MoabRecord do
   end
 
   describe '.after_save callback' do
-    before { allow(ChecksumValidationJob).to receive(:perform_later).and_call_original } # undo rails_helper block
+    before { allow(Audit::ChecksumValidationJob).to receive(:perform_later).and_call_original } # undo rails_helper block
 
     it 'does not call validate_checksums when status is unchanged' do
       moab_record.size = 234
