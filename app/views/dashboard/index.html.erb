@@ -49,7 +49,9 @@
         <%= render partial: 'replication_information' %>
       </div>
       <div class="tab-pane fade" id="audit-tab-pane" role="tabpanel" aria-labelledby="audit-tab" tabindex="0">
-        <%= render partial: 'audit_info' %>
+        <turbo-frame id="audit-info" src="<%= dashboard_audit_info_path %>" loading="lazy">
+          <%= render Spinner.new %>
+        </turbo-frame>
       </div>
     </div>
   </div>

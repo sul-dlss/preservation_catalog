@@ -68,8 +68,8 @@ RSpec.describe DashboardController do
       end
     end
 
-    it 'renders _audit_info template' do
-      expect(response).to render_template('dashboard/_audit_info')
+    it 'renders turbo-frame for audit_info path' do
+      expect(response.body).to match(/<turbo-frame id="audit-info" src="#{dashboard_audit_info_path}"/)
     end
   end
 
