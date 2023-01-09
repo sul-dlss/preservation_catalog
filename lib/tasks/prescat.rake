@@ -3,11 +3,28 @@
 require 'csv'
 
 namespace :prescat do
+  desc 'Diagnose failed replication'
+  task :diagnose_replication, [:druid] => :environment do |_task, args|
+    puts Audit::ReplicationSupport.zip_part_debug_info(args[:druid])
+  end
+
   desc 'Prune failed replication records from catalog'
   task :prune_failed_replication, [:druid, :version] => :environment do |_task, args|
     Replication::FailureRemediator.prune_replication_failures(druid: args[:druid], version: args[:version]).each do |zmv_version, endpoint_name|
       puts "pruned zipped moab version #{zmv_version} on #{endpoint_name}"
     end
+  end
+
+  desc 'Determine if temporary local zip is present'
+  task :check_temp_zip, [:druid, :version] => :environment do |_task, args|
+    file_path = Replication::DruidVersionZip.new(args[:druid], args[:version]).file_path
+    puts "#{file_path} exists: #{File.exist?(file_path)}"
+  end
+
+  desc 'Backfill zipped moab versions'
+  task :backfill, [:druid] => :environment do |_task, args|
+    zipped_moab_versions = PreservedObject.find_by(druid: args[:druid]).create_zipped_moab_versions!
+    puts "Backfilled with: #{zipped_moab_versions}"
   end
 
   namespace :cache_cleaner do
