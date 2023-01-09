@@ -6,6 +6,7 @@
 #   MoabReplicationAuditJob.perform_later(preserved_object)
 class MoabReplicationAuditJob < ApplicationJob
   queue_as :moab_replication_audit
+  delegate :logger, to: Audit::ReplicationSupport
 
   include UniqueJob
 
@@ -13,12 +14,8 @@ class MoabReplicationAuditJob < ApplicationJob
   def perform(preserved_object)
     return if backfill_missing_zipped_moab_versions(preserved_object)
 
-    ZipEndpoint
-      .includes(:zipped_moab_versions)
-      .where(zipped_moab_versions: { preserved_object: preserved_object }).each do |endpoint|
-        PartReplicationAuditJob.perform_later(preserved_object, endpoint)
-      end
-    preserved_object.update(last_archive_audit: Time.current)
+    results = Audit::Replication.results(preserved_object)
+    results.each { |audit_results| AuditResultsReporter.report_results(audit_results: audit_results, logger: logger) }
   end
 
   private
