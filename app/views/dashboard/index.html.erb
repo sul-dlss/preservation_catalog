@@ -24,7 +24,7 @@
   <div class="row row-cols-2">
     <div class="col-3 col-rows-3 sidenav">
       <ul class="nav nav-pills row-3" id="dashboardTab">
-        <li class="nav-link active text-reset" id="catalog-tab" data-bs-toggle="pill" data-bs-target="#catalog-tab-pane" type="button" aria-selected="true">
+        <li class="nav-link text-reset" id="catalog-tab" data-bs-toggle="pill" data-bs-target="#catalog-tab-pane" type="button" aria-selected="true">
           <turbo-frame id="moab-status" src="<%= dashboard_moab_storage_status_path %>" loading="lazy">
             <%= render Spinner.new %>
           </turbo-frame>
@@ -42,7 +42,7 @@
       </ul>
     </div>
     <div class="tab-content col-9" id="main">
-      <div class="tab-pane fade show active" id="catalog-tab-pane" role="tabpanel" aria-selected="true" tabindex="0">
+      <div class="tab-pane fade" id="catalog-tab-pane" role="tabpanel" aria-selected="true" tabindex="0">
         <%= render partial: 'moab_information' %>
       </div>
       <div class="tab-pane fade" id="replication-tab-pane" role="tabpanel" aria-labelledby="replication-tab" tabindex="0">
