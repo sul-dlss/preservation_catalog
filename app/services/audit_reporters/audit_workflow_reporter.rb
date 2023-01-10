@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module Reporters
+module AuditReporters
   # Reports to DOR Workflow Service.
   class AuditWorkflowReporter < BaseReporter
     protected

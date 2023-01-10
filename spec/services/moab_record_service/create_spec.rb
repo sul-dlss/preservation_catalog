@@ -13,16 +13,16 @@ RSpec.describe MoabRecordService::Create do
     described_class.new(druid: druid, incoming_version: incoming_version, incoming_size: incoming_size, moab_storage_root: moab_storage_root)
   end
   let(:expected_msg) { 'added object to db as it did not exist' }
-  let(:audit_workflow_reporter) { instance_double(Reporters::AuditWorkflowReporter, report_errors: nil) }
-  let(:logger_reporter) { instance_double(Reporters::LoggerReporter, report_errors: nil) }
-  let(:honeybadger_reporter) { instance_double(Reporters::HoneybadgerReporter, report_errors: nil) }
-  let(:event_service_reporter) { instance_double(Reporters::EventServiceReporter, report_errors: nil) }
+  let(:audit_workflow_reporter) { instance_double(AuditReporters::AuditWorkflowReporter, report_errors: nil) }
+  let(:logger_reporter) { instance_double(AuditReporters::LoggerReporter, report_errors: nil) }
+  let(:honeybadger_reporter) { instance_double(AuditReporters::HoneybadgerReporter, report_errors: nil) }
+  let(:event_service_reporter) { instance_double(AuditReporters::EventServiceReporter, report_errors: nil) }
 
   before do
-    allow(Reporters::AuditWorkflowReporter).to receive(:new).and_return(audit_workflow_reporter)
-    allow(Reporters::LoggerReporter).to receive(:new).and_return(logger_reporter)
-    allow(Reporters::HoneybadgerReporter).to receive(:new).and_return(honeybadger_reporter)
-    allow(Reporters::EventServiceReporter).to receive(:new).and_return(event_service_reporter)
+    allow(AuditReporters::AuditWorkflowReporter).to receive(:new).and_return(audit_workflow_reporter)
+    allow(AuditReporters::LoggerReporter).to receive(:new).and_return(logger_reporter)
+    allow(AuditReporters::HoneybadgerReporter).to receive(:new).and_return(honeybadger_reporter)
+    allow(AuditReporters::EventServiceReporter).to receive(:new).and_return(event_service_reporter)
   end
 
   describe '#execute' do

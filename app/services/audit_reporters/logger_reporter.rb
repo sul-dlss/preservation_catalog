@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-module Reporters
+module AuditReporters
   # Reports to logger.
   class LoggerReporter < BaseReporter
-    def initialize(logger = nil)
+    def initialize(logger = nil) # rubocop:disable Lint/MissingSuper
       @logger = logger || Rails.logger
     end
 

@@ -25,16 +25,16 @@ RSpec.describe Audit::CatalogToMoab do
     'check_catalog_version\\(bj102hs9687, fixture_sr1\\)' \
       'db MoabRecord \\(created .*Z; last updated .*Z\\) exists but Moab not found'
   end
-  let(:audit_workflow_reporter) { instance_double(Reporters::AuditWorkflowReporter, report_errors: nil) }
-  let(:event_service_reporter) { instance_double(Reporters::EventServiceReporter, report_errors: nil) }
-  let(:honeybadger_reporter) { instance_double(Reporters::HoneybadgerReporter, report_errors: nil) }
-  let(:logger_reporter) { instance_double(Reporters::LoggerReporter, report_errors: nil) }
+  let(:audit_workflow_reporter) { instance_double(AuditReporters::AuditWorkflowReporter, report_errors: nil) }
+  let(:event_service_reporter) { instance_double(AuditReporters::EventServiceReporter, report_errors: nil) }
+  let(:honeybadger_reporter) { instance_double(AuditReporters::HoneybadgerReporter, report_errors: nil) }
+  let(:logger_reporter) { instance_double(AuditReporters::LoggerReporter, report_errors: nil) }
 
   before do
-    allow(Reporters::AuditWorkflowReporter).to receive(:new).and_return(audit_workflow_reporter)
-    allow(Reporters::EventServiceReporter).to receive(:new).and_return(event_service_reporter)
-    allow(Reporters::HoneybadgerReporter).to receive(:new).and_return(honeybadger_reporter)
-    allow(Reporters::LoggerReporter).to receive(:new).and_return(logger_reporter)
+    allow(AuditReporters::AuditWorkflowReporter).to receive(:new).and_return(audit_workflow_reporter)
+    allow(AuditReporters::EventServiceReporter).to receive(:new).and_return(event_service_reporter)
+    allow(AuditReporters::HoneybadgerReporter).to receive(:new).and_return(honeybadger_reporter)
+    allow(AuditReporters::LoggerReporter).to receive(:new).and_return(logger_reporter)
     allow(c2m).to receive(:logger).and_return(logger_double) # silence log output
     allow(AuditResultsReporter).to receive(:report_results).and_return([])
   end
