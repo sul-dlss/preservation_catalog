@@ -47,5 +47,26 @@ module Audit
 
       true
     end
+
+    # a helpful query for debugging replication issues
+    # returns e.g.
+    # druid, current version, zipped moab version, endpoint, status, zip part suffix
+    # [["bc123df4567", 1, 1, "aws_s3_west_2", "unreplicated", ".z01", 2, 10737418240],
+    #  ["bc123df4567", 1, 1, "aws_s3_west_2", "ok", ".zip", 2, 10667110264]]
+    # @return [Array<Array>] an array of zip part debug info
+    def self.zip_part_debug_info(druid)
+      ZipPart.joins(
+        zipped_moab_version: %i[preserved_object zip_endpoint]
+      ).where(
+        preserved_objects: { druid: druid }
+      ).order(
+        # you could also provide an array of druids instead of `druid`,
+        # in which case this order will make for more readable results
+        :druid, :zip_version, :endpoint_name, :suffix
+      ).pluck(
+        :druid, 'current_version AS highest_version', 'zipped_moab_versions.version AS zip_version',
+        :endpoint_name, :status, :suffix, :parts_count, :size, :created_at, :updated_at
+      )
+    end
   end
 end
