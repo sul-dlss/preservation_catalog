@@ -43,7 +43,7 @@ module Audit
       desc = "Number of MoabRecords of status #{status} from #{storage_root_name} to be checksum validated"
       logger.info "#{desc}: #{moab_records.count}"
       moab_records.find_each do |moab_record|
-        ChecksumValidationJob.perform_later(moab_record)
+        Audit::ChecksumValidationJob.perform_later(moab_record)
       end
     end
   end

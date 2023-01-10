@@ -73,12 +73,12 @@ RSpec.describe Audit::ChecksumValidatorUtils do
         create(:preserved_object_fixture, druid: 'jj925bx9565')
       end
 
-      it 'queues a ChecksumValidationJob for each result' do
+      it 'queues a Audit::ChecksumValidationJob for each result' do
         msr = MoabStorageRoot.find_by!(name: root_name)
         moab_records = msr.moab_records.validity_unknown
         expect(moab_records.size).to eq 3
         moab_records.each do |moab_record|
-          expect(ChecksumValidationJob).to receive(:perform_later).with(moab_record).once
+          expect(Audit::ChecksumValidationJob).to receive(:perform_later).with(moab_record).once
         end
         described_class.validate_status_root('validity_unknown', root_name)
       end
@@ -86,7 +86,7 @@ RSpec.describe Audit::ChecksumValidatorUtils do
 
     context 'when there are no MoabRecords to check' do
       it 'will not create an instance of ChecksumValidator' do
-        expect(ChecksumValidationJob).not_to receive(:perform_later)
+        expect(Audit::ChecksumValidationJob).not_to receive(:perform_later)
         described_class.validate_status_root('ok', root_name)
       end
     end

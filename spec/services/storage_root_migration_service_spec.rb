@@ -46,13 +46,13 @@ RSpec.describe StorageRootMigrationService do
   end
 
   it 'queues checksum validation jobs' do
-    allow(ChecksumValidationJob).to receive(:perform_later).with(moab_record1)
-    allow(ChecksumValidationJob).to receive(:perform_later).with(moab_record2)
-    allow(ChecksumValidationJob).to receive(:perform_later).with(moab_record3)
+    allow(Audit::ChecksumValidationJob).to receive(:perform_later).with(moab_record1)
+    allow(Audit::ChecksumValidationJob).to receive(:perform_later).with(moab_record2)
+    allow(Audit::ChecksumValidationJob).to receive(:perform_later).with(moab_record3)
     described_class.new(from_storage_root.name, to_storage_root.name).migrate
-    expect(ChecksumValidationJob).to have_received(:perform_later).with(moab_record1)
-    expect(ChecksumValidationJob).to have_received(:perform_later).with(moab_record2)
-    expect(ChecksumValidationJob).not_to have_received(:perform_later).with(moab_record3)
+    expect(Audit::ChecksumValidationJob).to have_received(:perform_later).with(moab_record1)
+    expect(Audit::ChecksumValidationJob).to have_received(:perform_later).with(moab_record2)
+    expect(Audit::ChecksumValidationJob).not_to have_received(:perform_later).with(moab_record3)
   end
 
   it 'does not migrate moabs on other storage roots' do

@@ -24,14 +24,14 @@ class MoabStorageRoot < ApplicationRecord
   # Use a queue to check all associated MoabRecord objects for C2M
   def c2m_check!(last_checked_b4_date = Time.current)
     moab_records.version_audit_expired(last_checked_b4_date).find_each do |moab_rec|
-      CatalogToMoabJob.perform_later(moab_rec)
+      Audit::CatalogToMoabJob.perform_later(moab_rec)
     end
   end
 
   # Use a queue to ensure each druid on this root's directory is in the catalog database
   def m2c_check!
     MoabOnStorage::StorageDirectory.find_moab_paths(storage_location) do |druid, _path, _match|
-      MoabToCatalogJob.perform_later(self, druid)
+      Audit::MoabToCatalogJob.perform_later(self, druid)
     end
   end
 
