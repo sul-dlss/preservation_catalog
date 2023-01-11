@@ -28,10 +28,6 @@ class DashboardController < ApplicationController
     render 'dashboard/_replication_endpoints'
   end
 
-  def replication_flow
-    render 'dashboard/_replication_flow'
-  end
-
   def replicated_files
     render 'dashboard/_replicated_files'
   end
