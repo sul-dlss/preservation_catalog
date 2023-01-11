@@ -2,9 +2,10 @@
 
 module Replication
   # Responsibilities:
-  # If needed, zip files to zip storage and calculate checksum(s).
-  # Otherwise, touch the existing main ".zip" file to freshen it in cache.
-  # Invoke Replication::DeliveryDispatcherJob for each zip part.
+  # For a given version of a druid:
+  #   1. Ensure checksummed zip files (created from binaries from Moab on storage) are in zip cache
+  #        Note: a single DruidVersionZip may have more than one ZipPart.
+  #   2. Invoke Replication::DeliveryDispatcherJob for each ZipPart.
   class ZipmakerJob < ApplicationJob
     queue_as :zipmaker
     delegate :find_or_create_zip!, :file_path, :part_keys, to: :zip

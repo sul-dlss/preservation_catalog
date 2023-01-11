@@ -2,10 +2,12 @@
 
 module Replication
   # @see Replication::IbmProvider for how S3 credentials and bucket are configured
-  # @note this class name appears in the configuration for the endpoints for which it delivers content.
+  # @note this class name appears in config files for the endpoints for which it delivers content.
   #   Please update the configs for the various environments if it's renamed or moved.
   class IbmSouthDeliveryJob < Replication::AbstractDeliveryJob
     queue_as :ibm_us_south_delivery
+
+    # perform method is defined in AbstractDeliveryJob
 
     def bucket
       Replication::IbmProvider.new(

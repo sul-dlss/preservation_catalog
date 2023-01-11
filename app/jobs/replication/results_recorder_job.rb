@@ -1,14 +1,14 @@
 # frozen_string_literal: true
 
 module Replication
-  # Preconditions:
-  # Replication::DeliveryDispatcherJob has made a matching ZipPart row
+  # Preconditions: ZipPart exists in database
   #
   # Responsibilities:
-  # Update DB per event info.
-  # Is this event the last needed for the DV to be complete?
-  # If NO, do nothing further.
-  # If YES, send a message to a non-job pub/sub queue.
+  # 1. Update ZipPart status in database.
+  # 2. when all zip parts for the druid version are delivered to ONE endpoint,
+  #   Report to DOR event service
+  # 3. when all zip parts for the druid version are delivered to ALL endpoints,
+  #   Publish a message to a non-job pub/sub queue (currently no consumers).
   class ResultsRecorderJob < ApplicationJob
     queue_as :zip_endpoint_events
     attr_accessor :zmv, :zmvs
@@ -27,14 +27,14 @@ module Replication
     # @param [Integer] version
     # @param [String] s3_part_key
     # @param [String] delivery_class Name of the worker class that performed delivery
-    def perform(druid, version, s3_part_key, delivery_class) # rubocop:disable Lint/UnusedMethodArgument used as job.arguments.fourth in before_perform
+    def perform(druid, version, s3_part_key, delivery_class) # rubocop:disable Lint/UnusedMethodArgument # delivery_class used as job.arguments.fourth in before_perform
       part = zip_part!(s3_part_key)
       part.ok!
 
-      # log to event service if this part upload is the last one for the endpoint
+      # log to event service if all ZipParts are replicated for THIS endpoint
       create_zmv_replicated_event(druid) if zmv.reload.all_parts_replicated?
 
-      # only publish result if all of the parts replicated for all zip_endpoints
+      # only publish result if ALL of ZipParts are replicated to ALL zip_endpoints
       return unless zmvs.reload.all?(&:all_parts_replicated?)
 
       publish_result(message(druid, version).to_json)
@@ -58,8 +58,8 @@ module Replication
       }
     end
 
-    # Currently using the Sidekiq's underlying Redis instance, but we likely would
-    # want something more durable like RabbitMQ for production.
+    # If there are consumers for this, we might want something more durable than
+    #   Sidekiq's underlying redis instance (e.g. RabbitMQ).
     # @param [String] message JSON
     def publish_result(message)
       # Example: RabbitMQ using `connection` from the gem "Bunny":
