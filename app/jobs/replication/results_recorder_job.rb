@@ -7,8 +7,6 @@ module Replication
   # 1. Update ZipPart status in database.
   # 2. when all zip parts for the druid version are delivered to ONE endpoint,
   #   Report to DOR event service
-  # 3. when all zip parts for the druid version are delivered to ALL endpoints,
-  #   Publish a message to a non-job pub/sub queue (currently no consumers).
   class ResultsRecorderJob < ApplicationJob
     queue_as :zip_endpoint_events
     attr_accessor :zmv, :zmvs
@@ -31,13 +29,8 @@ module Replication
       part = zip_part!(s3_part_key)
       part.ok!
 
-      # log to event service if all ZipParts are replicated for THIS endpoint
+      # log to event service if all ZipParts are replicated for this endpoint
       create_zmv_replicated_event(druid) if zmv.reload.all_parts_replicated?
-
-      # only publish result if ALL of ZipParts are replicated to ALL zip_endpoints
-      return unless zmvs.reload.all?(&:all_parts_replicated?)
-
-      publish_result(message(druid, version).to_json)
     end
 
     private
@@ -56,15 +49,6 @@ module Replication
         version: version,
         zip_endpoints: zmvs.pluck(:endpoint_name).sort
       }
-    end
-
-    # If there are consumers for this, we might want something more durable than
-    #   Sidekiq's underlying redis instance (e.g. RabbitMQ).
-    # @param [String] message JSON
-    def publish_result(message)
-      # Example: RabbitMQ using `connection` from the gem "Bunny":
-      # connection.create_channel.fanout('replication.results').publish(message)
-      Sidekiq.redis { |redis| redis.lpush('replication.results', message) }
     end
 
     def create_zmv_replicated_event(druid)
