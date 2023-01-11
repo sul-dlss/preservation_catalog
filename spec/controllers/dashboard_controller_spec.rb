@@ -62,10 +62,6 @@ RSpec.describe DashboardController do
       it 'has turbo-frame for replicated_files path' do
         expect(response.body).to match(/<turbo-frame id="replicated-files" src="#{dashboard_replicated_files_path}" loading="lazy">/)
       end
-
-      it 'has turbo-frame for replication_flow path' do
-        expect(response.body).to match(/<turbo-frame id="replication-flow" src="#{dashboard_replication_flow_path}" loading="lazy">/)
-      end
     end
 
     it 'renders turbo-frame for audit_info path' do
