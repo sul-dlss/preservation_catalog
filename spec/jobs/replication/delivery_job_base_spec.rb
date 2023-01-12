@@ -2,8 +2,8 @@
 
 require 'rails_helper'
 
-describe Replication::AbstractDeliveryJob do
-  # NOTE: Test a concrete impl of the abstract job so the call to `#bucket` does not raise
+describe Replication::DeliveryJobBase do
+  # NOTE: Test a concrete impl of the base job so the call to `#bucket` does not raise
   subject(:job_implementation) do
     Class.new(described_class) do
       def bucket

@@ -3,7 +3,7 @@
 module Replication
   # Invokes `ZipDeliveryService`
   # Notify `Replication::ResultsRecorderJob`, if posted.
-  class AbstractDeliveryJob < Replication::ZipPartJobBase
+  class DeliveryJobBase < Replication::ZipPartJobBase
     before_enqueue { |job| job.zip_info_check!(job.arguments.fourth) }
 
     # @param [String] druid
@@ -22,7 +22,7 @@ module Replication
     end
 
     def bucket
-      raise NotImplementedError, 'Child of abstract delivery job failed to override `#bucket` method'
+      raise NotImplementedError, 'Child of DeliveryJobBase failed to override `#bucket` method'
     end
   end
 end
