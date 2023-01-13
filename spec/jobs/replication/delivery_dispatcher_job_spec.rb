@@ -111,5 +111,27 @@ describe Replication::DeliveryDispatcherJob do
         expect(parts3.map(&:md5)).to eq [metadata_non_matching[:checksum_md5]]
       end
     end
+
+    context 'when zip_parts are already replicated' do
+      before do
+        po.zipped_moab_versions.first!.zip_parts.create!({ md5: md5,
+                                                           size: 123,
+                                                           parts_count: 3,
+                                                           suffix: '.zip',
+                                                           create_info: 'zip -xyz ...Zip 3.0 (July 5th 2008)',
+                                                           status: :ok })
+      end
+
+      it 'skips that zipped moab version' do
+        expect(po.zipped_moab_versions.first.zip_endpoint.delivery_class.constantize).not_to receive(:perform_later)
+          .with(druid, version, s3_key, a_hash_including(:checksum_md5, :size, :zip_cmd, :zip_version))
+        expect(po.zipped_moab_versions.second.zip_endpoint.delivery_class.constantize).to receive(:perform_later)
+          .with(druid, version, s3_key, a_hash_including(:checksum_md5, :size, :zip_cmd, :zip_version))
+        expect(po.zipped_moab_versions.third.zip_endpoint.delivery_class.constantize).to receive(:perform_later)
+          .with(druid, version, s3_key, a_hash_including(:checksum_md5, :size, :zip_cmd, :zip_version))
+
+        described_class.perform_now(druid, version, s3_key, metadata_non_matching)
+      end
+    end
   end
 end

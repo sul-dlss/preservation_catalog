@@ -60,7 +60,9 @@ module Replication
 
     # @return [Array<Class>] endpoint specific delivery classes
     def deliverers
-      zipped_moab_versions.map { |zmv| zmv.zip_endpoint.delivery_class.constantize }.uniq
+      zipped_moab_versions
+        .filter { |zmv| !zmv.all_parts_replicated? }
+        .map { |zmv| zmv.zip_endpoint.delivery_class.constantize }.uniq
     end
   end
 end
