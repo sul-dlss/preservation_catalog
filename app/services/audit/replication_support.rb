@@ -49,24 +49,32 @@ module Audit
     end
 
     # a helpful query for debugging replication issues
-    # returns e.g.
-    # druid, current version, zipped moab version, endpoint, status, zip part suffix
-    # [["bc123df4567", 1, 1, "aws_s3_west_2", "unreplicated", ".z01", 2, 10737418240],
-    #  ["bc123df4567", 1, 1, "aws_s3_west_2", "ok", ".zip", 2, 10667110264]]
+    # @param [String|Array<String>] druid
     # @return [Array<Array>] an array of zip part debug info
     def self.zip_part_debug_info(druid)
-      ZipPart.joins(
-        zipped_moab_version: %i[preserved_object zip_endpoint]
-      ).where(
-        preserved_objects: { druid: druid }
-      ).order(
-        # you could also provide an array of druids instead of `druid`,
-        # in which case this order will make for more readable results
-        :druid, :zip_version, :endpoint_name, :suffix
-      ).pluck(
-        :druid, 'current_version AS highest_version', 'zipped_moab_versions.version AS zip_version',
-        :endpoint_name, :status, :suffix, :parts_count, :size, :created_at, :updated_at
-      )
+      ZipPart.joins(zipped_moab_version: %i[preserved_object zip_endpoint])
+             .where(preserved_objects: { druid: druid })
+             .order(:druid, :version, :endpoint_name, :suffix)
+             .map do |zip_part|
+        bucket = zip_part.zip_endpoint.delivery_class.constantize.new.bucket
+        s3_part = bucket.object(zip_part.s3_key)
+        s3_part_exists = s3_part.exists?
+        [
+          zip_part.preserved_object.druid,
+          zip_part.preserved_object.current_version,
+          zip_part.zipped_moab_version.version,
+          zip_part.zip_endpoint.endpoint_name,
+          zip_part.status,
+          zip_part.suffix,
+          zip_part.parts_count,
+          zip_part.size,
+          zip_part.created_at,
+          zip_part.updated_at,
+          zip_part.s3_key,
+          s3_part_exists ? 'found at endpoint' : 'not found at endpoint',
+          s3_part_exists ? s3_part.metadata['checksum_md5'] : nil
+        ]
+      end
     end
   end
 end
