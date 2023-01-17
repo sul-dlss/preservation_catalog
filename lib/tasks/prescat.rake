@@ -5,7 +5,14 @@ require 'csv'
 namespace :prescat do
   desc 'Diagnose failed replication'
   task :diagnose_replication, [:druid] => :environment do |_task, args|
-    puts Audit::ReplicationSupport.zip_part_debug_info(args[:druid])
+    debug_infos = Audit::ReplicationSupport.zip_part_debug_info(args[:druid])
+    CSV do |csv|
+      csv << ['druid', 'preserved object version', 'zipped moab version', 'endpoint',
+              'zip part status', 'zip part suffix', 'zipped moab parts count', 'zip part size',
+              'zip part created at', 'zip part updated at', 'zip part s3 key', 'zip part endpoint status',
+              'zip part size']
+      debug_infos.each { |debug_info| csv << debug_info }
+    end
   end
 
   desc 'Prune failed replication records from catalog'
