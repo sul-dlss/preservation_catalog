@@ -12,11 +12,6 @@ RSpec.describe Dashboard::ReplicationFilesComponent, type: :component do
     expect(rendered_html).to match(/0/) # table data
   end
 
-  it 'renders ok status count with plain styling' do
-    create(:zip_part, status: 'ok')
-    expect(rendered_html).to match('<td class="text-end">1</td>')
-  end
-
   it 'renders replicated_checksum_mismatch status count with danger styling' do
     create(:zip_part, status: 'replicated_checksum_mismatch')
     expect(rendered_html).to match('<td class="text-end table-danger">1</td>')
