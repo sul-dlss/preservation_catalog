@@ -246,7 +246,7 @@ GEM
     method_source (1.0.0)
     mini_mime (1.1.2)
     minitest (5.17.0)
-    moab-versioning (5.2.0)
+    moab-versioning (6.0.0.alpha)
       druid-tools (>= 1.0.0)
       json
       nokogiri
@@ -448,7 +448,7 @@ DEPENDENCIES
   jwt
   listen (~> 3.7)
   lograge
-  moab-versioning (~> 5.0)
+  moab-versioning (~> 6.0.0.alpha)
   okcomputer
   pg
   postgresql_cursor
