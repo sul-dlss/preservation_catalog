@@ -7,8 +7,6 @@
     <table class="table table-bordered table-hover">
       <thead class="table-info">
         <tr>
-          <th>Total ZipParts (count)</th>
-          <th class="text-center">ok</th>
           <th class="text-center">replicated checksum mismatch</th>
           <th class="text-center">unreplicated</th>
           <th class="text-center">not found</th>
@@ -16,8 +14,6 @@
       </thead>
       <tbody class="table-group-divider">
         <tr>
-          <td><%= ZipPart.count %></td>
-          <td class="text-end"><%= ZipPart.ok.count %></td>
           <td class="text-end<%= ' table-danger' if zip_parts_replicated_checksum_mismatch? %>"><%= zip_parts_replicated_checksum_mismatch_count %></td>
           <td class="text-end<%= ' table-warning' if zip_parts_unreplicated? %>"><%= zip_parts_unreplicated_count %></td>
           <td class="text-end<%= ' table-danger' if zip_parts_not_found? %>"><%= zip_parts_not_found_count %></td>
