@@ -9,15 +9,6 @@ module Replication
   #   Report to DOR event service
   class ResultsRecorderJob < ApplicationJob
     queue_as :zip_endpoint_events
-    attr_accessor :zmv, :zmvs
-
-    before_perform do |job|
-      job.zmvs ||= ZippedMoabVersion
-                   .by_druid(job.arguments.first)
-                   .joins(:zip_endpoint)
-                   .where(version: job.arguments.second)
-      job.zmv ||= zmvs.find_by!(zip_endpoints: { delivery_class: job.arguments.fourth })
-    end
 
     include UniqueJob
 
@@ -25,34 +16,31 @@ module Replication
     # @param [Integer] version
     # @param [String] s3_part_key
     # @param [String] delivery_class Name of the worker class that performed delivery
-    def perform(druid, version, s3_part_key, delivery_class) # rubocop:disable Lint/UnusedMethodArgument # delivery_class used as job.arguments.fourth in before_perform
-      part = zip_part!(s3_part_key)
-      part.ok!
+    def perform(druid, version, s3_part_key, delivery_class)
+      zipped_moab_version = find_zipped_moab_version(druid, version, delivery_class)
+      zip_part_ok!(zipped_moab_version, s3_part_key)
 
       # log to event service if all ZipParts are replicated for this endpoint
-      create_zmv_replicated_event(druid) if zmv.reload.all_parts_replicated?
+      create_zmv_replicated_event(druid, zipped_moab_version) if zipped_moab_version.reload.all_parts_replicated?
     end
 
     private
 
-    def zip_part!(s3_part_key)
-      zmv.zip_parts.find_by!(
+    def find_zipped_moab_version(druid, version, delivery_class)
+      ZippedMoabVersion.by_druid(druid)
+                       .joins(:zip_endpoint)
+                       .find_by!(zip_endpoints: { delivery_class: delivery_class }, version: version)
+    end
+
+    def zip_part_ok!(zipped_moab_version, s3_part_key)
+      zipped_moab_version.zip_parts.find_by!(
         suffix: File.extname(s3_part_key),
         status: 'unreplicated'
-      )
+      ).ok!
     end
 
-    # @return [Hash] response message to enqueue
-    def message(druid, version)
-      {
-        druid: druid,
-        version: version,
-        zip_endpoints: zmvs.pluck(:endpoint_name).sort
-      }
-    end
-
-    def create_zmv_replicated_event(druid)
-      parts_info = zmv.zip_parts.order(:suffix).map do |part|
+    def create_zmv_replicated_event(druid, zipped_moab_version)
+      parts_info = zipped_moab_version.zip_parts.order(:suffix).map do |part|
         { s3_key: part.s3_key, size: part.size, md5: part.md5 }
       end
 
@@ -62,8 +50,8 @@ module Replication
         data: {
           host: Socket.gethostname,
           invoked_by: 'preservation-catalog',
-          version: zmv.version,
-          endpoint_name: zmv.zip_endpoint.endpoint_name,
+          version: zipped_moab_version.version,
+          endpoint_name: zipped_moab_version.zip_endpoint.endpoint_name,
           parts_info: parts_info
         }
       )
