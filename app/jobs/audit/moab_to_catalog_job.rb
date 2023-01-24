@@ -4,7 +4,7 @@ module Audit
   # Check catalog based on filesystem, updating database
   # @see MoabRecordService::CheckExistence
   class MoabToCatalogJob < ApplicationJob
-    queue_as :m2c
+    queue_as :audit_moab_to_catalog
 
     before_enqueue do |job|
       raise ArgumentError, 'MoabStorageRoot param required' unless job.arguments.first.is_a?(MoabStorageRoot)
