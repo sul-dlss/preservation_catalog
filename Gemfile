@@ -16,11 +16,15 @@ gem 'pry-byebug' # call 'binding.pry' anywhere in the code to stop execution and
 gem 'pry' # make it possible to use pry for IRB
 gem 'puma', '~> 5.5' # app server
 gem 'rails', '~> 7.0.0'
-gem 'redis', '~> 5.0'
+gem 'redis', '~> 4.0' # Constrained by Sidekiq
 gem 'sidekiq', '~> 6.4'
 gem 'turbo-rails'
 gem 'view_component'
 gem 'whenever' # manage cron for audit checks
+
+source 'https://gems.contribsys.com/' do
+  gem 'sidekiq-pro'
+end
 
 # Stanford gems
 gem 'dor-event-client', '~> 1.0'
