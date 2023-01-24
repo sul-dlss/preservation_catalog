@@ -6,7 +6,7 @@ module Replication
   #   Please update the configs for the various environments if it's renamed or moved.
   # @note This name is slightly misleading, as this class solely deals with AWS US West 2 endpoint
   class S3WestDeliveryJob < Replication::DeliveryJobBase
-    queue_as :s3_us_west_2_delivery
+    queue_as :replication_aws_us_west_2_delivery
 
     # perform method is defined in DeliveryJobBase
 

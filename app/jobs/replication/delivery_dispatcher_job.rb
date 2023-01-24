@@ -18,7 +18,7 @@ module Replication
   #   the VM is updated to a new vesrion). Therefore, we receive the zip
   #   metadata from the process that actually created the zip file.
   class DeliveryDispatcherJob < Replication::ZipPartJobBase
-    queue_as :zips_made
+    queue_as :replication_plexer
 
     before_enqueue do |job|
       job.zip_info_check!(job.arguments.fourth)

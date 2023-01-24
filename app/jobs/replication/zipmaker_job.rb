@@ -7,7 +7,7 @@ module Replication
   #        Note: a single DruidVersionZip may have more than one ZipPart.
   #   2. Invoke Replication::DeliveryDispatcherJob for each ZipPart.
   class ZipmakerJob < ApplicationJob
-    queue_as :zipmaker
+    queue_as :replication_zipmaker
     delegate :find_or_create_zip!, :file_path, :part_keys, to: :zip
 
     attr_accessor :zip

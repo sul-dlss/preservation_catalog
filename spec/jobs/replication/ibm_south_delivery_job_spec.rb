@@ -8,6 +8,6 @@ describe Replication::IbmSouthDeliveryJob do
   end
 
   it 'uses its own queue' do
-    expect(described_class.new.queue_name).to eq 'ibm_us_south_delivery'
+    expect(described_class.new.queue_name).to eq 'replication_ibm_us_south_delivery'
   end
 end
