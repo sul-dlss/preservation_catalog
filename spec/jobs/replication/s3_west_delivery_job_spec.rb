@@ -8,6 +8,6 @@ describe Replication::S3WestDeliveryJob do
   end
 
   it 'uses its own queue' do
-    expect(described_class.new.queue_name).to eq 'replication_aws_us_west_2_delivery'
+    expect(described_class.new.queue_name).to eq 'replication_s3_west_delivery'
   end
 end
