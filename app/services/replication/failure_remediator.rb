@@ -68,7 +68,7 @@ module Replication
     end
 
     def empty_audit_results(zipped_moab_version)
-      AuditResults.new(druid: druid, actual_version: version, moab_storage_root: zipped_moab_version.zip_endpoint)
+      Audit::Results.new(druid: druid, actual_version: version, moab_storage_root: zipped_moab_version.zip_endpoint)
     end
 
     def endpoint_audit_class_for(zipped_moab_version)

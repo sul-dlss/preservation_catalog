@@ -10,7 +10,7 @@ RSpec.describe Audit::ChecksumValidator do
   let(:moab_record) { create(:preserved_object_fixture, druid: druid).moab_record }
   let(:checksum_validator) { described_class.new(moab_record, logger: logger_double) }
   let(:moab_on_storage_validator) { checksum_validator.send(:moab_on_storage_validator) }
-  let(:results) { instance_double(AuditResults) }
+  let(:results) { instance_double(Audit::Results) }
   let(:logger_double) { instance_double(ActiveSupport::Logger, info: nil, error: nil, add: nil) }
   let(:audit_workflow_reporter) { instance_double(AuditReporters::AuditWorkflowReporter, report_errors: nil, report_completed: nil) }
   let(:honeybadger_reporter) { instance_double(AuditReporters::HoneybadgerReporter, report_errors: nil, report_completed: nil) }
@@ -58,8 +58,8 @@ RSpec.describe Audit::ChecksumValidator do
                           { moab_record_status_changed: 'MoabRecord status changed from validity_unknown to moab_on_storage_not_found' }])
       end
 
-      it 'calls AuditResults.report_results' do
-        expect(AuditResultsReporter).to receive(:report_results).with(audit_results: AuditResults, logger: logger_double)
+      it 'calls Audit::Results.report_results' do
+        expect(AuditResultsReporter).to receive(:report_results).with(audit_results: Audit::Results, logger: logger_double)
         checksum_validator.validate_checksums
       end
     end
@@ -99,7 +99,7 @@ RSpec.describe Audit::ChecksumValidator do
       end
 
       it 'calls AuditResultReporter.report_results' do
-        expect(AuditResultsReporter).to receive(:report_results).with(audit_results: AuditResults, logger: logger_double)
+        expect(AuditResultsReporter).to receive(:report_results).with(audit_results: Audit::Results, logger: logger_double)
         checksum_validator.validate_checksums
       end
     end
@@ -161,7 +161,7 @@ RSpec.describe Audit::ChecksumValidator do
               moab_record.status = initial_status
               moab_record.save!
               expect { checksum_validator.validate_checksums }.to change(moab_record, :status).to 'unexpected_version_on_storage'
-              expect(checksum_validator.results.contains_result_code?(AuditResults::UNEXPECTED_VERSION)).to be true
+              expect(checksum_validator.results.contains_result_code?(Audit::Results::UNEXPECTED_VERSION)).to be true
               expect(moab_record.reload.status).to eq 'unexpected_version_on_storage'
             end
           end
@@ -169,7 +169,7 @@ RSpec.describe Audit::ChecksumValidator do
           it 'leaves status as UNEXPECTED_VERSION_ON_STORAGE_STATUS if MoabRecord started in that state' do
             moab_record.unexpected_version_on_storage!
             expect { checksum_validator.validate_checksums }.not_to(change(moab_record, :status))
-            expect(checksum_validator.results.contains_result_code?(AuditResults::UNEXPECTED_VERSION)).to be true
+            expect(checksum_validator.results.contains_result_code?(Audit::Results::UNEXPECTED_VERSION)).to be true
             expect(moab_record.reload.status).to eq 'unexpected_version_on_storage'
           end
         end
@@ -288,8 +288,8 @@ RSpec.describe Audit::ChecksumValidator do
     end
 
     context 'reports results' do
-      it 'calls AuditResults.report_results' do
-        expect(AuditResultsReporter).to receive(:report_results).with(audit_results: AuditResults, logger: logger_double)
+      it 'calls Audit::Results.report_results' do
+        expect(AuditResultsReporter).to receive(:report_results).with(audit_results: Audit::Results, logger: logger_double)
         checksum_validator.validate_checksums
       end
     end
@@ -312,12 +312,12 @@ RSpec.describe Audit::ChecksumValidator do
 
       it 'has a result code indicating the update failed' do
         checksum_validator.validate_checksums
-        expect(checksum_validator.results.contains_result_code?(AuditResults::DB_UPDATE_FAILED)).to be true
+        expect(checksum_validator.results.contains_result_code?(Audit::Results::DB_UPDATE_FAILED)).to be true
       end
 
       it 'does not have a result code indicating the update happened' do
         checksum_validator.validate_checksums
-        expect(checksum_validator.results.contains_result_code?(AuditResults::MOAB_RECORD_STATUS_CHANGED)).to be false
+        expect(checksum_validator.results.contains_result_code?(Audit::Results::MOAB_RECORD_STATUS_CHANGED)).to be false
       end
     end
   end
@@ -342,39 +342,39 @@ RSpec.describe Audit::ChecksumValidator do
     context 'file checksums in manifestInventory.xml do not match' do
       let(:druid) { 'zz925bx9565' }
 
-      before { allow(AuditResults).to receive(:new).and_return(results) }
+      before { allow(Audit::Results).to receive(:new).and_return(results) }
 
       it 'adds a MOAB_FILE_CHECKSUM_MISMATCH result' do
         file_path1 = "#{object_dir}/v0001/manifests/versionAdditions.xml"
         file_path2 = "#{object_dir}/v0002/manifests/versionInventory.xml"
         allow(results).to receive(:add_result).with(
-          AuditResults::MOAB_FILE_CHECKSUM_MISMATCH, file_path: a_string_matching(file_path1), version: 'v1'
+          Audit::Results::MOAB_FILE_CHECKSUM_MISMATCH, file_path: a_string_matching(file_path1), version: 'v1'
         )
         allow(results).to receive(:add_result).with(
-          AuditResults::MOAB_FILE_CHECKSUM_MISMATCH, file_path: a_string_matching(file_path2), version: 'v2'
+          Audit::Results::MOAB_FILE_CHECKSUM_MISMATCH, file_path: a_string_matching(file_path2), version: 'v2'
         )
         checksum_validator.send(:validate_manifest_inventories)
         expect(results).to have_received(:add_result).with(
-          AuditResults::MOAB_FILE_CHECKSUM_MISMATCH, file_path: a_string_matching(file_path1), version: 'v1'
+          Audit::Results::MOAB_FILE_CHECKSUM_MISMATCH, file_path: a_string_matching(file_path1), version: 'v1'
         )
         expect(results).to have_received(:add_result).with(
-          AuditResults::MOAB_FILE_CHECKSUM_MISMATCH, file_path: a_string_matching(file_path2), version: 'v2'
+          Audit::Results::MOAB_FILE_CHECKSUM_MISMATCH, file_path: a_string_matching(file_path2), version: 'v2'
         )
       end
     end
 
     context 'file missing from manifestInventory.xml' do
-      before { allow(AuditResults).to receive(:new).and_return(results) }
+      before { allow(Audit::Results).to receive(:new).and_return(results) }
 
       it 'adds a FILE_NOT_IN_MANIFEST result' do
         manifest_file_path = "#{object_dir}/v0003/manifests/manifestInventory.xml"
         file_path = "#{object_dir}/v0003/manifests/versionInventory.xml"
         allow(results).to receive(:add_result).with(
-          AuditResults::FILE_NOT_IN_MANIFEST, file_path: a_string_matching(file_path), manifest_file_path: a_string_matching(manifest_file_path)
+          Audit::Results::FILE_NOT_IN_MANIFEST, file_path: a_string_matching(file_path), manifest_file_path: a_string_matching(manifest_file_path)
         )
         checksum_validator.send(:validate_manifest_inventories)
         expect(results).to have_received(:add_result).with(
-          AuditResults::FILE_NOT_IN_MANIFEST, file_path: a_string_matching(file_path), manifest_file_path: a_string_matching(manifest_file_path)
+          Audit::Results::FILE_NOT_IN_MANIFEST, file_path: a_string_matching(file_path), manifest_file_path: a_string_matching(manifest_file_path)
         )
       end
     end
@@ -382,17 +382,17 @@ RSpec.describe Audit::ChecksumValidator do
     context 'file not on disk, but is described in manifestInventory.xml' do
       let(:druid) { 'zz514sm9647' }
 
-      before { allow(AuditResults).to receive(:new).and_return(results) }
+      before { allow(Audit::Results).to receive(:new).and_return(results) }
 
       it 'adds a FILE_NOT_IN_MOAB result' do
         manifest_file_path = "#{object_dir}/v0003/manifests/manifestInventory.xml"
         file_path = "#{object_dir}/v0003/manifests/versionInventory.xml"
         allow(results).to receive(:add_result).with(
-          AuditResults::FILE_NOT_IN_MOAB, manifest_file_path: a_string_matching(manifest_file_path), file_path: a_string_matching(file_path)
+          Audit::Results::FILE_NOT_IN_MOAB, manifest_file_path: a_string_matching(manifest_file_path), file_path: a_string_matching(file_path)
         )
         checksum_validator.send(:validate_manifest_inventories)
         expect(results).to have_received(:add_result).with(
-          AuditResults::FILE_NOT_IN_MOAB, manifest_file_path: a_string_matching(manifest_file_path), file_path: a_string_matching(file_path)
+          Audit::Results::FILE_NOT_IN_MOAB, manifest_file_path: a_string_matching(manifest_file_path), file_path: a_string_matching(file_path)
         )
       end
     end
@@ -400,16 +400,16 @@ RSpec.describe Audit::ChecksumValidator do
     context 'manifestInventory.xml not found in Moab' do
       let(:druid) { 'zz628nk4868' }
 
-      before { allow(AuditResults).to receive(:new).and_return(results) }
+      before { allow(Audit::Results).to receive(:new).and_return(results) }
 
       it 'adds a MANIFEST_NOT_IN_MOAB' do
         manifest_file_path = 'spec/fixtures/checksum_root01/sdr2objects/zz/628/nk/4868/zz628nk4868/v0001/manifests/manifestInventory.xml'
         allow(results).to receive(:add_result).with(
-          AuditResults::MANIFEST_NOT_IN_MOAB, manifest_file_path: manifest_file_path
+          Audit::Results::MANIFEST_NOT_IN_MOAB, manifest_file_path: manifest_file_path
         )
         checksum_validator.send(:validate_manifest_inventories)
         expect(results).to have_received(:add_result).with(
-          AuditResults::MANIFEST_NOT_IN_MOAB, manifest_file_path: manifest_file_path
+          Audit::Results::MANIFEST_NOT_IN_MOAB, manifest_file_path: manifest_file_path
         )
       end
     end
@@ -417,16 +417,16 @@ RSpec.describe Audit::ChecksumValidator do
     context 'cannot parse manifestInventory.xml file' do
       let(:druid) { 'zz048cw1328' }
 
-      before { allow(AuditResults).to receive(:new).and_return(results) }
+      before { allow(Audit::Results).to receive(:new).and_return(results) }
 
       it 'adds an INVALID_MANIFEST' do
         manifest_file_path = 'spec/fixtures/checksum_root01/sdr2objects/zz/048/cw/1328/zz048cw1328/v0002/manifests/manifestInventory.xml'
         allow(results).to receive(:add_result).with(
-          AuditResults::INVALID_MANIFEST, manifest_file_path: manifest_file_path
+          Audit::Results::INVALID_MANIFEST, manifest_file_path: manifest_file_path
         )
         checksum_validator.send(:validate_manifest_inventories)
         expect(results).to have_received(:add_result).with(
-          AuditResults::INVALID_MANIFEST, manifest_file_path: manifest_file_path
+          Audit::Results::INVALID_MANIFEST, manifest_file_path: manifest_file_path
         )
       end
     end
@@ -453,12 +453,12 @@ RSpec.describe Audit::ChecksumValidator do
       let(:druid) { 'zz111rr1111' }
       let(:root_name) { 'fixture_sr3' }
 
-      before { allow(AuditResults).to receive(:new).and_return(results) }
+      before { allow(Audit::Results).to receive(:new).and_return(results) }
 
       it 'adds a MOAB_FILE_CHECKSUM_MISMATCH result' do
         file_path = "#{object_dir}/v0001/data/content/eric-smith-dissertation-augmented.pdf"
         expect(results).to receive(:add_result).with(
-          AuditResults::MOAB_FILE_CHECKSUM_MISMATCH, { file_path: file_path, version: 1 }
+          Audit::Results::MOAB_FILE_CHECKSUM_MISMATCH, { file_path: file_path, version: 1 }
         )
         signature_catalog_validator.send(:validate_signature_catalog_listing)
       end
@@ -468,13 +468,13 @@ RSpec.describe Audit::ChecksumValidator do
       let(:druid) { 'tt222tt2222' }
       let(:root_name) { 'fixture_sr3' }
 
-      before { allow(AuditResults).to receive(:new).and_return(results) }
+      before { allow(Audit::Results).to receive(:new).and_return(results) }
 
       it 'adds a FILE_NOT_IN_MOAB error' do
         manifest_file_path = "#{object_dir}/v0003/manifests/signatureCatalog.xml"
         file_path = "#{object_dir}/v0001/data/content/SC1258_FUR_032a.jpg"
         expect(results).to receive(:add_result).with(
-          AuditResults::FILE_NOT_IN_MOAB, { manifest_file_path: manifest_file_path, file_path: file_path }
+          Audit::Results::FILE_NOT_IN_MOAB, { manifest_file_path: manifest_file_path, file_path: file_path }
         )
         signature_catalog_validator.send(:validate_signature_catalog_listing)
       end
@@ -484,11 +484,11 @@ RSpec.describe Audit::ChecksumValidator do
       let(:druid) { 'zz333vv3333' }
       let(:root_name) { 'fixture_sr3' }
 
-      before { allow(AuditResults).to receive(:new).and_return(results) }
+      before { allow(Audit::Results).to receive(:new).and_return(results) }
 
       it 'adds a MANIFEST_NOT_IN_MOAB error' do
         expect(results).to receive(:add_result).with(
-          AuditResults::SIGNATURE_CATALOG_NOT_IN_MOAB, signature_catalog_path: "#{object_dir}/v0002/manifests/signatureCatalog.xml"
+          Audit::Results::SIGNATURE_CATALOG_NOT_IN_MOAB, signature_catalog_path: "#{object_dir}/v0002/manifests/signatureCatalog.xml"
         )
         signature_catalog_validator.send(:validate_signature_catalog_listing)
       end
@@ -498,13 +498,13 @@ RSpec.describe Audit::ChecksumValidator do
       let(:druid) { 'xx444xx4444' }
       let(:root_name) { 'fixture_sr3' }
 
-      before { allow(AuditResults).to receive(:new).and_return(results) }
+      before { allow(Audit::Results).to receive(:new).and_return(results) }
 
       it 'adds an INVALID_MANIFEST error' do
         exp_msg_start = '#<Nokogiri::XML::SyntaxError: 6:28: FATAL: Opening and ending tag mismatch: signatureCatalog'
         expect(results).to receive(:add_result).with(
-          AuditResults::INVALID_MANIFEST, hash_including(manifest_file_path: "#{object_dir}/v0001/manifests/signatureCatalog.xml",
-                                                         addl: a_string_starting_with(exp_msg_start))
+          Audit::Results::INVALID_MANIFEST, hash_including(manifest_file_path: "#{object_dir}/v0001/manifests/signatureCatalog.xml",
+                                                           addl: a_string_starting_with(exp_msg_start))
         )
         signature_catalog_validator.send(:validate_signature_catalog_listing)
       end
@@ -532,7 +532,7 @@ RSpec.describe Audit::ChecksumValidator do
       let(:druid) { 'zz555zz5555' }
       let(:root_name) { 'fixture_sr3' }
 
-      before { allow(AuditResults).to receive(:new).and_return(results) }
+      before { allow(Audit::Results).to receive(:new).and_return(results) }
 
       it 'adds a FILE_NOT_IN_SIGNATURE_CATALOG error' do
         content_file_path = "#{object_dir}/v0001/data/content/not_in_sigcat.txt"
@@ -540,13 +540,13 @@ RSpec.describe Audit::ChecksumValidator do
         nested_file_path = "#{object_dir}/v0001/data/content/unexpected/another_not_in_sigcat.txt"
         signature_catalog_path = "#{object_dir}/v0002/manifests/signatureCatalog.xml"
         expect(results).to receive(:add_result).with(
-          AuditResults::FILE_NOT_IN_SIGNATURE_CATALOG, { file_path: content_file_path, signature_catalog_path: signature_catalog_path }
+          Audit::Results::FILE_NOT_IN_SIGNATURE_CATALOG, { file_path: content_file_path, signature_catalog_path: signature_catalog_path }
         )
         expect(results).to receive(:add_result).with(
-          AuditResults::FILE_NOT_IN_SIGNATURE_CATALOG, { file_path: metadata_file_path, signature_catalog_path: signature_catalog_path }
+          Audit::Results::FILE_NOT_IN_SIGNATURE_CATALOG, { file_path: metadata_file_path, signature_catalog_path: signature_catalog_path }
         )
         expect(results).to receive(:add_result).with(
-          AuditResults::FILE_NOT_IN_SIGNATURE_CATALOG, { file_path: nested_file_path, signature_catalog_path: signature_catalog_path }
+          Audit::Results::FILE_NOT_IN_SIGNATURE_CATALOG, { file_path: nested_file_path, signature_catalog_path: signature_catalog_path }
         )
         signature_catalog_validator.send(:flag_unexpected_data_files)
       end
@@ -579,7 +579,7 @@ RSpec.describe Audit::ChecksumValidator do
         allow(checksum_validator).to receive(:results).and_return(results)
         checksum_validator.send(:validate_signature_catalog)
         expect(results).to have_received(:add_result).with(
-          AuditResults::SIGNATURE_CATALOG_NOT_IN_MOAB, anything
+          Audit::Results::SIGNATURE_CATALOG_NOT_IN_MOAB, anything
         ).at_least(:once)
       end
     end
@@ -594,8 +594,8 @@ RSpec.describe Audit::ChecksumValidator do
         exp_msg_start = '#<Nokogiri::XML::SyntaxError: 6:28: FATAL: Opening and ending tag mismatch: signatureCatalog'
         checksum_validator.send(:validate_signature_catalog)
         expect(results).to have_received(:add_result).with(
-          AuditResults::INVALID_MANIFEST, hash_including(manifest_file_path: "#{object_dir}/v0001/manifests/signatureCatalog.xml",
-                                                         addl: a_string_starting_with(exp_msg_start))
+          Audit::Results::INVALID_MANIFEST, hash_including(manifest_file_path: "#{object_dir}/v0001/manifests/signatureCatalog.xml",
+                                                           addl: a_string_starting_with(exp_msg_start))
         )
       end
     end
@@ -610,8 +610,8 @@ RSpec.describe Audit::ChecksumValidator do
         exp_msg_start = '#<Nokogiri::XML::SyntaxError: 1:1: FATAL: Document is empty'
         checksum_validator.send(:validate_signature_catalog)
         expect(results).to have_received(:add_result).with(
-          AuditResults::INVALID_MANIFEST, hash_including(manifest_file_path: "#{object_dir}/v0001/manifests/signatureCatalog.xml",
-                                                         addl: a_string_starting_with(exp_msg_start))
+          Audit::Results::INVALID_MANIFEST, hash_including(manifest_file_path: "#{object_dir}/v0001/manifests/signatureCatalog.xml",
+                                                           addl: a_string_starting_with(exp_msg_start))
         ).at_least(:once)
       end
     end

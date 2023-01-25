@@ -11,7 +11,7 @@ module Audit
                         .extend(ActiveSupport::Logger.broadcast(Logger.new(Rails.root.join('log', 'cv.log'))))
     end
 
-    # @return [Array<AuditResults>] results from Audit::ChecksumValidator runs
+    # @return [Array<Audit::Results>] results from Audit::ChecksumValidator runs
     def self.validate_druid(druid)
       logger.info "#{Time.now.utc.iso8601} CV validate_druid starting for #{druid}"
       preserved_object = PreservedObject.find_by(druid: druid)

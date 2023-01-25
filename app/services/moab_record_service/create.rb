@@ -27,7 +27,7 @@ module MoabRecordService
     protected
 
     def report_already_exists
-      results.add_result(AuditResults::DB_OBJ_ALREADY_EXISTS, 'MoabRecord')
+      results.add_result(Audit::Results::DB_OBJ_ALREADY_EXISTS, 'MoabRecord')
     end
 
     def creation_status(checksums_validated)

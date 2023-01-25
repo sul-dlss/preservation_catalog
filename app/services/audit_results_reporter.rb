@@ -4,7 +4,7 @@
 class AuditResultsReporter
   def self.report_results(audit_results:, logger: nil)
     new(audit_results: audit_results, logger: logger).report_results
-    # This replicates previous behavior of AuditResults.report_results
+    # This replicates previous behavior of Audit::Results.report_results
     audit_results.results
   end
 

@@ -33,10 +33,10 @@ module AuditReporters
 
     def logger_severity_level(result_code)
       case result_code
-      when AuditResults::DB_OBJ_DOES_NOT_EXIST, AuditResults::ZIP_PARTS_NOT_CREATED, AuditResults::ZIP_PARTS_NOT_ALL_REPLICATED
+      when Audit::Results::DB_OBJ_DOES_NOT_EXIST, Audit::Results::ZIP_PARTS_NOT_CREATED, Audit::Results::ZIP_PARTS_NOT_ALL_REPLICATED
         Logger::WARN
-      when AuditResults::VERSION_MATCHES, AuditResults::ACTUAL_VERS_GT_DB_OBJ, AuditResults::CREATED_NEW_OBJECT,
-          AuditResults::MOAB_RECORD_STATUS_CHANGED, AuditResults::MOAB_CHECKSUM_VALID
+      when Audit::Results::VERSION_MATCHES, Audit::Results::ACTUAL_VERS_GT_DB_OBJ, Audit::Results::CREATED_NEW_OBJECT,
+          Audit::Results::MOAB_RECORD_STATUS_CHANGED, Audit::Results::MOAB_CHECKSUM_VALID
         Logger::INFO
       else
         Logger::ERROR
