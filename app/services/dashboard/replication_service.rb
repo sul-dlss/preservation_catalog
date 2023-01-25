@@ -6,6 +6,11 @@ module Dashboard
   module ReplicationService
     include InstrumentationSupport
 
+    OK_BADGE_CLASS = 'bg-success'
+    NOT_OK_BADGE_CLASS = 'bg-danger'
+    OK_LABEL = 'OK'
+    NOT_OK_LABEL = 'Error'
+
     def replication_and_zip_parts_ok?
       zip_parts_ok? && replication_ok?
     end
@@ -23,6 +28,11 @@ module Dashboard
     # total number of object versions according to PreservedObject table
     def num_object_versions_per_preserved_object
       PreservedObject.all.annotate(caller).sum(:current_version)
+    end
+
+    # Array-ify the endpoint data so it's renderable via the ViewComponent `#with_collection` method
+    def endpoints
+      endpoint_data.to_a
     end
 
     def endpoint_data
