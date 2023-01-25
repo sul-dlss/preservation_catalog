@@ -14,8 +14,8 @@ RSpec.describe AuditReporters::HoneybadgerReporter do
 
   describe '#report_errors' do
     context 'when handled error' do
-      let(:result1) { { AuditResults::MOAB_NOT_FOUND => 'db MoabRecord exists but Moab not found' } }
-      let(:result2) { { AuditResults::ZIP_PART_NOT_FOUND => 'replicated part not found' } }
+      let(:result1) { { Audit::Results::MOAB_NOT_FOUND => 'db MoabRecord exists but Moab not found' } }
+      let(:result2) { { Audit::Results::ZIP_PART_NOT_FOUND => 'replicated part not found' } }
 
       it 'notifies for each error' do
         described_class.new.report_errors(druid: druid,
@@ -29,7 +29,7 @@ RSpec.describe AuditReporters::HoneybadgerReporter do
     end
 
     context 'when ignored error' do
-      let(:result) { { AuditResults::ZIP_PARTS_NOT_CREATED => 'no zip_parts exist yet for this ZippedMoabVersion' } }
+      let(:result) { { Audit::Results::ZIP_PARTS_NOT_CREATED => 'no zip_parts exist yet for this ZippedMoabVersion' } }
 
       it 'does not notify' do
         described_class.new.report_errors(druid: druid, version: actual_version, storage_area: ms_root, check_name: check_name, results: [result])
@@ -39,7 +39,7 @@ RSpec.describe AuditReporters::HoneybadgerReporter do
   end
 
   describe '#report_completed' do
-    let(:result) { { AuditResults::MOAB_RECORD_STATUS_CHANGED => 'MoabRecord status changed from invalid_moab' } }
+    let(:result) { { Audit::Results::MOAB_RECORD_STATUS_CHANGED => 'MoabRecord status changed from invalid_moab' } }
 
     it 'does not notify' do
       described_class.new.report_completed(druid: druid, version: actual_version, storage_area: ms_root, check_name: check_name, result: result)

@@ -16,7 +16,7 @@ describe Audit::MoabReplicationAuditJob do
   end
 
   describe '#perform' do
-    let(:audit_results) { instance_double(AuditResults) }
+    let(:audit_results) { instance_double(Audit::Results) }
 
     context 'when there are no zipped moab versions to backfill' do
       before do

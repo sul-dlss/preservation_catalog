@@ -22,7 +22,7 @@ module MoabRecordService
       @incoming_version = ApplicationController.helpers.version_string_to_int(incoming_version)
       @incoming_size = ApplicationController.helpers.string_to_int(incoming_size)
       @moab_storage_root = moab_storage_root
-      @results = AuditResults.new(druid: druid, actual_version: incoming_version, moab_storage_root: moab_storage_root, check_name: check_name)
+      @results = Audit::Results.new(druid: druid, actual_version: incoming_version, moab_storage_root: moab_storage_root, check_name: check_name)
       @logger = PreservationCatalog::Application.logger
     end
 
@@ -47,7 +47,7 @@ module MoabRecordService
     # perform_execute wraps with common parts of the execute method for all moab record services
     def perform_execute
       if invalid?
-        results.add_result(AuditResults::INVALID_ARGUMENTS, errors.full_messages)
+        results.add_result(Audit::Results::INVALID_ARGUMENTS, errors.full_messages)
       elsif block_given?
         yield
       end
@@ -78,7 +78,7 @@ module MoabRecordService
     def raise_rollback_if_version_mismatch
       return if moab_record.matches_po_current_version?
 
-      results.add_result(AuditResults::DB_VERSIONS_DISAGREE, moab_record_version: moab_record_version, po_version: preserved_object_version)
+      results.add_result(Audit::Results::DB_VERSIONS_DISAGREE, moab_record_version: moab_record_version, po_version: preserved_object_version)
       raise ActiveRecord::Rollback, "MoabRecord version #{moab_record_version} != PreservedObject current_version #{preserved_object_version}"
     end
 
@@ -97,7 +97,7 @@ module MoabRecordService
         preserved_object = create_preserved_object
         preserved_object.create_moab_record!(moab_record_attrs(status, checksums_validated))
       end
-      results.add_result(AuditResults::CREATED_NEW_OBJECT) if transaction_ok
+      results.add_result(Audit::Results::CREATED_NEW_OBJECT) if transaction_ok
     end
 
     def report_results!
@@ -113,7 +113,7 @@ module MoabRecordService
     end
 
     def create_missing_moab_record
-      results.add_result(AuditResults::DB_OBJ_DOES_NOT_EXIST, 'MoabRecord')
+      results.add_result(Audit::Results::DB_OBJ_DOES_NOT_EXIST, 'MoabRecord')
       status = moab_on_storage_validator.moab_validation_errors.empty? ? 'validity_unknown' : 'invalid_moab'
       create_db_objects(status)
     end

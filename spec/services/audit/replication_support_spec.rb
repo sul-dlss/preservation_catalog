@@ -4,7 +4,7 @@ require 'rails_helper'
 
 RSpec.describe Audit::ReplicationSupport do
   let(:zmv) { create(:zipped_moab_version, preserved_object: create(:preserved_object_fixture, druid: 'bz514sm9647')) }
-  let(:results) { AuditResults.new(druid: zmv.preserved_object.druid, moab_storage_root: zmv.zip_endpoint, check_name: 'ReplicationSupportSpec') }
+  let(:results) { Audit::Results.new(druid: zmv.preserved_object.druid, moab_storage_root: zmv.zip_endpoint, check_name: 'ReplicationSupportSpec') }
   let(:version) { zmv.version }
   let(:endpoint_name) { zmv.zip_endpoint.endpoint_name }
   let(:result_prefix) { "#{version} on #{endpoint_name}" }
@@ -14,7 +14,7 @@ RSpec.describe Audit::ReplicationSupport do
       described_class.check_child_zip_part_attributes(zmv, results)
       expect(results.results).to include(
         a_hash_including(
-          AuditResults::ZIP_PARTS_NOT_CREATED => "#{result_prefix}: no zip_parts exist yet for this ZippedMoabVersion"
+          Audit::Results::ZIP_PARTS_NOT_CREATED => "#{result_prefix}: no zip_parts exist yet for this ZippedMoabVersion"
         )
       )
     end
@@ -41,7 +41,7 @@ RSpec.describe Audit::ReplicationSupport do
       child_parts_counts = zmv.child_parts_counts
       exp_err_msg = "#{result_prefix}: ZippedMoabVersion has variation in child parts_counts: #{child_parts_counts}"
       expect(results.results).to include(
-        a_hash_including(AuditResults::ZIP_PARTS_COUNT_INCONSISTENCY => exp_err_msg)
+        a_hash_including(Audit::Results::ZIP_PARTS_COUNT_INCONSISTENCY => exp_err_msg)
       )
     end
   end
@@ -60,12 +60,12 @@ RSpec.describe Audit::ReplicationSupport do
 
     it "doesn't log parts_count errors" do
       described_class.check_child_zip_part_attributes(zmv, results)
-      expect(results.results).not_to include(a_hash_including(AuditResults::ZIP_PARTS_COUNT_INCONSISTENCY))
+      expect(results.results).not_to include(a_hash_including(Audit::Results::ZIP_PARTS_COUNT_INCONSISTENCY))
     end
 
     it "doesn't log an error about parts_count mismatching number of zip_parts" do
       described_class.check_child_zip_part_attributes(zmv, results)
-      expect(results.results).not_to include(a_hash_including(AuditResults::ZIP_PARTS_COUNT_DIFFERS_FROM_ACTUAL))
+      expect(results.results).not_to include(a_hash_including(Audit::Results::ZIP_PARTS_COUNT_DIFFERS_FROM_ACTUAL))
     end
   end
 
@@ -85,7 +85,7 @@ RSpec.describe Audit::ReplicationSupport do
       msg = "#{result_prefix}: ZippedMoabVersion stated parts count " \
             "(3) doesn't match actual number of zip parts rows (2)"
       expect(results.results).to include(
-        a_hash_including(AuditResults::ZIP_PARTS_COUNT_DIFFERS_FROM_ACTUAL => msg)
+        a_hash_including(Audit::Results::ZIP_PARTS_COUNT_DIFFERS_FROM_ACTUAL => msg)
       )
     end
   end
@@ -106,7 +106,7 @@ RSpec.describe Audit::ReplicationSupport do
       described_class.check_child_zip_part_attributes(zmv, results)
       msg = "#{result_prefix}: Sum of ZippedMoabVersion child part sizes (666) is less than what is in the Moab: 202938"
       expect(results.results).to include(
-        a_hash_including(AuditResults::ZIP_PARTS_SIZE_INCONSISTENCY => msg)
+        a_hash_including(Audit::Results::ZIP_PARTS_SIZE_INCONSISTENCY => msg)
       )
     end
   end
@@ -128,7 +128,7 @@ RSpec.describe Audit::ReplicationSupport do
         unreplicated_parts = zmv.zip_parts.where(suffix: ['.zip', '.z02'])
         msg = "#{result_prefix}: not all ZippedMoabVersion parts are replicated yet: #{unreplicated_parts.to_a}"
         described_class.check_child_zip_part_attributes(zmv, results)
-        expect(results.results).to include(a_hash_including(AuditResults::ZIP_PARTS_NOT_ALL_REPLICATED => msg))
+        expect(results.results).to include(a_hash_including(Audit::Results::ZIP_PARTS_NOT_ALL_REPLICATED => msg))
       end
 
       it 'returns true' do

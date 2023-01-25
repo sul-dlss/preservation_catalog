@@ -19,16 +19,16 @@ RSpec.shared_examples 'attributes validated' do
     let(:results) { audit_result.results }
 
     it '1 result' do
-      expect(audit_result).to be_an_instance_of AuditResults
+      expect(audit_result).to be_an_instance_of Audit::Results
       expect(results.size).to eq 1
     end
 
     it 'INVALID_ARGUMENTS' do
-      expect(results).to include(a_hash_including(AuditResults::INVALID_ARGUMENTS))
+      expect(results).to include(a_hash_including(Audit::Results::INVALID_ARGUMENTS))
     end
 
     context 'result message includes' do
-      let(:msg) { results.first[AuditResults::INVALID_ARGUMENTS] }
+      let(:msg) { results.first[Audit::Results::INVALID_ARGUMENTS] }
 
       it 'prefix' do
         expect(msg).to match(Regexp.escape('encountered validation error(s): '))
@@ -55,7 +55,7 @@ end
 
 RSpec.shared_examples 'calls AuditResultsReporter.report_results' do
   it 'outputs results to Rails.logger and sends errors to WorkflowErrorReporter' do
-    mock_results = instance_double(AuditResults,
+    mock_results = instance_double(Audit::Results,
                                    add_result: nil,
                                    results: [],
                                    results_as_string: nil)
@@ -74,7 +74,7 @@ RSpec.shared_examples 'druid not in catalog' do
 
   it 'DB_OBJ_DOES_NOT_EXIST error' do
     raise 'mis-use of shared example: checking behavior when there is no record for the druid' if PreservedObject.exists?(druid: druid)
-    expect(results).to include(a_hash_including(AuditResults::DB_OBJ_DOES_NOT_EXIST => a_string_matching(expected_msg)))
+    expect(results).to include(a_hash_including(Audit::Results::DB_OBJ_DOES_NOT_EXIST => a_string_matching(expected_msg)))
   end
 end
 
@@ -87,7 +87,7 @@ RSpec.shared_examples 'MoabRecord does not exist' do
   end
 
   it 'DB_OBJ_DOES_NOT_EXIST error' do
-    code = AuditResults::DB_OBJ_DOES_NOT_EXIST
+    code = Audit::Results::DB_OBJ_DOES_NOT_EXIST
     expect(results).to include(a_hash_including(code => match(expected_msg)))
   end
 end
@@ -151,21 +151,21 @@ RSpec.shared_examples 'unexpected version' do |actual_version|
     let(:results) { audit_result.results }
 
     it 'number of results' do
-      expect(audit_result).to be_an_instance_of AuditResults
+      expect(audit_result).to be_an_instance_of Audit::Results
       expect(results.size).to eq 3
     end
 
     it 'UNEXPECTED_VERSION result' do
-      code = AuditResults::UNEXPECTED_VERSION
+      code = Audit::Results::UNEXPECTED_VERSION
       expect(results).to include(a_hash_including(code => unexpected_version_msg))
     end
 
     it 'specific version results' do
       # NOTE: this is not checking that we have the CORRECT specific code
       codes = [
-        AuditResults::VERSION_MATCHES,
-        AuditResults::ACTUAL_VERS_GT_DB_OBJ,
-        AuditResults::ACTUAL_VERS_LT_DB_OBJ
+        Audit::Results::VERSION_MATCHES,
+        Audit::Results::ACTUAL_VERS_GT_DB_OBJ,
+        Audit::Results::ACTUAL_VERS_LT_DB_OBJ
       ]
       object_version_results = results.select { |r| codes.include?(r.keys.first) }
       msgs = object_version_results.map { |r| r.values.first }
@@ -173,7 +173,7 @@ RSpec.shared_examples 'unexpected version' do |actual_version|
     end
 
     it 'MOAB_RECORD_STATUS_CHANGED result' do
-      expect(results).to include(a_hash_including(AuditResults::MOAB_RECORD_STATUS_CHANGED))
+      expect(results).to include(a_hash_including(Audit::Results::MOAB_RECORD_STATUS_CHANGED))
     end
   end
 end
@@ -249,25 +249,25 @@ RSpec.shared_examples 'unexpected version with validation' do |service, incoming
 
     if service == :update_version_after_validation
       it 'UNEXPECTED_VERSION result unless INVALID_MOAB' do
-        unless results.find { |result| result.keys.first == AuditResults::INVALID_MOAB }
-          code = AuditResults::UNEXPECTED_VERSION
+        unless results.find { |result| result.keys.first == Audit::Results::INVALID_MOAB }
+          code = Audit::Results::UNEXPECTED_VERSION
           expect(results).to include(a_hash_including(code => unexpected_version_msg))
         end
       end
     end
     it 'specific version results' do
       codes = [
-        AuditResults::VERSION_MATCHES,
-        AuditResults::ACTUAL_VERS_GT_DB_OBJ,
-        AuditResults::ACTUAL_VERS_LT_DB_OBJ
+        Audit::Results::VERSION_MATCHES,
+        Audit::Results::ACTUAL_VERS_GT_DB_OBJ,
+        Audit::Results::ACTUAL_VERS_LT_DB_OBJ
       ]
       object_version_results = results.select { |r| codes.include?(r.keys.first) }
       msgs = object_version_results.map { |r| r.values.first }
-      expect(msgs).to include(a_string_matching('MoabRecord')) unless results.find { |r| r.keys.first == AuditResults::INVALID_MOAB }
+      expect(msgs).to include(a_string_matching('MoabRecord')) unless results.find { |r| r.keys.first == Audit::Results::INVALID_MOAB }
     end
 
     it 'MOAB_RECORD_STATUS_CHANGED result' do
-      expect(results).to include(a_hash_including(AuditResults::MOAB_RECORD_STATUS_CHANGED => updated_status_msg_regex))
+      expect(results).to include(a_hash_including(Audit::Results::MOAB_RECORD_STATUS_CHANGED => updated_status_msg_regex))
     end
   end
 end
@@ -295,12 +295,12 @@ RSpec.shared_examples 'PreservedObject current_version does not match MoabRecord
     let(:results) { audit_result.results }
 
     it '1 result' do
-      expect(audit_result).to be_an_instance_of AuditResults
+      expect(audit_result).to be_an_instance_of Audit::Results
       expect(results.size).to eq 1
     end
 
     it 'DB_VERSIONS_DISAGREE result' do
-      code = AuditResults::DB_VERSIONS_DISAGREE
+      code = Audit::Results::DB_VERSIONS_DISAGREE
       expect(results).to include(hash_including(code => version_mismatch_msg))
     end
   end
@@ -314,9 +314,9 @@ RSpec.shared_examples 'cannot validate something with INVALID_CHECKSUM_STATUS' d
     expect(moab_record.reload.status).to eq 'invalid_checksum'
   end
 
-  it 'has an AuditResults entry indicating inability to check the given status' do
+  it 'has an Audit::Results entry indicating inability to check the given status' do
     moab_record_service.execute
-    expect(moab_record_service.results.contains_result_code?(AuditResults::UNABLE_TO_CHECK_STATUS)).to be true
+    expect(moab_record_service.results.contains_result_code?(Audit::Results::UNABLE_TO_CHECK_STATUS)).to be true
   end
 end
 

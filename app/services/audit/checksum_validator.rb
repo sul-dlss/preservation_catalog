@@ -25,7 +25,7 @@ module Audit
       persist_db_transaction!(clear_connections: true) do
         moab_record.last_checksum_validation = Time.current
         if results.results.empty?
-          results.add_result(AuditResults::MOAB_CHECKSUM_VALID)
+          results.add_result(Audit::Results::MOAB_CHECKSUM_VALID)
           moab_record.update_audit_timestamps(true, true)
 
           validate_versions
@@ -55,7 +55,7 @@ module Audit
                                                              moab_on_storage_validator: moab_on_storage_validator, caller_validates_checksums: true)
 
       return if versions_match?
-      results.add_result(AuditResults::UNEXPECTED_VERSION,
+      results.add_result(Audit::Results::UNEXPECTED_VERSION,
                          actual_version: moab_on_storage.current_version_id,
                          db_obj_name: 'MoabRecord',
                          db_obj_version: moab_record.version)
@@ -82,8 +82,8 @@ module Audit
     end
 
     def results
-      @results ||= AuditResults.new(druid: druid, moab_storage_root: moab_storage_root, actual_version: moab_on_storage.current_version_id,
-                                    check_name: 'validate_checksums')
+      @results ||= Audit::Results.new(druid: druid, moab_storage_root: moab_storage_root, actual_version: moab_on_storage.current_version_id,
+                                      check_name: 'validate_checksums')
     end
 
     def persist_db_transaction!(clear_connections: false)
@@ -124,7 +124,7 @@ module Audit
         @checksum_validator = checksum_validator
       end
 
-      # Adds to the AuditResults object for any errors in checksum validation it encounters.
+      # Adds to the Audit::Results object for any errors in checksum validation it encounters.
       def validate
         return if manifest_inventory_verification_result.verified
 
@@ -132,9 +132,9 @@ module Audit
           parse_verification_subentity(subentity) unless subentity.verified
         end
       rescue Nokogiri::XML::SyntaxError
-        results.add_result(AuditResults::INVALID_MANIFEST, manifest_file_path: manifest_file_path)
+        results.add_result(Audit::Results::INVALID_MANIFEST, manifest_file_path: manifest_file_path)
       rescue Errno::ENOENT
-        results.add_result(AuditResults::MANIFEST_NOT_IN_MOAB, manifest_file_path: manifest_file_path)
+        results.add_result(Audit::Results::MANIFEST_NOT_IN_MOAB, manifest_file_path: manifest_file_path)
       end
 
       private
@@ -161,7 +161,7 @@ module Audit
       def add_result_for_modified_xml(subentity)
         subentity.subsets.dig(MODIFIED, FILES).each_value do |details|
           results.add_result(
-            AuditResults::MOAB_FILE_CHECKSUM_MISMATCH,
+            Audit::Results::MOAB_FILE_CHECKSUM_MISMATCH,
             file_path: "#{subentity.details['other']}/#{details['basis_path']}",
             version: subentity.details['basis']
           )
@@ -171,7 +171,7 @@ module Audit
       def add_result_for_additions_in_xml(subentity)
         subentity.subsets.dig(ADDED, FILES).each_value do |details|
           results.add_result(
-            AuditResults::FILE_NOT_IN_MANIFEST,
+            Audit::Results::FILE_NOT_IN_MANIFEST,
             file_path: "#{subentity.details['other']}/#{details['other_path']}",
             manifest_file_path: "#{subentity.details['other']}/#{MANIFESTS_XML}"
           )
@@ -181,7 +181,7 @@ module Audit
       def add_result_for_deletions_in_xml(subentity)
         subentity.subsets.dig(DELETED, FILES).each_value do |details|
           results.add_result(
-            AuditResults::FILE_NOT_IN_MOAB,
+            Audit::Results::FILE_NOT_IN_MOAB,
             file_path: "#{subentity.details['other']}/#{details['basis_path']}",
             manifest_file_path: "#{subentity.details['other']}/#{MANIFESTS_XML}"
           )
@@ -236,7 +236,7 @@ module Audit
 
         absent_from_signature_catalog_data = { file_path: data_file, signature_catalog_path: latest_signature_catalog_path }
 
-        results.add_result(AuditResults::FILE_NOT_IN_SIGNATURE_CATALOG,
+        results.add_result(Audit::Results::FILE_NOT_IN_SIGNATURE_CATALOG,
                            absent_from_signature_catalog_data)
       end
 
@@ -256,30 +256,30 @@ module Audit
       def latest_signature_catalog_entries
         @latest_signature_catalog_entries ||= latest_moab_storage_object_version.signature_catalog.entries
       rescue Errno::ENOENT, NoMethodError # e.g. latest_moab_storage_object_version.signature_catalog is nil (signatureCatalog.xml does not exist)
-        results.add_result(AuditResults::SIGNATURE_CATALOG_NOT_IN_MOAB, signature_catalog_path: latest_signature_catalog_path)
+        results.add_result(Audit::Results::SIGNATURE_CATALOG_NOT_IN_MOAB, signature_catalog_path: latest_signature_catalog_path)
         []
       rescue Nokogiri::XML::SyntaxError => e
-        results.add_result(AuditResults::INVALID_MANIFEST, manifest_file_path: latest_signature_catalog_path, addl: e.inspect)
+        results.add_result(Audit::Results::INVALID_MANIFEST, manifest_file_path: latest_signature_catalog_path, addl: e.inspect)
         []
       end
 
       def validate_signature_catalog_listing
         latest_signature_catalog_entries.each { |entry| validate_signature_catalog_entry(entry) }
       rescue Errno::ENOENT
-        results.add_result(AuditResults::SIGNATURE_CATALOG_NOT_IN_MOAB, signature_catalog_path: latest_signature_catalog_path)
+        results.add_result(Audit::Results::SIGNATURE_CATALOG_NOT_IN_MOAB, signature_catalog_path: latest_signature_catalog_path)
       rescue Nokogiri::XML::SyntaxError
-        results.add_result(AuditResults::INVALID_MANIFEST, manifest_file_path: latest_signature_catalog_path)
+        results.add_result(Audit::Results::INVALID_MANIFEST, manifest_file_path: latest_signature_catalog_path)
       end
 
       def validate_signature_catalog_entry(entry)
         unless entry.signature.eql?(calculated_signature(signature_catalog_entry_path(entry)))
           mismatch_error_data = { file_path: signature_catalog_entry_path(entry), version: entry.version_id }
-          results.add_result(AuditResults::MOAB_FILE_CHECKSUM_MISMATCH, mismatch_error_data)
+          results.add_result(Audit::Results::MOAB_FILE_CHECKSUM_MISMATCH, mismatch_error_data)
         end
       rescue Errno::ENOENT
         absent_from_moab_data = { manifest_file_path: latest_signature_catalog_path,
                                   file_path: signature_catalog_entry_path(entry) }
-        results.add_result(AuditResults::FILE_NOT_IN_MOAB, absent_from_moab_data)
+        results.add_result(Audit::Results::FILE_NOT_IN_MOAB, absent_from_moab_data)
       end
 
       # @return [String]

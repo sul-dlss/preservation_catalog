@@ -119,7 +119,7 @@ RSpec.describe MoabRecordService::CreateAfterValidation do
 
       it 'includes invalid moab result' do
         results = moab_record_service.execute.results
-        expect(results).to include(a_hash_including(AuditResults::INVALID_MOAB => /Invalid Moab, validation errors:/))
+        expect(results).to include(a_hash_including(Audit::Results::INVALID_MOAB => /Invalid Moab, validation errors:/))
       end
 
       context 'db update error' do
@@ -133,11 +133,11 @@ RSpec.describe MoabRecordService::CreateAfterValidation do
           end
 
           it 'DB_UPDATE_FAILED result' do
-            expect(results).to include(a_hash_including(AuditResults::DB_UPDATE_FAILED))
+            expect(results).to include(a_hash_including(Audit::Results::DB_UPDATE_FAILED))
           end
 
           it 'does NOT get CREATED_NEW_OBJECT result' do
-            expect(results).not_to include(hash_including(AuditResults::CREATED_NEW_OBJECT))
+            expect(results).not_to include(hash_including(Audit::Results::CREATED_NEW_OBJECT))
           end
         end
 
@@ -156,9 +156,9 @@ RSpec.describe MoabRecordService::CreateAfterValidation do
       let(:results) { audit_result.results }
 
       it '1 CREATED_NEW_OBJECT result' do
-        expect(audit_result).to be_an_instance_of AuditResults
+        expect(audit_result).to be_an_instance_of Audit::Results
         expect(results.size).to eq 1
-        expect(results.first).to include(AuditResults::CREATED_NEW_OBJECT => expected_msg)
+        expect(results.first).to include(Audit::Results::CREATED_NEW_OBJECT => expected_msg)
       end
     end
   end

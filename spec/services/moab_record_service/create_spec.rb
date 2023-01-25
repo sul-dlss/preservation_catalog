@@ -51,7 +51,7 @@ RSpec.describe MoabRecordService::Create do
       new_moab_record_service = described_class.new(druid: druid, incoming_version: incoming_version, incoming_size: incoming_size,
                                                     moab_storage_root: moab_storage_root)
       audit_results = new_moab_record_service.execute
-      code = AuditResults::DB_OBJ_ALREADY_EXISTS
+      code = Audit::Results::DB_OBJ_ALREADY_EXISTS
       expect(audit_results.results).to include(a_hash_including(code => a_string_matching('MoabRecord db object already exists')))
     end
 
@@ -65,11 +65,11 @@ RSpec.describe MoabRecordService::Create do
         end
 
         it 'DB_UPDATE_FAILED result' do
-          expect(moab_record_service.execute.results).to include(a_hash_including(AuditResults::DB_UPDATE_FAILED))
+          expect(moab_record_service.execute.results).to include(a_hash_including(Audit::Results::DB_UPDATE_FAILED))
         end
 
         it 'does NOT get CREATED_NEW_OBJECT result' do
-          expect(moab_record_service.execute.results).not_to include(hash_including(AuditResults::CREATED_NEW_OBJECT))
+          expect(moab_record_service.execute.results).not_to include(hash_including(Audit::Results::CREATED_NEW_OBJECT))
         end
       end
 
@@ -86,9 +86,9 @@ RSpec.describe MoabRecordService::Create do
       let(:audit_result) { moab_record_service.execute }
 
       it '1 result of CREATED_NEW_OBJECT' do
-        expect(audit_result).to be_an_instance_of AuditResults
+        expect(audit_result).to be_an_instance_of Audit::Results
         expect(audit_result.results.size).to eq 1
-        expect(audit_result.results.first).to match(a_hash_including(AuditResults::CREATED_NEW_OBJECT => expected_msg))
+        expect(audit_result.results.first).to match(a_hash_including(Audit::Results::CREATED_NEW_OBJECT => expected_msg))
       end
     end
   end

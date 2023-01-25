@@ -7,31 +7,31 @@ module AuditReporters
 
     def handled_single_codes
       [
-        AuditResults::INVALID_MOAB
+        Audit::Results::INVALID_MOAB
       ]
     end
 
     def handled_merge_codes
       [
-        AuditResults::ACTUAL_VERS_LT_DB_OBJ,
-        AuditResults::DB_OBJ_ALREADY_EXISTS,
-        AuditResults::DB_UPDATE_FAILED,
-        AuditResults::DB_VERSIONS_DISAGREE,
-        AuditResults::FILE_NOT_IN_MANIFEST,
-        AuditResults::FILE_NOT_IN_MOAB,
-        AuditResults::FILE_NOT_IN_SIGNATURE_CATALOG,
-        AuditResults::INVALID_MANIFEST,
-        AuditResults::MANIFEST_NOT_IN_MOAB,
-        AuditResults::MOAB_FILE_CHECKSUM_MISMATCH,
-        AuditResults::MOAB_NOT_FOUND,
-        AuditResults::SIGNATURE_CATALOG_NOT_IN_MOAB,
-        AuditResults::UNABLE_TO_CHECK_STATUS,
-        AuditResults::UNEXPECTED_VERSION,
-        AuditResults::ZIP_PART_CHECKSUM_MISMATCH,
-        AuditResults::ZIP_PART_NOT_FOUND,
-        AuditResults::ZIP_PARTS_COUNT_DIFFERS_FROM_ACTUAL,
-        AuditResults::ZIP_PARTS_COUNT_INCONSISTENCY,
-        AuditResults::ZIP_PARTS_NOT_ALL_REPLICATED
+        Audit::Results::ACTUAL_VERS_LT_DB_OBJ,
+        Audit::Results::DB_OBJ_ALREADY_EXISTS,
+        Audit::Results::DB_UPDATE_FAILED,
+        Audit::Results::DB_VERSIONS_DISAGREE,
+        Audit::Results::FILE_NOT_IN_MANIFEST,
+        Audit::Results::FILE_NOT_IN_MOAB,
+        Audit::Results::FILE_NOT_IN_SIGNATURE_CATALOG,
+        Audit::Results::INVALID_MANIFEST,
+        Audit::Results::MANIFEST_NOT_IN_MOAB,
+        Audit::Results::MOAB_FILE_CHECKSUM_MISMATCH,
+        Audit::Results::MOAB_NOT_FOUND,
+        Audit::Results::SIGNATURE_CATALOG_NOT_IN_MOAB,
+        Audit::Results::UNABLE_TO_CHECK_STATUS,
+        Audit::Results::UNEXPECTED_VERSION,
+        Audit::Results::ZIP_PART_CHECKSUM_MISMATCH,
+        Audit::Results::ZIP_PART_NOT_FOUND,
+        Audit::Results::ZIP_PARTS_COUNT_DIFFERS_FROM_ACTUAL,
+        Audit::Results::ZIP_PARTS_COUNT_INCONSISTENCY,
+        Audit::Results::ZIP_PARTS_NOT_ALL_REPLICATED
       ].freeze
     end
 

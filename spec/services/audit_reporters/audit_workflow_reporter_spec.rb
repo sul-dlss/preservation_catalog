@@ -20,13 +20,13 @@ RSpec.describe AuditReporters::AuditWorkflowReporter do
     context 'when INVALID_MOAB' do
       let(:result1) do
         {
-          AuditResults::INVALID_MOAB =>
+          Audit::Results::INVALID_MOAB =>
                             "Invalid Moab, validation errors: [Version directory name not in 'v00xx' format: original-v1]"
         }
       end
       let(:result2) do
         {
-          AuditResults::INVALID_MOAB =>
+          Audit::Results::INVALID_MOAB =>
                           "Invalid Moab, validation errors: [Version directory name not in 'v00xx' format: original-v2]"
         }
       end
@@ -53,8 +53,8 @@ RSpec.describe AuditReporters::AuditWorkflowReporter do
     end
 
     context 'when other errors' do
-      let(:result1) { { AuditResults::DB_VERSIONS_DISAGREE => 'does not match PreservedObject current_version' } }
-      let(:result2) { { AuditResults::UNEXPECTED_VERSION => 'actual version (6) has unexpected relationship to db version' } }
+      let(:result1) { { Audit::Results::DB_VERSIONS_DISAGREE => 'does not match PreservedObject current_version' } }
+      let(:result2) { { Audit::Results::UNEXPECTED_VERSION => 'actual version (6) has unexpected relationship to db version' } }
 
       it 'merges errors and updates workflow' do
         described_class.new.report_errors(druid: druid,
@@ -72,7 +72,7 @@ RSpec.describe AuditReporters::AuditWorkflowReporter do
     end
 
     context 'when workflow does not exist' do
-      let(:result) { { AuditResults::DB_VERSIONS_DISAGREE => 'does not match PreservedObject current_version' } }
+      let(:result) { { Audit::Results::DB_VERSIONS_DISAGREE => 'does not match PreservedObject current_version' } }
 
       before do
         call_count = 0
@@ -95,7 +95,7 @@ RSpec.describe AuditReporters::AuditWorkflowReporter do
     end
 
     context 'when ignored error' do
-      let(:result) { { AuditResults::ZIP_PARTS_NOT_CREATED => 'no zip_parts exist yet for this ZippedMoabVersion' } }
+      let(:result) { { Audit::Results::ZIP_PARTS_NOT_CREATED => 'no zip_parts exist yet for this ZippedMoabVersion' } }
 
       it 'does not update workflow' do
         described_class.new.report_errors(druid: druid, version: actual_version, storage_area: ms_root, check_name: check_name, results: [result])
@@ -105,7 +105,7 @@ RSpec.describe AuditReporters::AuditWorkflowReporter do
   end
 
   describe '#report_completed' do
-    let(:result) { { AuditResults::MOAB_RECORD_STATUS_CHANGED => 'MoabRecord status changed from invalid_moab' } }
+    let(:result) { { Audit::Results::MOAB_RECORD_STATUS_CHANGED => 'MoabRecord status changed from invalid_moab' } }
 
     it 'updates workflow' do
       described_class.new.report_completed(druid: druid, version: actual_version, storage_area: ms_root, check_name: check_name, result: result)

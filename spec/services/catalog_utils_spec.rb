@@ -15,7 +15,7 @@ RSpec.describe CatalogUtils do
   let(:event_service_reporter) { instance_double(AuditReporters::EventServiceReporter, report_errors: nil, report_completed: nil) }
   let(:honeybadger_reporter) { instance_double(AuditReporters::HoneybadgerReporter, report_errors: nil, report_completed: nil) }
   let(:logger_reporter) { instance_double(AuditReporters::LoggerReporter, report_errors: nil, report_completed: nil) }
-  let(:audit_results) { instance_double(AuditResults, results: results) }
+  let(:audit_results) { instance_double(Audit::Results, results: results) }
   let(:results) { [] }
 
   before do

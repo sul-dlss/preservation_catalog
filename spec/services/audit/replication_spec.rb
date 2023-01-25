@@ -27,20 +27,20 @@ describe Audit::Replication do
 
   describe '#results' do
     before do
-      allow(Audit::ReplicationSupport).to receive(:check_child_zip_part_attributes).with(zipped_moab_version1, AuditResults).and_return(true)
-      allow(Audit::ReplicationSupport).to receive(:check_child_zip_part_attributes).with(zipped_moab_version3, AuditResults).and_return(true)
+      allow(Audit::ReplicationSupport).to receive(:check_child_zip_part_attributes).with(zipped_moab_version1, Audit::Results).and_return(true)
+      allow(Audit::ReplicationSupport).to receive(:check_child_zip_part_attributes).with(zipped_moab_version3, Audit::Results).and_return(true)
     end
 
-    it 'returns an array of AuditResults' do
+    it 'returns an array of Audit::Results' do
       expect { results }.to change(preserved_object, :last_archive_audit)
       expect(results.length).to eq(2)
       expect(results.first.results_as_string).to match(/actual location: #{endpoint.endpoint_name}/)
-      expect(audit_class1).to have_received(:check_replicated_zipped_moab_version).with(zipped_moab_version1, AuditResults)
-      expect(audit_class1).not_to have_received(:check_replicated_zipped_moab_version).with(zipped_moab_version2, AuditResults)
-      expect(audit_class1).not_to have_received(:check_replicated_zipped_moab_version).with(zipped_moab_version3, AuditResults)
-      expect(audit_class2).to have_received(:check_replicated_zipped_moab_version).with(zipped_moab_version3, AuditResults)
-      expect(audit_class2).not_to have_received(:check_replicated_zipped_moab_version).with(zipped_moab_version4, AuditResults)
-      expect(audit_class2).not_to have_received(:check_replicated_zipped_moab_version).with(zipped_moab_version1, AuditResults)
+      expect(audit_class1).to have_received(:check_replicated_zipped_moab_version).with(zipped_moab_version1, Audit::Results)
+      expect(audit_class1).not_to have_received(:check_replicated_zipped_moab_version).with(zipped_moab_version2, Audit::Results)
+      expect(audit_class1).not_to have_received(:check_replicated_zipped_moab_version).with(zipped_moab_version3, Audit::Results)
+      expect(audit_class2).to have_received(:check_replicated_zipped_moab_version).with(zipped_moab_version3, Audit::Results)
+      expect(audit_class2).not_to have_received(:check_replicated_zipped_moab_version).with(zipped_moab_version4, Audit::Results)
+      expect(audit_class2).not_to have_received(:check_replicated_zipped_moab_version).with(zipped_moab_version1, Audit::Results)
     end
   end
 end

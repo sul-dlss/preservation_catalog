@@ -31,8 +31,8 @@ module Audit
     end
 
     def results
-      @results ||= AuditResults.new(druid: druid, moab_storage_root: moab_record.moab_storage_root,
-                                    actual_version: moab_on_storage&.current_version_id, check_name: 'check_catalog_version')
+      @results ||= Audit::Results.new(druid: druid, moab_storage_root: moab_record.moab_storage_root,
+                                      actual_version: moab_on_storage&.current_version_id, check_name: 'check_catalog_version')
     end
 
     private
@@ -44,7 +44,7 @@ module Audit
     def check_preserved_object_and_moab_record_versions_match
       return true if moab_record.matches_po_current_version?
 
-      results.add_result(AuditResults::DB_VERSIONS_DISAGREE,
+      results.add_result(Audit::Results::DB_VERSIONS_DISAGREE,
                          moab_record_version: moab_record.version,
                          po_version: moab_record.preserved_object.current_version)
       false
@@ -57,7 +57,7 @@ module Audit
         status_handler.update_moab_record_status('moab_on_storage_not_found')
       end
 
-      results.add_result(AuditResults::MOAB_NOT_FOUND,
+      results.add_result(Audit::Results::MOAB_NOT_FOUND,
                          db_created_at: moab_record.created_at.iso8601,
                          db_updated_at: moab_record.updated_at.iso8601)
       false
@@ -93,7 +93,7 @@ module Audit
           status_handler.validate_moab_on_storage_and_set_status(found_expected_version: true,
                                                                  moab_on_storage_validator: moab_on_storage_validator)
         end
-        results.add_result(AuditResults::VERSION_MATCHES, 'MoabRecord')
+        results.add_result(Audit::Results::VERSION_MATCHES, 'MoabRecord')
         report_results!
       end
     end
@@ -112,7 +112,7 @@ module Audit
       persist_db_transaction! do
         status_handler.validate_moab_on_storage_and_set_status(found_expected_version: false, moab_on_storage_validator: moab_on_storage_validator)
         results.add_result(
-          AuditResults::UNEXPECTED_VERSION, db_obj_name: 'MoabRecord', db_obj_version: moab_record.version
+          Audit::Results::UNEXPECTED_VERSION, db_obj_name: 'MoabRecord', db_obj_version: moab_record.version
         )
         report_results!
       end

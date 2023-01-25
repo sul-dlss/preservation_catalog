@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
 ##
-# service class for updating status in AuditResults and MoabRecord
+# service class for updating status in Audit::Results and MoabRecord
 class StatusHandler
   delegate :add_result, to: :audit_results
 
-  # @param results [AuditResults] the instance the including class is using to track findings of interest
+  # @param results [Audit::Results] the instance the including class is using to track findings of interest
   # @param moab_record [MoabRecord] instance of the MoabRecord being validated
   def initialize(audit_results:, moab_record:)
     @audit_results = audit_results
@@ -17,7 +17,7 @@ class StatusHandler
 
     if moab_record.status_changed?
       add_result(
-        AuditResults::MOAB_RECORD_STATUS_CHANGED, old_status: moab_record.status_was, new_status: moab_record.status
+        Audit::Results::MOAB_RECORD_STATUS_CHANGED, old_status: moab_record.status_was, new_status: moab_record.status
       )
     end
 
@@ -25,7 +25,7 @@ class StatusHandler
   end
 
   def mark_moab_not_found
-    add_result(AuditResults::MOAB_NOT_FOUND,
+    add_result(Audit::Results::MOAB_NOT_FOUND,
                db_created_at: moab_record.created_at.iso8601,
                db_updated_at: moab_record.updated_at.iso8601)
     update_moab_record_status('moab_on_storage_not_found')
@@ -52,7 +52,7 @@ class StatusHandler
     # NOTE: subclasses which override this method should NOT perform checksum validation inside of this method!
     # CV is expensive, and can run a while, and this method should likely be called from within a DB transaction,
     # but CV definitely shouldn't happen inside a DB transaction.
-    if audit_results.contains_result_code?(AuditResults::MOAB_CHECKSUM_VALID)
+    if audit_results.contains_result_code?(Audit::Results::MOAB_CHECKSUM_VALID)
       update_moab_record_status('ok')
     elsif caller_validates_checksums
       update_moab_record_status('invalid_checksum')

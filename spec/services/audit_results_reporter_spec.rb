@@ -5,7 +5,7 @@ require 'rails_helper'
 RSpec.describe AuditResultsReporter do
   let(:reporter) { described_class.new(audit_results: audit_results) }
   let(:actual_version) { 6 }
-  let(:audit_results) { AuditResults.new(druid: druid, actual_version: actual_version, moab_storage_root: ms_root) }
+  let(:audit_results) { Audit::Results.new(druid: druid, actual_version: actual_version, moab_storage_root: ms_root) }
   let(:druid) { 'ab123cd4567' }
   let(:ms_root) { MoabStorageRoot.find_by(storage_location: 'spec/fixtures/storage_root01/sdr2objects') }
 
@@ -21,11 +21,11 @@ RSpec.describe AuditResultsReporter do
       allow(AuditReporters::HoneybadgerReporter).to receive(:new).and_return(honeybadger_reporter)
       allow(AuditReporters::LoggerReporter).to receive(:new).and_return(logger_reporter)
 
-      audit_results.add_result(AuditResults::INVALID_MOAB, [
+      audit_results.add_result(Audit::Results::INVALID_MOAB, [
                                  "Version directory name not in 'v00xx' format: original-v1",
                                  'Version v0005: No files present in manifest dir'
                                ])
-      audit_results.add_result(AuditResults::MOAB_RECORD_STATUS_CHANGED, old_status: 'invalid_checksum', new_status: 'ok')
+      audit_results.add_result(Audit::Results::MOAB_RECORD_STATUS_CHANGED, old_status: 'invalid_checksum', new_status: 'ok')
     end
 
     it 'invokes the reporters' do

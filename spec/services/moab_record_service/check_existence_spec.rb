@@ -109,9 +109,9 @@ RSpec.describe MoabRecordService::CheckExistence do
           let(:results) { audit_result.results }
 
           it '1 VERSION_MATCHES result' do
-            expect(audit_result).to be_an_instance_of AuditResults
+            expect(audit_result).to be_an_instance_of Audit::Results
             expect(results.size).to eq 1
-            expect(results).to include(a_hash_including(AuditResults::VERSION_MATCHES => version_matches_moab_record_msg))
+            expect(results).to include(a_hash_including(Audit::Results::VERSION_MATCHES => version_matches_moab_record_msg))
           end
         end
       end
@@ -206,7 +206,7 @@ RSpec.describe MoabRecordService::CheckExistence do
             it 'ACTUAL_VERS_GT_DB_OBJ results' do
               expect(results).to be_an Array
               expect(results.size).to eq 1
-              expect(results.first).to include(AuditResults::ACTUAL_VERS_GT_DB_OBJ => version_gt_moab_record_msg)
+              expect(results.first).to include(Audit::Results::ACTUAL_VERS_GT_DB_OBJ => version_gt_moab_record_msg)
             end
           end
         end
@@ -305,12 +305,12 @@ RSpec.describe MoabRecordService::CheckExistence do
             end
 
             it 'ACTUAL_VERS_GT_DB_OBJ results' do
-              code = AuditResults::ACTUAL_VERS_GT_DB_OBJ
+              code = Audit::Results::ACTUAL_VERS_GT_DB_OBJ
               expect(results).to include(a_hash_including(code => version_gt_moab_record_msg))
             end
 
             it 'INVALID_MOAB result' do
-              expect(results).to include(a_hash_including(AuditResults::INVALID_MOAB))
+              expect(results).to include(a_hash_including(Audit::Results::INVALID_MOAB))
             end
           end
         end
@@ -383,7 +383,7 @@ RSpec.describe MoabRecordService::CheckExistence do
 
           context 'DB_UPDATE_FAILED error' do
             let(:results) { moab_record_service.execute.results }
-            let(:result_code) { AuditResults::DB_UPDATE_FAILED }
+            let(:result_code) { Audit::Results::DB_UPDATE_FAILED }
 
             it 'returns expected message(s)' do
               expect(results).to include(a_hash_including(result_code => a_string_matching(db_update_failed_prefix)))
@@ -483,10 +483,10 @@ RSpec.describe MoabRecordService::CheckExistence do
             let(:results) { audit_result.results }
 
             it 'returns 2 results including expected messages' do
-              expect(audit_result).to be_an_instance_of AuditResults
+              expect(audit_result).to be_an_instance_of Audit::Results
               expect(results.size).to eq 2
-              expect(results).to include(a_hash_including(AuditResults::DB_OBJ_DOES_NOT_EXIST => exp_moab_record_not_exist_msg))
-              expect(results).to include(a_hash_including(AuditResults::CREATED_NEW_OBJECT => exp_obj_created_msg))
+              expect(results).to include(a_hash_including(Audit::Results::DB_OBJ_DOES_NOT_EXIST => exp_moab_record_not_exist_msg))
+              expect(results).to include(a_hash_including(Audit::Results::CREATED_NEW_OBJECT => exp_obj_created_msg))
             end
           end
 
@@ -505,7 +505,7 @@ RSpec.describe MoabRecordService::CheckExistence do
             end
 
             context 'DB_UPDATE_FAILED error' do
-              let(:result_code) { AuditResults::DB_UPDATE_FAILED }
+              let(:result_code) { Audit::Results::DB_UPDATE_FAILED }
 
               it 'returns expected message(s)' do
                 expect(results).to include(a_hash_including(result_code => a_string_matching(db_update_failed_prefix)))
@@ -548,16 +548,16 @@ RSpec.describe MoabRecordService::CheckExistence do
 
             it '3 results with expected messages' do
               exp_moab_errs_msg = 'Invalid Moab, validation errors: ["Missing directory: [\\"data\\", \\"manifests\\"] Version: v0001"]'
-              expect(audit_result).to be_an_instance_of AuditResults
+              expect(audit_result).to be_an_instance_of Audit::Results
               expect(results.size).to eq 3
-              expect(results).to include(a_hash_including(AuditResults::INVALID_MOAB => exp_moab_errs_msg))
-              expect(results).to include(a_hash_including(AuditResults::DB_OBJ_DOES_NOT_EXIST => exp_moab_record_not_exist_msg))
-              expect(results).to include(a_hash_including(AuditResults::CREATED_NEW_OBJECT => exp_obj_created_msg))
+              expect(results).to include(a_hash_including(Audit::Results::INVALID_MOAB => exp_moab_errs_msg))
+              expect(results).to include(a_hash_including(Audit::Results::DB_OBJ_DOES_NOT_EXIST => exp_moab_record_not_exist_msg))
+              expect(results).to include(a_hash_including(Audit::Results::CREATED_NEW_OBJECT => exp_obj_created_msg))
             end
           end
 
           context 'db update error (ActiveRecordError)' do
-            let(:result_code) { AuditResults::DB_UPDATE_FAILED }
+            let(:result_code) { Audit::Results::DB_UPDATE_FAILED }
             let(:results) do
               preserved_object = instance_double(PreservedObject)
               allow(preserved_object).to receive(:create_moab_record!).and_raise(ActiveRecord::ActiveRecordError, 'foo')

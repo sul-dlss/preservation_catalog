@@ -12,7 +12,7 @@ module Audit
     attr_reader :zmv, :results, :check_unreplicated_parts
 
     # @param [ZippedMoabVersion] the ZippedMoabVersion to check
-    # @param [AuditResults] the AuditResults instance used to track findings for this audit run
+    # @param [Audit::Results] the Audit::Results instance used to track findings for this audit run
     # @param [Boolean] defaults to false, skipping parts that aren't expected to be replicated.  "true" is useful for manual auditing, see wiki.
     def initialize(zmv, results, check_unreplicated_parts)
       @zmv = zmv
@@ -64,7 +64,7 @@ module Audit
         true
       else
         results.add_result(
-          AuditResults::ZIP_PART_CHECKSUM_MISMATCH,
+          Audit::Results::ZIP_PART_CHECKSUM_MISMATCH,
           endpoint_name: part.zipped_moab_version.zip_endpoint.endpoint_name,
           s3_key: part.s3_key,
           md5: part.md5,
@@ -82,7 +82,7 @@ module Audit
         true
       else
         results.add_result(
-          AuditResults::ZIP_PART_NOT_FOUND,
+          Audit::Results::ZIP_PART_NOT_FOUND,
           endpoint_name: part.zipped_moab_version.zip_endpoint.endpoint_name,
           s3_key: part.s3_key,
           bucket_name: bucket_name

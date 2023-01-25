@@ -154,7 +154,7 @@ RSpec.describe MoabRecordService::UpdateVersion do
           end
 
           it 'ACTUAL_VERS_GT_DB_OBJ results' do
-            code = AuditResults::ACTUAL_VERS_GT_DB_OBJ
+            code = Audit::Results::ACTUAL_VERS_GT_DB_OBJ
             version_greater_than_moab_record_msg = "actual version (#{incoming_version}) greater than MoabRecord db version (2)"
             expect(results).to include(a_hash_including(code => version_greater_than_moab_record_msg))
           end
@@ -176,7 +176,7 @@ RSpec.describe MoabRecordService::UpdateVersion do
       end
 
       context 'db update error' do
-        let(:result_code) { AuditResults::DB_UPDATE_FAILED }
+        let(:result_code) { Audit::Results::DB_UPDATE_FAILED }
 
         context 'MoabRecord' do
           context 'ActiveRecordError' do

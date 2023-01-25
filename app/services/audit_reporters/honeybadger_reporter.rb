@@ -7,13 +7,13 @@ module AuditReporters
 
     def handled_single_codes
       [
-        AuditResults::MOAB_FILE_CHECKSUM_MISMATCH,
-        AuditResults::MOAB_NOT_FOUND,
-        AuditResults::ZIP_PART_CHECKSUM_MISMATCH,
-        AuditResults::ZIP_PART_NOT_FOUND,
-        AuditResults::ZIP_PARTS_COUNT_DIFFERS_FROM_ACTUAL,
-        AuditResults::ZIP_PARTS_COUNT_INCONSISTENCY,
-        AuditResults::ZIP_PARTS_NOT_ALL_REPLICATED
+        Audit::Results::MOAB_FILE_CHECKSUM_MISMATCH,
+        Audit::Results::MOAB_NOT_FOUND,
+        Audit::Results::ZIP_PART_CHECKSUM_MISMATCH,
+        Audit::Results::ZIP_PART_NOT_FOUND,
+        Audit::Results::ZIP_PARTS_COUNT_DIFFERS_FROM_ACTUAL,
+        Audit::Results::ZIP_PARTS_COUNT_INCONSISTENCY,
+        Audit::Results::ZIP_PARTS_NOT_ALL_REPLICATED
       ].freeze
     end
 
