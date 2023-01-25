@@ -33,6 +33,10 @@ Layout/EmptyLineAfterGuardClause:
 Layout/LineLength:
   Max: 150
 
+Lint/MissingSuper:
+  Exclude:
+    - 'app/components/**/*'
+
 Metrics/BlockLength:
   Exclude:
     - '**/*.rake'
@@ -459,9 +463,9 @@ RSpec/NoExpectationExample: # new in 2.13
   Enabled: true
 RSpec/VerifiedDoubleReference: # new in 2.10.0
   Enabled: true
-RSpec/Capybara/SpecificFinders: # new in 2.13
+Capybara/SpecificFinders: # new in 2.13
   Enabled: true
-RSpec/Capybara/SpecificMatcher: # new in 2.12
+Capybara/SpecificMatcher: # new in 2.12
   Enabled: true
 RSpec/Rails/HaveHttpStatus: # new in 2.12
   Enabled: true
@@ -480,9 +484,9 @@ Rails/WhereNotWithMultipleConditions: # new in 2.17
   Enabled: true
 RSpec/SortMetadata: # new in 2.14
   Enabled: true
-RSpec/Capybara/NegationMatcher: # new in 2.14
+Capybara/NegationMatcher: # new in 2.14
   Enabled: true
-RSpec/Capybara/SpecificActions: # new in 2.14
+Capybara/SpecificActions: # new in 2.14
   Enabled: true
 RSpec/FactoryBot/ConsistentParenthesesStyle: # new in 2.14
   Enabled: true
@@ -511,4 +515,14 @@ RSpec/DuplicatedMetadata: # new in 2.16
 RSpec/PendingWithoutReason: # new in 2.16
   Enabled: true
 RSpec/FactoryBot/FactoryNameStyle: # new in 2.16
+  Enabled: true
+Lint/UselessRescue: # new in 1.43
+  Enabled: true
+Capybara/MatchStyle: # new in <<next>>
+  Enabled: true
+RSpec/Rails/MinitestAssertions: # new in 2.17
+  Enabled: true
+Gemspec/DevelopmentDependencies: # new in 1.44
+  Enabled: true
+Style/ComparableClamp: # new in 1.44
   Enabled: true

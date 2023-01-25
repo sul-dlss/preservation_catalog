@@ -2,6 +2,5 @@
 
 # A spinner
 class Spinner < ViewComponent::Base
-  def initialize(*) # rubocop:disable Lint/MissingSuper
-  end
+  def initialize(*); end
 end
