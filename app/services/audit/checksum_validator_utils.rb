@@ -8,7 +8,7 @@ module Audit
   class ChecksumValidatorUtils
     def self.logger
       @logger ||= Logger.new($stdout)
-                        .extend(ActiveSupport::Logger.broadcast(Logger.new(Rails.root.join('log', 'cv.log'))))
+                        .extend(ActiveSupport::Logger.broadcast(Logger.new(Rails.root.join('log', 'audit_checksum_validation.log'))))
     end
 
     # @return [Array<AuditResults>] results from Audit::ChecksumValidator runs

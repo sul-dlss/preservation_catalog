@@ -8,7 +8,7 @@
 class CatalogUtils
   def self.logger
     @logger ||= Logger.new($stdout)
-                      .extend(ActiveSupport::Logger.broadcast(Logger.new(Rails.root.join('log', 'm2c.log'))))
+                      .extend(ActiveSupport::Logger.broadcast(Logger.new(Rails.root.join('log', 'audit_moab_to_catalog.log'))))
   end
 
   # this method intended to be called from rake task or via ReST call
