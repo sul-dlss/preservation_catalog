@@ -127,7 +127,6 @@ namespace :prescat do
         nil
       )
     end
-    RubyProf::FlatPrinter.new(result).print($stdout)
     RubyProf::CallStackPrinter.new(result).print($stdout)
   end
 end

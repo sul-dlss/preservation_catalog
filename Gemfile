@@ -27,7 +27,8 @@ gem 'whenever' # manage cron for audit checks
 gem 'dor-event-client', '~> 1.0'
 gem 'dor-workflow-client', '~> 5.0' # audit errors are reported to the workflow service
 gem 'druid-tools' # for druid validation and druid-tree parsing
-gem 'moab-versioning', '~> 6.0' # work with Moab Objects
+# gem 'moab-versioning', '~> 6.0' # work with Moab Objects
+gem 'moab-versioning', '~> 6.0', github: 'sul-dlss/moab-versioning', branch: 'content-diffing-performance-tweaks#266'
 
 group :development, :test do
   gem 'rspec-rails', '~> 4.0'

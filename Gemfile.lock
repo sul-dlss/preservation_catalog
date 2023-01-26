@@ -1,3 +1,14 @@
+GIT
+  remote: https://github.com/sul-dlss/moab-versioning.git
+  revision: 1e5c3c59b206958cbc277c064a46611aac08af63
+  branch: content-diffing-performance-tweaks#266
+  specs:
+    moab-versioning (6.0.0)
+      druid-tools (>= 1.0.0)
+      json
+      nokogiri
+      nokogiri-happymapper
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -246,11 +257,6 @@ GEM
     method_source (1.0.0)
     mini_mime (1.1.2)
     minitest (5.17.0)
-    moab-versioning (6.0.0)
-      druid-tools (>= 1.0.0)
-      json
-      nokogiri
-      nokogiri-happymapper
     net-imap (0.3.4)
       date
       net-protocol
@@ -264,9 +270,9 @@ GEM
       net-protocol
     net-ssh (7.0.1)
     nio4r (2.5.8)
-    nokogiri (1.14.0-x86_64-darwin)
+    nokogiri (1.14.1-x86_64-darwin)
       racc (~> 1.4)
-    nokogiri (1.14.0-x86_64-linux)
+    nokogiri (1.14.1-x86_64-linux)
       racc (~> 1.4)
     nokogiri-happymapper (0.9.0)
       nokogiri (~> 1.5)
@@ -449,7 +455,7 @@ DEPENDENCIES
   jwt
   listen (~> 3.7)
   lograge
-  moab-versioning (~> 6.0)
+  moab-versioning (~> 6.0)!
   okcomputer
   pg
   postgresql_cursor
