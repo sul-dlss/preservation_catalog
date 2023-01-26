@@ -17,6 +17,7 @@ gem 'pry' # make it possible to use pry for IRB
 gem 'puma', '~> 5.5' # app server
 gem 'rails', '~> 7.0.0'
 gem 'redis', '~> 5.0'
+gem 'ruby-prof'
 gem 'sidekiq', '~> 6.4'
 gem 'turbo-rails'
 gem 'view_component'

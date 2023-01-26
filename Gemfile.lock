@@ -377,6 +377,7 @@ GEM
     rubocop-rspec (2.18.1)
       rubocop (~> 1.33)
       rubocop-capybara (~> 2.17)
+    ruby-prof (1.4.5)
     ruby-progressbar (1.11.0)
     ruby2_keywords (0.0.5)
     set (1.0.3)
@@ -463,6 +464,7 @@ DEPENDENCIES
   rubocop (~> 1.0)
   rubocop-rails
   rubocop-rspec
+  ruby-prof
   shoulda-matchers
   sidekiq (~> 6.4)
   simplecov

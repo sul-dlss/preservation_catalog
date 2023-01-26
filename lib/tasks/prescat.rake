@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'csv'
+require 'ruby-prof'
 
 namespace :prescat do
   desc 'Diagnose failed replication'
@@ -111,5 +112,22 @@ namespace :prescat do
     task :cv, [:storage_root_name] => [:environment] do |_task, args|
       MoabStorageRoot.find_by!(name: args[:storage_root_name]).moab_records.find_each(&:validate_checksums!)
     end
+  end
+
+  desc 'profile content diffing a large druid'
+  task profile: :environment do
+    # this file was generated on DSA and SFTPed to the stage-01
+    content = Marshal.load(File.read('/tmp/content_metadata_kh844yz4077.dump')) # rubocop:disable Security/MarshalLoad
+    result = RubyProf.profile do
+      # on preservation-catalog-web-stage-01
+      MoabOnStorage::StorageServicesWrapper.content_diff(
+        'druid:kh844yz4077',
+        content,
+        'preserve',
+        nil
+      )
+    end
+    RubyProf::FlatPrinter.new(result).print($stdout)
+    RubyProf::CallStackPrinter.new(result).print($stdout)
   end
 end
