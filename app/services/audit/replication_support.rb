@@ -68,6 +68,8 @@ module Audit
           zip_part.suffix,
           zip_part.parts_count,
           zip_part.size,
+          zip_part.md5,
+          zip_part.id,
           zip_part.created_at,
           zip_part.updated_at,
           zip_part.s3_key,
