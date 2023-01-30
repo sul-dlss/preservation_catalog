@@ -16,6 +16,8 @@ WORKDIR /app
 # Using argument for conditional setup in conf file  
 ARG RAILS_ENV
 ENV RAILS_ENV $RAILS_ENV
+ARG BUNDLE_GEMS__CONTRIBSYS__COM
+ENV BUNDLE_GEMS__CONTRIBSYS__COM $BUNDLE_GEMS__CONTRIBSYS__COM
 
 RUN gem update --system && \
   gem install bundler && \
