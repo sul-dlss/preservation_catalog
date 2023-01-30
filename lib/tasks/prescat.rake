@@ -9,8 +9,9 @@ namespace :prescat do
     CSV do |csv|
       csv << ['druid', 'preserved object version', 'zipped moab version', 'endpoint',
               'zip part status', 'zip part suffix', 'zipped moab parts count', 'zip part size',
+              'zip part md5', 'zip part id',
               'zip part created at', 'zip part updated at', 'zip part s3 key', 'zip part endpoint status',
-              'zip part size']
+              'zip part endpoint md5']
       debug_infos.each { |debug_info| csv << debug_info }
     end
   end
