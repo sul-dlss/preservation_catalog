@@ -49,6 +49,8 @@ First get the Ruby dependencies:
 bundle install
 ```
 
+The credentials for SideKiq Pro must be provided (e.g., in `.bash_profile`): `export BUNDLE_GEMS__CONTRIBSYS__COM=xxxx:xxxx` (available from shared_configs).
+
 Use `docker compose` to start supporting services (PostgreSQL and Redis)
 ```sh
 docker compose up -d db redis
