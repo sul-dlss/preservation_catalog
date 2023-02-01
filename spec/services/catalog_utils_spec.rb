@@ -27,7 +27,7 @@ RSpec.describe CatalogUtils do
   end
 
   describe '.logger' do
-    let(:logfile) { Rails.root.join('log', 'm2c.log') }
+    let(:logfile) { Rails.root.join('log', 'audit_moab_to_catalog.log') }
 
     after { FileUtils.rm_f(logfile) }
 

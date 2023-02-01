@@ -7,7 +7,7 @@ module Audit
 
     def initialize(moab_record)
       @moab_record = moab_record
-      @logger = Logger.new(Rails.root.join('log', 'c2m.log'))
+      @logger = Logger.new(Rails.root.join('log', 'audit_catalog_to_moab.log'))
     end
 
     # Check the catalog version (MoabRecord version) against versions of the preserved object and the moab on storage,
