@@ -88,29 +88,8 @@ if worker_host?
   OkComputer::Registry.register 'feature-zip_storage_dir', OkComputer::DirectoryCheck.new(Settings.zip_storage)
 end
 
-# check MoabRecord#last_version_audit to ensure it isn't too old
-class VersionAuditWindowCheck < OkComputer::Check
-  def check
-    if MoabRecord.version_audit_expired(clause).first
-      mark_message "MoabRecord#last_version_audit older than #{clause}. "
-      mark_failure
-    else
-      mark_message "MoabRecord#last_version_audit all newer than #{clause}. "
-    end
-  end
-
-  private def clause
-    # currently: M2C and C2M are queued on the 1st and 15th of the month, respectively, and
-    # expiry time on CV is 3 months (those are the three audits that touch this timestamp).
-    # M2C should run at most 16 days after C2M (following a 31 day month), but give a little buffer
-    # since the queues might take a while to work down, and ordering for enqueue is uncertain.
-    21.days.ago
-  end
-end
-OkComputer::Registry.register 'feature-version-audit-window-check', VersionAuditWindowCheck.new
-
 # TODO: do we want anything about s3 credentials here?
 
-optional_checks = %w[feature-version-audit-window-check external-workflow-services-url]
+optional_checks = %w[external-workflow-services-url]
 optional_checks << 'feature-zip_storage_dir' if worker_host?
 OkComputer.make_optional optional_checks
