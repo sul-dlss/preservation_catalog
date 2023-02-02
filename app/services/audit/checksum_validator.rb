@@ -103,7 +103,7 @@ module Audit
     end
 
     def logger
-      @logger ||= Logger.new($stdout).extend(ActiveSupport::Logger.broadcast(Logger.new(Rails.root.join('log', 'cv.log'))))
+      @logger ||= Logger.new($stdout).extend(ActiveSupport::Logger.broadcast(Logger.new(Rails.root.join('log', 'audit_checksum_validation.log'))))
     end
 
     # Validates files on storage against the manifest inventory

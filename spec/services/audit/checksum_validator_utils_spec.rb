@@ -20,7 +20,7 @@ RSpec.describe Audit::ChecksumValidatorUtils do
   end
 
   describe '.logger' do
-    let(:logfile) { Rails.root.join('log', 'cv.log') }
+    let(:logfile) { Rails.root.join('log', 'audit_checksum_validation.log') }
 
     before { allow(described_class).to receive(:logger).and_call_original } # undo silencing for 1 test
 
