@@ -14,7 +14,6 @@ module AuditReporters
     def handled_merge_codes
       [
         Audit::Results::ACTUAL_VERS_LT_DB_OBJ,
-        Audit::Results::DB_OBJ_ALREADY_EXISTS,
         Audit::Results::DB_UPDATE_FAILED,
         Audit::Results::DB_VERSIONS_DISAGREE,
         Audit::Results::FILE_NOT_IN_MANIFEST,

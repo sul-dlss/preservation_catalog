@@ -7,6 +7,7 @@ module AuditReporters
 
     def handled_single_codes
       [
+        Audit::Results::DB_OBJ_ALREADY_EXISTS,
         Audit::Results::MOAB_FILE_CHECKSUM_MISMATCH,
         Audit::Results::MOAB_NOT_FOUND,
         Audit::Results::ZIP_PART_CHECKSUM_MISMATCH,
