@@ -372,20 +372,19 @@ components:
         application/x-www-form-urlencoded:
           schema:
             $ref: '#/components/schemas/CatalogOptions'
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CatalogOptions'
     CatalogOptionsWithDruid:
       description: Common options (plus druid) for PUT/POST/PATCH operations to the catalog controller
       required: true
       content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CatalogOptionsWithDruid'
         application/x-www-form-urlencoded:
           schema:
-            allOf:
-              - $ref: '#/components/schemas/CatalogOptions'
-              - type: object
-                properties:
-                  druid:
-                    $ref: '#/components/schemas/Druid'
-                required:
-                  - druid
+            $ref: '#/components/schemas/CatalogOptionsWithDruid'
   schemas:
     Druid:
       description: Digital Repository Unique Identifier (bare or prefixed)
@@ -412,21 +411,33 @@ components:
           type: string
         checksums_validated:
           description: If the checksums for the moab object have previously been validated by caller (boolean/int as string)
-          type: string
-          enum:
-            - 'true'
-            - 'True'
-            - 'TRUE'
-            - 'nil'
-            - '1'
-            - 'on'
-            - 'false'
-            - 'False'
-            - 'FALSE'
+          oneOf:
+            - type: boolean
+            - type: string
+              enum:
+                - 'true'
+                - 'True'
+                - 'TRUE'
+                - 'nil'
+                - '1'
+                - 'on'
+                - 'false'
+                - 'False'
+                - 'FALSE'
       required:
         - incoming_version
         - incoming_size
         - storage_location
+    CatalogOptionsWithDruid:
+      allOf:
+        - $ref: '#/components/schemas/CatalogOptions'
+        - type: object
+          properties:
+            druid:
+              $ref: '#/components/schemas/Druid'
+          required:
+            - druid
+
     ContentDiff:
       description: A diff between given and existing content metadata (XML)
       type: object
