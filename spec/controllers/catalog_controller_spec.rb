@@ -302,7 +302,7 @@ RSpec.describe CatalogController do
         post :create, params: { druid: bare_druid, incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
       end
 
-      ['true', 'True', 'TRUE'].each do |t_val|
+      ['true', 'True', 'TRUE', true].each do |t_val|
         it "#{t_val} evaluates to true" do
           expect(MoabRecordService::Create).to receive(:execute).with(druid: bare_druid, incoming_version: ver, incoming_size: size,
                                                                       moab_storage_root: moab_storage_root, checksums_validated: true)
@@ -313,7 +313,7 @@ RSpec.describe CatalogController do
                                   checksums_validated: t_val }
         end
       end
-      ['nil', '1', 'on', 'false', 'False', 'FALSE'].each do |t_val|
+      ['nil', '1', 'on', 'false', 'False', 'FALSE', false].each do |t_val|
         it "#{t_val} evaluates to false" do
           expect(MoabRecordService::UpdateVersion).to receive(:execute).with(druid: bare_druid, incoming_version: ver, incoming_size: size,
                                                                              moab_storage_root: moab_storage_root, checksums_validated: false)

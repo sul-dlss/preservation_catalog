@@ -411,17 +411,19 @@ components:
           type: string
         checksums_validated:
           description: If the checksums for the moab object have previously been validated by caller (boolean/int as string)
-          type: string
-          enum:
-            - 'true'
-            - 'True'
-            - 'TRUE'
-            - 'nil'
-            - '1'
-            - 'on'
-            - 'false'
-            - 'False'
-            - 'FALSE'
+          oneOf:
+            - type: boolean
+            - type: string
+              enum:
+                - 'true'
+                - 'True'
+                - 'TRUE'
+                - 'nil'
+                - '1'
+                - 'on'
+                - 'false'
+                - 'False'
+                - 'FALSE'
       required:
         - incoming_version
         - incoming_size

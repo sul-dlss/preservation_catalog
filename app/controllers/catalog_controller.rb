@@ -63,7 +63,13 @@ class CatalogController < ApiController
 
   # @return boolean
   def checksums_validated
-    return params[:checksums_validated].casecmp('true').zero? if params[:checksums_validated]
-    false
+    case params[:checksums_validated]
+    when TrueClass, FalseClass
+      params[:checksums_validated]
+    when String
+      params[:checksums_validated].casecmp('true').zero?
+    else
+      false
+    end
   end
 end
