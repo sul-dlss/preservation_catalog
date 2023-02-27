@@ -10,7 +10,7 @@ RSpec.configure do |config|
     begin
       Sidekiq.redis(&:flushall) # clear queues and locks
     rescue Redis::CannotConnectError
-      p 'we are rescuing!' # rubocop:disable Lint/Debugger
+      p 'we are rescuing!'
     end
   end
 end
