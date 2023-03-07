@@ -112,5 +112,12 @@ namespace :prescat do
     task :cv, [:storage_root_name] => [:environment] do |_task, args|
       MoabStorageRoot.find_by!(name: args[:storage_root_name]).moab_records.find_each(&:validate_checksums!)
     end
+
+    desc 'run CV (checksum validation) for a single druid'
+    task :cv_single, [:druid] => [:environment] do |_task, args|
+      puts "Starting checksum validation for #{args[:druid]}"
+      MoabRecord.by_druid(args[:druid]).first.validate_checksums!
+      puts 'This may take some time. Any issues will be reported to Honeybadger.'
+    end
   end
 end
