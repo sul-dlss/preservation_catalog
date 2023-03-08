@@ -4,13 +4,14 @@ module Replication
   # Remediates catalog entries, e.g., prunes failed replication records
   # Currently this is only called from rake.
   class FailureRemediator
-    def self.prune_replication_failures(druid:, version:)
-      new(druid: druid, version: version).prune_replication_failures
+    def self.prune_replication_failures(druid:, version:, verify_expiration: true)
+      new(druid: druid, version: version, verify_expiration: verify_expiration).prune_replication_failures
     end
 
-    def initialize(druid:, version:)
+    def initialize(druid:, version:, verify_expiration:)
       @druid = druid
       @version = version
+      @verify_expiration = verify_expiration
     end
 
     # prunes ZipParts and ZippedMoabVersion from database for any ZippedMoabVersions that have replication errors for
@@ -35,7 +36,7 @@ module Replication
 
     private
 
-    attr_reader :druid, :version
+    attr_reader :druid, :version, :verify_expiration
 
     delegate :check_child_zip_part_attributes, to: Audit::ReplicationSupport
 
@@ -48,7 +49,9 @@ module Replication
     end
 
     def zipped_moab_versions_beyond_expiry
-      preserved_object.zipped_moab_versions.where(version: version, created_at: ..zip_cache_expiry_timestamp)
+      return preserved_object.zipped_moab_versions.where(version: version, created_at: ..zip_cache_expiry_timestamp) if verify_expiration
+
+      preserved_object.zipped_moab_versions.where(version: version)
     end
 
     def zipped_moab_versions_with_errors

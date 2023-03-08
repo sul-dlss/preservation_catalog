@@ -17,8 +17,11 @@ namespace :prescat do
   end
 
   desc 'Prune failed replication records from catalog'
-  task :prune_failed_replication, [:druid, :version] => :environment do |_task, args|
-    Replication::FailureRemediator.prune_replication_failures(druid: args[:druid], version: args[:version]).each do |zmv_version, endpoint_name|
+  task :prune_failed_replication, [:druid, :version, :verify_expiration] => :environment do |_task, args|
+    args.with_defaults(verify_expiration: true)
+    Replication::FailureRemediator.prune_replication_failures(druid: args[:druid],
+                                                              version: args[:version],
+                                                              verify_expiration: args[:verify_expiration]).each do |zmv_version, endpoint_name|
       puts "pruned zipped moab version #{zmv_version} on #{endpoint_name}"
     end
   end

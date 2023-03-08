@@ -5,7 +5,12 @@ require 'rails_helper'
 RSpec.describe Replication::FailureRemediator do
   let(:fake_audit_results_no_errors) { instance_double(Audit::Results, error_results: [], add_result: nil) }
   let(:fake_audit_results_with_errors) { instance_double(Audit::Results, error_results: [{ this_is: 'an error' }], add_result: nil) }
-  let(:instance) { described_class.new(druid: preserved_object.druid, version: preserved_object.current_version) }
+  let(:instance) do
+    described_class.new(druid: preserved_object.druid,
+                        version: preserved_object.current_version,
+                        verify_expiration: verify_expiration)
+  end
+  let(:verify_expiration) { false }
   let!(:preserved_object) { create(:preserved_object) }
   let!(:zip_endpoint) { ZipEndpoint.find_by(endpoint_name: 'aws_s3_west_2') }
 
@@ -17,7 +22,7 @@ RSpec.describe Replication::FailureRemediator do
     end
 
     it 'calls #prune_replication_failures on a new instance' do
-      described_class.prune_replication_failures(druid: preserved_object.druid, version: preserved_object.current_version)
+      described_class.prune_replication_failures(druid: preserved_object.druid, version: preserved_object.current_version, verify_expiration: true)
       expect(instance).to have_received(:prune_replication_failures).once
     end
   end
@@ -40,6 +45,7 @@ RSpec.describe Replication::FailureRemediator do
     end
 
     context 'with zipped moab versions newer than expiry timestamp' do
+      let(:verify_expiration) { true }
       let(:zipped_moab_version_new) do
         create(:zipped_moab_version, preserved_object: preserved_object, zip_endpoint: zip_endpoint)
       end
