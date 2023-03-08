@@ -122,5 +122,12 @@ namespace :prescat do
       MoabRecord.by_druid(args[:druid]).first.validate_checksums!
       puts 'This may take some time. Any issues will be reported to Honeybadger.'
     end
+
+    desc 'run replication audit for a single druid'
+    task :replication_single, [:druid] => [:environment] do |_task, args|
+      puts "Starting replication audit for #{args[:druid]}"
+      PreservedObject.find_by!(druid: args[:druid]).audit_moab_version_replication!
+      puts 'This may take some time. Any issues will be reported to Honeybadger.'
+    end
   end
 end
