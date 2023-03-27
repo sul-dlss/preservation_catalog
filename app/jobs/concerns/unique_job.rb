@@ -72,8 +72,10 @@ module UniqueJob
       3600
     end
 
-    def redis_connection(&block)
-      Sidekiq.redis(&block)
+    def redis_connection
+      Redis.new(url: Settings.redis_url).tap do |conn|
+        yield conn if block_given?
+      end
     end
 
     # @return [String] the key for locking this job/payload combination, e.g. 'lock:MySpecificJob-bt821jk7040;1'
