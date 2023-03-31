@@ -8,7 +8,7 @@ RSpec.configure do |config|
     allow(ActiveJob::Base.logger).to receive(:info) # keep the default logging quiet
 
     begin
-      Sidekiq.redis(&:flushall) # clear queues and locks
+      Redis.new(url: Settings.redis_url).flushall
     rescue Redis::CannotConnectError
       p 'we are rescuing!'
     end

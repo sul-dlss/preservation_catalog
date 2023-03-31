@@ -1,2 +1,0 @@
-development: <%= ENV.fetch('REDIS_URL', 'localhost:6379') %>
-test: <%= ENV.fetch('REDIS_URL', 'localhost:6379') %>
