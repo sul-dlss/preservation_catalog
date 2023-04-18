@@ -30,7 +30,7 @@ every '0 11 15 * *', roles: [:queue_populator] do
   runner_hb 'MoabStorageRoot.find_each(&:c2m_check!)'
 end
 
-# Proactivily audit to spread out load.
+# Proactively spread out replication audit TTL to keep replication audit queue from having a huge backlog due to similar TTL values.
 # Any that are not validated but hit fixity TTL will be validated by weekly audit below.
 every :day, at: '8pm', roles: [:queue_populator] do
   set :output, standard: nil, error: 'log/c2a-err.log'
@@ -43,7 +43,7 @@ every :wednesday, roles: [:queue_populator] do
   runner_hb 'PreservedObject.archive_check_expired.find_each(&:audit_moab_version_replication!)'
 end
 
-# Proactivily validate to spread out load.
+# Proactively spread out checksum validation TTL to keep validate_checksum audit queue from having a huge backlog due to similar TTL values.
 # Any that are not validated but hit fixity TTL will be validated by weekly validation below.
 every :day, at: '10pm', roles: [:queue_populator] do
   set :output, standard: nil, error: 'log/cv-err.log'
