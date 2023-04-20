@@ -13,6 +13,8 @@ Config.load_and_set_settings(Config.setting_files('config', 'production'))
 # If changing the schedule of one of these jobs, also update at https://app.honeybadger.io/projects/54415/check_ins
 job_type :rake_rb, 'cd :path && :environment_variable=:environment bundle exec rake --silent ":task" :output && curl --silent https://api.honeybadger.io/v1/check_in/:check_in'
 job_type :runner_hb, 'cd :path && bin/rails runner -e :environment ":task" :output && curl --silent https://api.honeybadger.io/v1/check_in/:check_in'
+# Overriding default runner job_type to remove invoking bundle exec.
+job_type :runner, 'cd :path && bin/rails runner -e :environment ":task" :output'
 
 # 11 am on the 1st of every month
 # If changing schedule, also change for HB checkin
