@@ -9,12 +9,17 @@ workflows:
       - ruby-rails/lint:
           context: dlss
           name: lint
+          executor:
+            name: ruby-rails/ruby
+            ruby-tag: '3.2.2'
       - ruby-rails/test-rails:
           name: test
           context: dlss
           api-only: true
           db-prepare-command: db:reset
-          executor: ruby-rails/ruby-postgres-redis
+          executor:
+            name: ruby-rails/ruby-postgres-redis
+            ruby-tag: '3.2.2'
       - ruby-rails/docker-publish:
           context: dlss
           name: publish-latest

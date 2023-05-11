@@ -1,4 +1,4 @@
-FROM ruby:3.0.5-alpine
+FROM ruby:3.2.2-alpine
 
 # postgresql-client is required for invoke.sh
 RUN apk --no-cache add \
@@ -13,7 +13,7 @@ LABEL maintainer="Aaron Collier <aaron.collier@stanford.edu>"
 RUN mkdir /app
 WORKDIR /app
 
-# Using argument for conditional setup in conf file  
+# Using argument for conditional setup in conf file
 ARG RAILS_ENV
 ENV RAILS_ENV $RAILS_ENV
 ARG BUNDLE_GEMS__CONTRIBSYS__COM
