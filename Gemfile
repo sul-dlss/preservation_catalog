@@ -20,7 +20,7 @@ gem 'redis', '~> 5.0'
 gem 'sidekiq', '~> 7.0'
 gem 'turbo-rails'
 gem 'view_component'
-gem 'whenever' # manage cron for audit checks
+gem 'whenever', require: false # Work around https://github.com/javan/whenever/issues/831
 
 source 'https://gems.contribsys.com/' do
   gem 'sidekiq-pro'
