@@ -3,6 +3,7 @@ require:
   - rubocop-rails
   - rubocop-rspec
   - rubocop-capybara
+  - rubocop-factory_bot
 
 inherit_from: .rubocop_todo.yml
 inherit_mode:
@@ -381,7 +382,7 @@ Rails/RedundantPresenceValidationOnBelongsTo: # new in 2.13
   Enabled: true
 Rails/RootJoinChain: # new in 2.13
   Enabled: true
-RSpec/FactoryBot/SyntaxMethods: # new in 2.7
+FactoryBot/SyntaxMethods: # new in 2.7
   Enabled: true
 
 Layout/LineContinuationLeadingSpace: # new in 1.31
@@ -489,7 +490,7 @@ Capybara/NegationMatcher: # new in 2.14
   Enabled: true
 Capybara/SpecificActions: # new in 2.14
   Enabled: true
-RSpec/FactoryBot/ConsistentParenthesesStyle: # new in 2.14
+FactoryBot/ConsistentParenthesesStyle: # new in 2.14
   Enabled: true
 RSpec/Rails/InferredSpecType: # new in 2.14
   Enabled: true
@@ -515,7 +516,7 @@ RSpec/DuplicatedMetadata: # new in 2.16
   Enabled: true
 RSpec/PendingWithoutReason: # new in 2.16
   Enabled: true
-RSpec/FactoryBot/FactoryNameStyle: # new in 2.16
+FactoryBot/FactoryNameStyle: # new in 2.16
   Enabled: true
 Lint/UselessRescue: # new in 1.43
   Enabled: true
@@ -556,3 +557,27 @@ RSpec/Rails/TravelAround: # new in 2.19
 
 Rails/UniqueValidationWithoutIndex:
   Enabled: false # it's buggy in 2.20.1
+
+Style/ExactRegexpMatch: # new in 1.51
+  Enabled: true
+Style/RedundantArrayConstructor: # new in 1.52
+  Enabled: true
+Style/RedundantFilterChain: # new in 1.52
+  Enabled: true
+Style/RedundantRegexpConstructor: # new in 1.52
+  Enabled: true
+FactoryBot/AssociationStyle: # new in 2.23
+  Enabled: true
+FactoryBot/FactoryAssociationWithStrategy: # new in 2.23
+  Enabled: true
+FactoryBot/RedundantFactoryOption: # new in 2.23
+  Enabled: true
+RSpec/BeEmpty: # new in 2.20
+  Enabled: true
+RSpec/ContainExactly: # new in 2.19
+  Enabled: true
+RSpec/IndexedLet: # new in 2.20
+  Enabled: false
+RSpec/MatchArray: # new in 2.19
+  Enabled: true
+

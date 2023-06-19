@@ -4,7 +4,6 @@ require 'rails_helper'
 
 RSpec.describe StorageRootMigrationService do
   let(:to_storage_root) { create(:moab_storage_root) }
-
   let(:from_storage_root) { moab_record1.moab_storage_root }
 
   let(:moab_record1) {
@@ -12,9 +11,7 @@ RSpec.describe StorageRootMigrationService do
                          last_moab_validation: Time.now,
                          last_checksum_validation: Time.now)
   }
-
   let(:moab_record2) { create(:moab_record, status: 'invalid_moab', moab_storage_root: from_storage_root) }
-
   let(:moab_record3) { create(:moab_record) }
 
   it 'migrates the storage root' do
