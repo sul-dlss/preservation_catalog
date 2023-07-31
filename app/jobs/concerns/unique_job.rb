@@ -85,8 +85,8 @@ module UniqueJob
       "lock:#{name}-#{queue_lock_args.join(';')}"
     end
 
-    def before_enqueue_lock(*args)
-      key = queue_lock_key(*args)
+    def before_enqueue_lock(*)
+      key = queue_lock_key(*)
       now = Time.now.to_i
       new_expiry_time = now + lock_timeout + 1
 
@@ -120,8 +120,8 @@ module UniqueJob
       end
     end
 
-    def clear_lock(*args)
-      key = queue_lock_key(*args)
+    def clear_lock(*)
+      key = queue_lock_key(*)
       Rails.logger.info("clearing lock for #{key}...")
       redis_connection do |conn|
         conn.del(key).tap do |del_result|
