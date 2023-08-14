@@ -182,8 +182,7 @@ RSpec.describe MoabRecordService::UpdateVersion do
           context 'ActiveRecordError' do
             let(:results) do
               allow(Rails.logger).to receive(:log)
-              allow(moab_record_service).to receive(:preserved_object).and_return(preserved_object)
-              allow(moab_record_service).to receive(:moab_record).and_return(moab_record)
+              allow(moab_record_service).to receive_messages(preserved_object: preserved_object, moab_record: moab_record)
               allow(moab_record).to receive(:save!).and_raise(ActiveRecord::ActiveRecordError, 'foo')
               moab_record_service.execute.results
             end

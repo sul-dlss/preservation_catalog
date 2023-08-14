@@ -18,8 +18,7 @@ RSpec.shared_examples 'replication to endpoint' do |provider_class, bucket_name,
   before do
     allow(Audit::Results).to receive(:new).and_return(results)
     allow(provider_class).to receive(:new).and_return(provider)
-    allow(provider).to receive(:bucket).and_return(bucket)
-    allow(provider).to receive(:bucket_name).and_return(bucket_name)
+    allow(provider).to receive_messages(bucket: bucket, bucket_name: bucket_name)
   end
 
   context 'some parts are unreplicated' do
