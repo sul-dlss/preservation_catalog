@@ -34,8 +34,7 @@ RSpec.describe Dashboard::ReplicationService do
 
     context 'when replication_ok? and zip_parts_ok? are both true' do
       before do
-        allow(test_class).to receive(:replication_ok?).and_return(true)
-        allow(test_class).to receive(:zip_parts_ok?).and_return(true)
+        allow(test_class).to receive_messages(replication_ok?: true, zip_parts_ok?: true)
       end
 
       it 'returns true' do

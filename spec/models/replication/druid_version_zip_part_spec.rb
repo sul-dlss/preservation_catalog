@@ -32,8 +32,7 @@ describe Replication::DruidVersionZipPart do
     let(:md5) { 'fakemd5' }
 
     before do
-      allow(part).to receive(:md5).and_return(md5)
-      allow(part).to receive(:md5_path).and_return(md5_path)
+      allow(part).to receive_messages(md5: md5, md5_path: md5_path)
     end
 
     it 'writes the md5 to the md5_path' do
