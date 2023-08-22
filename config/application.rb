@@ -45,7 +45,8 @@ module PreservationCatalog
       accept_request_filter: accept_proc,
       parse_response_by_content_type: false,
       query_hash_key: 'action_dispatch.request.query_parameters',
-      strict_reference_validation: true
+      strict_reference_validation: true,
+      parameter_overwite_by_rails_rule: false
     )
     # TODO: we can uncomment this at a later date to ensure we are passing back
     #       valid responses. Currently, uncommenting this line causes 24 spec
