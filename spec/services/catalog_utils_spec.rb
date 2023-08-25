@@ -37,22 +37,22 @@ RSpec.describe CatalogUtils do
     end
   end
 
-  describe '.seed_catalog_for_all_storage_roots' do
-    it 'calls seed_catalog_for_dir with the right argument once per root' do
-      allow(described_class).to receive(:seed_catalog_for_dir).exactly(MoabStorageRoot.count).times
+  describe '.populate_catalog_for_all_storage_roots' do
+    it 'calls populate_catalog_for_dir with the right argument once per root' do
+      allow(described_class).to receive(:populate_catalog_for_dir).exactly(MoabStorageRoot.count).times
       MoabStorageRoot.pluck(:storage_location) do |path|
-        allow(described_class).to receive(:seed_catalog_for_dir).with("#{path}/#{Settings.moab.storage_trunk}")
+        allow(described_class).to receive(:populate_catalog_for_dir).with("#{path}/#{Settings.moab.storage_trunk}")
       end
 
-      described_class.seed_catalog_for_all_storage_roots
-      expect(described_class).to have_received(:seed_catalog_for_dir).exactly(MoabStorageRoot.count).times
+      described_class.populate_catalog_for_all_storage_roots
+      expect(described_class).to have_received(:populate_catalog_for_dir).exactly(MoabStorageRoot.count).times
       MoabStorageRoot.pluck(:storage_location) do |path|
-        expect(described_class).to have_received(:seed_catalog_for_dir).with("#{path}/#{Settings.moab.storage_trunk}")
+        expect(described_class).to have_received(:populate_catalog_for_dir).with("#{path}/#{Settings.moab.storage_trunk}")
       end
     end
 
     it 'does not ingest more than one Moab per druid (first ingested wins)' do
-      described_class.seed_catalog_for_all_storage_roots
+      described_class.populate_catalog_for_all_storage_roots
       expect(PreservedObject.count).to eq 17
       expect(MoabRecord.count).to eq 17
       expect(MoabRecord.by_druid('bz514sm9647').count).to eq 1
@@ -122,13 +122,13 @@ RSpec.describe CatalogUtils do
     end
   end
 
-  describe '.seed_catalog_for_dir' do
+  describe '.populate_catalog_for_dir' do
     let(:storage_dir_a) { 'spec/fixtures/storage_rootA/sdr2objects' }
     let(:druid) { 'bz514sm9647' }
 
     it "calls 'find_moab_paths' with appropriate argument" do
       allow(MoabOnStorage::StorageDirectory).to receive(:find_moab_paths).with(storage_dir)
-      described_class.seed_catalog_for_dir(storage_dir)
+      described_class.populate_catalog_for_dir(storage_dir)
       expect(MoabOnStorage::StorageDirectory).to have_received(:find_moab_paths).with(storage_dir)
     end
 
@@ -136,7 +136,7 @@ RSpec.describe CatalogUtils do
       allow(moab).to receive(:size).at_least(:once)
       allow(moab).to receive(:current_version_id).at_least(:once)
       allow(Moab::StorageServices).to receive(:new)
-      described_class.seed_catalog_for_dir(storage_dir)
+      described_class.populate_catalog_for_dir(storage_dir)
       expect(moab).to have_received(:size).at_least(:once)
       expect(moab).to have_received(:current_version_id).at_least(:once)
       expect(Moab::StorageServices).not_to have_received(:new)
@@ -156,7 +156,7 @@ RSpec.describe CatalogUtils do
       end
 
       it 'calls #create_after_validation' do
-        described_class.seed_catalog_for_dir(storage_dir)
+        described_class.populate_catalog_for_dir(storage_dir)
         expected_argument_list.each do |arg_hash|
           expect(MoabRecordService::CreateAfterValidation).to have_received(:execute).with(
             druid: arg_hash[:druid],
@@ -169,20 +169,20 @@ RSpec.describe CatalogUtils do
     end
 
     it 'returns correct number of results' do
-      expect(described_class.seed_catalog_for_dir(storage_dir).count).to eq 3
+      expect(described_class.populate_catalog_for_dir(storage_dir).count).to eq 3
     end
 
     it 'will not ingest a MoabRecord for a druid that has already been cataloged' do
       expect(MoabRecord.by_druid(druid).count).to eq 0
-      expect(described_class.seed_catalog_for_dir(storage_dir).count).to eq 3
+      expect(described_class.populate_catalog_for_dir(storage_dir).count).to eq 3
       expect(MoabRecord.by_druid(druid).count).to eq 1
       expect(MoabRecord.count).to eq 3
 
-      storage_dir_a_seed_result_lists = described_class.seed_catalog_for_dir(storage_dir_a)
-      expect(storage_dir_a_seed_result_lists.count).to eq 1
+      storage_dir_a_population_result_lists = described_class.populate_catalog_for_dir(storage_dir_a)
+      expect(storage_dir_a_population_result_lists.count).to eq 1
       expected_result_msg = 'db update failed: #<ActiveRecord::RecordNotSaved: Failed to remove the existing associated moab_record. ' \
                             'The record failed to save after its foreign key was set to nil.>'
-      expect(storage_dir_a_seed_result_lists.first).to eq([{ db_update_failed: expected_result_msg }])
+      expect(storage_dir_a_population_result_lists.first).to eq([{ db_update_failed: expected_result_msg }])
       expect(MoabRecord.by_druid(druid).count).to eq 1
       # the Moab's original location should remain the location of record in the DB
       expect(MoabRecord.by_druid(druid).take.moab_storage_root.storage_location).to eq(storage_dir)
@@ -192,7 +192,7 @@ RSpec.describe CatalogUtils do
   end
 
   describe '.populate_moab_storage_root' do
-    before { described_class.seed_catalog_for_all_storage_roots }
+    before { described_class.populate_catalog_for_all_storage_roots }
 
     it "won't change objects in a fully seeded db" do
       expect { described_class.populate_moab_storage_root('fixture_sr1') }.not_to change(MoabRecord, :count).from(17)

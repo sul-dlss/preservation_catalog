@@ -34,8 +34,8 @@ class CatalogUtils
     end
   end
 
-  def self.seed_catalog_for_dir(storage_dir)
-    logger.info "#{Time.now.utc.iso8601} Seeding starting for '#{storage_dir}'"
+  def self.populate_catalog_for_dir(storage_dir)
+    logger.info "#{Time.now.utc.iso8601} Starting to populate catalog for '#{storage_dir}'"
     results = []
     ms_root = MoabStorageRoot.find_by!(storage_location: storage_dir)
     MoabOnStorage::StorageDirectory.find_moab_paths(storage_dir) do |druid, path, _path_match_data|
@@ -45,16 +45,15 @@ class CatalogUtils
     end
     results
   ensure
-    logger.info "#{Time.now.utc.iso8601} Seeding ended for '#{storage_dir}'"
+    logger.info "#{Time.now.utc.iso8601} Ended populating catalog for '#{storage_dir}'"
   end
 
-  # TODO: If needing to run several seed jobs in parallel, convert seeding to queues.
-  def self.seed_catalog_for_all_storage_roots
-    MoabStorageRoot.pluck(:storage_location).each { |location| seed_catalog_for_dir(location) }
+  def self.populate_catalog_for_all_storage_roots
+    MoabStorageRoot.pluck(:storage_location).each { |location| populate_catalog_for_dir(location) }
   end
 
   def self.populate_moab_storage_root(name)
     ms_root = MoabStorageRoot.find_by!(name: name)
-    seed_catalog_for_dir(ms_root.storage_location)
+    populate_catalog_for_dir(ms_root.storage_location)
   end
 end
