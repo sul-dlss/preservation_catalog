@@ -169,26 +169,25 @@ See wiki, in particular
 - [https://github.com/sul-dlss/preservation_catalog/wiki/Audits-(basic-info)](Audits (basic info))
 - [https://github.com/sul-dlss/preservation_catalog/wiki/Audits-(how-to-run-as-needed)](Audits (how to run as needed))
 
-## Seed the Catalog 
+## Populate the Catalog
 
-Seed the Catalog with data about the Moabs on the storage roots the catalog tracks -- presumes rake db:seed already performed)
+Populate the Catalog with data about the Moabs already written to the storage roots the catalog tracks -- presumes `rake db:seed` already performed
 
-_<sub>Note: "seed" might be slightly confusing terminology here, see https://github.com/sul-dlss/preservation_catalog/issues/1154</sub>_
-
-Seeding the catalog presumes an empty or nearly empty database -- otherwise seeding will throw `druid NOT expected to exist in catalog but was found` errors for each found object.
-Seeding does more validation than regular M2C.
+Populating the catalog presumes an empty or nearly empty database -- otherwise walking the storage roots to populate it will throw
+`druid NOT expected to exist in catalog but was found` errors for each found object.  Catalog population does more validation than the
+similar `MoabToCatalogJob`/`MoabRecordService::CheckExistence`.
 
 From console:
 ```ruby
-Audit::MoabToCatalog.seed_catalog_for_all_storage_roots
+CatalogUtils.populate_catalog_for_all_storage_roots
 ```
 
-#### Reset the catalog for re-seeding
+### Reset the catalog for re-population (without wiping preserved Moabs from storage roots)
 
-**DANGER!** this will erase the catalog, and thus require re-seeding from scratch.  It is mostly intended for development purposes, and it is unlikely that you'll _ever_ need to run this against production once the catalog is in regular use.
+**DANGER!** this will erase the catalog, and thus require re-population from scratch.  It is mostly intended for development purposes, and it is unlikely that you'll _ever_ need to run this against production once the catalog is in regular use.
 
-* Deploy the branch of the code with which you wish to seed, to the instance which you wish to seed (e.g. main to stage).
-* Reset the database for that instance.  E.g., on production or stage:  `RAILS_ENV=production bundle exec rake db:reset`
+* Deploy the branch of the code with which you wish to populate the catalog, to the instance which you wish to populate (e.g. `main` to stage).
+* Reset the database for that instance.  E.g., on production or stage:  `RAILS_ENV=production bundle exec rake db:reset` (this will wipe the DB and seed it with the necessary storage root and endpoint info from the app settings, to which other catalog records will refer)
   * note that if you do this while `RAILS_ENV=production` (i.e. production or stage), you'll get a scary warning along the lines of:
 
 ```
@@ -198,9 +197,11 @@ DISABLE_DATABASE_ENVIRONMENT_CHECK=1
 ```
 
 Basically an especially inconvenient confirmation dialogue.  For safety's sake, the full command that skips that warning can be constructed by the user as needed, so as to prevent unintentional copy/paste dismissal when the user might be administering multiple deployment environments simultaneously.  Inadvertent database wipes are no fun.
-* `db:reset` will make sure db is migrated and seeded.  If you want to be extra sure: `RAILS_ENV=[environment] bundle exec rake db:migrate db:seed`
 
 ### run `rake db:seed` on remote servers:
+
+Useful if storage roots or cloud endpoints are added to configuration.  Will not delete entries that have been removed from configuration, that must be done manually using `ActiveRecord`.
+
 These require the same credentials and setup as a regular Capistrano deploy.
 
 ```sh
@@ -213,18 +214,13 @@ or
 bundle exec cap prod db_seed # for the prod servers
 ```
 
-### Populate the catalog
+### Populate the catalog for a single storage root
 
 In console, start by finding the storage root.
 
 ```ruby
 msr = MoabStorageRoot.find_by!(name: name)
-Audit::MoabToCatalog.seed_catalog_for_dir(msr.storage_location)
-```
-
-Or for all roots:
-```ruby
-MoabStorageRoot.find_each { |msr| Audit::MoabToCatalog.seed_catalog_for_dir(msr.storage_location) }
+CatalogUtils.populate_catalog_for_dir(msr.storage_location)
 ```
 
 ## Deploying
@@ -232,14 +228,12 @@ MoabStorageRoot.find_each { |msr| Audit::MoabToCatalog.seed_catalog_for_dir(msr.
 Capistrano is used to deploy.  You will need SSH access to the targeted servers, via `kinit` and VPN.
 
 ```sh
-bundle exec cap stage deploy # for the stage servers
+bundle exec cap ENV deploy # e.g. bundle exec cap qa deploy
 ```
 
-Or:
+## Jobs
 
-```sh
-bundle exec cap prod deploy # for the prod servers
-```
+Sidekiq is run on one or more worker VMs to handle queued jobs.
 
 ### Sidekiq
 
@@ -304,3 +298,27 @@ ZipPart.all.annotate(caller).where.not(status: 'ok').count
 ZipPart.annotate(caller).where.not(status: 'ok').count
 ZipPart.where.not(status: 'ok').count.annotate(caller)
 ```
+
+## Resetting the preservation system
+
+This procedure should reset both the catalog and the Moab storage roots, as one would do when resetting the entire stage or QA environment.
+
+### Requirements
+
+These instructions assume that SDR will be quiet during the reset, and that all other SDR apps will also be reset. Since related services (like DSA) and activity (like `accessionWF` and `preservationIngestWF`) won't be making requests to preservation services, and since e.g. the Cocina data store will be reset, it's not necessary to forcibly make sure that no robots are active, and it's not necessary to worry about syncing content from other apps with preservation.
+
+### Steps
+
+You can view the raw markdown and copy the following checklist into a new issue description for tracking the work (if you notice any necessary changes, please update this README):
+
+- [ ] Quiet Sidekiq workers for preservation_catalog and preservation_robots in the environment being reset.  For both apps, dump any remaining queue contents manually.
+- [ ] preservation_catalog: stop the web services
+- _NOTE_: stopping pres bots workers and pres cat web services will effectively halt accessioning for the environment
+- [ ] Work with ops to delete archived content on cloud endpoints for the environment being reset.  If Suri is not reset, then druids won't be re-used, and this can be done async from the rest of this process.  _But_, if the reset is completed and accessioning starts up again before the old cloud archives are purged, you should dump a list of the old druids before the preservation_catalog DB reset, and give those to ops, so that only old content is purged.  You can query for the full druid list (and e.g. redirect or copy and save the output to a file) with the following query from pres cat: `PreservedObject.pluck(:druid)` (to be clear, this will return tens of thousands of druids).
+- [ ] Delete all content under the `deposit` dirs and the `sdr2objects` dirs in each of the storage roots (`sdr2objects` is the configured "storage trunk", and `deposit` is where the bags that are used to build Moabs are placed). Storage root paths are listed in shared_configs for preservation_catalog (and should be the same as what's configured for presbots/techmd in the same env).  So, e.g., `rm -rf /services-disk-stage/store2/deposit/*`, `rm -rf /services-disk-stage/store2/sdr2objects/*`, etc if the storage roots are `/services-disk-stage/store2/` etc.  Deletions must be done from a preservation_robots machine for the env, as techMD and pres cat mount pres storage roots as read-only.
+- [ ] From a preservation_robots VM for the environment: Delete all content under preservation_robots' `Settings.transfer_object.from_dir` path, e.g. `rm -rf /dor/export/*`
+- [ ] preservation_catalog: _NOTE: this step likely not needed for most resets:_ for the environment being reset, `cap shared_configs:update` (to push the latest shared_configs, in case e.g. storage root or cloud endpoint locations have been updated)
+- [ ] preservation_catalog: from any one host in the env to be reset, run `rake db:reset`.  This should clear the DB, migrate to the current schema, and run the `rake db:seed` command (which should recreate the current storage root and cloud endpoint configs).  See [this comment about DB reset approach for SDR resets](https://github.com/sul-dlss/argo/issues/4116#issuecomment-1688690735).
+- [ ] re-deploy preservation_catalog, preservation_robots, and techMD.  This will bring the pres cat web services back online, bring the Sidekiq workers for all services back online, and pick up any shared_configs changes.
+
+Once the various SDR services are started back up, preserved content on storage roots and in the cloud will be rebuilt by regular accessioning.  Since preservation just preserves whatever flows through accessioning, there's no need to worry about e.g. having particular APOs in place.
