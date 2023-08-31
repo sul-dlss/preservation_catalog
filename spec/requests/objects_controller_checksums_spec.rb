@@ -13,7 +13,7 @@ RSpec.describe ObjectsController do
   describe 'GET #checksum' do
     context 'when object found' do
       it 'response contains the object checksum when given a prefixed druid' do
-        get checksum_object_url(prefixed_druid, format: :json), headers: valid_auth_header
+        get checksum_object_url(prefixed_druid), headers: valid_auth_header
         expected_response = [
           { filename: 'eric-smith-dissertation.pdf',
             md5: 'aead2f6f734355c59af2d5b2689e4fb3',
@@ -31,7 +31,7 @@ RSpec.describe ObjectsController do
       end
 
       it 'response contains the object checksum when given a bare druid' do
-        get checksum_object_url(bare_druid, format: :json), headers: valid_auth_header
+        get checksum_object_url(bare_druid), headers: valid_auth_header
         expected_response = [
           { filename: 'eric-smith-dissertation.pdf',
             md5: 'aead2f6f734355c59af2d5b2689e4fb3',
@@ -51,14 +51,14 @@ RSpec.describe ObjectsController do
 
     context 'when object not found' do
       it 'returns a 404 response code' do
-        get checksum_object_url(prefixed_missing_druid, format: :json), headers: valid_auth_header
+        get checksum_object_url(prefixed_missing_druid), headers: valid_auth_header
         expect(response).to have_http_status(:not_found)
       end
     end
 
     context 'when bad parameter passed in' do
       it 'returns a 400 response code' do
-        get checksum_object_url('not a druid', format: :json), headers: valid_auth_header
+        get checksum_object_url('not a druid'), headers: valid_auth_header
         expect(response).to have_http_status(:bad_request)
       end
     end
