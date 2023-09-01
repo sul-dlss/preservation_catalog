@@ -28,9 +28,6 @@ Rails.application.routes.draw do
         get 'file', format: false # no need to add extension to url
         post 'content_diff'
       end
-      collection do
-        match 'checksums', via: %i[get post]
-      end
     end
   end
 end

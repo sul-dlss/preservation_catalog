@@ -63,29 +63,6 @@ class ObjectsController < ApiController
     render json: content_files_checksums(druid).to_json
   end
 
-  # return the checksums and filesize for a list of druids (supplied with druid: prefix)
-  # note: this is deliberately allowed to be a POST to allow for a large number of druids to be passed in
-  # GET OR POST /v1/objects/checksums?druids[]=druid1&druids[]=druid2&druids[]=druid3
-  def checksums
-    checksum_list, missing_druids_list, errored_druids = generate_checksum_list
-
-    if errored_druids.any?
-      bad_recs_msg = "Problems (other than Moab not found) generating checksums for #{errored_druids.join(', ')}"
-      render(plain: "Unexpected Error - #{bad_recs_msg}", status: :internal_server_error)
-      return
-    end
-
-    respond_to do |format|
-      format.json do
-        render json: (checksum_list + missing_druids_list).to_json
-      end
-      format.csv do
-        render plain: to_csv_checksum_list(checksum_list, missing_druids_list)
-      end
-      format.any { render status: :not_acceptable, plain: 'Format not acceptable' }
-    end
-  end
-
   # Retrieves [Moab::FileInventoryDifference] from comparison of passed contentMetadata.xml
   #   with latest (or specified) version in Moab for all files (default) or a specified subset (shelve|preserve|publish)
   # Moab::FileInventoryDifference is returned as an XML response
@@ -124,37 +101,6 @@ class ObjectsController < ApiController
 
   def returned_druid(druid)
     return_bare_druids? ? druid.to_s : "druid:#{druid}"
-  end
-
-  def generate_checksum_list
-    checksum_list = []
-    missing_druids_list = []
-    errored_druids = []
-    normalized_druids.each do |druid|
-      checksum_list << { returned_druid(druid) => content_files_checksums(druid) }
-    rescue Moab::ObjectNotFoundException
-      missing_druids_list << { returned_druid(druid) => [message: 'object not found or not fully accessioned'] }
-    rescue StandardError => e
-      errored_druids << "#{druid} (#{e.inspect})"
-    end
-    [checksum_list, missing_druids_list, errored_druids]
-  end
-
-  def to_csv_checksum_list(checksum_list, missing_druids_list)
-    CSV.generate do |csv|
-      checksum_list.each do |druid_checksum|
-        druid_checksum.each do |druid, checksums|
-          checksums.each do |checksum|
-            csv << [druid, checksum[:filename], checksum[:md5], checksum[:sha1], checksum[:sha256], checksum[:filesize]]
-          end
-        end
-      end
-      missing_druids_list.each do |druid_checksum|
-        druid_checksum.each do |druid, messages|
-          csv << [druid, messages.first[:message]]
-        end
-      end
-    end
   end
 
   def content_files_checksums(druid)
