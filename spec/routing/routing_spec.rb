@@ -23,16 +23,6 @@ RSpec.describe 'routes' do
     end
   end
 
-  describe 'objects/checksums' do
-    it 'GET checksums_objects_path' do
-      expect(get: checksums_objects_path).to route_to(controller: 'objects', action: 'checksums')
-    end
-
-    it 'POST checksums_objects_path' do
-      expect(post: checksums_objects_path).to route_to(controller: 'objects', action: 'checksums')
-    end
-  end
-
   describe 'objects/:id/content_diff' do
     it 'content_diff_object_path' do
       expect(post: content_diff_object_path(id: id)).to route_to(controller: 'objects', action: 'content_diff', id: id)
