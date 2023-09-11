@@ -31,7 +31,7 @@ module Dashboard
 
     def catalog_to_moab_audit_ok?
       # NOTE: unsure if there needs to be more checking of MoabRecord.status_details for more statuses to figure this out
-      !MoabRecord.all.annotate(caller).exists?(status: %w[moab_on_storage_not_found unexpected_version_on_storage])
+      !MoabRecord.annotate(caller).exists?(status: %w[moab_on_storage_not_found unexpected_version_on_storage])
     end
 
     def moab_to_catalog_audit_ok?

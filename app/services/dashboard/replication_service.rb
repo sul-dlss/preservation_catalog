@@ -27,7 +27,7 @@ module Dashboard
 
     # total number of object versions according to PreservedObject table
     def num_object_versions_per_preserved_object
-      PreservedObject.all.annotate(caller).sum(:current_version)
+      PreservedObject.annotate(caller).sum(:current_version)
     end
 
     # Array-ify the endpoint data so it's renderable via the ViewComponent `#with_collection` method
@@ -39,7 +39,7 @@ module Dashboard
       # called multiple times, so memoize to avoid db queries
       @endpoint_data ||= {}.tap do |endpoint_data|
         replication_counts = ZippedMoabVersion.group(:zip_endpoint_id).annotate(caller).count
-        ZipEndpoint.all.each do |zip_endpoint|
+        ZipEndpoint.find_each do |zip_endpoint|
           endpoint_data[zip_endpoint.endpoint_name] =
             {
               delivery_class: zip_endpoint.delivery_class,

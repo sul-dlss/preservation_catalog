@@ -22,7 +22,7 @@ module Dashboard
       @storage_root_info ||= begin
         moab_counts = MoabRecord.group(:moab_storage_root_id).annotate(caller).count
         storage_root_info = {}
-        MoabStorageRoot.all.each do |storage_root|
+        MoabStorageRoot.find_each do |storage_root|
           status_counts = MoabRecord.where(moab_storage_root: storage_root).group(:status).annotate(caller).count
           storage_root_info[storage_root.name] =
             {
@@ -109,11 +109,11 @@ module Dashboard
     end
 
     def moab_record_total_size
-      number_to_human_size(MoabRecord.all.annotate(caller).sum(:size))
+      number_to_human_size(MoabRecord.annotate(caller).sum(:size))
     end
 
     def moab_record_average_size
-      number_to_human_size(MoabRecord.all.annotate(caller).average(:size)) unless num_moab_records.zero?
+      number_to_human_size(MoabRecord.annotate(caller).average(:size)) unless num_moab_records.zero?
     end
 
     def moab_record_status_counts
@@ -146,7 +146,7 @@ module Dashboard
 
     def num_preserved_objects
       # used multiple times, so memoize to avoid db queries
-      @num_preserved_objects ||= PreservedObject.all.annotate(caller).count
+      @num_preserved_objects ||= PreservedObject.annotate(caller).count
     end
 
     def preserved_object_highest_version
@@ -156,16 +156,16 @@ module Dashboard
     # total number of object versions according to PreservedObject table
     def num_object_versions_per_preserved_object
       # used multiple times, so memoize to avoid db queries
-      @num_object_versions_per_preserved_object ||= PreservedObject.all.annotate(caller).sum(:current_version)
+      @num_object_versions_per_preserved_object ||= PreservedObject.annotate(caller).sum(:current_version)
     end
 
     def average_version_per_preserved_object
-      PreservedObject.all.annotate(caller).pick(Arel.sql('SUM(current_version)::numeric/COUNT(id)')).round(2) unless num_preserved_objects.zero?
+      PreservedObject.annotate(caller).pick(Arel.sql('SUM(current_version)::numeric/COUNT(id)')).round(2) unless num_preserved_objects.zero?
     end
 
     def num_moab_records
       # used multiple times; memoizing to avoid multiple db queries
-      @num_moab_records ||= MoabRecord.all.annotate(caller).count
+      @num_moab_records ||= MoabRecord.annotate(caller).count
     end
 
     def moab_record_highest_version
@@ -175,13 +175,13 @@ module Dashboard
     # total number of object versions according to MoabRecord table
     def num_object_versions_per_moab_record
       # used multiple times, so memoize to avoid multiple db queries
-      @num_object_versions_per_moab_record ||= MoabRecord.all.annotate(caller).sum(:version)
+      @num_object_versions_per_moab_record ||= MoabRecord.annotate(caller).sum(:version)
     end
 
     def average_version_per_moab_record
       # note, no user input to sanitize here, so ok to use Arel.sql
       # see https://api.rubyonrails.org/v7.0.4/classes/ActiveRecord/UnknownAttributeReference.html
-      MoabRecord.all.annotate(caller).pick(Arel.sql('SUM(version)::numeric/COUNT(id)')).round(2) unless num_moab_records.zero?
+      MoabRecord.annotate(caller).pick(Arel.sql('SUM(version)::numeric/COUNT(id)')).round(2) unless num_moab_records.zero?
     end
 
     def preserved_object_moab_record_counts_match?
