@@ -204,7 +204,7 @@ RSpec.shared_examples 'replication to endpoint' do |provider_class, bucket_name,
 
       it 'logs the mismatches' do
         described_class.check_replicated_zipped_moab_version(zmv, results)
-        zmv.zip_parts.where(suffix: ['.zip', '.z01']).each do |part|
+        zmv.zip_parts.where(suffix: ['.zip', '.z01']).find_each do |part|
           msg = "replicated md5 mismatch on #{endpoint_name}: #{part.s3_key} catalog md5 (#{part.md5}) " \
                 "doesn't match the replicated md5 (#{non_matching_md5}) on #{bucket_name}"
           expect(results.results).to include(a_hash_including(Audit::Results::ZIP_PART_CHECKSUM_MISMATCH => msg))

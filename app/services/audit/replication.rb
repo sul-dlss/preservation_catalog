@@ -43,7 +43,7 @@ module Audit
 
     def result(zip_endpoint)
       audit_results = new_audit_results(zip_endpoint)
-      preserved_object.zipped_moab_versions.where(zip_endpoint: zip_endpoint).each do |zipped_moab_version|
+      preserved_object.zipped_moab_versions.where(zip_endpoint: zip_endpoint).find_each do |zipped_moab_version|
         next unless Audit::ReplicationSupport.check_child_zip_part_attributes(zipped_moab_version, audit_results)
         zip_endpoint.audit_class.check_replicated_zipped_moab_version(zipped_moab_version, audit_results)
       end
