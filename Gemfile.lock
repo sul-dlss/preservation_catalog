@@ -1,8 +1,8 @@
 GEM
   remote: https://gems.contribsys.com/
   specs:
-    sidekiq-pro (7.1.4)
-      sidekiq (>= 7.1.0, < 8)
+    sidekiq-pro (7.1.5)
+      sidekiq (>= 7.1.5, < 8)
 
 GEM
   remote: https://rubygems.org/
@@ -79,8 +79,8 @@ GEM
     amq-protocol (2.3.2)
     ast (2.4.2)
     aws-eventstream (1.2.0)
-    aws-partitions (1.830.0)
-    aws-sdk-core (3.184.0)
+    aws-partitions (1.834.0)
+    aws-sdk-core (3.185.1)
       aws-eventstream (~> 1, >= 1.0.2)
       aws-partitions (~> 1, >= 1.651.0)
       aws-sigv4 (~> 1.5)
@@ -216,7 +216,7 @@ GEM
     faraday-net_http (3.0.2)
     faraday-retry (2.2.0)
       faraday (~> 2.0)
-    ffi (1.16.2)
+    ffi (1.16.3)
     globalid (1.2.1)
       activesupport (>= 6.1)
     hashdiff (1.0.1)
@@ -261,7 +261,7 @@ GEM
       json
       nokogiri
       nokogiri-happymapper
-    net-imap (0.3.7)
+    net-imap (0.4.0)
       date
       net-protocol
     net-pop (0.1.2)
@@ -283,7 +283,7 @@ GEM
     okcomputer (1.18.4)
     openapi_parser (1.0.0)
     parallel (1.23.0)
-    parser (3.2.2.3)
+    parser (3.2.2.4)
       ast (~> 2.4.1)
       racc
     pg (1.5.4)
@@ -349,7 +349,7 @@ GEM
     redis-client (0.17.0)
       connection_pool
     regexp_parser (2.8.1)
-    reline (0.3.8)
+    reline (0.3.9)
       io-console (~> 0.5)
     request_store (1.5.1)
       rack (>= 1.4)
@@ -404,7 +404,7 @@ GEM
     set (1.0.3)
     shoulda-matchers (5.3.0)
       activesupport (>= 5.2.0)
-    sidekiq (7.1.4)
+    sidekiq (7.1.5)
       concurrent-ruby (< 2)
       connection_pool (>= 2.3.0)
       rack (>= 2.2.4)
