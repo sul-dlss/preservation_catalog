@@ -461,6 +461,7 @@ DEPENDENCIES
   capybara
   committee
   config
+  connection_pool
   debug
   dlss-capistrano
   dor-event-client (~> 1.0)
