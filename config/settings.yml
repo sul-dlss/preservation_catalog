@@ -59,6 +59,7 @@ rabbitmq:
   password: guest
 
 redis_url: redis://localhost:6379/
+redis_timeout: 5 # seconds
 
 honeybadger_checkins:
   moab_to_catalog: xyzzy
@@ -69,3 +70,4 @@ honeybadger_checkins:
 slow_queries:
   enable: false
   threshold: 500
+

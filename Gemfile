@@ -3,6 +3,7 @@ source 'https://rubygems.org'
 # general Ruby/Rails gems
 gem 'aws-sdk-s3', '~> 1.17'
 gem 'committee' # Validates HTTP requests/responses per OpenAPI specification
+gem 'connection_pool' # Used for redis
 gem 'config' # Settings to manage configs on different instances
 gem 'honeybadger' # for error reporting / tracking / notifications
 gem 'jbuilder', '~> 2.5' # Build JSON APIs with ease.

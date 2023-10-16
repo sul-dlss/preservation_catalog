@@ -72,12 +72,6 @@ module UniqueJob
       3600
     end
 
-    def redis_connection
-      Redis.new(url: Settings.redis_url).tap do |conn|
-        yield conn if block_given?
-      end
-    end
-
     # @return [String] the key for locking this job/payload combination, e.g. 'lock:MySpecificJob-bt821jk7040;1'
     def queue_lock_key(*args)
       # Changes in ActiveModel object don't result in new lock (which they do when just calling to_s).
@@ -90,7 +84,7 @@ module UniqueJob
       now = Time.now.to_i
       new_expiry_time = now + lock_timeout + 1
 
-      redis_connection do |conn|
+      REDIS.with do |conn|
         # return true if we successfully acquired the lock
         # "Set key to hold string value if key does not exist" (otherwise no-op) -- https://redis.io/commands/setnx
         if conn.setnx(key, new_expiry_time)
@@ -123,7 +117,7 @@ module UniqueJob
     def clear_lock(*)
       key = queue_lock_key(*)
       Rails.logger.info("clearing lock for #{key}...")
-      redis_connection do |conn|
+      REDIS.with do |conn|
         conn.del(key).tap do |del_result|
           Rails.logger.info("...cleared lock for #{key} (del_result=#{del_result})")
         end
