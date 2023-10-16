@@ -5,7 +5,7 @@ module Replication
   # @note this class name appears in config files for the endpoints for which it delivers content.
   #   Please update the configs for the various environments if it's renamed or moved.
   class IbmSouthDeliveryJob < Replication::DeliveryJobBase
-    queue_as :ibm_us_south_delivery
+    queue_as :replication_ibm_us_south_delivery
 
     # perform method is defined in DeliveryJobBase
 

@@ -4,7 +4,7 @@ module Audit
   # Check filesystem based on catalog, updating database
   # @see Audit::CatalogToMoab
   class CatalogToMoabJob < ApplicationJob
-    queue_as :c2m
+    queue_as :audit_catalog_to_moab
 
     before_enqueue do |job|
       raise ArgumentError, 'MoabRecord param required' unless job.arguments.first.is_a?(MoabRecord)
