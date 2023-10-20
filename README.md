@@ -314,7 +314,9 @@ You can view the raw markdown and copy the following checklist into a new issue 
 - [ ] Quiet Sidekiq workers for preservation_catalog and preservation_robots in the environment being reset.  For both apps, dump any remaining queue contents manually.
 - [ ] preservation_catalog: stop the web services
 - _NOTE_: stopping pres bots workers and pres cat web services will effectively halt accessioning for the environment
-- [ ] Work with ops to delete archived content on cloud endpoints for the environment being reset.  If Suri is not reset, then druids won't be re-used, and this can be done async from the rest of this process.  _But_, if the reset is completed and accessioning starts up again before the old cloud archives are purged, you should dump a list of the old druids before the preservation_catalog DB reset, and give those to ops, so that only old content is purged.  You can query for the full druid list (and e.g. redirect or copy and save the output to a file) with the following query from pres cat: `PreservedObject.pluck(:druid)` (to be clear, this will return tens of thousands of druids).
+- [ ] Delete archived content on cloud endpoints for the environment being reset (inquire with ops if you run into cloud bucket auth issues).  If Suri is not reset, then druids won't be re-used, and this can be done async from the rest of this process.  _But_, if the reset is completed and accessioning starts up again before the old cloud archives are purged, you should dump a list of the old druids before the preservation_catalog DB reset, and use that for cleanup, so that only old content is purged.  You can query for the full druid list (and e.g. redirect or copy and save the output to a file) with the following query from pres cat: `druids = PreservedObject.pluck(:druid)` (to be clear, this will probably return tens of thousands of druids).
+  - `File.open('/opt/app/pres/druids_pre_reset.txt', 'w') { |f| druids.each {|druid| f.write("#{druid}\n")}}`
+  - See below for how to use this list to purge pre-reset cloud archives.
 - [ ] Delete all content under the `deposit` dirs and the `sdr2objects` dirs in each of the storage roots (`sdr2objects` is the configured "storage trunk", and `deposit` is where the bags that are used to build Moabs are placed). Storage root paths are listed in shared_configs for preservation_catalog (and should be the same as what's configured for presbots/techmd in the same env).  So, e.g., `rm -rf /services-disk-stage/store2/deposit/*`, `rm -rf /services-disk-stage/store2/sdr2objects/*`, etc if the storage roots are `/services-disk-stage/store2/` etc.  Deletions must be done from a preservation_robots machine for the env, as techMD and pres cat mount pres storage roots as read-only.
 - [ ] From a preservation_robots VM for the environment: Delete all content under preservation_robots' `Settings.transfer_object.from_dir` path, e.g. `rm -rf /dor/export/*`
 - [ ] preservation_catalog: _NOTE: this step likely not needed for most resets:_ for the environment being reset, `cap shared_configs:update` (to push the latest shared_configs, in case e.g. storage root or cloud endpoint locations have been updated)
@@ -322,3 +324,96 @@ You can view the raw markdown and copy the following checklist into a new issue 
 - [ ] re-deploy preservation_catalog, preservation_robots, and techMD.  This will bring the pres cat web services back online, bring the Sidekiq workers for all services back online, and pick up any shared_configs changes.
 
 Once the various SDR services are started back up, preserved content on storage roots and in the cloud will be rebuilt by regular accessioning.  Since preservation just preserves whatever flows through accessioning, there's no need to worry about e.g. having particular APOs in place.
+
+#### How to delete cloud content from before the reset, using the druid list that was dumped
+
+_NOTE:_ You should only be doing this in stage or QA.  Production has more restricted authorization for the pres user cloud buckets anyway, and should only allow an initial write for a particular key, blocking deletes and overwrites.
+
+Since the environment should have all the necessary credentials already for deletion on stage and QA (with secrets provided by combo of puppet/vault/env), you can do something like the following in the Rails console from one of the VMs for the env you're in:
+
+```ruby
+def aws_east_provider
+  Replication::AwsProvider.new(region: Settings.zip_endpoints.aws_s3_east_1.region,
+                               access_key_id: Settings.zip_endpoints.aws_s3_east_1.access_key_id,
+                               secret_access_key: Settings.zip_endpoints.aws_s3_east_1.secret_access_key)
+end
+
+def aws_west_provider
+  Replication::AwsProvider.new(region: Settings.zip_endpoints.aws_s3_west_2.region,
+                               access_key_id: Settings.zip_endpoints.aws_s3_west_2.access_key_id,
+                               secret_access_key: Settings.zip_endpoints.aws_s3_west_2.secret_access_key)
+end
+
+def ibm_south_provider
+  Replication::IbmProvider.new(region: Settings.zip_endpoints.ibm_us_south.region,
+                               access_key_id: Settings.zip_endpoints.ibm_us_south.access_key_id,
+                               secret_access_key: Settings.zip_endpoints.ibm_us_south.secret_access_key)
+end
+
+
+def all_cloud_providers
+  [aws_east_provider, aws_west_provider, ibm_south_provider]
+end
+
+def bucket_object_keys(bucket_objects)
+  bucket_objects.map { |obj| obj.key }
+end
+
+def purge_druid_from_all_could_providers!(druid_str, dry_run: true)
+  logger = Logger.new($stdout).extend(ActiveSupport::Logger.broadcast(Logger.new(Rails.root.join('log', 'sdr_reset_cloud_archive_cleanup.log'))))
+
+  logger.info "=== purging cloud copies for #{druid_str}"
+  druid_obj = DruidTools::Druid.new(druid_str)
+
+  all_cloud_providers.map do |provider|
+    logger.info "= delete #{druid_str} from #{provider.aws_client_args.slice(:region, :endpoint)}"
+
+    # all zips for all versions for this object, e.g. ['hx/900/cw/1590/hx900cw1590.v0001.zip', 'hx/900/cw/1590/hx900cw1590.v0002.zip', 'hx/900/cw/1590/hx900cw1590.v0003.zip']
+    bucket_objects = provider.bucket.objects(prefix: druid_obj.tree.join('/'))
+    pre_delete_bucket_object_keys = bucket_object_keys(bucket_objects)
+    if dry_run
+      logger.info "  # dry run, not deleting - #{pre_delete_bucket_object_keys}"
+      del_result = nil
+    else
+      logger.info "  ! actual run, deleting - #{pre_delete_bucket_object_keys}"
+      del_result = bucket_objects.map { |obj| obj.delete }
+      logger.info "  post-delete: bucket_objects keys: #{bucket_object_keys(bucket_objects)}"
+    end
+
+    {
+      druid: druid_str,
+      pre_delete_bucket_object_keys:,
+      delete_result: del_result
+    }
+  rescue StandardError => e
+    logger.error "!! Error deleting #{druid_str} from #{provider.aws_client_args.slice(:region, :endpoint)}: #{e.message} #{e.backtrace.join("\n")}"
+    {
+      druid: druid_str,
+      error_msg: e.message,
+      error_backtrace: e.backtrace
+    }
+  end
+
+rescue StandardError => e
+  logger.error "!!! Error deleting #{druid_str}: #{e.message} #{e.backtrace.join("\n")}"
+  {
+    druid: druid_str,
+    dry_run:,
+    error_msg: e.message,
+    error_backtrace: e.backtrace
+  }
+end
+
+
+
+druid_filename = '/opt/app/pres/druids_pre_reset.txt'
+druid_list = File.readlines(druid_filename).map!(&:chomp) # chomp the trailing newline
+
+# smoke test before doing the whole list
+test_druid = druid_list.first
+purge_druid_from_all_could_providers!(test_druid)
+purge_druid_from_all_could_providers!(test_druid, dry_run: false)
+
+# dry run on the first 10, to do for real add param `dry_run: false`
+druid_list.take(10).map { |druid_str| purge_druid_from_all_could_providers!(druid_str) }
+```
