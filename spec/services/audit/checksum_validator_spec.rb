@@ -486,7 +486,7 @@ RSpec.describe Audit::ChecksumValidator do
 
       before { allow(Audit::Results).to receive(:new).and_return(results) }
 
-      it 'adds a MANIFEST_NOT_IN_MOAB error' do
+      it 'adds a SIGNATURE_CATALOG_NOT_IN_MOAB error' do
         expect(results).to receive(:add_result).with(
           Audit::Results::SIGNATURE_CATALOG_NOT_IN_MOAB, signature_catalog_path: "#{object_dir}/v0002/manifests/signatureCatalog.xml"
         )
