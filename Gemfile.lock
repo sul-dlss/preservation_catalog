@@ -479,7 +479,7 @@ DEPENDENCIES
   postgresql_cursor
   pry
   pry-byebug
-  puma (~> 5.5)
+  puma
   rails (~> 7.0.0)
   rails-controller-testing
   redis (~> 5.0)
