@@ -163,7 +163,7 @@ GEM
       activesupport (>= 4.2, < 8)
       bunny (~> 2.17)
       zeitwerk (~> 2.1)
-    dor-workflow-client (5.1.0)
+    dor-workflow-client (6.0.0)
       activesupport (>= 3.2.1, < 8)
       deprecation (>= 0.99.0)
       faraday (~> 2.0)
@@ -465,7 +465,7 @@ DEPENDENCIES
   debug
   dlss-capistrano
   dor-event-client (~> 1.0)
-  dor-workflow-client (~> 5.0)
+  dor-workflow-client
   druid-tools
   factory_bot_rails
   honeybadger
