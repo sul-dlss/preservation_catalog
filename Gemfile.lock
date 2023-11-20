@@ -469,7 +469,7 @@ DEPENDENCIES
   druid-tools
   factory_bot_rails
   honeybadger
-  jbuilder (~> 2.5)
+  jbuilder
   jwt
   listen (~> 3.7)
   lograge

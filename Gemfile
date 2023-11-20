@@ -6,7 +6,7 @@ gem 'committee' # Validates HTTP requests/responses per OpenAPI specification
 gem 'connection_pool' # Used for redis
 gem 'config' # Settings to manage configs on different instances
 gem 'honeybadger' # for error reporting / tracking / notifications
-gem 'jbuilder', '~> 2.5' # Build JSON APIs with ease.
+gem 'jbuilder' # Build JSON APIs with ease.
 gem 'jwt' # for gating programmatic access to the application
 gem 'lograge'
 gem 'okcomputer' # ReST endpoint with upness status
