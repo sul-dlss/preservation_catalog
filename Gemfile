@@ -34,7 +34,7 @@ gem 'druid-tools' # for druid validation and druid-tree parsing
 gem 'moab-versioning', '~> 6.0' # work with Moab Objects
 
 group :development, :test do
-  gem 'rspec-rails', '~> 4.0'
+  gem 'rspec-rails'
   # Ruby static code analyzer https://rubocop.readthedocs.io/en/latest/
   gem 'rubocop', '~> 1.0'
   gem 'rubocop-rails'
