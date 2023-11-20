@@ -28,7 +28,7 @@ source 'https://gems.contribsys.com/' do
 end
 
 # Stanford gems
-gem 'dor-event-client', '~> 1.0'
+gem 'dor-event-client'
 gem 'dor-workflow-client' # audit errors are reported to the workflow service
 gem 'druid-tools' # for druid validation and druid-tree parsing
 gem 'moab-versioning', '~> 6.0' # work with Moab Objects

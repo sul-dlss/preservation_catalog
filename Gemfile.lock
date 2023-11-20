@@ -464,7 +464,7 @@ DEPENDENCIES
   connection_pool
   debug
   dlss-capistrano
-  dor-event-client (~> 1.0)
+  dor-event-client
   dor-workflow-client
   druid-tools
   factory_bot_rails
