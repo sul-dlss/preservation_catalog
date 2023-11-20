@@ -204,11 +204,11 @@ GEM
       dry-schema (>= 1.12, < 2)
       zeitwerk (~> 2.6)
     erubi (1.12.0)
-    factory_bot (4.11.1)
-      activesupport (>= 3.0.0)
-    factory_bot_rails (4.11.1)
-      factory_bot (~> 4.11.1)
-      railties (>= 3.0.0)
+    factory_bot (6.4.1)
+      activesupport (>= 5.0.0)
+    factory_bot_rails (6.4.0)
+      factory_bot (~> 6.4)
+      railties (>= 5.0.0)
     faraday (2.7.11)
       base64
       faraday-net_http (>= 2.0, < 3.1)
@@ -467,7 +467,7 @@ DEPENDENCIES
   dor-event-client (~> 1.0)
   dor-workflow-client (~> 5.0)
   druid-tools
-  factory_bot_rails (~> 4.0)
+  factory_bot_rails
   honeybadger
   jbuilder (~> 2.5)
   jwt
