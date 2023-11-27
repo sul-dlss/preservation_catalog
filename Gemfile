@@ -6,12 +6,14 @@ gem 'committee' # Validates HTTP requests/responses per OpenAPI specification
 gem 'connection_pool' # Used for redis
 gem 'config' # Settings to manage configs on different instances
 gem 'honeybadger' # for error reporting / tracking / notifications
+gem "importmap-rails", "~> 1.2"
 gem 'jbuilder' # Build JSON APIs with ease.
 gem 'jwt' # for gating programmatic access to the application
 gem 'lograge'
 gem 'okcomputer' # ReST endpoint with upness status
 gem 'pg' # postgres database
 gem 'postgresql_cursor' # for paging over large result sets efficiently
+gem 'propshaft', '~> 0.8.0' # asset pipeline
 # pry is useful for debugging, even in prod
 gem 'pry-byebug' # call 'binding.pry' anywhere in the code to stop execution and get a pry-byebug console
 gem 'pry' # make it possible to use pry for IRB

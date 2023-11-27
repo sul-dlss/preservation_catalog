@@ -20,7 +20,7 @@ set :deploy_to, "/opt/app/pres/#{fetch(:application)}"
 append :linked_files, 'config/database.yml'
 
 # Default value for linked_dirs is []
-append :linked_dirs, 'log', 'config/settings', 'tmp/pids'
+append :linked_dirs, 'log', 'config/settings', 'tmp/pids', 'vendor/bundle'
 
 set :honeybadger_env, fetch(:stage)
 
@@ -52,3 +52,9 @@ end
 
 set :sidekiq_systemd_role, :worker
 set :sidekiq_systemd_use_hooks, true
+
+# configure capistrano-rails to work with propshaft instead of sprockets
+# (we don't have public/assets/.sprockets-manifest* or public/assets/manifest*.*)
+set :assets_manifests, lambda {
+  [release_path.join('public', fetch(:assets_prefix), '.manifest.json')]
+}
