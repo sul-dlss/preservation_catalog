@@ -492,7 +492,7 @@ DEPENDENCIES
   sidekiq (~> 7.0)
   sidekiq-pro!
   simplecov
-  turbo-rails
+  turbo-rails (~> 1.0)
   view_component
   webmock
   whenever
