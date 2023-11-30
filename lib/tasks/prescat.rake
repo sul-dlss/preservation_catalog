@@ -40,6 +40,58 @@ namespace :prescat do
     puts "Backfilled with: #{zipped_moab_versions}"
   end
 
+  desc 'Purge zips from cloud storage'
+  # For purging zips from cloud storage one endpoint at a time.
+  # Ops will provide a time-limited access key and secret access key for the endpoint.
+  # CSV should be in the format of druid,version,endpoint_name without a header.
+  # For example: druid:bd632bd2980,3,aws_s3_east_1
+  task :purge_zips, [:csv_filename, :endpoint_name, :access_key, :secret_access_key, :dry_run] => :environment do |_task, args|
+    args.with_defaults(dry_run: 'true')
+
+    provider = case args[:endpoint_name]
+               when 'aws_s3_east_1'
+                 Replication::AwsProvider.new(region: Settings.zip_endpoints.aws_s3_east_1.region,
+                                              access_key_id: args[:access_key],
+                                              secret_access_key: args[:secret_access_key])
+               when 'aws_s3_west_2'
+                 Replication::AwsProvider.new(region: Settings.zip_endpoints.aws_s3_west_2.region,
+                                              access_key_id: args[:access_key],
+                                              secret_access_key: args[:secret_access_key])
+               when 'ibm_us_south'
+                 Replication::IbmProvider.new(region: Settings.zip_endpoints.ibm_us_south.region,
+                                              access_key_id: args[:access_key],
+                                              secret_access_key: args[:secret_access_key])
+               else
+                 raise ArgumentError, "Unknown endpoint_name: #{args[:endpoint_name]}"
+               end
+    zip_endpoint = ZipEndpoint.find_by(endpoint_name: args[:endpoint_name])
+
+    CSV.foreach(args[:csv_filename], headers: [:druid, :version, :endpoint_name]) do |row|
+      next unless row[:endpoint_name] == args[:endpoint_name]
+
+      druid = row[:druid].delete_prefix('druid:')
+      version = row[:version].to_i
+      zipped_moab_version = ZippedMoabVersion.by_druid(druid).find_by(zip_endpoint: zip_endpoint, version: version)
+      next unless zipped_moab_version
+
+      zipped_moab_version.zip_parts.each do |zip_part|
+        zip_info = "#{druid} (#{version}) #{zip_part.s3_key} from #{args[:endpoint_name]}"
+        s3_object = provider.bucket.object(zip_part.s3_key)
+        unless s3_object.exists?
+          puts "Skipping since does not exist: #{zip_info}"
+          next
+        end
+        if args[:dry_run] == 'false'
+          puts "Deleting: #{zip_info}"
+          s3_object.delete
+          zip_part.not_found!
+        else
+          puts "Dry run deleting: #{zip_info}"
+        end
+      end
+    end
+  end
+
   namespace :cache_cleaner do
     desc 'Clean zip storage cache of empty directories'
     task empty_directories: :environment do
