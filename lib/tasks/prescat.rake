@@ -186,17 +186,16 @@ namespace :prescat do
 
     desc 'audit all druids for zip part size inconsistency'
     task :zip_part_size_inconsistency => [:environment] do
-      MoabRecord.includes(:preserved_object).limit(1000).find_each.with_index do |moab_record, index|
-        puts "#{index + 1} of #{MoabRecord.count}: auditing #{moab_record.preserved_object.druid} (#{moab_record.version})"
+      results = Parallel.map(MoabRecord.limit(100).ids, in_processes: 3) do |moab_record_id|
+        moab_record = MoabRecord.includes(:preserved_object).find(moab_record_id)
         moab_version_size = moab_record.preserved_object.total_size_of_moab_version(moab_record.version)
         ZippedMoabVersion.includes(:zip_endpoint).where(preserved_object: moab_record.preserved_object,
-                                                        version: moab_record.version).find_each do |zipped_moab_version|
-          puts "  auditing #{zipped_moab_version.zip_endpoint.endpoint_name}"
+                                                        version: moab_record.version).map do |zipped_moab_version|
           total_part_size = zipped_moab_version.total_part_size
-
-          puts "    PROBLEM!!!!!!! (#{total_part_size}, #{moab_version_size}" if total_part_size < moab_version_size
+          [moab_record.druid, moab_record.version, zipped_moab_version.zip_endpoint.endpoint_name] if total_part_size < moab_version_size
         end
-      end
+      end.flatten.compact
+      puts results
     end
   end
 end
