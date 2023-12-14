@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 require 'csv'
+require 'parallel'
+require 'tty-progressbar'
 
 namespace :prescat do
   desc 'Diagnose failed replication'
@@ -186,13 +188,25 @@ namespace :prescat do
 
     desc 'audit all druids for zip part size inconsistency'
     task :zip_part_size_inconsistency => [:environment] do
-      results = Parallel.map(MoabRecord.limit(100).ids, in_processes: 3) do |moab_record_id|
+      moab_record_ids = MoabRecord.limit(100).ids
+      progress_bar = TTY::ProgressBar.new(
+        'Validating [:bar] (:percent (:current/:total), rate: :rate/s, mean rate: :mean_rate/s, :elapsed total, ETA: :eta_time)',
+        bar_format: :crate,
+        advance: moab_record_ids.size / 100,
+        total: moab_record_ids.size
+      )
+      results = Parallel.map(moab_record_ids,
+                             in_processes: 3,
+                             finish: -> { progress_bar.advance }) do |moab_record_id|
         moab_record = MoabRecord.includes(:preserved_object).find(moab_record_id)
         moab_version_size = moab_record.preserved_object.total_size_of_moab_version(moab_record.version)
         ZippedMoabVersion.includes(:zip_endpoint).where(preserved_object: moab_record.preserved_object,
                                                         version: moab_record.version).map do |zipped_moab_version|
           total_part_size = zipped_moab_version.total_part_size
-          [moab_record.druid, moab_record.version, zipped_moab_version.zip_endpoint.endpoint_name] if total_part_size < moab_version_size
+          if total_part_size < moab_version_size
+            [moab_record.preserved_object.druid, moab_record.version,
+             zipped_moab_version.zip_endpoint.endpoint_name]
+          end
         end
       end.flatten.compact
       puts results

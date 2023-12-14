@@ -21,6 +21,7 @@ gem 'puma' # app server
 gem 'rails', '~> 7.0.0'
 gem 'redis', '~> 5.0'
 gem 'sidekiq', '~> 7.0'
+gem 'tty-progressbar' # to show progress of long-running tasks
 gem 'turbo-rails', '~> 1.0'
 gem 'view_component'
 gem 'whenever', require: false # Work around https://github.com/javan/whenever/issues/831
