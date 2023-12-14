@@ -188,7 +188,7 @@ namespace :prescat do
 
     desc 'audit all druids for zip part size inconsistency'
     task :zip_part_size_inconsistency => [:environment] do
-      moab_record_ids = MoabRecord.limit(100).ids
+      moab_record_ids = MoabRecord.ids
       progress_bar = TTY::ProgressBar.new(
         'Validating [:bar] (:percent (:current/:total), rate: :rate/s, mean rate: :mean_rate/s, :elapsed total, ETA: :eta_time)',
         bar_format: :crate,
@@ -196,8 +196,8 @@ namespace :prescat do
         total: moab_record_ids.size
       )
       results = Parallel.map(moab_record_ids,
-                             in_processes: 3,
-                             finish: -> { progress_bar.advance }) do |moab_record_id|
+                             in_processes: 4,
+                             finish: ->(_, _, _) { progress_bar.advance }) do |moab_record_id|
         moab_record = MoabRecord.includes(:preserved_object).find(moab_record_id)
         moab_version_size = moab_record.preserved_object.total_size_of_moab_version(moab_record.version)
         ZippedMoabVersion.includes(:zip_endpoint).where(preserved_object: moab_record.preserved_object,
@@ -208,8 +208,8 @@ namespace :prescat do
              zipped_moab_version.zip_endpoint.endpoint_name]
           end
         end
-      end.flatten.compact
-      puts results
+      end.flatten(1).compact
+      CSV.open('zip_part_size_inconsistency.csv', 'wb') { |csv| results.each { |result| csv << result } }
     end
   end
 end
