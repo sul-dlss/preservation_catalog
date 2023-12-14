@@ -183,5 +183,20 @@ namespace :prescat do
       PreservedObject.find_by!(druid: args[:druid]).audit_moab_version_replication!
       puts 'This may take some time. Any issues will be reported to Honeybadger.'
     end
+
+    desc 'audit all druids for zip part size inconsistency'
+    task :zip_part_size_inconsistency => [:environment] do
+      MoabRecord.includes(:preserved_object).limit(1000).find_each.with_index do |moab_record, index|
+        puts "#{index + 1} of #{MoabRecord.count}: auditing #{moab_record.preserved_object.druid} (#{moab_record.version})"
+        moab_version_size = moab_record.preserved_object.total_size_of_moab_version(moab_record.version)
+        ZippedMoabVersion.includes(:zip_endpoint).where(preserved_object: moab_record.preserved_object,
+                                                        version: moab_record.version).find_each do |zipped_moab_version|
+          puts "  auditing #{zipped_moab_version.zip_endpoint.endpoint_name}"
+          total_part_size = zipped_moab_version.total_part_size
+
+          puts "    PROBLEM!!!!!!! (#{total_part_size}, #{moab_version_size}" if total_part_size < moab_version_size
+        end
+      end
+    end
   end
 end
