@@ -69,7 +69,7 @@ RSpec.describe Dashboard::AuditInformationComponent, type: :component do
     end
 
     it 'renders PreservedObject replication audits older than threshold without warning styling' do
-      expect(rendered).not_to have_css('.table-warning')
+      expect(rendered).to have_no_css('.table-warning')
     end
   end
 end
