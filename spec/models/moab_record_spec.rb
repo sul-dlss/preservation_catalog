@@ -46,7 +46,7 @@ RSpec.describe MoabRecord do
         .to raise_error(ArgumentError, "'INVALID_MOAB' is not a valid status")
     end
 
-    it 'will accept a symbol, but will always return a string' do
+    it 'accepts a symbol, but will always return a string' do
       expect(described_class.new(status: :invalid_moab).status).to eq 'invalid_moab'
     end
   end

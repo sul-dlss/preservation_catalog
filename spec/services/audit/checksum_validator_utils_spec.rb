@@ -85,7 +85,7 @@ RSpec.describe Audit::ChecksumValidatorUtils do
     end
 
     context 'when there are no MoabRecords to check' do
-      it 'will not create an instance of ChecksumValidator' do
+      it 'does not create an instance of ChecksumValidator' do
         expect(Audit::ChecksumValidationJob).not_to receive(:perform_later)
         described_class.validate_status_root('ok', root_name)
       end
