@@ -172,7 +172,7 @@ RSpec.describe CatalogUtils do
       expect(described_class.populate_catalog_for_dir(storage_dir).count).to eq 3
     end
 
-    it 'will not ingest a MoabRecord for a druid that has already been cataloged' do
+    it 'does not create a new MoabRecord for a druid that has already been cataloged' do
       expect(MoabRecord.by_druid(druid).count).to eq 0
       expect(described_class.populate_catalog_for_dir(storage_dir).count).to eq 3
       expect(MoabRecord.by_druid(druid).count).to eq 1
@@ -194,7 +194,7 @@ RSpec.describe CatalogUtils do
   describe '.populate_moab_storage_root' do
     before { described_class.populate_catalog_for_all_storage_roots }
 
-    it "won't change objects in a fully seeded db" do
+    it "doesn't change objects in a fully seeded db" do
       expect { described_class.populate_moab_storage_root('fixture_sr1') }.not_to change(MoabRecord, :count).from(17)
       expect(PreservedObject.count).to eq 17
     end
