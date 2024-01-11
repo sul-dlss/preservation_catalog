@@ -68,6 +68,37 @@ Settings.storage_root_map.default.each do |name, location|
   OkComputer::Registry.register "feature-#{name}-sdr2objects", DirectoryExistsCheck.new(sdrobjects_location, Settings.minimum_subfolder_count)
 end
 
+# Check that RabbitMQ queues exist
+class RabbitQueueExistsCheck < OkComputer::Check
+  attr_reader :queue_names, :conn
+
+  def initialize(queue_names)
+    @queue_names = Array(queue_names)
+    @conn = Bunny.new(hostname: Settings.rabbitmq.hostname,
+                      vhost: Settings.rabbitmq.vhost,
+                      username: Settings.rabbitmq.username,
+                      password: Settings.rabbitmq.password)
+    super()
+  end
+
+  def check
+    conn.start
+    status = conn.status
+    missing_queue_names = queue_names.reject { |queue_name| conn.queue_exists?(queue_name) }
+    if missing_queue_names.empty?
+      mark_message "'#{queue_names.join(', ')}' exists, connection status: #{status}"
+    else
+      mark_message "'#{missing_queue_names.join(', ')}' does not exist"
+      mark_failure
+    end
+    conn.close
+  rescue StandardError => e
+    mark_message "Error: '#{e}'"
+    mark_failure
+  end
+end
+OkComputer::Registry.register 'rabbit-queues', RabbitQueueExistsCheck.new('dsa.create-event')
+
 OkComputer::Registry.register 'ruby_version', OkComputer::RubyVersionCheck.new
 
 # ------------------------------------------------------------------------------
