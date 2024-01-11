@@ -39,6 +39,8 @@ describe 'OkComputer custom checks' do # rubocop:disable RSpec/DescribeClass
   end
 
   describe RabbitQueueExistsCheck do
+    subject(:rabbit_queue_exists_check) { described_class.new([queue_name1, queue_name2]) }
+
     let(:bunny_conn) { instance_double(Bunny::Session) }
     let(:queue_name1) { 'foo.first_queue' }
     let(:queue_name2) { 'foo.second_queue' }
@@ -54,8 +56,8 @@ describe 'OkComputer custom checks' do # rubocop:disable RSpec/DescribeClass
       let(:queue_exists1) { true }
       let(:queue_exists2) { true }
 
-      it 'succeeds if the expected queue exists' do
-        expect(described_class.new([queue_name1, queue_name2])).to be_successful
+      it 'succeeds if the expected queues exist' do
+        expect(rabbit_queue_exists_check).to be_successful
       end
     end
 
@@ -63,8 +65,8 @@ describe 'OkComputer custom checks' do # rubocop:disable RSpec/DescribeClass
       let(:queue_exists1) { true }
       let(:queue_exists2) { false }
 
-      it 'succeeds if the expected queue exists' do
-        expect(described_class.new([queue_name1, queue_name2])).not_to be_successful
+      it 'fails if an expected queue is missing' do
+        expect(rabbit_queue_exists_check).not_to be_successful
       end
     end
   end
