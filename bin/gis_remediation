@@ -1,0 +1,38 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# This is a temporary utility created to help remediate accessioned GIS SDR 
+# items. It was adapted from prescat's create_bag utility.
+# See: https://github.com/sul-dlss/gis-robot-suite/issues/813
+
+require 'rubygems'
+require 'bundler/setup'
+require 'moab/stanford'
+require 'yaml'
+
+# setup our preservation storage environment
+
+settings = YAML.load_file(File.join(__dir__, '..', 'config', 'settings', 'production.yml'))
+
+Moab::Config.configure do
+  storage_roots settings['storage_root_map']['default'].values.sort
+  storage_trunk 'sdr2objects'
+  deposit_trunk 'deposit'
+  path_method 'druid_tree'
+end
+
+# the input list of druids should include GIS items that were accessioned
+# before 2024-02-27 when data.zip files stopped being created by gisAssemblyWF
+
+File.readlines(ARGV[0], chomp: true).each do |druid|
+  storage_object = Stanford::StorageServices.find_storage_object(druid)
+
+  object_version = storage_object.current_version
+
+  begin
+    data_zip = object_version.find_filepath('content', 'data.zip')
+    puts "#{druid} #{data_zip}"
+  rescue Moab::FileNotFoundException
+    puts "#{druid} data.zip not found"
+  end
+end
