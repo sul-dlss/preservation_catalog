@@ -1,0 +1,28 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# This is a temporary utility created to help remediate accessioned GIS SDR 
+# items. It was adapted from prescat's create_bag utility.
+# See: https://github.com/sul-dlss/gis-robot-suite/issues/813
+#
+# Usage: bin/rails runner bin/gis_remediation druids.txt /path/to/export/
+
+# the input list of druids should include GIS items that were accessioned
+# before 2024-02-27 when data.zip files stopped being created by gisAssemblyWF
+
+druids_file = ARGV[0]
+export_root = Pathname.new(ARGV[1])
+
+raise "export root #{export_root} doesn't exist" unless export_root.directory?
+
+File.readlines(druids_file, chomp: true).each do |druid|
+  druid = druid.delete_prefix('druid:')
+  export_dir = export_root.join(druid)
+
+  begin
+    GisExporter.export(druid, export_dir)
+    puts "info: exported #{druid} to #{export_dir}"
+  rescue GisExporter::Error => error
+    puts "error: #{error} when exporting #{druid}"
+  end
+end

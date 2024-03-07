@@ -1,0 +1,1679 @@
+{
+  "cocinaVersion": "0.95.0",
+  "type": "https://cocina.sul.stanford.edu/models/geo",
+  "externalIdentifier": "druid:tw464vg5223",
+  "label": "gis preassembly integration test Cloves Ground Camellia Tea Oil",
+  "version": 1,
+  "access": {
+    "view": "world",
+    "download": "world",
+    "controlledDigitalLending": false
+  },
+  "administrative": {
+    "hasAdminPolicy": "druid:sq797nc3050",
+    "releaseTags": [
+
+    ]
+  },
+  "description": {
+    "title": [
+      {
+        "structuredValue": [
+
+        ],
+        "parallelValue": [
+
+        ],
+        "groupedValue": [
+
+        ],
+        "value": "Air Monitoring Stations: California, 2001-2003",
+        "identifier": [
+
+        ],
+        "note": [
+
+        ],
+        "appliesTo": [
+
+        ]
+      }
+    ],
+    "contributor": [
+      {
+        "name": [
+          {
+            "structuredValue": [
+
+            ],
+            "parallelValue": [
+
+            ],
+            "groupedValue": [
+
+            ],
+            "value": "Stephen P. Teale Data Center (Calif.). ",
+            "identifier": [
+
+            ],
+            "note": [
+
+            ],
+            "appliesTo": [
+
+            ]
+          }
+        ],
+        "type": "organization",
+        "role": [
+          {
+            "structuredValue": [
+
+            ],
+            "parallelValue": [
+
+            ],
+            "groupedValue": [
+
+            ],
+            "value": "creator",
+            "identifier": [
+
+            ],
+            "source": {
+              "code": "marcrelator",
+              "note": [
+
+              ]
+            },
+            "note": [
+
+            ],
+            "appliesTo": [
+
+            ]
+          }
+        ],
+        "identifier": [
+
+        ],
+        "note": [
+
+        ],
+        "parallelContributor": [
+
+        ]
+      },
+      {
+        "name": [
+          {
+            "structuredValue": [
+
+            ],
+            "parallelValue": [
+
+            ],
+            "groupedValue": [
+
+            ],
+            "value": "California. Air Resources Board. Planning and Technical Support Division",
+            "identifier": [
+
+            ],
+            "note": [
+
+            ],
+            "appliesTo": [
+
+            ]
+          }
+        ],
+        "type": "organization",
+        "role": [
+          {
+            "structuredValue": [
+
+            ],
+            "parallelValue": [
+
+            ],
+            "groupedValue": [
+
+            ],
+            "value": "creator",
+            "identifier": [
+
+            ],
+            "source": {
+              "code": "marcrelator",
+              "note": [
+
+              ]
+            },
+            "note": [
+
+            ],
+            "appliesTo": [
+
+            ]
+          }
+        ],
+        "identifier": [
+
+        ],
+        "note": [
+
+        ],
+        "parallelContributor": [
+
+        ]
+      }
+    ],
+    "event": [
+      {
+        "structuredValue": [
+
+        ],
+        "date": [
+          {
+            "structuredValue": [
+
+            ],
+            "parallelValue": [
+
+            ],
+            "groupedValue": [
+
+            ],
+            "value": "2013",
+            "type": "publication",
+            "status": "primary",
+            "encoding": {
+              "code": "w3cdtf",
+              "note": [
+
+              ]
+            },
+            "identifier": [
+
+            ],
+            "note": [
+
+            ],
+            "appliesTo": [
+
+            ]
+          },
+          {
+            "structuredValue": [
+              {
+                "structuredValue": [
+
+                ],
+                "parallelValue": [
+
+                ],
+                "groupedValue": [
+
+                ],
+                "value": "2001",
+                "type": "start",
+                "identifier": [
+
+                ],
+                "note": [
+
+                ],
+                "appliesTo": [
+
+                ]
+              },
+              {
+                "structuredValue": [
+
+                ],
+                "parallelValue": [
+
+                ],
+                "groupedValue": [
+
+                ],
+                "value": "2003",
+                "type": "end",
+                "identifier": [
+
+                ],
+                "note": [
+
+                ],
+                "appliesTo": [
+
+                ]
+              }
+            ],
+            "parallelValue": [
+
+            ],
+            "groupedValue": [
+
+            ],
+            "type": "validity",
+            "encoding": {
+              "code": "w3cdtf",
+              "note": [
+
+              ]
+            },
+            "identifier": [
+
+            ],
+            "note": [
+
+            ],
+            "appliesTo": [
+
+            ]
+          }
+        ],
+        "contributor": [
+          {
+            "name": [
+              {
+                "structuredValue": [
+
+                ],
+                "parallelValue": [
+
+                ],
+                "groupedValue": [
+
+                ],
+                "value": "California. Air Resources Board",
+                "identifier": [
+
+                ],
+                "note": [
+
+                ],
+                "appliesTo": [
+
+                ]
+              }
+            ],
+            "type": "organization",
+            "role": [
+              {
+                "structuredValue": [
+
+                ],
+                "parallelValue": [
+
+                ],
+                "groupedValue": [
+
+                ],
+                "value": "publisher",
+                "code": "pbl",
+                "uri": "http://id.loc.gov/vocabulary/relators/pbl",
+                "identifier": [
+
+                ],
+                "source": {
+                  "code": "marcrelator",
+                  "uri": "http://id.loc.gov/vocabulary/relators/",
+                  "note": [
+
+                  ]
+                },
+                "note": [
+
+                ],
+                "appliesTo": [
+
+                ]
+              }
+            ],
+            "identifier": [
+
+            ],
+            "note": [
+
+            ],
+            "parallelContributor": [
+
+            ]
+          }
+        ],
+        "location": [
+          {
+            "structuredValue": [
+
+            ],
+            "parallelValue": [
+
+            ],
+            "groupedValue": [
+
+            ],
+            "value": "Sacramento, California, US",
+            "identifier": [
+
+            ],
+            "note": [
+
+            ],
+            "appliesTo": [
+
+            ]
+          }
+        ],
+        "identifier": [
+
+        ],
+        "note": [
+
+        ],
+        "parallelEvent": [
+
+        ]
+      }
+    ],
+    "form": [
+      {
+        "structuredValue": [
+
+        ],
+        "parallelValue": [
+
+        ],
+        "groupedValue": [
+
+        ],
+        "value": "Geospatial data",
+        "type": "genre",
+        "uri": "http://id.loc.gov/authorities/genreForms/gf2011026297",
+        "identifier": [
+
+        ],
+        "source": {
+          "code": "lcgft",
+          "note": [
+
+          ]
+        },
+        "note": [
+
+        ],
+        "appliesTo": [
+
+        ]
+      },
+      {
+        "structuredValue": [
+
+        ],
+        "parallelValue": [
+
+        ],
+        "groupedValue": [
+
+        ],
+        "value": "cartographic dataset",
+        "type": "genre",
+        "uri": "http://rdvocab.info/termList/RDAContentType/1001",
+        "identifier": [
+
+        ],
+        "source": {
+          "code": "rdacontent",
+          "note": [
+
+          ]
+        },
+        "note": [
+
+        ],
+        "appliesTo": [
+
+        ]
+      },
+      {
+        "structuredValue": [
+
+        ],
+        "parallelValue": [
+
+        ],
+        "groupedValue": [
+
+        ],
+        "value": "cartographic",
+        "type": "resource type",
+        "identifier": [
+
+        ],
+        "source": {
+          "value": "MODS resource types",
+          "note": [
+
+          ]
+        },
+        "note": [
+
+        ],
+        "appliesTo": [
+
+        ]
+      },
+      {
+        "structuredValue": [
+
+        ],
+        "parallelValue": [
+
+        ],
+        "groupedValue": [
+
+        ],
+        "value": "software, multimedia",
+        "type": "resource type",
+        "identifier": [
+
+        ],
+        "source": {
+          "value": "MODS resource types",
+          "note": [
+
+          ]
+        },
+        "note": [
+
+        ],
+        "appliesTo": [
+
+        ]
+      },
+      {
+        "structuredValue": [
+
+        ],
+        "parallelValue": [
+
+        ],
+        "groupedValue": [
+
+        ],
+        "value": "Shapefile",
+        "type": "form",
+        "identifier": [
+
+        ],
+        "note": [
+
+        ],
+        "appliesTo": [
+
+        ]
+      },
+      {
+        "structuredValue": [
+
+        ],
+        "parallelValue": [
+
+        ],
+        "groupedValue": [
+
+        ],
+        "value": "0.008",
+        "type": "extent",
+        "identifier": [
+
+        ],
+        "note": [
+
+        ],
+        "appliesTo": [
+
+        ]
+      },
+      {
+        "structuredValue": [
+
+        ],
+        "parallelValue": [
+
+        ],
+        "groupedValue": [
+
+        ],
+        "value": "born digital",
+        "type": "digital origin",
+        "identifier": [
+
+        ],
+        "source": {
+          "value": "MODS digital origin terms",
+          "note": [
+
+          ]
+        },
+        "note": [
+
+        ],
+        "appliesTo": [
+
+        ]
+      },
+      {
+        "structuredValue": [
+
+        ],
+        "parallelValue": [
+
+        ],
+        "groupedValue": [
+
+        ],
+        "value": "Scale not given.",
+        "type": "map scale",
+        "identifier": [
+
+        ],
+        "note": [
+
+        ],
+        "appliesTo": [
+
+        ]
+      },
+      {
+        "structuredValue": [
+
+        ],
+        "parallelValue": [
+
+        ],
+        "groupedValue": [
+
+        ],
+        "value": "Custom projection",
+        "type": "map projection",
+        "identifier": [
+
+        ],
+        "note": [
+
+        ],
+        "appliesTo": [
+
+        ]
+      },
+      {
+        "structuredValue": [
+
+        ],
+        "parallelValue": [
+
+        ],
+        "groupedValue": [
+
+        ],
+        "value": "EPSG::4326",
+        "type": "map projection",
+        "uri": "http://opengis.net/def/crs/EPSG/0/4326",
+        "identifier": [
+
+        ],
+        "source": {
+          "code": "EPSG",
+          "note": [
+
+          ]
+        },
+        "displayLabel": "WGS84",
+        "note": [
+
+        ],
+        "appliesTo": [
+
+        ]
+      }
+    ],
+    "geographic": [
+      {
+        "form": [
+          {
+            "structuredValue": [
+
+            ],
+            "parallelValue": [
+
+            ],
+            "groupedValue": [
+
+            ],
+            "value": "application/x-esri-shapefile",
+            "type": "media type",
+            "identifier": [
+
+            ],
+            "source": {
+              "value": "IANA media type terms",
+              "note": [
+
+              ]
+            },
+            "note": [
+
+            ],
+            "appliesTo": [
+
+            ]
+          },
+          {
+            "structuredValue": [
+
+            ],
+            "parallelValue": [
+
+            ],
+            "groupedValue": [
+
+            ],
+            "value": "Shapefile",
+            "type": "data format",
+            "identifier": [
+
+            ],
+            "note": [
+
+            ],
+            "appliesTo": [
+
+            ]
+          },
+          {
+            "structuredValue": [
+
+            ],
+            "parallelValue": [
+
+            ],
+            "groupedValue": [
+
+            ],
+            "value": "Dataset#Point",
+            "type": "type",
+            "identifier": [
+
+            ],
+            "note": [
+
+            ],
+            "appliesTo": [
+
+            ]
+          }
+        ],
+        "subject": [
+          {
+            "structuredValue": [
+              {
+                "structuredValue": [
+
+                ],
+                "parallelValue": [
+
+                ],
+                "groupedValue": [
+
+                ],
+                "value": "-124.197234",
+                "type": "west",
+                "identifier": [
+
+                ],
+                "note": [
+
+                ],
+                "appliesTo": [
+
+                ]
+              },
+              {
+                "structuredValue": [
+
+                ],
+                "parallelValue": [
+
+                ],
+                "groupedValue": [
+
+                ],
+                "value": "32.351838",
+                "type": "south",
+                "identifier": [
+
+                ],
+                "note": [
+
+                ],
+                "appliesTo": [
+
+                ]
+              },
+              {
+                "structuredValue": [
+
+                ],
+                "parallelValue": [
+
+                ],
+                "groupedValue": [
+
+                ],
+                "value": "-115.349153",
+                "type": "east",
+                "identifier": [
+
+                ],
+                "note": [
+
+                ],
+                "appliesTo": [
+
+                ]
+              },
+              {
+                "structuredValue": [
+
+                ],
+                "parallelValue": [
+
+                ],
+                "groupedValue": [
+
+                ],
+                "value": "41.748288",
+                "type": "north",
+                "identifier": [
+
+                ],
+                "note": [
+
+                ],
+                "appliesTo": [
+
+                ]
+              }
+            ],
+            "parallelValue": [
+
+            ],
+            "groupedValue": [
+
+            ],
+            "type": "bounding box coordinates",
+            "standard": {
+              "code": "EPSG:4326",
+              "note": [
+
+              ]
+            },
+            "encoding": {
+              "value": "decimal",
+              "note": [
+
+              ]
+            },
+            "identifier": [
+
+            ],
+            "note": [
+
+            ],
+            "appliesTo": [
+
+            ]
+          },
+          {
+            "structuredValue": [
+
+            ],
+            "parallelValue": [
+
+            ],
+            "groupedValue": [
+
+            ],
+            "value": "California",
+            "type": "coverage",
+            "uri": "http://sws.geonames.org/5332921/",
+            "identifier": [
+
+            ],
+            "note": [
+
+            ],
+            "valueLanguage": {
+              "code": "eng",
+              "note": [
+
+              ]
+            },
+            "appliesTo": [
+
+            ]
+          }
+        ]
+      }
+    ],
+    "language": [
+      {
+        "appliesTo": [
+
+        ],
+        "code": "eng",
+        "groupedValue": [
+
+        ],
+        "note": [
+
+        ],
+        "parallelValue": [
+
+        ],
+        "source": {
+          "code": "iso639-2b",
+          "note": [
+
+          ]
+        },
+        "structuredValue": [
+
+        ]
+      }
+    ],
+    "note": [
+      {
+        "structuredValue": [
+
+        ],
+        "parallelValue": [
+
+        ],
+        "groupedValue": [
+
+        ],
+        "value": "This point shapefile represents all air monitoring stations active in California from 2001 until 2003. The data within the shapefile was obtained from the Air Resources Board's Ambient Air Quality Data Summaries (ADAM) database.",
+        "identifier": [
+
+        ],
+        "displayLabel": "Abstract",
+        "note": [
+
+        ],
+        "valueLanguage": {
+          "code": "eng",
+          "note": [
+
+          ],
+          "source": {
+            "code": "iso639-2b",
+            "note": [
+
+            ]
+          }
+        },
+        "appliesTo": [
+
+        ]
+      },
+      {
+        "structuredValue": [
+
+        ],
+        "parallelValue": [
+
+        ],
+        "groupedValue": [
+
+        ],
+        "value": "Developed for the California Air Resources Board (ARB) GIS data library. ",
+        "type": "abstract",
+        "identifier": [
+
+        ],
+        "displayLabel": "Purpose",
+        "note": [
+
+        ],
+        "valueLanguage": {
+          "code": "eng",
+          "note": [
+
+          ],
+          "source": {
+            "code": "iso639-2b",
+            "note": [
+
+            ]
+          }
+        },
+        "appliesTo": [
+
+        ]
+      },
+      {
+        "structuredValue": [
+
+        ],
+        "parallelValue": [
+
+        ],
+        "groupedValue": [
+
+        ],
+        "value": "Teale Data Center GIS Lab. California Air Resources Board. (2013). Air Monitoring Stations: California, 2001-2003. California Air Resources Board. Available at: http://purl.stanford.edu/zv296hf8888.",
+        "identifier": [
+
+        ],
+        "displayLabel": "Preferred citation",
+        "note": [
+
+        ],
+        "valueLanguage": {
+          "code": "eng",
+          "note": [
+
+          ],
+          "source": {
+            "code": "iso639-2b",
+            "note": [
+
+            ]
+          }
+        },
+        "appliesTo": [
+
+        ]
+      },
+      {
+        "structuredValue": [
+
+        ],
+        "parallelValue": [
+
+        ],
+        "groupedValue": [
+
+        ],
+        "value": "ADAM is the official database that stores regulatory air quality data for ARB.",
+        "identifier": [
+
+        ],
+        "displayLabel": "Supplemental information",
+        "note": [
+
+        ],
+        "appliesTo": [
+
+        ]
+      },
+      {
+        "structuredValue": [
+
+        ],
+        "parallelValue": [
+
+        ],
+        "groupedValue": [
+
+        ],
+        "value": "This layer is presented in the WGS84 coordinate system for web display purposes. Downloadable data are provided in native coordinate system or projection.",
+        "identifier": [
+
+        ],
+        "displayLabel": "WGS84 Cartographics",
+        "note": [
+
+        ],
+        "appliesTo": [
+
+        ]
+      }
+    ],
+    "identifier": [
+
+    ],
+    "subject": [
+      {
+        "structuredValue": [
+
+        ],
+        "parallelValue": [
+
+        ],
+        "groupedValue": [
+
+        ],
+        "value": "Air quality monitoring stations",
+        "type": "topic",
+        "identifier": [
+
+        ],
+        "source": {
+          "code": "lcsh",
+          "uri": "http://id.loc.gov/authorities/subjects.html",
+          "note": [
+
+          ]
+        },
+        "note": [
+
+        ],
+        "valueLanguage": {
+          "code": "eng",
+          "note": [
+
+          ],
+          "source": {
+            "code": "iso639-2b",
+            "note": [
+
+            ]
+          }
+        },
+        "appliesTo": [
+
+        ]
+      },
+      {
+        "structuredValue": [
+
+        ],
+        "parallelValue": [
+
+        ],
+        "groupedValue": [
+
+        ],
+        "value": "Air quality management",
+        "type": "topic",
+        "identifier": [
+
+        ],
+        "source": {
+          "code": "lcsh",
+          "uri": "http://id.loc.gov/authorities/subjects.html",
+          "note": [
+
+          ]
+        },
+        "note": [
+
+        ],
+        "valueLanguage": {
+          "code": "eng",
+          "note": [
+
+          ],
+          "source": {
+            "code": "iso639-2b",
+            "note": [
+
+            ]
+          }
+        },
+        "appliesTo": [
+
+        ]
+      },
+      {
+        "structuredValue": [
+
+        ],
+        "parallelValue": [
+
+        ],
+        "groupedValue": [
+
+        ],
+        "value": "California",
+        "type": "place",
+        "uri": "http://sws.geonames.org/5332921/",
+        "identifier": [
+
+        ],
+        "source": {
+          "code": "geonames",
+          "uri": "http://www.geonames.org/ontology#",
+          "note": [
+
+          ]
+        },
+        "note": [
+
+        ],
+        "valueLanguage": {
+          "code": "eng",
+          "note": [
+
+          ],
+          "source": {
+            "code": "iso639-2b",
+            "note": [
+
+            ]
+          }
+        },
+        "appliesTo": [
+
+        ]
+      },
+      {
+        "structuredValue": [
+
+        ],
+        "parallelValue": [
+
+        ],
+        "groupedValue": [
+
+        ],
+        "value": "2001-2003",
+        "type": "time",
+        "encoding": {
+          "code": "w3cdtf",
+          "note": [
+
+          ]
+        },
+        "identifier": [
+
+        ],
+        "note": [
+
+        ],
+        "appliesTo": [
+
+        ]
+      },
+      {
+        "structuredValue": [
+
+        ],
+        "parallelValue": [
+
+        ],
+        "groupedValue": [
+
+        ],
+        "value": "Climatology, Meteorology and Atmosphere",
+        "type": "topic",
+        "uri": "climatologyMeteorologyAtmosphere",
+        "identifier": [
+
+        ],
+        "source": {
+          "code": "ISO19115TopicCategory",
+          "uri": "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_TopicCategoryCode",
+          "note": [
+
+          ]
+        },
+        "note": [
+
+        ],
+        "appliesTo": [
+
+        ]
+      },
+      {
+        "structuredValue": [
+
+        ],
+        "parallelValue": [
+
+        ],
+        "groupedValue": [
+
+        ],
+        "value": "Environment",
+        "type": "topic",
+        "uri": "environment",
+        "identifier": [
+
+        ],
+        "source": {
+          "code": "ISO19115TopicCategory",
+          "uri": "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_TopicCategoryCode",
+          "note": [
+
+          ]
+        },
+        "note": [
+
+        ],
+        "appliesTo": [
+
+        ]
+      },
+      {
+        "structuredValue": [
+
+        ],
+        "parallelValue": [
+
+        ],
+        "groupedValue": [
+
+        ],
+        "value": "W 124°13ʹ3ʺ--W 114°45ʹ5ʺ/N 41°49ʹ5ʺ--N 32°17ʹ39ʺ",
+        "type": "map coordinates",
+        "identifier": [
+
+        ],
+        "note": [
+
+        ],
+        "appliesTo": [
+
+        ]
+      }
+    ],
+    "relatedResource": [
+      {
+        "title": [
+
+        ],
+        "contributor": [
+
+        ],
+        "event": [
+
+        ],
+        "form": [
+
+        ],
+        "language": [
+
+        ],
+        "note": [
+
+        ],
+        "identifier": [
+
+        ],
+        "subject": [
+
+        ],
+        "purl": "https://purl.stanford.edu/zv296hf8888",
+        "relatedResource": [
+
+        ]
+      }
+    ],
+    "marcEncodedData": [
+
+    ],
+    "adminMetadata": {
+      "contributor": [
+        {
+          "name": [
+            {
+              "structuredValue": [
+
+              ],
+              "parallelValue": [
+
+              ],
+              "groupedValue": [
+
+              ],
+              "value": "Stanford",
+              "identifier": [
+
+              ],
+              "note": [
+
+              ],
+              "appliesTo": [
+
+              ]
+            }
+          ],
+          "role": [
+
+          ],
+          "identifier": [
+
+          ],
+          "note": [
+
+          ],
+          "parallelContributor": [
+
+          ]
+        }
+      ],
+      "event": [
+
+      ],
+      "language": [
+        {
+          "appliesTo": [
+
+          ],
+          "code": "eng",
+          "groupedValue": [
+
+          ],
+          "note": [
+
+          ],
+          "parallelValue": [
+
+          ],
+          "source": {
+            "code": "iso639-2b",
+            "note": [
+
+            ]
+          },
+          "structuredValue": [
+
+          ]
+        }
+      ],
+      "note": [
+        {
+          "structuredValue": [
+
+          ],
+          "parallelValue": [
+
+          ],
+          "groupedValue": [
+
+          ],
+          "value": "This record was translated from ISO 19139 to MODS v.3 using an xsl transformation.",
+          "type": "record origin",
+          "identifier": [
+
+          ],
+          "note": [
+
+          ],
+          "appliesTo": [
+
+          ]
+        }
+      ],
+      "metadataStandard": [
+
+      ],
+      "identifier": [
+        {
+          "structuredValue": [
+
+          ],
+          "parallelValue": [
+
+          ],
+          "groupedValue": [
+
+          ],
+          "value": "edu.stanford.purl:zv296hf8888",
+          "identifier": [
+
+          ],
+          "note": [
+
+          ],
+          "appliesTo": [
+
+          ]
+        }
+      ]
+    },
+    "purl": "https://purl.stanford.edu/tw464vg5223"
+  },
+  "identification": {
+    "catalogLinks": [
+
+    ],
+    "sourceId": "geo-preassembly-integration-test:phoebe-ahljev"
+  },
+  "structural": {
+    "contains": [
+      {
+        "type": "https://cocina.sul.stanford.edu/models/resources/object",
+        "externalIdentifier": "tw464vg5223_1",
+        "label": "Data",
+        "version": 1,
+        "structural": {
+          "contains": [
+            {
+              "type": "https://cocina.sul.stanford.edu/models/file",
+              "externalIdentifier": "https://cocina.sul.stanford.edu/file/8a7e7ba2-9597-4490-b9f1-27aad1f98fa5",
+              "label": "data.zip",
+              "filename": "data.zip",
+              "size": 58097,
+              "version": 1,
+              "hasMimeType": "application/zip",
+              "use": "master",
+              "hasMessageDigests": [
+                {
+                  "type": "sha1",
+                  "digest": "272f9ddff26dab6c7604e071560943907b7df39b"
+                },
+                {
+                  "type": "md5",
+                  "digest": "e5364a57e0c36da45089ef16ea3e01b4"
+                }
+              ],
+              "access": {
+                "view": "world",
+                "download": "world",
+                "controlledDigitalLending": false
+              },
+              "administrative": {
+                "publish": true,
+                "sdrPreserve": true,
+                "shelve": true
+              }
+            }
+          ]
+        }
+      },
+      {
+        "type": "https://cocina.sul.stanford.edu/models/resources/preview",
+        "externalIdentifier": "tw464vg5223_2",
+        "label": "Preview",
+        "version": 1,
+        "structural": {
+          "contains": [
+            {
+              "type": "https://cocina.sul.stanford.edu/models/file",
+              "externalIdentifier": "https://cocina.sul.stanford.edu/file/c821cc80-2f63-4b5f-8612-914ae698b9ac",
+              "label": "preview.jpg",
+              "filename": "preview.jpg",
+              "size": 26314,
+              "version": 1,
+              "hasMimeType": "image/jpeg",
+              "use": "master",
+              "hasMessageDigests": [
+                {
+                  "type": "sha1",
+                  "digest": "ae5a8426ffeb2f19dbc0ac1c4b15fbb7c4c5a23b"
+                },
+                {
+                  "type": "md5",
+                  "digest": "471d3c592c9199d41b57c09edaa9fef1"
+                }
+              ],
+              "access": {
+                "view": "world",
+                "download": "world",
+                "controlledDigitalLending": false
+              },
+              "administrative": {
+                "publish": true,
+                "sdrPreserve": true,
+                "shelve": true
+              },
+              "presentation": {
+                "height": 430,
+                "width": 338
+              }
+            }
+          ]
+        }
+      },
+      {
+        "type": "https://cocina.sul.stanford.edu/models/resources/object",
+        "externalIdentifier": "tw464vg5223_3",
+        "label": "Metadata",
+        "version": 1,
+        "structural": {
+          "contains": [
+            {
+              "type": "https://cocina.sul.stanford.edu/models/file",
+              "externalIdentifier": "https://cocina.sul.stanford.edu/file/363c56d5-9faf-45d2-8892-6c98d80003af",
+              "label": "AirMonitoringStations.shp.xml",
+              "filename": "AirMonitoringStations.shp.xml",
+              "size": 64616,
+              "version": 1,
+              "hasMimeType": "application/xml",
+              "use": "master",
+              "hasMessageDigests": [
+                {
+                  "type": "sha1",
+                  "digest": "daee32ad33bdf5422290b17c49e32c6fc81ae98b"
+                },
+                {
+                  "type": "md5",
+                  "digest": "7336b6d3a49da10ae944311f4bd3c6ba"
+                }
+              ],
+              "access": {
+                "view": "world",
+                "download": "world",
+                "controlledDigitalLending": false
+              },
+              "administrative": {
+                "publish": true,
+                "sdrPreserve": true,
+                "shelve": true
+              }
+            },
+            {
+              "type": "https://cocina.sul.stanford.edu/models/file",
+              "externalIdentifier": "https://cocina.sul.stanford.edu/file/5fc54d49-a006-407a-a713-32377bf79968",
+              "label": "AirMonitoringStations-iso19139.xml",
+              "filename": "AirMonitoringStations-iso19139.xml",
+              "size": 28283,
+              "version": 1,
+              "hasMimeType": "application/xml",
+              "use": "derivative",
+              "hasMessageDigests": [
+                {
+                  "type": "sha1",
+                  "digest": "9f59dab7bc9066c21dc628f714b03472386094de"
+                },
+                {
+                  "type": "md5",
+                  "digest": "c1795cd6134e101cdbd6d9a9f6f7cc51"
+                }
+              ],
+              "access": {
+                "view": "world",
+                "download": "world",
+                "controlledDigitalLending": false
+              },
+              "administrative": {
+                "publish": true,
+                "sdrPreserve": false,
+                "shelve": true
+              }
+            },
+            {
+              "type": "https://cocina.sul.stanford.edu/models/file",
+              "externalIdentifier": "https://cocina.sul.stanford.edu/file/98d3cc7f-bf42-42be-91d1-b9f0a47f180f",
+              "label": "AirMonitoringStations-iso19110.xml",
+              "filename": "AirMonitoringStations-iso19110.xml",
+              "size": 10796,
+              "version": 1,
+              "hasMimeType": "application/xml",
+              "use": "derivative",
+              "hasMessageDigests": [
+                {
+                  "type": "sha1",
+                  "digest": "25e12e4c8e13d92c4a77be7796b10a22d4c9a2eb"
+                },
+                {
+                  "type": "md5",
+                  "digest": "815f224f0ec82a9180be7623aa1ca87b"
+                }
+              ],
+              "access": {
+                "view": "world",
+                "download": "world",
+                "controlledDigitalLending": false
+              },
+              "administrative": {
+                "publish": true,
+                "sdrPreserve": false,
+                "shelve": true
+              }
+            },
+            {
+              "type": "https://cocina.sul.stanford.edu/models/file",
+              "externalIdentifier": "https://cocina.sul.stanford.edu/file/e4c86be6-8fbf-4354-9445-d6253ef66ca3",
+              "label": "AirMonitoringStations-fgdc.xml",
+              "filename": "AirMonitoringStations-fgdc.xml",
+              "size": 6137,
+              "version": 1,
+              "hasMimeType": "application/xml",
+              "use": "derivative",
+              "hasMessageDigests": [
+                {
+                  "type": "sha1",
+                  "digest": "d4315e899e73a6d380068a07f01e10f765289bfe"
+                },
+                {
+                  "type": "md5",
+                  "digest": "1c93923639440b9d4e2ef9ccf944885f"
+                }
+              ],
+              "access": {
+                "view": "world",
+                "download": "world",
+                "controlledDigitalLending": false
+              },
+              "administrative": {
+                "publish": true,
+                "sdrPreserve": false,
+                "shelve": true
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "hasMemberOrders": [
+
+    ],
+    "isMemberOf": [
+      "druid:jn518bx4248"
+    ]
+  },
+  "geographic": {
+    "iso19139": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">\n              <rdf:Description rdf:about=\"http://sul-purl-stage.stanford.edu/tw464vg5223\">\n                <MD_Metadata xmlns=\"http://www.isotc211.org/2005/gmd\" xmlns:gco=\"http://www.isotc211.org/2005/gco\" xmlns:gts=\"http://www.isotc211.org/2005/gts\" xmlns:srv=\"http://www.isotc211.org/2005/srv\" xmlns:gml=\"http://www.opengis.net/gml\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n  <fileIdentifier>\n    <gco:CharacterString>edu.stanford.purl:zv296hf8888</gco:CharacterString>\n  </fileIdentifier>\n  <language>\n    <LanguageCode codeList=\"http://www.loc.gov/standards/iso639-2/php/code_list.php\" codeListValue=\"eng\" codeSpace=\"ISO639-2\">eng</LanguageCode>\n  </language>\n  <characterSet>\n    <MD_CharacterSetCode codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode\" codeListValue=\"utf8\" codeSpace=\"ISOTC211/19115\">utf8</MD_CharacterSetCode>\n  </characterSet>\n  <parentIdentifier>\n    <gco:CharacterString>http://purl.stanford.edu/nn400xy7936.mods</gco:CharacterString>\n  </parentIdentifier>\n  <hierarchyLevel>\n    <MD_ScopeCode codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ScopeCode\" codeListValue=\"dataset\" codeSpace=\"ISOTC211/19115\">dataset</MD_ScopeCode>\n  </hierarchyLevel>\n  <hierarchyLevelName>\n    <gco:CharacterString>dataset</gco:CharacterString>\n  </hierarchyLevelName>\n  <contact>\n    <CI_ResponsibleParty>\n      <individualName>\n        <gco:CharacterString>Pheng Timothy Lee</gco:CharacterString>\n      </individualName>\n      <organisationName>\n        <gco:CharacterString>California Air Resources Board</gco:CharacterString>\n      </organisationName>\n      <positionName>\n        <gco:CharacterString>Air Pollution Specialist</gco:CharacterString>\n      </positionName>\n      <contactInfo>\n        <CI_Contact>\n          <phone>\n            <CI_Telephone>\n              <voice>\n                <gco:CharacterString>916-445-6059</gco:CharacterString>\n              </voice>\n            </CI_Telephone>\n          </phone>\n          <address>\n            <CI_Address>\n              <electronicMailAddress>\n                <gco:CharacterString>plee@arb.ca.gov</gco:CharacterString>\n              </electronicMailAddress>\n            </CI_Address>\n          </address>\n          <hoursOfService>\n            <gco:CharacterString>M-F 8-5</gco:CharacterString>\n          </hoursOfService>\n        </CI_Contact>\n      </contactInfo>\n      <role>\n        <CI_RoleCode codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode\" codeListValue=\"pointOfContact\" codeSpace=\"ISOTC211/19115\">pointOfContact</CI_RoleCode>\n      </role>\n    </CI_ResponsibleParty>\n  </contact>\n  <dateStamp>\n    <gco:Date>2017-11-21</gco:Date>\n  </dateStamp>\n  <metadataStandardName>\n    <gco:CharacterString>ISO 19139 Geographic Information - Metadata - Implementation Specification</gco:CharacterString>\n  </metadataStandardName>\n  <metadataStandardVersion>\n    <gco:CharacterString>2007</gco:CharacterString>\n  </metadataStandardVersion>\n  <dataSetURI>\n    <gco:CharacterString>http://purl.stanford.edu/zv296hf8888</gco:CharacterString>\n  </dataSetURI>\n  <spatialRepresentationInfo>\n    <MD_VectorSpatialRepresentation>\n      <topologyLevel>\n        <MD_TopologyLevelCode codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_TopologyLevelCode\" codeListValue=\"geometryOnly\" codeSpace=\"ISOTC211/19115\">geometryOnly</MD_TopologyLevelCode>\n      </topologyLevel>\n      <geometricObjects>\n        <MD_GeometricObjects>\n          <geometricObjectType>\n            <MD_GeometricObjectTypeCode codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_GeometricObjectTypeCode\" codeListValue=\"point\" codeSpace=\"ISOTC211/19115\">point</MD_GeometricObjectTypeCode>\n          </geometricObjectType>\n          <geometricObjectCount>\n            <gco:Integer>294</gco:Integer>\n          </geometricObjectCount>\n        </MD_GeometricObjects>\n      </geometricObjects>\n    </MD_VectorSpatialRepresentation>\n  </spatialRepresentationInfo>\n  <referenceSystemInfo>\n    <MD_ReferenceSystem>\n      <referenceSystemIdentifier>\n        <RS_Identifier>\n          <code>\n            <gco:CharacterString>3310</gco:CharacterString>\n          </code>\n          <codeSpace>\n            <gco:CharacterString>EPSG</gco:CharacterString>\n          </codeSpace>\n          <version>\n            <gco:CharacterString>6.8(9.2.0)</gco:CharacterString>\n          </version>\n        </RS_Identifier>\n      </referenceSystemIdentifier>\n    </MD_ReferenceSystem>\n  </referenceSystemInfo>\n  <identificationInfo>\n    <MD_DataIdentification>\n      <citation>\n        <CI_Citation>\n          <title>\n            <gco:CharacterString>Air Monitoring Stations: California, 2001-2003</gco:CharacterString>\n          </title>\n          <date>\n            <CI_Date>\n              <date>\n                <gco:Date>2013-03-13</gco:Date>\n              </date>\n              <dateType>\n                <CI_DateTypeCode codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode\" codeListValue=\"publication\" codeSpace=\"ISOTC211/19115\">publication</CI_DateTypeCode>\n              </dateType>\n            </CI_Date>\n          </date>\n          <identifier>\n            <MD_Identifier>\n              <code>\n                <gco:CharacterString>http://purl.stanford.edu/zv296hf8888</gco:CharacterString>\n              </code>\n            </MD_Identifier>\n          </identifier>\n          <citedResponsibleParty>\n            <CI_ResponsibleParty>\n              <organisationName>\n                <gco:CharacterString>Stephen P. Teale Data Center (Calif.). </gco:CharacterString>\n              </organisationName>\n              <role>\n                <CI_RoleCode codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode\" codeListValue=\"originator\" codeSpace=\"ISOTC211/19115\">originator</CI_RoleCode>\n              </role>\n            </CI_ResponsibleParty>\n          </citedResponsibleParty>\n          <citedResponsibleParty>\n            <CI_ResponsibleParty>\n              <organisationName>\n                <gco:CharacterString>California. Air Resources Board. Planning and Technical Support Division</gco:CharacterString>\n              </organisationName>\n              <role>\n                <CI_RoleCode codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode\" codeListValue=\"originator\" codeSpace=\"ISOTC211/19115\">originator</CI_RoleCode>\n              </role>\n            </CI_ResponsibleParty>\n          </citedResponsibleParty>\n          <citedResponsibleParty>\n            <CI_ResponsibleParty>\n              <organisationName>\n                <gco:CharacterString>California. Air Resources Board</gco:CharacterString>\n              </organisationName>\n              <contactInfo>\n                <CI_Contact>\n                  <address>\n                    <CI_Address>\n                      <city>\n                        <gco:CharacterString>Sacramento</gco:CharacterString>\n                      </city>\n                      <administrativeArea>\n                        <gco:CharacterString>California</gco:CharacterString>\n                      </administrativeArea>\n                      <country>\n                        <gco:CharacterString>US</gco:CharacterString>\n                      </country>\n                    </CI_Address>\n                  </address>\n                </CI_Contact>\n              </contactInfo>\n              <role>\n                <CI_RoleCode codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode\" codeListValue=\"publisher\" codeSpace=\"ISOTC211/19115\">publisher</CI_RoleCode>\n              </role>\n            </CI_ResponsibleParty>\n          </citedResponsibleParty>\n          <presentationForm>\n            <CI_PresentationFormCode codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_PresentationFormCode\" codeListValue=\"mapDigital\" codeSpace=\"ISOTC211/19115\">mapDigital</CI_PresentationFormCode>\n          </presentationForm>\n          <collectiveTitle>\n            <gco:CharacterString>California Air Resources Board GIS Data</gco:CharacterString>\n          </collectiveTitle>\n        </CI_Citation>\n      </citation>\n      <abstract>\n        <gco:CharacterString>This point shapefile represents all air monitoring stations active in California from 2001 until 2003. The data within the shapefile was obtained from the Air Resources Board's Ambient Air Quality Data Summaries (ADAM) database.</gco:CharacterString>\n      </abstract>\n      <purpose>\n        <gco:CharacterString>Developed for the California Air Resources Board (ARB) GIS data library. </gco:CharacterString>\n      </purpose>\n      <credit>\n        <gco:CharacterString>Teale Data Center GIS Lab. California Air Resources Board. (2013). Air Monitoring Stations: California, 2001-2003. California Air Resources Board. Available at: http://purl.stanford.edu/zv296hf8888.</gco:CharacterString>\n      </credit>\n      <status>\n        <MD_ProgressCode codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_ProgressCode\" codeListValue=\"completed\" codeSpace=\"ISOTC211/19115\">completed</MD_ProgressCode>\n      </status>\n      <pointOfContact>\n        <CI_ResponsibleParty>\n          <individualName>\n            <gco:CharacterString>Pheng Timothy Lee</gco:CharacterString>\n          </individualName>\n          <organisationName>\n            <gco:CharacterString>California Air Resources Board</gco:CharacterString>\n          </organisationName>\n          <positionName>\n            <gco:CharacterString>Air Pollution Specialist</gco:CharacterString>\n          </positionName>\n          <contactInfo>\n            <CI_Contact>\n              <phone>\n                <CI_Telephone>\n                  <voice>\n                    <gco:CharacterString>916-445-6059</gco:CharacterString>\n                  </voice>\n                </CI_Telephone>\n              </phone>\n              <address>\n                <CI_Address>\n                  <electronicMailAddress>\n                    <gco:CharacterString>plee@arb.ca.gov</gco:CharacterString>\n                  </electronicMailAddress>\n                </CI_Address>\n              </address>\n              <hoursOfService>\n                <gco:CharacterString>M-F 8-5</gco:CharacterString>\n              </hoursOfService>\n            </CI_Contact>\n          </contactInfo>\n          <role>\n            <CI_RoleCode codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode\" codeListValue=\"pointOfContact\" codeSpace=\"ISOTC211/19115\">pointOfContact</CI_RoleCode>\n          </role>\n        </CI_ResponsibleParty>\n      </pointOfContact>\n      <resourceMaintenance>\n        <MD_MaintenanceInformation>\n          <maintenanceAndUpdateFrequency>\n            <MD_MaintenanceFrequencyCode codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_MaintenanceFrequencyCode\" codeListValue=\"asNeeded\" codeSpace=\"ISOTC211/19115\">asNeeded</MD_MaintenanceFrequencyCode>\n          </maintenanceAndUpdateFrequency>\n        </MD_MaintenanceInformation>\n      </resourceMaintenance>\n      <graphicOverview>\n        <MD_BrowseGraphic>\n          <fileName>\n            <gco:CharacterString>AirMonitoringStations.shp</gco:CharacterString>\n          </fileName>\n          <fileDescription>\n            <gco:CharacterString>An GIS shapefile of air monitoring stations for the past 3 years in California.</gco:CharacterString>\n          </fileDescription>\n          <fileType>\n            <gco:CharacterString>.shp</gco:CharacterString>\n          </fileType>\n        </MD_BrowseGraphic>\n      </graphicOverview>\n      <descriptiveKeywords>\n        <MD_Keywords>\n          <keyword>\n            <gco:CharacterString>California</gco:CharacterString>\n          </keyword>\n          <type>\n            <MD_KeywordTypeCode codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode\" codeListValue=\"place\" codeSpace=\"ISOTC211/19115\">place</MD_KeywordTypeCode>\n          </type>\n          <thesaurusName>\n            <CI_Citation>\n              <title>\n                <gco:CharacterString>geonames</gco:CharacterString>\n              </title>\n              <date>\n                <CI_Date>\n                  <date>\n                    <gco:Date>2012-11-01</gco:Date>\n                  </date>\n                  <dateType>\n                    <CI_DateTypeCode codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode\" codeListValue=\"revision\" codeSpace=\"ISOTC211/19115\">revision</CI_DateTypeCode>\n                  </dateType>\n                </CI_Date>\n              </date>\n              <edition>\n                <gco:CharacterString>3.1</gco:CharacterString>\n              </edition>\n              <identifier>\n                <MD_Identifier>\n                  <code>\n                    <gco:CharacterString>http://www.geonames.org/ontology#</gco:CharacterString>\n                  </code>\n                </MD_Identifier>\n              </identifier>\n            </CI_Citation>\n          </thesaurusName>\n        </MD_Keywords>\n      </descriptiveKeywords>\n      <descriptiveKeywords>\n        <MD_Keywords>\n          <keyword>\n            <gco:CharacterString>2001-2003</gco:CharacterString>\n          </keyword>\n          <type>\n            <MD_KeywordTypeCode codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode\" codeListValue=\"temporal\" codeSpace=\"ISOTC211/19115\">temporal</MD_KeywordTypeCode>\n          </type>\n        </MD_Keywords>\n      </descriptiveKeywords>\n      <descriptiveKeywords>\n        <MD_Keywords>\n          <keyword>\n            <gco:CharacterString>Air quality monitoring stations</gco:CharacterString>\n          </keyword>\n          <keyword>\n            <gco:CharacterString>Air quality management</gco:CharacterString>\n          </keyword>\n          <type>\n            <MD_KeywordTypeCode codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode\" codeListValue=\"theme\" codeSpace=\"ISOTC211/19115\">theme</MD_KeywordTypeCode>\n          </type>\n          <thesaurusName>\n            <CI_Citation>\n              <title>\n                <gco:CharacterString>lcsh</gco:CharacterString>\n              </title>\n              <date>\n                <CI_Date>\n                  <date>\n                    <gco:Date>2011-04-26</gco:Date>\n                  </date>\n                  <dateType>\n                    <CI_DateTypeCode codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode\" codeListValue=\"revision\" codeSpace=\"ISOTC211/19115\">revision</CI_DateTypeCode>\n                  </dateType>\n                </CI_Date>\n              </date>\n              <identifier>\n                <MD_Identifier>\n                  <code>\n                    <gco:CharacterString>http://id.loc.gov/authorities/subjects.html</gco:CharacterString>\n                  </code>\n                </MD_Identifier>\n              </identifier>\n            </CI_Citation>\n          </thesaurusName>\n        </MD_Keywords>\n      </descriptiveKeywords>\n      <descriptiveKeywords>\n        <MD_Keywords>\n          <keyword>\n            <gco:CharacterString>Downloadable Data</gco:CharacterString>\n          </keyword>\n          <thesaurusName uuidref=\"723f6998-058e-11dc-8314-0800200c9a66\"/>\n        </MD_Keywords>\n      </descriptiveKeywords>\n      <resourceConstraints>\n        <MD_LegalConstraints>\n          <useLimitation>\n            <gco:CharacterString>No restrictions on access or use.</gco:CharacterString>\n          </useLimitation>\n        </MD_LegalConstraints>\n      </resourceConstraints>\n      <aggregationInfo>\n        <MD_AggregateInformation>\n          <aggregateDataSetName>\n            <CI_Citation>\n              <title>\n                <gco:CharacterString>California Air Resources Board GIS Data</gco:CharacterString>\n              </title>\n              <date>\n                <CI_Date>\n                  <date>\n                    <gco:Date>2013-03-13</gco:Date>\n                  </date>\n                  <dateType>\n                    <CI_DateTypeCode codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode\" codeListValue=\"publication\" codeSpace=\"ISOTC211/19115\">publication</CI_DateTypeCode>\n                  </dateType>\n                </CI_Date>\n              </date>\n              <identifier>\n                <MD_Identifier>\n                  <code>\n                    <gco:CharacterString>http://purl.stanford.edu/nn400xy7936</gco:CharacterString>\n                  </code>\n                </MD_Identifier>\n              </identifier>\n              <citedResponsibleParty>\n                <CI_ResponsibleParty>\n                  <organisationName>\n                    <gco:CharacterString>Stephen P. Teale Data Center (Calif.). </gco:CharacterString>\n                  </organisationName>\n                  <role>\n                    <CI_RoleCode codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode\" codeListValue=\"originator\" codeSpace=\"ISOTC211/19115\">originator</CI_RoleCode>\n                  </role>\n                </CI_ResponsibleParty>\n              </citedResponsibleParty>\n              <citedResponsibleParty>\n                <CI_ResponsibleParty>\n                  <organisationName>\n                    <gco:CharacterString>California. Air Resources Board. Planning and Technical Support Division.</gco:CharacterString>\n                  </organisationName>\n                  <role>\n                    <CI_RoleCode codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode\" codeListValue=\"originator\" codeSpace=\"ISOTC211/19115\">originator</CI_RoleCode>\n                  </role>\n                </CI_ResponsibleParty>\n              </citedResponsibleParty>\n              <citedResponsibleParty>\n                <CI_ResponsibleParty>\n                  <organisationName>\n                    <gco:CharacterString>California. Air Resources Board</gco:CharacterString>\n                  </organisationName>\n                  <contactInfo>\n                    <CI_Contact>\n                      <address>\n                        <CI_Address>\n                          <city>\n                            <gco:CharacterString>Sacramento</gco:CharacterString>\n                          </city>\n                          <administrativeArea>\n                            <gco:CharacterString>California</gco:CharacterString>\n                          </administrativeArea>\n                          <country>\n                            <gco:CharacterString>US</gco:CharacterString>\n                          </country>\n                        </CI_Address>\n                      </address>\n                    </CI_Contact>\n                  </contactInfo>\n                  <role>\n                    <CI_RoleCode codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode\" codeListValue=\"publisher\" codeSpace=\"ISOTC211/19115\">publisher</CI_RoleCode>\n                  </role>\n                </CI_ResponsibleParty>\n              </citedResponsibleParty>\n            </CI_Citation>\n          </aggregateDataSetName>\n          <associationType>\n            <DS_AssociationTypeCode codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#DS_AssociationTypeCode\" codeListValue=\"largerWorkCitation\" codeSpace=\"ISOTC211/19115\">largerWorkCitation</DS_AssociationTypeCode>\n          </associationType>\n          <initiativeType>\n            <DS_InitiativeTypeCode codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#DS_InitiativeTypeCode\" codeListValue=\"collection\" codeSpace=\"ISOTC211/19115\">collection</DS_InitiativeTypeCode>\n          </initiativeType>\n        </MD_AggregateInformation>\n      </aggregationInfo>\n      <spatialRepresentationType>\n        <MD_SpatialRepresentationTypeCode codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_SpatialRepresentationTypeCode\" codeListValue=\"vector\" codeSpace=\"ISOTC211/19115\">vector</MD_SpatialRepresentationTypeCode>\n      </spatialRepresentationType>\n      <language>\n        <LanguageCode codeList=\"http://www.loc.gov/standards/iso639-2/php/code_list.php\" codeListValue=\"eng\" codeSpace=\"ISO639-2\">eng</LanguageCode>\n      </language>\n      <characterSet>\n        <MD_CharacterSetCode codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode\" codeListValue=\"utf8\" codeSpace=\"ISOTC211/19115\">utf8</MD_CharacterSetCode>\n      </characterSet>\n      <topicCategory>\n        <MD_TopicCategoryCode>climatologyMeteorologyAtmosphere</MD_TopicCategoryCode>\n      </topicCategory>\n      <topicCategory>\n        <MD_TopicCategoryCode>environment</MD_TopicCategoryCode>\n      </topicCategory>\n      <environmentDescription>\n        <gco:CharacterString> Version 6.2 (Build 9200) ; Esri ArcGIS 10.4.1.5686</gco:CharacterString>\n      </environmentDescription>\n      <extent>\n        <EX_Extent>\n          <description>\n            <gco:CharacterString>ground condition</gco:CharacterString>\n          </description>\n          <temporalElement>\n            <EX_TemporalExtent>\n              <extent>\n                <gml:TimePeriod gml:id=\"idm329\">\n                  <gml:beginPosition>2001-01-01T00:00:00</gml:beginPosition>\n                  <gml:endPosition>2003-12-31T00:00:00</gml:endPosition>\n                </gml:TimePeriod>\n              </extent>\n            </EX_TemporalExtent>\n          </temporalElement>\n        </EX_Extent>\n      </extent>\n      <extent>\n        <EX_Extent>\n          <geographicElement>\n            <EX_GeographicBoundingBox>\n              <extentTypeCode>\n                <gco:Boolean>true</gco:Boolean>\n              </extentTypeCode>\n              <westBoundLongitude>\n                <gco:Decimal>-124.217383</gco:Decimal>\n              </westBoundLongitude>\n              <eastBoundLongitude>\n                <gco:Decimal>-114.751264</gco:Decimal>\n              </eastBoundLongitude>\n              <southBoundLatitude>\n                <gco:Decimal>32.294192</gco:Decimal>\n              </southBoundLatitude>\n              <northBoundLatitude>\n                <gco:Decimal>41.818074</gco:Decimal>\n              </northBoundLatitude>\n            </EX_GeographicBoundingBox>\n          </geographicElement>\n        </EX_Extent>\n      </extent>\n      <supplementalInformation>\n        <gco:CharacterString>ADAM is the official database that stores regulatory air quality data for ARB.</gco:CharacterString>\n      </supplementalInformation>\n    </MD_DataIdentification>\n  </identificationInfo>\n  <contentInfo>\n    <MD_FeatureCatalogueDescription>\n      <complianceCode>\n        <gco:Boolean>false</gco:Boolean>\n      </complianceCode>\n      <language>\n        <LanguageCode codeList=\"http://www.loc.gov/standards/iso639-2/php/code_list.php\" codeListValue=\"eng\" codeSpace=\"ISO639-2\">eng</LanguageCode>\n      </language>\n      <includedWithDataset>\n        <gco:Boolean>true</gco:Boolean>\n      </includedWithDataset>\n      <featureCatalogueCitation>\n        <CI_Citation>\n          <title>\n            <gco:CharacterString>Feature Catalog for Air Monitoring Stations: California, 2001-2003</gco:CharacterString>\n          </title>\n          <date>\n            <CI_Date>\n              <date>\n                <gco:Date>2013-03-13</gco:Date>\n              </date>\n              <dateType>\n                <CI_DateTypeCode codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_DateTypeCode\" codeListValue=\"publication\" codeSpace=\"ISOTC211/19115\">publication</CI_DateTypeCode>\n              </dateType>\n            </CI_Date>\n          </date>\n          <identifier>\n            <MD_Identifier>\n              <code>\n                <gco:CharacterString>ccf38f5b-5948-407d-9b9d-31419bddd201</gco:CharacterString>\n              </code>\n            </MD_Identifier>\n          </identifier>\n          <citedResponsibleParty>\n            <CI_ResponsibleParty>\n              <organisationName>\n                <gco:CharacterString>Stephen P. Teale Data Center (Calif.). </gco:CharacterString>\n              </organisationName>\n              <role>\n                <CI_RoleCode codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode\" codeListValue=\"originator\" codeSpace=\"ISOTC211/19115\">originator</CI_RoleCode>\n              </role>\n            </CI_ResponsibleParty>\n          </citedResponsibleParty>\n        </CI_Citation>\n      </featureCatalogueCitation>\n    </MD_FeatureCatalogueDescription>\n  </contentInfo>\n  <distributionInfo>\n    <MD_Distribution>\n      <distributionFormat>\n        <MD_Format>\n          <name>\n            <gco:CharacterString>Shapefile</gco:CharacterString>\n          </name>\n          <version gco:nilReason=\"missing\"/>\n        </MD_Format>\n      </distributionFormat>\n      <distributor>\n        <MD_Distributor>\n          <distributorContact>\n            <CI_ResponsibleParty>\n              <organisationName>\n                <gco:CharacterString>Stanford Geospatial Center</gco:CharacterString>\n              </organisationName>\n              <contactInfo>\n                <CI_Contact>\n                  <phone>\n                    <CI_Telephone>\n                      <voice>\n                        <gco:CharacterString>650-723-2746</gco:CharacterString>\n                      </voice>\n                    </CI_Telephone>\n                  </phone>\n                  <address>\n                    <CI_Address>\n                      <deliveryPoint>\n                        <gco:CharacterString>Mitchell Bldg. 2nd floor</gco:CharacterString>\n                      </deliveryPoint>\n                      <deliveryPoint>\n                        <gco:CharacterString>397 Panama Mall</gco:CharacterString>\n                      </deliveryPoint>\n                      <city>\n                        <gco:CharacterString>Stanford</gco:CharacterString>\n                      </city>\n                      <administrativeArea>\n                        <gco:CharacterString>California</gco:CharacterString>\n                      </administrativeArea>\n                      <postalCode>\n                        <gco:CharacterString>94305</gco:CharacterString>\n                      </postalCode>\n                      <country>\n                        <gco:CharacterString>US</gco:CharacterString>\n                      </country>\n                      <electronicMailAddress>\n                        <gco:CharacterString>brannerlibrary@stanford.edu</gco:CharacterString>\n                      </electronicMailAddress>\n                    </CI_Address>\n                  </address>\n                </CI_Contact>\n              </contactInfo>\n              <role>\n                <CI_RoleCode codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode\" codeListValue=\"distributor\" codeSpace=\"ISOTC211/19115\">distributor</CI_RoleCode>\n              </role>\n            </CI_ResponsibleParty>\n          </distributorContact>\n        </MD_Distributor>\n      </distributor>\n      <transferOptions>\n        <MD_DigitalTransferOptions>\n          <transferSize>\n            <gco:Real>0.008</gco:Real>\n          </transferSize>\n          <onLine>\n            <CI_OnlineResource>\n              <linkage>\n                <URL>http://purl.stanford.edu/zv296hf8888</URL>\n              </linkage>\n              <protocol>\n                <gco:CharacterString>http</gco:CharacterString>\n              </protocol>\n              <name>\n                <gco:CharacterString>AirMonitoringStations.shp</gco:CharacterString>\n              </name>\n              <function>\n                <CI_OnLineFunctionCode codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\" codeListValue=\"download\" codeSpace=\"ISOTC211/19115\">download</CI_OnLineFunctionCode>\n              </function>\n            </CI_OnlineResource>\n          </onLine>\n        </MD_DigitalTransferOptions>\n      </transferOptions>\n    </MD_Distribution>\n  </distributionInfo>\n</MD_Metadata>\n              </rdf:Description>\n              <rdf:Description rdf:about=\"http://sul-purl-stage.stanford.edu/tw464vg5223\">\n                <gfc:FC_FeatureCatalogue xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:gco=\"http://www.isotc211.org/2005/gco\" xmlns:gfc=\"http://www.isotc211.org/2005/gfc\" xmlns:gmd=\"http://www.isotc211.org/2005/gmd\" xmlns:gmx=\"http://www.isotc211.org/2005/gmx\" xmlns:gml=\"http://www.opengis.net/gml/3.2\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns=\"http://www.isotc211.org/2005/gfc\" xsi:schemaLocation=\"http://www.isotc211.org/2005/gfc http://www.isotc211.org/2005/gfc/gfc.xsd\" uuid=\"ccf38f5b-5948-407d-9b9d-31419bddd201\">\n  <gmx:name>\n    <gco:CharacterString>Feature Catalog for Air Monitoring Stations: California, 2001-2003</gco:CharacterString>\n  </gmx:name>\n  <gmx:scope>\n    <gco:CharacterString>Air quality monitoring stations; Air quality management</gco:CharacterString>\n  </gmx:scope>\n  <gmx:versionNumber gco:nilReason=\"unknown\"/>\n  <gmx:versionDate>\n    <gco:Date>2013</gco:Date>\n  </gmx:versionDate>\n  <gmx:language>\n    <gco:CharacterString>eng; US</gco:CharacterString>\n  </gmx:language>\n  <gmx:characterSet>\n    <gmd:MD_CharacterSetCode codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_CharacterSetCode\" codeListValue=\"utf8\" codeSpace=\"ISOTC211/19115\"/>\n  </gmx:characterSet>\n  <gfc:producer>\n    <gmd:CI_ResponsibleParty>\n      <gmd:organisationName>\n        <gco:CharacterString>Stephen P. Teale Data Center (Calif.). </gco:CharacterString>\n      </gmd:organisationName>\n      <gmd:role>\n        <gmd:CI_RoleCode codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode\" codeListValue=\"originator\" codeSpace=\"006\"/>\n      </gmd:role>\n    </gmd:CI_ResponsibleParty>\n  </gfc:producer>\n  <gfc:featureType>\n    <gfc:FC_FeatureType>\n      <gfc:typeName>\n        <gco:LocalName>AirMonitoringStations</gco:LocalName>\n      </gfc:typeName>\n      <gfc:definition/>\n      <gfc:isAbstract>\n        <gco:Boolean>false</gco:Boolean>\n      </gfc:isAbstract>\n      <gfc:featureCatalogue uuidref=\"ccf38f5b-5948-407d-9b9d-31419bddd201\"/>\n      <gfc:carrierOfCharacteristics>\n        <gfc:FC_FeatureAttribute>\n          <gfc:memberName>\n            <gco:LocalName>FID</gco:LocalName>\n          </gfc:memberName>\n          <gfc:definition>\n            <gco:CharacterString>Internal feature number.</gco:CharacterString>\n          </gfc:definition>\n          <gfc:cardinality gco:nilReason=\"unknown\"/>\n          <gfc:definitionReference>\n            <gfc:FC_DefinitionReference>\n              <gfc:definitionSource>\n                <gfc:FC_DefinitionSource>\n                  <gfc:source>\n                    <gmd:CI_Citation>\n                      <gmd:title>\n                        <gco:CharacterString>ESRI</gco:CharacterString>\n                      </gmd:title>\n                      <gmd:date gco:nilReason=\"unknown\"/>\n                      <gmd:citedResponsibleParty>\n                        <gmd:CI_ResponsibleParty>\n                          <gmd:organisationName>\n                            <gco:CharacterString>ESRI</gco:CharacterString>\n                          </gmd:organisationName>\n                          <gmd:role>\n                            <gmd:CI_RoleCode codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode\" codeListValue=\"resourceProvider\" codeSpace=\"001\"/>\n                          </gmd:role>\n                        </gmd:CI_ResponsibleParty>\n                      </gmd:citedResponsibleParty>\n                    </gmd:CI_Citation>\n                  </gfc:source>\n                </gfc:FC_DefinitionSource>\n              </gfc:definitionSource>\n            </gfc:FC_DefinitionReference>\n          </gfc:definitionReference>\n          <gfc:valueType>\n            <gco:TypeName>\n              <gco:aName>\n                <gco:CharacterString>OID</gco:CharacterString>\n              </gco:aName>\n            </gco:TypeName>\n          </gfc:valueType>\n        </gfc:FC_FeatureAttribute>\n      </gfc:carrierOfCharacteristics>\n      <gfc:carrierOfCharacteristics>\n        <gfc:FC_FeatureAttribute>\n          <gfc:memberName>\n            <gco:LocalName>Shape</gco:LocalName>\n          </gfc:memberName>\n          <gfc:definition>\n            <gco:CharacterString>Feature geometry.</gco:CharacterString>\n          </gfc:definition>\n          <gfc:cardinality gco:nilReason=\"unknown\"/>\n          <gfc:definitionReference>\n            <gfc:FC_DefinitionReference>\n              <gfc:definitionSource>\n                <gfc:FC_DefinitionSource>\n                  <gfc:source>\n                    <gmd:CI_Citation>\n                      <gmd:title>\n                        <gco:CharacterString>ESRI</gco:CharacterString>\n                      </gmd:title>\n                      <gmd:date gco:nilReason=\"unknown\"/>\n                      <gmd:citedResponsibleParty>\n                        <gmd:CI_ResponsibleParty>\n                          <gmd:organisationName>\n                            <gco:CharacterString>ESRI</gco:CharacterString>\n                          </gmd:organisationName>\n                          <gmd:role>\n                            <gmd:CI_RoleCode codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode\" codeListValue=\"resourceProvider\" codeSpace=\"001\"/>\n                          </gmd:role>\n                        </gmd:CI_ResponsibleParty>\n                      </gmd:citedResponsibleParty>\n                    </gmd:CI_Citation>\n                  </gfc:source>\n                </gfc:FC_DefinitionSource>\n              </gfc:definitionSource>\n            </gfc:FC_DefinitionReference>\n          </gfc:definitionReference>\n          <gfc:valueType>\n            <gco:TypeName>\n              <gco:aName>\n                <gco:CharacterString>Geometry</gco:CharacterString>\n              </gco:aName>\n            </gco:TypeName>\n          </gfc:valueType>\n        </gfc:FC_FeatureAttribute>\n      </gfc:carrierOfCharacteristics>\n      <gfc:carrierOfCharacteristics>\n        <gfc:FC_FeatureAttribute>\n          <gfc:memberName>\n            <gco:LocalName>SITEVALUE</gco:LocalName>\n          </gfc:memberName>\n          <gfc:cardinality gco:nilReason=\"unknown\"/>\n          <gfc:valueType>\n            <gco:TypeName>\n              <gco:aName>\n                <gco:CharacterString>SmallInteger</gco:CharacterString>\n              </gco:aName>\n            </gco:TypeName>\n          </gfc:valueType>\n        </gfc:FC_FeatureAttribute>\n      </gfc:carrierOfCharacteristics>\n      <gfc:carrierOfCharacteristics>\n        <gfc:FC_FeatureAttribute>\n          <gfc:memberName>\n            <gco:LocalName>SITENAME</gco:LocalName>\n          </gfc:memberName>\n          <gfc:cardinality gco:nilReason=\"unknown\"/>\n          <gfc:valueType>\n            <gco:TypeName>\n              <gco:aName>\n                <gco:CharacterString>String</gco:CharacterString>\n              </gco:aName>\n            </gco:TypeName>\n          </gfc:valueType>\n        </gfc:FC_FeatureAttribute>\n      </gfc:carrierOfCharacteristics>\n      <gfc:carrierOfCharacteristics>\n        <gfc:FC_FeatureAttribute>\n          <gfc:memberName>\n            <gco:LocalName>ABNAME</gco:LocalName>\n          </gfc:memberName>\n          <gfc:cardinality gco:nilReason=\"unknown\"/>\n          <gfc:valueType>\n            <gco:TypeName>\n              <gco:aName>\n                <gco:CharacterString>String</gco:CharacterString>\n              </gco:aName>\n            </gco:TypeName>\n          </gfc:valueType>\n        </gfc:FC_FeatureAttribute>\n      </gfc:carrierOfCharacteristics>\n      <gfc:carrierOfCharacteristics>\n        <gfc:FC_FeatureAttribute>\n          <gfc:memberName>\n            <gco:LocalName>CNTYNAME</gco:LocalName>\n          </gfc:memberName>\n          <gfc:cardinality gco:nilReason=\"unknown\"/>\n          <gfc:valueType>\n            <gco:TypeName>\n              <gco:aName>\n                <gco:CharacterString>String</gco:CharacterString>\n              </gco:aName>\n            </gco:TypeName>\n          </gfc:valueType>\n        </gfc:FC_FeatureAttribute>\n      </gfc:carrierOfCharacteristics>\n      <gfc:carrierOfCharacteristics>\n        <gfc:FC_FeatureAttribute>\n          <gfc:memberName>\n            <gco:LocalName>DISTRICT</gco:LocalName>\n          </gfc:memberName>\n          <gfc:cardinality gco:nilReason=\"unknown\"/>\n          <gfc:valueType>\n            <gco:TypeName>\n              <gco:aName>\n                <gco:CharacterString>String</gco:CharacterString>\n              </gco:aName>\n            </gco:TypeName>\n          </gfc:valueType>\n        </gfc:FC_FeatureAttribute>\n      </gfc:carrierOfCharacteristics>\n      <gfc:carrierOfCharacteristics>\n        <gfc:FC_FeatureAttribute>\n          <gfc:memberName>\n            <gco:LocalName>LONGITUDE</gco:LocalName>\n          </gfc:memberName>\n          <gfc:cardinality gco:nilReason=\"unknown\"/>\n          <gfc:valueType>\n            <gco:TypeName>\n              <gco:aName>\n                <gco:CharacterString>Double</gco:CharacterString>\n              </gco:aName>\n            </gco:TypeName>\n          </gfc:valueType>\n        </gfc:FC_FeatureAttribute>\n      </gfc:carrierOfCharacteristics>\n      <gfc:carrierOfCharacteristics>\n        <gfc:FC_FeatureAttribute>\n          <gfc:memberName>\n            <gco:LocalName>LATITUDE</gco:LocalName>\n          </gfc:memberName>\n          <gfc:cardinality gco:nilReason=\"unknown\"/>\n          <gfc:valueType>\n            <gco:TypeName>\n              <gco:aName>\n                <gco:CharacterString>Double</gco:CharacterString>\n              </gco:aName>\n            </gco:TypeName>\n          </gfc:valueType>\n        </gfc:FC_FeatureAttribute>\n      </gfc:carrierOfCharacteristics>\n      <gfc:carrierOfCharacteristics>\n        <gfc:FC_FeatureAttribute>\n          <gfc:memberName>\n            <gco:LocalName>X_COORD</gco:LocalName>\n          </gfc:memberName>\n          <gfc:cardinality gco:nilReason=\"unknown\"/>\n          <gfc:valueType>\n            <gco:TypeName>\n              <gco:aName>\n                <gco:CharacterString>Double</gco:CharacterString>\n              </gco:aName>\n            </gco:TypeName>\n          </gfc:valueType>\n        </gfc:FC_FeatureAttribute>\n      </gfc:carrierOfCharacteristics>\n      <gfc:carrierOfCharacteristics>\n        <gfc:FC_FeatureAttribute>\n          <gfc:memberName>\n            <gco:LocalName>Y_COORD</gco:LocalName>\n          </gfc:memberName>\n          <gfc:cardinality gco:nilReason=\"unknown\"/>\n          <gfc:valueType>\n            <gco:TypeName>\n              <gco:aName>\n                <gco:CharacterString>Double</gco:CharacterString>\n              </gco:aName>\n            </gco:TypeName>\n          </gfc:valueType>\n        </gfc:FC_FeatureAttribute>\n      </gfc:carrierOfCharacteristics>\n    </gfc:FC_FeatureType>\n  </gfc:featureType>\n</gfc:FC_FeatureCatalogue>\n              </rdf:Description>\n            </rdf:RDF>\n"
+  },
+  "created": "2024-02-07T23:08:08+00:00",
+  "modified": "2024-02-07T23:08:14+00:00",
+  "lock": "druid:tw464vg5223="
+}

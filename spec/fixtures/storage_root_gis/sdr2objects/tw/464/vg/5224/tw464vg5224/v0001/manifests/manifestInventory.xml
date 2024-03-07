@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fileInventory type="manifests" objectId="druid:tw464vg5223" versionId="1" inventoryDatetime="2024-02-07T23:08:20Z" fileCount="4" byteCount="9277" blockCount="11">
+  <fileGroup groupId="manifests" dataSource="/services-disk-stage/storage-root-2/sdr2objects/tw/464/vg/5223/tw464vg5223/v0001/manifests" fileCount="4" byteCount="9277" blockCount="11">
+    <file>
+      <fileSignature size="2944" md5="bce9ad38ddaa3921f5b8f98cadcc40f5" sha1="4d087b5da594fb89614e0c43c06d3362d7c30e0d" sha256="b49ae60a28a8fa319364329c93c69a953d5314e5b542cdf4761c06b93660149c"/>
+      <fileInstance path="fileInventoryDifference.xml" datetime="2024-02-07T23:08:20Z"/>
+    </file>
+    <file>
+      <fileSignature size="1921" md5="13971a17f8c36e0d39c517fa4caf42ad" sha1="1b0e309ba1e0bbf2007c33b22925b987c3ad1216" sha256="6cea1276de50c674dfa913e453c9bfc55531e99a45424329e6bb0a3def8ed6fb"/>
+      <fileInstance path="signatureCatalog.xml" datetime="2024-02-07T23:08:20Z"/>
+    </file>
+    <file>
+      <fileSignature size="2170" md5="5adcf4b79a8e1f7cd897aca605ea57fd" sha1="6f3a66b630b9a802583ee1489d5dff5b3ac5735d" sha256="813d36424888526b65a720a4d4cf4e1e100893d6eb3347a7ba276a59dd292082"/>
+      <fileInstance path="versionAdditions.xml" datetime="2024-02-07T23:08:20Z"/>
+    </file>
+    <file>
+      <fileSignature size="2242" md5="9c3f14b8e64159448f757c1303352b9c" sha1="e95025c85e24992503c01d345457f32dc344e7e1" sha256="edd01e0357cb0fe199cbe8aaf71eb5f7ef089d65d4199f577cdaf86e05105fe9"/>
+      <fileInstance path="versionInventory.xml" datetime="2024-02-07T23:08:20Z"/>
+    </file>
+  </fileGroup>
+</fileInventory>

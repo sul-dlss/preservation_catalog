@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<contentMetadata objectId="druid:tw464vg5223" type="geo">
+  <resource id="https://cocina.sul.stanford.edu/fileSet/tw464vg5223-tw464vg5223_2" sequence="2" type="preview">
+    <label>Preview</label>
+    <file id="preview.jpg" mimetype="image/jpeg" size="26314" publish="yes" shelve="yes" preserve="yes" role="master">
+      <checksum type="sha1">ae5a8426ffeb2f19dbc0ac1c4b15fbb7c4c5a23b</checksum>
+      <checksum type="md5">471d3c592c9199d41b57c09edaa9fef1</checksum>
+      <imageData height="430" width="338"/>
+    </file>
+  </resource>
+  <resource id="https://cocina.sul.stanford.edu/fileSet/tw464vg5223-tw464vg5223_3" sequence="3" type="object">
+    <label>Metadata</label>
+    <file id="AirMonitoringStations.shp.xml" mimetype="application/xml" size="64616" publish="yes" shelve="yes" preserve="yes" role="master">
+      <checksum type="sha1">daee32ad33bdf5422290b17c49e32c6fc81ae98b</checksum>
+      <checksum type="md5">7336b6d3a49da10ae944311f4bd3c6ba</checksum>
+    </file>
+    <file id="AirMonitoringStations-iso19139.xml" mimetype="application/xml" size="28283" publish="yes" shelve="yes" preserve="no" role="derivative">
+      <checksum type="sha1">9f59dab7bc9066c21dc628f714b03472386094de</checksum>
+      <checksum type="md5">c1795cd6134e101cdbd6d9a9f6f7cc51</checksum>
+    </file>
+    <file id="AirMonitoringStations-iso19110.xml" mimetype="application/xml" size="10796" publish="yes" shelve="yes" preserve="no" role="derivative">
+      <checksum type="sha1">25e12e4c8e13d92c4a77be7796b10a22d4c9a2eb</checksum>
+      <checksum type="md5">815f224f0ec82a9180be7623aa1ca87b</checksum>
+    </file>
+    <file id="AirMonitoringStations-fgdc.xml" mimetype="application/xml" size="6137" publish="yes" shelve="yes" preserve="no" role="derivative">
+      <checksum type="sha1">d4315e899e73a6d380068a07f01e10f765289bfe</checksum>
+      <checksum type="md5">1c93923639440b9d4e2ef9ccf944885f</checksum>
+    </file>
+  </resource>
+</contentMetadata>

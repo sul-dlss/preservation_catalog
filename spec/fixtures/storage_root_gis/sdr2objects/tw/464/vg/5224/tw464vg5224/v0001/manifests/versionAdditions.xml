@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fileInventory type="additions" objectId="druid:tw464vg5223" versionId="1" inventoryDatetime="2024-02-07T23:08:19Z" fileCount="6" byteCount="224121" blockCount="222">
+  <fileGroup groupId="content" dataSource="" fileCount="2" byteCount="149027" blockCount="147">
+    <file>
+      <fileSignature size="26314" md5="471d3c592c9199d41b57c09edaa9fef1" sha1="ae5a8426ffeb2f19dbc0ac1c4b15fbb7c4c5a23b" sha256="fa838f7e6288990a4e317b9d5f5e432bee9f36ef211f282f31c380ca9b279cf3"/>
+      <fileInstance path="preview.jpg" datetime=""/>
+    </file>
+    <file>
+      <fileSignature size="64616" md5="7336b6d3a49da10ae944311f4bd3c6ba" sha1="daee32ad33bdf5422290b17c49e32c6fc81ae98b" sha256="c3163f46187d0e3ec82bc573d1b71d742883b03edfd1e1c8a2982dc03b9c7130"/>
+      <fileInstance path="AirMonitoringStations.shp.xml" datetime=""/>
+    </file>
+  </fileGroup>
+  <fileGroup groupId="metadata" dataSource="" fileCount="3" byteCount="75094" blockCount="75">
+    <file>
+      <fileSignature size="72488" md5="023a01710cd7284691d12a38e381c5ef" sha1="2509df17d08b68ee8ea62da3d9ac88d8f5fcaef2" sha256="fa11fd5deccd046799d2783a24d01c0846efa64f812cd6cd858e55e817022ae2"/>
+      <fileInstance path="cocina.json" datetime="2024-02-07T23:08:19Z"/>
+    </file>
+    <file>
+      <fileSignature size="2403" md5="985d611aabb2419df8d4b589ef6d097a" sha1="879ecf8a86fd48c932c79d4b80c9b6d345e3167c" sha256="06abf90438bebc0d9ea4fc84de0d4aa64b55bbdf5d505351b756c1c8e4d516cd"/>
+      <fileInstance path="contentMetadata.xml" datetime="2024-02-07T23:08:19Z"/>
+    </file>
+    <file>
+      <fileSignature size="203" md5="c03a07f70f9ca4010e6ed9606735538a" sha1="7558dc5cdb9b90c90cabaa1500dc66e91cba6ff4" sha256="80137f0795d29734e7eac7a33c74b0d54f17a130a65cff2499f747f0051fd02b"/>
+      <fileInstance path="versionMetadata.xml" datetime="2024-02-07T23:08:19Z"/>
+    </file>
+  </fileGroup>
+</fileInventory>

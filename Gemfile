@@ -63,3 +63,5 @@ group :deploy do
   gem 'capistrano-passenger'
   gem 'dlss-capistrano'
 end
+
+gem "rubyzip", "~> 2.3"
