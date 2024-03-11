@@ -22,7 +22,7 @@ module Audit
     def backfill_missing_zipped_moab_versions(preserved_object)
       return false unless Settings.replication.audit_should_backfill
       zipped_moab_versions = preserved_object.create_zipped_moab_versions!
-      return false if zipped_moab_versions.empty?
+      return false if zipped_moab_versions.blank?
       Audit::ReplicationSupport.logger.warn(
         "#{self.class}: #{preserved_object.druid} backfilled #{zipped_moab_versions.count} ZippedMoabVersions: #{format_zmvs(zipped_moab_versions)}"
       )
