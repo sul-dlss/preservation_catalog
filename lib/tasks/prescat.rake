@@ -199,16 +199,18 @@ namespace :prescat do
                              in_processes: 4,
                              finish: ->(_, _, _) { progress_bar.advance }) do |moab_record_id|
         moab_record = MoabRecord.includes(:preserved_object).find(moab_record_id)
-        moab_version_size = moab_record.preserved_object.total_size_of_moab_version(moab_record.version)
-        ZippedMoabVersion.includes(:zip_endpoint).where(preserved_object: moab_record.preserved_object,
-                                                        version: moab_record.version).map do |zipped_moab_version|
-          total_part_size = zipped_moab_version.total_part_size
-          if total_part_size < moab_version_size
-            [moab_record.preserved_object.druid, moab_record.version,
-             zipped_moab_version.zip_endpoint.endpoint_name]
+        (1..moab_record.version).map do |version|
+          moab_version_size = moab_record.preserved_object.total_size_of_moab_version(version)
+          ZippedMoabVersion.includes(:zip_endpoint).where(preserved_object: moab_record.preserved_object,
+                                                          version: version).map do |zipped_moab_version|
+            total_part_size = zipped_moab_version.total_part_size
+            if total_part_size < moab_version_size
+              [moab_record.preserved_object.druid, version,
+               zipped_moab_version.zip_endpoint.endpoint_name]
+            end
           end
         end
-      end.flatten(1).compact
+      end.flatten(2).compact
       CSV.open('zip_part_size_inconsistency.csv', 'wb') { |csv| results.each { |result| csv << result } }
     end
   end
