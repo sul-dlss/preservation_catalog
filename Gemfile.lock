@@ -97,6 +97,7 @@ GEM
       aws-eventstream (~> 1, >= 1.0.2)
     base64 (0.2.0)
     bcrypt_pbkdf (1.1.1)
+    bcrypt_pbkdf (1.1.1-arm64-darwin)
     bcrypt_pbkdf (1.1.1-x86_64-darwin)
     bigdecimal (3.1.8)
     builder (3.2.4)
@@ -190,6 +191,8 @@ GEM
       net-http
     faraday-retry (2.2.1)
       faraday (~> 2.0)
+    ffi (1.17.0-aarch64-linux-musl)
+    ffi (1.17.0-arm64-darwin)
     ffi (1.17.0-x86_64-darwin)
     ffi (1.17.0-x86_64-linux-gnu)
     globalid (1.2.1)
@@ -259,6 +262,10 @@ GEM
       net-protocol
     net-ssh (7.2.3)
     nio4r (2.7.3)
+    nokogiri (1.16.5-aarch64-linux)
+      racc (~> 1.4)
+    nokogiri (1.16.5-arm64-darwin)
+      racc (~> 1.4)
     nokogiri (1.16.5-x86_64-darwin)
       racc (~> 1.4)
     nokogiri (1.16.5-x86_64-linux)
@@ -447,6 +454,8 @@ GEM
     zeitwerk (2.6.15)
 
 PLATFORMS
+  aarch64-linux-musl
+  arm64-darwin-23
   x86_64-darwin-19
   x86_64-darwin-21
   x86_64-darwin-22
