@@ -1,12 +1,9 @@
-FROM ruby:3.2.2-alpine
+FROM ruby:3.3.2-bookworm
 
-# postgresql-client is required for invoke.sh
-RUN apk --no-cache add \
-  postgresql-dev \
-  postgresql-client \
-  tzdata \
-  libxml2-dev \
-  libxslt-dev
+RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
+    && apt-get -y install --no-install-recommends \
+        postgresql-client postgresql-contrib libpq-dev build-essential \
+        libxml2-dev libxslt-dev
 
 LABEL maintainer="Aaron Collier <aaron.collier@stanford.edu>"
 
@@ -25,10 +22,7 @@ RUN gem update --system && \
 
 COPY Gemfile Gemfile.lock ./
 
-RUN apk --no-cache add --virtual build-dependencies \
-  build-base \
-  && bundle install --without test\
-  && apk del build-dependencies
+RUN bundle install
 
 COPY . .
 

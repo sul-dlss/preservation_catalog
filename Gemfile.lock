@@ -191,6 +191,7 @@ GEM
       net-http
     faraday-retry (2.2.1)
       faraday (~> 2.0)
+    ffi (1.17.0-aarch64-linux-gnu)
     ffi (1.17.0-aarch64-linux-musl)
     ffi (1.17.0-arm64-darwin)
     ffi (1.17.0-x86_64-darwin)
@@ -454,6 +455,7 @@ GEM
     zeitwerk (2.6.15)
 
 PLATFORMS
+  aarch64-linux
   aarch64-linux-musl
   arm64-darwin-23
   x86_64-darwin-19
