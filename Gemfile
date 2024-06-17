@@ -39,8 +39,11 @@ group :development, :test do
   gem 'rspec-rails'
   # Ruby static code analyzer https://rubocop.readthedocs.io/en/latest/
   gem 'rubocop', '~> 1.0'
+  gem 'rubocop-capybara'
+  gem 'rubocop-factory_bot'
   gem 'rubocop-rails'
   gem 'rubocop-rspec'
+  gem 'rubocop-rspec_rails'
   gem 'rspec_junit_formatter' # used by CircleCI
 end
 
