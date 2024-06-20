@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'csv'
-
 ##
 # ObjectsController allows consumers to interact with preserved objects
 #  (Note: methods will eventually be ported from sdr-services-app)

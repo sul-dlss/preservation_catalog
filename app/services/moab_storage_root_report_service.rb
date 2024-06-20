@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'csv'
-
 ##
 # run queries and produce reports from the results, for consumption
 # by preservation catalog maintainers

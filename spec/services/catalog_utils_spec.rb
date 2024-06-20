@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'rails_helper'
-require 'csv'
 
 RSpec.describe CatalogUtils do
   let(:storage_dir) { 'spec/fixtures/storage_root01/sdr2objects' }

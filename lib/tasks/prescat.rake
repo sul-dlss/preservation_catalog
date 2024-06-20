@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'csv'
-
 namespace :prescat do
   desc 'Diagnose failed replication'
   task :diagnose_replication, [:druid] => :environment do |_task, args|
