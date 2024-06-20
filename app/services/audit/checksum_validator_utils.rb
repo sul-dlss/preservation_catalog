@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'csv'
-
 module Audit
   # Helper methods for invoking Audit::ChecksumValidator.
   # These are for use from the Rails console; they are not called from the app.

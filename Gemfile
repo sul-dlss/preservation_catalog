@@ -5,6 +5,7 @@ gem 'aws-sdk-s3', '~> 1.17'
 gem 'committee' # Validates HTTP requests/responses per OpenAPI specification
 gem 'connection_pool' # Used for redis
 gem 'config' # Settings to manage configs on different instances
+gem 'csv' # will be removed from standard library in Ruby 3.4
 gem 'honeybadger' # for error reporting / tracking / notifications
 gem "importmap-rails", "~> 1.2"
 gem 'jbuilder' # Build JSON APIs with ease.
