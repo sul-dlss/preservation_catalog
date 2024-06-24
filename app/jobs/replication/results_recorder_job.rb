@@ -8,7 +8,7 @@ module Replication
   # 2. when all zip parts for the druid version are delivered to ONE endpoint,
   #   Report to DOR event service
   class ResultsRecorderJob < ApplicationJob
-    queue_as :zip_endpoint_events
+    queue_as :replication_results_recorder
 
     include UniqueJob
 
