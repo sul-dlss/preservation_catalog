@@ -4,7 +4,7 @@ module Audit
   # Confirm checksum for one Moab on storage and update MoabRecord in database
   # @see Audit::ChecksumValidator
   class ChecksumValidationJob < ApplicationJob
-    queue_as :checksum_validation
+    queue_as :audit_checksum_validation
 
     before_enqueue do |job|
       raise ArgumentError, 'MoabRecord param required' unless job.arguments.first.is_a?(MoabRecord)
