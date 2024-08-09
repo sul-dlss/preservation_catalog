@@ -1,23 +1,27 @@
+# frozen_string_literal: true
+
 source 'https://rubygems.org'
 
-# general Ruby/Rails gems
 gem 'aws-sdk-s3', '~> 1.17'
 gem 'committee' # Validates HTTP requests/responses per OpenAPI specification
-gem 'connection_pool' # Used for redis
 gem 'config' # Settings to manage configs on different instances
+gem 'connection_pool' # Used for redis
 gem 'csv' # will be removed from standard library in Ruby 3.4
+gem 'dor-event-client'
+gem 'dor-workflow-client' # audit errors are reported to the workflow service
+gem 'druid-tools' # for druid validation and druid-tree parsing
 gem 'honeybadger' # for error reporting / tracking / notifications
-gem "importmap-rails", "~> 1.2"
+gem 'importmap-rails', '~> 1.2'
 gem 'jbuilder' # Build JSON APIs with ease.
 gem 'jwt' # for gating programmatic access to the application
 gem 'lograge'
+gem 'moab-versioning', '~> 6.0' # work with Moab Objects
 gem 'okcomputer' # ReST endpoint with upness status
 gem 'pg' # postgres database
 gem 'postgresql_cursor' # for paging over large result sets efficiently
 gem 'propshaft', '~> 0.8.0' # asset pipeline
-# pry is useful for debugging, even in prod
-gem 'pry-byebug' # call 'binding.pry' anywhere in the code to stop execution and get a pry-byebug console
 gem 'pry' # make it possible to use pry for IRB
+gem 'pry-byebug' # call 'binding.pry' anywhere in the code to stop execution and get a pry-byebug console
 gem 'puma' # app server
 gem 'rails', '~> 7.0.0'
 gem 'redis', '~> 5.0'
@@ -31,13 +35,9 @@ source 'https://gems.contribsys.com/' do
 end
 
 # Stanford gems
-gem 'dor-event-client'
-gem 'dor-workflow-client' # audit errors are reported to the workflow service
-gem 'druid-tools' # for druid validation and druid-tree parsing
-gem 'moab-versioning', '~> 6.0' # work with Moab Objects
 
 group :development, :test do
-  gem 'rspec-rails'
+  gem 'erb_lint', require: false
   # Ruby static code analyzer https://rubocop.readthedocs.io/en/latest/
   gem 'rubocop', '~> 1.0'
   gem 'rubocop-capybara'
@@ -45,6 +45,7 @@ group :development, :test do
   gem 'rubocop-rails'
   gem 'rubocop-rspec'
   gem 'rubocop-rspec_rails'
+  gem 'rspec-rails'
   gem 'rspec_junit_formatter' # used by CircleCI
 end
 
