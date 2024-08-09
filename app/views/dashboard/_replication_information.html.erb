@@ -6,12 +6,12 @@
 <p><strong class="fs-4">ZippedMoabVersion</strong> records are about a single version of the Moab that is archived as zip file(s) on a particular cloud endpoint.</p>
 <p><strong class="fs-4">ZipPart</strong> records represent the individual zip segments for a ZippedMoabVersion (zips larger than <%= Replication::DruidVersionZip::ZIP_SPLIT_SIZE %> are split into segments) that are replicated to the particular cloud endpoint.</p>
 <p>See <a href="https://github.com/sul-dlss/preservation_catalog/wiki/Replication-Flow">Replication Flow wiki</a> for details about the replication process.</p>
-<hr/>
+<hr>
 <turbo-frame id="replication-endpoints" src="<%= dashboard_replication_endpoints_path %>" loading="lazy">
   <%= render Spinner.new %>
 </turbo-frame>
-<hr/>
+<hr>
 <turbo-frame id="replicated-files" src="<%= dashboard_replicated_files_path %>" loading="lazy">
   <%= render Spinner.new %>
 </turbo-frame>
-<hr/>
+<hr>
