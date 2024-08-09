@@ -13,7 +13,7 @@
           <th class="col-1">average size</th>
           <th class="col-1">moab count</th>
           <% status_labels.map do |status| %>
-            <th class="col-sm-1 text-center"><%=status %></th>
+            <th class="col-sm-1 text-center"><%= status %></th>
           <% end %>
           <th class="col-sm-1">expired checksum audit</th>
         </tr>
@@ -39,9 +39,9 @@
       <tfoot class="table-group-divider">
         <tr>
           <th>totals</th>
-          <td class="table-secondary"/>
-          <td class="table-secondary"/>
-          <td class="table-secondary"/>
+          <td class="table-secondary" />
+          <td class="table-secondary" />
+          <td class="table-secondary" />
           <td class="text-end<%= ' table-danger' unless storage_roots_moab_count_ok? %>"><%= storage_roots_moab_count %></td>
           <td class="text-end<%= ' table-danger' unless storage_roots_ok_count_ok? %>"><%= storage_roots_ok_count %></td>
           <td class="text-end<%= ' table-danger' unless storage_roots_invalid_moab_count_ok? %>"><%= storage_roots_invalid_moab_count %></td>
