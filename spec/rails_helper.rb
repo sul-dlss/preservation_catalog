@@ -10,7 +10,7 @@ require 'rspec/rails'
 # Add additional requires below this line. Rails is not loaded until this point!
 
 # auto-require all ruby files in the support directory
-Dir[Rails.root.join('spec', 'support', '*.rb')].each { |f| require f }
+Rails.root.glob('spec/support/*.rb').each { |f| require f }
 
 require 'view_component/test_helpers'
 require 'capybara/rspec'
