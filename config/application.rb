@@ -4,9 +4,10 @@ require_relative 'boot'
 
 # Select only parts we need from rails/all
 require 'rails'
-require 'active_record/railtie'
 require 'action_controller/railtie'
 require 'active_job/railtie'
+require 'active_record/railtie'
+require 'action_cable/engine'
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
