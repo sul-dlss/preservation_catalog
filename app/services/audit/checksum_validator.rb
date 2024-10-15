@@ -88,7 +88,7 @@ module Audit
 
     def persist_db_transaction!(clear_connections: false)
       # This is to deal with db connection timeouts.
-      ActiveRecord::Base.clear_active_connections! if clear_connections
+      ActiveRecord::ConnectionAdapters::ConnectionHandler.new.clear_active_connections! if clear_connections
 
       transaction_ok = ActiveRecordUtils.with_transaction_and_rescue(results) do
         yield if block_given?
@@ -103,7 +103,7 @@ module Audit
     end
 
     def logger
-      @logger ||= Logger.new($stdout).extend(ActiveSupport::Logger.broadcast(Logger.new(Rails.root.join('log', 'audit_checksum_validation.log'))))
+      @logger ||= ActiveSupport::BroadcastLogger.new(Logger.new($stdout), Logger.new(Rails.root.join('log', 'audit_checksum_validation.log')))
     end
 
     # Validates files on storage against the manifest inventory

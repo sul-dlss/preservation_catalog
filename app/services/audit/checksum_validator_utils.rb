@@ -5,8 +5,7 @@ module Audit
   # These are for use from the Rails console; they are not called from the app.
   class ChecksumValidatorUtils
     def self.logger
-      @logger ||= Logger.new($stdout)
-                        .extend(ActiveSupport::Logger.broadcast(Logger.new(Rails.root.join('log', 'audit_checksum_validation.log'))))
+      @logger ||= ActiveSupport::BroadcastLogger.new(Logger.new($stdout), Logger.new(Rails.root.join('log', 'audit_checksum_validation.log')))
     end
 
     # @return [Array<Audit::Results>] results from Audit::ChecksumValidator runs
