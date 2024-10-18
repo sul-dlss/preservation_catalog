@@ -5,7 +5,7 @@
 class MoabRecord < ApplicationRecord
   # @note Hash values cannot be modified without migrating any associated persisted data.
   # @see [enum docs] http://api.rubyonrails.org/classes/ActiveRecord/Enum.html
-  enum status: {
+  enum :status, {
     'ok' => 0,
     'invalid_moab' => 1,
     'invalid_checksum' => 2,

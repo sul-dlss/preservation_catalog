@@ -3,7 +3,7 @@
 # Base job for this Application
 class ApplicationJob < ActiveJob::Base
   before_perform do |_job|
-    ActiveRecord::Base.clear_active_connections!
+    ActiveRecord::ConnectionAdapters::ConnectionHandler.new.clear_active_connections!
   end
 
   # Raises if the metadata is incomplete

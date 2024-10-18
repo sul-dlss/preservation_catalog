@@ -23,7 +23,7 @@ gem 'propshaft', '~> 0.8.0' # asset pipeline
 gem 'pry' # make it possible to use pry for IRB
 gem 'pry-byebug' # call 'binding.pry' anywhere in the code to stop execution and get a pry-byebug console
 gem 'puma' # app server
-gem 'rails', '~> 7.0.0'
+gem 'rails', '~> 7.2.0'
 gem 'redis', '~> 5.0'
 gem 'sidekiq', '~> 7.0'
 gem 'turbo-rails', '~> 1.0'

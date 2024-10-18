@@ -7,7 +7,7 @@ class ZipEndpoint < ApplicationRecord
 
   # @note Hash values cannot be modified without migrating any associated persisted data.
   # @see [enum docs] http://api.rubyonrails.org/classes/ActiveRecord/Enum.html
-  enum delivery_class: {
+  enum :delivery_class, {
     'Replication::S3WestDeliveryJob' => 1,
     'Replication::S3EastDeliveryJob' => 2,
     'Replication::IbmSouthDeliveryJob' => 3

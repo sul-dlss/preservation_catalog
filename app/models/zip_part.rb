@@ -9,7 +9,7 @@ class ZipPart < ApplicationRecord
 
   # @note Hash values cannot be modified without migrating any associated persisted data.
   # @see [enum docs] http://api.rubyonrails.org/classes/ActiveRecord/Enum.html
-  enum status: {
+  enum :status, {
     'ok' => 0,
     'unreplicated' => 1, # DB-level default
     'not_found' => 2,
