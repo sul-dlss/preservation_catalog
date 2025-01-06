@@ -2,7 +2,7 @@
 
 source 'https://rubygems.org'
 
-gem 'aws-sdk-s3', '~> 1.17'
+gem 'aws-sdk-s3', '~> 1.176.0' # for S3 storage
 gem 'committee' # Validates HTTP requests/responses per OpenAPI specification
 gem 'config' # Settings to manage configs on different instances
 gem 'connection_pool' # Used for redis
