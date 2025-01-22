@@ -4,8 +4,8 @@
 [![Test Coverage](https://api.codeclimate.com/v1/badges/96b330db62f304b786cb/test_coverage)](https://codeclimate.com/github/sul-dlss/preservation_catalog/test_coverage)
 [![Maintainability](https://api.codeclimate.com/v1/badges/96b330db62f304b786cb/maintainability)](https://codeclimate.com/github/sul-dlss/preservation_catalog/maintainability)
 [![GitHub version](https://badge.fury.io/gh/sul-dlss%2Fpreservation_catalog.svg)](https://badge.fury.io/gh/sul-dlss%2Fpreservation_catalog)
-[![Docker image](https://images.microbadger.com/badges/image/suldlss/preservation_catalog.svg)](https://microbadger.com/images/suldlss/preservation_catalog "Get your own image badge on microbadger.com")
-[![OpenAPI Validator](http://validator.swagger.io/validator?url=https://raw.githubusercontent.com/sul-dlss/preservation_catalog/main/openapi.yml)](http://validator.swagger.io/validator/debug?url=https://raw.githubusercontent.com/sul-dlss/preservation_catalog/main/openapi.yml)
+[![Docker image](https://img.shields.io/docker/pulls/suldlss/preservation_catalog.svg)](https://hub.docker.com/r/suldlss/preservation_catalog)
+[![OpenAPI Validator](https://validator.swagger.io/validator?url=https://raw.githubusercontent.com/sul-dlss/preservation_catalog/main/openapi.yml)](http://validator.swagger.io/validator/debug?url=https://raw.githubusercontent.com/sul-dlss/preservation_catalog/main/openapi.yml)
 
 ## Overview
 
