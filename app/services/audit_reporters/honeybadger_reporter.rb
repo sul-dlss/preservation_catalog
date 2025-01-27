@@ -24,7 +24,7 @@ module AuditReporters
     end
 
     def handle_single_error(druid, _version, storage_area, check_name, result)
-      Honeybadger.notify("#{check_name}(#{druid}, #{storage_area&.to_s}) #{result.values.first}")
+      Honeybadger.notify("#{check_name}(#{druid}, #{storage_area}) #{result.values.first}")
     end
   end
 end
