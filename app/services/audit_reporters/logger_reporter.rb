@@ -28,7 +28,7 @@ module AuditReporters
 
     def log(druid, storage_area, check_name, result)
       severity = logger_severity_level(result.keys.first)
-      logger.add(severity, "#{check_name}(#{druid.delete_prefix('druid:')}, #{storage_area&.to_s}) #{result.values.first}")
+      logger.add(severity, "#{check_name}(#{druid.delete_prefix('druid:')}, #{storage_area}) #{result.values.first}")
     end
 
     def logger_severity_level(result_code)
