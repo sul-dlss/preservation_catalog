@@ -3,12 +3,19 @@
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 
 require 'simplecov'
-require 'webmock/rspec'
 SimpleCov.start :rails do
   add_filter '/spec/'
   add_filter '/vendor/'
   add_filter '/lib/'
+
+  if ENV['CI']
+    require 'simplecov_json_formatter'
+
+    formatter SimpleCov::Formatter::JSONFormatter
+  end
 end
+
+require 'webmock/rspec'
 
 RSpec.configure do |config|
   config.filter_run_excluding(:live_s3) unless ENV['CI'] == 'true' # default exclude unless on CI
