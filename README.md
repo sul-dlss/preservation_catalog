@@ -1,8 +1,7 @@
 # preservation_catalog (aka PresCat)
 
 [![CircleCI](https://circleci.com/gh/sul-dlss/preservation_catalog.svg?style=svg)](https://circleci.com/gh/sul-dlss/preservation_catalog)
-[![Test Coverage](https://api.codeclimate.com/v1/badges/96b330db62f304b786cb/test_coverage)](https://codeclimate.com/github/sul-dlss/preservation_catalog/test_coverage)
-[![Maintainability](https://api.codeclimate.com/v1/badges/96b330db62f304b786cb/maintainability)](https://codeclimate.com/github/sul-dlss/preservation_catalog/maintainability)
+[![codecov](https://codecov.io/github/sul-dlss/preservation_catalog/graph/badge.svg?token=dyOwoVHZ1y)](https://codecov.io/github/sul-dlss/preservation_catalog)
 [![GitHub version](https://badge.fury.io/gh/sul-dlss%2Fpreservation_catalog.svg)](https://badge.fury.io/gh/sul-dlss%2Fpreservation_catalog)
 [![Docker image](https://img.shields.io/docker/pulls/suldlss/preservation_catalog.svg)](https://hub.docker.com/r/suldlss/preservation_catalog)
 [![OpenAPI Validator](https://validator.swagger.io/validator?url=https://raw.githubusercontent.com/sul-dlss/preservation_catalog/main/openapi.yml)](http://validator.swagger.io/validator/debug?url=https://raw.githubusercontent.com/sul-dlss/preservation_catalog/main/openapi.yml)
@@ -56,7 +55,7 @@ Use `docker compose` to start supporting services (PostgreSQL and Redis)
 docker compose up -d db redis
 ```
 
-### Configure the database 
+### Configure the database
 
 Set up the database:
 
