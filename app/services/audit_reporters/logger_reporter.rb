@@ -7,21 +7,6 @@ module AuditReporters
       @logger = logger || Rails.logger
     end
 
-    protected
-
-    def handled_single_codes
-      # Everything
-      nil
-    end
-
-    def handle_completed(druid, _version, storage_area, check_name, result)
-      log(druid, storage_area, check_name, result)
-    end
-
-    def handle_single_error(druid, _version, storage_area, check_name, result)
-      log(druid, storage_area, check_name, result)
-    end
-
     private
 
     attr_reader :logger
@@ -41,6 +26,19 @@ module AuditReporters
       else
         Logger::ERROR
       end
+    end
+
+    def handled_single_codes
+      # Everything
+      nil
+    end
+
+    def handle_completed(druid, _version, storage_area, check_name, result)
+      log(druid, storage_area, check_name, result)
+    end
+
+    def handle_single_error(druid, _version, storage_area, check_name, result)
+      log(druid, storage_area, check_name, result)
     end
   end
 end

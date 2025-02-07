@@ -24,7 +24,7 @@ module MoabRecordService
       end
     end
 
-    protected
+    private
 
     def report_already_exists
       results.add_result(Audit::Results::DB_OBJ_ALREADY_EXISTS, 'MoabRecord')

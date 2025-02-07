@@ -38,14 +38,12 @@ module Audit
       )
     end
 
-    protected
+    private
 
     # @return [S3::AwsProvider, S3::IbmProvider] class that will provide .bucket, and .bucket_name methods
     def s3_provider_class
       raise 'this method should be implemented by the child class'
     end
-
-    private
 
     def zip_parts_to_check
       return zmv.zip_parts.where.not(status: :unreplicated) unless check_unreplicated_parts

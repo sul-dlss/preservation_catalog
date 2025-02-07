@@ -3,7 +3,7 @@
 module AuditReporters
   # Reports to DOR Event Service.
   class EventServiceReporter < BaseReporter
-    protected
+    private
 
     def handled_single_codes
       [
@@ -50,8 +50,6 @@ module AuditReporters
       error_message = MessageHelper.results_as_message(check_name, version, storage_area, results)
       create_error_event(druid, version, 'preservation-audit', storage_area, error_message)
     end
-
-    private
 
     def create_success_event(druid, version, process_name, storage_area)
       Dor::Event::Client.create(

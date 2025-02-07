@@ -3,7 +3,7 @@
 module AuditReporters
   # Reports to DOR Workflow Service.
   class AuditWorkflowReporter < BaseReporter
-    protected
+    private
 
     def handled_single_codes
       [
@@ -48,8 +48,6 @@ module AuditReporters
       error_message = MessageHelper.results_as_message(check_name, version, moab_storage_root, results)
       update_error_status(druid, version, 'preservation-audit', moab_storage_root, error_message)
     end
-
-    private
 
     def workflow_client
       @workflow_client ||=

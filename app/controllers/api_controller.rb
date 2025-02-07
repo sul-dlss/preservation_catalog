@@ -12,7 +12,7 @@ class ApiController < ActionController::API
 
   TOKEN_HEADER = 'Authorization'
 
-  protected
+  private
 
   # IMPORTANT!  all non-API routes must be protected by shibboleth and restricted to an
   # appropritaly small workgroup.

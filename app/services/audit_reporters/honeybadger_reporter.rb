@@ -3,7 +3,7 @@
 module AuditReporters
   # Reports to Honeybadger.
   class HoneybadgerReporter < BaseReporter
-    protected
+    private
 
     def handled_single_codes
       [
