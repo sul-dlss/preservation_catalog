@@ -42,7 +42,7 @@ module MoabRecordService
       )
     end
 
-    protected
+    private
 
     # perform_execute wraps with common parts of the execute method for all moab record services
     def perform_execute
@@ -117,8 +117,6 @@ module MoabRecordService
       status = moab_on_storage_validator.moab_validation_errors.empty? ? 'validity_unknown' : 'invalid_moab'
       create_db_objects(status)
     end
-
-    private
 
     def moab_record_attrs(status, checksums_validated)
       {

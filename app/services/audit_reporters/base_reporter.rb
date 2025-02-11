@@ -30,8 +30,6 @@ module AuditReporters
       handle_completed(namespaced_druid(druid), version, storage_area, check_name, result)
     end
 
-    protected
-
     def handled_single_codes
       # No codes
       []

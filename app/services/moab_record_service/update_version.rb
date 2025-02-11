@@ -23,7 +23,7 @@ module MoabRecordService
       end
     end
 
-    protected
+    private
 
     def update_catalog(status: nil, set_status_to_unexpected_version: false, checksums_validated: false)
       with_active_record_transaction_and_rescue do
