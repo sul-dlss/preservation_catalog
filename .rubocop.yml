@@ -2,9 +2,11 @@
 require:
   - rubocop-capybara
   - rubocop-factory_bot
+  - rubocop-rspec_rails
+
+plugins:
   - rubocop-rails
   - rubocop-rspec
-  - rubocop-rspec_rails
 
 inherit_from: .rubocop_todo.yml
 inherit_mode:
