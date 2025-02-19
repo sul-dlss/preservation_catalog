@@ -21,7 +21,5 @@ class ApplicationRecord < ActiveRecord::Base
     @provlog ||= Logger.new Rails.root.join('log', 'prov.log')
   end
 
-  def provlog
-    self.class.provlog
-  end
+  delegate :provlog, to: self
 end
