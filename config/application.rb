@@ -41,6 +41,11 @@ module PreservationCatalog
     # Common ones are `templates`, `generators`, or `middleware`, for example.
     config.autoload_lib(ignore: %w[assets tasks])
 
+    # Add timestamps to all loggers (both Rack-based ones and e.g. Sidekiq's)
+    config.log_formatter = proc do |severity, datetime, _progname, msg|
+      "[#{datetime.to_fs(:iso8601)}] [#{severity}] #{msg}\n"
+    end
+
     # accept_request_filter omits OKComputer & Sidekiq routes
     accept_proc = proc { |request| request.path.start_with?('/v1') }
     config.middleware.use(
