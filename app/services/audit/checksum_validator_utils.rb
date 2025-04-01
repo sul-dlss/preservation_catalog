@@ -1,21 +1,21 @@
 # frozen_string_literal: true
 
 module Audit
-  # Helper methods for invoking Audit::ChecksumValidator.
+  # Helper methods for invoking Audit::ChecksumValidationOrchestrator.
   # These are for use from the Rails console; they are not called from the app.
   class ChecksumValidatorUtils
     def self.logger
       @logger ||= ActiveSupport::BroadcastLogger.new(Logger.new($stdout), Logger.new(Rails.root.join('log', 'audit_checksum_validation.log')))
     end
 
-    # @return [Array<Audit::Results>] results from Audit::ChecksumValidator runs
+    # @return [Array<Audit::Results>] results from Audit::ChecksumValidationOrchestrator runs
     def self.validate_druid(druid)
       logger.info "#{Time.now.utc.iso8601} CV validate_druid starting for #{druid}"
       preserved_object = PreservedObject.find_by(druid: druid)
       moab_record = preserved_object&.moab_record
       logger.debug("#{moab_record ? 'Found' : 'Did Not Find'} MoabRecord in database.")
       if moab_record
-        cv = Audit::ChecksumValidator.new(moab_record)
+        cv = Audit::ChecksumValidationOrchestrator.new(moab_record)
         cv.validate_checksums
         logger.info "#{cv.results.results} for #{druid}"
         cv.results
