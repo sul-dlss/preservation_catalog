@@ -7,14 +7,14 @@ describe Audit::ChecksumValidationJob do
   let(:moab_record) { create(:moab_record) }
 
   describe '#perform' do
-    let(:validator) { instance_double(Audit::ChecksumValidator) }
+    let(:validator) { instance_double(Audit::ChecksumValidationOrchestrator) }
 
     before do
-      allow(Audit::ChecksumValidator).to receive(:new).with(moab_record).and_return(validator)
+      allow(Audit::ChecksumValidationOrchestrator).to receive(:new).with(moab_record).and_return(validator)
       allow(validator).to receive(:validate_checksums)
     end
 
-    it 'calls ChecksumValidator#validate_checksums' do
+    it 'calls ChecksumValidationOrchestrator#validate_checksums' do
       job.perform(moab_record)
       expect(validator).to have_received(:validate_checksums)
     end
