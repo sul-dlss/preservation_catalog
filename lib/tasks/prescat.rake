@@ -181,7 +181,7 @@ namespace :prescat do
       Audit::ChecksumValidator.new(
         moab_storage_object: MoabOnStorage.moab(storage_location: args[:storage_location], druid: args[:druid]),
         emit_results: true
-      ).validate!
+      ).validate
     end
 
     desc 'run replication audit for a single druid'

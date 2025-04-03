@@ -16,6 +16,11 @@ module Audit
       @emit_results = emit_results
     end
 
+    def validate
+      validate_manifest_inventories
+      validate_signature_catalog
+    end
+
     def validate_manifest_inventories
       # This will populate the results object
       moab_storage_object.version_list.each { |moab_version| ManifestInventoryValidator.validate(moab_version:, checksum_validator: self) }
