@@ -28,7 +28,7 @@ workflow_services_url: 'https://workflows.example.org/workflow/'
 
 checksum_algos: ['md5'] # 'sha1' 'sha256'
 
-zip_cache_expiry_time: '+20160' # this is UNIX `find` speak for "greater than 14 days"
+zip_cache_expiry_time: '+10080' # this is UNIX `find` speak for "greater than 7 days"
 zip_storage: '/tmp' # override in #{RAILS_ENV}.yml
 
 # When the backlog of unreplicated moabs is very large, e.g. when first spinning up
