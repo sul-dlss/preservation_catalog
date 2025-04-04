@@ -23,13 +23,6 @@ describe 'the whole replication pipeline' do # rubocop:disable RSpec/DescribeCla
   let(:ibm_provider) { instance_double(Replication::IbmProvider, bucket: ibm_bucket) }
   let(:moab_storage_root) { MoabStorageRoot.find_by!(name: 'fixture_sr1') }
 
-  around do |example|
-    old_adapter = ApplicationJob.queue_adapter
-    ApplicationJob.queue_adapter = :inline
-    example.run
-    ApplicationJob.queue_adapter = old_adapter
-  end
-
   before do
     allow(Settings).to receive(:zip_storage).and_return(Rails.root.join('spec', 'fixtures', 'zip_storage'))
     allow(Replication::AwsProvider).to receive(:new).and_return(aws_provider)
@@ -65,7 +58,9 @@ describe 'the whole replication pipeline' do # rubocop:disable RSpec/DescribeCla
     )
 
     # creating or updating a MoabRecord should trigger its parent PreservedObject to replicate any missing versions to any target endpoints
-    create(:moab_record, preserved_object: preserved_object, version: version, moab_storage_root: moab_storage_root)
+    perform_enqueued_jobs do
+      create(:moab_record, preserved_object: preserved_object, version: version, moab_storage_root: moab_storage_root)
+    end
   end
 
   context 'updating an existing moab' do
@@ -98,9 +93,11 @@ describe 'the whole replication pipeline' do # rubocop:disable RSpec/DescribeCla
         data: a_hash_including({ host: 'fakehost', version: 3, endpoint_name: 'ibm_us_south' })
       )
 
-      # updating the MoabRecord#version and its PreservedObject#current_version should trigger the replication cycle again, on the new version
-      MoabRecordService::UpdateVersion.execute(druid: druid, incoming_version: next_version, incoming_size: 712,
-                                               moab_storage_root: moab_storage_root, checksums_validated: true)
+      perform_enqueued_jobs do
+        # updating the MoabRecord#version and its PreservedObject#current_version should trigger the replication cycle again, on the new version
+        MoabRecordService::UpdateVersion.execute(druid: druid, incoming_version: next_version, incoming_size: 712,
+                                                 moab_storage_root: moab_storage_root, checksums_validated: true)
+      end
     end
   end
 end

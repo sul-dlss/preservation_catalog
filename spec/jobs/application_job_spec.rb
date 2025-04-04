@@ -17,15 +17,6 @@ class RegularParameterJob < ApplicationJob
 end
 
 RSpec.describe ApplicationJob do
-  include ActiveJob::TestHelper
-
-  around do |example|
-    old_adapter = ActiveJob::Base.queue_adapter
-    ActiveJob::Base.queue_adapter = :sidekiq
-    example.run
-    ActiveJob::Base.queue_adapter = old_adapter
-  end
-
   it 'queues start empty' do
     expect(enqueued_jobs.size).to eq 0
   end
