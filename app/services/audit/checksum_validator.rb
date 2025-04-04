@@ -2,7 +2,7 @@
 
 module Audit
   # Service for validating Moab checksums in a directory. This class's primary collaborator
-  # is Audit::ChecksumValidationOrchestrator, which depends on Audit::ChecksumValidator to
+  # is Audit::ChecksumValidationService, which depends on Audit::ChecksumValidator to
   # validate manifest inventories on disk and update the passed-in `results` object. It is
   # also invoked by the `prescat:audit:validate_uncataloged` rake task which expects the
   # class to emit validation results and errors to STDOUT.

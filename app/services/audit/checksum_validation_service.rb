@@ -2,7 +2,7 @@
 
 module Audit
   # Service for validating Moab checksums on storage, updating the MoabRecord db record, and reporting results.
-  class ChecksumValidationOrchestrator
+  class ChecksumValidationService
     attr_reader :moab_record
 
     delegate :moab_storage_root, :preserved_object, to: :moab_record
