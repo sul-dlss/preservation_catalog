@@ -175,6 +175,15 @@ namespace :prescat do
       puts 'This may take some time. Any issues will be reported to Honeybadger.'
     end
 
+    desc 'validate checksums in a Moab directory outside of a known storage root (i.e., not in the catalog)'
+    task :validate_uncataloged, [:druid, :storage_location] => [:environment] do |_task, args|
+      puts "Starting checksum validation for #{args[:druid]} in #{args[:storage_location]} (NOTE: this may take some time!)"
+      Audit::ChecksumValidator.new(
+        moab_storage_object: MoabOnStorage.moab(storage_location: args[:storage_location], druid: args[:druid]),
+        emit_results: true
+      ).validate
+    end
+
     desc 'run replication audit for a single druid'
     task :replication_single, [:druid] => [:environment] do |_task, args|
       puts "Starting replication audit for #{args[:druid]}"

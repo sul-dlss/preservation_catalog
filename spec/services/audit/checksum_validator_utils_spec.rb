@@ -36,8 +36,8 @@ RSpec.describe Audit::ChecksumValidatorUtils do
     let!(:po) { create(:preserved_object_fixture, druid: 'bz514sm9647') }
 
     it 'creates an instance ancd calls #validate_checksums for MoabRecord' do
-      cv = Audit::ChecksumValidator.new(po.moab_record)
-      allow(Audit::ChecksumValidator).to receive(:new).with(cv.moab_record).and_return(cv)
+      cv = Audit::ChecksumValidationService.new(po.moab_record)
+      allow(Audit::ChecksumValidationService).to receive(:new).with(cv.moab_record).and_return(cv)
       allow(cv).to receive(:validate_checksums).and_call_original
       described_class.validate_druid(po.druid)
       expect(cv).to have_received(:validate_checksums)
@@ -85,7 +85,7 @@ RSpec.describe Audit::ChecksumValidatorUtils do
     end
 
     context 'when there are no MoabRecords to check' do
-      it 'does not create an instance of ChecksumValidator' do
+      it 'does not create an instance of ChecksumValidationService' do
         expect(Audit::ChecksumValidationJob).not_to receive(:perform_later)
         described_class.validate_status_root('ok', root_name)
       end

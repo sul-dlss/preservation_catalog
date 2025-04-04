@@ -11,6 +11,6 @@ module MoabOnStorage
   # @param druid [String]
   # @param storage_location [String] the root directory holding the druid tree (the storage root path)
   def self.moab(druid:, storage_location:)
-    Moab::StorageObject.new(druid, object_dir(druid: druid, storage_location: storage_location))
+    Moab::StorageObject.new(druid, object_dir(druid:, storage_location:))
   end
 end
