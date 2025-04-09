@@ -19,13 +19,13 @@ module Audit
     def validate
       validate_manifest_inventories
       validate_signature_catalog
+
+      print_results!
     end
 
     def validate_manifest_inventories
       # This will populate the results object
       moab_storage_object.version_list.each { |moab_version| ManifestInventoryValidator.validate(moab_version:, checksum_validator: self) }
-
-      print_results!
     end
 
     def validate_signature_catalog
@@ -50,7 +50,8 @@ module Audit
       #       validation.
       moab_on_storage_validator.moab_validation_errors
 
-      logger.info(results.results_as_string)
+      result_details = results.results.map { |result| "* #{result}" }.join("\n")
+      logger.info("#{results.result_summary_msg}\n#{result_details}")
     end
 
     def emit_results?

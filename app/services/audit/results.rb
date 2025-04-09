@@ -125,12 +125,25 @@ module Audit
       result_array.detect { |result_hash| result_hash.key?(code) } != nil
     end
 
+    # this prioritizes getting everything on one grep-able line, which makes things less readable
+    # at a glance on the terminal than if the values were joined by line breaks.
     def results_as_string
       "#{string_prefix} #{result_array.map(&:values).flatten.join(' && ')}"
     end
 
     def to_json(*_args)
       { druid: druid, results: result_array }.to_json
+    end
+
+    def result_summary_msg
+      catchy_pass_fail_msg =
+        if error_results.empty?
+          '✅ fixity check passed'
+        else
+          '⚠️ fixity check failed, investigate errors'
+        end
+
+      "#{catchy_pass_fail_msg} - #{check_name} - #{druid} - #{location_version_string}"
     end
 
     private
@@ -155,12 +168,16 @@ module Audit
       RESPONSE_CODE_TO_MESSAGES[code] % arg_hash
     end
 
-    def string_prefix
-      @string_prefix ||= begin
+    def location_version_string
+      @location_version_string ||= begin
         location_info = "actual location: #{moab_storage_root}" if moab_storage_root
         actual_version_info = "actual version: #{actual_version}" if actual_version
-        "#{check_name} (#{location_info}; #{actual_version_info})"
+        "#{location_info}; #{actual_version_info}"
       end
+    end
+
+    def string_prefix
+      @string_prefix ||= "#{check_name} (#{location_version_string})"
     end
   end
 end
