@@ -114,6 +114,7 @@ RSpec.describe PreservedObject do
     let(:zip_endpoints) { ZipEndpoint.all }
     let!(:zip_ep) { zip_endpoints.first }
     let!(:zip_ep2) { zip_endpoints.second }
+    let!(:zip_ep3) { zip_endpoints.third }
 
     before do
       allow(Replication::ZipmakerJob).to receive(:perform_later)
@@ -126,19 +127,19 @@ RSpec.describe PreservedObject do
       expect(Replication::ZipmakerJob).to receive(:perform_later).with(preserved_object.druid, 3, moab_rec1.moab_storage_root.storage_location)
       expect { preserved_object.create_zipped_moab_versions! }.to change {
         ZipEndpoint.which_need_archive_copy(druid, current_version).to_a.to_set
-      }.from([zip_ep, zip_ep2].to_set).to([].to_set).and change {
+      }.from([zip_ep, zip_ep2, zip_ep3].to_set).to([].to_set).and change {
         zmvs_by_druid.where(version: current_version).count
-      }.from(0).to(2)
+      }.from(0).to(3)
 
-      expect(zmvs_by_druid.pluck(:version).sort).to eq [1, 1, 2, 2, 3, 3]
+      expect(zmvs_by_druid.pluck(:version).sort).to eq [1, 1, 1, 2, 2, 2, 3, 3, 3]
     end
 
     it "creates ZMVs that don't yet exist for new endpoint, but should" do
       expect { preserved_object.create_zipped_moab_versions! }.to change {
         ZipEndpoint.which_need_archive_copy(druid, current_version).to_a.to_set
-      }.from([zip_ep, zip_ep2].to_set).to([].to_set).and change {
+      }.from([zip_ep, zip_ep2, zip_ep3].to_set).to([].to_set).and change {
         zmvs_by_druid.where(version: current_version).count
-      }.from(0).to(2)
+      }.from(0).to(3)
 
       new_zip_ep = create(:zip_endpoint)
 
@@ -149,12 +150,12 @@ RSpec.describe PreservedObject do
         ZipEndpoint.which_need_archive_copy(druid, current_version).to_a
       }.from([new_zip_ep]).to([]).and change {
         zmvs_by_druid.where(version: current_version).count
-      }.from(2).to(3)
+      }.from(3).to(4)
     end
 
     it 'creates all versions for ZMV' do
       expect(preserved_object.current_version).to eq 3
-      expect { preserved_object.create_zipped_moab_versions! }.to change(ZippedMoabVersion, :count).from(0).to(6)
+      expect { preserved_object.create_zipped_moab_versions! }.to change(ZippedMoabVersion, :count).from(0).to(9)
     end
 
     it 'if ZMVs already exist, return an empty array' do

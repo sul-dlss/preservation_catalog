@@ -10,7 +10,8 @@ class ZipEndpoint < ApplicationRecord
   enum :delivery_class, {
     'Replication::S3WestDeliveryJob' => 1,
     'Replication::S3EastDeliveryJob' => 2,
-    'Replication::IbmSouthDeliveryJob' => 3
+    'Replication::IbmSouthDeliveryJob' => 3,
+    'Replication::GcpDeliveryJob' => 4
   }
 
   validates :endpoint_name, presence: true, uniqueness: true

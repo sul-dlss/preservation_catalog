@@ -44,7 +44,7 @@ describe Audit::MoabReplicationAuditJob do
       it 'creates missing zipped moab versions and logs a warning' do
         expect(preserved_object).to receive(:create_zipped_moab_versions!).and_call_original
         expect(logger).to receive(:warn)
-          .with(/backfilled 4 ZippedMoabVersions: 1 to aws_s3_west_2; 1 to ibm_us_south; 2 to aws_s3_west_2; 2 to ibm_us_south/)
+          .with(/backfilled 6 ZippedMoabVersions: 1 to aws_s3_west_2; 1 to gcp; 1 to ibm_us_south; 2 to aws_s3_west_2; 2 to gcp; 2 to ibm_us_south/)
         expect(Audit::Replication).not_to receive(:results)
         job.perform(preserved_object)
       end
