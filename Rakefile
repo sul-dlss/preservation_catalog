@@ -12,7 +12,7 @@ RuboCop::RakeTask.new
 desc 'Run erblint against ERB files'
 task erblint: :environment do
   puts 'Running erblint...'
-  system('bundle exec erblint --lint-all --format compact')
+  system('bundle exec erb_lint --lint-all --format compact')
 end
 
 desc 'Run all configured linters'
