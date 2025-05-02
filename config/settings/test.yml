@@ -31,3 +31,11 @@ zip_endpoints:
     audit_class: 'Audit::ReplicationToIbm'
     access_key_id: 'overridden-by-env-var-in-ci'
     secret_access_key: 'overridden-by-env-var-in-ci'
+  gcp:
+    region: 'us-central1'
+    endpoint_node: 'https://storage.googleapis.com'
+    storage_location: 'sdr-us-central-test'
+    delivery_class: 'Replication::GcpDeliveryJob'
+    audit_class: 'Audit::ReplicationToGcp'
+    access_key_id: 'overridden-by-env-var-in-ci'
+    secret_access_key: 'overridden-by-env-var-in-ci'

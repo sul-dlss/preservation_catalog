@@ -73,6 +73,8 @@ describe Replication::DeliveryDispatcherJob do
         .with(druid, version, s3_key, a_hash_including(:checksum_md5, :size, :zip_cmd, :zip_version))
       expect(Replication::IbmSouthDeliveryJob).to receive(:perform_later)
         .with(druid, version, s3_key, a_hash_including(:checksum_md5, :size, :zip_cmd, :zip_version))
+      expect(Replication::GcpDeliveryJob).to receive(:perform_later)
+        .with(druid, version, s3_key, a_hash_including(:checksum_md5, :size, :zip_cmd, :zip_version))
       described_class.perform_now(druid, version, s3_key, metadata)
     end
 
@@ -81,6 +83,7 @@ describe Replication::DeliveryDispatcherJob do
       allow(Replication::S3WestDeliveryJob).to receive(:perform_later)
       allow(Replication::S3EastDeliveryJob).to receive(:perform_later)
       allow(Replication::IbmSouthDeliveryJob).to receive(:perform_later)
+      allow(Replication::GcpDeliveryJob).to receive(:perform_later)
 
       described_class.perform_now(druid, version, s3_key, metadata)
       expect(parts1.map(&:status)).to eq ['unreplicated']
@@ -89,7 +92,7 @@ describe Replication::DeliveryDispatcherJob do
     end
 
     it 'adds ZipPart to each related ZMV' do
-      expect(po.zipped_moab_versions.count).to eq 3
+      expect(po.zipped_moab_versions.count).to eq 4
       described_class.perform_now(druid, version, s3_key, metadata)
       expect(parts1.map(&:md5)).to eq [md5]
       expect(parts2.map(&:md5)).to eq [md5]

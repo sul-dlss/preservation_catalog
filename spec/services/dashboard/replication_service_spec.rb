@@ -44,17 +44,15 @@ RSpec.describe Dashboard::ReplicationService do
   end
 
   describe '#replication_ok?' do
-    let(:endpoint1) { ZipEndpoint.first }
-    let(:endpoint2) { ZipEndpoint.last }
     let(:po1) { create(:preserved_object, current_version: 2) }
     let(:po2) { create(:preserved_object, current_version: 1) }
 
     before do
-      # test seeds have 2 ZipEndpoints
-      create(:zipped_moab_version, preserved_object: po1, zip_endpoint: endpoint1)
-      create(:zipped_moab_version, preserved_object: po1, zip_endpoint: endpoint2)
-      create(:zipped_moab_version, preserved_object: po2, zip_endpoint: endpoint1)
-      create(:zipped_moab_version, preserved_object: po2, zip_endpoint: endpoint2)
+      # test seeds are on each ZipEndpoint
+      ZipEndpoint.find_each do |zip_endpoint|
+        create(:zipped_moab_version, preserved_object: po1, zip_endpoint: zip_endpoint)
+        create(:zipped_moab_version, preserved_object: po2, zip_endpoint: zip_endpoint)
+      end
     end
 
     context 'when a ZipEndpoint count does not match num_object_versions_per_preserved_object' do
@@ -65,9 +63,10 @@ RSpec.describe Dashboard::ReplicationService do
 
     context 'when ZipEndpoint counts match num_object_versions_per_preserved_object' do
       before do
-        # test seeds have 2 ZipEndpoints
-        create(:zipped_moab_version, preserved_object: po1, version: 2, zip_endpoint: ZipEndpoint.first)
-        create(:zipped_moab_version, preserved_object: po1, version: 2, zip_endpoint: ZipEndpoint.last)
+        # test seeds are on each ZipEndpoint
+        ZipEndpoint.find_each do |zip_endpoint|
+          create(:zipped_moab_version, preserved_object: po1, version: 2, zip_endpoint: zip_endpoint)
+        end
       end
 
       it 'returns true' do
