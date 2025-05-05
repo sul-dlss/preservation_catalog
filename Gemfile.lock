@@ -85,15 +85,15 @@ GEM
     amq-protocol (2.3.3)
     ast (2.4.3)
     aws-eventstream (1.3.2)
-    aws-partitions (1.1092.0)
-    aws-sdk-core (3.222.2)
+    aws-partitions (1.1097.0)
+    aws-sdk-core (3.223.0)
       aws-eventstream (~> 1, >= 1.3.0)
       aws-partitions (~> 1, >= 1.992.0)
       aws-sigv4 (~> 1.9)
       base64
       jmespath (~> 1, >= 1.6.1)
       logger
-    aws-sdk-kms (1.99.0)
+    aws-sdk-kms (1.100.0)
       aws-sdk-core (~> 3, >= 3.216.0)
       aws-sigv4 (~> 1.5)
     aws-sdk-s3 (1.176.1)
@@ -161,7 +161,7 @@ GEM
     config (5.5.2)
       deep_merge (~> 1.2, >= 1.2.1)
       ostruct
-    connection_pool (2.5.2)
+    connection_pool (2.5.3)
     crack (1.0.0)
       bigdecimal
       rexml
@@ -196,7 +196,7 @@ GEM
       zeitwerk (~> 2.1)
     drb (2.2.1)
     druid-tools (3.0.0)
-    ed25519 (1.3.0)
+    ed25519 (1.4.0)
     erb_lint (0.9.0)
       activesupport
       better_html (>= 2.0.1)
@@ -226,7 +226,7 @@ GEM
     globalid (1.2.1)
       activesupport (>= 6.1)
     hashdiff (1.1.2)
-    honeybadger (5.27.2)
+    honeybadger (5.28.0)
       logger
       ostruct
     i18n (1.14.7)
@@ -279,7 +279,7 @@ GEM
       nokogiri-happymapper
     net-http (0.6.0)
       uri
-    net-imap (0.5.7)
+    net-imap (0.5.8)
       date
       net-protocol
     net-pop (0.1.2)
@@ -331,10 +331,10 @@ GEM
     pry-byebug (3.11.0)
       byebug (~> 12.0)
       pry (>= 0.13, < 0.16)
-    psych (5.2.3)
+    psych (5.2.4)
       date
       stringio
-    public_suffix (6.0.1)
+    public_suffix (6.0.2)
     puma (6.6.0)
       nio4r (~> 2.0)
     racc (1.8.1)
@@ -402,24 +402,24 @@ GEM
     rexml (3.4.1)
     rspec-core (3.13.3)
       rspec-support (~> 3.13.0)
-    rspec-expectations (3.13.3)
+    rspec-expectations (3.13.4)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.13.0)
-    rspec-mocks (3.13.2)
+    rspec-mocks (3.13.3)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.13.0)
-    rspec-rails (7.1.1)
-      actionpack (>= 7.0)
-      activesupport (>= 7.0)
-      railties (>= 7.0)
+    rspec-rails (8.0.0)
+      actionpack (>= 7.2)
+      activesupport (>= 7.2)
+      railties (>= 7.2)
       rspec-core (~> 3.13)
       rspec-expectations (~> 3.13)
       rspec-mocks (~> 3.13)
       rspec-support (~> 3.13)
-    rspec-support (3.13.2)
+    rspec-support (3.13.3)
     rspec_junit_formatter (0.6.0)
       rspec-core (>= 2, < 4, != 2.12.0)
-    rubocop (1.75.3)
+    rubocop (1.75.5)
       json (~> 2.3)
       language_server-protocol (~> 3.17.0.2)
       lint_roller (~> 1.1.0)
