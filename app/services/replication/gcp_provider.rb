@@ -11,7 +11,7 @@ module Replication
         region: region,
         access_key_id: access_key_id,
         secret_access_key: secret_access_key,
-        endpoint: Settings.zip_endpoints.gcp.endpoint_node
+        endpoint: Settings.zip_endpoints.gcp_s3_central_1.endpoint_node
       }
     end
 
@@ -22,7 +22,7 @@ module Replication
 
     # @return [String]
     def bucket_name
-      Settings.zip_endpoints.gcp.storage_location
+      Settings.zip_endpoints.gcp_s3_central_1.storage_location
     end
 
     # @return [::Aws::S3::Resource]
