@@ -6,7 +6,6 @@ server 'preservation-catalog-prod-02.stanford.edu', user: 'pres', roles: %w[app 
 server 'preservation-catalog-prod-03.stanford.edu', user: 'pres', roles: %w[app worker]
 server 'preservation-catalog-prod-04.stanford.edu', user: 'pres', roles: %w[app worker cache_cleaner]
 
-Capistrano::OneTimeKey.generate_one_time_key!
 set :rails_env, 'production'
 set :bundle_without, 'deploy test'
 set :deploy_to, '/opt/app/pres/preservation_catalog'
