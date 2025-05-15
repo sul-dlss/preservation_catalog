@@ -44,7 +44,8 @@ RSpec.shared_examples 'provider' do |provider_class, bucket_name, region, access
     describe '::Aws::S3::Object#upload_file' do
       subject(:s3_object) { bucket.object("test_key_#{test_key_id}") }
 
-      let(:test_key_id) { ENV.fetch('CIRCLE_SHA1', '000')[0..6] }
+      # ensure a unique S3 key so that there aren't collisions between runs (e.g. GCP CI bucket is configured as write-once, like deployed envs)
+      let(:test_key_id) { "#{DateTime.now.strftime('%Y%m%d_%H%M%S')}_#{SecureRandom.alphanumeric}" }
       let(:dvz) { Replication::DruidVersionZip.new('bj102hs9687', 2) }
       let(:dvz_part) { Replication::DruidVersionZipPart.new(dvz, dvz.s3_key('.zip')) }
       let(:digest) { dvz_part.base64digest }
