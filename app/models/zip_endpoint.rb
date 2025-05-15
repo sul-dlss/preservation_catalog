@@ -38,7 +38,7 @@ class ZipEndpoint < ApplicationRecord
   #   entries, including any entries that may have been seeded already)
   # @note this adds new entries from the config, and leaves existing entries alone, but won't delete anything.
   # TODO: figure out deletion/update based on config?
-  def self.seed_from_config
+  def self.seed_from_config # rubocop:disable Metrics/AbcSize
     return unless Settings.zip_endpoints
     Settings.zip_endpoints.map do |endpoint_name, endpoint_config|
       find_or_create_by!(endpoint_name: endpoint_name.to_s) do |zip_endpoint|
@@ -46,6 +46,13 @@ class ZipEndpoint < ApplicationRecord
         zip_endpoint.storage_location = endpoint_config.storage_location
         zip_endpoint.delivery_class = delivery_classes[endpoint_config.delivery_class]
       end
+    rescue ActiveRecord::ActiveRecordError => e
+      err_msg = 'Error trying to insert record for new zip endpoint, skipping entry'
+      logger.warn("#{err_msg}: #{e.record.errors.full_messages}")
+      Honeybadger.notify(err_msg,
+                         error_class: e.class.to_s,
+                         backtrace: e.backtrace,
+                         context: { error_messages: e.record.errors.full_messages })
     end
   end
 

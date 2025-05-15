@@ -99,6 +99,33 @@ RSpec.describe ZipEndpoint do
       expect(described_class.pluck(:endpoint_name).sort).to eq expected_ep_names
     end
 
+    it 'alerts and continues if a settings entry is not addable (allows e.g. partial initial config of credentials via env var)' do
+      zip_endpoints_setting = Config::Options.new(
+        forthcoming_s3_north_endpoint:
+          Config::Options.new(
+            secret_access_key: 'sdXSDr+asdfe/lkljoWEDCljdE+aTWrefc'
+          )
+      )
+      logger = instance_double(Logger, warn: nil)
+      allow(described_class).to receive(:logger).and_return(logger)
+      allow(Settings).to receive(:zip_endpoints).and_return(zip_endpoints_setting)
+      allow(Honeybadger).to receive(:notify)
+
+      # run it a second time
+      described_class.seed_from_config
+      expected_ep_names = %w[aws_s3_west_2 gcp_s3_central_1 ibm_us_south zip-endpoint]
+      expect(described_class.pluck(:endpoint_name).sort).to eq expected_ep_names
+      expect(Honeybadger).to have_received(:notify).with(
+        'Error trying to insert record for new zip endpoint, skipping entry',
+        error_class: 'ActiveRecord::RecordInvalid',
+        backtrace: include(a_string_matching(%r{app/models/zip_endpoint.rb})),
+        context: { error_messages: ["Delivery class can't be blank"] }
+      )
+      expect(logger).to have_received(:warn).with(
+        "Error trying to insert record for new zip endpoint, skipping entry: [\"Delivery class can't be blank\"]"
+      )
+    end
+
     # TODO: add a test for Settings.zip_endpoint changing an attribute other than the endpoint_name
   end
 
