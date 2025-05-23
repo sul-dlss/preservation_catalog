@@ -66,7 +66,7 @@ describe 'the whole replication pipeline' do # rubocop:disable RSpec/DescribeCla
     expect(Dor::Event::Client).to receive(:create).with(
       druid: "druid:#{druid}",
       type: 'druid_version_replicated',
-      data: a_hash_including({ host: 'fakehost', version: 1, endpoint_name: 'gcp_s3_central_1' })
+      data: a_hash_including({ host: 'fakehost', version: 1, endpoint_name: 'gcp_s3_south_1' })
     )
 
     # creating or updating a MoabRecord should trigger its parent PreservedObject to replicate any missing versions to any target endpoints
@@ -110,7 +110,7 @@ describe 'the whole replication pipeline' do # rubocop:disable RSpec/DescribeCla
       expect(Dor::Event::Client).to receive(:create).with(
         druid: "druid:#{druid}",
         type: 'druid_version_replicated',
-        data: a_hash_including({ host: 'fakehost', version: 3, endpoint_name: 'gcp_s3_central_1' })
+        data: a_hash_including({ host: 'fakehost', version: 3, endpoint_name: 'gcp_s3_south_1' })
       )
 
       perform_enqueued_jobs do

@@ -79,7 +79,7 @@ RSpec.describe ZipEndpoint do
       # run it a second time
       expect { described_class.seed_from_config }
         .not_to change { described_class.pluck(:endpoint_name).sort }
-        .from(%w[aws_s3_west_2 gcp_s3_central_1 ibm_us_south zip-endpoint])
+        .from(%w[aws_s3_west_2 gcp_s3_south_1 ibm_us_south zip-endpoint])
     end
 
     it 'adds new ZipEndpoint record if there are new Settings.zip_endpoint key names' do
@@ -95,7 +95,7 @@ RSpec.describe ZipEndpoint do
 
       # run it a second time
       described_class.seed_from_config
-      expected_ep_names = %w[aws_s3_west_2 fixture_archiveTest gcp_s3_central_1 ibm_us_south zip-endpoint]
+      expected_ep_names = %w[aws_s3_west_2 fixture_archiveTest gcp_s3_south_1 ibm_us_south zip-endpoint]
       expect(described_class.pluck(:endpoint_name).sort).to eq expected_ep_names
     end
 
@@ -113,7 +113,7 @@ RSpec.describe ZipEndpoint do
 
       # run it a second time
       described_class.seed_from_config
-      expected_ep_names = %w[aws_s3_west_2 gcp_s3_central_1 ibm_us_south zip-endpoint]
+      expected_ep_names = %w[aws_s3_west_2 gcp_s3_south_1 ibm_us_south zip-endpoint]
       expect(described_class.pluck(:endpoint_name).sort).to eq expected_ep_names
       expect(Honeybadger).to have_received(:notify).with(
         'Error trying to insert record for new zip endpoint, skipping entry',
@@ -178,7 +178,7 @@ RSpec.describe ZipEndpoint do
 
         po.zipped_moab_versions.create!(version: version, zip_endpoint: other_ep1)
         expect(described_class.which_need_archive_copy(druid, version).pluck(:endpoint_name).sort).to eq %w[
-          gcp_s3_central_1 ibm_us_south zip-endpoint
+          gcp_s3_south_1 ibm_us_south zip-endpoint
         ]
         expect(described_class.which_need_archive_copy(druid, version - 1).pluck(:endpoint_name).sort).to eq names
         expect(described_class.which_need_archive_copy(other_druid, version).pluck(:endpoint_name).sort).to eq names
@@ -186,12 +186,12 @@ RSpec.describe ZipEndpoint do
 
         po2.zipped_moab_versions.create!(version: version - 1, zip_endpoint: other_ep1)
         expect(described_class.which_need_archive_copy(druid, version).pluck(:endpoint_name).sort).to eq %w[
-          gcp_s3_central_1 ibm_us_south zip-endpoint
+          gcp_s3_south_1 ibm_us_south zip-endpoint
         ]
         expect(described_class.which_need_archive_copy(druid, version - 1).pluck(:endpoint_name).sort).to eq names
         expect(described_class.which_need_archive_copy(other_druid, version).pluck(:endpoint_name).sort).to eq names
         expect(described_class.which_need_archive_copy(other_druid, version - 1).pluck(:endpoint_name).sort).to eq %w[
-          gcp_s3_central_1 ibm_us_south zip-endpoint
+          gcp_s3_south_1 ibm_us_south zip-endpoint
         ]
       end
     end
