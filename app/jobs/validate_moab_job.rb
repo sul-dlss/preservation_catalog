@@ -87,34 +87,21 @@ class ValidateMoabJob < ApplicationJob
   end
 
   def log_started
-    workflow_client.update_status(druid: druid,
-                                  workflow: 'preservationIngestWF',
-                                  process: 'validate-moab',
-                                  status: 'started',
-                                  note: "Started by preservation_catalog on #{Socket.gethostname}.")
+    workflow_process.update(status: 'started',
+                            note: "Started by preservation_catalog on #{Socket.gethostname}.")
   end
 
   def log_success(elapsed)
-    workflow_client.update_status(druid: druid,
-                                  workflow: 'preservationIngestWF',
-                                  process: 'validate-moab',
-                                  status: 'completed',
-                                  elapsed: elapsed,
-                                  note: "Completed by preservation_catalog on #{Socket.gethostname}.")
+    workflow_process.update(status: 'completed',
+                            elapsed: elapsed,
+                            note: "Completed by preservation_catalog on #{Socket.gethostname}.")
   end
 
   def log_failure(errors)
-    workflow_client.update_error_status(druid: druid,
-                                        workflow: 'preservationIngestWF',
-                                        process: 'validate-moab',
-                                        error_msg: "Problem with Moab validation run on #{Socket.gethostname}: #{errors}")
+    workflow_process.update_error(error_msg: "Problem with Moab validation run on #{Socket.gethostname}: #{errors}")
   end
 
-  def workflow_client
-    @workflow_client ||=
-      begin
-        wf_log = Logger.new('log/workflow_service.log', 'weekly')
-        Dor::Workflow::Client.new(url: Settings.workflow_services_url, logger: wf_log)
-      end
+  def workflow_process
+    @workflow_process ||= Dor::Services::Client.object(druid).workflow('preservationIngestWF').process('validate-moab')
   end
 end

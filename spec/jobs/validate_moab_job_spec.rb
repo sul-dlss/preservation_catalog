@@ -8,16 +8,13 @@ describe ValidateMoabJob do
   let(:druid) { "druid:#{bare_druid}" }
   let(:path) { 'spec/fixtures/storage_root01/sdr2objects/bj/102/hs/9687/bj102hs9687' }
   let(:moab) { Moab::StorageObject.new(druid, path) }
-  let(:workflow_client) { instance_double(Dor::Workflow::Client) }
+  let(:object_client) { instance_double(Dor::Services::Client::Object, workflow: object_workflow) }
+  let(:object_workflow) { instance_double(Dor::Services::Client::ObjectWorkflow, process:) }
+  let(:process) { instance_double(Dor::Services::Client::Process, update: true, update_error: true) }
 
   before do
     allow(Moab::StorageServices).to receive(:find_storage_object).with(druid).and_return(moab)
-    allow(Dor::Workflow::Client).to receive(:new).and_return(workflow_client)
-    allow(Settings).to receive(:workflow_services_url).and_return('http://workflow')
-    allow(workflow_client).to receive(:update_status).with(a_hash_including(druid: druid,
-                                                                            workflow: 'preservationIngestWF',
-                                                                            process: 'validate-moab')).at_least(:twice)
-    allow(workflow_client).to receive(:update_error_status)
+    allow(Dor::Services::Client).to receive(:object).with(druid).and_return(object_client)
   end
 
   describe '#perform' do
@@ -34,24 +31,18 @@ describe ValidateMoabJob do
     it 'tells workflow server check has started' do
       job.perform(druid)
       exp_str = 'Started by preservation_catalog on '
-      expect(workflow_client).to have_received(:update_status).with(druid: druid,
-                                                                    workflow: 'preservationIngestWF',
-                                                                    process: 'validate-moab',
-                                                                    status: 'started',
-                                                                    note: a_string_starting_with(exp_str))
+      expect(process).to have_received(:update).with(status: 'started',
+                                                     note: a_string_starting_with(exp_str))
     end
 
     it 'reports success to workflow server when no validation errors are found' do
       allow(job).to receive(:validate).and_return([]) # test object bj102hs9687 has errors
       job.perform(druid)
-      expect(workflow_client).to have_received(:update_status).twice
+      expect(process).to have_received(:update).twice
       exp_str = 'Completed by preservation_catalog on '
-      expect(workflow_client).to have_received(:update_status).with(druid: druid,
-                                                                    workflow: 'preservationIngestWF',
-                                                                    process: 'validate-moab',
-                                                                    elapsed: a_value > 0,
-                                                                    status: 'completed',
-                                                                    note: a_string_starting_with(exp_str))
+      expect(process).to have_received(:update).with(elapsed: a_value > 0,
+                                                     status: 'completed',
+                                                     note: a_string_starting_with(exp_str))
     end
 
     it 'reports failure to workflow server when there are validation errors' do
@@ -60,10 +51,7 @@ describe ValidateMoabJob do
       job.perform(druid) # test object bj102hs9687 has errors
       validation_err_substring = 'druid:bj102hs9687-v0001: version_additions: file_differences'
       expected_str_regex = /^Problem with Moab validation run on .*#{validation_err_substring}.*/
-      expect(workflow_client).to have_received(:update_error_status).with(druid: druid,
-                                                                          workflow: 'preservationIngestWF',
-                                                                          process: 'validate-moab',
-                                                                          error_msg: a_string_matching(expected_str_regex))
+      expect(process).to have_received(:update_error).with(error_msg: a_string_matching(expected_str_regex))
     end
 
     it 'sleeps' do
@@ -80,10 +68,7 @@ describe ValidateMoabJob do
 
         it 'sends error to workflow client' do
           job.perform(druid)
-          expect(workflow_client).to have_received(:update_error_status).with(druid: druid,
-                                                                              workflow: 'preservationIngestWF',
-                                                                              process: 'validate-moab',
-                                                                              error_msg: a_string_matching(expected_validation_err_regex))
+          expect(process).to have_received(:update_error).with(error_msg: a_string_matching(expected_validation_err_regex))
         end
       end
 
@@ -94,10 +79,7 @@ describe ValidateMoabJob do
 
         it 'sends error to workflow client' do
           job.perform(druid)
-          expect(workflow_client).to have_received(:update_error_status).with(druid: druid,
-                                                                              workflow: 'preservationIngestWF',
-                                                                              process: 'validate-moab',
-                                                                              error_msg: a_string_matching(expected_validation_err_regex))
+          expect(process).to have_received(:update_error).with(error_msg: a_string_matching(expected_validation_err_regex))
         end
       end
 
@@ -114,10 +96,7 @@ describe ValidateMoabJob do
 
         it 'sends error to workflow client' do
           job.perform(druid)
-          expect(workflow_client).to have_received(:update_error_status).with(druid: druid,
-                                                                              workflow: 'preservationIngestWF',
-                                                                              process: 'validate-moab',
-                                                                              error_msg: a_string_matching(expected_validation_err_regex))
+          expect(process).to have_received(:update_error).with(error_msg: a_string_matching(expected_validation_err_regex))
         end
       end
 
@@ -132,10 +111,7 @@ describe ValidateMoabJob do
 
         it 'sends error to workflow client' do
           job.perform(druid)
-          expect(workflow_client).to have_received(:update_error_status).with(druid: druid,
-                                                                              workflow: 'preservationIngestWF',
-                                                                              process: 'validate-moab',
-                                                                              error_msg: a_string_matching(expected_validation_err_regex))
+          expect(process).to have_received(:update_error).with(error_msg: a_string_matching(expected_validation_err_regex))
         end
       end
 
@@ -151,10 +127,7 @@ describe ValidateMoabJob do
 
         it 'sends error to workflow client' do
           job.perform(druid)
-          expect(workflow_client).to have_received(:update_error_status).with(druid: druid,
-                                                                              workflow: 'preservationIngestWF',
-                                                                              process: 'validate-moab',
-                                                                              error_msg: a_string_matching(expected_validation_err_regex))
+          expect(process).to have_received(:update_error).with(error_msg: a_string_matching(expected_validation_err_regex))
         end
       end
 
@@ -237,20 +210,14 @@ describe ValidateMoabJob do
           allow(storage_object_version1).to receive(:verify_signature_catalog).and_raise(Errno::ENOENT, 'No such file or directory')
           job.perform(druid)
           expected_str_regex = /^Problem with Moab validation run on .*No such file or directory.*/
-          expect(workflow_client).to have_received(:update_error_status).with(druid: druid,
-                                                                              workflow: 'preservationIngestWF',
-                                                                              process: 'validate-moab',
-                                                                              error_msg: a_string_matching(expected_str_regex))
+          expect(process).to have_received(:update_error).with(error_msg: a_string_matching(expected_str_regex))
         end
 
         it 'Nokogiri::XML::SyntaxError is rescued and appears in err messages' do
           allow(storage_object_version1).to receive(:verify_signature_catalog).and_raise(Nokogiri::XML::SyntaxError, 'gonzo')
           job.perform(druid)
           expected_str_regex = /^Problem with Moab validation run on .*Nokogiri::XML::SyntaxError: gonzo.*/
-          expect(workflow_client).to have_received(:update_error_status).with(druid: druid,
-                                                                              workflow: 'preservationIngestWF',
-                                                                              process: 'validate-moab',
-                                                                              error_msg: a_string_matching(expected_str_regex))
+          expect(process).to have_received(:update_error).with(error_msg: a_string_matching(expected_str_regex))
         end
       end
     end

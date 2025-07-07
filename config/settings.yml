@@ -24,7 +24,9 @@ provlog:
 storage_root_map: # empty here, override in #{RAILS_ENV}.yml
   default: {}
 
-workflow_services_url: 'https://workflows.example.org/workflow/'
+dor_services:
+  url: http://localhost:3003
+  token: TOKEN_GOES_HERE # for token see https://github.com/sul-dlss/dor-services-app#authentication
 
 checksum_algos: ['md5'] # 'sha1' 'sha256'
 
