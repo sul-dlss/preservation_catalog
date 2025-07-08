@@ -49,46 +49,25 @@ module AuditReporters
       update_error_status(druid, version, 'preservation-audit', moab_storage_root, error_message)
     end
 
-    def workflow_client
-      @workflow_client ||=
-        begin
-          wf_log = Logger.new('log/workflow_service.log', 'weekly')
-          Dor::Workflow::Client.new(
-            url: Settings.workflow_services_url,
-            logger: wf_log
-          )
-        end
+    def workflow(druid:)
+      @workflow ||= Dor::Services::Client.object(druid).workflow('preservationAuditWF')
     end
 
     def create_workflow(druid, version)
-      workflow_client.create_workflow_by_name(druid, 'preservationAuditWF', version: version)
+      workflow(druid:).create(version:)
     end
 
     def update_status(druid, version, process_name, moab_storage_root)
-      if Settings.workflow_services_url.present?
-        workflow_client.update_status(druid: druid,
-                                      workflow: 'preservationAuditWF',
-                                      process: process_name,
-                                      status: 'completed')
-      else
-        Rails.logger.warn('no workflow hookup - assume you are in test or dev environment')
-      end
-    rescue Dor::MissingWorkflowException
+      workflow(druid:).process(process_name).update(status: 'completed')
+    rescue Dor::Services::Client::NotFoundResponse
       # Create workflow and retry
       create_workflow(druid, version)
       update_status(druid, version, process_name, moab_storage_root)
     end
 
     def update_error_status(druid, version, process_name, moab_storage_root, error_message)
-      if Settings.workflow_services_url.present?
-        workflow_client.update_error_status(druid: druid,
-                                            workflow: 'preservationAuditWF',
-                                            process: process_name,
-                                            error_msg: error_message)
-      else
-        Rails.logger.warn('no workflow hookup - assume you are in test or dev environment')
-      end
-    rescue Dor::MissingWorkflowException
+      workflow(druid:).process(process_name).update_error(error_msg: error_message)
+    rescue Dor::Services::Client::NotFoundResponse
       # Create workflow and retry
       create_workflow(druid, version)
       update_error_status(druid, version, process_name, moab_storage_root, error_message)

@@ -8,7 +8,7 @@ gem 'config' # Settings to manage configs on different instances
 gem 'connection_pool' # Used for redis
 gem 'csv' # will be removed from standard library in Ruby 3.4
 gem 'dor-event-client'
-gem 'dor-workflow-client' # audit errors are reported to the workflow service
+gem 'dor-services-client'
 gem 'druid-tools' # for druid validation and druid-tree parsing
 gem 'honeybadger' # for error reporting / tracking / notifications
 gem 'importmap-rails', '~> 1.2'
