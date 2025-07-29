@@ -1,13 +1,15 @@
 # frozen_string_literal: true
 
-require_relative 'boot'
-
 # Select only parts we need from rails/all
 require 'rails'
 require 'action_controller/railtie'
 require 'active_job/railtie'
 require 'active_record/railtie'
 require 'action_cable/engine'
+require_relative 'boot'
+
+# Pick the frameworks you want:
+# require 'action_view/railtie'
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
@@ -34,12 +36,14 @@ end
 module PreservationCatalog
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.
-    config.load_defaults 7.2
+    config.load_defaults 8.0
 
     # Please, add to the `ignore` list any other `lib` subdirectories that do
     # not contain `.rb` files, or that should not be reloaded or eager loaded.
     # Common ones are `templates`, `generators`, or `middleware`, for example.
     config.autoload_lib(ignore: %w[assets tasks])
+
+    # Configuration for the application, engines, and railties goes here.
 
     # Add timestamps to all loggers (both Rack-based ones and e.g. Sidekiq's)
     config.log_formatter = proc do |severity, datetime, _progname, msg|
@@ -65,9 +69,16 @@ module PreservationCatalog
     #
     # config.middleware.use Committee::Middleware::ResponseValidation, schema_path: 'openapi.yml'
 
-    # Settings in config/environments/* take precedence over those specified here.
     # Application configuration should go into files in config/initializers
     # -- all .rb files in that directory are automatically loaded.
+    # These settings can be overridden in specific environments using the files
+    # in config/environments, which are processed later.
+    #
+    # config.time_zone = "Central Time (US & Canada)"
+    # config.eager_load_paths << Rails.root.join("extras")
+
+    # Don't generate system test files.
+    config.generators.system_tests = nil
 
     # Double-output logging, both to Rails.logger and $stdout.  Helps avoid puts statements.
     # If you don't want that, just use Rails.logger (or another Logger instance)
