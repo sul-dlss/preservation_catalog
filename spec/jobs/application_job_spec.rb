@@ -5,6 +5,7 @@ require 'rails_helper'
 # A very simple job class that extends ApplicationJob to allow testing of basic queue locking behavior
 class RegularParameterJob < ApplicationJob
   include UniqueJob
+
   def self.lock_timeout
     1
   end

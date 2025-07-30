@@ -59,6 +59,10 @@ namespace :prescat do
                  Replication::IbmProvider.new(region: Settings.zip_endpoints.ibm_us_south.region,
                                               access_key_id: args[:access_key],
                                               secret_access_key: args[:secret_access_key])
+               when 'gcp_s3_south_1'
+                 Replication::GcpProvider.new(region: Settings.zip_endpoints.gcp_s3_south_1.region,
+                                              access_key_id: args[:access_key],
+                                              secret_access_key: args[:secret_access_key])
                else
                  raise ArgumentError, "Unknown endpoint_name: #{args[:endpoint_name]}"
                end
