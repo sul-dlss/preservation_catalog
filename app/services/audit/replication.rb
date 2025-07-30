@@ -51,7 +51,7 @@ module Audit
     end
 
     def new_audit_results(zip_endpoint)
-      Audit::Results.new(druid: preserved_object.druid, moab_storage_root: zip_endpoint, check_name: 'PartReplicationAuditJob')
+      Audit::Results.new(druid: preserved_object.druid, moab_storage_root: zip_endpoint, check_name: 'MoabReplicationAuditJob')
     end
   end
 end

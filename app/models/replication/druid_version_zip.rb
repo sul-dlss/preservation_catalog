@@ -161,6 +161,9 @@ module Replication
       @zip_storage ||= Pathname.new(Settings.zip_storage)
     end
 
+    # This assumes that the zip file will be at least as large as the Moab version being zipped. Why? Because
+    # we don't enable compression (see zip_command). Why no compression? We thought it might make extraction
+    # from zips more reliable in the distant future. For further explanation, see https://github.com/sul-dlss/preservation_catalog/wiki/Zip-Creation
     def zip_size_ok?
       total_part_size > moab_version_size
     end

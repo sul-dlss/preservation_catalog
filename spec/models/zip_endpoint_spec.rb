@@ -130,6 +130,10 @@ RSpec.describe ZipEndpoint do
   end
 
   context 'ZippedMoabVersion presence on ZipEndpoint' do
+    # The tests in this section basically start with no druid versions for our test data existing on any of the endpoints.  As specific
+    # druid versions are progressively created on different endpoints, expectations on the queries spot check that they return appropriate
+    # results for various druid/version pairs for various endpoints.  The expectations are not exhaustive, they just spot check the different
+    # dimensions along which a buggy query might return bad info.
     let(:version) { 3 }
     let(:other_druid) { 'zy098xw7654' }
     let!(:po) { create(:preserved_object, current_version: version, druid: druid) }

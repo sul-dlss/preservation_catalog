@@ -60,7 +60,7 @@ Note also:
       </tr>
       <tr>
         <td><strong>Catalog to Archive</strong><br>Confirm a PreservedObject has all versions/parts replicated for each of its target endpoints and attempts to backfill missing ones</td>
-        <td>moab_replication_audit<br>part_audit_aws_s3_east_1<br>part_audit_aws_s3_west_2<br>part_audit_ibm_us_south</td>
+        <td>moab_replication_audit</td>
         <td><strong>Weekly</strong>: 12am on Wednesday<br><em>for PreservedObjects with expired checks</em></td>
         <td><strong>subset</strong>:<br>expired archive checks for PreservedObjects and their associated ZipParts are queued</td>
         <td class="text-end<%= ' table-warning' if replication_audits_older_than_threshold? %>">PreservedObject replication audits older than <%= replication_audit_age_threshold %>:<hr><%= num_replication_audits_older_than_threshold %></td>
