@@ -59,7 +59,9 @@ describe Replication::ZipmakerJob do
       expect do
         described_class.perform_now(druid, version, moab_replication_storage_location)
       end.to(
-        (change { File.stat(druid_version_zip.file_path).atime })
+        change do
+          File.stat(druid_version_zip.file_path).atime
+        end
           .and(change { File.stat(druid_version_zip.file_path).mtime })
       )
     end
