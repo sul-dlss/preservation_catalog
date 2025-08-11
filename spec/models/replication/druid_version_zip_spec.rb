@@ -78,9 +78,9 @@ describe Replication::DruidVersionZip do
       it 'updates atime and mtime on the zip file that is already there' do
         sleep(0.1) # sorta hate this, but sleep for a 1/10 s, to give a moment before checking atime/mtime (to prevent flappy test in CI).
         expect { dvz.find_or_create_zip! }.to(
-          (change do
+          change do
             File.stat(dvz.file_path).atime
-          end).and(change do
+          end.and(change do
             File.stat(dvz.file_path).mtime
           end)
         )
