@@ -77,6 +77,8 @@ To run the tests:
 bundle exec rspec
 ```
 
+**NOTE**: This does not run tests which access AWS S3 resources on the fly, which are flaky and based on IP addresses. To run these, use `bundle exec rspec --tag live_s3`.)
+
 ### Run the App
 
 If you've chosen to install Ruby dependencies you can run the app locally with:

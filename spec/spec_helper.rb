@@ -18,7 +18,6 @@ end
 require 'webmock/rspec'
 
 RSpec.configure do |config|
-  config.filter_run_excluding(:live_s3) unless ENV['CI'] == 'true' # default exclude unless on CI
   # rspec-expectations config goes here. You can use an alternate
   # assertion/expectation library such as wrong or the stdlib/minitest
   # assertions if you prefer.
