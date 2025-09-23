@@ -107,10 +107,6 @@ OkComputer::Registry.register 'ruby_version', OkComputer::RubyVersionCheck.new
 #   - at individual moab_storage_root, HTTP response code reflects the actual result
 #   - in /status/all, these checks will display their result text, but will not affect HTTP response code
 
-# Audit Checks (only) report errors to workflow service so they appear in Argo
-workflows_url = "#{Settings.workflow_services_url}/objects/druid:oo000oo0000/workflows"
-OkComputer::Registry.register 'external-workflow-services-url', OkComputer::HttpCheck.new(workflows_url)
-
 # For each deployed environment (qa, stage, prod), the "web" host, by convention, does not
 # mount the zip-transfers directory, so this check will always fail on those hosts. Instead
 # of failing a check on these hosts, only register the check on non-web hosts.
@@ -121,6 +117,6 @@ end
 
 # TODO: do we want anything about s3 credentials here?
 
-optional_checks = %w[external-workflow-services-url]
+optional_checks = []
 optional_checks << 'feature-zip_storage_dir' if worker_host?
 OkComputer.make_optional optional_checks
