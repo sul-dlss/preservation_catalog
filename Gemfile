@@ -23,7 +23,7 @@ gem 'propshaft', '~> 0.8.0' # asset pipeline
 gem 'pry' # make it possible to use pry for IRB
 gem 'pry-byebug' # call 'binding.pry' anywhere in the code to stop execution and get a pry-byebug console
 gem 'puma' # app server
-gem 'rails', '~> 8.0.2.1' # pin to 8.0.2.x, as 8.0.3 introduced a breaking change: https://github.com/sul-dlss/preservation_catalog/issues/2469
+gem 'rails', '~> 8.0.0'
 gem 'redis', '~> 5.0'
 # The default Socket.getbyhostname and other libc-bound DNS resolutions in Ruby block the entire VM until they complete.
 # In a single thread this doesn't matter, but it can cause competition and deadlock in multi-threaded environments.
