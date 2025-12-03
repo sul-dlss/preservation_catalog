@@ -42,7 +42,7 @@ module Dashboard
 
     def moab_checksum_validation_audit_ok?
       # NOTE: unsure if there needs to be more checking of MoabRecord.status_details for more statuses to figure this out
-      MoabRecord.invalid_checksum.annotate(caller).count.zero?
+      MoabRecord.invalid_checksum.annotate(caller).none?
     end
 
     def catalog_to_archive_audit_ok?

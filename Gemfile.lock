@@ -603,16 +603,16 @@ DEPENDENCIES
   erb_lint
   factory_bot_rails
   honeybadger
-  importmap-rails (~> 1.2)
+  importmap-rails
   jbuilder
   jwt
-  listen (~> 3.7)
+  listen (~> 3)
   lograge
   moab-versioning (~> 6.0)
   okcomputer
   pg
   postgresql_cursor
-  propshaft (~> 0.8.0)
+  propshaft
   pry
   pry-byebug
   puma
@@ -622,7 +622,7 @@ DEPENDENCIES
   resolv-replace
   rspec-rails
   rspec_junit_formatter
-  rubocop (~> 1.0)
+  rubocop
   rubocop-capybara
   rubocop-factory_bot
   rubocop-rails
@@ -632,7 +632,7 @@ DEPENDENCIES
   sidekiq (~> 7.0)
   sidekiq-pro!
   simplecov
-  turbo-rails (~> 1.0)
+  turbo-rails
   view_component
   webmock
   whenever

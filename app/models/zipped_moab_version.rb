@@ -35,7 +35,7 @@ class ZippedMoabVersion < ApplicationRecord
     # the assumption is that all of the database part records are created at once,
     # initialized to 'unreplicated', as soon as the (possibly multi-part) zip file
     # has been created and completely written to disk.  see DruidVersionZip.
-    zip_parts.count.positive? && zip_parts.all?(&:ok?)
+    zip_parts.any? && zip_parts.all?(&:ok?)
   end
 
   def total_part_size
