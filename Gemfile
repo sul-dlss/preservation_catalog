@@ -11,7 +11,7 @@ gem 'dor-event-client'
 gem 'dor-services-client'
 gem 'druid-tools' # for druid validation and druid-tree parsing
 gem 'honeybadger' # for error reporting / tracking / notifications
-gem 'importmap-rails', '~> 1.2'
+gem 'importmap-rails'
 gem 'jbuilder' # Build JSON APIs with ease.
 gem 'jwt' # for gating programmatic access to the application
 gem 'lograge'
@@ -19,11 +19,11 @@ gem 'moab-versioning', '~> 6.0' # work with Moab Objects
 gem 'okcomputer' # ReST endpoint with upness status
 gem 'pg' # postgres database
 gem 'postgresql_cursor' # for paging over large result sets efficiently
-gem 'propshaft', '~> 0.8.0' # asset pipeline
+gem 'propshaft' # asset pipeline
 gem 'pry' # make it possible to use pry for IRB
 gem 'pry-byebug' # call 'binding.pry' anywhere in the code to stop execution and get a pry-byebug console
 gem 'puma' # app server
-gem 'rails', '~> 8.0.2.1' # pin to 8.0.2.x, as 8.0.3 introduced a breaking change: https://github.com/sul-dlss/preservation_catalog/issues/2469
+gem 'rails', '~> 8.0.0'
 gem 'redis', '~> 5.0'
 # The default Socket.getbyhostname and other libc-bound DNS resolutions in Ruby block the entire VM until they complete.
 # In a single thread this doesn't matter, but it can cause competition and deadlock in multi-threaded environments.
@@ -31,7 +31,7 @@ gem 'redis', '~> 5.0'
 # It is a monkey-patch, but obviously one provided and supported by the Ruby maintainers themselves.
 gem 'resolv-replace'
 gem 'sidekiq', '~> 7.0'
-gem 'turbo-rails', '~> 1.0'
+gem 'turbo-rails'
 gem 'view_component'
 gem 'whenever', require: false # Work around https://github.com/javan/whenever/issues/831
 
@@ -42,7 +42,7 @@ end
 group :development, :test do
   gem 'erb_lint', require: false
   # Ruby static code analyzer https://rubocop.readthedocs.io/en/latest/
-  gem 'rubocop', '~> 1.0'
+  gem 'rubocop'
   gem 'rubocop-capybara'
   gem 'rubocop-factory_bot'
   gem 'rubocop-rails'
@@ -53,7 +53,7 @@ group :development, :test do
 end
 
 group :development do
-  gem 'listen', '~> 3.7'
+  gem 'listen', '~> 3'
 end
 
 group :test do

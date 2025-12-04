@@ -65,7 +65,7 @@ module Dashboard
     end
 
     def storage_roots_invalid_moab_count_ok?
-      storage_roots_invalid_moab_count&.zero? && MoabRecord.invalid_moab.annotate(caller).count.zero?
+      storage_roots_invalid_moab_count&.zero? && MoabRecord.invalid_moab.annotate(caller).none?
     end
 
     def storage_roots_invalid_checksum_count
@@ -73,7 +73,7 @@ module Dashboard
     end
 
     def storage_roots_invalid_checksum_count_ok?
-      storage_roots_invalid_checksum_count&.zero? && MoabRecord.invalid_checksum.annotate(caller).count.zero?
+      storage_roots_invalid_checksum_count&.zero? && MoabRecord.invalid_checksum.annotate(caller).none?
     end
 
     def storage_roots_moab_not_found_count
@@ -81,7 +81,7 @@ module Dashboard
     end
 
     def storage_roots_moab_not_found_count_ok?
-      storage_roots_moab_not_found_count&.zero? && MoabRecord.moab_on_storage_not_found.annotate(caller).count.zero?
+      storage_roots_moab_not_found_count&.zero? && MoabRecord.moab_on_storage_not_found.annotate(caller).none?
     end
 
     def storage_roots_unexpected_version_count
@@ -89,7 +89,7 @@ module Dashboard
     end
 
     def storage_roots_unexpected_version_count_ok?
-      storage_roots_unexpected_version_count&.zero? && MoabRecord.unexpected_version_on_storage.annotate(caller).count.zero?
+      storage_roots_unexpected_version_count&.zero? && MoabRecord.unexpected_version_on_storage.annotate(caller).none?
     end
 
     def storage_roots_validity_unknown_count
@@ -97,7 +97,7 @@ module Dashboard
     end
 
     def storage_roots_validity_unknown_count_ok?
-      storage_roots_validity_unknown_count&.zero? && MoabRecord.validity_unknown.annotate(caller).count.zero?
+      storage_roots_validity_unknown_count&.zero? && MoabRecord.validity_unknown.annotate(caller).none?
     end
 
     def storage_roots_fixity_check_expired_count

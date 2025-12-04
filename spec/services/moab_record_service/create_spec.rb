@@ -57,39 +57,41 @@ RSpec.describe MoabRecordService::Create do
 
     it_behaves_like 'calls AuditResultsReporter.report_results'
 
-    context 'db update error' do
-      context 'ActiveRecordError' do
-        before do
-          allow(PreservedObject).to receive(:create!).with(hash_including(druid: druid))
-                                                     .and_raise(ActiveRecord::ActiveRecordError, 'foo')
-        end
-
-        it 'DB_UPDATE_FAILED result' do
-          expect(moab_record_service.execute.results).to include(a_hash_including(Audit::Results::DB_UPDATE_FAILED))
-        end
-
-        it 'does NOT get CREATED_NEW_OBJECT result' do
-          expect(moab_record_service.execute.results).not_to include(hash_including(Audit::Results::CREATED_NEW_OBJECT))
-        end
+    context 'when ActiveRecordError is raised' do
+      before do
+        allow(PreservedObject).to receive(:create!)
+          .with(hash_including(druid: druid))
+          .and_raise(ActiveRecord::ActiveRecordError, 'foo')
       end
 
-      it "rolls back PreservedObject creation if the MoabRecord can't be created (e.g. due to DB constraint violation)" do
-        preserved_object = instance_double(PreservedObject)
-        allow(PreservedObject).to receive(:create!).with(hash_including(druid: druid)).and_return(preserved_object)
-        allow(preserved_object).to receive(:create_moab_record!).and_raise(ActiveRecord::RecordInvalid)
-        moab_record_service.execute
-        expect(PreservedObject.find_by(druid: druid)).to be_nil
+      it 'returns audit results including DB_UPDATE_FAILED' do
+        expect(moab_record_service.execute.results).to include(a_hash_including(Audit::Results::DB_UPDATE_FAILED))
+      end
+
+      it 'does not return audit results including CREATED_NEW_OBJECT' do
+        expect(moab_record_service.execute.results).not_to include(hash_including(Audit::Results::CREATED_NEW_OBJECT))
       end
     end
 
-    context 'returns' do
-      let(:audit_result) { moab_record_service.execute }
+    context 'when the MoabRecord cannot be created due to database error' do
+      let(:preserved_object) { instance_double(PreservedObject, _last_transaction_return_status: nil) }
 
-      it '1 result of CREATED_NEW_OBJECT' do
-        expect(audit_result).to be_an_instance_of Audit::Results
-        expect(audit_result.results.size).to eq 1
-        expect(audit_result.results.first).to match(a_hash_including(Audit::Results::CREATED_NEW_OBJECT => expected_msg))
+      before do
+        allow(preserved_object).to receive(:create_moab_record!).and_raise(ActiveRecord::RecordInvalid)
+        allow(PreservedObject).to receive(:create!).with(hash_including(druid:)).and_return(preserved_object)
       end
+
+      it 'rolls back PreservedObject creation' do
+        moab_record_service.execute
+        expect(PreservedObject.find_by(druid:)).to be_nil
+      end
+    end
+
+    it 'returns one result of CREATED_NEW_OBJECT' do
+      audit_result = moab_record_service.execute
+      expect(audit_result).to be_an_instance_of Audit::Results
+      expect(audit_result.results.size).to eq 1
+      expect(audit_result.results.first).to match(a_hash_including(Audit::Results::CREATED_NEW_OBJECT => expected_msg))
     end
   end
 end

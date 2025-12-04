@@ -493,7 +493,7 @@ RSpec.describe MoabRecordService::CheckExistence do
           context 'db update error (ActiveRecordError)' do
             let(:results) do
               allow(Rails.logger).to receive(:log)
-              preserved_object = instance_double(PreservedObject)
+              preserved_object = instance_double(PreservedObject, _last_transaction_return_status: nil)
               allow(preserved_object).to receive(:create_moab_record!).and_raise(ActiveRecord::ActiveRecordError, 'foo')
               allow(PreservedObject).to receive(:create!).with(hash_including(druid: valid_druid)).and_return(preserved_object)
               moab_record_service.execute.results
@@ -559,7 +559,7 @@ RSpec.describe MoabRecordService::CheckExistence do
           context 'db update error (ActiveRecordError)' do
             let(:result_code) { Audit::Results::DB_UPDATE_FAILED }
             let(:results) do
-              preserved_object = instance_double(PreservedObject)
+              preserved_object = instance_double(PreservedObject, _last_transaction_return_status: nil)
               allow(preserved_object).to receive(:create_moab_record!).and_raise(ActiveRecord::ActiveRecordError, 'foo')
               allow(PreservedObject).to receive(:create!).with(hash_including(druid: invalid_druid)).and_return(preserved_object)
               moab_record_service.execute.results
