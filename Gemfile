@@ -30,7 +30,7 @@ gem 'redis', '~> 5.0'
 # This library is included as part of Ruby to swap out the libc implementation for a thread-friendly pure ruby version.
 # It is a monkey-patch, but obviously one provided and supported by the Ruby maintainers themselves.
 gem 'resolv-replace'
-gem 'sidekiq', '~> 7.0'
+gem 'sidekiq', '~> 8.0'
 gem 'turbo-rails'
 gem 'view_component'
 gem 'whenever', require: false # Work around https://github.com/javan/whenever/issues/831
