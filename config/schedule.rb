@@ -36,7 +36,7 @@ end
 # Any that are not validated but hit fixity TTL will be validated by weekly audit below.
 every :day, at: '8pm', roles: [:queue_populator] do
   set :output, standard: nil, error: 'log/c2a-err.log'
-  runner 'PreservedObject.order(last_archive_audit: :asc).limit(PreservedObject.daily_check_count).find_each(&:audit_moab_version_replication!)'
+  runner 'PreservedObject.order(last_archive_audit: :asc).limit(PreservedObject.daily_check_count).each_instance(&:audit_moab_version_replication!)'
 end
 
 every :wednesday, roles: [:queue_populator] do
@@ -49,7 +49,7 @@ end
 # Any that are not validated but hit fixity TTL will be validated by weekly validation below.
 every :day, at: '10pm', roles: [:queue_populator] do
   set :output, standard: nil, error: 'log/cv-err.log'
-  runner 'MoabRecord.order(last_checksum_validation: :asc).limit(MoabRecord.daily_check_count).find_each(&:validate_checksums!)'
+  runner 'MoabRecord.order(last_checksum_validation: :asc).limit(MoabRecord.daily_check_count).each_instance(&:validate_checksums!)'
 end
 
 every :sunday, at: '1am', roles: [:queue_populator] do
