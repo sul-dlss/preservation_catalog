@@ -56,26 +56,26 @@ module Audit
              .where(preserved_objects: { druid: druid })
              .order(:druid, :version, :endpoint_name, :suffix)
              .map do |zip_part|
-        bucket = zip_part.zip_endpoint.delivery_class.constantize.new.bucket
-        s3_part = bucket.object(zip_part.s3_key)
-        s3_part_exists = s3_part.exists?
-        [
-          zip_part.preserved_object.druid,
-          zip_part.preserved_object.current_version,
-          zip_part.zipped_moab_version.version,
-          zip_part.zip_endpoint.endpoint_name,
-          zip_part.status,
-          zip_part.suffix,
-          zip_part.parts_count,
-          zip_part.size,
-          zip_part.md5,
-          zip_part.id,
-          zip_part.created_at,
-          zip_part.updated_at,
-          zip_part.s3_key,
-          s3_part_exists ? 'found at endpoint' : 'not found at endpoint',
-          s3_part_exists ? s3_part.metadata['checksum_md5'] : nil
-        ]
+               bucket = zip_part.zip_endpoint.delivery_class.constantize.new.bucket
+               s3_part = bucket.object(zip_part.s3_key)
+               s3_part_exists = s3_part.exists?
+               [
+                 zip_part.preserved_object.druid,
+                 zip_part.preserved_object.current_version,
+                 zip_part.zipped_moab_version.version,
+                 zip_part.zip_endpoint.endpoint_name,
+                 zip_part.status,
+                 zip_part.suffix,
+                 zip_part.parts_count,
+                 zip_part.size,
+                 zip_part.md5,
+                 zip_part.id,
+                 zip_part.created_at,
+                 zip_part.updated_at,
+                 zip_part.s3_key,
+                 s3_part_exists ? 'found at endpoint' : 'not found at endpoint',
+                 s3_part_exists ? s3_part.metadata['checksum_md5'] : nil
+               ]
       end
     end
   end
