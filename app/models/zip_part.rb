@@ -5,7 +5,7 @@
 # This model's data is populated by Replication::DeliveryDispatcherJob.
 class ZipPart < ApplicationRecord
   belongs_to :zipped_moab_version, inverse_of: :zip_parts
-  delegate :zip_endpoint, :preserved_object, to: :zipped_moab_version
+  delegate :zip_endpoint, :preserved_object, :druid_version_zip, to: :zipped_moab_version
 
   # @note Hash values cannot be modified without migrating any associated persisted data.
   # @see [enum docs] http://api.rubyonrails.org/classes/ActiveRecord/Enum.html
@@ -37,11 +37,15 @@ class ZipPart < ApplicationRecord
     druid_version_zip.expected_part_keys(parts_count).map { |key| File.extname(key) }
   end
 
-  def druid_version_zip
-    @druid_version_zip ||= Replication::DruidVersionZip.new(preserved_object.druid, zipped_moab_version.version)
+  def druid_version_zip_part
+    @druid_version_zip_part ||= Replication::DruidVersionZipPart.new(druid_version_zip, s3_key)
   end
 
   def s3_key
     druid_version_zip.s3_key(suffix)
+  end
+
+  def s3_part
+    @s3_part ||= zip_endpoint.bucket.object(s3_key)
   end
 end

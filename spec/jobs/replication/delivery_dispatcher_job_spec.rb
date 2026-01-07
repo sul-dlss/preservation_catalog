@@ -63,7 +63,7 @@ describe Replication::DeliveryDispatcherJob do
 
     before do
       create(:zip_endpoint, delivery_class: 2) # new 3rd endpoint, preserved_object should 3 ZMVs
-      create(:moab_record, preserved_object: po, version: po.current_version)
+      po.populate_zipped_moab_versions!
     end
 
     it 'splits the message out to endpoints' do
@@ -126,7 +126,8 @@ describe Replication::DeliveryDispatcherJob do
       end
 
       it 'skips that zipped moab version' do
-        expect(po.zipped_moab_versions.first.zip_endpoint.delivery_class.constantize).not_to receive(:perform_later)
+        expect(po.zipped_moab_versions.first.zip_endpoint.delivery_class.constantize)
+          .not_to receive(:perform_later)
           .with(druid, version, s3_key, a_hash_including(:checksum_md5, :size, :zip_cmd, :zip_version))
         expect(po.zipped_moab_versions.second.zip_endpoint.delivery_class.constantize).to receive(:perform_later)
           .with(druid, version, s3_key, a_hash_including(:checksum_md5, :size, :zip_cmd, :zip_version))

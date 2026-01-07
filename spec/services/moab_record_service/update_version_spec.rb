@@ -24,6 +24,7 @@ RSpec.describe MoabRecordService::UpdateVersion do
     allow(AuditReporters::LoggerReporter).to receive(:new).and_return(logger_reporter)
     allow(AuditReporters::HoneybadgerReporter).to receive(:new).and_return(honeybadger_reporter)
     allow(AuditReporters::EventServiceReporter).to receive(:new).and_return(event_service_reporter)
+    allow(ReplicationJob).to receive(:perform_later)
   end
 
   describe '#execute' do
@@ -140,6 +141,7 @@ RSpec.describe MoabRecordService::UpdateVersion do
           it 'current_version becomes incoming version' do
             expect { moab_record_service.execute }.to change(moab_record_service.preserved_object, :current_version)
               .to(incoming_version)
+            expect(ReplicationJob).to have_received(:perform_later).with(preserved_object)
           end
         end
 
