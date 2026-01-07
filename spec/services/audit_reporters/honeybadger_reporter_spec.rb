@@ -23,8 +23,22 @@ RSpec.describe AuditReporters::HoneybadgerReporter do
                                           storage_area: ms_root,
                                           check_name: check_name,
                                           results: [result1, result2])
-        expect(Honeybadger).to have_received(:notify).with('FooCheck(druid:ab123cd4567, fixture_sr1) db MoabRecord exists but Moab not found')
-        expect(Honeybadger).to have_received(:notify).with('FooCheck(druid:ab123cd4567, fixture_sr1) replicated part not found')
+        expect(Honeybadger).to have_received(:notify).with(
+          'FooCheck',
+          context: {
+            druid: "druid:#{druid}",
+            storage_area: 'fixture_sr1',
+            result: 'db MoabRecord exists but Moab not found'
+          }
+        ).once
+        expect(Honeybadger).to have_received(:notify).with(
+          'FooCheck',
+          context: {
+            druid: "druid:#{druid}",
+            storage_area: 'fixture_sr1',
+            result: 'replicated part not found'
+          }
+        ).once
       end
     end
 

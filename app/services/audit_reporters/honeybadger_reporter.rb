@@ -19,12 +19,19 @@ module AuditReporters
       ].freeze
     end
 
-    def handle_completed(druid, version, storage_area, check_name, result)
+    def handle_completed(...)
       # Pass
     end
 
     def handle_single_error(druid, _version, storage_area, check_name, result)
-      Honeybadger.notify("#{check_name}(#{druid}, #{storage_area}) #{result.values.first}")
+      Honeybadger.notify(
+        check_name,
+        context: {
+          druid:,
+          storage_area: storage_area.name,
+          result: result.values.first
+        }
+      )
     end
   end
 end
