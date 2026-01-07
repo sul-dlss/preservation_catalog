@@ -154,4 +154,14 @@ RSpec.describe ZippedMoabVersion do
       end
     end
   end
+
+  describe '#update_status_updated_at before save' do
+    it 'sets status_updated_at if status has changed' do
+      expect { zmv.ok! }.to(change(zmv, :status_updated_at))
+    end
+
+    it 'does not change status_updated_at if status has not changed' do
+      expect { zmv.update!(zip_parts_count: 2) }.not_to(change(zmv, :status_updated_at))
+    end
+  end
 end

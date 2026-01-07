@@ -20,6 +20,8 @@ module MoabRecordService
         new_status = (checksums_validated ? nil : 'validity_unknown')
         # NOTE: we deal with active record transactions in update_catalog, not here
         update_catalog(status: new_status, set_status_to_unexpected_version: true, checksums_validated: checksums_validated)
+        # After the transaction is complete:
+        ReplicationJob.perform_later(preserved_object) if perform_replication?
       end
     end
 
@@ -49,6 +51,8 @@ module MoabRecordService
 
       preserved_object.current_version = incoming_version
       preserved_object.save!
+
+      @perform_replication = true
     end
 
     def update_moab_record_to_unexpected_version(status:)
@@ -75,6 +79,10 @@ module MoabRecordService
           db_obj_name: moab_record.class.name, db_obj_version: moab_record.version
         )
       end
+    end
+
+    def perform_replication?
+      @perform_replication ||= false
     end
   end
 end

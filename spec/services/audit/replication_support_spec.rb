@@ -124,9 +124,8 @@ RSpec.describe Audit::ReplicationSupport do
         )
       end
 
-      it 'logs the unreplicated parts' do
-        unreplicated_parts = zmv.zip_parts.where(suffix: ['.zip', '.z02'])
-        msg = "#{result_prefix}: not all ZippedMoabVersion parts are replicated yet: #{unreplicated_parts.to_a}"
+      it 'logs' do
+        msg = "#{result_prefix}: not all ZippedMoabVersion parts are replicated yet"
         described_class.check_child_zip_part_attributes(zmv, results)
         expect(results.results).to include(a_hash_including(Audit::Results::ZIP_PARTS_NOT_ALL_REPLICATED => msg))
       end

@@ -26,6 +26,7 @@ RSpec.describe MoabRecordService::CheckExistence do
     allow(AuditReporters::LoggerReporter).to receive(:new).and_return(logger_reporter)
     allow(AuditReporters::HoneybadgerReporter).to receive(:new).and_return(honeybadger_reporter)
     allow(AuditReporters::EventServiceReporter).to receive(:new).and_return(event_service_reporter)
+    allow(ReplicationJob).to receive(:perform_later)
   end
 
   describe '#check_existence' do
@@ -96,6 +97,7 @@ RSpec.describe MoabRecordService::CheckExistence do
           original_time = preserved_object.updated_at
           moab_record_service.execute
           expect(preserved_object.reload.updated_at).to eq original_time
+          expect(ReplicationJob).not_to have_received(:perform_later)
         end
 
         it_behaves_like 'calls AuditResultsReporter.report_results'
@@ -193,6 +195,11 @@ RSpec.describe MoabRecordService::CheckExistence do
 
             it 'dependent MoabRecord also updated' do
               expect { moab_record_service.execute }.to change { moab_record_service.moab_record.updated_at }
+            end
+
+            it 'queues a ReplicationJob' do
+              moab_record_service.execute
+              expect(ReplicationJob).to have_received(:perform_later).with(instance_of(PreservedObject))
             end
           end
 
@@ -292,6 +299,7 @@ RSpec.describe MoabRecordService::CheckExistence do
             original_updated_at = invalid_preserved_object.updated_at
             invalid_moab_record_service.execute
             expect(invalid_preserved_object.reload.updated_at).to eq original_updated_at
+            expect(ReplicationJob).not_to have_received(:perform_later)
           end
 
           it_behaves_like 'calls AuditResultsReporter.report_results'
@@ -378,6 +386,7 @@ RSpec.describe MoabRecordService::CheckExistence do
 
             it 'PreservedObject is not updated' do
               expect { moab_record_service.execute }.not_to change { moab_record_service.preserved_object.reload.updated_at }
+              expect(ReplicationJob).not_to have_received(:perform_later)
             end
           end
 
@@ -466,6 +475,7 @@ RSpec.describe MoabRecordService::CheckExistence do
               current_version: incoming_version
             }
             moab_record_service.execute
+            expect(ReplicationJob).to have_received(:perform_later).with(instance_of(PreservedObject))
             expect(PreservedObject.where(po_args)).to exist
           end
 

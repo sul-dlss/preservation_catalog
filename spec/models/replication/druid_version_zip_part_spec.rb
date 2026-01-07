@@ -94,5 +94,16 @@ describe Replication::DruidVersionZipPart do
         expect(part.size).to eq 3
       end
     end
+
+    describe '#md5_match?' do
+      it 'returns true when md5 matches' do
+        expect(part.md5_match?).to be true
+      end
+
+      it 'returns false when md5 does not match' do
+        allow(part).to receive(:read_md5).and_return('wrongmd5value')
+        expect(part.md5_match?).to be false
+      end
+    end
   end
 end

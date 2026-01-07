@@ -97,7 +97,9 @@ module MoabRecordService
         preserved_object = create_preserved_object
         preserved_object.create_moab_record!(moab_record_attrs(status, checksums_validated))
       end
-      results.add_result(Audit::Results::CREATED_NEW_OBJECT) if transaction_ok
+      return unless transaction_ok
+      results.add_result(Audit::Results::CREATED_NEW_OBJECT)
+      ReplicationJob.perform_later(preserved_object)
     end
 
     def report_results!
@@ -135,7 +137,7 @@ module MoabRecordService
     end
 
     def create_preserved_object
-      PreservedObject.find_or_create_by!(druid: druid) do |preserved_object|
+      @preserved_object = PreservedObject.find_or_create_by!(druid: druid) do |preserved_object|
         preserved_object.current_version = incoming_version # init to match version of the first moab for the druid
       end
     end

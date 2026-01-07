@@ -10,9 +10,9 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_12_20_212633) do
+ActiveRecord::Schema[8.0].define(version: 2026_01_07_124042) do
   # These are extensions that must be enabled in order to support this database
-  enable_extension "plpgsql"
+  enable_extension "pg_catalog.plpgsql"
 
   create_table "moab_records", force: :cascade do |t|
     t.integer "version", null: false
@@ -95,8 +95,13 @@ ActiveRecord::Schema[7.0].define(version: 2022_12_20_212633) do
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
     t.bigint "preserved_object_id", null: false
+    t.integer "status", default: 2, null: false
+    t.datetime "status_updated_at", precision: nil
+    t.integer "zip_parts_count"
     t.index ["preserved_object_id", "zip_endpoint_id", "version"], name: "index_unique_on_zipped_moab_versions", unique: true
     t.index ["preserved_object_id"], name: "index_zipped_moab_versions_on_preserved_object_id"
+    t.index ["status"], name: "index_zipped_moab_versions_on_status"
+    t.index ["status_updated_at"], name: "index_zipped_moab_versions_on_status_updated_at"
     t.index ["zip_endpoint_id"], name: "index_zipped_moab_versions_on_zip_endpoint_id"
   end
 

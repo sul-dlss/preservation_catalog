@@ -8,11 +8,6 @@
 class PreservedObject < ApplicationRecord
   PREFIX_RE = /druid:/i
 
-  # hook for creating archive zips is here and on MoabRecord, because version and current_version must be in sync, and
-  # even though both fields will usually be updated together in a single transaction, one has to be updated first.  latter
-  # of the two updates will actually trigger replication.
-  after_update :create_zipped_moab_versions!, if: :saved_change_to_current_version? # an ActiveRecord dynamic method
-
   has_one :moab_record, dependent: :restrict_with_exception, autosave: true
   has_many :zipped_moab_versions, dependent: :restrict_with_exception, inverse_of: :preserved_object
 
@@ -51,6 +46,19 @@ class PreservedObject < ApplicationRecord
     end
   end
 
+  # Creates ZippedMoabVersion for each version for each ZipEndpoint for which a ZippedMoabVersion does not already exist.
+  # @return [Array<ZippedMoabVersion>] the ZippedMoabVersions that were created
+  def populate_zipped_moab_versions!
+    [].tap do |new_zipped_moab_versions|
+      (1..current_version).each do |version|
+        ZipEndpoint.find_each do |zip_endpoint|
+          next if zipped_moab_versions.exists?(version: version, zip_endpoint: zip_endpoint)
+          new_zipped_moab_versions << zipped_moab_versions.create!(version: version, zip_endpoint: zip_endpoint)
+        end
+      end
+    end
+  end
+
   def as_json(*)
     super.except('id')
   end
@@ -58,7 +66,7 @@ class PreservedObject < ApplicationRecord
   # Queue a job that will check to see whether this PreservedObject has been
   # fully replicated to all target ZipEndpoints
   def audit_moab_version_replication!
-    Audit::MoabReplicationAuditJob.perform_later(self)
+    Audit::ReplicationAuditJob.perform_later(self)
   end
 
   def total_size_of_moab_version(version)

@@ -5,7 +5,9 @@ require 'rails_helper'
 describe Audit::Replication do
   let(:results) { described_class.results(preserved_object) }
 
-  let(:preserved_object) { create(:preserved_object, current_version: 2) }
+  let(:preserved_object) do
+    create(:preserved_object, current_version: 2).tap(&:populate_zipped_moab_versions!)
+  end
   let(:endpoints) { preserved_object.zipped_moab_versions.map(&:zip_endpoint).uniq }
   let(:endpoint) { endpoints.first }
   let(:endpoint2) { endpoints.second }

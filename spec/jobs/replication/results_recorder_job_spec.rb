@@ -9,12 +9,11 @@ describe Replication::ResultsRecorderJob do
   let(:druid) { preserved_object.druid }
   let(:zip_endpoint) { zmv.zip_endpoint }
   let(:zip_endpoint2) { zmv2.zip_endpoint }
-  let(:zip_part_attributes) { [attributes_for(:zip_part)] }
+  let(:zip_part_attributes) { [attributes_for(:zip_part, index: 1)] }
   let(:druid_version_zip) { Replication::DruidVersionZip.new(druid, zmv.version) }
 
   before do
-    # creating the MoabRecord triggers associated ZippedMoabVersion creation via AR hooks
-    create(:moab_record, preserved_object: preserved_object, version: preserved_object.current_version)
+    preserved_object.populate_zipped_moab_versions!
     zmv.zip_parts.create(zip_part_attributes)
     zmv2.zip_parts.create(zip_part_attributes)
     allow(Dor::Event::Client).to receive(:create).and_return(true)

@@ -14,11 +14,6 @@ class MoabRecord < ApplicationRecord
     'validity_unknown' => 6
   }
 
-  after_create :create_zipped_moab_versions!
-  # hook for creating archive zips is here and on PreservedObject, because version and current_version must be in sync, and
-  # even though both fields will usually be updated together in a single transaction, one has to be updated first.  latter
-  # of the two updates will actually trigger replication.
-  after_update :create_zipped_moab_versions!, if: :saved_change_to_version? # an ActiveRecord dynamic method
   after_save :validate_checksums!, if: proc { |moab_record| moab_record.saved_change_to_status? && moab_record.validity_unknown? }
 
   # NOTE: Since Rails 5.0, belongs_to adds the presence validator automatically, and explicit presence validation

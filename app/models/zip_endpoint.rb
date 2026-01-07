@@ -63,6 +63,11 @@ class ZipEndpoint < ApplicationRecord
     raise "Failed to return audit class based on setting for #{endpoint_name}.  Check setting string for accuracy."
   end
 
+  # @return [Aws::S3::Bucket] S3 bucket object for this zip endpoint
+  def bucket
+    @bucket ||= Replication::ProviderFactory.create(zip_endpoint: self).bucket
+  end
+
   def to_s
     endpoint_name
   end

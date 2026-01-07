@@ -23,6 +23,7 @@ RSpec.describe MoabRecordService::Create do
     allow(AuditReporters::LoggerReporter).to receive(:new).and_return(logger_reporter)
     allow(AuditReporters::HoneybadgerReporter).to receive(:new).and_return(honeybadger_reporter)
     allow(AuditReporters::EventServiceReporter).to receive(:new).and_return(event_service_reporter)
+    allow(ReplicationJob).to receive(:perform_later)
   end
 
   describe '#execute' do
@@ -33,6 +34,7 @@ RSpec.describe MoabRecordService::Create do
       expect(new_preserved_object.current_version).to eq incoming_version
       expect(new_moab_record.moab_storage_root).to eq moab_storage_root
       expect(new_moab_record.size).to eq incoming_size
+      expect(ReplicationJob).to have_received(:perform_later).with(new_preserved_object)
     end
 
     it 'creates the MoabRecord with "ok" status and validation timestamps if caller ran CV' do
