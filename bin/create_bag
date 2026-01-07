@@ -4,41 +4,27 @@
 # This script can be used to pull objects from preservation, if we need to re-accession it into DOR.
 #
 # You must run it from ~/preservation_catalog/current/
-# using bin/create_bag /directory/with/druids/druid-list.txt /some/directory
+# using:
+#
+# bin/create_bag /directory/with/druids/druid-list.txt /some/directory
+#
 # where /directory/with/druids/druid-list.txt is wherever your druid file list is,
 # and where /some/directory is wherever you want the bags to land, usually in the tmp directory.
-# 
-# NOTE: druids should be each on their own line in the list, with or without the druid prefix, 
+#
+# NOTE: druids should be each on their own line in the list, with or without the druid prefix,
 # e.g. druid:pv564yb1711 or pv564yb1711
 
-require 'rubygems'
-require 'bundler/setup'
-require 'moab/stanford'
-require 'yaml'
+# Set default environment if not already set by the command line
+ENV["RAILS_ENV"] ||= "production"
 
-# rubocop:disable Style/MixinUsage
-include Stanford
-# rubocop:enable Style/MixinUsage
+require_relative '../config/environment'
 
-settings = YAML.load_file(File.join(__dir__, '..', 'config', 'settings', 'production.yml'))
-
-Moab::Config.configure do
-  storage_roots settings['storage_root_map']['default'].values.sort
-  storage_trunk 'sdr2objects'
-  deposit_trunk 'deposit'
-  path_method 'druid_tree'
-end
-
-druids = []
-druidlist = File.open(ARGV[0])
-druidlist.each_line { |line| druids.push line.chomp }
-
-druids.each do |druid|
-  druid = druid.delete_prefix('druid:')
-  storage_object = StorageServices.find_storage_object(druid)
+File.foreach(ARGV[0], chomp: true).each do |druid|
+  bare_druid = druid.delete_prefix('druid:')
+  storage_object = Stanford::StorageServices.find_storage_object(bare_druid)
   version_id = storage_object.current_version_id
-  bag_dir = "#{ARGV[1]}/bags/#{druid}"
+  bag_dir = "#{ARGV[1]}/bags/#{bare_druid}"
   storage_object.reconstruct_version(version_id, bag_dir)
-rescue ObjectNotFoundException => e
-  puts "#{druid}, #{e}"
+rescue Moab::ObjectNotFoundException => e
+  puts "#{bare_druid}, #{e}"
 end
