@@ -1,12 +1,13 @@
 # frozen_string_literal: true
 
+require_relative 'boot'
+
 # Select only parts we need from rails/all
 require 'rails'
 require 'action_controller/railtie'
 require 'active_job/railtie'
 require 'active_record/railtie'
 require 'action_cable/engine'
-require_relative 'boot'
 
 # Pick the frameworks you want:
 # require 'action_view/railtie'

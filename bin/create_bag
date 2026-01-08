@@ -4,41 +4,73 @@
 # This script can be used to pull objects from preservation, if we need to re-accession it into DOR.
 #
 # You must run it from ~/preservation_catalog/current/
-# using bin/create_bag /directory/with/druids/druid-list.txt /some/directory
+# using:
+#
+# bin/create_bag /directory/with/druids/druid-list.txt /some/directory
+#
 # where /directory/with/druids/druid-list.txt is wherever your druid file list is,
 # and where /some/directory is wherever you want the bags to land, usually in the tmp directory.
-# 
-# NOTE: druids should be each on their own line in the list, with or without the druid prefix, 
+#
+# NOTE: druids should be each on their own line in the list, with or without the druid prefix,
 # e.g. druid:pv564yb1711 or pv564yb1711
 
-require 'rubygems'
-require 'bundler/setup'
-require 'moab/stanford'
-require 'yaml'
+# Set default environment if not already set by the command line
+ENV["RAILS_ENV"] ||= "production"
 
-# rubocop:disable Style/MixinUsage
-include Stanford
-# rubocop:enable Style/MixinUsage
+require_relative '../config/environment'
 
-settings = YAML.load_file(File.join(__dir__, '..', 'config', 'settings', 'production.yml'))
+require 'optparse'
 
-Moab::Config.configure do
-  storage_roots settings['storage_root_map']['default'].values.sort
-  storage_trunk 'sdr2objects'
-  deposit_trunk 'deposit'
-  path_method 'druid_tree'
+options = { version: nil, extension: nil, dry_run: false, quiet: false }
+
+parser = OptionParser.new do |option_parser|
+  option_parser.banner = "Usage: #{$PROGRAM_NAME} DRUID_LIST_FILE TARGET_DIRECTORY [options]"
+  option_parser.on('-v', '--version VERSION_NUMBER',
+                   'Create a bag for the specified version of a given object, e.g., 2 (default: current version)')
+  option_parser.on('-e', '--extension FILE_EXTENSION',
+                   'Include only files that match a given file extension, e.g., pdf (default: all)')
+  option_parser.on('--[no-]dry_run', 'Simulate the bag creation (defaults to false)')
+  option_parser.on('--[no-]quiet', 'Do not output progress information (defaults to false)')
+  option_parser.on('-h', '--help', 'Displays help.') do
+    $stdout.puts option_parser
+    exit
+  end
 end
 
-druids = []
-druidlist = File.open(ARGV[0])
-druidlist.each_line { |line| druids.push line.chomp }
+parser.parse!(into: options)
 
-druids.each do |druid|
-  druid = druid.delete_prefix('druid:')
-  storage_object = StorageServices.find_storage_object(druid)
-  version_id = storage_object.current_version_id
-  bag_dir = "#{ARGV[1]}/bags/#{druid}"
-  storage_object.reconstruct_version(version_id, bag_dir)
-rescue ObjectNotFoundException => e
-  puts "#{druid}, #{e}"
+# Validate required arguments
+if ARGV.size != 2 || !File.file?(ARGV[0]) || !File.readable?(ARGV[0]) || !File.directory?(ARGV[1]) || !File.writable?(ARGV[1])
+  $stderr.puts parser
+  exit 1
+end
+
+druid_list_file, target_directory = ARGV.slice(0..1)
+
+$stdout.puts '*** DRY RUN - NO ACTIONS WILL BE PERFORMED' if options[:dry_run]
+
+File.foreach(druid_list_file, chomp: true).each do |druid|
+  bare_druid = druid.delete_prefix('druid:')
+  bag_dir = File.join(target_directory, 'bags', bare_druid)
+
+  storage_object = Stanford::StorageServices.find_storage_object(bare_druid)
+  version_id = options[:version] ? "v#{options[:version]}" : storage_object.current_version_id
+
+  $stdout.puts "Creating bag for #{version_id} of #{bare_druid} in #{bag_dir}" unless options[:quiet]
+  storage_object.reconstruct_version(version_id, bag_dir) unless options[:dry_run]
+
+  if (ext = options[:extension])
+    content_dir = File.join(bag_dir, 'data', 'content')
+    $stdout.puts "Removing content files not matching file extension #{options[:extension]} in #{content_dir}" unless options[:quiet]
+
+    Find.find(content_dir) do |path|
+      next unless File.file?(path) && File.extname(path) != ".#{ext}"
+
+      $stdout.puts "Removing #{path}" unless options[:quiet]
+      File.delete(path) unless options[:dry_run]
+    end
+  end
+rescue Moab::ObjectNotFoundException => e
+  $stderr.puts "#{bare_druid}, #{e}"
+  exit 1
 end
