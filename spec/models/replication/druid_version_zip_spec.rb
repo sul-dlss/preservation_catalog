@@ -96,6 +96,7 @@ describe Replication::DruidVersionZip do
   describe '#exist?' do
     let(:dvz) { described_class.new(druid, version, 'spec/fixtures/storage_root01/sdr2objects') }
 
+    before { FileUtils.rm_rf('/tmp/bj') } # prep dir
     after { FileUtils.rm_rf('/tmp/bj') } # cleanup
 
     it 'returns true when zip exists' do

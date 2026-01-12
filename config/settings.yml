@@ -18,9 +18,6 @@ preservation_policy:
   # the frequency with which the Moabs on storage should be checked for fixity.
   fixity_ttl: 7_776_000 # 90 days
 
-provlog:
-  enable: false
-
 storage_root_map: # empty here, override in #{RAILS_ENV}.yml
   default: {}
 
