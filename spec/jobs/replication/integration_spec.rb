@@ -81,6 +81,10 @@ describe 'the whole replication pipeline' do # rubocop:disable RSpec/DescribeCla
     let(:next_version) { version + 1 }
     let(:s3_key) { "bz/514/sm/9647/bz514sm9647.v000#{next_version}.zip" }
 
+    before do
+      allow(ReplicationJob).to receive(:perform_later)
+    end
+
     it 'gets from zipmaker queue to replication result message for the new version when the moab is updated' do # rubocop:disable RSpec/ExampleLength
       # pretend catalog is on version 2 before update call from robots
       create(:moab_record, preserved_object: preserved_object, version: version, moab_storage_root: moab_storage_root)
