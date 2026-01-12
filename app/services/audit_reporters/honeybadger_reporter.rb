@@ -28,7 +28,7 @@ module AuditReporters
         check_name,
         context: {
           druid:,
-          storage_area: storage_area.name,
+          storage_area: storage_area.to_s,
           result: result.values.first
         }
       )
