@@ -33,34 +33,6 @@ RSpec.describe ZipEndpoint do
   it { is_expected.to validate_presence_of(:endpoint_name) }
   it { is_expected.to validate_presence_of(:delivery_class) }
 
-  describe '#audit_class' do
-    it 'returns the right audit class when one is configured' do
-      expect(described_class.find_by(endpoint_name: 'aws_s3_west_2').audit_class).to be(Audit::ReplicationToAws)
-      expect(described_class.find_by(endpoint_name: 'ibm_us_south').audit_class).to be(Audit::ReplicationToIbm)
-    end
-
-    it 'raises a helpful error when no audit class is configured' do
-      expect { zip_endpoint.audit_class }.to raise_error("No audit class configured for #{zip_endpoint.endpoint_name}")
-    end
-
-    it 'raises a helpful error when a non-existent audit class is configured' do
-      ep_name = zip_endpoint.endpoint_name
-      zip_endpoints_setting = Config::Options.new(
-        "#{ep_name}":
-          Config::Options.new(
-            endpoint_node: 'endpoint_node',
-            storage_location: 'storage_location',
-            delivery_class: 'Replication::S3WestDeliveryJob',
-            audit_class: 'S3::Hal::Audit'
-          )
-      )
-
-      allow(Settings).to receive(:zip_endpoints).and_return(zip_endpoints_setting)
-      msg = "Failed to return audit class based on setting for #{ep_name}.  Check setting string for accuracy."
-      expect { zip_endpoint.audit_class }.to raise_error(msg)
-    end
-  end
-
   describe '#bucket' do
     subject(:bucket) { described_class.find_by(endpoint_name: 'aws_s3_west_2').bucket }
 
@@ -136,77 +108,5 @@ RSpec.describe ZipEndpoint do
     end
 
     # TODO: add a test for Settings.zip_endpoint changing an attribute other than the endpoint_name
-  end
-
-  context 'ZippedMoabVersion presence on ZipEndpoint' do
-    # The tests in this section basically start with no druid versions for our test data existing on any of the endpoints.  As specific
-    # druid versions are progressively created on different endpoints, expectations on the queries spot check that they return appropriate
-    # results for various druid/version pairs for various endpoints.  The expectations are not exhaustive, they just spot check the different
-    # dimensions along which a buggy query might return bad info.
-    let(:version) { 3 }
-    let(:other_druid) { 'zy098xw7654' }
-    let!(:po) { create(:preserved_object, current_version: version, druid: druid) }
-    let!(:po2) { create(:preserved_object, current_version: version, druid: other_druid) }
-    let!(:other_eps) { described_class.where.not(zip_endpoints: { id: zip_endpoint.id }).order(:endpoint_name) }
-    let!(:other_ep1) { other_eps.first }
-    let!(:other_ep2) { other_eps.second }
-    let!(:other_ep3) { other_eps.third }
-
-    describe '.which_have_archive_copy' do
-      it 'returns the zip endpoints which have a MoabRecord for the druid version' do
-        expect(described_class.which_have_archive_copy(druid, version).pluck(:endpoint_name)).to eq []
-        expect { po.zipped_moab_versions.create!(version: version, zip_endpoint: other_ep1) }.not_to change {
-          [
-            described_class.which_have_archive_copy(druid, version - 1).pluck(:endpoint_name),
-            described_class.which_have_archive_copy(other_druid, version).pluck(:endpoint_name),
-            described_class.which_have_archive_copy(other_druid, version - 1).pluck(:endpoint_name)
-          ]
-        }.from([[], [], []])
-        expect(described_class.which_have_archive_copy(druid, version).pluck(:endpoint_name)).to eq [other_ep1.endpoint_name]
-
-        expect { po2.zipped_moab_versions.create!(version: version - 1, zip_endpoint: other_ep1) }.to change {
-          described_class.which_have_archive_copy(other_druid, version - 1).pluck(:endpoint_name)
-        }.from([]).to([other_ep1.endpoint_name])
-
-        expect { po2.zipped_moab_versions.create!(version: version - 1, zip_endpoint: zip_endpoint) }.not_to change {
-          [
-            described_class.which_have_archive_copy(druid, version).pluck(:endpoint_name),
-            described_class.which_have_archive_copy(druid, version - 1).pluck(:endpoint_name),
-            described_class.which_have_archive_copy(other_druid, version).pluck(:endpoint_name)
-          ]
-        }.from([[other_ep1.endpoint_name], [], []])
-        expect(described_class.which_have_archive_copy(other_druid, version - 1).pluck(:endpoint_name).sort)
-          .to eq [other_ep1.endpoint_name, 'zip-endpoint']
-      end
-    end
-
-    describe '.which_need_archive_copy' do
-      let(:names) { [other_ep1.endpoint_name, other_ep2.endpoint_name, other_ep3.endpoint_name, zip_endpoint.endpoint_name] }
-
-      it "returns the zip endpoints which should have a MoabRecord for the druid/version, but which don't yet" do
-        expect(described_class.which_need_archive_copy(druid, version).pluck(:endpoint_name).sort).to eq names
-        expect(described_class.which_need_archive_copy(druid, version - 1).pluck(:endpoint_name).sort).to eq names
-        expect(described_class.which_need_archive_copy(other_druid, version).pluck(:endpoint_name).sort).to eq names
-        expect(described_class.which_need_archive_copy(other_druid, version - 1).pluck(:endpoint_name).sort).to eq names
-
-        po.zipped_moab_versions.create!(version: version, zip_endpoint: other_ep1)
-        expect(described_class.which_need_archive_copy(druid, version).pluck(:endpoint_name).sort).to eq %w[
-          gcp_s3_south_1 ibm_us_south zip-endpoint
-        ]
-        expect(described_class.which_need_archive_copy(druid, version - 1).pluck(:endpoint_name).sort).to eq names
-        expect(described_class.which_need_archive_copy(other_druid, version).pluck(:endpoint_name).sort).to eq names
-        expect(described_class.which_need_archive_copy(other_druid, version - 1).pluck(:endpoint_name).sort).to eq names
-
-        po2.zipped_moab_versions.create!(version: version - 1, zip_endpoint: other_ep1)
-        expect(described_class.which_need_archive_copy(druid, version).pluck(:endpoint_name).sort).to eq %w[
-          gcp_s3_south_1 ibm_us_south zip-endpoint
-        ]
-        expect(described_class.which_need_archive_copy(druid, version - 1).pluck(:endpoint_name).sort).to eq names
-        expect(described_class.which_need_archive_copy(other_druid, version).pluck(:endpoint_name).sort).to eq names
-        expect(described_class.which_need_archive_copy(other_druid, version - 1).pluck(:endpoint_name).sort).to eq %w[
-          gcp_s3_south_1 ibm_us_south zip-endpoint
-        ]
-      end
-    end
   end
 end

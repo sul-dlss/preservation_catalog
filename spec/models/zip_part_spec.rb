@@ -47,19 +47,6 @@ RSpec.describe ZipPart do
     end
   end
 
-  describe '#all_parts_replicated?' do
-    let(:zp) { described_class.new(args) }
-
-    it "returns false if status is 'unreplicated'" do
-      expect(zp.all_parts_replicated?).to be false
-    end
-
-    it "returns true if status is 'ok'" do
-      zp.ok!
-      expect(zp.all_parts_replicated?).to be true
-    end
-  end
-
   describe '#druid_version_zip' do
     let(:po) { build(:preserved_object, current_version: 3) }
     let(:zmv) { build(:zipped_moab_version, preserved_object: po, version: 1) }
@@ -77,14 +64,6 @@ RSpec.describe ZipPart do
 
     it 'generates an s3_key with the correct version and suffix' do
       expect(zp.s3_key).to eq "#{DruidTools::Druid.new(po.druid).tree.join('/')}.v0001.zip"
-    end
-  end
-
-  describe '#suffixes_in_set' do
-    let(:zp) { described_class.new(args.merge(parts_count: 3)) }
-
-    it 'returns suffixes of all parts' do
-      expect(zp.suffixes_in_set).to eq ['.zip', '.z01', '.z02']
     end
   end
 

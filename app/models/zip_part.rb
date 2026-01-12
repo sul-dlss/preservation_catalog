@@ -22,21 +22,6 @@ class ZipPart < ApplicationRecord
   validates :suffix, presence: true, format: { with: /\A\.z(ip|[0-9]+)\z/ }
   validates :parts_count, presence: true, numericality: { only_integer: true, greater_than: 0 }
 
-  # For this persisted ZipPart, are it and all its sibling parts now replicated
-  #  to their parent ZippedMoabVersion's ZipEndpoint?
-  # @return [Boolean] true if all expected parts are now replicated
-  def all_parts_replicated?
-    return false unless persisted? && ok?
-    parts = zipped_moab_version.zip_parts.where(suffix: suffixes_in_set)
-    parts.count == parts_count && parts.all?(&:ok?)
-  end
-
-  # For this part, the suffixes of all parts constituting the full zip
-  # @return [Array<String>]
-  def suffixes_in_set
-    druid_version_zip.expected_part_keys(parts_count).map { |key| File.extname(key) }
-  end
-
   def druid_version_zip_part
     @druid_version_zip_part ||= Replication::DruidVersionZipPart.new(druid_version_zip, s3_key)
   end

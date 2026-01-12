@@ -32,12 +32,6 @@ namespace :prescat do
     puts "#{file_path} exists: #{File.exist?(file_path)}"
   end
 
-  desc 'Backfill zipped moab versions'
-  task :backfill, [:druid] => :environment do |_task, args|
-    zipped_moab_versions = PreservedObject.find_by(druid: args[:druid]).create_zipped_moab_versions!
-    puts "Backfilled with: #{zipped_moab_versions}"
-  end
-
   desc 'Purge zips from cloud storage'
   # For purging zips from cloud storage one endpoint at a time.
   # Ops will provide a time-limited access key and secret access key for the endpoint.

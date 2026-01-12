@@ -18,20 +18,6 @@ class ZipEndpoint < ApplicationRecord
   # TODO: after switching to string, validate that input resolves to class which #is_a class of the right type?
   validates :delivery_class, presence: true
 
-  # for a given druid, which zip endpoints have an archive copy of the given version?
-  scope :which_have_archive_copy, lambda { |druid, version|
-    joins(zipped_moab_versions: [:preserved_object])
-      .where(
-        preserved_objects: { druid: druid },
-        zipped_moab_versions: { version: version }
-      )
-  }
-
-  # for a given version of a druid, which zip endpoints need an archive copy
-  scope :which_need_archive_copy, lambda { |druid, version|
-    where.not(id: which_have_archive_copy(druid, version))
-  }
-
   # iterates over the zip endpoints enumerated in settings, creating a ZipEndpoint for each if one doesn't
   # already exist.
   # @return [Array<ZipEndpoint>] the ZipEndpoint list for the zip endpoints defined in the config (all
@@ -56,13 +42,6 @@ class ZipEndpoint < ApplicationRecord
     end
   end
 
-  def audit_class
-    raise "No audit class configured for #{endpoint_name}" unless audit_class_setting
-    audit_class_setting.constantize
-  rescue NameError
-    raise "Failed to return audit class based on setting for #{endpoint_name}.  Check setting string for accuracy."
-  end
-
   # @return [Aws::S3::Bucket] S3 bucket object for this zip endpoint
   def bucket
     @bucket ||= Replication::ProviderFactory.create(zip_endpoint: self).bucket
@@ -70,11 +49,5 @@ class ZipEndpoint < ApplicationRecord
 
   def to_s
     endpoint_name
-  end
-
-  private
-
-  def audit_class_setting
-    @audit_class_setting ||= Settings.zip_endpoints[endpoint_name]&.audit_class
   end
 end
