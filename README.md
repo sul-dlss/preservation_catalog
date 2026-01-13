@@ -418,3 +418,15 @@ purge_druid_from_all_could_providers!(test_druid, dry_run: false)
 # dry run on the first 10, to do for real add param `dry_run: false`
 druid_list.take(10).map { |druid_str| purge_druid_from_all_could_providers!(druid_str) }
 ```
+
+## Setting alert notices to appear on the dashboard
+
+In order to include a banner in the UI with a given bootstrap alert variant, see: https://getbootstrap.com/docs/4.0/components/alerts/ add a line to the appropriate environments settings.yml with the variant as key and the desired text as value.
+
+Valid variants are: primary, secondary, success, danger, warning, info, light, dark
+
+### Example:
+```
+notices:
+ warning: 'This is a Preservation Catalog instance running in the TEST environment.'
+ info: 'This is providing info <a href="http://example.com">with a link to document.</a>'
