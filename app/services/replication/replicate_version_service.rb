@@ -83,10 +83,7 @@ module Replication
           zipped_moab_version.zip_parts.create!(
             suffix: druid_version_zip_part.extname,
             size: druid_version_zip_part.size,
-            md5: druid_version_zip_part.read_md5,
-            # The following will be dropped and these are bogus values to satisfy validations
-            create_info: 'not provided',
-            parts_count: 1
+            md5: druid_version_zip_part.read_md5
           )
         end
         zipped_moab_version.update!(zip_parts_count: zipped_moab_version.zip_parts.count)

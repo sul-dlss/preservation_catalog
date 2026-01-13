@@ -5,6 +5,5 @@ FactoryBot.define do
     sequence(:endpoint_name) { |n| "endpoint#{format('%02d', n)}" }
     sequence(:endpoint_node) { |n| "us-west-#{format('%02d', n)}" }
     storage_location { 'bucket_name' }
-    delivery_class { 1 }
   end
 end

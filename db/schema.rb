@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_01_07_124042) do
+ActiveRecord::Schema[8.0].define(version: 2026_01_13_114437) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -55,7 +55,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_07_124042) do
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
     t.datetime "last_archive_audit", precision: nil
-    t.boolean "robot_versioning_allowed", default: true, null: false
     t.index ["created_at"], name: "index_preserved_objects_on_created_at"
     t.index ["druid"], name: "index_preserved_objects_on_druid", unique: true
     t.index ["last_archive_audit"], name: "index_preserved_objects_on_last_archive_audit"
@@ -64,7 +63,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_07_124042) do
 
   create_table "zip_endpoints", force: :cascade do |t|
     t.string "endpoint_name", null: false
-    t.integer "delivery_class", null: false
     t.string "endpoint_node"
     t.string "storage_location"
     t.datetime "created_at", precision: nil, null: false
@@ -78,13 +76,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_07_124042) do
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
     t.string "md5", null: false
-    t.string "create_info", null: false
-    t.integer "parts_count", null: false
     t.string "suffix", null: false
-    t.integer "status", default: 1, null: false
-    t.datetime "last_existence_check", precision: nil
-    t.datetime "last_checksum_validation", precision: nil
-    t.index ["status"], name: "index_zip_parts_on_status"
     t.index ["zipped_moab_version_id", "suffix"], name: "index_zip_parts_on_zipped_moab_version_id_and_suffix", unique: true
     t.index ["zipped_moab_version_id"], name: "index_zip_parts_on_zipped_moab_version_id"
   end
