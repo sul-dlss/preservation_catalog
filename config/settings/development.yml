@@ -18,7 +18,6 @@ zip_endpoints:
     region: 'localhost'
     endpoint_node: 'localhost'
     storage_location: 'bucket_name'
-    delivery_class: 'Replication::S3WestDeliveryJob'
     access_key_id: 'foo'
     secret_access_key: 'bar'
 

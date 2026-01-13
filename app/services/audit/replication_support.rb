@@ -15,8 +15,7 @@ module Audit
              .where(preserved_objects: { druid: druid })
              .order(:druid, :version, :endpoint_name, :suffix)
              .map do |zip_part|
-               bucket = zip_part.zip_endpoint.delivery_class.constantize.new.bucket
-               s3_part = bucket.object(zip_part.s3_key)
+               s3_part = zip_part.s3_part
                s3_part_exists = s3_part.exists?
                {
                  druid: zip_part.preserved_object.druid,

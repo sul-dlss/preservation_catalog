@@ -1,5 +1,5 @@
 <div class="card border-0 text-start">
-  <div class="card-body" />
+  <div class="card-body">
     <div class="card-title fs-4 fw-semibold d-flex justify-content-between">
       Replication Zips
       <span class="badge rounded-pill <%= replication_zips_badge_class %>">
@@ -8,9 +8,9 @@
     </div>
     <ul class="list-group border border-2 border-secondary">
       <li class="list-group-item d-flex justify-content-between align-items-center">
-        <h6 class="d-flex justify-content-start">ZipPart Statuses</h6>
-        <span class="badge rounded-pill <%= zip_parts_badge_class %>">
-          <%= zip_parts_status_label %>
+        <h6 class="d-flex justify-content-start">ZippedMoabVersion Statuses</h6>
+        <span class="badge rounded-pill <%= zipped_moab_versions_badge_class %>">
+          <%= zipped_moab_versions_status_label %>
         </span>
       </li>
       <%= render Dashboard::ReplicationEndpointStatusComponent.with_collection(endpoints) %>

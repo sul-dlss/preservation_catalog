@@ -10,16 +10,16 @@ RSpec.describe Dashboard::ReplicationStatusComponent, type: :component do
   context 'when happy path' do
     it 'renders Replication Status with everything hunky-dory' do
       expect(rendered).to match(/Replication Zips/) # top level status
-      expect(rendered).to match(/ZipPart Statuses/) # sub status
+      expect(rendered).to match(/ZippedMoabVersion Statuses/) # sub status
       expect(rendered).to match(/Endpoint:/) # sub status
       expect(rendered_html).to match(Dashboard::ReplicationService::OK_LABEL) # actual status data
       expect(rendered_html).to match(%r{<a href="queues">Redis queues</a>}) # link to redis
     end
   end
 
-  context 'when replication & zip parts are not OK' do
+  context 'when replication & zipped moab versions are not OK' do
     before do
-      allow(component).to receive(:replication_and_zip_parts_ok?).and_return(false)
+      allow(component).to receive(:replication_and_zipped_moab_versions_ok?).and_return(false)
     end
 
     it 'renders Replication Status with errors called out' do
@@ -27,9 +27,9 @@ RSpec.describe Dashboard::ReplicationStatusComponent, type: :component do
     end
   end
 
-  context 'when zip parts are not OK' do
+  context 'when zipped moab versions are not OK' do
     before do
-      allow(component).to receive(:zip_parts_ok?).and_return(false)
+      allow(component).to receive(:zipped_moab_versions_failed?).and_return(true)
     end
 
     it 'renders Replication Status with errors called out' do

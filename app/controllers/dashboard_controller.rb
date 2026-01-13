@@ -28,8 +28,8 @@ class DashboardController < ApplicationController
     render 'dashboard/_replication_endpoints'
   end
 
-  def replicated_files
-    render 'dashboard/_replicated_files'
+  def zipped_moab_version_status
+    render 'dashboard/_zipped_moab_version_status'
   end
 
   def audit_status

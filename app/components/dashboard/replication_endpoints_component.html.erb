@@ -7,7 +7,6 @@
       <thead class="table-info">
         <tr>
           <th>endpoint name</th>
-          <th>ActiveJob class for replication</th>
           <th class="text-center">ZippedMoabVersion replicated count<br>(according to database)</th>
           <th class="text-center">Number of Object Versions<br>(per PreservedObject)</th>
         </tr>
@@ -16,7 +15,6 @@
         <% endpoint_data.each do |endpoint_name, info| %>
           <tr>
             <td><%= endpoint_name %></td>
-            <td><%= info[:delivery_class] %></td>
             <% replication_count = info[:replication_count] %>
             <td class="text-end<%= ' table-danger' unless endpoint_replication_count_ok?(replication_count) %>"><%= replication_count %></td>
             <td class="text-end"><%= num_object_versions_per_preserved_object %></td>

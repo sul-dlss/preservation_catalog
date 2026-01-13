@@ -9,7 +9,7 @@ RSpec.describe Dashboard::ReplicationService do
     end
   end
 
-  describe '#replication_and_zip_parts_ok?' do
+  describe '#replication_and_zipped_moab_versions_ok?' do
     let(:test_class) { outer_class.new }
 
     context 'when replication_ok? is false' do
@@ -18,27 +18,27 @@ RSpec.describe Dashboard::ReplicationService do
       end
 
       it 'returns false' do
-        expect(test_class.replication_and_zip_parts_ok?).to be false
+        expect(test_class.replication_and_zipped_moab_versions_ok?).to be false
       end
     end
 
-    context 'when zip_parts_ok? is false' do
+    context 'when !zipped_moab_versions_failed? is true' do
       before do
-        allow(test_class).to receive(:zip_parts_ok?).and_return(false)
+        allow(test_class).to receive(:zipped_moab_versions_failed?).and_return(true)
       end
 
       it 'returns false' do
-        expect(test_class.replication_and_zip_parts_ok?).to be false
+        expect(test_class.replication_and_zipped_moab_versions_ok?).to be false
       end
     end
 
-    context 'when replication_ok? and zip_parts_ok? are both true' do
+    context 'when replication_ok? is true and zipped_moab_versions_failed? is false' do
       before do
-        allow(test_class).to receive_messages(replication_ok?: true, zip_parts_ok?: true)
+        allow(test_class).to receive_messages(replication_ok?: true, zipped_moab_versions_failed?: false)
       end
 
       it 'returns true' do
-        expect(test_class.replication_and_zip_parts_ok?).to be true
+        expect(test_class.replication_and_zipped_moab_versions_ok?).to be true
       end
     end
   end
@@ -105,98 +105,60 @@ RSpec.describe Dashboard::ReplicationService do
 
     it 'returns a hash with endpoint_name keys and values of Hash with delivery_class and replication_count' do
       endpoint_data = outer_class.new.endpoint_data
-      expect(endpoint_data[endpoint1.endpoint_name]).to eq({ delivery_class: endpoint1.delivery_class, replication_count: 5 })
-      expect(endpoint_data[endpoint2.endpoint_name]).to eq({ delivery_class: endpoint2.delivery_class, replication_count: 2 })
+      expect(endpoint_data[endpoint1.endpoint_name]).to eq({ replication_count: 5 })
+      expect(endpoint_data[endpoint2.endpoint_name]).to eq({ replication_count: 2 })
     end
   end
 
-  describe '#num_replication_errors' do
+  describe '#zipped_moab_versions_failed_count' do
     before do
-      create(:zip_part, status: 'unreplicated')
-      create(:zip_part, status: 'ok')
-      create(:zip_part, status: 'ok')
-      create(:zip_part, status: 'replicated_checksum_mismatch')
-      create(:zip_part, status: 'not_found')
+      create(:zipped_moab_version, status: 'incomplete')
+      create_list(:zipped_moab_version, 2, status: 'ok')
+      create_list(:zipped_moab_version, 2, status: 'failed')
     end
 
-    it 'returns ZipPart.count - ZipPart.ok.count' do
-      expect(ZipPart.count).to eq 5
-      expect(outer_class.new.num_replication_errors).to eq 3
+    it 'returns count of failed ZippedMoabVersions' do
+      expect(ZippedMoabVersion.count).to eq 5
+      expect(outer_class.new.zipped_moab_versions_failed_count).to eq 2
     end
   end
 
-  describe '#zip_parts_ok?' do
+  describe '#zipped_moab_versions_failed?' do
     before do
-      create(:zip_part, status: 'ok')
+      create(:zipped_moab_version, status: 'ok')
     end
 
-    context 'when no zip_parts with status other than ok' do
-      it 'returns true' do
-        expect(outer_class.new.zip_parts_ok?).to be true
-      end
-    end
-
-    context 'when zip_part has status other than ok' do
-      before do
-        create(:zip_part, status: 'not_found')
-      end
-
+    context 'when no failed ZippedMoabVersions' do
       it 'returns false' do
-        expect(outer_class.new.zip_parts_ok?).to be false
+        expect(outer_class.new.zipped_moab_versions_failed?).to be false
+      end
+    end
+
+    context 'when failed ZippedMoabVersions' do
+      before do
+        create(:zipped_moab_version, status: 'failed')
+      end
+
+      it 'returns true' do
+        expect(outer_class.new.zipped_moab_versions_failed?).to be true
       end
     end
   end
 
-  describe '#zip_parts_unreplicated?' do
-    context 'when no ZipPart with status unreplicated' do
+  describe '#zipped_moab_versions_incomplete?' do
+    context 'when no incomplete ZippedMoabVersions' do
       it 'returns false' do
-        expect(outer_class.new.zip_parts_unreplicated?).to be false
+        expect(outer_class.new.zipped_moab_versions_incomplete?).to be false
       end
     end
 
-    context 'when at least one ZipPart has status unreplicated' do
+    context 'when at least one ZippedMoabVersion has status incomplete' do
       before do
-        create(:zip_part, status: :unreplicated)
+        create(:zipped_moab_version, status: 'incomplete')
       end
 
       it 'returns true' do
-        expect(outer_class.new.zip_parts_unreplicated?).to be true
-      end
-    end
-  end
-
-  describe '#zip_parts_not_found?' do
-    context 'when no ZipPart with status not_found' do
-      it 'returns false' do
-        expect(outer_class.new.zip_parts_not_found?).to be false
-      end
-    end
-
-    context 'when at least one ZipPart has status not_found' do
-      before do
-        create(:zip_part, status: :not_found)
-      end
-
-      it 'returns true' do
-        expect(outer_class.new.zip_parts_not_found?).to be true
-      end
-    end
-  end
-
-  describe '#zip_parts_replicated_checksum_mismatch?' do
-    context 'when no ZipPart with status replicated_checksum_mismatch' do
-      it 'returns false' do
-        expect(outer_class.new.zip_parts_replicated_checksum_mismatch?).to be false
-      end
-    end
-
-    context 'when at least one ZipPart has status replicated_checksum_mismatch' do
-      before do
-        create(:zip_part, status: :replicated_checksum_mismatch)
-      end
-
-      it 'returns true' do
-        expect(outer_class.new.zip_parts_replicated_checksum_mismatch?).to be true
+        expect(outer_class.new.zipped_moab_versions_incomplete?).to be true
       end
     end
   end

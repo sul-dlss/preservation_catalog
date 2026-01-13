@@ -6,25 +6,25 @@ module Dashboard
     include Dashboard::ReplicationService
 
     def replication_zips_badge_class
-      return OK_BADGE_CLASS if replication_and_zip_parts_ok?
+      return OK_BADGE_CLASS if replication_and_zipped_moab_versions_ok?
 
       NOT_OK_BADGE_CLASS
     end
 
     def replication_zips_status_label
-      return OK_LABEL if replication_and_zip_parts_ok?
+      return OK_LABEL if replication_and_zipped_moab_versions_ok?
 
       NOT_OK_LABEL
     end
 
-    def zip_parts_badge_class
-      return OK_BADGE_CLASS if zip_parts_ok?
+    def zipped_moab_versions_badge_class
+      return OK_BADGE_CLASS unless zipped_moab_versions_failed?
 
       NOT_OK_BADGE_CLASS
     end
 
-    def zip_parts_status_label
-      return OK_LABEL if zip_parts_ok?
+    def zipped_moab_versions_status_label
+      return OK_LABEL unless zipped_moab_versions_failed?
 
       NOT_OK_LABEL
     end

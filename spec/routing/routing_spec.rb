@@ -71,9 +71,10 @@ RSpec.describe 'routes' do
     end
   end
 
-  describe 'dashboard/replicated_files' do
-    it 'routes to dashboard controller replicated_files action' do
-      expect(get: dashboard_replicated_files_path).to route_to(controller: 'dashboard', action: 'replicated_files', format: 'html')
+  describe 'dashboard/zipped_moab_version_status' do
+    it 'routes to dashboard controller zipped_moab_version_status action' do
+      expect(get: dashboard_zipped_moab_version_status_path).to route_to(controller: 'dashboard', action: 'zipped_moab_version_status',
+                                                                         format: 'html')
     end
   end
 
