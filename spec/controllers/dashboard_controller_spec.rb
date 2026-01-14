@@ -59,8 +59,9 @@ RSpec.describe DashboardController do
         expect(response.body).to match(/<turbo-frame id="replication-endpoints" src="#{dashboard_replication_endpoints_path}" loading="lazy">/)
       end
 
-      it 'has turbo-frame for replicated_files path' do
-        expect(response.body).to match(/<turbo-frame id="replicated-files" src="#{dashboard_replicated_files_path}" loading="lazy">/)
+      it 'has turbo-frame for zipped_moab_version_status path' do
+        expect(response.body)
+          .to match(/<turbo-frame id="zipped-moab-version-status" src="#{dashboard_zipped_moab_version_status_path}" loading="lazy">/)
       end
     end
 
@@ -195,14 +196,14 @@ RSpec.describe DashboardController do
 
     it 'renders replication endpoints data' do
       expect(response.body).to match(/Endpoint Data/)
-      expect(response.body).to match(/ActiveJob class for replication/) # table header
-      expect(response.body).to match(/S3WestDeliveryJob/) # table data
+      expect(response.body).to match(/endpoint name/) # table header
+      expect(response.body).to match(/aws_s3_west_2/) # table data
     end
   end
 
-  describe 'GET dashboard/replicated_files' do
+  describe 'GET dashboard/zipped_moab_version_status' do
     before do
-      get :replicated_files
+      get :zipped_moab_version_status
     end
 
     it 'returns a success response with html content' do
@@ -210,13 +211,13 @@ RSpec.describe DashboardController do
       expect(response.content_type).to eq('text/html; charset=utf-8')
     end
 
-    it 'renders _replicated_files template' do
-      expect(response).to render_template('dashboard/_replicated_files')
+    it 'renders _zipped_moab_version_status template' do
+      expect(response).to render_template('dashboard/_zipped_moab_version_status')
     end
 
-    it 'renders replicated files data' do
-      expect(response.body).to match(/Replication Files/)
-      expect(response.body).to match(/unreplicated/) # table header
+    it 'renders zipped moab version status data' do
+      expect(response.body).to match(/ZippedMoabVersion Status/)
+      expect(response.body).to match(/replication failures/) # table header
       expect(response.body).to match(/0/) # table data
     end
   end

@@ -19,6 +19,7 @@ module MoabRecordService
         else
           create_missing_moab_record
         end
+        ReplicationJob.perform_later(preserved_object) if perform_replication?
       end
     end
 
@@ -31,6 +32,8 @@ module MoabRecordService
         moab_record.upd_audstamps_version_size(moab_on_storage_validator.ran_moab_validation?, incoming_version, incoming_size)
         preserved_object.current_version = incoming_version
         preserved_object.save!
+
+        @perform_replication = true
       end
     end
 
@@ -62,6 +65,10 @@ module MoabRecordService
         moab_record.update_audit_timestamps(moab_on_storage_validator.ran_moab_validation?, true)
         moab_record.save!
       end
+    end
+
+    def perform_replication?
+      @perform_replication ||= false
     end
   end
 end

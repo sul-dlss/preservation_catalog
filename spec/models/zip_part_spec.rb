@@ -4,21 +4,11 @@ require 'rails_helper'
 
 RSpec.describe ZipPart do
   let(:zmv) { build(:zipped_moab_version) }
-  let(:args) { attributes_for(:zip_part).merge(zipped_moab_version: zmv) }
-
-  it 'defines a status enum with the expected values' do
-    is_expected.to define_enum_for(:status).with_values(
-      'ok' => 0,
-      'unreplicated' => 1,
-      'not_found' => 2,
-      'replicated_checksum_mismatch' => 3
-    )
-  end
+  let(:args) { attributes_for(:zip_part, index: 1).merge(zipped_moab_version: zmv) }
 
   it 'is not valid unless it has all required attributes' do
     expect(described_class.new).not_to be_valid
     expect(described_class.new(args.merge(md5: nil))).not_to be_valid
-    expect(described_class.new(args.merge(create_info: nil))).not_to be_valid
     expect(described_class.new(args)).to be_valid
   end
 
@@ -47,19 +37,6 @@ RSpec.describe ZipPart do
     end
   end
 
-  describe '#all_parts_replicated?' do
-    let(:zp) { described_class.new(args) }
-
-    it "returns false if status is 'unreplicated'" do
-      expect(zp.all_parts_replicated?).to be false
-    end
-
-    it "returns true if status is 'ok'" do
-      zp.ok!
-      expect(zp.all_parts_replicated?).to be true
-    end
-  end
-
   describe '#druid_version_zip' do
     let(:po) { build(:preserved_object, current_version: 3) }
     let(:zmv) { build(:zipped_moab_version, preserved_object: po, version: 1) }
@@ -80,17 +57,7 @@ RSpec.describe ZipPart do
     end
   end
 
-  describe '#suffixes_in_set' do
-    let(:zp) { described_class.new(args.merge(parts_count: 3)) }
-
-    it 'returns suffixes of all parts' do
-      expect(zp.suffixes_in_set).to eq ['.zip', '.z01', '.z02']
-    end
-  end
-
-  it { is_expected.to validate_presence_of(:create_info) }
   it { is_expected.to validate_presence_of(:md5) }
-  it { is_expected.to validate_presence_of(:parts_count) }
   it { is_expected.to validate_presence_of(:size) }
   it { is_expected.to validate_presence_of(:suffix) }
   it { is_expected.to belong_to(:zipped_moab_version) }

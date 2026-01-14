@@ -105,74 +105,25 @@ RSpec.describe PreservedObject do
     end
   end
 
-  describe '#create_zipped_moab_versions!' do
-    let!(:preserved_object) { create(:preserved_object, druid: druid, current_version: 3) }
-    let(:current_version) { preserved_object.current_version }
-    let!(:msr1) { create(:moab_storage_root) }
-    let!(:moab_rec1) { create(:moab_record, preserved_object: preserved_object, version: current_version, moab_storage_root: msr1) }
-    let(:zmvs_by_druid) { ZippedMoabVersion.by_druid(druid) }
-    let(:zip_endpoints) { ZipEndpoint.all }
-    let!(:zip_ep) { zip_endpoints.first }
-    let!(:zip_ep2) { zip_endpoints.second }
-    let!(:zip_ep3) { zip_endpoints.third }
+  describe '#populate_zipped_moab_versions!' do
+    let(:preserved_object) { create(:preserved_object, druid: druid, current_version:) }
+
+    let(:zip_endpoint) { ZipEndpoint.first }
+    let(:zip_endpoint_count) { ZipEndpoint.count }
+    let(:current_version) { 2 }
 
     before do
-      allow(Replication::ZipmakerJob).to receive(:perform_later)
-      ZippedMoabVersion.destroy_all # a bit contrived, but delete ZMVs auto-created by AR hook, so we can test #create_zipped_moab_versions!
+      create(:zipped_moab_version, preserved_object: preserved_object, version: 1, zip_endpoint: zip_endpoint)
     end
 
-    it "creates ZMVs that don't yet exist for expected versions, but should" do
-      expect(Replication::ZipmakerJob).to receive(:perform_later).with(preserved_object.druid, 1, moab_rec1.moab_storage_root.storage_location)
-      expect(Replication::ZipmakerJob).to receive(:perform_later).with(preserved_object.druid, 2, moab_rec1.moab_storage_root.storage_location)
-      expect(Replication::ZipmakerJob).to receive(:perform_later).with(preserved_object.druid, 3, moab_rec1.moab_storage_root.storage_location)
-      expect { preserved_object.create_zipped_moab_versions! }.to change {
-        ZipEndpoint.which_need_archive_copy(druid, current_version).to_a.to_set
-      }.from([zip_ep, zip_ep2, zip_ep3].to_set).to([].to_set).and change {
-        zmvs_by_druid.where(version: current_version).count
-      }.from(0).to(3)
+    it 'creates missing ZippedMoabVersions for all versions and all ZipEndpoints' do
+      new_zipped_moab_versions = preserved_object.populate_zipped_moab_versions!
+      expect(new_zipped_moab_versions.size).to eq((zip_endpoint_count * current_version) - 1)
 
-      expect(zmvs_by_druid.pluck(:version).sort).to eq [1, 1, 1, 2, 2, 2, 3, 3, 3]
-    end
-
-    it "creates ZMVs that don't yet exist for new endpoint, but should" do
-      expect { preserved_object.create_zipped_moab_versions! }.to change {
-        ZipEndpoint.which_need_archive_copy(druid, current_version).to_a.to_set
-      }.from([zip_ep, zip_ep2, zip_ep3].to_set).to([].to_set).and change {
-        zmvs_by_druid.where(version: current_version).count
-      }.from(0).to(3)
-
-      new_zip_ep = create(:zip_endpoint)
-
-      expect(Replication::ZipmakerJob).to receive(:perform_later).with(preserved_object.druid, 1, msr1.storage_location)
-      expect(Replication::ZipmakerJob).to receive(:perform_later).with(preserved_object.druid, 2, msr1.storage_location)
-      expect(Replication::ZipmakerJob).to receive(:perform_later).with(preserved_object.druid, 3, msr1.storage_location)
-      expect { preserved_object.create_zipped_moab_versions! }.to change {
-        ZipEndpoint.which_need_archive_copy(druid, current_version).to_a
-      }.from([new_zip_ep]).to([]).and change {
-        zmvs_by_druid.where(version: current_version).count
-      }.from(3).to(4)
-    end
-
-    it 'creates all versions for ZMV' do
-      expect(preserved_object.current_version).to eq 3
-      expect { preserved_object.create_zipped_moab_versions! }.to change(ZippedMoabVersion, :count).from(0).to(9)
-    end
-
-    it 'if ZMVs already exist, return an empty array' do
-      preserved_object.create_zipped_moab_versions!
-      expect(preserved_object.create_zipped_moab_versions!).to eq []
-    end
-
-    context 'no moabs are both up to date and ok' do
-      let(:moab_rec1) do
-        create(:moab_record, preserved_object: preserved_object, version: current_version, status: 'invalid_checksum', moab_storage_root: msr1)
-      end
-
-      it 'returns nil and does not attempt to replicate' do
-        expect(ZipEndpoint).not_to receive(:which_need_archive_copy)
-        expect(Replication::ZipmakerJob).not_to receive(:perform_later)
-        expect(preserved_object.create_zipped_moab_versions!).to be_nil
-      end
+      expect(preserved_object.reload.zipped_moab_versions.count).to eq(zip_endpoint_count * current_version)
+      expect(preserved_object.zipped_moab_versions.where(version: 1).count).to eq zip_endpoint_count
+      expect(preserved_object.zipped_moab_versions.where(version: 2).count).to eq zip_endpoint_count
+      expect(preserved_object.zipped_moab_versions.where(zip_endpoint: zip_endpoint).count).to eq current_version
     end
   end
 
@@ -180,7 +131,7 @@ RSpec.describe PreservedObject do
     let!(:preserved_object) { create(:preserved_object, druid: druid, current_version: 3) }
 
     it 'queues a replication audit job for its MoabRecord' do
-      expect(Audit::MoabReplicationAuditJob).to receive(:perform_later).with(preserved_object)
+      expect(Audit::ReplicationAuditJob).to receive(:perform_later).with(preserved_object)
       preserved_object.audit_moab_version_replication!
     end
   end

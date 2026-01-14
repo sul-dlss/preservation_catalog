@@ -73,5 +73,10 @@ module Replication
     def read_md5
       File.read(md5_path)
     end
+
+    # @return [Boolean] whether the md5 from the md5 sidecar file matches the computed md5
+    def md5_match?
+      read_md5 == hexdigest
+    end
   end
 end

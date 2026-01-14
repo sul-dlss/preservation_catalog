@@ -46,7 +46,7 @@ module Dashboard
     end
 
     def catalog_to_archive_audit_ok?
-      !ZipPart.where.not(status: 'ok').annotate(caller).exists?
+      ZippedMoabVersion.failed.annotate(caller).none?
     end
 
     def moab_audit_age_threshold
