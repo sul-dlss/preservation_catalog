@@ -23,6 +23,7 @@ zip_endpoints:
     audit_class: 'Audit::ReplicationToAws'
     access_key_id: 'overridden-by-env-var-in-ci'
     secret_access_key: 'overridden-by-env-var-in-ci'
+    provider_class: 'Replication::AwsProvider'
   ibm_us_south:
     region: 'us-south'
     endpoint_node: 'https://s3.us-south.cloud-object-storage.appdomain.cloud'
@@ -31,6 +32,7 @@ zip_endpoints:
     audit_class: 'Audit::ReplicationToIbm'
     access_key_id: 'overridden-by-env-var-in-ci'
     secret_access_key: 'overridden-by-env-var-in-ci'
+    provider_class: 'Replication::IbmProvider'
   gcp_s3_south_1:
     region: 'us-south1'
     endpoint_node: 'https://storage.googleapis.com'
@@ -39,3 +41,4 @@ zip_endpoints:
     audit_class: 'Audit::ReplicationToGcp'
     access_key_id: 'overridden-by-env-var-in-ci'
     secret_access_key: 'overridden-by-env-var-in-ci'
+    provider_class: 'Replication::GcpProvider'

@@ -41,7 +41,7 @@ module Audit
       if unreplicated_parts.any?
         results.add_result(
           Audit::Results::ZIP_PARTS_NOT_ALL_REPLICATED,
-          base_hash.merge(unreplicated_parts_list: unreplicated_parts.to_a)
+          base_hash
         )
       end
 

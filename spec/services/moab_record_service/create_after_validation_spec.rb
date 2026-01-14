@@ -124,9 +124,13 @@ RSpec.describe MoabRecordService::CreateAfterValidation do
 
       context 'db update error' do
         context 'ActiveRecordError' do
-          let(:results) do
+          before do
             allow(PreservedObject).to receive(:create!).with(hash_including(druid: invalid_druid))
                                                        .and_raise(ActiveRecord::ActiveRecordError, 'foo')
+            allow(ReplicationJob).to receive(:perform_later)
+          end
+
+          let(:results) do
             moab_record_service = described_class.new(druid: invalid_druid, incoming_version: incoming_version, incoming_size: incoming_size,
                                                       moab_storage_root: moab_storage_root)
             moab_record_service.execute.results
@@ -138,6 +142,10 @@ RSpec.describe MoabRecordService::CreateAfterValidation do
 
           it 'does NOT get CREATED_NEW_OBJECT result' do
             expect(results).not_to include(hash_including(Audit::Results::CREATED_NEW_OBJECT))
+          end
+
+          it 'does not call ReplicationJob' do
+            expect(ReplicationJob).not_to have_received(:perform_later)
           end
         end
 

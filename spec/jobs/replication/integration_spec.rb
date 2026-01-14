@@ -72,6 +72,7 @@ describe 'the whole replication pipeline' do # rubocop:disable RSpec/DescribeCla
     # creating or updating a MoabRecord should trigger its parent PreservedObject to replicate any missing versions to any target endpoints
     perform_enqueued_jobs do
       create(:moab_record, preserved_object: preserved_object, version: version, moab_storage_root: moab_storage_root)
+      preserved_object.create_zipped_moab_versions! # This is no longer started by AR hooks
     end
   end
 
@@ -79,6 +80,10 @@ describe 'the whole replication pipeline' do # rubocop:disable RSpec/DescribeCla
     let(:version) { 2 }
     let(:next_version) { version + 1 }
     let(:s3_key) { "bz/514/sm/9647/bz514sm9647.v000#{next_version}.zip" }
+
+    before do
+      allow(ReplicationJob).to receive(:perform_later)
+    end
 
     it 'gets from zipmaker queue to replication result message for the new version when the moab is updated' do # rubocop:disable RSpec/ExampleLength
       # pretend catalog is on version 2 before update call from robots
@@ -117,6 +122,11 @@ describe 'the whole replication pipeline' do # rubocop:disable RSpec/DescribeCla
         # updating the MoabRecord#version and its PreservedObject#current_version should trigger the replication cycle again, on the new version
         MoabRecordService::UpdateVersion.execute(druid: druid, incoming_version: next_version, incoming_size: 712,
                                                  moab_storage_root: moab_storage_root, checksums_validated: true)
+        preserved_object.zipped_moab_versions.where(version: next_version).find_each do |zipped_moab_version|
+          zipped_moab_version.zip_parts.destroy_all
+          zipped_moab_version.destroy
+        end
+        preserved_object.reload.create_zipped_moab_versions! # This is no longer started by AR hooks
       end
     end
   end

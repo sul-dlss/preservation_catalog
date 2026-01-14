@@ -11,7 +11,6 @@ describe Audit::MoabReplicationAuditJob do
     allow(Audit::ReplicationSupport).to receive(:logger).and_return(logger)
     allow(Settings.replication).to receive(:audit_should_backfill).and_return(true) # enable for tests
     allow(Audit::Replication).to receive(:results).and_return([])
-    # creation of MoabRecord triggers archive zip creation, as archive zips are created from moabs
     create(:moab_record, preserved_object: preserved_object, version: preserved_object.current_version)
   end
 
@@ -22,6 +21,7 @@ describe Audit::MoabReplicationAuditJob do
       before do
         allow(Audit::Replication).to receive(:results).and_return([audit_results])
         allow(AuditResultsReporter).to receive(:report_results)
+        preserved_object.populate_zipped_moab_versions!
       end
 
       it 'calls Audit::Replication and reports results' do
@@ -33,8 +33,6 @@ describe Audit::MoabReplicationAuditJob do
     end
 
     context 'when there are zipped_moab_versions to backfill' do
-      before { preserved_object.zipped_moab_versions.destroy_all } # undo auto-spawned rows from callback
-
       it 'does nothing when backfilling is disabled' do
         allow(Settings.replication).to receive(:audit_should_backfill).and_return(false)
         expect(preserved_object).not_to receive(:create_zipped_moab_versions!)

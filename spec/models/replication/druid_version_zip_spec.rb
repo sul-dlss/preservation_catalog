@@ -93,6 +93,18 @@ describe Replication::DruidVersionZip do
     end
   end
 
+  describe '#exist?' do
+    let(:dvz) { described_class.new(druid, version, 'spec/fixtures/storage_root01/sdr2objects') }
+
+    after { FileUtils.rm_rf('/tmp/bj') } # cleanup
+
+    it 'returns true when zip exists' do
+      expect(dvz.exist?).to be false
+      dvz.create_zip!
+      expect(dvz.exist?).to be true
+    end
+  end
+
   describe '#create_zip!' do
     let(:dvz) { described_class.new(druid, version, 'spec/fixtures/storage_root01/sdr2objects') }
     let(:zip_path) { dvz.file_path }
@@ -410,6 +422,87 @@ describe Replication::DruidVersionZip do
       allow(File).to receive(:stat)
       v1_moab_files.each { |filename| expect(File).to receive(:stat).with(filename) }
       dvz.send(:check_moab_version_readability!)
+    end
+  end
+
+  describe '#complete?' do
+    let(:dvz) { described_class.new(druid, version, 'spec/fixtures/storage_root01/sdr2objects') }
+    let(:zip_path) { dvz.file_path }
+    let(:version) { 3 } # v1 and v2 pre-existing
+
+    after { FileUtils.rm_rf('/tmp/bj') } # cleanup
+
+    context 'when zip does not exist' do
+      it 'returns false' do
+        expect(dvz.complete?).to be false
+      end
+    end
+
+    context 'when zip is complete' do
+      before do
+        dvz.create_zip!
+      end
+
+      it 'returns true' do
+        expect(dvz.complete?).to be true
+      end
+    end
+
+    context 'when there is a zip file with no md5 sidecar' do
+      before do
+        dvz.create_zip!
+        File.delete("#{zip_path}.md5")
+      end
+
+      it 'returns false' do
+        expect(dvz.complete?).to be false
+      end
+    end
+
+    context 'when there is a md5 sidecar with no zip file' do
+      before do
+        dvz.create_zip!
+        File.delete(zip_path)
+      end
+
+      it 'returns false' do
+        expect(dvz.complete?).to be false
+      end
+    end
+
+    context 'when the md5 sidecar does not match the zip file' do
+      before do
+        dvz.create_zip!
+        File.write("#{zip_path}.md5", 'notthecorrectmd5value')
+      end
+
+      it 'returns false' do
+        expect(dvz.complete?).to be false
+      end
+    end
+  end
+
+  describe '#cleanup_zip_parts!' do
+    let(:dvz) { described_class.new(druid, version, 'spec/fixtures/storage_root01/sdr2objects') }
+    let(:version) { 3 } # v1 and v2 pre-existing
+
+    before do
+      dvz.create_zip!
+    end
+
+    after { FileUtils.rm_rf('/tmp/bj') } # cleanup
+
+    it 'deletes the zip parts and their md5 sidecars' do
+      expect(dvz.parts_and_checksums_paths).not_to be_empty
+      dvz.parts_and_checksums_paths.each do |path|
+        expect(File).to exist(path)
+      end
+
+      dvz.cleanup_zip_parts!
+
+      dvz.parts_and_checksums_paths.each do |path|
+        expect(File).not_to exist(path)
+      end
     end
   end
 end

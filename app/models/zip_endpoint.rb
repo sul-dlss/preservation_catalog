@@ -32,6 +32,8 @@ class ZipEndpoint < ApplicationRecord
     where.not(id: which_have_archive_copy(druid, version))
   }
 
+  delegate :bucket, :bucket_name, to: :provider
+
   # iterates over the zip endpoints enumerated in settings, creating a ZipEndpoint for each if one doesn't
   # already exist.
   # @return [Array<ZipEndpoint>] the ZipEndpoint list for the zip endpoints defined in the config (all
@@ -61,6 +63,10 @@ class ZipEndpoint < ApplicationRecord
     audit_class_setting.constantize
   rescue NameError
     raise "Failed to return audit class based on setting for #{endpoint_name}.  Check setting string for accuracy."
+  end
+
+  def provider
+    @provider ||= Replication::ProviderFactory.create(zip_endpoint: self)
   end
 
   def to_s
