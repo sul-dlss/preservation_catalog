@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe AuditReporters::LoggerReporter do
+RSpec.describe ResultsReporters::LoggerReporter do
   let(:druid) { 'ab123cd4567' }
   let(:actual_version) { 6 }
   let(:ms_root) { MoabStorageRoot.find_by(storage_location: 'spec/fixtures/storage_root01/sdr2objects') }

@@ -10,19 +10,19 @@ RSpec.describe CatalogUtils do
     allow(Moab::StorageObject).to receive(:new).and_return(moab)
     moab
   end
-  let(:audit_workflow_reporter) { instance_double(AuditReporters::AuditWorkflowReporter, report_errors: nil, report_completed: nil) }
-  let(:event_service_reporter) { instance_double(AuditReporters::EventServiceReporter, report_errors: nil, report_completed: nil) }
-  let(:honeybadger_reporter) { instance_double(AuditReporters::HoneybadgerReporter, report_errors: nil, report_completed: nil) }
-  let(:logger_reporter) { instance_double(AuditReporters::LoggerReporter, report_errors: nil, report_completed: nil) }
+  let(:audit_workflow_reporter) { instance_double(ResultsReporters::AuditWorkflowReporter, report_errors: nil, report_completed: nil) }
+  let(:event_service_reporter) { instance_double(ResultsReporters::EventServiceReporter, report_errors: nil, report_completed: nil) }
+  let(:honeybadger_reporter) { instance_double(ResultsReporters::HoneybadgerReporter, report_errors: nil, report_completed: nil) }
+  let(:logger_reporter) { instance_double(ResultsReporters::LoggerReporter, report_errors: nil, report_completed: nil) }
   let(:audit_results) { instance_double(Audit::Results, results: results) }
   let(:results) { [] }
 
   before do
     allow(described_class.logger).to receive(:info) # silence STDOUT chatter
-    allow(AuditReporters::AuditWorkflowReporter).to receive(:new).and_return(audit_workflow_reporter)
-    allow(AuditReporters::EventServiceReporter).to receive(:new).and_return(event_service_reporter)
-    allow(AuditReporters::HoneybadgerReporter).to receive(:new).and_return(honeybadger_reporter)
-    allow(AuditReporters::LoggerReporter).to receive(:new).and_return(logger_reporter)
+    allow(ResultsReporters::AuditWorkflowReporter).to receive(:new).and_return(audit_workflow_reporter)
+    allow(ResultsReporters::EventServiceReporter).to receive(:new).and_return(event_service_reporter)
+    allow(ResultsReporters::HoneybadgerReporter).to receive(:new).and_return(honeybadger_reporter)
+    allow(ResultsReporters::LoggerReporter).to receive(:new).and_return(logger_reporter)
   end
 
   describe '.logger' do

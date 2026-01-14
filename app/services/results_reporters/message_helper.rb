@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module AuditReporters
+module ResultsReporters
   # Helper for formatting messages.
   class MessageHelper
     def self.invalid_moab_message(check_name, version, storage_area, result)

@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe AuditReporters::AuditWorkflowReporter do
+RSpec.describe ResultsReporters::AuditWorkflowReporter do
   let(:client) { instance_double(Dor::Services::Client::Object, workflow: object_workflow) }
   let(:object_workflow) { instance_double(Dor::Services::Client::ObjectWorkflow, process:) }
   let(:process) { instance_double(Dor::Services::Client::Process, update: true, update_error: true) }

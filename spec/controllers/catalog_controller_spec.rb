@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 RSpec.describe CatalogController do
-  let(:audit_workflow_reporter) { instance_double(AuditReporters::AuditWorkflowReporter, report_errors: nil) }
+  let(:audit_workflow_reporter) { instance_double(ResultsReporters::AuditWorkflowReporter, report_errors: nil) }
   let(:size) { 2342 }
   let(:ver) { 3 }
   let(:bare_druid) { 'bj102hs9687' }
@@ -10,16 +10,16 @@ RSpec.describe CatalogController do
   let(:storage_location) { "#{storage_location_param}/sdr2objects" }
   let(:storage_location_param) { 'spec/fixtures/storage_root01' }
   let(:moab_storage_root) { MoabStorageRoot.find_by!(name: 'fixture_sr1') }
-  let(:event_service_reporter) { instance_double(AuditReporters::EventServiceReporter, report_errors: nil) }
-  let(:honeybadger_reporter) { instance_double(AuditReporters::HoneybadgerReporter, report_errors: nil) }
-  let(:logger_reporter) { instance_double(AuditReporters::LoggerReporter, report_errors: nil) }
+  let(:event_service_reporter) { instance_double(ResultsReporters::EventServiceReporter, report_errors: nil) }
+  let(:honeybadger_reporter) { instance_double(ResultsReporters::HoneybadgerReporter, report_errors: nil) }
+  let(:logger_reporter) { instance_double(ResultsReporters::LoggerReporter, report_errors: nil) }
 
   before do
     allow(described_class.logger).to receive(:info) # silence STDOUT chatter
-    allow(AuditReporters::AuditWorkflowReporter).to receive(:new).and_return(audit_workflow_reporter)
-    allow(AuditReporters::EventServiceReporter).to receive(:new).and_return(event_service_reporter)
-    allow(AuditReporters::HoneybadgerReporter).to receive(:new).and_return(honeybadger_reporter)
-    allow(AuditReporters::LoggerReporter).to receive(:new).and_return(logger_reporter)
+    allow(ResultsReporters::AuditWorkflowReporter).to receive(:new).and_return(audit_workflow_reporter)
+    allow(ResultsReporters::EventServiceReporter).to receive(:new).and_return(event_service_reporter)
+    allow(ResultsReporters::HoneybadgerReporter).to receive(:new).and_return(honeybadger_reporter)
+    allow(ResultsReporters::LoggerReporter).to receive(:new).and_return(logger_reporter)
     allow(controller).to receive(:check_auth_token!) # gating on valid token tested in request specs and auth spec
   end
 

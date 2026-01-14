@@ -10,16 +10,16 @@ RSpec.describe MoabRecordService::CreateAfterValidation do
   let(:storage_dir) { 'spec/fixtures/storage_root01/sdr2objects' }
   let(:moab_storage_root) { MoabStorageRoot.find_by(storage_location: storage_dir) }
   let(:expected_msg) { 'added object to db as it did not exist' }
-  let(:audit_workflow_reporter) { instance_double(AuditReporters::AuditWorkflowReporter, report_errors: nil) }
-  let(:logger_reporter) { instance_double(AuditReporters::LoggerReporter, report_errors: nil) }
-  let(:honeybadger_reporter) { instance_double(AuditReporters::HoneybadgerReporter, report_errors: nil) }
-  let(:event_service_reporter) { instance_double(AuditReporters::EventServiceReporter, report_errors: nil) }
+  let(:audit_workflow_reporter) { instance_double(ResultsReporters::AuditWorkflowReporter, report_errors: nil) }
+  let(:logger_reporter) { instance_double(ResultsReporters::LoggerReporter, report_errors: nil) }
+  let(:honeybadger_reporter) { instance_double(ResultsReporters::HoneybadgerReporter, report_errors: nil) }
+  let(:event_service_reporter) { instance_double(ResultsReporters::EventServiceReporter, report_errors: nil) }
 
   before do
-    allow(AuditReporters::AuditWorkflowReporter).to receive(:new).and_return(audit_workflow_reporter)
-    allow(AuditReporters::LoggerReporter).to receive(:new).and_return(logger_reporter)
-    allow(AuditReporters::HoneybadgerReporter).to receive(:new).and_return(honeybadger_reporter)
-    allow(AuditReporters::EventServiceReporter).to receive(:new).and_return(event_service_reporter)
+    allow(ResultsReporters::AuditWorkflowReporter).to receive(:new).and_return(audit_workflow_reporter)
+    allow(ResultsReporters::LoggerReporter).to receive(:new).and_return(logger_reporter)
+    allow(ResultsReporters::HoneybadgerReporter).to receive(:new).and_return(honeybadger_reporter)
+    allow(ResultsReporters::EventServiceReporter).to receive(:new).and_return(event_service_reporter)
   end
 
   describe '#execute' do

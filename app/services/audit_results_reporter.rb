@@ -29,10 +29,10 @@ class AuditResultsReporter
 
   def reporters
     @reporters ||= [
-      AuditReporters::LoggerReporter.new(logger),
-      AuditReporters::HoneybadgerReporter.new,
-      AuditReporters::AuditWorkflowReporter.new,
-      AuditReporters::EventServiceReporter.new
+      ResultsReporters::LoggerReporter.new(logger),
+      ResultsReporters::HoneybadgerReporter.new,
+      ResultsReporters::AuditWorkflowReporter.new,
+      ResultsReporters::EventServiceReporter.new
     ].freeze
   end
 
