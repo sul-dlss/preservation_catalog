@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe AuditReporters::HoneybadgerReporter do
+RSpec.describe ResultsReporters::HoneybadgerReporter do
   let(:druid) { 'ab123cd4567' }
   let(:actual_version) { 6 }
   let(:check_name) { 'FooCheck' }

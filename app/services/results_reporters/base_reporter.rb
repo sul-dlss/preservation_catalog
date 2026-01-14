@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-module AuditReporters
-  # Base class for AuditReporters.
+module ResultsReporters
+  # Base class for ResultsReporters.
   class BaseReporter
     # Report errors.
     # The reporter will only report the errors that it handles (based on the code). It may also merge errors and report once.

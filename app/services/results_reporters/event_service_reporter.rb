@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module AuditReporters
+module ResultsReporters
   # Reports to DOR Event Service.
   class EventServiceReporter < BaseReporter
     private
