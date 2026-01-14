@@ -5,6 +5,7 @@ FactoryBot.define do
   # Instead create a :moab_record and get the zipped_moab_versions from it
   factory :zipped_moab_version do
     version { 1 }
+    status { 2 }
     zip_endpoint
     preserved_object
   end

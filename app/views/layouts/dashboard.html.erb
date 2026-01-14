@@ -40,10 +40,10 @@
             </ul>
           </li>
         </ul>
-        <form class="d-flex" role="search">
-          <input class="form-control me-2" type="search" placeholder="Search by druid" aria-label="Search by druid" autocomplete="off">
+        <%= form_with url: dashboard_search_index_path, method: :post, class: 'd-flex', role: 'search' do %>
+          <input class="form-control me-2" type="search" name="druid" placeholder="Search by druid" aria-label="Search by druid" autocomplete="off">
           <button class="btn btn-outline-primary" type="submit">Search</button>
-      </form>
+        <% end %>
       </div>
     </div>
   </nav>

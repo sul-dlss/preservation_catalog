@@ -23,6 +23,7 @@ Rails.application.routes.draw do
         get 'incomplete' # Incomplete ZippedMoabVersions list page
       end
     end
+    resources :search, param: :druid, only: [:create]
   end
 
   scope 'v1' do

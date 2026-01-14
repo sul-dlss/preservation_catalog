@@ -1,0 +1,46 @@
+<div class="container m-10">
+  <h1 class="mb-4">Preserved Object: druid:<%= @druid %></h1>
+  <%= render Show::WarningsComponent.new(preserved_object: @preserved_object, druid: @druid) %>
+  <hr>
+  <% if @preserved_object %>
+    <div class="row">
+      <div class="col-md-6">
+        <table id="details-table" class="table table-sm mb-5 caption-header border">
+          <caption class="header ps-2" style="caption-side: top; background-color: var(--bs-table-border-color);">Details</caption>
+          <tbody>
+            <tr>
+              <th scope="row">Druid</th>
+              <td><%= @preserved_object.druid %></td>
+            </tr>
+            <tr>
+              <th scope="row">Current Version</th>
+              <td><%= @preserved_object.current_version %></td>
+            </tr>
+            <tr>
+              <th scope="row">Created</th>
+              <td><%= @preserved_object.created_at %></td>
+            </tr>
+            <tr>
+              <th scope="row">Last Updated</th>
+              <td><%= @preserved_object.updated_at %></td>
+            </tr>
+            <tr>
+              <th scope="row">Last Archive Audit</th>
+              <td><%= @preserved_object.last_archive_audit %></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="col-md-6">
+        <%= render Show::MoabRecordComponent.new(moab_record: @preserved_object.moab_record) %>
+      </div>
+    </div>
+
+    <% @preserved_object.zipped_moab_versions.each do |zipped_moab_version| %>
+      <hr>
+      <%= render Show::ZippedMoabVersionComponent.new(zipped_moab_version:) %>
+    <% end %>
+
+    <%= render Show::ZipPartInfoComponent.new(zip_part_info: @zip_part_info) %>
+  <% end %>
+</div>
