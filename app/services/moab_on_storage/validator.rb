@@ -5,15 +5,15 @@ module MoabOnStorage
   # service class with methods for running Stanford::StorageObjectValidator in moab-versioning gem
   class Validator
     # @param moab [Moab::StorageObject] the moab to be validated
-    # @param results [Audit::Results] the instance the including class is using to track findings of interest
-    def initialize(moab:, audit_results:)
+    # @param results [Results] the instance the including class is using to track findings of interest
+    def initialize(moab:, results:)
       @moab = moab
-      @audit_results = audit_results
+      @results = results
     end
 
     def can_validate_current_comp_moab_status?(moab_record:, caller_validates_checksums: false)
       can_do = caller_validates_checksums || moab_record.status != 'invalid_checksum'
-      audit_results.add_result(Audit::Results::UNABLE_TO_CHECK_STATUS, current_status: moab_record.status) unless can_do
+      results.add_result(Results::UNABLE_TO_CHECK_STATUS, current_status: moab_record.status) unless can_do
       can_do
     end
 
@@ -28,7 +28,7 @@ module MoabOnStorage
             moab_errors.each do |error_hash|
               moab_error_msgs += error_hash.values
             end
-            audit_results.add_result(Audit::Results::INVALID_MOAB, moab_error_msgs)
+            results.add_result(Results::INVALID_MOAB, moab_error_msgs)
           end
           moab_errors
         end
@@ -44,6 +44,6 @@ module MoabOnStorage
 
     private
 
-    attr_reader :moab, :audit_results
+    attr_reader :moab, :results
   end
 end

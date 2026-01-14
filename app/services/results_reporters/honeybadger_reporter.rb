@@ -7,14 +7,14 @@ module ResultsReporters
 
     def handled_single_codes
       [
-        Audit::Results::DB_OBJ_ALREADY_EXISTS,
-        Audit::Results::MOAB_FILE_CHECKSUM_MISMATCH,
-        Audit::Results::MOAB_NOT_FOUND,
-        Audit::Results::ZIP_PART_CHECKSUM_MISMATCH,
-        Audit::Results::ZIP_PART_NOT_FOUND,
-        Audit::Results::ZIP_PARTS_COUNT_DIFFERS_FROM_ACTUAL,
-        Audit::Results::ZIP_PARTS_NOT_ALL_REPLICATED,
-        Audit::Results::ZIP_PARTS_SIZE_INCONSISTENCY
+        Results::DB_OBJ_ALREADY_EXISTS,
+        Results::MOAB_FILE_CHECKSUM_MISMATCH,
+        Results::MOAB_NOT_FOUND,
+        Results::ZIP_PART_CHECKSUM_MISMATCH,
+        Results::ZIP_PART_NOT_FOUND,
+        Results::ZIP_PARTS_COUNT_DIFFERS_FROM_ACTUAL,
+        Results::ZIP_PARTS_NOT_ALL_REPLICATED,
+        Results::ZIP_PARTS_SIZE_INCONSISTENCY
       ].freeze
     end
 

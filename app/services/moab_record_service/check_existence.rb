@@ -50,17 +50,17 @@ module MoabRecordService
             status_handler.validate_moab_on_storage_and_set_status(found_expected_version: true,
                                                                    moab_on_storage_validator: moab_on_storage_validator)
           end
-          results.add_result(Audit::Results::VERSION_MATCHES, 'MoabRecord')
+          results.add_result(Results::VERSION_MATCHES, 'MoabRecord')
         elsif incoming_version > moab_record.version
           unless moab_record.status == 'ok'
             status_handler.validate_moab_on_storage_and_set_status(found_expected_version: true,
                                                                    moab_on_storage_validator: moab_on_storage_validator)
           end
-          results.add_result(Audit::Results::ACTUAL_VERS_GT_DB_OBJ, db_obj_name: 'MoabRecord', db_obj_version: moab_record.version)
+          results.add_result(Results::ACTUAL_VERS_GT_DB_OBJ, db_obj_name: 'MoabRecord', db_obj_version: moab_record.version)
           update_moab_record_preserved_object_or_set_status
         else # incoming_version < moab_record.version
           status_handler.validate_moab_on_storage_and_set_status(found_expected_version: false, moab_on_storage_validator: moab_on_storage_validator)
-          results.add_result(Audit::Results::ACTUAL_VERS_LT_DB_OBJ, db_obj_name: 'MoabRecord', db_obj_version: moab_record.version)
+          results.add_result(Results::ACTUAL_VERS_LT_DB_OBJ, db_obj_name: 'MoabRecord', db_obj_version: moab_record.version)
         end
         moab_record.update_audit_timestamps(moab_on_storage_validator.ran_moab_validation?, true)
         moab_record.save!

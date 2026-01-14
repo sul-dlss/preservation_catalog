@@ -100,20 +100,19 @@ RSpec.describe MoabRecordService::CheckExistence do
           expect(ReplicationJob).not_to have_received(:perform_later)
         end
 
-        it_behaves_like 'calls AuditResultsReporter.report_results'
+        it_behaves_like 'calls ResultsReporter.report_results'
         it 'does not validate moab' do
           expect(moab_on_storage_validator).not_to receive(:moab_validation_errors)
           moab_record_service.execute
         end
 
         context 'returns' do
-          let(:audit_result) { moab_record_service.execute }
-          let(:results) { audit_result.results }
+          let(:results) { moab_record_service.execute }
 
           it '1 VERSION_MATCHES result' do
-            expect(audit_result).to be_an_instance_of Audit::Results
+            expect(results).to be_an_instance_of Results
             expect(results.size).to eq 1
-            expect(results).to include(a_hash_including(Audit::Results::VERSION_MATCHES => version_matches_moab_record_msg))
+            expect(results.to_a).to include(a_hash_including(Results::VERSION_MATCHES => version_matches_moab_record_msg))
           end
         end
       end
@@ -203,17 +202,17 @@ RSpec.describe MoabRecordService::CheckExistence do
             end
           end
 
-          it_behaves_like 'calls AuditResultsReporter.report_results'
+          it_behaves_like 'calls ResultsReporter.report_results'
 
           context 'returns' do
-            let(:results) { moab_record_service.execute.results }
+            let(:results) { moab_record_service.execute }
 
             before { allow(moab_on_storage_validator).to receive(:moab_validation_errors).and_return([]) }
 
             it 'ACTUAL_VERS_GT_DB_OBJ results' do
-              expect(results).to be_an Array
+              expect(results).to be_an Results
               expect(results.size).to eq 1
-              expect(results.first).to include(Audit::Results::ACTUAL_VERS_GT_DB_OBJ => version_gt_moab_record_msg)
+              expect(results.first).to include(Results::ACTUAL_VERS_GT_DB_OBJ => version_gt_moab_record_msg)
             end
           end
         end
@@ -302,23 +301,23 @@ RSpec.describe MoabRecordService::CheckExistence do
             expect(ReplicationJob).not_to have_received(:perform_later)
           end
 
-          it_behaves_like 'calls AuditResultsReporter.report_results'
+          it_behaves_like 'calls ResultsReporter.report_results'
 
           context 'returns' do
-            let(:results) { invalid_moab_record_service.execute.results }
+            let(:results) { invalid_moab_record_service.execute }
 
             it '3 results' do
-              expect(results).to be_an_instance_of Array
+              expect(results).to be_an_instance_of Results
               expect(results.size).to eq 3
             end
 
             it 'ACTUAL_VERS_GT_DB_OBJ results' do
-              code = Audit::Results::ACTUAL_VERS_GT_DB_OBJ
-              expect(results).to include(a_hash_including(code => version_gt_moab_record_msg))
+              code = Results::ACTUAL_VERS_GT_DB_OBJ
+              expect(results.to_a).to include(a_hash_including(code => version_gt_moab_record_msg))
             end
 
             it 'INVALID_MOAB result' do
-              expect(results).to include(a_hash_including(Audit::Results::INVALID_MOAB))
+              expect(results.to_a).to include(a_hash_including(Results::INVALID_MOAB))
             end
           end
         end
@@ -391,13 +390,13 @@ RSpec.describe MoabRecordService::CheckExistence do
           end
 
           context 'DB_UPDATE_FAILED error' do
-            let(:results) { moab_record_service.execute.results }
-            let(:result_code) { Audit::Results::DB_UPDATE_FAILED }
+            let(:results) { moab_record_service.execute }
+            let(:result_code) { Results::DB_UPDATE_FAILED }
 
             it 'returns expected message(s)' do
-              expect(results).to include(a_hash_including(result_code => a_string_matching(db_update_failed_prefix)))
-              expect(results).to include(a_hash_including(result_code => a_string_matching('ActiveRecord::ActiveRecordError')))
-              expect(results).to include(a_hash_including(result_code => a_string_matching('foo')))
+              expect(results.to_a).to include(a_hash_including(result_code => a_string_matching(db_update_failed_prefix)))
+              expect(results.to_a).to include(a_hash_including(result_code => a_string_matching('ActiveRecord::ActiveRecordError')))
+              expect(results.to_a).to include(a_hash_including(result_code => a_string_matching('foo')))
             end
           end
         end
@@ -486,17 +485,16 @@ RSpec.describe MoabRecordService::CheckExistence do
             expect(new_moab_record.status).to eq 'validity_unknown'
           end
 
-          it_behaves_like 'calls AuditResultsReporter.report_results'
+          it_behaves_like 'calls ResultsReporter.report_results'
 
           context 'returns' do
-            let(:audit_result) { moab_record_service.execute }
-            let(:results) { audit_result.results }
+            let(:results) { moab_record_service.execute }
 
             it 'returns 2 results including expected messages' do
-              expect(audit_result).to be_an_instance_of Audit::Results
+              expect(results).to be_an_instance_of Results
               expect(results.size).to eq 2
-              expect(results).to include(a_hash_including(Audit::Results::DB_OBJ_DOES_NOT_EXIST => exp_moab_record_not_exist_msg))
-              expect(results).to include(a_hash_including(Audit::Results::CREATED_NEW_OBJECT => exp_obj_created_msg))
+              expect(results.to_a).to include(a_hash_including(Results::DB_OBJ_DOES_NOT_EXIST => exp_moab_record_not_exist_msg))
+              expect(results.to_a).to include(a_hash_including(Results::CREATED_NEW_OBJECT => exp_obj_created_msg))
             end
           end
 
@@ -506,7 +504,7 @@ RSpec.describe MoabRecordService::CheckExistence do
               preserved_object = instance_double(PreservedObject, _last_transaction_return_status: nil)
               allow(preserved_object).to receive(:create_moab_record!).and_raise(ActiveRecord::ActiveRecordError, 'foo')
               allow(PreservedObject).to receive(:create!).with(hash_including(druid: valid_druid)).and_return(preserved_object)
-              moab_record_service.execute.results
+              moab_record_service.execute
             end
 
             it 'transaction is rolled back' do
@@ -515,12 +513,12 @@ RSpec.describe MoabRecordService::CheckExistence do
             end
 
             context 'DB_UPDATE_FAILED error' do
-              let(:result_code) { Audit::Results::DB_UPDATE_FAILED }
+              let(:result_code) { Results::DB_UPDATE_FAILED }
 
               it 'returns expected message(s)' do
-                expect(results).to include(a_hash_including(result_code => a_string_matching(db_update_failed_prefix)))
-                expect(results).to include(a_hash_including(result_code => a_string_matching('ActiveRecord::ActiveRecordError')))
-                expect(results).to include(a_hash_including(result_code => a_string_matching('foo')))
+                expect(results.to_a).to include(a_hash_including(result_code => a_string_matching(db_update_failed_prefix)))
+                expect(results.to_a).to include(a_hash_including(result_code => a_string_matching('ActiveRecord::ActiveRecordError')))
+                expect(results.to_a).to include(a_hash_including(result_code => a_string_matching('foo')))
               end
             end
           end
@@ -550,29 +548,28 @@ RSpec.describe MoabRecordService::CheckExistence do
             expect(new_moab_record.preserved_object.druid).to eq(invalid_druid)
           end
 
-          it_behaves_like 'calls AuditResultsReporter.report_results'
+          it_behaves_like 'calls ResultsReporter.report_results'
 
           context 'returns' do
-            let(:audit_result) { moab_record_service.execute }
-            let(:results) { audit_result.results }
+            let(:results) { moab_record_service.execute }
 
             it '3 results with expected messages' do
               exp_moab_errs_msg = 'Invalid Moab, validation errors: ["Missing directory: [\\"data\\", \\"manifests\\"] Version: v0001"]'
-              expect(audit_result).to be_an_instance_of Audit::Results
+              expect(results).to be_an_instance_of Results
               expect(results.size).to eq 3
-              expect(results).to include(a_hash_including(Audit::Results::INVALID_MOAB => exp_moab_errs_msg))
-              expect(results).to include(a_hash_including(Audit::Results::DB_OBJ_DOES_NOT_EXIST => exp_moab_record_not_exist_msg))
-              expect(results).to include(a_hash_including(Audit::Results::CREATED_NEW_OBJECT => exp_obj_created_msg))
+              expect(results.to_a).to include(a_hash_including(Results::INVALID_MOAB => exp_moab_errs_msg))
+              expect(results.to_a).to include(a_hash_including(Results::DB_OBJ_DOES_NOT_EXIST => exp_moab_record_not_exist_msg))
+              expect(results.to_a).to include(a_hash_including(Results::CREATED_NEW_OBJECT => exp_obj_created_msg))
             end
           end
 
           context 'db update error (ActiveRecordError)' do
-            let(:result_code) { Audit::Results::DB_UPDATE_FAILED }
+            let(:result_code) { Results::DB_UPDATE_FAILED }
             let(:results) do
               preserved_object = instance_double(PreservedObject, _last_transaction_return_status: nil)
               allow(preserved_object).to receive(:create_moab_record!).and_raise(ActiveRecord::ActiveRecordError, 'foo')
               allow(PreservedObject).to receive(:create!).with(hash_including(druid: invalid_druid)).and_return(preserved_object)
-              moab_record_service.execute.results
+              moab_record_service.execute
             end
 
             before { allow(Rails.logger).to receive(:log) }
@@ -583,9 +580,9 @@ RSpec.describe MoabRecordService::CheckExistence do
             end
 
             it 'DB_UPDATE_FAILED error includes expected message(s)' do
-              expect(results).to include(a_hash_including(result_code => a_string_matching(db_update_failed_prefix)))
-              expect(results).to include(a_hash_including(result_code => a_string_matching('ActiveRecord::ActiveRecordError')))
-              expect(results).to include(a_hash_including(result_code => a_string_matching('foo')))
+              expect(results.to_a).to include(a_hash_including(result_code => a_string_matching(db_update_failed_prefix)))
+              expect(results.to_a).to include(a_hash_including(result_code => a_string_matching('ActiveRecord::ActiveRecordError')))
+              expect(results.to_a).to include(a_hash_including(result_code => a_string_matching('foo')))
             end
           end
         end

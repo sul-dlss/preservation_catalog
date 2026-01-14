@@ -2,10 +2,10 @@
 
 require 'rails_helper'
 
-RSpec.describe AuditResultsReporter do
-  let(:reporter) { described_class.new(audit_results: audit_results) }
+RSpec.describe ResultsReporter do
+  let(:reporter) { described_class.new(results: results) }
   let(:actual_version) { 6 }
-  let(:audit_results) { Audit::Results.new(druid: druid, actual_version: actual_version, moab_storage_root: ms_root) }
+  let(:results) { Results.new(druid: druid, actual_version: actual_version, moab_storage_root: ms_root) }
   let(:druid) { 'ab123cd4567' }
   let(:ms_root) { MoabStorageRoot.find_by(storage_location: 'spec/fixtures/storage_root01/sdr2objects') }
 
@@ -21,11 +21,11 @@ RSpec.describe AuditResultsReporter do
       allow(ResultsReporters::HoneybadgerReporter).to receive(:new).and_return(honeybadger_reporter)
       allow(ResultsReporters::LoggerReporter).to receive(:new).and_return(logger_reporter)
 
-      audit_results.add_result(Audit::Results::INVALID_MOAB, [
-                                 "Version directory name not in 'v00xx' format: original-v1",
-                                 'Version v0005: No files present in manifest dir'
-                               ])
-      audit_results.add_result(Audit::Results::MOAB_RECORD_STATUS_CHANGED, old_status: 'invalid_checksum', new_status: 'ok')
+      results.add_result(Results::INVALID_MOAB, [
+                           "Version directory name not in 'v00xx' format: original-v1",
+                           'Version v0005: No files present in manifest dir'
+                         ])
+      results.add_result(Results::MOAB_RECORD_STATUS_CHANGED, old_status: 'invalid_checksum', new_status: 'ok')
     end
 
     it 'invokes the reporters' do

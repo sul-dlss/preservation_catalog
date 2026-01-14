@@ -8,7 +8,7 @@ module Audit
       @logger ||= ActiveSupport::BroadcastLogger.new(Logger.new($stdout), Logger.new(Rails.root.join('log', 'audit_checksum_validation.log')))
     end
 
-    # @return [Array<Audit::Results>] results from Audit::ChecksumValidationService runs
+    # @return [Array<Results>] results from Audit::ChecksumValidationService runs
     def self.validate_druid(druid)
       logger.info "#{Time.now.utc.iso8601} CV validate_druid starting for #{druid}"
       preserved_object = PreservedObject.find_by(druid: druid)
@@ -17,7 +17,7 @@ module Audit
       if moab_record
         cv = Audit::ChecksumValidationService.new(moab_record)
         cv.validate_checksums
-        logger.info "#{cv.results.results} for #{druid}"
+        logger.info "#{cv.results.to_a} for #{druid}"
         cv.results
       end
     ensure

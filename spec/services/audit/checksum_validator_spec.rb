@@ -8,7 +8,7 @@ RSpec.describe Audit::ChecksumValidator do
   let(:moab_storage_object) { MoabOnStorage.moab(storage_location:, druid:) }
   let(:emit_results) { true }
 
-  let(:result_codes) { checksum_validator.results.results.map(&:keys).flatten }
+  let(:result_codes) { checksum_validator.results.map(&:keys).flatten }
 
   describe '#validate' do
     context 'valid moab' do
@@ -28,7 +28,7 @@ RSpec.describe Audit::ChecksumValidator do
 
       it 'does not detect errors' do
         expect { checksum_validator.validate }.to output(/#{Regexp.escape(expected_result_output)}/).to_stdout
-        expect(checksum_validator.results.results_as_string).not_to include('errors')
+        expect(checksum_validator.results.to_s).not_to include('errors')
         expect(result_codes).to be_empty
       end
     end
@@ -65,7 +65,7 @@ RSpec.describe Audit::ChecksumValidator do
 
       it 'detects errors' do
         expect { checksum_validator.validate }.to output(/#{Regexp.escape(expected_result_output)}/).to_stdout
-        expect(checksum_validator.results.results_as_string).to include('errors')
+        expect(checksum_validator.results.to_s).to include('errors')
         expect(result_codes).to eq(
           %i[moab_file_checksum_mismatch moab_file_checksum_mismatch file_not_in_signature_catalog
              file_not_in_signature_catalog moab_file_checksum_mismatch invalid_moab]

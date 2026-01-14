@@ -48,7 +48,7 @@ module Audit
 
       absent_from_signature_catalog_data = { file_path: data_file, signature_catalog_path: latest_signature_catalog_path }
 
-      results.add_result(Audit::Results::FILE_NOT_IN_SIGNATURE_CATALOG,
+      results.add_result(Results::FILE_NOT_IN_SIGNATURE_CATALOG,
                          absent_from_signature_catalog_data)
     end
 
@@ -68,30 +68,30 @@ module Audit
     def latest_signature_catalog_entries
       @latest_signature_catalog_entries ||= latest_moab_storage_object_version.signature_catalog.entries
     rescue Errno::ENOENT, NoMethodError # e.g. latest_moab_storage_object_version.signature_catalog is nil (signatureCatalog.xml does not exist)
-      results.add_result(Audit::Results::SIGNATURE_CATALOG_NOT_IN_MOAB, signature_catalog_path: latest_signature_catalog_path)
+      results.add_result(Results::SIGNATURE_CATALOG_NOT_IN_MOAB, signature_catalog_path: latest_signature_catalog_path)
       []
     rescue Nokogiri::XML::SyntaxError => e
-      results.add_result(Audit::Results::INVALID_MANIFEST, manifest_file_path: latest_signature_catalog_path, addl: e.inspect)
+      results.add_result(Results::INVALID_MANIFEST, manifest_file_path: latest_signature_catalog_path, addl: e.inspect)
       []
     end
 
     def validate_signature_catalog_listing
       latest_signature_catalog_entries.each { |entry| validate_signature_catalog_entry(entry) }
     rescue Errno::ENOENT
-      results.add_result(Audit::Results::SIGNATURE_CATALOG_NOT_IN_MOAB, signature_catalog_path: latest_signature_catalog_path)
+      results.add_result(Results::SIGNATURE_CATALOG_NOT_IN_MOAB, signature_catalog_path: latest_signature_catalog_path)
     rescue Nokogiri::XML::SyntaxError
-      results.add_result(Audit::Results::INVALID_MANIFEST, manifest_file_path: latest_signature_catalog_path)
+      results.add_result(Results::INVALID_MANIFEST, manifest_file_path: latest_signature_catalog_path)
     end
 
     def validate_signature_catalog_entry(entry)
       unless entry.signature.eql?(calculated_signature(signature_catalog_entry_path(entry)))
         mismatch_error_data = { file_path: signature_catalog_entry_path(entry), version: entry.version_id }
-        results.add_result(Audit::Results::MOAB_FILE_CHECKSUM_MISMATCH, mismatch_error_data)
+        results.add_result(Results::MOAB_FILE_CHECKSUM_MISMATCH, mismatch_error_data)
       end
     rescue Errno::ENOENT
       absent_from_moab_data = { manifest_file_path: latest_signature_catalog_path,
                                 file_path: signature_catalog_entry_path(entry) }
-      results.add_result(Audit::Results::FILE_NOT_IN_MOAB, absent_from_moab_data)
+      results.add_result(Results::FILE_NOT_IN_MOAB, absent_from_moab_data)
     end
 
     # @return [String]

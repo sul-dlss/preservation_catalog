@@ -11,12 +11,12 @@ RSpec.shared_examples 'replication to endpoint' do |provider_class, bucket_name,
   let(:bucket_name) { bucket_name }
   let(:matching_md5) { attributes_for(:zip_part)[:md5] }
   let(:non_matching_md5) { 'asdfasdfb43t347l;x5px54xx6549;f4' }
-  let(:results) { Audit::Results.new(druid: zmv.preserved_object.druid, moab_storage_root: zmv.zip_endpoint, check_name: check_name) }
+  let(:results) { Results.new(druid: zmv.preserved_object.druid, moab_storage_root: zmv.zip_endpoint, check_name: check_name) }
   let(:endpoint_name) { zmv.zip_endpoint.endpoint_name }
   let(:provider) { instance_double(provider_class) }
 
   before do
-    allow(Audit::Results).to receive(:new).and_return(results)
+    allow(Results).to receive(:new).and_return(results)
     allow(provider_class).to receive(:new).and_return(provider)
     allow(provider).to receive_messages(bucket: bucket, bucket_name: bucket_name)
   end
@@ -135,8 +135,8 @@ RSpec.shared_examples 'replication to endpoint' do |provider_class, bucket_name,
       described_class.check_replicated_zipped_moab_version(zmv, results)
       zmv.zip_parts.each do |part|
         msg = "replicated part not found on #{endpoint_name}: #{part.s3_key} was not found on #{bucket_name}"
-        expect(results.results).to include(
-          a_hash_including(Audit::Results::ZIP_PART_NOT_FOUND => msg)
+        expect(results.to_a).to include(
+          a_hash_including(Results::ZIP_PART_NOT_FOUND => msg)
         )
         expect(part.status).to eq('not_found')
       end
@@ -168,12 +168,12 @@ RSpec.shared_examples 'replication to endpoint' do |provider_class, bucket_name,
 
       it "doesn't log checksum mismatches" do
         described_class.check_replicated_zipped_moab_version(zmv, results)
-        expect(results.results).not_to include(a_hash_including(Audit::Results::ZIP_PART_CHECKSUM_MISMATCH))
+        expect(results.to_a).not_to include(a_hash_including(Results::ZIP_PART_CHECKSUM_MISMATCH))
       end
 
       it "doesn't log not found errors" do
         described_class.check_replicated_zipped_moab_version(zmv, results)
-        expect(results.results).not_to include(a_hash_including(Audit::Results::ZIP_PART_NOT_FOUND))
+        expect(results.to_a).not_to include(a_hash_including(Results::ZIP_PART_NOT_FOUND))
       end
 
       it 'updates existence check timestamps' do
@@ -207,7 +207,7 @@ RSpec.shared_examples 'replication to endpoint' do |provider_class, bucket_name,
         zmv.zip_parts.where(suffix: ['.zip', '.z01']).find_each do |part|
           msg = "replicated md5 mismatch on #{endpoint_name}: #{part.s3_key} catalog md5 (#{part.md5}) " \
                 "doesn't match the replicated md5 (#{non_matching_md5}) on #{bucket_name}"
-          expect(results.results).to include(a_hash_including(Audit::Results::ZIP_PART_CHECKSUM_MISMATCH => msg))
+          expect(results.to_a).to include(a_hash_including(Results::ZIP_PART_CHECKSUM_MISMATCH => msg))
         end
       end
 
@@ -279,13 +279,13 @@ RSpec.shared_examples 'replication to endpoint' do |provider_class, bucket_name,
 
         [zmv.zip_parts.first, zmv.zip_parts.fourth].each do |part|
           msg = "replicated part not found on #{endpoint_name}: #{part.s3_key} was not found on #{bucket_name}"
-          expect(results.results).to include(a_hash_including(Audit::Results::ZIP_PART_NOT_FOUND => msg))
+          expect(results.to_a).to include(a_hash_including(Results::ZIP_PART_NOT_FOUND => msg))
         end
       end
 
       it "doesn't log checksum mismatches" do
         described_class.check_replicated_zipped_moab_version(zmv, results)
-        expect(results.results).not_to include(a_hash_including(Audit::Results::ZIP_PART_CHECKSUM_MISMATCH))
+        expect(results.to_a).not_to include(a_hash_including(Results::ZIP_PART_CHECKSUM_MISMATCH))
       end
     end
 
@@ -298,7 +298,7 @@ RSpec.shared_examples 'replication to endpoint' do |provider_class, bucket_name,
         described_class.check_replicated_zipped_moab_version(zmv, results)
         [zmv.zip_parts.first, zmv.zip_parts.fourth].each do |part|
           msg = "replicated part not found on #{endpoint_name}: #{part.s3_key} was not found on #{bucket_name}"
-          expect(results.results).to include(a_hash_including(Audit::Results::ZIP_PART_NOT_FOUND => msg))
+          expect(results.to_a).to include(a_hash_including(Results::ZIP_PART_NOT_FOUND => msg))
         end
       end
 
@@ -307,7 +307,7 @@ RSpec.shared_examples 'replication to endpoint' do |provider_class, bucket_name,
         msg = "replicated md5 mismatch on #{endpoint_name}: #{part.s3_key} catalog md5 (#{part.md5}) " \
               "doesn't match the replicated md5 (#{non_matching_md5}) on #{bucket_name}"
         described_class.check_replicated_zipped_moab_version(zmv, results)
-        expect(results.results).to include(a_hash_including(Audit::Results::ZIP_PART_CHECKSUM_MISMATCH => msg))
+        expect(results.to_a).to include(a_hash_including(Results::ZIP_PART_CHECKSUM_MISMATCH => msg))
       end
     end
   end

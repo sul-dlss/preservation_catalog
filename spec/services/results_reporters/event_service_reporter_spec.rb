@@ -16,12 +16,12 @@ RSpec.describe ResultsReporters::EventServiceReporter do
   describe '#report_errors' do
     context 'when INVALID_MOAB' do
       let(:result1) do
-        { Audit::Results::INVALID_MOAB => 'Invalid Moab, validation errors: [Version directory name not in ' \
-                                          "'v00xx' format: original-v1]" }
+        { Results::INVALID_MOAB => 'Invalid Moab, validation errors: [Version directory name not in ' \
+                                   "'v00xx' format: original-v1]" }
       end
       let(:result2) do
-        { Audit::Results::INVALID_MOAB => 'Invalid Moab, validation errors: [Version directory name not in ' \
-                                          "'v00xx' format: original-v2]" }
+        { Results::INVALID_MOAB => 'Invalid Moab, validation errors: [Version directory name not in ' \
+                                   "'v00xx' format: original-v2]" }
       end
 
       it 'creates events' do # rubocop:disable RSpec/ExampleLength
@@ -62,8 +62,8 @@ RSpec.describe ResultsReporters::EventServiceReporter do
     end
 
     context 'when other errors' do
-      let(:result1) { { Audit::Results::DB_VERSIONS_DISAGREE => 'does not match PreservedObject current_version' } }
-      let(:result2) { { Audit::Results::UNEXPECTED_VERSION => 'actual version (6) has unexpected relationship to db version' } }
+      let(:result1) { { Results::DB_VERSIONS_DISAGREE => 'does not match PreservedObject current_version' } }
+      let(:result2) { { Results::UNEXPECTED_VERSION => 'actual version (6) has unexpected relationship to db version' } }
 
       it 'merges errors and creates single event' do
         described_class.new.report_errors(druid: druid,
@@ -89,7 +89,7 @@ RSpec.describe ResultsReporters::EventServiceReporter do
   end
 
   describe '#report_completed' do
-    let(:result) { { Audit::Results::MOAB_RECORD_STATUS_CHANGED => 'MoabRecord status changed from invalid_moab' } }
+    let(:result) { { Results::MOAB_RECORD_STATUS_CHANGED => 'MoabRecord status changed from invalid_moab' } }
 
     it 'creates events' do
       described_class.new.report_completed(druid: druid, version: actual_version, storage_area: ms_root, check_name: check_name, result: result)
