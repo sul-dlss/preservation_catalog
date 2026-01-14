@@ -1,7 +1,19 @@
 # frozen_string_literal: true
 
 module Audit
-  # Audit::Results allows the correct granularity of auditing information to be modeled in various contexts.
+  # Audit::Results provides a general purpose data structure for services to track actions that are
+  # performed (e.g., created a new object) and states that are determined (e.g., a moab on disk is invalid).
+
+  # Results may indicate an error or may be merely informative.
+  # This is dependent on the context, so it is important to know what a result means, how it is
+  # created, and how it is used.
+
+  # In many cases, results are provided to ResultsReporters, which will selectively notify for some results.
+  # Notications include logging, HB alerting, and reporting a DSA event.
+
+  # Calling code may also take action based on the results. For example, CatalogController.create and
+  # CatalogController.update will use result to determine which HTTP status to return.
+
   # All results are kept in the result_array attribute, which is returned by the report_results method.
   #   result_array = [result1, result2]
   #   result1 = {response_code => msg}
@@ -13,27 +25,36 @@ module Audit
     DB_OBJ_ALREADY_EXISTS = :db_obj_already_exists
     DB_OBJ_DOES_NOT_EXIST = :db_obj_does_not_exist
     DB_UPDATE_FAILED = :db_update_failed
+    # When PreservedObject.current_version and MoabRecord.version disagree
     DB_VERSIONS_DISAGREE = :db_versions_disagree
     FILE_NOT_IN_MANIFEST = :file_not_in_manifest
     FILE_NOT_IN_MOAB = :file_not_in_moab
     FILE_NOT_IN_SIGNATURE_CATALOG = :file_not_in_signature_catalog
+    # When MoabRecordService::* invoked with invalid arguments
     INVALID_ARGUMENTS = :invalid_arguments
     INVALID_MANIFEST = :invalid_manifest
     INVALID_MOAB = :invalid_moab
     MANIFEST_NOT_IN_MOAB = :manifest_not_in_moab
     MOAB_CHECKSUM_VALID = :moab_checksum_valid
     MOAB_FILE_CHECKSUM_MISMATCH = :moab_file_checksum_mismatch
+    # When moab not found on disk
     MOAB_NOT_FOUND = :moab_not_found
     MOAB_RECORD_STATUS_CHANGED = :moab_record_status_changed
     SIGNATURE_CATALOG_NOT_IN_MOAB = :signature_catalog_not_in_moab
     UNABLE_TO_CHECK_STATUS = :unable_to_check_status
+    # When MoabRecord version does not match moab on disk
     UNEXPECTED_VERSION = :unexpected_version
     VERSION_MATCHES = :version_matches
+    # When ZipPart md5 does not match zip part file md5 on endpoint
     ZIP_PART_CHECKSUM_MISMATCH = :zip_part_checksum_mismatch
+    # When expected zip part file not found on endpoint
     ZIP_PART_NOT_FOUND = :zip_part_not_found
+    # When ZippedMoabVersion.zip_part_count != ZippedMoabVersion.zip_parts.count
     ZIP_PARTS_COUNT_DIFFERS_FROM_ACTUAL = :zip_parts_count_differs_from_actual
+    # When total of ZipPart.size < Total of size of files for version on disk
     ZIP_PARTS_SIZE_INCONSISTENCY = :zip_parts_size_inconsistency
     ZIP_PARTS_NOT_ALL_REPLICATED = :zip_parts_not_all_replicated
+    # When no ZipParts exist for a ZippedMoabVersion yet
     ZIP_PARTS_NOT_CREATED = :zip_parts_not_created
 
     RESPONSE_CODE_TO_MESSAGES = {
@@ -78,7 +99,7 @@ module Audit
                                       'Sum of ZippedMoabVersion child part sizes (%{total_part_size}) is less than what is in ' \
                                       'the Moab: %{moab_version_size}',
       ZIP_PARTS_NOT_ALL_REPLICATED => '%{version} on %{endpoint_name}: not all ' \
-                                      'ZippedMoabVersion parts are replicated yet',
+                                      'ZippedMoabVersion parts are replicated yet: %{unreplicated_parts_list}',
       ZIP_PARTS_NOT_CREATED => '%{version} on %{endpoint_name}: no zip_parts exist yet for this ZippedMoabVersion'
     }.freeze
 
