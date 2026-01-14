@@ -18,7 +18,7 @@ class CatalogUtils
     storage_dir = "#{moab.object_pathname.to_s.split(storage_trunk).first}#{storage_trunk}"
     ms_root = MoabStorageRoot.find_by!(storage_location: storage_dir)
     results = MoabRecordService::CheckExistence.execute(druid: druid, incoming_version: moab.current_version_id, incoming_size: moab.size,
-                                                        moab_storage_root: ms_root).results
+                                                        moab_storage_root: ms_root).to_a
     logger.info "#{results} for #{druid}"
     results
   rescue TypeError
@@ -40,7 +40,7 @@ class CatalogUtils
     MoabOnStorage::StorageDirectory.find_moab_paths(storage_dir) do |druid, path, _path_match_data|
       moab = Moab::StorageObject.new(druid, path)
       results << MoabRecordService::CreateAfterValidation.execute(druid: druid, incoming_version: moab.current_version_id,
-                                                                  incoming_size: moab.size, moab_storage_root: ms_root).results
+                                                                  incoming_size: moab.size, moab_storage_root: ms_root).to_a
     end
     results
   ensure

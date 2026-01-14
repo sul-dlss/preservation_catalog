@@ -15,7 +15,8 @@ RSpec.describe ResultsReporters::HoneybadgerReporter do
     context 'when handled error' do
       context 'when storage_area is a moab storage root' do
         let(:storage_area) { MoabStorageRoot.find_by(storage_location: 'spec/fixtures/storage_root01/sdr2objects') }
-        let(:result1) { { Audit::Results::MOAB_NOT_FOUND => 'db MoabRecord exists but Moab not found' } }
+        let(:result1) { { Results::MOAB_NOT_FOUND => 'db MoabRecord exists but Moab not found' } }
+        let(:result2) { { Results::ZIP_PART_NOT_FOUND => 'replicated part not found' } }
 
         it 'notifies for each error' do
           described_class.new.report_errors(druid: druid,
@@ -36,8 +37,8 @@ RSpec.describe ResultsReporters::HoneybadgerReporter do
 
       context 'when storage_area is a cloud endpoint' do
         let(:storage_area) { ZipEndpoint.find_by(endpoint_name: 'aws_s3_west_2') }
-        let(:result1) { { Audit::Results::ZIP_PART_CHECKSUM_MISMATCH => 'local value for zip part checksum does not match cloud metadata' } }
-        let(:result2) { { Audit::Results::ZIP_PART_NOT_FOUND => 'replicated part not found' } }
+        let(:result1) { { Results::ZIP_PART_CHECKSUM_MISMATCH => 'local value for zip part checksum does not match cloud metadata' } }
+        let(:result2) { { Results::ZIP_PART_NOT_FOUND => 'replicated part not found' } }
 
         it 'notifies for each error' do
           described_class.new.report_errors(druid: druid,
@@ -67,7 +68,7 @@ RSpec.describe ResultsReporters::HoneybadgerReporter do
 
     context 'when ignored error' do
       let(:storage_area) { ZipEndpoint.find_by(endpoint_name: 'aws_s3_west_2') }
-      let(:result) { { Audit::Results::ZIP_PARTS_NOT_CREATED => 'no zip_parts exist yet for this ZippedMoabVersion' } }
+      let(:result) { { Results::ZIP_PARTS_NOT_CREATED => 'no zip_parts exist yet for this ZippedMoabVersion' } }
 
       it 'does not notify' do
         described_class.new.report_errors(druid: druid, version: actual_version, storage_area:, check_name: check_name, results: [result])
@@ -78,7 +79,7 @@ RSpec.describe ResultsReporters::HoneybadgerReporter do
 
   describe '#report_completed' do
     let(:storage_area) { MoabStorageRoot.find_by(storage_location: 'spec/fixtures/storage_root01/sdr2objects') }
-    let(:result) { { Audit::Results::MOAB_RECORD_STATUS_CHANGED => 'MoabRecord status changed from invalid_moab' } }
+    let(:result) { { Results::MOAB_RECORD_STATUS_CHANGED => 'MoabRecord status changed from invalid_moab' } }
 
     it 'does not notify' do
       described_class.new.report_completed(druid: druid, version: actual_version, storage_area:, check_name: check_name, result: result)

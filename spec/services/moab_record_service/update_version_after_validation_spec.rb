@@ -376,28 +376,28 @@ RSpec.describe MoabRecordService::UpdateVersionAfterValidation do
             end
 
             context 'returns' do
-              let!(:results) { moab_record_service.execute.results }
+              let!(:results) { moab_record_service.execute }
 
               it '3 results' do
-                expect(results).to be_an_instance_of Array
+                expect(results).to be_an_instance_of Results
                 expect(results.size).to eq 3
               end
 
               it 'INVALID_MOAB result' do
-                code = Audit::Results::INVALID_MOAB
+                code = Results::INVALID_MOAB
                 invalid_moab_msg = 'Invalid Moab, validation errors: ["Missing directory: [\\"data\\", \\"manifests\\"] Version: v0001"]'
-                expect(results).to include(hash_including(code => invalid_moab_msg))
+                expect(results.to_a).to include(hash_including(code => invalid_moab_msg))
               end
 
               it 'DB_VERSIONS_DISAGREE result' do
-                code = Audit::Results::DB_VERSIONS_DISAGREE
+                code = Results::DB_VERSIONS_DISAGREE
                 mismatch_msg = 'MoabRecord version 3 does not match PreservedObject current_version 2'
-                expect(results).to include(hash_including(code => mismatch_msg))
+                expect(results.to_a).to include(hash_including(code => mismatch_msg))
               end
 
               it 'MOAB_RECORD_STATUS_CHANGED result' do
                 updated_status_msg_regex = Regexp.new('MoabRecord status changed from')
-                expect(results).to include(a_hash_including(Audit::Results::MOAB_RECORD_STATUS_CHANGED => updated_status_msg_regex))
+                expect(results.to_a).to include(a_hash_including(Results::MOAB_RECORD_STATUS_CHANGED => updated_status_msg_regex))
               end
             end
           end
@@ -430,28 +430,28 @@ RSpec.describe MoabRecordService::UpdateVersionAfterValidation do
             end
 
             context 'returns' do
-              let!(:results) { moab_record_service.execute(checksums_validated: true).results }
+              let!(:results) { moab_record_service.execute(checksums_validated: true) }
 
               it '3 results' do
-                expect(results).to be_an_instance_of Array
+                expect(results).to be_an_instance_of Results
                 expect(results.size).to eq 3
               end
 
               it 'INVALID_MOAB result' do
-                code = Audit::Results::INVALID_MOAB
+                code = Results::INVALID_MOAB
                 invalid_moab_msg = 'Invalid Moab, validation errors: ["Missing directory: [\\"data\\", \\"manifests\\"] Version: v0001"]'
-                expect(results).to include(hash_including(code => invalid_moab_msg))
+                expect(results.to_a).to include(hash_including(code => invalid_moab_msg))
               end
 
               it 'DB_VERSIONS_DISAGREE result' do
-                code = Audit::Results::DB_VERSIONS_DISAGREE
+                code = Results::DB_VERSIONS_DISAGREE
                 mismatch_msg = 'MoabRecord version 3 does not match PreservedObject current_version 2'
-                expect(results).to include(hash_including(code => mismatch_msg))
+                expect(results.to_a).to include(hash_including(code => mismatch_msg))
               end
 
               it 'MOAB_RECORD_STATUS_CHANGED result' do
                 updated_status_msg_regex = Regexp.new('MoabRecord status changed from')
-                expect(results).to include(a_hash_including(Audit::Results::MOAB_RECORD_STATUS_CHANGED => updated_status_msg_regex))
+                expect(results.to_a).to include(a_hash_including(Results::MOAB_RECORD_STATUS_CHANGED => updated_status_msg_regex))
               end
             end
           end
@@ -466,7 +466,7 @@ RSpec.describe MoabRecordService::UpdateVersionAfterValidation do
         end
 
         context 'db update error' do
-          let(:result_code) { Audit::Results::DB_UPDATE_FAILED }
+          let(:result_code) { Results::DB_UPDATE_FAILED }
 
           context 'MoabRecord' do
             context 'ActiveRecordError' do
@@ -475,20 +475,20 @@ RSpec.describe MoabRecordService::UpdateVersionAfterValidation do
                 allow(moab_record_service).to receive(:preserved_object).and_return(preserved_object)
                 allow(moab_record_service.preserved_object).to receive(:moab_record).and_return(moab_record)
                 allow(moab_record).to receive(:save!).and_raise(ActiveRecord::ActiveRecordError, 'foo')
-                moab_record_service.execute.results
+                moab_record_service.execute
               end
 
               context 'DB_UPDATE_FAILED error' do
                 it 'prefix' do
-                  expect(results).to include(a_hash_including(result_code => a_string_matching(db_update_failed_prefix)))
+                  expect(results.to_a).to include(a_hash_including(result_code => a_string_matching(db_update_failed_prefix)))
                 end
 
                 it 'specific exception raised' do
-                  expect(results).to include(a_hash_including(result_code => a_string_matching('ActiveRecord::ActiveRecordError')))
+                  expect(results.to_a).to include(a_hash_including(result_code => a_string_matching('ActiveRecord::ActiveRecordError')))
                 end
 
                 it "exception's message" do
-                  expect(results).to include(a_hash_including(result_code => a_string_matching('foo')))
+                  expect(results.to_a).to include(a_hash_including(result_code => a_string_matching('foo')))
                 end
               end
             end

@@ -7,7 +7,7 @@ module ResultsReporters
 
     def handled_single_codes
       [
-        Audit::Results::INVALID_MOAB
+        Results::INVALID_MOAB
       ]
     end
 
@@ -18,19 +18,19 @@ module ResultsReporters
     # other reporters.
     def handled_merge_codes
       [
-        Audit::Results::ACTUAL_VERS_LT_DB_OBJ,
-        Audit::Results::DB_UPDATE_FAILED,
-        Audit::Results::DB_VERSIONS_DISAGREE,
-        Audit::Results::FILE_NOT_IN_MANIFEST,
-        Audit::Results::FILE_NOT_IN_MOAB,
-        Audit::Results::FILE_NOT_IN_SIGNATURE_CATALOG,
-        Audit::Results::INVALID_MANIFEST,
-        Audit::Results::MANIFEST_NOT_IN_MOAB,
-        Audit::Results::MOAB_FILE_CHECKSUM_MISMATCH,
-        Audit::Results::MOAB_NOT_FOUND,
-        Audit::Results::SIGNATURE_CATALOG_NOT_IN_MOAB,
-        Audit::Results::UNABLE_TO_CHECK_STATUS,
-        Audit::Results::UNEXPECTED_VERSION
+        Results::ACTUAL_VERS_LT_DB_OBJ,
+        Results::DB_UPDATE_FAILED,
+        Results::DB_VERSIONS_DISAGREE,
+        Results::FILE_NOT_IN_MANIFEST,
+        Results::FILE_NOT_IN_MOAB,
+        Results::FILE_NOT_IN_SIGNATURE_CATALOG,
+        Results::INVALID_MANIFEST,
+        Results::MANIFEST_NOT_IN_MOAB,
+        Results::MOAB_FILE_CHECKSUM_MISMATCH,
+        Results::MOAB_NOT_FOUND,
+        Results::SIGNATURE_CATALOG_NOT_IN_MOAB,
+        Results::UNABLE_TO_CHECK_STATUS,
+        Results::UNEXPECTED_VERSION
       ].freeze
     end
 

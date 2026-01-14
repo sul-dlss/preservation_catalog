@@ -50,7 +50,7 @@ module Audit
       #       validation.
       moab_on_storage_validator.moab_validation_errors
 
-      result_details = results.results.map { |result| "* #{result}" }.join("\n")
+      result_details = results.map { |result| "* #{result}" }.join("\n")
       logger.info("#{results.result_summary_msg}\n#{result_details}")
     end
 
@@ -59,7 +59,7 @@ module Audit
     end
 
     def moab_on_storage_validator
-      @moab_on_storage_validator ||= MoabOnStorage::Validator.new(moab: moab_storage_object, audit_results: results)
+      @moab_on_storage_validator ||= MoabOnStorage::Validator.new(moab: moab_storage_object, results: results)
     end
 
     def object_dir
@@ -71,8 +71,8 @@ module Audit
     end
 
     def results
-      @results ||= Audit::Results.new(druid:, moab_storage_root: storage_location, actual_version: moab_storage_object.current_version_id,
-                                      check_name: 'validate_checksums')
+      @results ||= Results.new(druid:, moab_storage_root: storage_location, actual_version: moab_storage_object.current_version_id,
+                               check_name: 'validate_checksums')
     end
 
     def storage_location

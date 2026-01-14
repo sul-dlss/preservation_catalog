@@ -52,12 +52,12 @@ RSpec.describe MoabRecordService::Create do
       moab_record_service.execute
       new_moab_record_service = described_class.new(druid: druid, incoming_version: incoming_version, incoming_size: incoming_size,
                                                     moab_storage_root: moab_storage_root)
-      audit_results = new_moab_record_service.execute
-      code = Audit::Results::DB_OBJ_ALREADY_EXISTS
-      expect(audit_results.results).to include(a_hash_including(code => a_string_matching('MoabRecord db object already exists')))
+      results = new_moab_record_service.execute
+      code = Results::DB_OBJ_ALREADY_EXISTS
+      expect(results.to_a).to include(a_hash_including(code => a_string_matching('MoabRecord db object already exists')))
     end
 
-    it_behaves_like 'calls AuditResultsReporter.report_results'
+    it_behaves_like 'calls ResultsReporter.report_results'
 
     context 'when ActiveRecordError is raised' do
       before do
@@ -67,11 +67,11 @@ RSpec.describe MoabRecordService::Create do
       end
 
       it 'returns audit results including DB_UPDATE_FAILED' do
-        expect(moab_record_service.execute.results).to include(a_hash_including(Audit::Results::DB_UPDATE_FAILED))
+        expect(moab_record_service.execute.to_a).to include(a_hash_including(Results::DB_UPDATE_FAILED))
       end
 
       it 'does not return audit results including CREATED_NEW_OBJECT' do
-        expect(moab_record_service.execute.results).not_to include(hash_including(Audit::Results::CREATED_NEW_OBJECT))
+        expect(moab_record_service.execute.to_a).not_to include(hash_including(Results::CREATED_NEW_OBJECT))
       end
     end
 
@@ -90,10 +90,10 @@ RSpec.describe MoabRecordService::Create do
     end
 
     it 'returns one result of CREATED_NEW_OBJECT' do
-      audit_result = moab_record_service.execute
-      expect(audit_result).to be_an_instance_of Audit::Results
-      expect(audit_result.results.size).to eq 1
-      expect(audit_result.results.first).to match(a_hash_including(Audit::Results::CREATED_NEW_OBJECT => expected_msg))
+      results = moab_record_service.execute
+      expect(results).to be_an_instance_of Results
+      expect(results.size).to eq 1
+      expect(results.first).to match(a_hash_including(Results::CREATED_NEW_OBJECT => expected_msg))
     end
   end
 end

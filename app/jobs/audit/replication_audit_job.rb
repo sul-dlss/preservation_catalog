@@ -13,8 +13,8 @@ module Audit
 
       preserved_object.populate_zipped_moab_versions!
 
-      ::Replication::AuditService.call(preserved_object: preserved_object).each do |audit_results|
-        AuditResultsReporter.report_results(audit_results: audit_results, logger: logger)
+      ::Replication::AuditService.call(preserved_object: preserved_object).each do |results|
+        ResultsReporter.report_results(results: results, logger: logger)
       end
 
       preserved_object.update!(last_archive_audit: Time.current)

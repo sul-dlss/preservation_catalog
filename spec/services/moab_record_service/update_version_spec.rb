@@ -145,20 +145,20 @@ RSpec.describe MoabRecordService::UpdateVersion do
           end
         end
 
-        it_behaves_like 'calls AuditResultsReporter.report_results'
+        it_behaves_like 'calls ResultsReporter.report_results'
 
         context 'returns' do
-          let!(:results) { moab_record_service.execute(checksums_validated: true).results }
+          let!(:results) { moab_record_service.execute(checksums_validated: true) }
 
           it '1 results' do
-            expect(results).to be_an_instance_of Array
+            expect(results).to be_an_instance_of Results
             expect(results.size).to eq 1
           end
 
           it 'ACTUAL_VERS_GT_DB_OBJ results' do
-            code = Audit::Results::ACTUAL_VERS_GT_DB_OBJ
+            code = Results::ACTUAL_VERS_GT_DB_OBJ
             version_greater_than_moab_record_msg = "actual version (#{incoming_version}) greater than MoabRecord db version (2)"
-            expect(results).to include(a_hash_including(code => version_greater_than_moab_record_msg))
+            expect(results.to_a).to include(a_hash_including(code => version_greater_than_moab_record_msg))
           end
         end
       end
@@ -178,7 +178,7 @@ RSpec.describe MoabRecordService::UpdateVersion do
       end
 
       context 'db update error' do
-        let(:result_code) { Audit::Results::DB_UPDATE_FAILED }
+        let(:result_code) { Results::DB_UPDATE_FAILED }
 
         context 'MoabRecord' do
           context 'ActiveRecordError' do
@@ -186,20 +186,20 @@ RSpec.describe MoabRecordService::UpdateVersion do
               allow(Rails.logger).to receive(:log)
               allow(moab_record_service).to receive_messages(preserved_object: preserved_object, moab_record: moab_record)
               allow(moab_record).to receive(:save!).and_raise(ActiveRecord::ActiveRecordError, 'foo')
-              moab_record_service.execute.results
+              moab_record_service.execute
             end
 
             context 'DB_UPDATE_FAILED error' do
               it 'prefix' do
-                expect(results).to include(a_hash_including(result_code => a_string_matching(db_update_failed_prefix)))
+                expect(results.to_a).to include(a_hash_including(result_code => a_string_matching(db_update_failed_prefix)))
               end
 
               it 'specific exception raised' do
-                expect(results).to include(a_hash_including(result_code => a_string_matching('ActiveRecord::ActiveRecordError')))
+                expect(results.to_a).to include(a_hash_including(result_code => a_string_matching('ActiveRecord::ActiveRecordError')))
               end
 
               it "exception's message" do
-                expect(results).to include(a_hash_including(result_code => a_string_matching('foo')))
+                expect(results.to_a).to include(a_hash_including(result_code => a_string_matching('foo')))
               end
             end
           end
@@ -212,20 +212,20 @@ RSpec.describe MoabRecordService::UpdateVersion do
               allow(Rails.logger).to receive(:log)
               allow(moab_record_service).to receive(:preserved_object).and_return(preserved_object)
               allow(preserved_object).to receive(:save!).and_raise(ActiveRecord::ActiveRecordError, 'foo')
-              moab_record_service.execute.results
+              moab_record_service.execute
             end
 
             context 'DB_UPDATE_FAILED error' do
               it 'prefix' do
-                expect(results).to include(a_hash_including(result_code => a_string_matching(db_update_failed_prefix)))
+                expect(results.to_a).to include(a_hash_including(result_code => a_string_matching(db_update_failed_prefix)))
               end
 
               it 'specific exception raised' do
-                expect(results).to include(a_hash_including(result_code => a_string_matching('ActiveRecord::ActiveRecordError')))
+                expect(results.to_a).to include(a_hash_including(result_code => a_string_matching('ActiveRecord::ActiveRecordError')))
               end
 
               it "exception's message" do
-                expect(results).to include(a_hash_including(result_code => a_string_matching('foo')))
+                expect(results.to_a).to include(a_hash_including(result_code => a_string_matching('foo')))
               end
             end
           end

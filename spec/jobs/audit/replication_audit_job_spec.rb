@@ -3,17 +3,17 @@
 require 'rails_helper'
 
 RSpec.describe Audit::ReplicationAuditJob do
-  let(:audit_results) { instance_double(Audit::Results) }
+  let(:results) { instance_double(Results) }
 
   before do
-    allow(Replication::AuditService).to receive(:call).and_return(audit_results_list)
+    allow(Replication::AuditService).to receive(:call).and_return(results_list)
     allow(ReplicationJob).to receive(:perform_later)
-    allow(AuditResultsReporter).to receive(:report_results)
+    allow(ResultsReporter).to receive(:report_results)
   end
 
   context 'when no failures and no created/incomplete ZippedMoabVersions' do
     let(:preserved_object) { create(:preserved_object, current_version: 1) }
-    let(:audit_results_list) { [] }
+    let(:results_list) { [] }
 
     before do
       ZipEndpoint.find_each do |zip_endpoint|
@@ -26,14 +26,14 @@ RSpec.describe Audit::ReplicationAuditJob do
 
       expect(preserved_object.reload.zipped_moab_versions.count).to eq ZipEndpoint.count
       expect(Replication::AuditService).to have_received(:call).with(preserved_object: preserved_object)
-      expect(AuditResultsReporter).not_to have_received(:report_results)
+      expect(ResultsReporter).not_to have_received(:report_results)
       expect(ReplicationJob).not_to have_received(:perform_later)
     end
   end
 
   context 'when not all ZippedMoabVersions exists' do
     let(:preserved_object) { create(:preserved_object, current_version: 2) }
-    let(:audit_results_list) { [audit_results] }
+    let(:results_list) { [results] }
 
     before do
       ZipEndpoint.find_each do |zip_endpoint|
@@ -47,13 +47,13 @@ RSpec.describe Audit::ReplicationAuditJob do
       expect(preserved_object.reload.zipped_moab_versions.count).to eq ZipEndpoint.count * 2
       expect(Replication::AuditService).to have_received(:call).with(preserved_object: preserved_object)
       expect(ReplicationJob).to have_received(:perform_later).with(preserved_object)
-      expect(AuditResultsReporter).to have_received(:report_results).with(audit_results:, logger: anything)
+      expect(ResultsReporter).to have_received(:report_results).with(results:, logger: anything)
     end
   end
 
   context 'when some ZippedMoabVersions have failed' do
     let(:preserved_object) { create(:preserved_object, current_version: 1) }
-    let(:audit_results_list) { [audit_results] }
+    let(:results_list) { [results] }
 
     before do
       ZipEndpoint.find_each do |zip_endpoint|
@@ -66,7 +66,7 @@ RSpec.describe Audit::ReplicationAuditJob do
 
       expect(Replication::AuditService).to have_received(:call).with(preserved_object: preserved_object)
       expect(ReplicationJob).not_to have_received(:perform_later)
-      expect(AuditResultsReporter).to have_received(:report_results).with(audit_results:, logger: anything)
+      expect(ResultsReporter).to have_received(:report_results).with(results:, logger: anything)
     end
   end
 end

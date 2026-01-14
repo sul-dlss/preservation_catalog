@@ -1,15 +1,15 @@
 # frozen_string_literal: true
 
-# Reports audit results to the Rails log, Honeybadger, Workflow Service, and Event Service.
-class AuditResultsReporter
-  def self.report_results(audit_results:, logger: nil)
-    new(audit_results: audit_results, logger: logger).report_results
-    # This replicates previous behavior of Audit::Results.report_results
-    audit_results.results
+# Reports results to the Rails log, Honeybadger, Workflow Service, and Event Service.
+class ResultsReporter
+  def self.report_results(results:, logger: nil)
+    new(results: results, logger: logger).report_results
+    # This replicates previous behavior of Results.report_results
+    results.to_a
   end
 
-  def initialize(audit_results:, logger: nil)
-    @audit_results = audit_results
+  def initialize(results:, logger: nil)
+    @results = results
     @logger = logger
   end
 
@@ -23,9 +23,9 @@ class AuditResultsReporter
 
   private
 
-  attr_reader :audit_results, :logger
+  attr_reader :results, :logger
 
-  delegate :druid, :moab_storage_root, :check_name, :actual_version, to: :audit_results
+  delegate :druid, :moab_storage_root, :check_name, :actual_version, to: :results
 
   def reporters
     @reporters ||= [
@@ -39,13 +39,13 @@ class AuditResultsReporter
   def report_errors
     reporters.each do |reporter|
       reporter.report_errors(druid: druid, version: actual_version, storage_area: moab_storage_root, check_name: check_name,
-                             results: audit_results.error_results)
+                             results: results.error_results)
     end
   end
 
   def report_completed
     reporters.each do |reporter|
-      audit_results.completed_results.each do |result|
+      results.completed_results.each do |result|
         reporter.report_completed(druid: druid, version: actual_version, storage_area: moab_storage_root, check_name: check_name, result: result)
       end
     end

@@ -15,7 +15,7 @@ RSpec.describe ResultsReporters::LoggerReporter do
   end
 
   describe '#report_errors' do
-    let(:result1) { { Audit::Results::DB_VERSIONS_DISAGREE => version_not_matched_str } }
+    let(:result1) { { Results::DB_VERSIONS_DISAGREE => version_not_matched_str } }
     let(:version_not_matched_str) { 'does not match PreservedObject current_version' }
 
     it 'logs to Rails logger' do
@@ -26,7 +26,7 @@ RSpec.describe ResultsReporters::LoggerReporter do
     end
 
     context 'when multiple results' do
-      let(:result2) { { Audit::Results::ZIP_PARTS_NOT_CREATED => zip_parts_not_created_str } }
+      let(:result2) { { Results::ZIP_PARTS_NOT_CREATED => zip_parts_not_created_str } }
       let(:zip_parts_not_created_str) { 'no zip_parts exist yet for this ZippedMoabVersion' }
 
       it 'logs each result' do
@@ -42,7 +42,7 @@ RSpec.describe ResultsReporters::LoggerReporter do
   end
 
   describe '#report_completed' do
-    let(:result) { { Audit::Results::MOAB_RECORD_STATUS_CHANGED => 'MoabRecord status changed from invalid_moab' } }
+    let(:result) { { Results::MOAB_RECORD_STATUS_CHANGED => 'MoabRecord status changed from invalid_moab' } }
 
     it 'logs to Rails logger' do
       described_class.new.report_completed(druid: druid, version: actual_version, storage_area: ms_root, check_name: check_name, result: result)
@@ -53,15 +53,15 @@ RSpec.describe ResultsReporters::LoggerReporter do
 
   describe '.logger_severity_level' do
     it 'DB_VERSIONS_DISAGREE is an ERROR' do
-      expect(described_class.new.send(:logger_severity_level, Audit::Results::DB_VERSIONS_DISAGREE)).to eq Logger::ERROR
+      expect(described_class.new.send(:logger_severity_level, Results::DB_VERSIONS_DISAGREE)).to eq Logger::ERROR
     end
 
     it 'DB_OBJ_DOES_NOT_EXIST is WARN' do
-      expect(described_class.new.send(:logger_severity_level, Audit::Results::DB_OBJ_DOES_NOT_EXIST)).to eq Logger::WARN
+      expect(described_class.new.send(:logger_severity_level, Results::DB_OBJ_DOES_NOT_EXIST)).to eq Logger::WARN
     end
 
     it 'CREATED_NEW_OBJECT is INFO' do
-      expect(described_class.new.send(:logger_severity_level, Audit::Results::CREATED_NEW_OBJECT)).to eq Logger::INFO
+      expect(described_class.new.send(:logger_severity_level, Results::CREATED_NEW_OBJECT)).to eq Logger::INFO
     end
 
     it 'default for unrecognized value is ERROR' do

@@ -50,8 +50,8 @@ RSpec.describe Audit::ChecksumValidatorUtils do
 
     it 'returns the checksum audit results' do
       checksum_results = described_class.validate_druid('bz514sm9647')
-      expect(checksum_results).to be_a(Audit::Results)
-      expect(checksum_results.contains_result_code?(Audit::Results::MOAB_CHECKSUM_VALID)).to be true
+      expect(checksum_results).to be_a(Results)
+      expect(checksum_results.contains_result_code?(Results::MOAB_CHECKSUM_VALID)).to be true
     end
   end
 
