@@ -87,25 +87,6 @@ If you've chosen to install Ruby dependencies you can run the app locally with:
 bin/dev
 ```
 
-If you prefer you can also run the web app inside of a Docker container:
-
-```sh
-docker compose build app
-```
-
-Bring up the docker container and its dependencies:
-
-```sh
-docker compose up -d
-```
-
-It does the same thing as the `db:reset` and `db:seed` above, but you can
-initialize the database directly from inside in the container if you like:
-
-```sh
-docker compose run app bundle exec rails db:reset db:seed
-```
-
 All set, now you can view the app:
 
 Visit `http://localhost:3000/dashboard/`
