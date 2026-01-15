@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_01_13_114437) do
+ActiveRecord::Schema[8.0].define(version: 2026_01_15_121204) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -90,6 +90,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_13_114437) do
     t.integer "status", default: 2, null: false
     t.datetime "status_updated_at", precision: nil
     t.integer "zip_parts_count"
+    t.string "status_details"
     t.index ["preserved_object_id", "zip_endpoint_id", "version"], name: "index_unique_on_zipped_moab_versions", unique: true
     t.index ["preserved_object_id"], name: "index_zipped_moab_versions_on_preserved_object_id"
     t.index ["status"], name: "index_zipped_moab_versions_on_status"

@@ -23,6 +23,7 @@ RSpec.describe Replication::ReplicateVersionService do
     allow(Replication::DruidVersionZipPart).to receive(:new).with(druid_version_zip, s3_key).and_return(druid_version_zip_part)
 
     allow(Replication::ProviderFactory).to receive(:create).and_return(provider)
+    allow(ResultsReporter).to receive(:report_results)
   end
 
   context 'when there are no created or incomplete ZippedMoabVersions' do
@@ -44,7 +45,7 @@ RSpec.describe Replication::ReplicateVersionService do
     before do
       create(:zipped_moab_version, status: :incomplete, preserved_object:, version:)
       # This stubs out the other parts that are not being tested here.
-      allow(subject).to receive_messages(no_zip_parts_on_endpoint?: false, md5_mismatch_for_md5_sidecar?: false)
+      allow(subject).to receive_messages(no_zip_parts_on_endpoint?: false, check_zip_parts_to_zip_file: nil)
       allow(subject).to receive(:replicate_incomplete_zipped_moab_versions)
 
       allow(Replication::DruidVersionZip).to receive(:new).and_return(druid_version_zip)
@@ -65,7 +66,7 @@ RSpec.describe Replication::ReplicateVersionService do
     end
 
     before do
-      allow(subject).to receive(:md5_mismatch_for_md5_sidecar?).and_return(false)
+      allow(subject).to receive(:check_zip_parts_to_zip_file).and_return(nil)
       allow(subject).to receive(:populate_zip_parts!)
       allow(subject).to receive(:replicate_incomplete_zipped_moab_versions)
 
@@ -75,28 +76,32 @@ RSpec.describe Replication::ReplicateVersionService do
     it 'resets the ZippedMoabVersion to created status and deletes any existing ZipParts' do
       expect { service.call }
         .to change { zipped_moab_version.reload.status }.from('incomplete').to('created')
+        .and change(zipped_moab_version, :status_details).from(nil).to('no zip part files found on endpoint')
         .and change { zipped_moab_version.zip_parts.count }.from(1).to(0)
     end
   end
 
-  context 'when there is a md5 mismatch for a zip part sidecar file' do
+  context 'when there is a md5 mismatch for a zip part file' do
     let!(:zipped_moab_version) do
       create(:zipped_moab_version, status: :incomplete, preserved_object:, version:).tap do |zipped_moab_version|
         create(:zip_part, zipped_moab_version:)
       end
     end
 
+    let(:results) { instance_double(Results, empty?: false, to_s: 'md5 mismatch for zip part sidecar file') }
+
     before do
       # This stubs out the other parts that are not being tested here.
       allow(subject).to receive(:no_zip_parts_on_endpoint?).and_return(false)
       allow(subject).to receive(:replicate_incomplete_zipped_moab_versions)
-
-      allow(druid_version_zip_part).to receive(:read_md5).and_return('differentmd5hashvalue1234')
+      allow(Replication::ZipPartsToZipFilesAuditService).to receive(:call).with(zipped_moab_version:).and_return(results)
     end
 
     it 'sets the ZippedMoabVersion status to failed' do
       expect { service.call }
         .to change { zipped_moab_version.reload.status }.from('incomplete').to('failed')
+        .and change(zipped_moab_version, :status_details).to('md5 mismatch for zip part sidecar file')
+      expect(ResultsReporter).to have_received(:report_results).with(results:)
     end
   end
 
@@ -134,13 +139,14 @@ RSpec.describe Replication::ReplicateVersionService do
       create(:zipped_moab_version, status: :incomplete, preserved_object:, version:)
     end
     let!(:zip_part) { create(:zip_part, zipped_moab_version:) }
+    let(:results) { instance_double(Results, empty?: true) }
 
     before do
       # This stubs out the other parts that are not being tested here.
       allow(subject).to receive(:create_zip_if_necessary)
-      allow(subject).to receive_messages(no_zip_parts_on_endpoint?: false, md5_mismatch_for_md5_sidecar?: false)
+      allow(subject).to receive_messages(no_zip_parts_on_endpoint?: false, check_zip_parts_to_zip_file: nil)
 
-      allow(Replication::ReplicateZipPartService).to receive(:call)
+      allow(Replication::ReplicateZipPartService).to receive(:call).and_return(results)
       allow(Dor::Event::Client).to receive(:create)
       allow(Socket).to receive(:gethostname).and_return('fakehost')
     end
@@ -165,24 +171,28 @@ RSpec.describe Replication::ReplicateVersionService do
     end
   end
 
-  context 'when replication raises DifferentPartFileFoundError' do
+  context 'when replication encounters an existing zip part file with an md5 mismatch' do
     let!(:zipped_moab_version) do
       create(:zipped_moab_version, status: :incomplete, preserved_object:, version:).tap do |zipped_moab_version|
-        create(:zip_part, zipped_moab_version:)
+        create_list(:zip_part, 2, zipped_moab_version:)
       end
     end
+    let(:results) { instance_double(Results, empty?: true) }
+    let(:error_results) { instance_double(Results, empty?: false, to_s: 'some error message') }
 
     before do
       # This stubs out the other parts that are not being tested here.
       allow(subject).to receive(:create_zip_if_necessary)
-      allow(subject).to receive_messages(no_zip_parts_on_endpoint?: false, md5_mismatch_for_md5_sidecar?: false)
+      allow(subject).to receive_messages(no_zip_parts_on_endpoint?: false, check_zip_parts_to_zip_file: nil)
 
-      allow(Replication::ReplicateZipPartService).to receive(:call).and_raise(Replication::ReplicateZipPartService::DifferentPartFileFoundError)
+      allow(Replication::ReplicateZipPartService).to receive(:call).and_return(results, error_results)
     end
 
     it 'sets the ZippedMoabVersion status to failed and notifies' do
-      expect { service.call }.to change { zipped_moab_version.reload.status }.from('incomplete').to('failed')
-
+      expect { service.call }
+        .to change { zipped_moab_version.reload.status }.from('incomplete').to('failed')
+        .and change(zipped_moab_version, :status_details).to('some error message')
+      expect(ResultsReporter).to have_received(:report_results).with(results: error_results)
       expect(druid_version_zip).to have_received(:cleanup_zip_parts!)
     end
   end

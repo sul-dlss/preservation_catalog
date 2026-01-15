@@ -3,11 +3,11 @@
 require 'rails_helper'
 
 RSpec.describe Replication::ReplicateZipPartService do
-  subject { described_class.new(zip_part:) }
+  subject(:results) { described_class.call(zip_part:) }
 
   let(:zip_part) { create(:zip_part, md5:) }
   let(:druid_version_zip_part) { instance_double(Replication::DruidVersionZipPart, file_path: '/path/to/file', read_md5: md5, size: 2048) }
-  let(:s3_part) { instance_double(Aws::S3::Object) }
+  let(:s3_part) { instance_double(Aws::S3::Object, bucket_name: 'test-bucket') }
   let(:md5) { '00236a2ae558018ed13b5222ef1bd977' }
   let(:transfer_manager) { instance_double(Aws::S3::TransferManager) }
   let(:bucket_name) { 'sul-sdr-aws-us-west-2-test' }
@@ -25,7 +25,7 @@ RSpec.describe Replication::ReplicateZipPartService do
 
   context 'when the zip part does not exist on the endpoint' do
     it 'uploads the zip part file to the endpoint' do
-      subject.call
+      expect(results.empty?).to be true
       expect(transfer_manager).to have_received(:upload_file)
         .with('/path/to/file',
               bucket: bucket_name,
@@ -40,7 +40,7 @@ RSpec.describe Replication::ReplicateZipPartService do
     end
 
     it 'does not re-upload the zip part file' do
-      subject.call
+      expect(results.empty?).to be true
       expect(transfer_manager).not_to have_received(:upload_file)
     end
   end
@@ -50,8 +50,8 @@ RSpec.describe Replication::ReplicateZipPartService do
       allow(s3_part).to receive_messages(exists?: true, metadata: { 'checksum_md5' => 'different_md5_value' })
     end
 
-    it 'raises' do
-      expect { subject.call }.to raise_error(Replication::ReplicateZipPartService::DifferentPartFileFoundError)
+    it 'adds to results' do
+      expect(results.to_s).to match(/replicated md5 mismatch on endpoint\d\d/)
       expect(transfer_manager).not_to have_received(:upload_file)
     end
   end

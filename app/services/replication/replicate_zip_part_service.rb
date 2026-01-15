@@ -3,9 +3,6 @@
 module Replication
   # Service to replicate a single zip part to cloud endpoint
   class ReplicateZipPartService
-    # Raised when a part file is found at the endpoint and there is an md5 mismatch
-    class DifferentPartFileFoundError < StandardError; end
-
     def self.call(...)
       new(...).call
     end
@@ -14,23 +11,24 @@ module Replication
       @zip_part = zip_part
     end
 
-    # @raise [DifferentPartFileFoundError] if a different part file is found at the endpoint
+    # @return [Results] results of the replication attempt possibly including errors
     def call
       set_hb_context
 
-      return if already_replicated?
-      check_existing_part_file_on_endpoint
+      return results if already_replicated? || !check_existing_part_file_on_endpoint
 
       transfer_manager.upload_file(druid_version_zip_part.file_path,
                                    bucket: zip_part.zip_endpoint.bucket_name,
                                    key: zip_part.s3_key, metadata:)
+      results
     end
 
     private
 
     attr_reader :zip_part
 
-    delegate :s3_part, :druid_version_zip_part, to: :zip_part
+    delegate :s3_part, :druid_version_zip_part, :preserved_object, :zip_endpoint, to: :zip_part
+    delegate :druid, to: :preserved_object
 
     def zip_part_file_exists_on_endpoint?
       s3_part.exists?
@@ -60,8 +58,20 @@ module Replication
       }
     end
 
+    def results
+      @results ||= Results.new(druid:, moab_storage_root: zip_endpoint, check_name: 'ReplicateZipPartService')
+    end
+
     def check_existing_part_file_on_endpoint
-      raise DifferentPartFileFoundError if zip_part_file_exists_on_endpoint? && !zip_part_md5s_match?
+      return true if !zip_part_file_exists_on_endpoint? || zip_part_md5s_match?
+
+      results.add_result(Results::ZIP_PART_CHECKSUM_MISMATCH,
+                         endpoint_name: zip_endpoint.endpoint_name,
+                         s3_key: zip_part.s3_key,
+                         md5: zip_part.md5,
+                         replicated_checksum: s3_part.metadata['checksum_md5'],
+                         bucket_name: s3_part.bucket_name)
+      false
     end
 
     def transfer_manager
