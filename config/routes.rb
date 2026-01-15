@@ -23,6 +23,7 @@ Rails.application.routes.draw do
 
     resources :objects, only: %i[show] do
       member do
+        get 'ok'
         get 'checksum'
         get 'validate_moab'
         get 'file', format: false # no need to add extension to url
