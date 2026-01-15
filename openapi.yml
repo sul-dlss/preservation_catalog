@@ -124,6 +124,27 @@ paths:
           example: 'druid:bc123df4567.json'
           schema:
             $ref: '#/components/schemas/DruidWithOptionalFormat'
+  /v1/objects/{id}/ok:
+    get:
+      tags:
+        - objects
+      summary: Returns true if the object (MoabRecord) is not in an error state
+      responses:
+        '200':
+          description: Preserved object found
+          content:
+            application/json:
+              schema:
+                type: boolean
+        '404':
+          description: Preserved object not found
+      parameters:
+        - name: id
+          in: path
+          required: true
+          example: 'druid:bc123df4567'
+          schema:
+            $ref: '#/components/schemas/Druid'
   /v1/objects/{id}/validate_moab:
     get:
       tags:
