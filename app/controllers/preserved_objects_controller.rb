@@ -11,6 +11,10 @@ class PreservedObjectsController < ApplicationController
     end
   end
 
+  # attr_reader :preserved_object, :moab_record
+
+  delegate :moab_record, :zipped_moab_versions, to: :@preserved_object
+
   private
 
   def bare_druid

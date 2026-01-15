@@ -1,47 +1,16 @@
-<h1>Preserved Object: druid:<%= @preserved_object.druid %></h1>
-<h2>Details</h2>
-<ul>
-  <li>Druid: <%= @preserved_object.druid %></li>
-  <li>Current Version: <%= @preserved_object.current_version %></li>
-  <li>Created: <%= @preserved_object.created_at %></li>
-  <li>Last Updated: <%= @preserved_object.updated_at %></li>
-  <li>Last Archive Audit: <%= @preserved_object.last_archive_audit %></li>
-  <li>Robot Versioning Allowed: <%= @preserved_object.robot_versioning_allowed %></li>
-</ul>
+<div class="container m-10">
+  <h1 class="mb-4">Preserved Object: druid:<%= @preserved_object.druid %></h1>
+  <hr>
+  <div class="row">
+    <div class="col-md-6">
+      <%= render Show::DetailsComponent.new(preserved_object: @preserved_object) %>
+    </div>
+    <div class="col-md-6">
+      <%= render Show::MoabRecordComponent.new(moab_record: @preserved_object.moab_record) %>
+    </div>
+  </div>
 
-<% if @preserved_object.moab_record.present? %>
-  <h2>Moab Record</h2>
-  <ul>
-    <li>Version: <%= @preserved_object.moab_record.version %></li>
-    <li>Created: <%= @preserved_object.moab_record.created_at %></li>
-    <li>Last Updated: <%= @preserved_object.moab_record.updated_at %></li>
-    <li>Last Moab Validation: <%= @preserved_object.moab_record.last_moab_validation %></li>
-    <li>Last Checksum Validation: <%= @preserved_object.moab_record.last_checksum_validation %></li>
-    <li>Size: <%= @preserved_object.moab_record.size %></li>
-    <li>Status: <%= @preserved_object.moab_record.status %></li>
-    <li>Last Version Audit: <%= @preserved_object.moab_record.last_version_audit %></li>
-    <li>Status Details: <%= @preserved_object.moab_record.status_details %></li>
-  </ul>
-<% end %>
-
-<% @preserved_object.zipped_moab_versions.each do |zipped_moab| %>
-  <h2>Zipped Moab Version: <%= zipped_moab.version %></h2>
-  <ul>
-    <li>Created: <%= zipped_moab.created_at %></li>
-    <li>Last Updated: <%= zipped_moab.updated_at %></li>
-    <% zipped_moab.zip_parts.each do |part| %>
-      <li>Zip Part:
-        <ul>
-          <li>Size <%= part.size %></li>
-          <li>Checksum: <%= part.md5 %></li>
-          <li>Created At: <%= part.created_at %></li>
-          <li>Updated At: <%= part.updated_at %></li>
-          <li>Create Info: <%= part.create_info %></li>
-          <li>Status: <%= part.status %></li>
-          <li>Last Existence Check: <%= part.last_existence_check %></li>
-          <li>Last Checksum Validation: <%= part.last_checksum_validation %></li>
-        </ul>
-      </li>
-    <% end %>
-  </ul>
-<% end %>
+  <% @preserved_object.zipped_moab_versions.each do |zipped_moab_version| %>
+    <%= render Show::ZippedMoabVersionComponent.new(zipped_moab_version:) %>
+  <% end %>
+</div>
