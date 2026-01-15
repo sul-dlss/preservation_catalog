@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module Show
+  # Details about a PreservedObject
   class DetailsComponent < ViewComponent::Base
     attr_reader :preserved_object
 

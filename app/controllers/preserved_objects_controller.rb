@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# Minimal controller for PreservedObject
 class PreservedObjectsController < ApplicationController
   before_action :set_preserved_object, only: [:show]
 
@@ -10,10 +11,6 @@ class PreservedObjectsController < ApplicationController
       render plain: "PreservedObject with druid #{druid} not found", status: :not_found
     end
   end
-
-  # attr_reader :preserved_object, :moab_record
-
-  delegate :moab_record, :zipped_moab_versions, to: :@preserved_object
 
   private
 

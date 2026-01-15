@@ -1,16 +1,46 @@
-  <h2>Zipped Moab Version: <%= version %></h2>
-  <ul>
-    <li>Created: <%= created_at %></li>
-    <li>Last Updated: <%= updated_at %></li>
-    <li>Zip Endpoint: <%= endpoint_name %></li>
-    <li>Delivery Class: <%= delivery_class %></li>
-    <li>Endpoint Node: <%= endpoint_node %></li>
-    <li>Storage Location: <%= storage_location %></li>
+<div class="row">
+  <div class="col-md-6">
+    <table class="table table-sm mb-5 caption-header border">
+      <caption class="header ps-2" style="caption-side: top; background-color: var(--bs-table-border-color);">Zipped Moab Version</caption>
+      <tbody>
+        <tr>
+          <th scope="row">Version</th>
+          <td><%= version %></td>
+        </tr>
+        <tr>
+          <th scope="row">Created</th>
+          <td><%= created_at %></td>
+        </tr>
+        <tr>
+          <th scope="row">Last Updated</th>
+          <td><%= updated_at %></td>
+        </tr>
+        <tr>
+          <th scope="row">Zip Endpoint</th>
+          <td><%= endpoint_name %></td>
+        </tr>
+        <tr>
+          <th scope="row">Delivery Class</th>
+          <td><%= delivery_class %></td>
+        </tr>
+        <tr>
+          <th scope="row">Endpoint Node</th>
+          <td><%= endpoint_node %></td>
+        </tr>
+        <tr>
+          <th scope="row">Storage Location</th>
+          <td><%= storage_location %></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="col-md-6">
     <% if zip_parts.empty? %>
-      <li><strong>No zip parts available.</strong></li>
+      <p>No zip parts found for this zipped moab version.</p>
     <% else %>
       <% zip_parts.each do |zip_part| %>
         <%= render Show::ZipPartComponent.new(zip_part:) %>
       <% end %>
     <% end %>
-  </ul>
+  </div>
+</div>

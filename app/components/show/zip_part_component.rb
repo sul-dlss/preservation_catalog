@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module Show
+  # Details about a ZipPart
   class ZipPartComponent < ViewComponent::Base
     attr_reader :zip_part
 

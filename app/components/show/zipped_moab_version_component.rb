@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module Show
+  # Details about a ZippedMoabVersion
   class ZippedMoabVersionComponent < ViewComponent::Base
     attr_reader :zipped_moab_version
 
