@@ -24,7 +24,7 @@ module Replication
       zipped_moab_versions.incomplete.each do |zipped_moab_version|
         reset_to_created!(zipped_moab_version) if no_zip_parts_on_endpoint?(zipped_moab_version)
         # Check that the md5s for the local zip part files match those recorded in the db
-        zipped_moab_version.failed! if md5_mismatch_for_md5_sidecar?(zipped_moab_version)
+        check_zip_parts_to_zip_file(zipped_moab_version)
       end
 
       zipped_moab_versions.created.each do |zipped_moab_version|
@@ -61,7 +61,7 @@ module Replication
     def reset_to_created!(zipped_moab_version)
       ZippedMoabVersion.transaction do
         zipped_moab_version.zip_parts.destroy_all
-        zipped_moab_version.created!
+        zipped_moab_version.update!(status: 'created', status_details: 'no zip part files found on endpoint')
       end
     end
 
@@ -70,11 +70,12 @@ module Replication
       zipped_moab_version.zip_parts.none? { |zip_part| zip_part.s3_part.exists? }
     end
 
-    # @return [Boolean] true if the md5 from any md5 sidecar file does not match the ZipPart md5 field
-    def md5_mismatch_for_md5_sidecar?(zipped_moab_version)
-      zipped_moab_version.zip_parts.any? do |zip_part|
-        zip_part.md5 != zip_part.druid_version_zip_part.read_md5
-      end
+    def check_zip_parts_to_zip_file(zipped_moab_version)
+      results = Replication::ZipPartsToZipFilesAuditService.call(zipped_moab_version:)
+      return if results.empty?
+
+      ResultsReporter.report_results(results:)
+      zipped_moab_version.update!(status: 'failed', status_details: results.to_s, status_updated_at: Time.current)
     end
 
     def populate_zip_parts!(zipped_moab_version)
@@ -87,20 +88,26 @@ module Replication
           )
         end
         zipped_moab_version.update!(zip_parts_count: zipped_moab_version.zip_parts.count)
-        zipped_moab_version.incomplete!
+        zipped_moab_version.update!(status: 'incomplete', status_details: 'zip parts created, replication pending')
       end
     end
 
     def replicate_incomplete_zipped_moab_versions
       zipped_moab_versions.incomplete.each do |zipped_moab_version|
+        error_results = []
         zipped_moab_version.zip_parts.each do |zip_part|
-          Replication::ReplicateZipPartService.call(zip_part:)
+          if (results = Replication::ReplicateZipPartService.call(zip_part:)).present?
+            ResultsReporter.report_results(results:)
+            error_results << results
+          end
         end
-        zipped_moab_version.ok!
-        send_dsa_event(zipped_moab_version)
-      rescue Replication::ReplicateZipPartService::DifferentPartFileFoundError
-        zipped_moab_version.failed!
-        Honeybadger.notify('Replication failure')
+
+        if error_results.empty?
+          zipped_moab_version.update!(status: 'ok', status_details: 'replication complete')
+          send_dsa_event(zipped_moab_version)
+        else
+          zipped_moab_version.update!(status: 'failed', status_details: error_results.map(&:to_s).join('; '))
+        end
       end
     end
 

@@ -16,7 +16,7 @@ RSpec.describe Replication::ZippedMoabVersionAuditService do
     instance_double(Aws::S3::Object, exists?: true, metadata: { 'checksum_md5' => 'incorrect_checksum' }, bucket_name: 'test-bucket')
   end
 
-  let(:results) { instance_double(Results, add_result: nil) }
+  let(:results) { instance_double(Results, add_result: nil, to_s: 'new status details') }
 
   before do
     allow(Replication::ProviderFactory).to receive(:create).and_return(provider)
@@ -36,7 +36,8 @@ RSpec.describe Replication::ZippedMoabVersionAuditService do
     it 'sets zip_parts_count to actual count' do
       expect { described_class.call(zipped_moab_version:, results:) }
         .to change { zipped_moab_version.reload.zip_parts_count }.from(nil).to(3)
-        .and change { zipped_moab_version.reload.status }.to('ok')
+        .and change(zipped_moab_version, :status).to('ok')
+        .and change(zipped_moab_version, :status_details).from(nil).to('new status details')
     end
   end
 

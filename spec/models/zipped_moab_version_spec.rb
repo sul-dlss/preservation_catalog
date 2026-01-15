@@ -67,4 +67,23 @@ RSpec.describe ZippedMoabVersion do
       expect { zmv.update!(zip_parts_count: 2) }.not_to(change(zmv, :status_updated_at))
     end
   end
+
+  describe '#update_status_details before save' do
+    before do
+      zmv.update!(status_details: 'some details')
+    end
+
+    it 'clears status_details if status has changed but status_details has not changed' do
+      expect { zmv.ok! }.to(change(zmv, :status_details).from('some details').to(nil))
+    end
+
+    it 'does not change status_details if status_details has changed' do
+      expect { zmv.update(status: 'ok', status_details: 'new details') }
+        .to(change(zmv, :status_details).from('some details').to('new details'))
+    end
+
+    it 'does not change status_details if status has not changed' do
+      expect { zmv.update!(zip_parts_count: 2) }.not_to(change(zmv, :status_details))
+    end
+  end
 end

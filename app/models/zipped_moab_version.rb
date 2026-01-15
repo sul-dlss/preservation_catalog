@@ -29,6 +29,7 @@ class ZippedMoabVersion < ApplicationRecord
   }
 
   before_save :update_status_updated_at
+  before_save :update_status_details
 
   def total_part_size
     zip_parts.sum(&:size)
@@ -36,6 +37,11 @@ class ZippedMoabVersion < ApplicationRecord
 
   def update_status_updated_at
     self.status_updated_at = Time.current if status_changed?
+  end
+
+  def update_status_details
+    # Clear status_details if status changed but status_details did not
+    self.status_details = nil if status_changed? && !status_details_changed?
   end
 
   def druid_version_zip
