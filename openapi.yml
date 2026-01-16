@@ -124,27 +124,6 @@ paths:
           example: 'druid:bc123df4567.json'
           schema:
             $ref: '#/components/schemas/DruidWithOptionalFormat'
-  /v1/objects/{id}/ok:
-    get:
-      tags:
-        - objects
-      summary: Returns true if the object (MoabRecord) is not in an error state
-      responses:
-        '200':
-          description: Preserved object found
-          content:
-            application/json:
-              schema:
-                type: boolean
-        '404':
-          description: Preserved object not found
-      parameters:
-        - name: id
-          in: path
-          required: true
-          example: 'druid:bc123df4567'
-          schema:
-            $ref: '#/components/schemas/Druid'
   /v1/objects/{id}/validate_moab:
     get:
       tags:
@@ -469,28 +448,18 @@ components:
       description: A preserved object instance
       type: object
       properties:
-        id:
-          type: integer
-          example: 123
         druid:
           $ref: '#/components/schemas/Druid'
         current_version:
           type: integer
           example: 13
-        created_at:
-          type: string
-          format: date-time
-          example: '2020-02-20T06:34:16.148Z'
-        updated_at:
-          type: string
-          format: date-time
-          example: '2020-02-21T16:36:28.075Z'
+        ok_on_local_storage:
+          description: True if the files for the object on local storage (as represented by the  MoabRecord) are not in an error state
+          type: boolean
       required:
-        - id
         - druid
         - current_version
-        - created_at
-        - updated_at
+        - ok_on_local_storage
     AuditResult:
       description: A single audit result
       type: object

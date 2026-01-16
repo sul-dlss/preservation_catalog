@@ -4,15 +4,16 @@
 # ObjectsController allows consumers to interact with preserved objects
 #  (Note: methods will eventually be ported from sdr-services-app)
 class ObjectsController < ApiController
-  before_action :set_preserved_object, only: %i[show ok]
-  # return the PreservedObject model for the druid (supplied *without* `druid:` prefix)
+  # return data about the PreservedObject for the druid (supplied *without* `druid:` prefix)
   # GET /v1/objects/:id.json
   def show
-    render json: @preserved_object.to_json
-  end
-
-  def ok
-    render json: @preserved_object.moab_record.ok?.to_json
+    preserved_object = PreservedObject.eager_load(:moab_record).find_by!(druid:)
+    response = {
+      druid: preserved_object.druid,
+      current_version: preserved_object.current_version,
+      ok_on_local_storage: preserved_object.moab_record.ok?
+    }
+    render json: response.to_json
   end
 
   # queue a ValidateMoab job for a specific druid, typically called by a preservationIngestWF robot.
@@ -111,9 +112,5 @@ class ObjectsController < ApiController
     content_group.path_hash.map do |file, signature|
       { filename: file, md5: signature.md5, sha1: signature.sha1, sha256: signature.sha256, filesize: signature.size }
     end
-  end
-
-  def set_preserved_object
-    @preserved_object = PreservedObject.find_by!(druid:)
   end
 end
