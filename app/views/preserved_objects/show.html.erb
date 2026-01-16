@@ -1,0 +1,18 @@
+<div class="container m-10">
+  <h1 class="mb-4">Preserved Object: druid:<%= @preserved_object.druid %></h1>
+  <%= render Show::WarningsComponent.new(preserved_object: @preserved_object) %>
+  <hr>
+  <div class="row">
+    <div class="col-md-6">
+      <%= render Show::DetailsComponent.new(preserved_object: @preserved_object) %>
+    </div>
+    <div class="col-md-6">
+      <%= render Show::MoabRecordComponent.new(moab_record: @preserved_object.moab_record) %>
+    </div>
+  </div>
+
+  <% @preserved_object.zipped_moab_versions.each do |zipped_moab_version| %>
+    <hr>
+    <%= render Show::ZippedMoabVersionComponent.new(zipped_moab_version:) %>
+  <% end %>
+</div>

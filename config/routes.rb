@@ -18,6 +18,8 @@ Rails.application.routes.draw do
     get 'audit_info', to: '/dashboard#audit_info', defaults: { format: 'html' }
   end
 
+  get 'preserved_object/:druid', to: 'preserved_objects#show', as: 'preserved_object', defaults: { format: 'html' }
+
   scope 'v1' do
     resources :catalog, param: :druid, only: %i[create update]
 
