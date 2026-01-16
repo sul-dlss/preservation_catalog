@@ -61,6 +61,15 @@ RSpec.describe ZipEndpoint do
     end
   end
 
+  describe '#bucket' do
+    subject(:bucket) { described_class.find_by(endpoint_name: 'aws_s3_west_2').bucket }
+
+    it 'returns an Aws::S3::Bucket' do
+      expect(bucket).to be_a(Aws::S3::Bucket)
+      expect(bucket.name).to eq(Settings.zip_endpoints.aws_s3_west_2.storage_location)
+    end
+  end
+
   describe '.seed_from_config' do
     # NOTE: .seed_from_config has already been run or we wouldn't be able to run tests
 

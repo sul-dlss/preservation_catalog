@@ -176,11 +176,33 @@ RSpec.describe PreservedObject do
     end
   end
 
+  describe '#populate_zipped_moab_versions!' do
+    let(:preserved_object) { create(:preserved_object, druid: druid, current_version:) }
+
+    let(:zip_endpoint) { ZipEndpoint.first }
+    let(:zip_endpoint_count) { ZipEndpoint.count }
+    let(:current_version) { 2 }
+
+    before do
+      create(:zipped_moab_version, preserved_object: preserved_object, version: 1, zip_endpoint: zip_endpoint)
+    end
+
+    it 'creates missing ZippedMoabVersions for all versions and all ZipEndpoints' do
+      new_zipped_moab_versions = preserved_object.populate_zipped_moab_versions!
+      expect(new_zipped_moab_versions.size).to eq((zip_endpoint_count * current_version) - 1)
+
+      expect(preserved_object.reload.zipped_moab_versions.count).to eq(zip_endpoint_count * current_version)
+      expect(preserved_object.zipped_moab_versions.where(version: 1).count).to eq zip_endpoint_count
+      expect(preserved_object.zipped_moab_versions.where(version: 2).count).to eq zip_endpoint_count
+      expect(preserved_object.zipped_moab_versions.where(zip_endpoint: zip_endpoint).count).to eq current_version
+    end
+  end
+
   describe '#audit_moab_version_replication!' do
     let!(:preserved_object) { create(:preserved_object, druid: druid, current_version: 3) }
 
     it 'queues a replication audit job for its MoabRecord' do
-      expect(Audit::MoabReplicationAuditJob).to receive(:perform_later).with(preserved_object)
+      expect(Audit::ReplicationAuditJob).to receive(:perform_later).with(preserved_object)
       preserved_object.audit_moab_version_replication!
     end
   end

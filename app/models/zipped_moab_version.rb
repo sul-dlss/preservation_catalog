@@ -14,9 +14,21 @@ class ZippedMoabVersion < ApplicationRecord
 
   validates :version, presence: true
 
+  # If zip_parts_count is present, must be greater than zero
+  validates :zip_parts_count, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
+
+  enum :status, {
+    'ok' => 0,
+    'incomplete' => 1,
+    'created' => 2, # DB-level default. The ZippedMoabVersion has been created, but no ZipParts yet.
+    'failed' => 3
+  }
+
   scope :by_druid, lambda { |druid|
     joins(:preserved_object).where(preserved_objects: { druid: druid })
   }
+
+  before_save :update_status_updated_at
 
   # ideally, there should be only one distinct parts_count value among a set of sibling
   # zip_parts.  if there's variation in the count, that implies the zip was remade, and that
@@ -40,5 +52,16 @@ class ZippedMoabVersion < ApplicationRecord
 
   def total_part_size
     zip_parts.sum(&:size)
+  end
+
+  def update_status_updated_at
+    self.status_updated_at = Time.current if status_changed?
+  end
+
+  def druid_version_zip
+    @druid_version_zip ||= Replication::DruidVersionZip.new(
+      # In tests, a PreservedObject may not have a MoabRecord, hence the safe navigation.
+      preserved_object.druid, version, preserved_object&.moab_record&.moab_storage_root&.storage_location # rubocop:disable Style/SafeNavigationChainLength
+    )
   end
 end

@@ -36,12 +36,26 @@ module Replication
     # create it.
     # @raise [StandardError] if there's a zip file for this druid-version, but it looks too small to be complete.
     def find_or_create_zip!
-      if File.exist?(file_path)
+      if exist?
         raise "zip already exists, but size (#{total_part_size}) is smaller than the moab version size (#{moab_version_size})!" unless zip_size_ok?
         FileUtils.touch(file_path)
       else
         create_zip!
       end
+    end
+
+    def exist?
+      File.exist?(file_path)
+    end
+
+    # @return [Boolean] true if there is a match between the zip part files and their md5 sidecar files
+    def complete?
+      # There is at least one part file
+      return false if part_paths.empty?
+      # The set of md5 sidecar files matches the set of part files
+      return false unless part_keys.to_set == part_keys_from_md5_sidecars.to_set
+      # Check each md5 sidecar file against the zip part file
+      druid_version_zip_parts.all?(&:md5_match?)
     end
 
     # Creates a zip of Druid-Version content.
@@ -54,7 +68,7 @@ module Replication
       combined, status = Open3.capture2e(zip_command, chdir: work_dir.to_s)
       raise "zipmaker failure #{combined}" unless status.success?
       unless zip_size_ok?
-        part_cleanup_errors = cleanup_zip_parts!
+        part_cleanup_errors = cleanup_zip_parts_with_rescue!
         part_cleanup_err_msg = "\n-- errors cleaning up zip parts: #{part_cleanup_errors.map(&:inspect)}" if part_cleanup_errors.present?
         raise "zip size (#{total_part_size}) is smaller than the moab version size (#{moab_version_size})! zipmaker failure #{combined}#{part_cleanup_err_msg}"
       end
@@ -172,6 +186,18 @@ module Replication
       moab_version_files.sum { |f| File.size(f) }
     end
 
+    # Deletes all zip part files and their md5 sidecar files from local zip storage
+    def cleanup_zip_parts!
+      parts_and_checksums_paths.each { |filepath| File.delete(filepath) }
+    end
+
+    # @return [Array<DruidVersionZipPart>] all parts for this DruidVersionZip
+    def druid_version_zip_parts
+      part_keys.map do |part_key|
+        Replication::DruidVersionZipPart.new(self, part_key)
+      end
+    end
+
     private
 
     # Throws an error if any of the files in the moab are not yet readable.  For example due to
@@ -184,7 +210,7 @@ module Replication
       moab_version_files.map { |f| File.stat(f) }
     end
 
-    def cleanup_zip_parts!
+    def cleanup_zip_parts_with_rescue!
       errors = []
       parts_and_checksums_paths.map do |p|
         File.delete(p)
@@ -218,6 +244,15 @@ module Replication
 
     def zip_version_regexp
       /This is (Zip \d+(\.\d)+\s*(\(.*\d{4}\))?)/
+    end
+
+    # @return [Array<String>] relative paths, i.e. s3_part_keys for existing parts based on the md5 sidecar files
+    def part_keys_from_md5_sidecars
+      md5_sidecar_paths.map { |md5_path| md5_path.relative_path_from(zip_storage).to_s.delete_suffix('.md5') }
+    end
+
+    def md5_sidecar_paths
+      Pathname.glob(File.join(zip_storage, s3_key('.*.md5')))
     end
   end
 end

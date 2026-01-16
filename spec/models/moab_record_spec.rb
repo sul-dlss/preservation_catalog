@@ -312,20 +312,6 @@ RSpec.describe MoabRecord do
     end
   end
 
-  describe '.after_update callback' do
-    it 'does not call create_zipped_moab_versions when version is unchanged' do
-      moab_record.size = 234
-      expect(moab_record).not_to receive(:create_zipped_moab_versions!)
-      moab_record.save!
-    end
-
-    it 'calls create_zipped_moab_versions when version was changed' do
-      moab_record.version = 55
-      expect(moab_record).to receive(:create_zipped_moab_versions!)
-      moab_record.save!
-    end
-  end
-
   describe '.after_save callback' do
     before { allow(Audit::ChecksumValidationJob).to receive(:perform_later).and_call_original } # undo rails_helper block
 

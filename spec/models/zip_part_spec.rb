@@ -4,7 +4,7 @@ require 'rails_helper'
 
 RSpec.describe ZipPart do
   let(:zmv) { build(:zipped_moab_version) }
-  let(:args) { attributes_for(:zip_part).merge(zipped_moab_version: zmv) }
+  let(:args) { attributes_for(:zip_part, index: 1).merge(zipped_moab_version: zmv) }
 
   it 'defines a status enum with the expected values' do
     is_expected.to define_enum_for(:status).with_values(
