@@ -1,4 +1,6 @@
 class AddStatusToZippedMoabVersions < ActiveRecord::Migration[8.0]
+  disable_ddl_transaction!
+
   def change
     add_column :zipped_moab_versions, :status, :integer, default: 2, null: false
     add_column :zipped_moab_versions, :status_updated_at, :datetime, precision: nil
