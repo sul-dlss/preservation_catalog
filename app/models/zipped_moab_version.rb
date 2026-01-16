@@ -30,26 +30,6 @@ class ZippedMoabVersion < ApplicationRecord
 
   before_save :update_status_updated_at
 
-  # ideally, there should be only one distinct parts_count value among a set of sibling
-  # zip_parts.  if there's variation in the count, that implies the zip was remade, and that
-  # the part count differed between the zip invocations (which may imply a zip implementation
-  # change, bitrot in the Moab on storage being archived, or some other unknown cause of drift).
-  # hopefully this happens rarely or not at all, but an example scenario would be:
-  # 1) zips get lost from cloud provider, 2) druid is re-queued for replication, no cached
-  # zips available, 3) multi-part zip is remade, number of parts is fewer than prior zip/push,
-  # 4) metadata on some existing part rows is updated with new (smaller) count, zips are pushed,
-  # but old rows for prior push still exist with old (higher) count.
-  def child_parts_counts
-    zip_parts.group(:parts_count).pluck(:parts_count, Arel.sql('count(zip_parts.id)'))
-  end
-
-  def all_parts_replicated?
-    # the assumption is that all of the database part records are created at once,
-    # initialized to 'unreplicated', as soon as the (possibly multi-part) zip file
-    # has been created and completely written to disk.  see DruidVersionZip.
-    zip_parts.any? && zip_parts.all?(&:ok?)
-  end
-
   def total_part_size
     zip_parts.sum(&:size)
   end

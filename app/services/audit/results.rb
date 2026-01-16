@@ -32,7 +32,6 @@ module Audit
     ZIP_PART_CHECKSUM_MISMATCH = :zip_part_checksum_mismatch
     ZIP_PART_NOT_FOUND = :zip_part_not_found
     ZIP_PARTS_COUNT_DIFFERS_FROM_ACTUAL = :zip_parts_count_differs_from_actual
-    ZIP_PARTS_COUNT_INCONSISTENCY = :zip_parts_count_inconsistency
     ZIP_PARTS_SIZE_INCONSISTENCY = :zip_parts_size_inconsistency
     ZIP_PARTS_NOT_ALL_REPLICATED = :zip_parts_not_all_replicated
     ZIP_PARTS_NOT_CREATED = :zip_parts_not_created
@@ -75,8 +74,6 @@ module Audit
       ZIP_PARTS_COUNT_DIFFERS_FROM_ACTUAL => '%{version} on %{endpoint_name}: ' \
                                              "ZippedMoabVersion stated parts count (%{db_count}) doesn't match actual " \
                                              'number of zip parts rows (%{actual_count})',
-      ZIP_PARTS_COUNT_INCONSISTENCY => '%{version} on %{endpoint_name}: ' \
-                                       'ZippedMoabVersion has variation in child parts_counts: %{child_parts_counts}',
       ZIP_PARTS_SIZE_INCONSISTENCY => '%{version} on %{endpoint_name}: ' \
                                       'Sum of ZippedMoabVersion child part sizes (%{total_part_size}) is less than what is in ' \
                                       'the Moab: %{moab_version_size}',
