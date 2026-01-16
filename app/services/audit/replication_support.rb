@@ -59,23 +59,23 @@ module Audit
                bucket = zip_part.zip_endpoint.delivery_class.constantize.new.bucket
                s3_part = bucket.object(zip_part.s3_key)
                s3_part_exists = s3_part.exists?
-               [
-                 zip_part.preserved_object.druid,
-                 zip_part.preserved_object.current_version,
-                 zip_part.zipped_moab_version.version,
-                 zip_part.zip_endpoint.endpoint_name,
-                 zip_part.status,
-                 zip_part.suffix,
-                 zip_part.parts_count,
-                 zip_part.size,
-                 zip_part.md5,
-                 zip_part.id,
-                 zip_part.created_at,
-                 zip_part.updated_at,
-                 zip_part.s3_key,
-                 s3_part_exists ? 'found at endpoint' : 'not found at endpoint',
-                 s3_part_exists ? s3_part.metadata['checksum_md5'] : nil
-               ]
+               {
+                 druid: zip_part.preserved_object.druid,
+                 preserved_object_version: zip_part.preserved_object.current_version,
+                 zipped_moab_version: zip_part.zipped_moab_version.version,
+                 endpoint_name: zip_part.zip_endpoint.endpoint_name,
+                 status: zip_part.status,
+                 suffix: zip_part.suffix,
+                 parts_count: zip_part.parts_count,
+                 size: zip_part.size,
+                 md5: zip_part.md5,
+                 id: zip_part.id,
+                 created_at: zip_part.created_at,
+                 updated_at: zip_part.updated_at,
+                 s3_key: zip_part.s3_key,
+                 found_at_endpoint: s3_part_exists ? 'found at endpoint' : 'not found at endpoint',
+                 checksum_md5: s3_part_exists ? s3_part.metadata['checksum_md5'] : nil
+               }
       end
     end
   end

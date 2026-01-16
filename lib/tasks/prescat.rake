@@ -10,7 +10,7 @@ namespace :prescat do
               'zip part md5', 'zip part id',
               'zip part created at', 'zip part updated at', 'zip part s3 key', 'zip part endpoint status',
               'zip part endpoint md5']
-      debug_infos.each { |debug_info| csv << debug_info }
+      debug_infos.each { |debug_info| csv << debug_info.values }
     end
   end
 
