@@ -59,10 +59,6 @@ class PreservedObject < ApplicationRecord
     end
   end
 
-  def as_json(*)
-    super.except('id')
-  end
-
   # Queue a job that will check to see whether this PreservedObject has been
   # fully replicated to all target ZipEndpoints
   def audit_moab_version_replication!

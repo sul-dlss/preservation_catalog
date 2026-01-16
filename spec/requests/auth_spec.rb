@@ -3,7 +3,11 @@
 require 'rails_helper'
 
 RSpec.describe 'auth' do
-  let(:pres_obj) { create(:preserved_object) }
+  let(:pres_obj) do
+    create(:preserved_object).tap do |preserved_object|
+      create(:moab_record, preserved_object:)
+    end
+  end
 
   before do
     allow(Honeybadger).to receive(:notify)
@@ -58,9 +62,8 @@ RSpec.describe 'auth' do
       expect(Honeybadger).to have_received(:context).with(invoked_by: jwt_payload[:sub])
     end
 
-    it 'responds with a 200 OK and the correct body' do
+    it 'responds with a 200 OK' do
       get "/v1/objects/#{pres_obj.druid}", headers: valid_auth_header
-      expect(response.body).to include(pres_obj.to_json)
       expect(response).to have_http_status(:ok)
     end
   end

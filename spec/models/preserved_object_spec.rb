@@ -27,14 +27,6 @@ RSpec.describe PreservedObject do
       expect(valid_obj).to be_valid
     end
 
-    context 'when returning json' do
-      subject { valid_obj.to_json }
-
-      it 'does not include id' do
-        expect(subject).not_to include '"id"'
-      end
-    end
-
     it 'is not valid without all required attributes' do
       expect(described_class.new).not_to be_valid
       expect(described_class.new(current_version: 1)).not_to be_valid
