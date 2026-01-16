@@ -16,7 +16,7 @@ module Replication
 
     # @raise [DifferentPartFileFoundError] if a different part file is found at the endpoint
     def call
-      set_hb_context
+      Honeybadger.context(zip_part:)
 
       return if already_replicated?
       check_existing_part_file_on_endpoint
@@ -40,15 +40,6 @@ module Replication
 
     def already_replicated?
       zip_part_file_exists_on_endpoint? && zip_part_md5s_match?
-    end
-
-    def set_hb_context
-      Honeybadger.context(
-        druid: zip_part.preserved_object.druid,
-        version: zip_part.zipped_moab_version.version,
-        endpoint: zip_part.zip_endpoint.endpoint_name,
-        zip_part_id: zip_part.id
-      )
     end
 
     def metadata
