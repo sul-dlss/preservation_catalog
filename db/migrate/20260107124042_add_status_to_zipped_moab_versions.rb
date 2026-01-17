@@ -12,7 +12,12 @@ class AddStatusToZippedMoabVersions < ActiveRecord::Migration[8.0]
     # Set status to 'ok'. Auditing will set this correctly later.
     ZippedMoabVersion.update_all(status: 0)
 
+    # NOTE: We went back and modified this for the historical record, as we didn't run this last step
+    # for the prod migration.  It hit a PostgreSQL connection timeout after a couple hours of running.
+    # We did this out-of-band from cap deployment migration by running the new replication audit job on
+    # these same objects in a rails console session in screen.
+    #
     # For ZippedMoabVersions without any ZipParts, set status to 'created'.
-    ZippedMoabVersion.where.missing(:zip_parts).update_all(status: 2, status_updated_at: Time.current)
+    # ZippedMoabVersion.where.missing(:zip_parts).update_all(status: 2, status_updated_at: Time.current)
   end
 end
