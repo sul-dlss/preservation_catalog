@@ -40,6 +40,8 @@ class MoabRecord < ApplicationRecord
     where('last_checksum_validation < ? or last_checksum_validation IS NULL', Time.zone.now - Settings.preservation_policy.fixity_ttl.seconds)
   }
 
+  delegate :druid, to: :preserved_object
+
   # Send to asynchronous checksum validation pipeline
   def validate_checksums!
     Audit::ChecksumValidationJob.perform_later(self)

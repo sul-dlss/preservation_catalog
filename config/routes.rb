@@ -9,7 +9,7 @@ Rails.application.routes.draw do
   namespace :dashboard do
     root to: 'dashboard#index' # Preservation System Status Overview page
 
-    resources :objects, only: [:show] # show -> Object show page
+    resources :objects, only: [:show], param: :druid # show -> Object show page
     resources :moab_records, only: [:index] do # index -> Files in moabs on local storage page
       collection do
         get 'with_errors' # MoabRecords in error statuses list page

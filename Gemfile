@@ -16,6 +16,7 @@ gem 'honeybadger' # for error reporting / tracking / notifications
 gem 'importmap-rails'
 gem 'jbuilder' # Build JSON APIs with ease.
 gem 'jwt' # for gating programmatic access to the application
+gem 'kaminari' # pagination
 gem 'lograge'
 gem 'moab-versioning', '~> 6.0' # work with Moab Objects
 gem 'okcomputer' # ReST endpoint with upness status

@@ -3,7 +3,7 @@
 require 'rails_helper'
 
 RSpec.describe ZippedMoabVersionCalculations do
-  describe '.errors_count' do
+  describe '.with_errors' do
     before do
       create(:zipped_moab_version, status: :ok)
       create(:zipped_moab_version, status: :failed)
@@ -12,20 +12,20 @@ RSpec.describe ZippedMoabVersionCalculations do
     end
 
     it 'returns the count of ZippedMoabVersions with failed status' do
-      expect(ZippedMoabVersion.errors_count).to eq(1)
+      expect(ZippedMoabVersion.with_errors.count).to eq(1)
     end
   end
 
-  describe '.stuck_count' do
+  describe '.stuck' do
     before do
-      create(:zipped_moab_version, status: :incomplete, updated_at: 2.weeks.ago)
-      create(:zipped_moab_version, status: :incomplete, updated_at: 3.days.ago)
-      create(:zipped_moab_version, status: :created)
+      create(:zipped_moab_version, status: :incomplete, status_updated_at: 2.weeks.ago)
+      create(:zipped_moab_version, status: :incomplete)
+      create(:zipped_moab_version, status: :created, status_updated_at: 8.days.ago)
       create(:zipped_moab_version, status: :ok)
     end
 
-    it 'returns the count of ZippedMoabVersions with status of validity_unknown for more than a week' do
-      expect(ZippedMoabVersion.stuck_count).to eq(2)
+    it 'returns the count of ZippedMoabVersions with incomplete or created statusfor more than a week' do
+      expect(ZippedMoabVersion.stuck.count).to eq(2)
     end
   end
 

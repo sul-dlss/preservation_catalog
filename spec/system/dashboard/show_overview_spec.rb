@@ -4,8 +4,23 @@ require 'rails_helper'
 
 RSpec.describe 'Show dashboard overview' do
   before do
-    allow(MoabRecord).to receive_messages(errors_count: 1, stuck_count: 2, validity_unknown_count: 5, expired_checksum_validation_with_grace_count: 9)
-    allow(ZippedMoabVersion).to receive_messages(errors_count: 3, stuck_count: 4, created_count: 6, incomplete_count: 7, missing_count: 8)
+    # 1 with errors
+    create(:moab_record, status: 'invalid_checksum')
+    # 2 stuck
+    create_list(:moab_record, 2, status: 'validity_unknown', updated_at: 2.weeks.ago)
+    # 3 additional not stuck
+    create_list(:moab_record, 3, status: 'validity_unknown')
+    # 9 expired checksum validations + grace
+    create_list(:moab_record, 9, last_checksum_validation: Time.current - Settings.preservation_policy.fixity_ttl.seconds - 8.days)
+    # 3 with errors
+    create_list(:zipped_moab_version, 3, status: 'failed')
+    # 4 stuck
+    create_list(:zipped_moab_version, 4, status: 'incomplete', status_updated_at: 2.weeks.ago)
+    # 6 created
+    create_list(:zipped_moab_version, 6, status: 'created')
+    # 3 additional incomplete
+    create_list(:zipped_moab_version, 3, status: 'incomplete')
+    allow(ZippedMoabVersion).to receive(:missing_count).and_return(8)
     allow(PreservedObject).to receive(:expired_archive_audit_with_grace_count).and_return(10)
   end
 
@@ -16,14 +31,22 @@ RSpec.describe 'Show dashboard overview' do
     within('table#status-errors-table tbody') do
       within('tr:nth-of-type(1)') do
         expect(page).to have_css('th', text: 'MoabRecords')
-        expect(page).to have_css('td:nth-of-type(1)', text: '1')
-        expect(page).to have_css('td:nth-of-type(2)', text: '2')
+        within('td:nth-of-type(1)') do
+          expect(page).to have_link('1', href: with_errors_dashboard_moab_records_path)
+        end
+        within('td:nth-of-type(2)') do
+          expect(page).to have_link('2', href: stuck_dashboard_moab_records_path)
+        end
       end
 
       within('tr:nth-of-type(2)') do
         expect(page).to have_css('th', text: 'ZippedMoabVersions')
-        expect(page).to have_css('td:nth-of-type(1)', text: '3')
-        expect(page).to have_css('td:nth-of-type(2)', text: '4')
+        within('td:nth-of-type(1)') do
+          expect(page).to have_link('3', href: with_errors_dashboard_zipped_moab_versions_path)
+        end
+        within('td:nth-of-type(2)') do
+          expect(page).to have_link('4', href: stuck_dashboard_zipped_moab_versions_path)
+        end
       end
     end
 
