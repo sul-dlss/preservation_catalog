@@ -8,6 +8,8 @@
 #
 # @note Does not have size independent of part(s), see `#total_part_size`
 class ZippedMoabVersion < ApplicationRecord
+  include ZippedMoabVersionCalculations
+
   belongs_to :preserved_object, inverse_of: :zipped_moab_versions
   belongs_to :zip_endpoint, inverse_of: :zipped_moab_versions
   has_many :zip_parts, dependent: :restrict_with_exception, inverse_of: :zipped_moab_version

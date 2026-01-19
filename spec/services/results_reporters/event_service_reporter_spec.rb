@@ -24,7 +24,7 @@ RSpec.describe ResultsReporters::EventServiceReporter do
                                    "'v00xx' format: original-v2]" }
       end
 
-      it 'creates events' do # rubocop:disable RSpec/ExampleLength
+      it 'creates events' do
         described_class.new.report_errors(druid: druid,
                                           version: actual_version,
                                           storage_area: ms_root,

@@ -62,7 +62,6 @@ group :test do
   gem 'capybara'
   gem 'debug'
   gem 'factory_bot_rails'
-  gem 'rails-controller-testing'
   gem 'shoulda-matchers'
   gem 'simplecov'
   gem 'webmock'

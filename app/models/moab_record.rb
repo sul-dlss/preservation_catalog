@@ -2,6 +2,8 @@
 
 # MoabRecord represents a concrete instance of a PreservedObject across ALL versions, in physical storage.
 class MoabRecord < ApplicationRecord
+  include MoabRecordCalculations
+
   enum :status, {
     'ok' => 0,
     'invalid_moab' => 1,
