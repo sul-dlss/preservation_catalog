@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 RSpec.describe CatalogController do
-  let(:audit_workflow_reporter) { instance_double(AuditReporters::AuditWorkflowReporter, report_errors: nil) }
+  let(:audit_workflow_reporter) { instance_double(ResultsReporters::AuditWorkflowReporter, report_errors: nil) }
   let(:size) { 2342 }
   let(:ver) { 3 }
   let(:bare_druid) { 'bj102hs9687' }
@@ -10,16 +10,16 @@ RSpec.describe CatalogController do
   let(:storage_location) { "#{storage_location_param}/sdr2objects" }
   let(:storage_location_param) { 'spec/fixtures/storage_root01' }
   let(:moab_storage_root) { MoabStorageRoot.find_by!(name: 'fixture_sr1') }
-  let(:event_service_reporter) { instance_double(AuditReporters::EventServiceReporter, report_errors: nil) }
-  let(:honeybadger_reporter) { instance_double(AuditReporters::HoneybadgerReporter, report_errors: nil) }
-  let(:logger_reporter) { instance_double(AuditReporters::LoggerReporter, report_errors: nil) }
+  let(:event_service_reporter) { instance_double(ResultsReporters::EventServiceReporter, report_errors: nil) }
+  let(:honeybadger_reporter) { instance_double(ResultsReporters::HoneybadgerReporter, report_errors: nil) }
+  let(:logger_reporter) { instance_double(ResultsReporters::LoggerReporter, report_errors: nil) }
 
   before do
     allow(described_class.logger).to receive(:info) # silence STDOUT chatter
-    allow(AuditReporters::AuditWorkflowReporter).to receive(:new).and_return(audit_workflow_reporter)
-    allow(AuditReporters::EventServiceReporter).to receive(:new).and_return(event_service_reporter)
-    allow(AuditReporters::HoneybadgerReporter).to receive(:new).and_return(honeybadger_reporter)
-    allow(AuditReporters::LoggerReporter).to receive(:new).and_return(logger_reporter)
+    allow(ResultsReporters::AuditWorkflowReporter).to receive(:new).and_return(audit_workflow_reporter)
+    allow(ResultsReporters::EventServiceReporter).to receive(:new).and_return(event_service_reporter)
+    allow(ResultsReporters::HoneybadgerReporter).to receive(:new).and_return(honeybadger_reporter)
+    allow(ResultsReporters::LoggerReporter).to receive(:new).and_return(logger_reporter)
     allow(controller).to receive(:check_auth_token!) # gating on valid token tested in request specs and auth spec
   end
 
@@ -47,7 +47,7 @@ RSpec.describe CatalogController do
       end
 
       it 'response contains create_new_object code' do
-        exp_msg = [{ Audit::Results::CREATED_NEW_OBJECT => 'added object to db as it did not exist' }]
+        exp_msg = [{ Results::CREATED_NEW_OBJECT => 'added object to db as it did not exist' }]
         expect(response.body).to include(exp_msg.to_json)
       end
 
@@ -70,7 +70,7 @@ RSpec.describe CatalogController do
 
       it 'response contains error message' do
         errors = ["Druid can't be blank", 'Druid is invalid']
-        exp_msg = [{ Audit::Results::INVALID_ARGUMENTS => "encountered validation error(s): #{errors}" }]
+        exp_msg = [{ Results::INVALID_ARGUMENTS => "encountered validation error(s): #{errors}" }]
         expect(response.body).to include(exp_msg.to_json)
       end
 
@@ -86,7 +86,7 @@ RSpec.describe CatalogController do
       end
 
       it 'response contains error message' do
-        exp_msg = [{ Audit::Results::DB_OBJ_ALREADY_EXISTS => 'MoabRecord db object already exists' }]
+        exp_msg = [{ Results::DB_OBJ_ALREADY_EXISTS => 'MoabRecord db object already exists' }]
         expect(response.body).to include(exp_msg.to_json)
       end
 
@@ -103,7 +103,7 @@ RSpec.describe CatalogController do
       end
 
       it 'response contains error message' do
-        code = Audit::Results::DB_UPDATE_FAILED.to_json
+        code = Results::DB_UPDATE_FAILED.to_json
         expect(response.body).to include(code)
       end
 
@@ -172,7 +172,7 @@ RSpec.describe CatalogController do
 
       it 'response contains error message' do
         errors = ['Moab storage root must be an actual MoabStorageRoot']
-        exp_msg = [{ Audit::Results::INVALID_ARGUMENTS => "encountered validation error(s): #{errors}" }]
+        exp_msg = [{ Results::INVALID_ARGUMENTS => "encountered validation error(s): #{errors}" }]
         expect(response.body).to include(exp_msg.to_json)
       end
 
@@ -188,7 +188,7 @@ RSpec.describe CatalogController do
 
       it 'response contains error message' do
         err_regex = /#<ActiveRecord::RecordNotFound: Couldn't find (PreservedObject|MoabRecord).*> db object does not exist/
-        exp_result = { 'results' => [{ Audit::Results::DB_OBJ_DOES_NOT_EXIST.to_s => a_string_matching(err_regex) }] }
+        exp_result = { 'results' => [{ Results::DB_OBJ_DOES_NOT_EXIST.to_s => a_string_matching(err_regex) }] }
         expect(JSON.parse(response.body)).to include(exp_result)
       end
 
@@ -205,7 +205,7 @@ RSpec.describe CatalogController do
       end
 
       it 'response contains error message' do
-        exp_msg = [{ Audit::Results::DB_VERSIONS_DISAGREE => 'MoabRecord version 4 does not match PreservedObject current_version 3' }]
+        exp_msg = [{ Results::DB_VERSIONS_DISAGREE => 'MoabRecord version 4 does not match PreservedObject current_version 3' }]
         expect(response.body).to include(exp_msg.to_json)
       end
 
@@ -224,9 +224,9 @@ RSpec.describe CatalogController do
         ver_lt_db = 'actual version (1) less than MoabRecord db version (3); ERROR!'
         status_change = 'MoabRecord status changed from validity_unknown to unexpected_version_on_storage'
         exp_msg = [
-          { Audit::Results::UNEXPECTED_VERSION => unexp_ver.to_s },
-          { Audit::Results::ACTUAL_VERS_LT_DB_OBJ => ver_lt_db.to_s },
-          { Audit::Results::MOAB_RECORD_STATUS_CHANGED => status_change.to_s }
+          { Results::UNEXPECTED_VERSION => unexp_ver.to_s },
+          { Results::ACTUAL_VERS_LT_DB_OBJ => ver_lt_db.to_s },
+          { Results::MOAB_RECORD_STATUS_CHANGED => status_change.to_s }
         ]
         expect(response.body).to include(exp_msg.to_json)
       end
@@ -247,7 +247,7 @@ RSpec.describe CatalogController do
 
       it 'response contains error message' do
         patch :update, params: { druid: prefixed_druid, incoming_version: ver, incoming_size: size, storage_location: storage_location_param }
-        code = Audit::Results::DB_UPDATE_FAILED.to_json
+        code = Results::DB_UPDATE_FAILED.to_json
         expect(response.body).to include(code)
       end
 
@@ -288,7 +288,7 @@ RSpec.describe CatalogController do
 
   describe 'parameters' do
     describe 'checksums_validated' do
-      let(:results) { instance_double(Audit::Results) }
+      let(:results) { instance_double(Results) }
 
       before do
         allow(results).to receive(:contains_result_code?)

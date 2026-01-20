@@ -2,30 +2,30 @@
 
 require 'rails_helper'
 
-RSpec.describe AuditResultsReporter do
-  let(:reporter) { described_class.new(audit_results: audit_results) }
+RSpec.describe ResultsReporter do
+  let(:reporter) { described_class.new(results: results) }
   let(:actual_version) { 6 }
-  let(:audit_results) { Audit::Results.new(druid: druid, actual_version: actual_version, moab_storage_root: ms_root) }
+  let(:results) { Results.new(druid: druid, actual_version: actual_version, moab_storage_root: ms_root) }
   let(:druid) { 'ab123cd4567' }
   let(:ms_root) { MoabStorageRoot.find_by(storage_location: 'spec/fixtures/storage_root01/sdr2objects') }
 
   describe '#report_results' do
-    let(:audit_workflow_reporter) { instance_double(AuditReporters::AuditWorkflowReporter, report_errors: nil, report_completed: nil) }
-    let(:event_service_reporter) { instance_double(AuditReporters::EventServiceReporter, report_errors: nil, report_completed: nil) }
-    let(:honeybadger_reporter) { instance_double(AuditReporters::HoneybadgerReporter, report_errors: nil, report_completed: nil) }
-    let(:logger_reporter) { instance_double(AuditReporters::LoggerReporter, report_errors: nil, report_completed: nil) }
+    let(:audit_workflow_reporter) { instance_double(ResultsReporters::AuditWorkflowReporter, report_errors: nil, report_completed: nil) }
+    let(:event_service_reporter) { instance_double(ResultsReporters::EventServiceReporter, report_errors: nil, report_completed: nil) }
+    let(:honeybadger_reporter) { instance_double(ResultsReporters::HoneybadgerReporter, report_errors: nil, report_completed: nil) }
+    let(:logger_reporter) { instance_double(ResultsReporters::LoggerReporter, report_errors: nil, report_completed: nil) }
 
     before do
-      allow(AuditReporters::AuditWorkflowReporter).to receive(:new).and_return(audit_workflow_reporter)
-      allow(AuditReporters::EventServiceReporter).to receive(:new).and_return(event_service_reporter)
-      allow(AuditReporters::HoneybadgerReporter).to receive(:new).and_return(honeybadger_reporter)
-      allow(AuditReporters::LoggerReporter).to receive(:new).and_return(logger_reporter)
+      allow(ResultsReporters::AuditWorkflowReporter).to receive(:new).and_return(audit_workflow_reporter)
+      allow(ResultsReporters::EventServiceReporter).to receive(:new).and_return(event_service_reporter)
+      allow(ResultsReporters::HoneybadgerReporter).to receive(:new).and_return(honeybadger_reporter)
+      allow(ResultsReporters::LoggerReporter).to receive(:new).and_return(logger_reporter)
 
-      audit_results.add_result(Audit::Results::INVALID_MOAB, [
-                                 "Version directory name not in 'v00xx' format: original-v1",
-                                 'Version v0005: No files present in manifest dir'
-                               ])
-      audit_results.add_result(Audit::Results::MOAB_RECORD_STATUS_CHANGED, old_status: 'invalid_checksum', new_status: 'ok')
+      results.add_result(Results::INVALID_MOAB, [
+                           "Version directory name not in 'v00xx' format: original-v1",
+                           'Version v0005: No files present in manifest dir'
+                         ])
+      results.add_result(Results::MOAB_RECORD_STATUS_CHANGED, old_status: 'invalid_checksum', new_status: 'ok')
     end
 
     it 'invokes the reporters' do

@@ -10,16 +10,16 @@ RSpec.describe MoabRecordService::CreateAfterValidation do
   let(:storage_dir) { 'spec/fixtures/storage_root01/sdr2objects' }
   let(:moab_storage_root) { MoabStorageRoot.find_by(storage_location: storage_dir) }
   let(:expected_msg) { 'added object to db as it did not exist' }
-  let(:audit_workflow_reporter) { instance_double(AuditReporters::AuditWorkflowReporter, report_errors: nil) }
-  let(:logger_reporter) { instance_double(AuditReporters::LoggerReporter, report_errors: nil) }
-  let(:honeybadger_reporter) { instance_double(AuditReporters::HoneybadgerReporter, report_errors: nil) }
-  let(:event_service_reporter) { instance_double(AuditReporters::EventServiceReporter, report_errors: nil) }
+  let(:audit_workflow_reporter) { instance_double(ResultsReporters::AuditWorkflowReporter, report_errors: nil) }
+  let(:logger_reporter) { instance_double(ResultsReporters::LoggerReporter, report_errors: nil) }
+  let(:honeybadger_reporter) { instance_double(ResultsReporters::HoneybadgerReporter, report_errors: nil) }
+  let(:event_service_reporter) { instance_double(ResultsReporters::EventServiceReporter, report_errors: nil) }
 
   before do
-    allow(AuditReporters::AuditWorkflowReporter).to receive(:new).and_return(audit_workflow_reporter)
-    allow(AuditReporters::LoggerReporter).to receive(:new).and_return(logger_reporter)
-    allow(AuditReporters::HoneybadgerReporter).to receive(:new).and_return(honeybadger_reporter)
-    allow(AuditReporters::EventServiceReporter).to receive(:new).and_return(event_service_reporter)
+    allow(ResultsReporters::AuditWorkflowReporter).to receive(:new).and_return(audit_workflow_reporter)
+    allow(ResultsReporters::LoggerReporter).to receive(:new).and_return(logger_reporter)
+    allow(ResultsReporters::HoneybadgerReporter).to receive(:new).and_return(honeybadger_reporter)
+    allow(ResultsReporters::EventServiceReporter).to receive(:new).and_return(event_service_reporter)
   end
 
   describe '#execute' do
@@ -31,7 +31,7 @@ RSpec.describe MoabRecordService::CreateAfterValidation do
 
     it_behaves_like 'attributes validated'
 
-    it_behaves_like 'calls AuditResultsReporter.report_results'
+    it_behaves_like 'calls ResultsReporter.report_results'
 
     context 'sets validation timestamps' do
       let(:t) { Time.current }
@@ -118,8 +118,8 @@ RSpec.describe MoabRecordService::CreateAfterValidation do
       end
 
       it 'includes invalid moab result' do
-        results = moab_record_service.execute.results
-        expect(results).to include(a_hash_including(Audit::Results::INVALID_MOAB => /Invalid Moab, validation errors:/))
+        results = moab_record_service.execute
+        expect(results.to_a).to include(a_hash_including(Results::INVALID_MOAB => /Invalid Moab, validation errors:/))
       end
 
       context 'db update error' do
@@ -133,15 +133,15 @@ RSpec.describe MoabRecordService::CreateAfterValidation do
           let(:results) do
             moab_record_service = described_class.new(druid: invalid_druid, incoming_version: incoming_version, incoming_size: incoming_size,
                                                       moab_storage_root: moab_storage_root)
-            moab_record_service.execute.results
+            moab_record_service.execute
           end
 
           it 'DB_UPDATE_FAILED result' do
-            expect(results).to include(a_hash_including(Audit::Results::DB_UPDATE_FAILED))
+            expect(results.to_a).to include(a_hash_including(Results::DB_UPDATE_FAILED))
           end
 
           it 'does NOT get CREATED_NEW_OBJECT result' do
-            expect(results).not_to include(hash_including(Audit::Results::CREATED_NEW_OBJECT))
+            expect(results.to_a).not_to include(a_hash_including(Results::CREATED_NEW_OBJECT))
           end
 
           it 'does not call ReplicationJob' do
@@ -160,13 +160,12 @@ RSpec.describe MoabRecordService::CreateAfterValidation do
     end
 
     context 'returns' do
-      let(:audit_result) { moab_record_service.execute }
-      let(:results) { audit_result.results }
+      let(:results) { moab_record_service.execute }
 
       it '1 CREATED_NEW_OBJECT result' do
-        expect(audit_result).to be_an_instance_of Audit::Results
+        expect(results).to be_an_instance_of Results
         expect(results.size).to eq 1
-        expect(results.first).to include(Audit::Results::CREATED_NEW_OBJECT => expected_msg)
+        expect(results.first).to include(Results::CREATED_NEW_OBJECT => expected_msg)
       end
     end
   end

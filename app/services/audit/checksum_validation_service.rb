@@ -26,8 +26,8 @@ module Audit
 
       persist_db_transaction!(clear_connections: true) do
         moab_record.last_checksum_validation = Time.current
-        if results.results.empty?
-          results.add_result(Audit::Results::MOAB_CHECKSUM_VALID)
+        if results.empty?
+          results.add_result(Results::MOAB_CHECKSUM_VALID)
           moab_record.update_audit_timestamps(true, true)
 
           validate_versions
@@ -51,14 +51,14 @@ module Audit
                                                              caller_validates_checksums: true)
 
       return if versions_match?
-      results.add_result(Audit::Results::UNEXPECTED_VERSION,
+      results.add_result(Results::UNEXPECTED_VERSION,
                          actual_version: moab_on_storage.current_version_id,
                          db_obj_name: 'MoabRecord',
                          db_obj_version: moab_record.version)
     end
 
     def status_handler
-      @status_handler ||= StatusHandler.new(audit_results: results, moab_record: moab_record)
+      @status_handler ||= StatusHandler.new(results: results, moab_record: moab_record)
     end
 
     def moab_on_storage
@@ -66,8 +66,8 @@ module Audit
     end
 
     def results
-      @results ||= Audit::Results.new(druid:, moab_storage_root:, actual_version: moab_on_storage.current_version_id,
-                                      check_name: 'validate_checksums')
+      @results ||= Results.new(druid:, moab_storage_root:, actual_version: moab_on_storage.current_version_id,
+                               check_name: 'validate_checksums')
     end
 
     def persist_db_transaction!(clear_connections: false)
@@ -79,7 +79,7 @@ module Audit
         moab_record.save!
       end
       results.remove_db_updated_results unless transaction_ok
-      AuditResultsReporter.report_results(audit_results: results, logger: logger)
+      ResultsReporter.report_results(results: results, logger: logger)
     end
 
     def logger

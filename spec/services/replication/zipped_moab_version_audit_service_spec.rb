@@ -16,7 +16,7 @@ RSpec.describe Replication::ZippedMoabVersionAuditService do
     instance_double(Aws::S3::Object, exists?: true, metadata: { 'checksum_md5' => 'incorrect_checksum' }, bucket_name: 'test-bucket')
   end
 
-  let(:audit_results) { instance_double(Audit::Results, add_result: nil) }
+  let(:results) { instance_double(Results, add_result: nil) }
 
   before do
     allow(Replication::ProviderFactory).to receive(:create).and_return(provider)
@@ -34,7 +34,7 @@ RSpec.describe Replication::ZippedMoabVersionAuditService do
     end
 
     it 'sets zip_parts_count to actual count' do
-      expect { described_class.call(zipped_moab_version:, audit_results:) }
+      expect { described_class.call(zipped_moab_version:, results:) }
         .to change { zipped_moab_version.reload.zip_parts_count }.from(nil).to(3)
         .and change { zipped_moab_version.reload.status }.to('ok')
     end
@@ -48,9 +48,9 @@ RSpec.describe Replication::ZippedMoabVersionAuditService do
     end
 
     it 'changes status to ok and returns no audit results' do
-      expect { described_class.call(zipped_moab_version:, audit_results:) }
+      expect { described_class.call(zipped_moab_version:, results:) }
         .to change { zipped_moab_version.reload.status }.to('ok')
-      expect(audit_results).not_to have_received(:add_result)
+      expect(results).not_to have_received(:add_result)
     end
   end
 
@@ -60,10 +60,10 @@ RSpec.describe Replication::ZippedMoabVersionAuditService do
     end
 
     it 'adds an audit result and changes status to created' do
-      expect { described_class.call(zipped_moab_version:, audit_results:) }
+      expect { described_class.call(zipped_moab_version:, results:) }
         .to change { zipped_moab_version.reload.status }.to('created')
-      expect(audit_results).to have_received(:add_result).with(
-        Audit::Results::ZIP_PARTS_NOT_CREATED,
+      expect(results).to have_received(:add_result).with(
+        Results::ZIP_PARTS_NOT_CREATED,
         hash_including(
           version: zipped_moab_version.version,
           endpoint_name: zipped_moab_version.zip_endpoint.endpoint_name
@@ -78,10 +78,10 @@ RSpec.describe Replication::ZippedMoabVersionAuditService do
     end
 
     it 'adds an audit result and leaves status' do
-      expect { described_class.call(zipped_moab_version:, audit_results:) }
+      expect { described_class.call(zipped_moab_version:, results:) }
         .not_to(change { zipped_moab_version.reload.status })
-      expect(audit_results).to have_received(:add_result).with(
-        Audit::Results::ZIP_PARTS_NOT_CREATED, Hash
+      expect(results).to have_received(:add_result).with(
+        Results::ZIP_PARTS_NOT_CREATED, Hash
       )
     end
   end
@@ -94,10 +94,10 @@ RSpec.describe Replication::ZippedMoabVersionAuditService do
     end
 
     it 'changes the status to failed and adds an audit result' do
-      expect { described_class.call(zipped_moab_version:, audit_results:) }
+      expect { described_class.call(zipped_moab_version:, results:) }
         .to change { zipped_moab_version.reload.status }.to('failed')
-      expect(audit_results).to have_received(:add_result).with(
-        Audit::Results::ZIP_PARTS_SIZE_INCONSISTENCY,
+      expect(results).to have_received(:add_result).with(
+        Results::ZIP_PARTS_SIZE_INCONSISTENCY,
         hash_including(
           total_part_size: 300,
           moab_version_size: 1_928_387
@@ -114,10 +114,10 @@ RSpec.describe Replication::ZippedMoabVersionAuditService do
     end
 
     it 'changes the status to failed and adds an audit result' do
-      expect { described_class.call(zipped_moab_version:, audit_results:) }
+      expect { described_class.call(zipped_moab_version:, results:) }
         .to change { zipped_moab_version.reload.status }.to('failed')
-      expect(audit_results).to have_received(:add_result).with(
-        Audit::Results::ZIP_PARTS_COUNT_DIFFERS_FROM_ACTUAL,
+      expect(results).to have_received(:add_result).with(
+        Results::ZIP_PARTS_COUNT_DIFFERS_FROM_ACTUAL,
         hash_including(
           db_count: 3,
           actual_count: 2
@@ -138,10 +138,10 @@ RSpec.describe Replication::ZippedMoabVersionAuditService do
     end
 
     it 'changes the status to failed and adds an audit result' do
-      expect { described_class.call(zipped_moab_version:, audit_results:) }
+      expect { described_class.call(zipped_moab_version:, results:) }
         .to change { zipped_moab_version.reload.status }.to('failed')
-      expect(audit_results).to have_received(:add_result).with(
-        Audit::Results::ZIP_PART_CHECKSUM_MISMATCH,
+      expect(results).to have_received(:add_result).with(
+        Results::ZIP_PART_CHECKSUM_MISMATCH,
         hash_including(
           bucket_name: 'test-bucket',
           endpoint_name: zipped_moab_version.zip_endpoint.endpoint_name,
@@ -165,10 +165,10 @@ RSpec.describe Replication::ZippedMoabVersionAuditService do
     end
 
     it 'changes the status to incomplete and adds an audit result' do
-      expect { described_class.call(zipped_moab_version:, audit_results:) }
+      expect { described_class.call(zipped_moab_version:, results:) }
         .to change { zipped_moab_version.reload.status }.to('incomplete')
-      expect(audit_results).to have_received(:add_result).with(
-        Audit::Results::ZIP_PART_NOT_FOUND,
+      expect(results).to have_received(:add_result).with(
+        Results::ZIP_PART_NOT_FOUND,
         hash_including(
           bucket_name: 'test-bucket',
           endpoint_name: zipped_moab_version.zip_endpoint.endpoint_name,
@@ -190,11 +190,11 @@ RSpec.describe Replication::ZippedMoabVersionAuditService do
     end
 
     it 'does not change status but adds an audit result' do
-      expect { described_class.call(zipped_moab_version:, audit_results:) }
+      expect { described_class.call(zipped_moab_version:, results:) }
         .not_to(change { zipped_moab_version.reload.status })
 
-      expect(audit_results).to have_received(:add_result).with(
-        Audit::Results::ZIP_PARTS_NOT_ALL_REPLICATED, Hash
+      expect(results).to have_received(:add_result).with(
+        Results::ZIP_PARTS_NOT_ALL_REPLICATED, Hash
       )
     end
   end

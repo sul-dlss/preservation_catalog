@@ -23,8 +23,8 @@ RSpec.describe Replication::AuditService do
     expect(endpoint_names).to contain_exactly('s3-east', 's3-west')
 
     expect(Replication::ZippedMoabVersionAuditService).to have_received(:call)
-      .with(zipped_moab_version: zipped_moab_version_east, audit_results: Audit::Results)
+      .with(zipped_moab_version: zipped_moab_version_east, results: Results)
     expect(Replication::ZippedMoabVersionAuditService).to have_received(:call)
-      .with(zipped_moab_version: zipped_moab_version_west, audit_results: Audit::Results)
+      .with(zipped_moab_version: zipped_moab_version_west, results: Results)
   end
 end

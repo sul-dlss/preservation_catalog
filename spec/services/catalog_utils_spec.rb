@@ -10,19 +10,19 @@ RSpec.describe CatalogUtils do
     allow(Moab::StorageObject).to receive(:new).and_return(moab)
     moab
   end
-  let(:audit_workflow_reporter) { instance_double(AuditReporters::AuditWorkflowReporter, report_errors: nil, report_completed: nil) }
-  let(:event_service_reporter) { instance_double(AuditReporters::EventServiceReporter, report_errors: nil, report_completed: nil) }
-  let(:honeybadger_reporter) { instance_double(AuditReporters::HoneybadgerReporter, report_errors: nil, report_completed: nil) }
-  let(:logger_reporter) { instance_double(AuditReporters::LoggerReporter, report_errors: nil, report_completed: nil) }
-  let(:audit_results) { instance_double(Audit::Results, results: results) }
-  let(:results) { [] }
+  let(:audit_workflow_reporter) { instance_double(ResultsReporters::AuditWorkflowReporter, report_errors: nil, report_completed: nil) }
+  let(:event_service_reporter) { instance_double(ResultsReporters::EventServiceReporter, report_errors: nil, report_completed: nil) }
+  let(:honeybadger_reporter) { instance_double(ResultsReporters::HoneybadgerReporter, report_errors: nil, report_completed: nil) }
+  let(:logger_reporter) { instance_double(ResultsReporters::LoggerReporter, report_errors: nil, report_completed: nil) }
+  let(:results) { instance_double(Results, to_a: results_array) }
+  let(:results_array) { [] }
 
   before do
     allow(described_class.logger).to receive(:info) # silence STDOUT chatter
-    allow(AuditReporters::AuditWorkflowReporter).to receive(:new).and_return(audit_workflow_reporter)
-    allow(AuditReporters::EventServiceReporter).to receive(:new).and_return(event_service_reporter)
-    allow(AuditReporters::HoneybadgerReporter).to receive(:new).and_return(honeybadger_reporter)
-    allow(AuditReporters::LoggerReporter).to receive(:new).and_return(logger_reporter)
+    allow(ResultsReporters::AuditWorkflowReporter).to receive(:new).and_return(audit_workflow_reporter)
+    allow(ResultsReporters::EventServiceReporter).to receive(:new).and_return(event_service_reporter)
+    allow(ResultsReporters::HoneybadgerReporter).to receive(:new).and_return(honeybadger_reporter)
+    allow(ResultsReporters::LoggerReporter).to receive(:new).and_return(logger_reporter)
   end
 
   describe '.logger' do
@@ -62,7 +62,7 @@ RSpec.describe CatalogUtils do
   describe '.check_existence_for_druid' do
     let(:druid) { 'bz514sm9647' }
     let(:storage_dir_a) { 'spec/fixtures/storage_rootA/sdr2objects' }
-    let(:results) do
+    let(:results_array) do
       [{ db_obj_does_not_exist: 'MoabRecord db object does not exist' },
        { created_new_object: 'added object to db as it did not exist' }]
     end
@@ -81,7 +81,7 @@ RSpec.describe CatalogUtils do
     end
 
     it 'calls check_existence' do
-      allow(MoabRecordService::CheckExistence).to receive(:execute).and_return(audit_results)
+      allow(MoabRecordService::CheckExistence).to receive(:execute).and_return(results)
       described_class.check_existence_for_druid(druid)
       expect(MoabRecordService::CheckExistence).to have_received(:execute).with(druid: druid,
                                                                                 incoming_version: 3, # current_version
@@ -90,7 +90,7 @@ RSpec.describe CatalogUtils do
     end
 
     it 'returns results' do
-      expect(described_class.check_existence_for_druid(druid)).to eq results
+      expect(described_class.check_existence_for_druid(druid)).to eq results_array
     end
 
     context 'given a druid that does not exist' do
@@ -151,7 +151,7 @@ RSpec.describe CatalogUtils do
       end
 
       before do
-        allow(MoabRecordService::CreateAfterValidation).to receive(:execute).and_return(audit_results)
+        allow(MoabRecordService::CreateAfterValidation).to receive(:execute).and_return(results)
       end
 
       it 'calls #create_after_validation' do

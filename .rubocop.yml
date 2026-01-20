@@ -41,7 +41,6 @@ Metrics/BlockLength:
 
 Metrics/ClassLength:
   Exclude:
-    - 'app/services/audit/results.rb'
     - 'app/services/complete_moab_service/base.rb'
 
 Naming/FileName:

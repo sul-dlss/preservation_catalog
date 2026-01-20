@@ -19,7 +19,7 @@ module Audit
       @checksum_validator = checksum_validator
     end
 
-    # Adds to the Audit::Results object for any errors in checksum validation it encounters.
+    # Adds to the Results object for any errors in checksum validation it encounters.
     def validate
       return if manifest_inventory_verification_result.verified
 
@@ -27,9 +27,9 @@ module Audit
         parse_verification_subentity(subentity) unless subentity.verified
       end
     rescue Nokogiri::XML::SyntaxError
-      results.add_result(Audit::Results::INVALID_MANIFEST, manifest_file_path: manifest_file_path)
+      results.add_result(Results::INVALID_MANIFEST, manifest_file_path: manifest_file_path)
     rescue Errno::ENOENT
-      results.add_result(Audit::Results::MANIFEST_NOT_IN_MOAB, manifest_file_path: manifest_file_path)
+      results.add_result(Results::MANIFEST_NOT_IN_MOAB, manifest_file_path: manifest_file_path)
     end
 
     private
@@ -56,7 +56,7 @@ module Audit
     def add_result_for_modified_xml(subentity)
       subentity.subsets.dig(MODIFIED, FILES).each_value do |details|
         results.add_result(
-          Audit::Results::MOAB_FILE_CHECKSUM_MISMATCH,
+          Results::MOAB_FILE_CHECKSUM_MISMATCH,
           file_path: "#{subentity.details['other']}/#{details['basis_path']}",
           version: subentity.details['basis']
         )
@@ -66,7 +66,7 @@ module Audit
     def add_result_for_additions_in_xml(subentity)
       subentity.subsets.dig(ADDED, FILES).each_value do |details|
         results.add_result(
-          Audit::Results::FILE_NOT_IN_MANIFEST,
+          Results::FILE_NOT_IN_MANIFEST,
           file_path: "#{subentity.details['other']}/#{details['other_path']}",
           manifest_file_path: "#{subentity.details['other']}/#{MANIFESTS_XML}"
         )
@@ -76,7 +76,7 @@ module Audit
     def add_result_for_deletions_in_xml(subentity)
       subentity.subsets.dig(DELETED, FILES).each_value do |details|
         results.add_result(
-          Audit::Results::FILE_NOT_IN_MOAB,
+          Results::FILE_NOT_IN_MOAB,
           file_path: "#{subentity.details['other']}/#{details['basis_path']}",
           manifest_file_path: "#{subentity.details['other']}/#{MANIFESTS_XML}"
         )

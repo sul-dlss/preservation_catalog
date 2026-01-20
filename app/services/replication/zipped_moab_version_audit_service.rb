@@ -7,9 +7,9 @@ module Replication
       new(...).call
     end
 
-    def initialize(zipped_moab_version:, audit_results:)
+    def initialize(zipped_moab_version:, results:)
       @zipped_moab_version = zipped_moab_version
-      @audit_results = audit_results
+      @results = results
     end
 
     def call
@@ -29,7 +29,7 @@ module Replication
 
     private
 
-    attr_reader :zipped_moab_version, :audit_results
+    attr_reader :zipped_moab_version, :results
 
     delegate :zip_parts, :preserved_object, to: :zipped_moab_version
 
@@ -55,7 +55,7 @@ module Replication
       return if checksum_mismatch_zip_parts.empty?
 
       checksum_mismatch_zip_parts.each do |zip_part|
-        add_result(Audit::Results::ZIP_PART_CHECKSUM_MISMATCH,
+        add_result(Results::ZIP_PART_CHECKSUM_MISMATCH,
                    endpoint_name: zip_part.zipped_moab_version.zip_endpoint.endpoint_name,
                    s3_key: zip_part.s3_key,
                    md5: zip_part.md5,
@@ -73,10 +73,10 @@ module Replication
       # This state is expected; reporting doesn't indicate a problem.
       # If the status is something else, report as ZIP_PART_NOT_FOUND.
       if zipped_moab_version.incomplete?
-        add_result(Audit::Results::ZIP_PARTS_NOT_ALL_REPLICATED)
+        add_result(Results::ZIP_PARTS_NOT_ALL_REPLICATED)
       else
         not_found_zip_parts.each do |zip_part|
-          add_result(Audit::Results::ZIP_PART_NOT_FOUND,
+          add_result(Results::ZIP_PART_NOT_FOUND,
                      endpoint_name: zip_part.zipped_moab_version.zip_endpoint.endpoint_name,
                      s3_key: zip_part.s3_key,
                      bucket_name: zip_part.s3_part.bucket_name)
@@ -99,7 +99,7 @@ module Replication
     end
 
     def add_result(code, **details)
-      audit_results.add_result(
+      results.add_result(
         code,
         details.merge(
           version: zipped_moab_version.version,
@@ -114,7 +114,7 @@ module Replication
       moab_version_size = zipped_moab_version.druid_version_zip.moab_version_size
       return unless total_part_size < moab_version_size
       add_result(
-        Audit::Results::ZIP_PARTS_SIZE_INCONSISTENCY,
+        Results::ZIP_PARTS_SIZE_INCONSISTENCY,
         total_part_size: total_part_size, moab_version_size: moab_version_size
       )
       :failed
@@ -126,7 +126,7 @@ module Replication
       actual_count = zipped_moab_version.zip_parts.count
       return if db_count == actual_count
       add_result(
-        Audit::Results::ZIP_PARTS_COUNT_DIFFERS_FROM_ACTUAL,
+        Results::ZIP_PARTS_COUNT_DIFFERS_FROM_ACTUAL,
         db_count:, actual_count:
       )
       :failed
@@ -139,7 +139,7 @@ module Replication
 
       # If the current status is :created, this state is expected; reporting doesn't indicate a problem.
       # If the status is something else, this is unexpected.
-      add_result(Audit::Results::ZIP_PARTS_NOT_CREATED)
+      add_result(Results::ZIP_PARTS_NOT_CREATED)
       :created # ZippedMoabVersion has been created, but no ZipParts yet.
     end
 
