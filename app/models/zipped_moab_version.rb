@@ -24,6 +24,8 @@ class ZippedMoabVersion < ApplicationRecord
     'failed' => 3
   }
 
+  delegate :druid, to: :preserved_object
+
   scope :by_druid, lambda { |druid|
     joins(:preserved_object).where(preserved_objects: { druid: druid })
   }

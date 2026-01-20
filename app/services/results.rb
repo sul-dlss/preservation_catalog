@@ -98,7 +98,7 @@ class Results # rubocop:disable Metrics/ClassLength
                                     'Sum of ZippedMoabVersion child part sizes (%{total_part_size}) is less than what is in ' \
                                     'the Moab: %{moab_version_size}',
     ZIP_PARTS_NOT_ALL_REPLICATED => '%{version} on %{endpoint_name}: not all ' \
-                                    'ZippedMoabVersion parts are replicated yet: %{unreplicated_parts_list}',
+                                    'ZippedMoabVersion parts are replicated yet',
     ZIP_PARTS_NOT_CREATED => '%{version} on %{endpoint_name}: no zip_parts exist yet for this ZippedMoabVersion'
   }.freeze
 
