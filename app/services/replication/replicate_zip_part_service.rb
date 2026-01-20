@@ -21,7 +21,9 @@ module Replication
       return if already_replicated?
       check_existing_part_file_on_endpoint
 
-      s3_part.upload_file(druid_version_zip_part.file_path, metadata:)
+      transfer_manager.upload_file(druid_version_zip_part.file_path,
+                                   bucket: zip_part.zip_endpoint.bucket_name,
+                                   key: zip_part.s3_key, metadata:)
     end
 
     private
@@ -60,6 +62,12 @@ module Replication
 
     def check_existing_part_file_on_endpoint
       raise DifferentPartFileFoundError if zip_part_file_exists_on_endpoint? && !zip_part_md5s_match?
+    end
+
+    def transfer_manager
+      @transfer_manager ||= Aws::S3::TransferManager.new(
+        client: zip_part.zip_endpoint.provider.client
+      )
     end
   end
 end

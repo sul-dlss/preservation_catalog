@@ -18,6 +18,8 @@ class ZipEndpoint < ApplicationRecord
   # TODO: after switching to string, validate that input resolves to class which #is_a class of the right type?
   validates :delivery_class, presence: true
 
+  delegate :bucket, :bucket_name, to: :provider
+
   # iterates over the zip endpoints enumerated in settings, creating a ZipEndpoint for each if one doesn't
   # already exist.
   # @return [Array<ZipEndpoint>] the ZipEndpoint list for the zip endpoints defined in the config (all
@@ -42,9 +44,8 @@ class ZipEndpoint < ApplicationRecord
     end
   end
 
-  # @return [Aws::S3::Bucket] S3 bucket object for this zip endpoint
-  def bucket
-    @bucket ||= Replication::ProviderFactory.create(zip_endpoint: self).bucket
+  def provider
+    @provider ||= Replication::ProviderFactory.create(zip_endpoint: self)
   end
 
   def to_s
