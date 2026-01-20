@@ -1,0 +1,61 @@
+<div class="container mt-4">
+  <h1>Files in Moabs on Local Storage</h1>
+
+  <h2 class="mt-5">MoabRecords by MoabStorageRoot</h2>
+  <table class="table" id="moabrecords-by-moabstorageroot-table">
+    <thead>
+      <tr>
+        <th scope="col">Storage root</th>
+        <th scope="col">Storage location</th>
+        <th scope="col">Total size</th>
+        <th scope="col">Moab count</th>
+        <th scope="col">ok</th>
+        <th scope="col">invalid_moab</th>
+        <th scope="col">invalid_checksum</th>
+        <th scope="col">moab_on_storage_not_found</th>
+        <th scope="col">unexpected_version_on_storage</th>
+        <th scope="col">validity_unknown</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @results.each do |result| %>
+        <tr>
+          <th scope="row"><%= result.moab_storage_root.name %></th>
+          <td><%= result.moab_storage_root.storage_location %></td>
+          <td><%= number_to_human_size(result.total_size) %></td>
+          <td><%= number_with_delimiter(result.moab_count) %></td>
+          <td><%= number_with_delimiter(result.ok_count) %></td>
+          <td><%= number_with_delimiter(result.invalid_moab_count) %></td>
+          <td><%= number_with_delimiter(result.invalid_checksum_count) %></td>
+          <td><%= number_with_delimiter(result.moab_on_storage_not_found_count) %></td>
+          <td><%= number_with_delimiter(result.unexpected_version_on_storage_count) %></td>
+          <td><%= number_with_delimiter(result.validity_unknown_count) %></td>
+        </tr>
+      <% end %>
+      <tr class="fw-bold">
+        <th scope="row" colspan="2">TOTAL</th>
+        <td><%= number_to_human_size(@total_result.total_size) %></td>
+        <td><%= number_with_delimiter(@total_result.moab_count) %></td>
+        <td><%= number_with_delimiter(@total_result.ok_count) %></td>
+        <td><%= number_with_delimiter(@total_result.invalid_moab_count) %></td>
+        <td><%= number_with_delimiter(@total_result.invalid_checksum_count) %></td>
+        <td><%= number_with_delimiter(@total_result.moab_on_storage_not_found_count) %></td>
+        <td><%= number_with_delimiter(@total_result.unexpected_version_on_storage_count) %></td>
+        <td><%= number_with_delimiter(@total_result.validity_unknown_count) %></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <hr class="my-5">
+
+  <h2>Versions</h2>
+
+  <table class="table" id="versions-table">
+    <tbody>
+      <tr>
+        <th scope="row">Max version</th>
+        <td><%= number_with_delimiter(MoabRecord.maximum(:version)) %></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
