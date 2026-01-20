@@ -30,7 +30,7 @@ module AuditReporters
         Audit::Results::ZIP_PART_CHECKSUM_MISMATCH,
         Audit::Results::ZIP_PART_NOT_FOUND,
         Audit::Results::ZIP_PARTS_COUNT_DIFFERS_FROM_ACTUAL,
-        Audit::Results::ZIP_PARTS_COUNT_INCONSISTENCY,
+        Audit::Results::ZIP_PARTS_NOT_ALL_REPLICATED,
         Audit::Results::ZIP_PARTS_SIZE_INCONSISTENCY
       ].freeze
     end

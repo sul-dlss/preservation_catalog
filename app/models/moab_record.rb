@@ -43,9 +43,6 @@ class MoabRecord < ApplicationRecord
     where('last_checksum_validation < ? or last_checksum_validation IS NULL', Time.zone.now - Settings.preservation_policy.fixity_ttl.seconds)
   }
 
-  # TODO: create_missing_zipped_moab_versions! would be a better name
-  delegate :create_zipped_moab_versions!, to: :preserved_object
-
   # Send to asynchronous checksum validation pipeline
   def validate_checksums!
     Audit::ChecksumValidationJob.perform_later(self)
