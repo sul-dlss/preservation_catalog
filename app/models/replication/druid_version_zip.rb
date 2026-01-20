@@ -68,14 +68,15 @@ module Replication
       combined, status = Open3.capture2e(zip_command, chdir: work_dir.to_s)
       raise "zipmaker failure #{combined}" unless status.success?
       unless zip_size_ok?
-        part_cleanup_errors = cleanup_zip_parts_with_rescue!
-        part_cleanup_err_msg = "\n-- errors cleaning up zip parts: #{part_cleanup_errors.map(&:inspect)}" if part_cleanup_errors.present?
-        raise "zip size (#{total_part_size}) is smaller than the moab version size (#{moab_version_size})! zipmaker failure #{combined}#{part_cleanup_err_msg}"
+        raise "zip size (#{total_part_size}) is smaller than the moab version size (#{moab_version_size})! zipmaker failure #{combined}"
       end
 
       part_keys.each do |part_key|
         Replication::DruidVersionZipPart.new(self, part_key).write_md5
       end
+    rescue StandardError
+      cleanup_zip_parts!
+      raise
     end
 
     # Ensure the directory the zip will live in exists
@@ -188,7 +189,7 @@ module Replication
 
     # Deletes all zip part files and their md5 sidecar files from local zip storage
     def cleanup_zip_parts!
-      parts_and_checksums_paths.each { |filepath| File.delete(filepath) }
+      FileUtils.rm_f(parts_and_checksums_paths)
     end
 
     # @return [Array<DruidVersionZipPart>] all parts for this DruidVersionZip
@@ -208,16 +209,6 @@ module Replication
     # @raise [Errno::EACCES, Errno::EIO, Errno::ENOENT, Errno::ESTALE, ?] if it is not possible to stat one or more files in the Moab
     def check_moab_version_readability!
       moab_version_files.map { |f| File.stat(f) }
-    end
-
-    def cleanup_zip_parts_with_rescue!
-      errors = []
-      parts_and_checksums_paths.map do |p|
-        File.delete(p)
-      rescue StandardError => e
-        errors << e
-      end
-      errors
     end
 
     def total_part_size
