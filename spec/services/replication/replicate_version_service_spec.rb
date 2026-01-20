@@ -6,7 +6,12 @@ require 'rails_helper'
 RSpec.describe Replication::ReplicateVersionService do
   subject(:service) { described_class.new(preserved_object:, version:) }
 
-  let(:preserved_object) { create(:preserved_object, druid:) }
+  let(:preserved_object) do
+    create(:preserved_object, druid:).tap do |preserved_object|
+      create(:moab_record, version:, preserved_object:, status: moab_record_status)
+    end
+  end
+  let(:moab_record_status) { 'ok' }
   let(:version) { 2 }
   let(:druid) { 'bj102hs9687' }
   let(:s3_key) { 'bj/102/hs/9687/bj102hs9687.v0002.zip' }
@@ -19,7 +24,7 @@ RSpec.describe Replication::ReplicateVersionService do
   let(:druid_version_zip_part) { instance_double(Replication::DruidVersionZipPart) }
 
   before do
-    allow(Replication::DruidVersionZip).to receive(:new).with(druid, version, nil).and_return(druid_version_zip)
+    allow(Replication::DruidVersionZip).to receive(:new).with(druid, version, String).and_return(druid_version_zip)
     allow(Replication::DruidVersionZipPart).to receive(:new).with(druid_version_zip, s3_key).and_return(druid_version_zip_part)
 
     allow(Replication::ProviderFactory).to receive(:create).and_return(provider)
@@ -30,6 +35,21 @@ RSpec.describe Replication::ReplicateVersionService do
     before do
       create(:zipped_moab_version, status: :ok, preserved_object:, version:)
       create(:zipped_moab_version, status: :failed, preserved_object:, version:)
+      allow(service).to receive(:create_zip_if_necessary) # rubocop:disable RSpec/SubjectStub
+    end
+
+    it 'does nothing' do
+      described_class.call(preserved_object:, version:)
+      expect(service).not_to have_received(:create_zip_if_necessary) # rubocop:disable RSpec/SubjectStub
+    end
+  end
+
+  context 'when MoabRecord is not ok' do
+    let(:moab_record_status) { 'invalid_moab' }
+
+    before do
+      create(:zipped_moab_version, status: :incomplete, preserved_object:, version:)
+
       allow(service).to receive(:create_zip_if_necessary) # rubocop:disable RSpec/SubjectStub
     end
 
