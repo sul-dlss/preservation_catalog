@@ -45,9 +45,9 @@ RSpec.describe ZippedMoabVersion do
         args = attributes_for(:zip_part)
         zmv.zip_parts.create!(
           [
-            args.merge(status: 'ok', parts_count: 1, suffix: '.zip', size: 1234),
-            args.merge(status: 'ok', parts_count: 1, suffix: '.z01', size: 1234),
-            args.merge(status: 'ok', parts_count: 1, suffix: '.z02', size: 1234)
+            args.merge(suffix: '.zip', size: 1234),
+            args.merge(suffix: '.z01', size: 1234),
+            args.merge(suffix: '.z02', size: 1234)
           ]
         )
       end

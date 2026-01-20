@@ -137,19 +137,20 @@ RSpec.describe Dashboard::AuditService do
 
   describe '#catalog_to_archive_audit_ok?' do
     before do
-      create(:zip_part, status: 'ok')
-      create(:zip_part, status: 'ok')
+      create(:zipped_moab_version, status: 'ok')
+      create(:zipped_moab_version, status: 'incomplete')
+      create(:zipped_moab_version, status: 'created')
     end
 
-    context 'when all ZipParts have ok status' do
+    context 'when no failed ZippedMoabVersions' do
       it 'is true' do
         expect(outer_class.new.catalog_to_archive_audit_ok?).to be true
       end
     end
 
-    context 'when all ZipParts do not have ok status' do
+    context 'when failed ZippedMoabVersions' do
       before do
-        create(:zip_part, status: 'replicated_checksum_mismatch')
+        create(:zipped_moab_version, status: 'failed')
       end
 
       it 'is false' do
