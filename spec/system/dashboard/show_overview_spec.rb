@@ -64,6 +64,7 @@ RSpec.describe 'Show dashboard overview' do
       within('tr:nth-of-type(3)') do
         expect(page).to have_css('th', text: 'ZippedMoabVersions with incomplete status')
         expect(page).to have_css('td', text: '7')
+        expect(page).to have_link('7', href: incomplete_dashboard_zipped_moab_versions_path)
       end
 
       within('tr:nth-of-type(4)') do

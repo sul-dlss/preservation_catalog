@@ -5,6 +5,8 @@
     <thead>
       <tr>
         <th scope="col">Druid</th>
+        <th scope="col">Version</th>
+        <th scope="col">Endpoint</th>
         <th scope="col">Status</th>
         <th scope="col">Status detail</th>
         <th scope="col">Last updated</th>
@@ -14,6 +16,8 @@
       <% @zipped_moab_versions.each do |zipped_moab_version| %>
         <tr>
           <th scope="row"><%= link_to zipped_moab_version.druid, dashboard_object_path(zipped_moab_version.druid) %></th>
+          <td><%= zipped_moab_version.version %></td>
+          <td><%= zipped_moab_version.zip_endpoint.endpoint_name %></td>
           <td><%= zipped_moab_version.status %></td>
           <td><%= zipped_moab_version.status_details %></td>
           <td><%= l zipped_moab_version.status_updated_at %></td>
@@ -21,7 +25,7 @@
       <% end %>
       <% if @zipped_moab_versions.empty? %>
         <tr>
-          <td colspan="4">No records found.</td>
+          <td colspan="6">No records found.</td>
         </tr>
       <% end %>
     </tbody>

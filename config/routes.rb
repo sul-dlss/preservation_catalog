@@ -20,6 +20,7 @@ Rails.application.routes.draw do
       collection do
         get 'with_errors' # ZipppedMoabVersion in failed status list page
         get 'stuck' # Stuck ZippedMoabVersions list page
+        get 'incomplete' # Incomplete ZippedMoabVersions list page
       end
     end
   end
