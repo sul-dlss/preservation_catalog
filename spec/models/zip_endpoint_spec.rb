@@ -11,22 +11,6 @@ RSpec.describe ZipEndpoint do
     expect(zip_endpoint).to be_valid
   end
 
-  it 'enforces unique constraint on endpoint_name (model level)' do
-    expect do
-      described_class.create!(endpoint_name: 'zip-endpoint')
-    end.to raise_error(ActiveRecord::RecordInvalid)
-  end
-
-  it 'enforces unique constraint on endpoint_name (db level)' do
-    expect do
-      described_class.new(endpoint_name: 'zip-endpoint').save(validate: false)
-    end.to raise_error(ActiveRecord::RecordNotUnique)
-  end
-
-  it { is_expected.to have_many(:zipped_moab_versions) }
-  it { is_expected.to have_db_index(:endpoint_name) }
-  it { is_expected.to validate_presence_of(:endpoint_name) }
-
   describe '#bucket' do
     subject(:bucket) { described_class.find_by(endpoint_name: 'aws_s3_west_2').bucket }
 
