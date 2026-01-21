@@ -55,4 +55,47 @@ RSpec.describe MoabRecordCalculations do
       expect(MoabRecord.expired_checksum_validation_with_grace_count).to eq(1)
     end
   end
+
+  describe '.moab_records_by_moab_storage_root' do
+    let(:moab_storage_root1) { create(:moab_storage_root) }
+    let(:moab_storage_root2) { create(:moab_storage_root) }
+
+    before do
+      create(:moab_record, moab_storage_root: moab_storage_root1, status: 'ok', size: 100)
+      create_list(:moab_record, 2, moab_storage_root: moab_storage_root1, status: 'invalid_moab', size: 101)
+      create_list(:moab_record, 3, moab_storage_root: moab_storage_root1, status: 'invalid_checksum', size: 102)
+      create_list(:moab_record, 4, moab_storage_root: moab_storage_root1, status: 'moab_on_storage_not_found', size: 103)
+      create_list(:moab_record, 5, moab_storage_root: moab_storage_root1, status: 'unexpected_version_on_storage', size: 104)
+      create_list(:moab_record, 6, moab_storage_root: moab_storage_root1, status: 'validity_unknown', size: 105)
+      create_list(:moab_record, 7, moab_storage_root: moab_storage_root2, status: 'ok', size: 200)
+    end
+
+    it 'returns aggregation of MoabRecords by MoabStorageRoot and a total aggregation' do
+      results, total_result = MoabRecord.moab_records_by_moab_storage_root
+      result1 = results.find { |r| r.moab_storage_root == moab_storage_root1 }
+      result2 = results.find { |r| r.moab_storage_root == moab_storage_root2 }
+
+      expect(result1.total_size).to eq(2170)
+      expect(result1.moab_count).to eq(21)
+      expect(result1.ok_count).to eq(1)
+      expect(result1.invalid_moab_count).to eq(2)
+      expect(result1.invalid_checksum_count).to eq(3)
+      expect(result1.moab_on_storage_not_found_count).to eq(4)
+      expect(result1.unexpected_version_on_storage_count).to eq(5)
+      expect(result1.validity_unknown_count).to eq(6)
+
+      expect(result2.total_size).to eq(1400)
+      expect(result2.moab_count).to eq(7)
+      expect(result2.ok_count).to eq(7)
+      expect(result2.invalid_moab_count).to eq(0)
+      expect(result2.invalid_checksum_count).to eq(0)
+      expect(result2.moab_on_storage_not_found_count).to eq(0)
+      expect(result2.unexpected_version_on_storage_count).to eq(0)
+      expect(result2.validity_unknown_count).to eq(0)
+
+      expect(total_result.total_size).to eq(3570)
+      expect(total_result.moab_count).to eq(28)
+      expect(total_result.ok_count).to eq(8)
+    end
+  end
 end
