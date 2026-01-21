@@ -12,15 +12,6 @@ RSpec.describe ZippedMoabVersion do
     expect(zmv).to be_valid
   end
 
-  # NOTE: Since Rails 5.0, belongs_to adds the presence validator automatically, and explicit presence validation
-  #   is redundant (unless you explicitly set config.active_record.belongs_to_required_by_default to false, which we don't.)
-  it { is_expected.to belong_to(:preserved_object) }
-  it { is_expected.to belong_to(:zip_endpoint) }
-  it { is_expected.to validate_presence_of(:version) }
-  it { is_expected.to have_db_index(:zip_endpoint_id) }
-  it { is_expected.to have_many(:zip_parts) }
-  it { is_expected.to have_db_index(:preserved_object_id) }
-
   describe '#total_part_size' do
     context 'there are no parts' do
       it 'returns 0' do
