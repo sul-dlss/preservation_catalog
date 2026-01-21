@@ -36,7 +36,7 @@ class ZippedMoabVersion < ApplicationRecord
   end
 
   def update_status_updated_at
-    self.status_updated_at = Time.current if status_changed?
+    self.status_updated_at = Time.current if status_changed? && !status_updated_at_changed?
   end
 
   def update_status_details

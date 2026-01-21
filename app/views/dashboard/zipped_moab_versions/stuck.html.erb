@@ -1,0 +1,27 @@
+<div class="container mt-4">
+  <h1>Stuck ZippedMoabVersions</h1>
+
+  <table class="table" id="stuck-zipped-moab-versions-table">
+    <thead>
+      <tr>
+        <th scope="col">Druid</th>
+        <th scope="col">Stuck since</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @zipped_moab_versions.each do |zipped_moab_version| %>
+        <tr>
+          <th scope="row"><%= link_to zipped_moab_version.druid, dashboard_object_path(zipped_moab_version.druid) %></th>
+          <td><%= l zipped_moab_version.status_updated_at %></td>
+        </tr>
+      <% end %>
+      <% if @zipped_moab_versions.empty? %>
+        <tr>
+          <td colspan="4">No records found.</td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+
+  <%= paginate @zipped_moab_versions %>
+</div>

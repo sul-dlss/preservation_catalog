@@ -6,22 +6,21 @@ module ZippedMoabVersionCalculations
   extend ActiveSupport::Concern
   include InstrumentationSupport
 
+  STUCK_STATUSES = %w[created incomplete].freeze
+
+  included do
+    # @return [ActiveRecord::Relation<ZippedMoabVersion>] ZippedMoabVersions with failed status
+    scope :with_errors, -> { where(status: 'failed').annotate(caller) }
+
+    # @return [ActiveRecord::Relation<ZippedMoabVersion>] ZippedMoabVersions with status of incomplete or created for more than a week
+    scope :stuck, lambda {
+      where(status: STUCK_STATUSES)
+        .where(status_updated_at: ...1.week.ago)
+        .annotate(caller)
+    }
+  end
+
   class_methods do
-    # @return [Integer] count of ZippedMoabVersions with failed status
-    def errors_count
-      where(status: 'failed')
-        .annotate(caller)
-        .count
-    end
-
-    # @return [Integer] count of ZippedMoabVersions with status of incomplete or created for more than a week
-    def stuck_count
-      where(status: ['incomplete', 'created'])
-        .where('updated_at > ?', 1.week.ago)
-        .annotate(caller)
-        .count
-    end
-
     # @return [Integer] count of ZippedMoabVersions with status of created
     def created_count
       where(status: 'created')

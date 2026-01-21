@@ -1,0 +1,31 @@
+<div class="container mt-4">
+  <h1>MoabRecords in error statuses</h1>
+
+  <table class="table" id="moab-records-with-errors-table">
+    <thead>
+      <tr>
+        <th scope="col">Druid</th>
+        <th scope="col">Status</th>
+        <th scope="col">Status detail</th>
+        <th scope="col">Last updated</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @moab_records.each do |moab_record| %>
+        <tr>
+          <th scope="row"><%= link_to moab_record.druid, dashboard_object_path(moab_record.druid) %></th>
+          <td><%= moab_record.status %></td>
+          <td><%= moab_record.status_details %></td>
+          <td><%= l moab_record.updated_at %></td>
+        </tr>
+      <% end %>
+      <% if @moab_records.empty? %>
+        <tr>
+          <td colspan="4">No records found.</td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+
+  <%= paginate @moab_records %>
+</div>

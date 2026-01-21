@@ -13,13 +13,13 @@
     <tbody>
       <tr>
         <th scope="row">MoabRecords</th>
-        <td><%= number_with_delimiter(MoabRecord.errors_count) %></td>
-        <td><%= number_with_delimiter(MoabRecord.stuck_count) %></td>
+        <td><%= link_to number_with_delimiter(MoabRecord.with_errors.count), with_errors_dashboard_moab_records_path %></td>
+        <td><%= link_to number_with_delimiter(MoabRecord.stuck.count), stuck_dashboard_moab_records_path %></td>
       </tr>
       <tr>
         <th scope="row">ZippedMoabVersions</th>
-        <td><%= number_with_delimiter(ZippedMoabVersion.errors_count) %></td>
-        <td><%= number_with_delimiter(ZippedMoabVersion.stuck_count) %></td>
+        <td><%= link_to number_with_delimiter(ZippedMoabVersion.with_errors.count), with_errors_dashboard_zipped_moab_versions_path %></td>
+        <td><%= link_to number_with_delimiter(ZippedMoabVersion.stuck.count), stuck_dashboard_zipped_moab_versions_path %></td>
       </tr>
     </tbody>
   </table>

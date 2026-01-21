@@ -3,7 +3,7 @@
 require 'rails_helper'
 
 RSpec.describe MoabRecordCalculations do
-  describe '.errors_count' do
+  describe '.with_errors' do
     before do
       create(:moab_record, status: :ok)
       create(:moab_record, status: :invalid_moab)
@@ -13,12 +13,12 @@ RSpec.describe MoabRecordCalculations do
       create(:moab_record, status: :validity_unknown)
     end
 
-    it 'returns the count of MoabRecords with error statuses' do
-      expect(MoabRecord.errors_count).to eq(4)
+    it 'returns MoabRecords with error statuses' do
+      expect(MoabRecord.with_errors.count).to eq(4)
     end
   end
 
-  describe '.stuck_count' do
+  describe '.stuck' do
     before do
       create(:moab_record, status: :validity_unknown, updated_at: 2.weeks.ago)
       create(:moab_record, status: :validity_unknown, updated_at: 3.days.ago)
@@ -26,8 +26,8 @@ RSpec.describe MoabRecordCalculations do
       create(:moab_record, status: :ok)
     end
 
-    it 'returns the count of MoabRecords with status of validity_unknown for more than a week' do
-      expect(MoabRecord.stuck_count).to eq(2)
+    it 'returns MoabRecords with status of validity_unknown for more than a week' do
+      expect(MoabRecord.stuck.count).to eq(1)
     end
   end
 

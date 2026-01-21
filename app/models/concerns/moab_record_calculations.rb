@@ -6,25 +6,22 @@ module MoabRecordCalculations
   extend ActiveSupport::Concern
   include InstrumentationSupport
 
+  ERROR_STATUSES = %w[invalid_moab
+                      invalid_checksum
+                      moab_on_storage_not_found
+                      unexpected_version_on_storage].freeze
+
+  included do
+    # @return [ActiveRecord::Relation<MoabRecord>] MoabRecords with error statuses
+    scope :with_errors, -> { where(status: ERROR_STATUSES).annotate(caller) }
+
+    # @return [ActiveRecord::Relation<MoabRecord>] MoabRecords with status of validity_unknown for more than a week
+    scope :stuck, lambda {
+      where(status: 'validity_unknown').where(updated_at: ...1.week.ago).annotate(caller)
+    }
+  end
+
   class_methods do
-    # @return [Integer] count of MoabRecords with error statuses
-    def errors_count
-      where(status: %w[invalid_moab
-                       invalid_checksum
-                       moab_on_storage_not_found
-                       unexpected_version_on_storage])
-        .annotate(caller)
-        .count
-    end
-
-    # @return [Integer] count of MoabRecords with status of validity_unknown for more than a week
-    def stuck_count
-      where(status: 'validity_unknown')
-        .where('updated_at > ?', 1.week.ago)
-        .annotate(caller)
-        .count
-    end
-
     # @return [Integer] count of MoabRecords with status of validity_unknown
     def validity_unknown_count
       where(status: 'validity_unknown')

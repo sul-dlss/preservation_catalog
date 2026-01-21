@@ -1,0 +1,27 @@
+<div class="container mt-4">
+  <h1>Stuck MoabRecords</h1>
+
+  <table class="table" id="stuck-moab-records-table">
+    <thead>
+      <tr>
+        <th scope="col">Druid</th>
+        <th scope="col">Stuck since</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @moab_records.each do |moab_record| %>
+        <tr>
+          <th scope="row"><%= link_to moab_record.druid, dashboard_object_path(moab_record.druid) %></th>
+          <td><%= l moab_record.updated_at %></td>
+        </tr>
+      <% end %>
+      <% if @moab_records.empty? %>
+        <tr>
+          <td colspan="4">No records found.</td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+
+  <%= paginate @moab_records %>
+</div>
