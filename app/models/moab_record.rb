@@ -1,10 +1,7 @@
 # frozen_string_literal: true
 
-##
 # MoabRecord represents a concrete instance of a PreservedObject across ALL versions, in physical storage.
 class MoabRecord < ApplicationRecord
-  # @note Hash values cannot be modified without migrating any associated persisted data.
-  # @see [enum docs] http://api.rubyonrails.org/classes/ActiveRecord/Enum.html
   enum :status, {
     'ok' => 0,
     'invalid_moab' => 1,
@@ -16,8 +13,6 @@ class MoabRecord < ApplicationRecord
 
   after_save :validate_checksums!, if: proc { |moab_record| moab_record.saved_change_to_status? && moab_record.validity_unknown? }
 
-  # NOTE: Since Rails 5.0, belongs_to adds the presence validator automatically, and explicit presence validation
-  #   is redundant (unless you explicitly set config.active_record.belongs_to_required_by_default to false, which we don't.)
   belongs_to :preserved_object, inverse_of: :moab_record
   belongs_to :moab_storage_root, inverse_of: :moab_records
   belongs_to :from_moab_storage_root, class_name: 'MoabStorageRoot', optional: true
