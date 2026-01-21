@@ -280,20 +280,6 @@ RSpec.describe MoabRecord do
         expect(described_class.fixity_check_expired).not_to include(recently_checked_moab_rec1, recently_checked_moab_rec2)
       end
     end
-
-    describe '.order_fixity_check_expired' do
-      let(:fixity_check_expired) { described_class.fixity_check_expired }
-
-      it 'returns MoabRecords that need fixity check, never checked first, then least-recently to most-recently' do
-        expect(described_class.order_fixity_check_expired(fixity_check_expired).to_a)
-          .to eq [moab_record, fixity_expired_moab_rec1, fixity_expired_moab_rec2]
-      end
-
-      it 'returns no MoabRecords with timestamps indicating still-valid fixity check' do
-        expect(described_class.order_fixity_check_expired(fixity_check_expired))
-          .not_to include(recently_checked_moab_rec1, recently_checked_moab_rec2)
-      end
-    end
   end
 
   context 'with a persisted object' do

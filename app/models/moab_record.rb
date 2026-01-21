@@ -103,14 +103,6 @@ class MoabRecord < ApplicationRecord
     active_record_relation.order(Arel.sql('last_version_audit IS NOT NULL, last_version_audit ASC'))
   end
 
-  # Sort the given relation by last_checksum_validation, nulls first.
-  def self.order_fixity_check_expired(active_record_relation)
-    # possibly non-obvious: IS NOT NULL evaluates to 0 for nulls and 1 for non-nulls; thus, this
-    # sorts nulls (0) before non-nulls (1), and non-nulls are then sorted by last_checksum_validation.
-    # standard SQL doesn't have a NULLS FIRST sort built in.
-    active_record_relation.order(Arel.sql('last_checksum_validation IS NOT NULL, last_checksum_validation ASC'))
-  end
-
   # Number of MoabRecords to validate on a daily basis.
   def self.daily_check_count
     MoabRecord.count / (Settings.preservation_policy.fixity_ttl / (60 * 60 * 24))
