@@ -18,8 +18,6 @@ class PreservedObject < ApplicationRecord
             format: { with: /(?!#{PREFIX_RE})#{DruidTools::Druid.pattern}/ } # ?! group is a *negative* match
   validates :current_version, presence: true, numericality: { only_integer: true, greater_than: 0 }
 
-  scope :without_moab_record, -> { where.missing(:moab_record) }
-
   scope :archive_check_expired, lambda {
     where(
       'last_archive_audit < (CURRENT_TIMESTAMP - (? * INTERVAL \'1 SECOND\')) OR last_archive_audit IS NULL',
