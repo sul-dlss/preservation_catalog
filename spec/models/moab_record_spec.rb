@@ -181,20 +181,6 @@ RSpec.describe MoabRecord do
         expect(described_class.version_audit_expired(now)).not_to include future_timestamp_moab_rec
       end
     end
-
-    describe '.order_last_version_audit' do
-      let(:version_audit_expired) { described_class.version_audit_expired(now) }
-
-      it 'returns MoabRecords with nils first, then old to new timestamps' do
-        expect(described_class.order_last_version_audit(version_audit_expired))
-          .to eq [moab_record, older_timestamp_moab_rec, newer_timestamp_moab_rec]
-      end
-
-      it 'returns no MoabRecords with future timestamps' do
-        expect(described_class.order_last_version_audit(version_audit_expired))
-          .not_to include future_timestamp_moab_rec
-      end
-    end
   end
 
   describe 'enforcement of uniqueness on druid (PreservedObject) across all storage roots' do

@@ -95,14 +95,6 @@ class MoabRecord < ApplicationRecord
     Time.parse(timestamp).utc
   end
 
-  # Sort the given relation by last_version_audit, nulls first.
-  def self.order_last_version_audit(active_record_relation)
-    # possibly non-obvious: IS NOT NULL evaluates to 0 for nulls and 1 for non-nulls; thus, this
-    # sorts nulls (0) before non-nulls (1), and non-nulls are then sorted by last_version_audit.
-    # standard SQL doesn't have a NULLS FIRST sort built in.
-    active_record_relation.order(Arel.sql('last_version_audit IS NOT NULL, last_version_audit ASC'))
-  end
-
   # Number of MoabRecords to validate on a daily basis.
   def self.daily_check_count
     MoabRecord.count / (Settings.preservation_policy.fixity_ttl / (60 * 60 * 24))
