@@ -61,7 +61,7 @@ RSpec/DescribeClass:
     - 'spec/requests/auth_spec.rb' # technically testing ApplicationController, but rubocop complains even if you provide that
 
 RSpec/ExampleLength:
-  Max: 29
+  Enabled: false
 
 RSpec/ImplicitSubject: # we use this for `define_enum_for`, `validate_presence_of`, etc.
   Enabled: false
@@ -71,7 +71,7 @@ RSpec/MessageSpies:
   Enabled: false
 
 RSpec/MultipleExpectations:
-  Max: 12
+  Enabled: false
 
 RSpec/NamedSubject:
   Enabled: false

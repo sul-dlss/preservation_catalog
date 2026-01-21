@@ -1,0 +1,67 @@
+<div class="container mt-4">
+  <h1>Preservation System Status Overview</h1>
+
+  <h2 class="mt-5">Object Status Errors</h2>
+  <table class="table" id="status-errors-table">
+    <thead>
+      <tr>
+        <th scope="col">Record type</th>
+        <th scope="col">With errors</th>
+        <th scope="col">Stuck</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th scope="row">MoabRecords</th>
+        <td><%= number_with_delimiter(MoabRecord.errors_count) %></td>
+        <td><%= number_with_delimiter(MoabRecord.stuck_count) %></td>
+      </tr>
+      <tr>
+        <th scope="row">ZippedMoabVersions</th>
+        <td><%= number_with_delimiter(ZippedMoabVersion.errors_count) %></td>
+        <td><%= number_with_delimiter(ZippedMoabVersion.stuck_count) %></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <hr class="my-5">
+
+  <h2>System Level Warnings</h2>
+
+  <p>Large counts for any of the following may indicate system level issues that need investigation.</p>
+
+  <table class="table" id="system-warnings-table">
+    <thead>
+      <tr>
+        <th scope="col">Warning</th>
+        <th scope="col">Count</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th scope="row">MoabRecord with validity_unknown status</th>
+        <td><%= number_with_delimiter(MoabRecord.validity_unknown_count) %></td>
+      </tr>
+      <tr>
+        <th scope="row">ZippedMoabVersions with created status</th>
+        <td><%= number_with_delimiter(ZippedMoabVersion.created_count) %></td>
+      </tr>
+      <tr>
+        <th scope="row">ZippedMoabVersions with incomplete status</th>
+        <td><%= number_with_delimiter(ZippedMoabVersion.incomplete_count) %></td>
+      </tr>
+      <tr>
+        <th scope="row">Missing ZippedMoabVersions</th>
+        <td><%= number_with_delimiter(ZippedMoabVersion.missing_count) %></td>
+      </tr>
+      <tr>
+        <th scope="row">Expired MoabRecord checksum validations + 7 day grace</th>
+        <td><%= number_with_delimiter(MoabRecord.expired_checksum_validation_with_grace_count) %></td>
+      </tr>
+      <tr>
+        <th scope="row">Expired PreservedObject replication audits + 7 day grace</th>
+        <td><%= number_with_delimiter(PreservedObject.expired_archive_audit_with_grace_count) %></td>
+      </tr>
+    </tbody>
+  </table>
+</div>

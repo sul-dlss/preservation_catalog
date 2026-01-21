@@ -6,6 +6,8 @@
 # represent a specific stored instance on a specific node, but aggregates
 # those instances.
 class PreservedObject < ApplicationRecord
+  include PreservedObjectCalculations
+
   PREFIX_RE = /druid:/i
 
   has_one :moab_record, dependent: :restrict_with_exception, autosave: true
