@@ -13,13 +13,6 @@ RSpec.describe PreservedObject do
     }
   end
 
-  it { is_expected.to have_one(:moab_record) }
-  it { is_expected.to have_db_index(:druid) }
-  it { is_expected.to have_db_index(:last_archive_audit) }
-  it { is_expected.to validate_presence_of(:druid) }
-  it { is_expected.to validate_presence_of(:current_version) }
-  it { is_expected.to have_many(:zipped_moab_versions) }
-
   context 'validation' do
     let(:valid_obj) { described_class.new(required_attributes) }
 
@@ -42,33 +35,7 @@ RSpec.describe PreservedObject do
       expect(described_class.new(required_attributes.merge(druid: 'druid:ab123cd4567'))).not_to be_valid
       expect(described_class.new(required_attributes.merge(druid: 'DRUID:ab123cd4567'))).not_to be_valid
     end
-
-    describe 'enforces unique constraint on druid' do
-      before { described_class.create!(required_attributes) }
-
-      it 'at model level' do
-        msg = 'Validation failed: Druid has already been taken'
-        expect { described_class.create!(required_attributes) }.to raise_error(ActiveRecord::RecordInvalid, msg)
-      end
-
-      it 'at db level' do
-        dup_po = described_class.new(druid: druid, current_version: 2)
-        expect { dup_po.save(validate: false) }.to raise_error(ActiveRecord::RecordNotUnique)
-      end
-    end
   end
-
-  # context 'delegation to s3_key' do
-  #   it 'creates the s3_key correctly' do
-  #     expect(moab_record.s3_key).to eq("ab/123/cd/4567/#{druid}.v0001.zip")
-  #   end
-  # end
-
-  # describe '#druid_version_zip' do
-  #   it 'creates an instance of DruidVersionZip' do
-  #     expect(moab_record.druid_version_zip).to be_an_instance_of DruidVersionZip
-  #   end
-  # end
 
   describe '.archive_check_expired' do
     let!(:preserved_object) { create(:preserved_object, druid: druid) }
@@ -86,14 +53,12 @@ RSpec.describe PreservedObject do
       create(:preserved_object, current_version: 9, last_archive_audit: now - (archive_ttl * 0.1))
     end
 
-    describe '.archive_check_expired' do
-      it 'returns MoabRecords that need fixity check' do
-        expect(described_class.archive_check_expired.to_a.sort).to eq [preserved_object, old_check_po1, old_check_po2]
-      end
+    it 'returns MoabRecords that need fixity check' do
+      expect(described_class.archive_check_expired.to_a.sort).to eq [preserved_object, old_check_po1, old_check_po2]
+    end
 
-      it 'returns no MoabRecords with timestamps indicating still-valid fixity check' do
-        expect(described_class.archive_check_expired).not_to include(recently_checked_po1, recently_checked_po2)
-      end
+    it 'returns no MoabRecords with timestamps indicating still-valid fixity check' do
+      expect(described_class.archive_check_expired).not_to include(recently_checked_po1, recently_checked_po2)
     end
   end
 

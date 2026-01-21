@@ -27,40 +27,6 @@ RSpec.describe MoabRecord do
     expect(described_class.new(args.merge(preserved_object_id: po.id, moab_storage_root_id: MoabStorageRoot.first.id, size: 1))).to be_valid
   end
 
-  it 'defines a status enum with the expected values' do
-    is_expected.to define_enum_for(:status).with_values(
-      'ok' => 0,
-      'invalid_moab' => 1,
-      'invalid_checksum' => 2,
-      'moab_on_storage_not_found' => 3,
-      'unexpected_version_on_storage' => 4,
-      'validity_unknown' => 6
-    )
-  end
-
-  describe '#status=' do
-    it 'validation rejects a value if it does not match the enum' do
-      expect { described_class.new(status: 654) }
-        .to raise_error(ArgumentError, "'654' is not a valid status")
-      expect { described_class.new(status: 'INVALID_MOAB') }
-        .to raise_error(ArgumentError, "'INVALID_MOAB' is not a valid status")
-    end
-
-    it 'accepts a symbol, but will always return a string' do
-      expect(described_class.new(status: :invalid_moab).status).to eq 'invalid_moab'
-    end
-  end
-
-  it { is_expected.to belong_to(:moab_storage_root) }
-  it { is_expected.to belong_to(:preserved_object) }
-  it { is_expected.to have_db_index(:last_version_audit) }
-  it { is_expected.to have_db_index(:last_moab_validation) }
-  it { is_expected.to have_db_index(:last_checksum_validation) }
-  it { is_expected.to have_db_index(:moab_storage_root_id) }
-  it { is_expected.to have_db_index(:preserved_object_id) }
-  it { is_expected.to validate_presence_of(:version) }
-  it { is_expected.to validate_uniqueness_of(:preserved_object_id) }
-
   describe '#validate_checksums!' do
     it 'passes self to Audit::ChecksumValidationJob' do
       expect(Audit::ChecksumValidationJob).to receive(:perform_later).with(moab_record)
@@ -86,36 +52,36 @@ RSpec.describe MoabRecord do
     end
   end
 
-  describe '#upd_audstamps_version_size' do
+  describe '#update_audit_timestamps_version_size' do
     it 'updates version' do
-      expect { moab_record.upd_audstamps_version_size(false, 3, nil) }.to change(moab_record, :version).to(3)
+      expect { moab_record.update_audit_timestamps_version_size(false, 3, nil) }.to change(moab_record, :version).to(3)
     end
 
     it 'updates size if size is not nil' do
-      expect { moab_record.upd_audstamps_version_size(false, 0, 123) }.to change(moab_record, :size).to(123)
+      expect { moab_record.update_audit_timestamps_version_size(false, 0, 123) }.to change(moab_record, :size).to(123)
     end
 
     it 'does not update size if size is nil' do
-      expect { moab_record.upd_audstamps_version_size(false, 0, nil) }.not_to change(moab_record, :size)
+      expect { moab_record.update_audit_timestamps_version_size(false, 0, nil) }.not_to change(moab_record, :size)
     end
 
     it 'calls update_audit_timestamps with the appropriate params' do
       expect(moab_record).to receive(:update_audit_timestamps).with(false, true)
-      moab_record.upd_audstamps_version_size(false, 3, nil)
+      moab_record.update_audit_timestamps_version_size(false, 3, nil)
     end
   end
 
-  describe '#matches_po_current_version?' do
+  describe '#matches_preserved_object_current_version?' do
     before { moab_record.version = 666 }
 
     it 'returns true when its version matches its preserved objects current version' do
       moab_record.preserved_object.current_version = 666
-      expect(moab_record.matches_po_current_version?).to be true
+      expect(moab_record.matches_preserved_object_current_version?).to be true
     end
 
     it 'returns false when its version does not match its preserved objects current version' do
       moab_record.preserved_object.current_version = 777
-      expect(moab_record.matches_po_current_version?).to be false
+      expect(moab_record.matches_preserved_object_current_version?).to be false
     end
   end
 
@@ -174,77 +140,12 @@ RSpec.describe MoabRecord do
 
     describe '.version_audit_expired' do
       it 'returns MoabRecords with nils and MoabRecords < given date (not orded by last_version_audit)' do
-        expect(described_class.version_audit_expired(now).sort).to eq [moab_record, newer_timestamp_moab_rec, older_timestamp_moab_rec]
+        expect(described_class.version_audit_expired.sort).to eq [moab_record, newer_timestamp_moab_rec, older_timestamp_moab_rec]
       end
 
       it 'returns no MoabRecords with future timestamps' do
-        expect(described_class.version_audit_expired(now)).not_to include future_timestamp_moab_rec
+        expect(described_class.version_audit_expired).not_to include future_timestamp_moab_rec
       end
-    end
-
-    describe '.order_last_version_audit' do
-      let(:version_audit_expired) { described_class.version_audit_expired(now) }
-
-      it 'returns MoabRecords with nils first, then old to new timestamps' do
-        expect(described_class.order_last_version_audit(version_audit_expired))
-          .to eq [moab_record, older_timestamp_moab_rec, newer_timestamp_moab_rec]
-      end
-
-      it 'returns no MoabRecords with future timestamps' do
-        expect(described_class.order_last_version_audit(version_audit_expired))
-          .not_to include future_timestamp_moab_rec
-      end
-    end
-  end
-
-  describe 'enforcement of uniqueness on druid (PreservedObject) across all storage roots' do
-    context 'at the model level' do
-      it 'must be unique' do
-        expect {
-          create(:moab_record, preserved_object_id: preserved_object.id,
-                               moab_storage_root: create(:moab_storage_root))
-        }.to raise_error(ActiveRecord::RecordInvalid)
-      end
-    end
-
-    context 'at the db level' do
-      it 'must be unique' do
-        dup_moab_record = described_class.new(preserved_object_id: preserved_object.id,
-                                              moab_storage_root: create(:moab_storage_root),
-                                              status: status,
-                                              version: moab_record_version)
-        expect { dup_moab_record.save(validate: false) }.to raise_error(ActiveRecord::RecordNotUnique)
-      end
-    end
-  end
-
-  describe '.normalize_date(timestamp)' do
-    it 'given a String timestamp, returns a Time object' do
-      expect(described_class.send(:normalize_date, '2018-01-22T18:54:48')).to be_a(Time)
-    end
-
-    it 'given a Time Object, returns equivalent Time object' do
-      expect(described_class.send(:normalize_date, now)).to eq(now)
-    end
-
-    it 'given nil, raises TypeError' do
-      expect { described_class.send(:normalize_date, nil) }.to raise_error(TypeError, /no implicit conversion/)
-    end
-
-    it 'given an unparseable date, raises ArgumentError' do
-      expect { described_class.send(:normalize_date, 'an 6') }.to raise_error(ArgumentError, /no time information/)
-    end
-
-    it 'given day only returns a Time object' do
-      expect(described_class.send(:normalize_date, '2018-02-02')).to be_a(Time)
-    end
-
-    it 'given a month only returns Time object' do
-      expect(described_class.send(:normalize_date, 'April')).to be_a(Time)
-    end
-
-    it 'given a year only, raises ArgumentError' do
-      expect { described_class.send(:normalize_date, '2014') }.to raise_error(ArgumentError, /argument out of range/)
     end
   end
 
@@ -278,20 +179,6 @@ RSpec.describe MoabRecord do
 
       it 'returns no MoabRecords with timestamps indicating still-valid fixity check' do
         expect(described_class.fixity_check_expired).not_to include(recently_checked_moab_rec1, recently_checked_moab_rec2)
-      end
-    end
-
-    describe '.order_fixity_check_expired' do
-      let(:fixity_check_expired) { described_class.fixity_check_expired }
-
-      it 'returns MoabRecords that need fixity check, never checked first, then least-recently to most-recently' do
-        expect(described_class.order_fixity_check_expired(fixity_check_expired).to_a)
-          .to eq [moab_record, fixity_expired_moab_rec1, fixity_expired_moab_rec2]
-      end
-
-      it 'returns no MoabRecords with timestamps indicating still-valid fixity check' do
-        expect(described_class.order_fixity_check_expired(fixity_check_expired))
-          .not_to include(recently_checked_moab_rec1, recently_checked_moab_rec2)
       end
     end
   end

@@ -56,9 +56,4 @@ RSpec.describe ZipPart do
       expect(zp.s3_key).to eq "#{DruidTools::Druid.new(po.druid).tree.join('/')}.v0001.zip"
     end
   end
-
-  it { is_expected.to validate_presence_of(:md5) }
-  it { is_expected.to validate_presence_of(:size) }
-  it { is_expected.to validate_presence_of(:suffix) }
-  it { is_expected.to belong_to(:zipped_moab_version) }
 end

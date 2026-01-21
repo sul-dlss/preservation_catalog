@@ -44,7 +44,7 @@ module MoabRecordService
       # add results without db updates
       results.add_result(Results::ACTUAL_VERS_GT_DB_OBJ, db_obj_name: 'MoabRecord', db_obj_version: moab_record.version)
 
-      moab_record.upd_audstamps_version_size(moab_on_storage_validator.ran_moab_validation?, incoming_version, incoming_size)
+      moab_record.update_audit_timestamps_version_size(moab_on_storage_validator.ran_moab_validation?, incoming_version, incoming_size)
       moab_record.last_checksum_validation = Time.current if checksums_validated && moab_record.last_checksum_validation
       status_handler.update_moab_record_status(status) if status
       moab_record.save!

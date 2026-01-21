@@ -29,7 +29,7 @@ module MoabRecordService
       if validation_errors?
         status_handler.update_moab_record_status('invalid_moab')
       else
-        moab_record.upd_audstamps_version_size(moab_on_storage_validator.ran_moab_validation?, incoming_version, incoming_size)
+        moab_record.update_audit_timestamps_version_size(moab_on_storage_validator.ran_moab_validation?, incoming_version, incoming_size)
         preserved_object.current_version = incoming_version
         preserved_object.save!
 

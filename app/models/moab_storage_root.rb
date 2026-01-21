@@ -22,8 +22,8 @@ class MoabStorageRoot < ApplicationRecord
   end
 
   # Use a queue to check all associated MoabRecord objects for C2M
-  def c2m_check!(last_checked_b4_date = Time.current)
-    moab_records.version_audit_expired(last_checked_b4_date).find_each do |moab_rec|
+  def c2m_check!
+    moab_records.version_audit_expired.find_each do |moab_rec|
       Audit::CatalogToMoabJob.perform_later(moab_rec)
     end
   end

@@ -1,10 +1,7 @@
 # frozen_string_literal: true
 
-##
 # MoabRecord represents a concrete instance of a PreservedObject across ALL versions, in physical storage.
 class MoabRecord < ApplicationRecord
-  # @note Hash values cannot be modified without migrating any associated persisted data.
-  # @see [enum docs] http://api.rubyonrails.org/classes/ActiveRecord/Enum.html
   enum :status, {
     'ok' => 0,
     'invalid_moab' => 1,
@@ -16,8 +13,6 @@ class MoabRecord < ApplicationRecord
 
   after_save :validate_checksums!, if: proc { |moab_record| moab_record.saved_change_to_status? && moab_record.validity_unknown? }
 
-  # NOTE: Since Rails 5.0, belongs_to adds the presence validator automatically, and explicit presence validation
-  #   is redundant (unless you explicitly set config.active_record.belongs_to_required_by_default to false, which we don't.)
   belongs_to :preserved_object, inverse_of: :moab_record
   belongs_to :moab_storage_root, inverse_of: :moab_records
   belongs_to :from_moab_storage_root, class_name: 'MoabStorageRoot', optional: true
@@ -35,8 +30,8 @@ class MoabRecord < ApplicationRecord
     joins(:moab_storage_root).where(moab_storage_root: moab_storage_root)
   }
 
-  scope :version_audit_expired, lambda { |expired_date|
-    where('last_version_audit IS NULL or last_version_audit < ?', normalize_date(expired_date))
+  scope :version_audit_expired, lambda {
+    where('last_version_audit IS NULL or last_version_audit < ?', Time.current)
   }
 
   scope :fixity_check_expired, lambda {
@@ -57,13 +52,13 @@ class MoabRecord < ApplicationRecord
   # @param [Boolean] moab_validated whether validation has been run (regardless of result)
   # @param [Integer] new_version
   # @param [Integer] new_size is expected to be numeric if provided
-  def upd_audstamps_version_size(moab_validated, new_version, new_size = nil)
+  def update_audit_timestamps_version_size(moab_validated, new_version, new_size = nil)
     self.version = new_version
     self.size = new_size if new_size
     update_audit_timestamps(moab_validated, true)
   end
 
-  def matches_po_current_version?
+  def matches_preserved_object_current_version?
     version == preserved_object.current_version
   end
 
@@ -88,27 +83,6 @@ class MoabRecord < ApplicationRecord
     self.last_checksum_validation = nil
     self.last_version_audit = nil
     self
-  end
-
-  def self.normalize_date(timestamp)
-    return timestamp if timestamp.is_a?(Time) || timestamp.is_a?(ActiveSupport::TimeWithZone)
-    Time.parse(timestamp).utc
-  end
-
-  # Sort the given relation by last_version_audit, nulls first.
-  def self.order_last_version_audit(active_record_relation)
-    # possibly non-obvious: IS NOT NULL evaluates to 0 for nulls and 1 for non-nulls; thus, this
-    # sorts nulls (0) before non-nulls (1), and non-nulls are then sorted by last_version_audit.
-    # standard SQL doesn't have a NULLS FIRST sort built in.
-    active_record_relation.order(Arel.sql('last_version_audit IS NOT NULL, last_version_audit ASC'))
-  end
-
-  # Sort the given relation by last_checksum_validation, nulls first.
-  def self.order_fixity_check_expired(active_record_relation)
-    # possibly non-obvious: IS NOT NULL evaluates to 0 for nulls and 1 for non-nulls; thus, this
-    # sorts nulls (0) before non-nulls (1), and non-nulls are then sorted by last_checksum_validation.
-    # standard SQL doesn't have a NULLS FIRST sort built in.
-    active_record_relation.order(Arel.sql('last_checksum_validation IS NOT NULL, last_checksum_validation ASC'))
   end
 
   # Number of MoabRecords to validate on a daily basis.

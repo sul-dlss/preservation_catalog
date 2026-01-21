@@ -201,7 +201,7 @@ RSpec.describe CatalogUtils do
     it 're-adds objects for a dropped MoabStorageRoot' do
       ZippedMoabVersion.destroy_all
       ms_root.moab_records.destroy_all
-      PreservedObject.without_moab_record.destroy_all
+      PreservedObject.where.missing(:moab_record).destroy_all
       expect(PreservedObject.count).to eq 14
       expect { described_class.populate_moab_storage_root('fixture_sr1') }.to change(MoabRecord, :count).from(14).to(17)
       expect(PreservedObject.count).to eq 17
