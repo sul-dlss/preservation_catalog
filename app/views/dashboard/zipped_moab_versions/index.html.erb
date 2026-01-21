@@ -1,0 +1,37 @@
+<div class="container mt-4">
+  <h1>Replication of zip part files to cloud endpoints</h1>
+
+  <h2 class="mt-5">ZippedMoabVersions by ZipEndpoint</h2>
+  <table class="table" id="zippedmoabversions-by-zipendpoint-table">
+    <thead>
+      <tr>
+        <th scope="col">Endpoint</th>
+        <th scope="col">ZippedMoabVersion count</th>
+        <th scope="col">ok</th>
+        <th scope="col">failed</th>
+        <th scope="col">created</th>
+        <th scope="col">incomplete</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @results.each do |result| %>
+        <tr>
+          <th scope="row"><%= result.zip_endpoint.endpoint_name %></th>
+          <td><%= number_with_delimiter(result.zipped_moab_version_count) %></td>
+          <td><%= number_with_delimiter(result.ok_count) %></td>
+          <td><%= number_with_delimiter(result.failed_count) %></td>
+          <td><%= number_with_delimiter(result.created_count) %></td>
+          <td><%= number_with_delimiter(result.incomplete_count) %></td>
+        </tr>
+      <% end %>
+      <tr class="fw-bold">
+        <th scope="row">TOTAL</th>
+        <td><%= number_with_delimiter(@total_result.zipped_moab_version_count) %></td>
+        <td><%= number_with_delimiter(@total_result.ok_count) %></td>
+        <td><%= number_with_delimiter(@total_result.failed_count) %></td>
+        <td><%= number_with_delimiter(@total_result.created_count) %></td>
+        <td><%= number_with_delimiter(@total_result.incomplete_count) %></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
