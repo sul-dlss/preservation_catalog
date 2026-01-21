@@ -174,11 +174,11 @@ RSpec.describe MoabRecord do
 
     describe '.version_audit_expired' do
       it 'returns MoabRecords with nils and MoabRecords < given date (not orded by last_version_audit)' do
-        expect(described_class.version_audit_expired(now).sort).to eq [moab_record, newer_timestamp_moab_rec, older_timestamp_moab_rec]
+        expect(described_class.version_audit_expired.sort).to eq [moab_record, newer_timestamp_moab_rec, older_timestamp_moab_rec]
       end
 
       it 'returns no MoabRecords with future timestamps' do
-        expect(described_class.version_audit_expired(now)).not_to include future_timestamp_moab_rec
+        expect(described_class.version_audit_expired).not_to include future_timestamp_moab_rec
       end
     end
   end
@@ -201,36 +201,6 @@ RSpec.describe MoabRecord do
                                               version: moab_record_version)
         expect { dup_moab_record.save(validate: false) }.to raise_error(ActiveRecord::RecordNotUnique)
       end
-    end
-  end
-
-  describe '.normalize_date(timestamp)' do
-    it 'given a String timestamp, returns a Time object' do
-      expect(described_class.send(:normalize_date, '2018-01-22T18:54:48')).to be_a(Time)
-    end
-
-    it 'given a Time Object, returns equivalent Time object' do
-      expect(described_class.send(:normalize_date, now)).to eq(now)
-    end
-
-    it 'given nil, raises TypeError' do
-      expect { described_class.send(:normalize_date, nil) }.to raise_error(TypeError, /no implicit conversion/)
-    end
-
-    it 'given an unparseable date, raises ArgumentError' do
-      expect { described_class.send(:normalize_date, 'an 6') }.to raise_error(ArgumentError, /no time information/)
-    end
-
-    it 'given day only returns a Time object' do
-      expect(described_class.send(:normalize_date, '2018-02-02')).to be_a(Time)
-    end
-
-    it 'given a month only returns Time object' do
-      expect(described_class.send(:normalize_date, 'April')).to be_a(Time)
-    end
-
-    it 'given a year only, raises ArgumentError' do
-      expect { described_class.send(:normalize_date, '2014') }.to raise_error(ArgumentError, /argument out of range/)
     end
   end
 

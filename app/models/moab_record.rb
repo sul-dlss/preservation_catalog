@@ -35,8 +35,8 @@ class MoabRecord < ApplicationRecord
     joins(:moab_storage_root).where(moab_storage_root: moab_storage_root)
   }
 
-  scope :version_audit_expired, lambda { |expired_date|
-    where('last_version_audit IS NULL or last_version_audit < ?', normalize_date(expired_date))
+  scope :version_audit_expired, lambda {
+    where('last_version_audit IS NULL or last_version_audit < ?', Time.current)
   }
 
   scope :fixity_check_expired, lambda {
@@ -88,11 +88,6 @@ class MoabRecord < ApplicationRecord
     self.last_checksum_validation = nil
     self.last_version_audit = nil
     self
-  end
-
-  def self.normalize_date(timestamp)
-    return timestamp if timestamp.is_a?(Time) || timestamp.is_a?(ActiveSupport::TimeWithZone)
-    Time.parse(timestamp).utc
   end
 
   # Number of MoabRecords to validate on a daily basis.
