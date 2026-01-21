@@ -31,7 +31,6 @@ class ResultsReporter
     @reporters ||= [
       ResultsReporters::LoggerReporter.new(logger),
       ResultsReporters::HoneybadgerReporter.new,
-      ResultsReporters::AuditWorkflowReporter.new,
       ResultsReporters::EventServiceReporter.new
     ].freeze
   end

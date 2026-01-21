@@ -2,7 +2,6 @@
 
 require 'rails_helper'
 RSpec.describe CatalogController do
-  let(:audit_workflow_reporter) { instance_double(ResultsReporters::AuditWorkflowReporter, report_errors: nil) }
   let(:size) { 2342 }
   let(:ver) { 3 }
   let(:bare_druid) { 'bj102hs9687' }
@@ -16,7 +15,6 @@ RSpec.describe CatalogController do
 
   before do
     allow(described_class.logger).to receive(:info) # silence STDOUT chatter
-    allow(ResultsReporters::AuditWorkflowReporter).to receive(:new).and_return(audit_workflow_reporter)
     allow(ResultsReporters::EventServiceReporter).to receive(:new).and_return(event_service_reporter)
     allow(ResultsReporters::HoneybadgerReporter).to receive(:new).and_return(honeybadger_reporter)
     allow(ResultsReporters::LoggerReporter).to receive(:new).and_return(logger_reporter)

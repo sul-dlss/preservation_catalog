@@ -12,14 +12,12 @@ RSpec.describe Audit::ChecksumValidationService do
   let(:moab_on_storage_validator) { checksum_validation_service.send(:moab_on_storage_validator) }
   let(:results) { instance_double(Results) }
   let(:logger_double) { instance_double(ActiveSupport::Logger, info: nil, error: nil, add: nil) }
-  let(:audit_workflow_reporter) { instance_double(ResultsReporters::AuditWorkflowReporter, report_errors: nil, report_completed: nil) }
   let(:honeybadger_reporter) { instance_double(ResultsReporters::HoneybadgerReporter, report_errors: nil, report_completed: nil) }
   let(:event_service_reporter) { instance_double(ResultsReporters::EventServiceReporter, report_errors: nil, report_completed: nil) }
   let(:logger_reporter) { instance_double(ResultsReporters::LoggerReporter, report_errors: nil, report_completed: nil) }
 
   before do
     allow(ResultsReporters::LoggerReporter).to receive(:new).and_return(logger_reporter)
-    allow(ResultsReporters::AuditWorkflowReporter).to receive(:new).and_return(audit_workflow_reporter)
     allow(ResultsReporters::HoneybadgerReporter).to receive(:new).and_return(honeybadger_reporter)
     allow(ResultsReporters::EventServiceReporter).to receive(:new).and_return(event_service_reporter)
   end
@@ -652,56 +650,6 @@ RSpec.describe Audit::ChecksumValidationService do
       expect(Digest::SHA1).not_to receive(:new).and_call_original
       expect(Digest::SHA2).to receive(:new).and_call_original.at_least(:once)
       checksum_validation_service.validate_checksums
-    end
-  end
-
-  context 'preservationAuditWF reporting' do
-    let(:druid) { 'bz514sm9647' }
-    let(:root_name) { 'fixture_sr1' }
-
-    it 'has status changed to OK_STATUS and completes workflow' do
-      moab_record.invalid_moab!
-      expect(audit_workflow_reporter).to receive(:report_completed)
-        .with(druid: druid,
-              version: 3,
-              check_name: 'validate_checksums',
-              storage_area: moab_store_root,
-              result: { moab_record_status_changed: 'MoabRecord status changed from invalid_moab to ok' })
-      checksum_validation_service.validate_checksums
-    end
-
-    it 'has status that does not change and does not complete workflow' do
-      moab_record.ok!
-      expect(audit_workflow_reporter).not_to receive(:report_completed)
-      checksum_validation_service.validate_checksums
-    end
-
-    context 'has status changed to status other than OK_STATUS' do
-      before do
-        moab_record.version = 4 # this is one greater than the version on disk for bz514sm9647
-        moab_record.save!
-      end
-
-      it 'does not complete workflow' do
-        moab_record.ok!
-        expect(audit_workflow_reporter).not_to receive(:report_completed)
-        checksum_validation_service.validate_checksums
-      end
-    end
-
-    context 'transaction is rolled back' do
-      before do
-        # would result in a status update if the save succeeded
-        moab_record.moab_on_storage_not_found!
-
-        # do this second since we save! as part of setup
-        allow(moab_record).to receive(:save!).and_raise(ActiveRecord::ConnectionTimeoutError)
-      end
-
-      it 'does not complete workflow' do
-        expect(audit_workflow_reporter).not_to receive(:report_completed)
-        checksum_validation_service.validate_checksums
-      end
     end
   end
 end

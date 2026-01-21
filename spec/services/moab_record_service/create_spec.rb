@@ -13,13 +13,11 @@ RSpec.describe MoabRecordService::Create do
     described_class.new(druid: druid, incoming_version: incoming_version, incoming_size: incoming_size, moab_storage_root: moab_storage_root)
   end
   let(:expected_msg) { 'added object to db as it did not exist' }
-  let(:audit_workflow_reporter) { instance_double(ResultsReporters::AuditWorkflowReporter, report_errors: nil) }
   let(:logger_reporter) { instance_double(ResultsReporters::LoggerReporter, report_errors: nil) }
   let(:honeybadger_reporter) { instance_double(ResultsReporters::HoneybadgerReporter, report_errors: nil) }
   let(:event_service_reporter) { instance_double(ResultsReporters::EventServiceReporter, report_errors: nil) }
 
   before do
-    allow(ResultsReporters::AuditWorkflowReporter).to receive(:new).and_return(audit_workflow_reporter)
     allow(ResultsReporters::LoggerReporter).to receive(:new).and_return(logger_reporter)
     allow(ResultsReporters::HoneybadgerReporter).to receive(:new).and_return(honeybadger_reporter)
     allow(ResultsReporters::EventServiceReporter).to receive(:new).and_return(event_service_reporter)
