@@ -48,7 +48,7 @@
       </tr>
       <tr>
         <th scope="row">ZippedMoabVersions with incomplete status</th>
-        <td><%= number_with_delimiter(ZippedMoabVersion.incomplete_count) %></td>
+        <td><%= link_to number_with_delimiter(ZippedMoabVersion.incomplete_count), incomplete_dashboard_zipped_moab_versions_path %></td>
       </tr>
       <tr>
         <th scope="row">Missing ZippedMoabVersions</th>

@@ -39,6 +39,8 @@ RSpec.describe 'Show stuck ZippedMoabVersions' do
         within('tr:nth-of-type(1)') do
           expect(page).to have_css('th', text: zipped_moab_version.druid)
           expect(page).to have_link(zipped_moab_version.druid, href: dashboard_object_path(zipped_moab_version.druid))
+          expect(page).to have_css('td:nth-of-type(1)', text: zipped_moab_version.version.to_s)
+          expect(page).to have_css('td:nth-of-type(2)', text: zipped_moab_version.zip_endpoint.endpoint_name)
         end
       end
 
