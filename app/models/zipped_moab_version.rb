@@ -26,10 +26,6 @@ class ZippedMoabVersion < ApplicationRecord
 
   delegate :druid, to: :preserved_object
 
-  scope :by_druid, lambda { |druid|
-    joins(:preserved_object).where(preserved_objects: { druid: druid })
-  }
-
   before_save :update_status_updated_at
   before_save :update_status_details
 

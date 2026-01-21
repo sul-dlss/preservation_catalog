@@ -21,18 +21,6 @@ RSpec.describe ZippedMoabVersion do
   it { is_expected.to have_many(:zip_parts) }
   it { is_expected.to have_db_index(:preserved_object_id) }
 
-  describe '.by_druid' do
-    before { zmv.save! }
-
-    let(:po_diff) { build(:preserved_object, druid: 'jj925bx9565') }
-    let!(:zmv_diff_druid) { create(:zipped_moab_version, preserved_object: po_diff) }
-
-    it "returns the ZMV's for the given druid" do
-      expect(described_class.by_druid('jj925bx9565').sort).to include zmv_diff_druid
-      expect(described_class.by_druid('jj925bx9565').sort).not_to include zmv
-    end
-  end
-
   describe '#total_part_size' do
     context 'there are no parts' do
       it 'returns 0' do
