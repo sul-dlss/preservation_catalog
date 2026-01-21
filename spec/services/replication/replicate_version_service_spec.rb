@@ -178,7 +178,8 @@ RSpec.describe Replication::ReplicateVersionService do
       end
     end
     let(:results) { instance_double(Results, empty?: true) }
-    let(:error_results) { instance_double(Results, empty?: false, to_s: 'some error message') }
+    let(:error_msg) { 'replicated md5 mismatch on endpoint' }
+    let(:error_results) { instance_double(Results, empty?: false, to_s: error_msg) }
 
     before do
       # This stubs out the other parts that are not being tested here.
@@ -191,7 +192,7 @@ RSpec.describe Replication::ReplicateVersionService do
     it 'sets the ZippedMoabVersion status to failed and notifies' do
       expect { service.call }
         .to change { zipped_moab_version.reload.status }.from('incomplete').to('failed')
-        .and change(zipped_moab_version, :status_details).to('some error message')
+        .and change(zipped_moab_version, :status_details).to(error_msg)
       expect(ResultsReporter).to have_received(:report_results).with(results: error_results)
       expect(druid_version_zip).to have_received(:cleanup_zip_parts!)
     end
