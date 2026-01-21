@@ -44,6 +44,8 @@ class Results # rubocop:disable Metrics/ClassLength
   # When MoabRecord version does not match moab on disk
   UNEXPECTED_VERSION = :unexpected_version
   VERSION_MATCHES = :version_matches
+  # When ZipPart md5 does not match local zip part file md5
+  ZIP_PART_CHECKSUM_FILE_MISMATCH = :zip_part_checksum_file_mismatch
   # When ZipPart md5 does not match zip part file md5 on endpoint
   ZIP_PART_CHECKSUM_MISMATCH = :zip_part_checksum_mismatch
   # When expected zip part file not found on endpoint
@@ -86,6 +88,8 @@ class Results # rubocop:disable Metrics/ClassLength
     UNEXPECTED_VERSION => 'actual version (%{actual_version}) has unexpected ' \
                           'relationship to %{db_obj_name} db version (%{db_obj_version}); ERROR!',
     VERSION_MATCHES => 'actual version (%{actual_version}) matches %{addl} db version',
+    ZIP_PART_CHECKSUM_FILE_MISMATCH => "%{s3_key} catalog md5 (%{md5}) doesn't match the local zip file md5 " \
+                                       '(%{local_md5})',
     ZIP_PART_CHECKSUM_MISMATCH => 'replicated md5 mismatch on %{endpoint_name}: ' \
                                   "%{s3_key} catalog md5 (%{md5}) doesn't match the replicated md5 " \
                                   '(%{replicated_checksum}) on %{bucket_name}',

@@ -145,7 +145,7 @@ module Replication
 
     def update_status_to(new_status)
       # Setting status_updated_at to now to indicate that the status was checked, even if not changed.
-      zipped_moab_version.update!(status: new_status, status_updated_at: Time.zone.now)
+      zipped_moab_version.update!(status: new_status, status_updated_at: Time.zone.now, status_details: results.to_s)
     end
   end
 end
