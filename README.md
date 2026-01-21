@@ -121,28 +121,7 @@ curl -H 'Authorization: Bearer eyJhbGcxxxxx.eyJzdWIxxxxx.lWMJ66Wxx-xx' http://lo
 
 - Communication with other DLSS services happens via REST.
 
-- Most human/manual interaction happens via Rails console and rake tasks.
-
 - There's troubleshooting advice in the wiki. If you debug or clean something up in prod, consider documenting in a wiki entry (and please update entries that you use that are out of date).
-
-- Tasks that use asynchronous workers will execute on any of the eligible worker pool VM.  Therefore, do not expect all the results to show in the logs of the machine that enqueued the jobs!
-
-- We strongly prefer to run large numbers of validations using ActiveJob, so they can be run in parallel.
-
-- You can monitor the progress of most tasks by tailing `log/production.log` (or task specific log), checking the Sidekiq dashboard, or by querying the database. The tasks for large storage roots can take a while -- check [the repo wiki for stats](https://github.com/sul-dlss/preservation_catalog/wiki) on the timing of past runs.
-
-- When executing long running queries, audits, remediations, etc from the Rails console, consider using a [screen session](http://thingsilearned.com/2009/05/26/gnu-screen-super-basic-tutorial/) or `nohup` so that the process isn't killed when you log out.
-
-If you are new to developing on this project, you should at least skim [the database README](db/README.md).
-It has a detailed explanation of the data model, some sample queries, and an ER diagram illustrating the
-table/model relationships.  For those less familiar with ActiveRecord, there is also some guidance about
-how this project uses it.
-
-_Please keep the database README up to date as the schema changes!_
-
-You may also wish to glance at the (much shorter) [Replication README](app/jobs/README.md).
-
-Making modifications to the database is usually done either using the Rails console or a Rake task. Some common operations are listed below.
 
 ## Audits
 
@@ -280,6 +259,20 @@ ZipPart.all.annotate(caller).where.not(status: 'ok').count
 ZipPart.annotate(caller).where.not(status: 'ok').count
 ZipPart.where.not(status: 'ok').count.annotate(caller)
 ```
+
+## Regenerating the ER diagram after a schema change
+```
+docker run \
+-v $(pwd):/home/schcrwlr/share \
+--name schemacrawler \
+--rm \
+--entrypoint=/bin/bash \
+--network preservation_catalog_default \
+schemacrawler/schemacrawler \
+/opt/schemacrawler/bin/schemacrawler.sh --server=postgresql --host=db --database=development --user=postgres --password=sekret --info-level=standard --command=schema --output-format=svg --output-file=/home/schcrwlr/share/db/schema_er_diagram.svg --config-file=/var/preservation_catalog/db/schemacrawler.config.properties --title "PresCat Schema ER Diagram"
+```
+and then commit the changed `db/schema_er_diagram.svg`.
+
 
 ## Resetting the preservation system
 
