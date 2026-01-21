@@ -17,6 +17,9 @@ module Replication
       # Skip if there are no created or incomplete ZippedMoabVersion for the version
       return unless zipped_moab_versions.created.exists? || zipped_moab_versions.incomplete.exists?
 
+      # Skip if the MoabRecord is not ok
+      return unless preserved_object.moab_record.ok?
+
       # If there is a zip, makes sure it is complete.
       # If it is not complete or not present, creates it.
       create_zip_if_necessary
