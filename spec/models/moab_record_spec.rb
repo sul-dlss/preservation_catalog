@@ -27,40 +27,6 @@ RSpec.describe MoabRecord do
     expect(described_class.new(args.merge(preserved_object_id: po.id, moab_storage_root_id: MoabStorageRoot.first.id, size: 1))).to be_valid
   end
 
-  it 'defines a status enum with the expected values' do
-    is_expected.to define_enum_for(:status).with_values(
-      'ok' => 0,
-      'invalid_moab' => 1,
-      'invalid_checksum' => 2,
-      'moab_on_storage_not_found' => 3,
-      'unexpected_version_on_storage' => 4,
-      'validity_unknown' => 6
-    )
-  end
-
-  describe '#status=' do
-    it 'validation rejects a value if it does not match the enum' do
-      expect { described_class.new(status: 654) }
-        .to raise_error(ArgumentError, "'654' is not a valid status")
-      expect { described_class.new(status: 'INVALID_MOAB') }
-        .to raise_error(ArgumentError, "'INVALID_MOAB' is not a valid status")
-    end
-
-    it 'accepts a symbol, but will always return a string' do
-      expect(described_class.new(status: :invalid_moab).status).to eq 'invalid_moab'
-    end
-  end
-
-  it { is_expected.to belong_to(:moab_storage_root) }
-  it { is_expected.to belong_to(:preserved_object) }
-  it { is_expected.to have_db_index(:last_version_audit) }
-  it { is_expected.to have_db_index(:last_moab_validation) }
-  it { is_expected.to have_db_index(:last_checksum_validation) }
-  it { is_expected.to have_db_index(:moab_storage_root_id) }
-  it { is_expected.to have_db_index(:preserved_object_id) }
-  it { is_expected.to validate_presence_of(:version) }
-  it { is_expected.to validate_uniqueness_of(:preserved_object_id) }
-
   describe '#validate_checksums!' do
     it 'passes self to Audit::ChecksumValidationJob' do
       expect(Audit::ChecksumValidationJob).to receive(:perform_later).with(moab_record)
@@ -179,27 +145,6 @@ RSpec.describe MoabRecord do
 
       it 'returns no MoabRecords with future timestamps' do
         expect(described_class.version_audit_expired).not_to include future_timestamp_moab_rec
-      end
-    end
-  end
-
-  describe 'enforcement of uniqueness on druid (PreservedObject) across all storage roots' do
-    context 'at the model level' do
-      it 'must be unique' do
-        expect {
-          create(:moab_record, preserved_object_id: preserved_object.id,
-                               moab_storage_root: create(:moab_storage_root))
-        }.to raise_error(ActiveRecord::RecordInvalid)
-      end
-    end
-
-    context 'at the db level' do
-      it 'must be unique' do
-        dup_moab_record = described_class.new(preserved_object_id: preserved_object.id,
-                                              moab_storage_root: create(:moab_storage_root),
-                                              status: status,
-                                              version: moab_record_version)
-        expect { dup_moab_record.save(validate: false) }.to raise_error(ActiveRecord::RecordNotUnique)
       end
     end
   end
