@@ -7,6 +7,7 @@ gem 'bootsnap', require: false
 gem 'committee' # Validates HTTP requests/responses per OpenAPI specification
 gem 'config' # Settings to manage configs on different instances
 gem 'connection_pool' # Used for redis
+gem 'cssbundling-rails', '~> 1.4'
 gem 'csv' # will be removed from standard library in Ruby 3.4
 gem 'dor-event-client'
 gem 'dor-services-client'

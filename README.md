@@ -84,7 +84,7 @@ bundle exec rspec
 If you've chosen to install Ruby dependencies you can run the app locally with:
 
 ```sh
-bin/dev
+bin/setup
 ```
 
 All set, now you can view the app:

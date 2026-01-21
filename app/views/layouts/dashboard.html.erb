@@ -1,0 +1,51 @@
+<% content_for :content do %>
+  <%# Dashboard Navbar %>
+  <nav class="navbar navbar-expand-lg bg-body-tertiary">
+    <div class="container-fluid">
+      <a class="navbar-brand d-flex align-items-center" href="#">
+        <i class="bi bi-safe text-success fw-bold fs-2 me-2"></i>
+        PresCat Dashboard
+      </a>
+
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <%= link_to 'Overview', dashboard_root_path, class: 'nav-link' %>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Files in moabs on local storage (MoabRecords)
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><%= link_to 'Overview', dashboard_moab_records_path, class: 'dropdown-item' %></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><%= link_to 'With errors', with_errors_dashboard_moab_records_path, class: 'dropdown-item' %></li>
+              <li><%= link_to 'Stuck', stuck_dashboard_moab_records_path, class: 'dropdown-item' %></li>
+            </ul>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Replication of zip parts to cloud storage (ZippedMoabVersions)
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><%= link_to 'Overview', dashboard_zipped_moab_versions_path, class: 'dropdown-item' %></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><%= link_to 'With errors', with_errors_dashboard_zipped_moab_versions_path, class: 'dropdown-item' %></li>
+              <li><%= link_to 'Stuck', stuck_dashboard_zipped_moab_versions_path, class: 'dropdown-item' %></li>
+            </ul>
+          </li>
+        </ul>
+        <form class="d-flex" role="search">
+          <input class="form-control me-2" type="search" placeholder="Search by druid" aria-label="Search by druid" autocomplete="off">
+          <button class="btn btn-outline-primary" type="submit">Search</button>
+      </form>
+      </div>
+    </div>
+  </nav>
+  <%= yield %>
+<% end %>
+<%= render template: 'layouts/application' %>

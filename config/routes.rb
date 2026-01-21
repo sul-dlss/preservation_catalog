@@ -4,18 +4,24 @@ Rails.application.routes.draw do
   require 'sidekiq/web'
   mount Sidekiq::Web => '/queues'
 
-  get 'dashboard', to: 'dashboard#index', defaults: { format: 'html' }
+  root to: redirect('/dashboard')
+
   namespace :dashboard do
-    # routes for turbo-frame partials
-    get 'moab_storage_status', to: '/dashboard#moab_storage_status', defaults: { format: 'html' }
-    get 'moab_record_versions', to: '/dashboard#moab_record_versions', defaults: { format: 'html' }
-    get 'moab_record_info', to: '/dashboard#moab_record_info', defaults: { format: 'html' }
-    get 'storage_root_data', to: '/dashboard#storage_root_data', defaults: { format: 'html' }
-    get 'replication_status', to: '/dashboard#replication_status', defaults: { format: 'html' }
-    get 'replication_endpoints', to: '/dashboard#replication_endpoints', defaults: { format: 'html' }
-    get 'zipped_moab_version_status', to: '/dashboard#zipped_moab_version_status', defaults: { format: 'html' }
-    get 'audit_status', to: '/dashboard#audit_status', defaults: { format: 'html' }
-    get 'audit_info', to: '/dashboard#audit_info', defaults: { format: 'html' }
+    root to: 'dashboard#index' # Preservation System Status Overview page
+
+    resources :objects, only: [:show] # show -> Object show page
+    resources :moab_records, only: [:index] do # index -> Files in moabs on local storage page
+      collection do
+        get 'with_errors' # MoabRecords in error statuses list page
+        get 'stuck' # Stuck MoabRecords list page
+      end
+    end
+    resources :zipped_moab_versions, only: [:index] do # Replication of zip part files to cloud endpoints page
+      collection do
+        get 'with_errors' # ZipppedMoabVersion in failed status list page
+        get 'stuck' # Stuck ZippedMoabVersions list page
+      end
+    end
   end
 
   scope 'v1' do
