@@ -4,7 +4,6 @@ require 'rails_helper'
 require 'services/moab_record_service/shared_examples'
 
 RSpec.describe MoabRecordService::CheckExistence do
-  let(:audit_workflow_reporter) { instance_double(ResultsReporters::AuditWorkflowReporter, report_errors: nil) }
   let(:druid) { 'ab123cd4567' }
   let(:incoming_version) { 6 }
   let(:incoming_size) { 9876 }
@@ -22,7 +21,6 @@ RSpec.describe MoabRecordService::CheckExistence do
   let(:event_service_reporter) { instance_double(ResultsReporters::EventServiceReporter, report_errors: nil) }
 
   before do
-    allow(ResultsReporters::AuditWorkflowReporter).to receive(:new).and_return(audit_workflow_reporter)
     allow(ResultsReporters::LoggerReporter).to receive(:new).and_return(logger_reporter)
     allow(ResultsReporters::HoneybadgerReporter).to receive(:new).and_return(honeybadger_reporter)
     allow(ResultsReporters::EventServiceReporter).to receive(:new).and_return(event_service_reporter)

@@ -5,14 +5,12 @@ require 'rails_helper'
 RSpec.describe Audit::ChecksumValidatorUtils do
   let(:root_name) { 'fixture_sr1' }
   let(:logger_double) { instance_double(ActiveSupport::Logger, info: nil, add: nil, debug: nil, warn: nil) }
-  let(:audit_workflow_reporter) { instance_double(ResultsReporters::AuditWorkflowReporter, report_errors: nil, report_completed: nil) }
   let(:event_service_reporter) { instance_double(ResultsReporters::EventServiceReporter, report_errors: nil, report_completed: nil) }
   let(:honeybadger_reporter) { instance_double(ResultsReporters::HoneybadgerReporter, report_errors: nil, report_completed: nil) }
   let(:logger_reporter) { instance_double(ResultsReporters::LoggerReporter, report_errors: nil, report_completed: nil) }
 
   before do
     allow(described_class.logger).to receive(:info) # silence STDOUT chatter
-    allow(ResultsReporters::AuditWorkflowReporter).to receive(:new).and_return(audit_workflow_reporter)
     allow(ResultsReporters::EventServiceReporter).to receive(:new).and_return(event_service_reporter)
     allow(ResultsReporters::HoneybadgerReporter).to receive(:new).and_return(honeybadger_reporter)
     allow(ResultsReporters::LoggerReporter).to receive(:new).and_return(logger_reporter)
