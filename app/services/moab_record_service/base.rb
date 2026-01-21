@@ -76,7 +76,7 @@ module MoabRecordService
     end
 
     def raise_rollback_if_version_mismatch
-      return if moab_record.matches_po_current_version?
+      return if moab_record.matches_preserved_object_current_version?
 
       results.add_result(Results::DB_VERSIONS_DISAGREE, moab_record_version: moab_record_version, po_version: preserved_object_version)
       raise ActiveRecord::Rollback, "MoabRecord version #{moab_record_version} != PreservedObject current_version #{preserved_object_version}"

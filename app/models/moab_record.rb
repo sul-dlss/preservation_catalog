@@ -63,7 +63,7 @@ class MoabRecord < ApplicationRecord
     update_audit_timestamps(moab_validated, true)
   end
 
-  def matches_po_current_version?
+  def matches_preserved_object_current_version?
     version == preserved_object.current_version
   end
 

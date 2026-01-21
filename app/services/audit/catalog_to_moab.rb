@@ -42,7 +42,7 @@ module Audit
     end
 
     def check_preserved_object_and_moab_record_versions_match
-      return true if moab_record.matches_po_current_version?
+      return true if moab_record.matches_preserved_object_current_version?
 
       results.add_result(Results::DB_VERSIONS_DISAGREE,
                          moab_record_version: moab_record.version,

@@ -105,17 +105,17 @@ RSpec.describe MoabRecord do
     end
   end
 
-  describe '#matches_po_current_version?' do
+  describe '#matches_preserved_object_current_version?' do
     before { moab_record.version = 666 }
 
     it 'returns true when its version matches its preserved objects current version' do
       moab_record.preserved_object.current_version = 666
-      expect(moab_record.matches_po_current_version?).to be true
+      expect(moab_record.matches_preserved_object_current_version?).to be true
     end
 
     it 'returns false when its version does not match its preserved objects current version' do
       moab_record.preserved_object.current_version = 777
-      expect(moab_record.matches_po_current_version?).to be false
+      expect(moab_record.matches_preserved_object_current_version?).to be false
     end
   end
 
