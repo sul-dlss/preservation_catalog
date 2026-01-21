@@ -86,22 +86,22 @@ RSpec.describe MoabRecord do
     end
   end
 
-  describe '#upd_audstamps_version_size' do
+  describe '#update_audit_timestamps_version_size' do
     it 'updates version' do
-      expect { moab_record.upd_audstamps_version_size(false, 3, nil) }.to change(moab_record, :version).to(3)
+      expect { moab_record.update_audit_timestamps_version_size(false, 3, nil) }.to change(moab_record, :version).to(3)
     end
 
     it 'updates size if size is not nil' do
-      expect { moab_record.upd_audstamps_version_size(false, 0, 123) }.to change(moab_record, :size).to(123)
+      expect { moab_record.update_audit_timestamps_version_size(false, 0, 123) }.to change(moab_record, :size).to(123)
     end
 
     it 'does not update size if size is nil' do
-      expect { moab_record.upd_audstamps_version_size(false, 0, nil) }.not_to change(moab_record, :size)
+      expect { moab_record.update_audit_timestamps_version_size(false, 0, nil) }.not_to change(moab_record, :size)
     end
 
     it 'calls update_audit_timestamps with the appropriate params' do
       expect(moab_record).to receive(:update_audit_timestamps).with(false, true)
-      moab_record.upd_audstamps_version_size(false, 3, nil)
+      moab_record.update_audit_timestamps_version_size(false, 3, nil)
     end
   end
 
