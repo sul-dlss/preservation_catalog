@@ -9,7 +9,7 @@ RSpec.describe Replication::ZippedMoabVersionAuditService do
   let(:delivery_job) { instance_double(Replication::S3WestDeliveryJob, bucket:) }
   let(:bucket) { instance_double(Aws::S3::Bucket, object: s3_object) }
   let(:s3_object) { instance_double(Aws::S3::Object, exists?: true, metadata: { 'checksum_md5' => md5_checksum }) }
-  let(:provider) { instance_double(Replication::AwsProvider, bucket:) }
+  let(:provider) { instance_double(Replication::CloudProvider, bucket:) }
 
   let(:missing_s3_object) { instance_double(Aws::S3::Object, exists?: false, bucket_name: 'test-bucket') }
   let(:mismatch_s3_object) do

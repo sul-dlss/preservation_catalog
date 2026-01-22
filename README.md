@@ -308,19 +308,21 @@ Since the environment should have all the necessary credentials already for dele
 
 ```ruby
 def aws_east_provider
-  Replication::AwsProvider.new(region: Settings.zip_endpoints.aws_s3_east_1.region,
+  # Note that access_key_id and secret_access_key can be overridden when initializing a cloud
+  # provider, here we use the value from Settings.zip_endpoints by default
+  Replication::CloudProvider.new(endpoint_settings: Settings.zip_endpoints.aws_s3_east_1,
                                access_key_id: Settings.zip_endpoints.aws_s3_east_1.access_key_id,
                                secret_access_key: Settings.zip_endpoints.aws_s3_east_1.secret_access_key)
 end
 
 def aws_west_provider
-  Replication::AwsProvider.new(region: Settings.zip_endpoints.aws_s3_west_2.region,
+  Replication::CloudProvider.new(endpoint_settings: Settings.zip_endpoints.aws_s3_west_2,
                                access_key_id: Settings.zip_endpoints.aws_s3_west_2.access_key_id,
                                secret_access_key: Settings.zip_endpoints.aws_s3_west_2.secret_access_key)
 end
 
 def ibm_south_provider
-  Replication::IbmProvider.new(region: Settings.zip_endpoints.ibm_us_south.region,
+  Replication::CloudProvider.new(endpoint_settings: Settings.zip_endpoints.ibm_us_south,
                                access_key_id: Settings.zip_endpoints.ibm_us_south.access_key_id,
                                secret_access_key: Settings.zip_endpoints.ibm_us_south.secret_access_key)
 end

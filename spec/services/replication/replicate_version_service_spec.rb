@@ -18,7 +18,7 @@ RSpec.describe Replication::ReplicateVersionService do
 
   let(:bucket) { instance_double(Aws::S3::Bucket, object: s3_part) }
   let(:s3_part) { instance_double(Aws::S3::Object) }
-  let(:provider) { instance_double(Replication::AwsProvider, bucket:) }
+  let(:provider) { instance_double(Replication::CloudProvider, bucket:) }
 
   let(:druid_version_zip) { instance_double(Replication::DruidVersionZip, s3_key:, complete?: true, cleanup_zip_parts!: nil) }
   let(:druid_version_zip_part) { instance_double(Replication::DruidVersionZipPart) }
