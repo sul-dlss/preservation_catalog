@@ -8,8 +8,8 @@ RSpec.describe Replication::ProviderFactory do
   context 'when the endpoint configuration exists' do
     let(:zip_endpoint) { instance_double(ZipEndpoint, endpoint_name: 'aws_s3_west_2') }
 
-    it 'creates an AwsProvider instance' do
-      expect(provider).to be_an_instance_of(Replication::AwsProvider)
+    it 'creates an CloudProvider instance' do
+      expect(provider).to be_an_instance_of(Replication::CloudProvider)
       expect(provider.bucket_name).to eq('sul-sdr-aws-us-west-2-test')
     end
   end
@@ -24,7 +24,7 @@ RSpec.describe Replication::ProviderFactory do
     let(:secret_access_key) { 'OVERRIDDEN_SECRET_ACCESS_KEY' }
 
     it 'creates the provider with the overridden keys' do
-      expect(provider).to be_an_instance_of(Replication::AwsProvider)
+      expect(provider).to be_an_instance_of(Replication::CloudProvider)
       expect(provider.client.config.credentials.access_key_id).to eq(access_key_id)
       expect(provider.client.config.credentials.secret_access_key).to eq(secret_access_key)
     end

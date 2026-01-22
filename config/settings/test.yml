@@ -21,18 +21,15 @@ zip_endpoints:
     storage_location: 'sul-sdr-aws-us-west-2-test'
     access_key_id: 'overridden-by-env-var-in-ci'
     secret_access_key: 'overridden-by-env-var-in-ci'
-    provider_class: 'Replication::AwsProvider'
   ibm_us_south:
     region: 'us-south'
     endpoint_node: 'https://s3.us-south.cloud-object-storage.appdomain.cloud'
     storage_location: 'sul-sdr-ibm-us-south-1-test'
     access_key_id: 'overridden-by-env-var-in-ci'
     secret_access_key: 'overridden-by-env-var-in-ci'
-    provider_class: 'Replication::IbmProvider'
   gcp_s3_south_1:
     region: 'us-south1'
     endpoint_node: 'https://storage.googleapis.com'
     storage_location: 'gcp-us-south-test'
     access_key_id: 'overridden-by-env-var-in-ci'
     secret_access_key: 'overridden-by-env-var-in-ci'
-    provider_class: 'Replication::GcpProvider'

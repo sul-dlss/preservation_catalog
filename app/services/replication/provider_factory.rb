@@ -16,12 +16,12 @@ module Replication
       @secret_access_key = secret_access_key
     end
 
-    # @return [Replication::AwsProvider, Replication::IbmProvider, Replication::GcpProvider]
+    # @return [Replication::CloudProvider]
     def create
-      raise 'Unknown endpoint configuration' unless endpoint_settings&.provider_class
+      raise 'Unknown endpoint configuration' unless endpoint_settings&.region
 
-      provider_class.new(
-        region: endpoint_settings.region,
+      CloudProvider.new(
+        endpoint_settings:,
         access_key_id: access_key_id || endpoint_settings.access_key_id,
         secret_access_key: secret_access_key || endpoint_settings.secret_access_key
       )
@@ -33,10 +33,6 @@ module Replication
 
     def endpoint_settings
       @endpoint_settings ||= Settings.zip_endpoints[zip_endpoint.endpoint_name]
-    end
-
-    def provider_class
-      endpoint_settings.provider_class.constantize
     end
   end
 end

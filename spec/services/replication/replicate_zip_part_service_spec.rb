@@ -11,7 +11,7 @@ RSpec.describe Replication::ReplicateZipPartService do
   let(:md5) { '00236a2ae558018ed13b5222ef1bd977' }
   let(:transfer_manager) { instance_double(Aws::S3::TransferManager) }
   let(:bucket_name) { 'sul-sdr-aws-us-west-2-test' }
-  let(:provider) { instance_double(Replication::AwsProvider, client:, bucket_name:) }
+  let(:provider) { instance_double(Replication::CloudProvider, client:, bucket_name:) }
   let(:client) { instance_double(Aws::S3::Client) }
 
   before do
