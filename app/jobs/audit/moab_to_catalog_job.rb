@@ -6,10 +6,6 @@ module Audit
   class MoabToCatalogJob < ApplicationJob
     queue_as :m2c
 
-    before_enqueue do |job|
-      raise ArgumentError, 'MoabStorageRoot param required' unless job.arguments.first.is_a?(MoabStorageRoot)
-    end
-
     include UniqueJob
 
     # @param [MoabStorageRoot] root mount containing the Moab
