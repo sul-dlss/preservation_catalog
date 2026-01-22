@@ -62,7 +62,7 @@ module UniqueJob
     def lock_timeout
       # 1 hour is a reasonable default, because most jobs in this app will
       # cause only minor trouble if re-executed too aggressively.
-      3600
+      1.hour.to_i
     end
 
     # @return [String] the key for locking this job/payload combination, e.g. 'lock:MySpecificJob-bt821jk7040;1'
