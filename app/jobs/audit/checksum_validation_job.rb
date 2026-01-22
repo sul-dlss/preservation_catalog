@@ -8,10 +8,6 @@ module Audit
 
     queue_as :checksum_validation
 
-    before_enqueue do |job|
-      raise ArgumentError, 'MoabRecord param required' unless job.arguments.first.is_a?(MoabRecord)
-    end
-
     RETRIES = 5
 
     # Retriable jobs should retry when any exception is raised. Retry

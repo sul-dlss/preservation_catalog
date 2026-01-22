@@ -20,15 +20,6 @@ describe Audit::ChecksumValidationJob do
     end
   end
 
-  describe 'before_enqueue' do
-    before { allow(described_class).to receive(:perform_later).and_call_original } # undo rails_helper block
-
-    it 'raises on bad param' do
-      expect { described_class.perform_later(3) }.to raise_error(ArgumentError)
-      expect { described_class.perform_later }.to raise_error(ArgumentError)
-    end
-  end
-
   context 'a subclass with message(s) queued' do
     around do |example|
       old_adapter = described_class.queue_adapter

@@ -6,10 +6,6 @@ module Audit
   class CatalogToMoabJob < ApplicationJob
     queue_as :c2m
 
-    before_enqueue do |job|
-      raise ArgumentError, 'MoabRecord param required' unless job.arguments.first.is_a?(MoabRecord)
-    end
-
     include UniqueJob
 
     # @param [MoabRecord] moab_record object to C2M check
