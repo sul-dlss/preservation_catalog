@@ -21,7 +21,7 @@ module Replication
       raise 'Unknown endpoint configuration' unless endpoint_settings&.provider_class
 
       provider_class.new(
-        region: endpoint_settings.region,
+        zip_endpoint:,
         access_key_id: access_key_id || endpoint_settings.access_key_id,
         secret_access_key: secret_access_key || endpoint_settings.secret_access_key
       )

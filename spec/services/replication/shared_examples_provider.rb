@@ -5,9 +5,31 @@ require 'rails_helper'
 RSpec.shared_examples 'provider' do |provider_class, bucket_name, region, access_key_id, secret_access_key|
   let(:provider) do
     provider_class.new(
-      region: region,
+      zip_endpoint: zip_endpoint,
       access_key_id: 'some_key',
       secret_access_key: 'secret'
+    )
+  end
+  let(:zip_endpoint) { create(:zip_endpoint) }
+  let(:settings) do
+    Struct.new(
+      :storage_location, :region, :provider_class, :endpoint_node,
+      :access_key_id, :secret_access_key
+    )
+  end
+
+  before do
+    allow(Settings).to receive(:zip_endpoints).and_return(
+      {
+        zip_endpoint.endpoint_name => settings.new(
+          storage_location: bucket_name,
+          region: region,
+          provider_class: provider_class.name,
+          endpoint_node: 'https://s3.example.com',
+          access_key_id: access_key_id,
+          secret_access_key: secret_access_key
+        )
+      }
     )
   end
 
@@ -33,7 +55,7 @@ RSpec.shared_examples 'provider' do |provider_class, bucket_name, region, access
 
     let(:provider) do
       described_class.new(
-        region: region,
+        zip_endpoint: zip_endpoint,
         access_key_id: access_key_id,
         secret_access_key: secret_access_key
       )

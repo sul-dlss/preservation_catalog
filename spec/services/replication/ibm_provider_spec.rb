@@ -11,9 +11,10 @@ describe Replication::IbmProvider do
                   Settings.zip_endpoints.ibm_us_south.secret_access_key
 
   describe '.resource' do
+    let(:zip_endpoint) { instance_double(ZipEndpoint, endpoint_name: 'ibm_us_south') }
     let(:provider) do
       described_class.new(
-        region: Settings.zip_endpoints.ibm_us_south.region,
+        zip_endpoint: zip_endpoint,
         access_key_id: 'some_key',
         secret_access_key: 'secret'
       )

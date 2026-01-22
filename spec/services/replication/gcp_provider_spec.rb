@@ -11,9 +11,10 @@ describe Replication::GcpProvider do
                   Settings.zip_endpoints.gcp_s3_south_1.secret_access_key
 
   describe '.resource' do
+    let(:zip_endpoint) { instance_double(ZipEndpoint, endpoint_name: 'gcp_s3_south_1') }
     let(:provider) do
       described_class.new(
-        region: Settings.zip_endpoints.gcp_s3_south_1.region,
+        zip_endpoint: zip_endpoint,
         access_key_id: 'some_key',
         secret_access_key: 'secret'
       )
