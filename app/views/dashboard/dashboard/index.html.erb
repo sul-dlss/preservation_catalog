@@ -24,11 +24,16 @@
     </tbody>
   </table>
 
+  <%= render CardComponent.new do %>
+    <p class="fw-semibold">Any errors shown above require investigation.</p>
+    <p class="mb-1"><span class="fw-medium">Stuck for MoabRecords:</span> status of <italic>validity_unknown</italic> for more than a week</p>
+    <p class="mb-1"><span class="fw-medium">Stuck for ZippedMoabVersions:</span> status of <italic>created</italic> or <italic>incomplete</italic> for more than a week</p>
+    <p>Each of the stuck statuses should be transient; if they persist, that indicates a problem.</p>
+  <% end %>
+
   <hr class="my-5">
 
   <h2>System Level Warnings</h2>
-
-  <p>Large counts for any of the following may indicate system level issues that need investigation.</p>
 
   <table class="table" id="system-warnings-table">
     <thead>
@@ -64,4 +69,10 @@
       </tr>
     </tbody>
   </table>
+
+  <%= render CardComponent.new do %>
+    <p class="fw-semibold">Large counts for any of the above may indicate system level issues that need investigation.</p>
+    <p>In normal operation, a small number of objects in these states is expected.</p>
+    <%= link_to 'Sidekiq Dashboard', sidekiq_web_path, class: 'card-link' %>
+  <% end %>
 </div>
