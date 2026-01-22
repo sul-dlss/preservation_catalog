@@ -36,11 +36,13 @@ task :decommission_endpoint, [:endpoint_name, :access_key, :secret_access_key, :
         zip_part.destroy!
       end
     end
+    zipped_moab_version.reload
     zipped_moab_version.destroy! unless dry_run
   end
 
   unless dry_run
     puts "Deleting ZipEndpoint: #{args[:endpoint_name]}"
+    zip_endpoint.reload
     zip_endpoint.destroy!
   end
 end
