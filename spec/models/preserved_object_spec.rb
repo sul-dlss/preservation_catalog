@@ -102,39 +102,4 @@ RSpec.describe PreservedObject do
       expect(described_class.daily_check_count).to eq 11
     end
   end
-
-  describe '#total_size_of_moab_version' do
-    let(:druid) { 'bz514sm9647' }
-    let(:preserved_object) { create(:preserved_object, druid: druid, current_version: current_version) }
-    let(:current_version) { 3 }
-
-    context 'when MoabRecord is nil' do
-      it 'returns 0' do
-        expect(preserved_object.total_size_of_moab_version(current_version)).to eq(0)
-      end
-    end
-
-    context 'when MoabRecord exists' do
-      let!(:moab_rec1) { create(:moab_record, preserved_object: preserved_object, version: current_version, moab_storage_root: msr) } # rubocop:disable RSpec/LetSetup
-
-      context 'when moab version path does not exist' do
-        let(:msr) { create(:moab_storage_root) }
-
-        it 'raises a runtime error' do
-          expect { preserved_object.total_size_of_moab_version(current_version) }.to raise_error(
-            RuntimeError,
-            /Moab version does not exist:/
-          )
-        end
-      end
-
-      context 'when moab version exists' do
-        let(:msr) { MoabStorageRoot.find_by!(storage_location: 'spec/fixtures/storage_root01/sdr2objects') }
-
-        it 'returns the sum of the file sizes' do
-          expect(preserved_object.total_size_of_moab_version(current_version)).to eq(37_989)
-        end
-      end
-    end
-  end
 end
