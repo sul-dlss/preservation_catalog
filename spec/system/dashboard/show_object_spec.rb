@@ -51,18 +51,18 @@ RSpec.describe 'Show object show page' do
     end
 
     context 'that is missing zip parts' do
-      let!(:zipped_moab_version) { create(:zipped_moab_version, preserved_object:, zip_endpoint:) }
+      let(:zipped_moab_version) { create(:zipped_moab_version, preserved_object:, zip_endpoint:) }
 
       it 'shows the object show page with a zip part alert' do
-        visit dashboard_object_path(druid: preserved_object.druid)
+        visit dashboard_object_path(druid: zipped_moab_version.preserved_object.druid)
 
         expect(page).to have_css('h1', text: "Preserved Object: druid:#{preserved_object.druid}")
         expect(page).to have_css('div.alert.alert-warning', text: "Zipped Moab Version #{zipped_moab_version.version} has no associated Zip Parts.")
       end
     end
 
-    context 'that is missing zip moab versions' do
-      it 'shows the object show page with a zip moab versions alert' do
+    context 'that is missing zipped moab versions' do
+      it 'shows the object show page with a zipped moab versions alert' do
         visit dashboard_object_path(druid: preserved_object.druid)
 
         expect(page).to have_css('h1', text: "Preserved Object: druid:#{preserved_object.druid}")
@@ -80,7 +80,7 @@ RSpec.describe 'Show object show page' do
     end
   end
 
-  context 'with the preserved object is not found' do
+  context 'when the preserved object is not found' do
     let(:druid) { 'aa11bb2222' }
 
     it 'shows the object show page with a moab record alert' do

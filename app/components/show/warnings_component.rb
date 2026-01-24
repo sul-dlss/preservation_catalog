@@ -14,7 +14,7 @@ module Show
 
     def alerts
       [
-        druid_alerts,
+        druid_alert,
         moab_record_alert,
         zipped_moab_version_alerts
       ].flatten.compact
@@ -22,22 +22,22 @@ module Show
 
     private
 
-    def druid_alerts
-      return if druid.blank? || preserved_object.present?
+    def druid_alert
+      return if preserved_object.present?
 
       Alert.new('danger', "No Preserved Object found with druid #{druid}.")
     end
 
     def moab_record_alert
-      return if preserved_object.blank?
+      return if preserved_object.blank? || preserved_object.moab_record&.status == 'ok'
 
-      if preserved_object.moab_record.present?
-        return if preserved_object.moab_record.status == 'ok'
+      Alert.new('danger', moab_record_message)
+    end
 
-        return Alert.new('danger', "Moab Record status is '#{preserved_object.moab_record.status}'.")
-      end
+    def moab_record_message
+      return 'No Moab Record found for this Preserved Object.' if preserved_object.moab_record.blank?
 
-      Alert.new('danger', 'No Moab Record found for this Preserved Object.')
+      "Moab Record status is '#{preserved_object.moab_record.status}'."
     end
 
     def zipped_moab_version_alerts
@@ -48,8 +48,8 @@ module Show
     end
 
     def zip_part_alerts
-      preserved_object.zipped_moab_versions.map do |zmv|
-        next unless zmv.zip_parts.empty?
+      preserved_object.zipped_moab_versions.filter_map do |zmv|
+        next if zmv.zip_parts.any?
 
         Alert.new('warning', "Zipped Moab Version #{zmv.version} has no associated Zip Parts.")
       end
