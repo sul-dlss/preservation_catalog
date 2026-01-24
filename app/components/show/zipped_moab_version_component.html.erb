@@ -1,0 +1,42 @@
+<div class="row">
+  <div class="col-md-6">
+    <table id="zipped-moab-version-table-<%= id %>" class="table table-sm mb-5 caption-header border">
+      <caption class="header ps-2" style="caption-side: top; background-color: var(--bs-table-border-color);">Zipped Moab Version</caption>
+      <tbody>
+        <tr>
+          <th scope="row">Version</th>
+          <td><%= version %></td>
+        </tr>
+        <tr>
+          <th scope="row">Created</th>
+          <td><%= created_at %></td>
+        </tr>
+        <tr>
+          <th scope="row">Last Updated</th>
+          <td><%= updated_at %></td>
+        </tr>
+        <tr>
+          <th scope="row">Zip Endpoint</th>
+          <td><%= endpoint_name %></td>
+        </tr>
+        <tr>
+          <th scope="row">Endpoint Node</th>
+          <td><%= endpoint_node %></td>
+        </tr>
+        <tr>
+          <th scope="row">Storage Location</th>
+          <td><%= storage_location %></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="col-md-6">
+    <% if zip_parts.empty? %>
+      <p>No zip parts found for this zipped moab version.</p>
+    <% else %>
+      <% zip_parts.each do |zip_part| %>
+        <%= render Show::ZipPartComponent.new(zip_part:) %>
+      <% end %>
+    <% end %>
+  </div>
+</div>

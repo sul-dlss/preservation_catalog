@@ -1,0 +1,5 @@
+<% alerts.each do |alert| %>
+  <%= tag.div class: "alert alert-#{alert.variant}", role: 'alert' do %>
+    <%= sanitize alert.message %>
+  <% end %>
+<% end %>

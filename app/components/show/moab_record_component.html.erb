@@ -1,0 +1,49 @@
+<table id="moab-record-table" class="table table-sm mb-5 caption-header border">
+  <caption class="header ps-2" style="caption-side: top; background-color: var(--bs-table-border-color);">Moab Record</caption>
+  <tbody>
+    <tr>
+      <th scope="row">Version</th>
+      <td><%= version %></td>
+    </tr>
+    <tr>
+      <th scope="row">Created</th>
+      <td><%= created_at %></td>
+    </tr>
+    <tr>
+      <th scope="row">Last Updated</th>
+      <td><%= updated_at %></td>
+    </tr>
+    <tr>
+      <th scope="row">Last Moab Validation</th>
+      <td><%= last_moab_validation %></td>
+    </tr>
+    <tr>
+      <th scope="row">Last Checksum Validation</th>
+      <td><%= last_checksum_validation %></td>
+    </tr>
+    <tr>
+      <th scope="row">Size</th>
+      <td><%= size %></td>
+    </tr>
+    <tr>
+      <th scope="row">Status</th>
+      <td><%= status %></td>
+    </tr>
+    <tr>
+      <th scope="row">Last Version Audit</th>
+      <td><%= last_version_audit %></td>
+    </tr>
+    <tr>
+      <th scope="row">Status Details</th>
+      <td><%= status_details %></td>
+    </tr>
+    <tr>
+      <th scope="row">Moab Storage Root</th>
+      <td><%= moab_storage_root.name %></td>
+    </tr>
+    <tr>
+      <th scope="row">Moab Storage Location</th>
+      <td><%= moab_storage_root.storage_location %></td>
+    </tr>
+  </tbody>
+</table>

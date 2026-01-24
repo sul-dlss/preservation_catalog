@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'rails_helper'
+
 RSpec.describe ObjectsController do
   let(:pres_obj) do
     create(:preserved_object, current_version: 3).tap do |preserved_object|

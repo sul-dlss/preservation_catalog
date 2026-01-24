@@ -1,0 +1,47 @@
+<hr>
+<h3>Zip Part Info Debug Information</h3>
+<div class="row">
+  <div class="col-md-12">
+    <table class="table table-sm mb-5 border">
+      <thead>
+        <tr>
+          <th scope="col">ID</th>
+          <th scope="col">Druid</th>
+          <th scope="col">Preserved Object Version</th>
+          <th scope="col">Zipped Moab Version</th>
+          <th scope="col">Endpoint</th>
+          <th scope="col">Status</th>
+          <th scope="col">Suffix</th>
+          <th scope="col">Parts Count</th>
+          <th scope="col">Size</th>
+          <th scope="col">MD5</th>
+          <th scope="col">Created At</th>
+          <th scope="col">Updated At</th>
+          <th scope="col">S3 Key</th>
+          <th scope="col">Found at Endpoint</th>
+          <th scope="col">Checksum MD5</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% zip_part_info.each do |info| %>
+          <tr>
+            <td><%= info[:id] %></td>
+            <td><%= info[:druid] %></td>
+            <td><%= info[:preserved_object_version] %></td>
+            <td><%= info[:zipped_moab_version] %></td>
+            <td><%= info[:endpoint] %></td>
+            <td><%= info[:status] %></td>
+            <td><%= info[:suffix] %></td>
+            <td><%= info[:parts_count] %></td>
+            <td><%= info[:size] %></td>
+            <td><%= info[:md5] %></td>
+            <td><%= info[:created_at] %></td>
+            <td><%= info[:updated_at] %></td>
+            <td><%= info[:s3_key] %></td>
+            <td><%= info[:found_at_endpoint] %></td>
+            <td><%= info[:checksum_md5] %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
