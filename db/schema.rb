@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_01_15_121204) do
+ActiveRecord::Schema[8.0].define(version: 2026_01_27_164511) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -55,9 +55,25 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_15_121204) do
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
     t.datetime "last_archive_audit", precision: nil
+    t.datetime "last_moab_validation"
+    t.datetime "last_checksum_validation"
+    t.datetime "last_version_audit"
+    t.integer "status"
+    t.string "status_details"
+    t.bigint "size"
+    t.bigint "from_moab_storage_root_id"
+    t.bigint "moab_storage_root_id"
     t.index ["created_at"], name: "index_preserved_objects_on_created_at"
     t.index ["druid"], name: "index_preserved_objects_on_druid", unique: true
+    t.index ["from_moab_storage_root_id"], name: "index_preserved_objects_on_from_moab_storage_root_id"
     t.index ["last_archive_audit"], name: "index_preserved_objects_on_last_archive_audit"
+    t.index ["last_checksum_validation"], name: "index_preserved_objects_on_last_checksum_validation"
+    t.index ["last_moab_validation"], name: "index_preserved_objects_on_last_moab_validation"
+    t.index ["last_version_audit"], name: "index_preserved_objects_on_last_version_audit"
+    t.index ["moab_storage_root_id", "current_version"], name: "index_preserved_objects_on_storage_root_and_version", unique: true
+    t.index ["moab_storage_root_id"], name: "index_preserved_objects_on_moab_storage_root_id"
+    t.index ["moab_storage_root_id"], name: "index_preserved_objects_on_storage_root_id", unique: true
+    t.index ["status"], name: "index_preserved_objects_on_status"
     t.index ["updated_at"], name: "index_preserved_objects_on_updated_at"
   end
 
@@ -101,6 +117,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_15_121204) do
   add_foreign_key "moab_records", "moab_storage_roots"
   add_foreign_key "moab_records", "moab_storage_roots", column: "from_moab_storage_root_id"
   add_foreign_key "moab_records", "preserved_objects"
+  add_foreign_key "preserved_objects", "moab_storage_roots"
+  add_foreign_key "preserved_objects", "moab_storage_roots", column: "from_moab_storage_root_id"
   add_foreign_key "zip_parts", "zipped_moab_versions"
   add_foreign_key "zipped_moab_versions", "preserved_objects"
   add_foreign_key "zipped_moab_versions", "zip_endpoints"
