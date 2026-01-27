@@ -55,6 +55,8 @@ describe Replication::DruidVersionZip do
   describe '#find_or_create_zip!' do
     let(:dvz) { described_class.new(druid, version, 'spec/fixtures/storage_root01/sdr2objects') }
 
+    after { FileUtils.rm_rf('/tmp/bj') } # cleanup
+
     context 'there is a zip file already made, but it looks too small' do
       before do
         dvz.create_zip!
@@ -72,8 +74,6 @@ describe Replication::DruidVersionZip do
       let(:version) { 3 }
 
       before { dvz.create_zip! }
-
-      after { FileUtils.rm_rf('/tmp/bj') } # cleanup
 
       it 'updates atime and mtime on the zip file that is already there' do
         sleep(0.1) # sorta hate this, but sleep for a 1/10 s, to give a moment before checking atime/mtime (to prevent flappy test in CI).
@@ -197,7 +197,7 @@ describe Replication::DruidVersionZip do
       let(:version) { 1 }
 
       it 'creates md5' do
-        dvz.part_paths.each { |path| expect(File).not_to exist(path) } # flaky?
+        dvz.part_paths.each { |path| expect(File).not_to exist(path) }
         expect { dvz.create_zip! }.not_to raise_error
         dvz.part_paths.each { |path| expect(File).to exist(path) }
       end
