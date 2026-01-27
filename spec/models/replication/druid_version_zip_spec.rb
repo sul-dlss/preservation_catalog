@@ -10,12 +10,6 @@ describe Replication::DruidVersionZip do
   let(:druid) { 'bj102hs9687' }
   let(:version) { 1 }
 
-  describe '#base_key' do
-    it 'returns filename without ext' do
-      expect(dvz.base_key).to eq 'bj/102/hs/9687/bj102hs9687.v0001'
-    end
-  end
-
   describe '#s3_key' do
     it 'returns a tree path-based key' do
       expect(dvz.s3_key).to eq 'bj/102/hs/9687/bj102hs9687.v0001.zip'
@@ -32,7 +26,7 @@ describe Replication::DruidVersionZip do
 
   describe '#ensure_zip_directory' do
     it 'returns path if zip directory exists' do
-      expect(dvz.ensure_zip_directory!.to_s).to eq '/tmp/bj/102/hs/9687/bj102hs9687.v0001.zip'
+      expect(dvz.send(:ensure_zip_directory!).to_s).to eq '/tmp/bj/102/hs/9687/bj102hs9687.v0001.zip'
     end
 
     context 'zip directory does not exist' do
@@ -40,75 +34,21 @@ describe Replication::DruidVersionZip do
 
       it 'returns path by creating zip directory if does not exist' do
         expect(File).not_to exist('/tmp/bj/102/hs/9687/bj102hs9687.v0001.zip')
-        expect { dvz.ensure_zip_directory! }.not_to raise_error
-        expect(dvz.ensure_zip_directory!.to_s).to eq '/tmp/bj/102/hs/9687/bj102hs9687.v0001.zip'
+        expect { dvz.send(:ensure_zip_directory!) }.not_to raise_error
+        expect(dvz.send(:ensure_zip_directory!).to_s).to eq '/tmp/bj/102/hs/9687/bj102hs9687.v0001.zip'
       end
     end
   end
 
   describe '#file_path' do
     it 'returns a full path' do
-      expect(dvz.file_path).to eq '/tmp/bj/102/hs/9687/bj102hs9687.v0001.zip'
-    end
-  end
-
-  describe '#find_or_create_zip!' do
-    let(:dvz) { described_class.new(druid, version, 'spec/fixtures/storage_root01/sdr2objects') }
-
-    after { FileUtils.rm_rf('/tmp/bj') } # cleanup
-
-    context 'there is a zip file already made, but it looks too small' do
-      before do
-        dvz.create_zip!
-        File.write(dvz.file_path, 'pretend it is too small because zip binary silently omitted versionAdditions.xml')
-      end
-
-      it 'raises an error indicating that the file in the zip temp space looks too small' do
-        expect do
-          dvz.find_or_create_zip!
-        end.to raise_error(RuntimeError, 'zip already exists, but size (80) is smaller than the moab version size (1928387)!')
-      end
-    end
-
-    context 'there is a zip file already made, and it passes the size check' do
-      let(:version) { 3 }
-
-      before { dvz.create_zip! }
-
-      it 'updates atime and mtime on the zip file that is already there' do
-        sleep(0.1) # sorta hate this, but sleep for a 1/10 s, to give a moment before checking atime/mtime (to prevent flappy test in CI).
-        expect { dvz.find_or_create_zip! }.to(
-          change do
-            File.stat(dvz.file_path).atime
-          end.and(change do
-            File.stat(dvz.file_path).mtime
-          end)
-        )
-      end
-
-      it 'does not attempt to re-create the zip file' do
-        expect(dvz).not_to receive(:create_zip!)
-        dvz.find_or_create_zip!
-      end
-    end
-  end
-
-  describe '#exist?' do
-    let(:dvz) { described_class.new(druid, version, 'spec/fixtures/storage_root01/sdr2objects') }
-
-    before { FileUtils.rm_rf('/tmp/bj') } # prep dir
-    after { FileUtils.rm_rf('/tmp/bj') } # cleanup
-
-    it 'returns true when zip exists' do
-      expect(dvz.exist?).to be false
-      dvz.create_zip!
-      expect(dvz.exist?).to be true
+      expect(dvz.send(:file_path)).to eq '/tmp/bj/102/hs/9687/bj102hs9687.v0001.zip'
     end
   end
 
   describe '#create_zip!' do
     let(:dvz) { described_class.new(druid, version, 'spec/fixtures/storage_root01/sdr2objects') }
-    let(:zip_path) { dvz.file_path }
+    let(:zip_path) { dvz.send(:file_path) }
     let(:version) { 3 } # v1 and v2 pre-existing
 
     after { FileUtils.rm_rf('/tmp/bj') } # cleanup
@@ -130,14 +70,16 @@ describe Replication::DruidVersionZip do
 
       it 'cleans up the zip file' do
         expect { dvz.create_zip! }.to raise_error(RuntimeError)
-        expect(dvz.parts_and_checksums_paths).to be_empty
+        expect(dvz.send(:parts_and_checksums_paths)).to be_empty
       end
 
       it 'does not interfere with zip files created for other versions' do
         dvz_v2 = described_class.new(druid, version - 1, 'spec/fixtures/storage_root01/sdr2objects')
         dvz_v2.create_zip!
         expect { dvz.create_zip! }.to raise_error(RuntimeError)
-        expect(dvz_v2.parts_and_checksums_paths.sort).to eq [Pathname.new(dvz_v2.file_path), Pathname.new("#{dvz_v2.file_path}.md5")]
+        expect(dvz_v2.send(:parts_and_checksums_paths).sort).to eq(
+          [Pathname.new(dvz_v2.send(:file_path)), Pathname.new("#{dvz_v2.send(:file_path)}.md5")]
+        )
       end
     end
 
@@ -170,7 +112,7 @@ describe Replication::DruidVersionZip do
       it 'calls check_moab_version_readability! before attempting to create the zip' do
         # This checks that we only attempt zip creation after checking to see that all files are readable.
         expect(dvz).to receive(:check_moab_version_readability!).ordered.and_call_original
-        expect(Open3).to receive(:capture2e).with(dvz.zip_command, chdir: dvz.work_dir.to_s).ordered.and_call_original
+        expect(Open3).to receive(:capture2e).with(dvz.send(:zip_command), chdir: dvz.send(:work_dir).to_s).ordered.and_call_original
         expect { dvz.create_zip! }.not_to raise_error
         expect(File).to exist(zip_path)
       end
@@ -192,14 +134,14 @@ describe Replication::DruidVersionZip do
         allow(dvz).to receive(:zip_size_ok?).and_return(true)
       end
 
-      after { dvz.part_paths.each { |path| File.delete(path) } }
+      after { dvz.send(:part_paths).each { |path| File.delete(path) } }
 
       let(:version) { 1 }
 
       it 'creates md5' do
-        dvz.part_paths.each { |path| expect(File).not_to exist(path) }
+        dvz.send(:part_paths).each { |path| expect(File).not_to exist(path) }
         expect { dvz.create_zip! }.not_to raise_error
-        dvz.part_paths.each { |path| expect(File).to exist(path) }
+        dvz.send(:part_paths).each { |path| expect(File).to exist(path) }
       end
     end
 
@@ -232,34 +174,12 @@ describe Replication::DruidVersionZip do
     end
   end
 
-  describe '#expected_part_keys' do
-    it 'raises for invalid integer' do
-      expect { dvz.expected_part_keys(0) }.to raise_error ArgumentError
-    end
-
-    it 'lists the files expected' do
-      expect(dvz.expected_part_keys(1)).to eq ['bj/102/hs/9687/bj102hs9687.v0001.zip']
-      expect(dvz.expected_part_keys(2)).to eq [
-        'bj/102/hs/9687/bj102hs9687.v0001.zip',
-        'bj/102/hs/9687/bj102hs9687.v0001.z01'
-      ]
-      one_oh_one = dvz.expected_part_keys(101)
-      expect(one_oh_one.count).to eq(101)
-      expect(one_oh_one.last).to eq('bj/102/hs/9687/bj102hs9687.v0001.z100')
-    end
-  end
-
-  describe '#hex_to_base64' do
-    it 'returns base64-encoded value' do
-      expect(dvz.hex_to_base64('4f98f59e877ecb84ff75ef0fab45bac5')).to eq 'T5j1nod+y4T/de8Pq0W6xQ=='
-      expect(dvz.hex_to_base64('d41d8cd98f00b204e9800998ecf8427e')).to eq '1B2M2Y8AsgTpgAmY7PhCfg=='
-    end
-  end
-
   describe '#moab_version_path' do
     context 'storage_location is not available' do
       it 'raises an error' do
-        expect { dvz.moab_version_path }.to raise_error("cannot determine moab_version_path for #{druid} v#{version}, storage_location not provided")
+        expect { dvz.send(:moab_version_path) }.to raise_error(
+          "cannot determine moab_version_path for #{druid} v#{version}, storage_location not provided"
+        )
       end
     end
 
@@ -267,7 +187,7 @@ describe Replication::DruidVersionZip do
       let(:dvz) { described_class.new(druid, version, 'spec/fixtures/storage_root01/sdr2objects') }
 
       it 'returns authoritative druid version location' do
-        expect(dvz.moab_version_path)
+        expect(dvz.send(:moab_version_path))
           .to eq 'spec/fixtures/storage_root01/sdr2objects/bj/102/hs/9687/bj102hs9687/v0001'
       end
     end
@@ -286,7 +206,7 @@ describe Replication::DruidVersionZip do
 
     before do
       FileUtils.rm_rf('/tmp/dc') # prep dir
-      dvz.ensure_zip_directory!
+      dvz.send(:ensure_zip_directory!)
       %w[zip z01 z02 z03 z04].each do |f|
         FileUtils.touch("/tmp/dc/048/cw/1328/dc048cw1328.v0001.#{f}")
       end
@@ -295,15 +215,15 @@ describe Replication::DruidVersionZip do
     after { FileUtils.rm_rf('/tmp/dc') } # cleanup
 
     it 'lists the multiple files produced' do
-      expect(dvz.part_keys).to all(be_a String)
-      expect(dvz.part_keys).to include(
+      expect(dvz.send(:part_keys)).to all(be_a String)
+      expect(dvz.send(:part_keys)).to include(
         'dc/048/cw/1328/dc048cw1328.v0001.zip',
         'dc/048/cw/1328/dc048cw1328.v0001.z01',
         'dc/048/cw/1328/dc048cw1328.v0001.z02',
         'dc/048/cw/1328/dc048cw1328.v0001.z03',
         'dc/048/cw/1328/dc048cw1328.v0001.z04'
       )
-      expect(dvz.part_keys.count).to eq 5
+      expect(dvz.send(:part_keys).count).to eq 5
     end
   end
 
@@ -320,28 +240,28 @@ describe Replication::DruidVersionZip do
 
     it 'lists the multiple files produced' do
       dvz.create_zip!
-      expect(dvz.part_paths).to all(be_a Pathname)
-      expect(dvz.part_paths.map(&:to_s)).to include(
+      expect(dvz.send(:part_paths)).to all(be_a Pathname)
+      expect(dvz.send(:part_paths).map(&:to_s)).to include(
         '/tmp/dc/048/cw/1328/dc048cw1328.v0001.zip',
         '/tmp/dc/048/cw/1328/dc048cw1328.v0001.z01',
         '/tmp/dc/048/cw/1328/dc048cw1328.v0001.z04'
       )
-      expect(dvz.part_paths.count).to eq 5
+      expect(dvz.send(:part_paths).count).to eq 5
     end
   end
 
-  describe '#v_version' do
+  describe '#send(:v_version)' do
     let(:version) { 1 }
 
     it 'returns 3 zero-padded string of the version' do
-      expect(dvz.v_version).to eq 'v0001'
+      expect(dvz.send(:v_version)).to eq 'v0001'
     end
 
     context 'two digit version' do
       let(:version) { 34 }
 
       it 'returns 2 zero-padded string of the version' do
-        expect(dvz.v_version).to eq 'v0034'
+        expect(dvz.send(:v_version)).to eq 'v0034'
       end
     end
   end
@@ -350,7 +270,7 @@ describe Replication::DruidVersionZip do
     let(:dvz) { described_class.new(druid, version, 'spec/fixtures/storage_root01/sdr2objects') }
 
     it 'returns Pathname directory where the zip command is executed' do
-      expect(dvz.work_dir.to_s).to eq 'spec/fixtures/storage_root01/sdr2objects/bj/102/hs/9687'
+      expect(dvz.send(:work_dir).to_s).to eq 'spec/fixtures/storage_root01/sdr2objects/bj/102/hs/9687'
     end
   end
 
@@ -358,36 +278,13 @@ describe Replication::DruidVersionZip do
     let(:zip_path) { '/tmp/bj/102/hs/9687/bj102hs9687.v0001.zip' }
 
     it 'returns zip string to execute for this druid/version' do
-      expect(dvz.zip_command).to eq "zip -r0X -s 10g #{zip_path} bj102hs9687/v0001"
-    end
-  end
-
-  describe '#zip_version' do
-    it 'calls fetch_zip_version only once' do
-      dvz.zip_version
-      expect(dvz).not_to receive(:fetch_zip_version)
-      dvz.zip_version
-    end
-  end
-
-  describe '#zip_version_regexp' do
-    subject { dvz.send(:zip_version_regexp) }
-
-    it { is_expected.to match('This is Zip 3.0 (July 5th 2008), by Info-ZIP.') }
-    it { is_expected.to match('This is Zip 5.0.2 (April 19th 2021), by Cyberdyne II') }
-    it { is_expected.not_to match(%[Copyright (c) 1990-2008 Info-ZIP - Type 'zip "-L"' for software license.]) }
-    it { is_expected.not_to match('bzip2, a block-sorting file compressor.  Version 1.0.6, 6-Sept-2010.') }
-  end
-
-  describe '#fetch_zip_version' do
-    it 'gets version from the system zip' do
-      expect(dvz.send(:fetch_zip_version)).to match(/^Zip \d+\.\d+/)
+      expect(dvz.send(:zip_command)).to eq "zip -r0X -s 10g #{zip_path} bj102hs9687/v0001"
     end
   end
 
   describe '#zip_storage' do
     it 'returns Pathname to location where the zip file is to be created' do
-      expect(dvz.zip_storage.to_s).to eq '/tmp'
+      expect(dvz.send(:zip_storage).to_s).to eq '/tmp'
     end
   end
 
@@ -422,7 +319,7 @@ describe Replication::DruidVersionZip do
 
   describe '#complete?' do
     let(:dvz) { described_class.new(druid, version, 'spec/fixtures/storage_root01/sdr2objects') }
-    let(:zip_path) { dvz.file_path }
+    let(:zip_path) { dvz.send(:file_path) }
     let(:version) { 3 } # v1 and v2 pre-existing
 
     after { FileUtils.rm_rf('/tmp/bj') } # cleanup
@@ -488,14 +385,14 @@ describe Replication::DruidVersionZip do
     after { FileUtils.rm_rf('/tmp/bj') } # cleanup
 
     it 'deletes the zip parts and their md5 sidecars' do
-      expect(dvz.parts_and_checksums_paths).not_to be_empty
-      dvz.parts_and_checksums_paths.each do |path|
+      expect(dvz.send(:parts_and_checksums_paths)).not_to be_empty
+      dvz.send(:parts_and_checksums_paths).each do |path|
         expect(File).to exist(path)
       end
 
       dvz.cleanup_zip_parts!
 
-      dvz.parts_and_checksums_paths.each do |path|
+      dvz.send(:parts_and_checksums_paths).each do |path|
         expect(File).not_to exist(path)
       end
     end

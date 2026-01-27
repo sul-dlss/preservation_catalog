@@ -43,7 +43,7 @@ RSpec.describe ZipPart do
     let(:zp) { described_class.new(args) }
 
     it 'gets a DruidVersionZip of the correct version' do
-      expect(zp.druid_version_zip.version).to eq 1
+      expect(zp.druid_version_zip.send(:version)).to eq 1
     end
   end
 
