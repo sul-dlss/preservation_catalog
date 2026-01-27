@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 require 'rails_helper'
-require 'services/moab_record_service/shared_examples'
+require 'services/moab_service/shared_examples'
 
-RSpec.describe MoabRecordService::Create do
+RSpec.describe MoabService::Create do
   let(:druid) { 'ab123cd4567' }
   let(:incoming_version) { 6 }
   let(:incoming_size) { 9876 }
@@ -26,6 +26,7 @@ RSpec.describe MoabRecordService::Create do
 
   describe '#execute' do
     it 'creates PreservedObject and MoabRecord in database' do
+      debugger
       moab_record_service.execute
       new_preserved_object = PreservedObject.find_by(druid: druid)
       new_moab_record = new_preserved_object.moab_record

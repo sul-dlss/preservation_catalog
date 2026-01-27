@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 require 'rails_helper'
-require 'services/moab_record_service/shared_examples'
+require 'services/moab_service/shared_examples'
 
-RSpec.describe MoabRecordService::CheckExistence do
+RSpec.describe MoabService::CheckExistence do
   let(:druid) { 'ab123cd4567' }
   let(:incoming_version) { 6 }
   let(:incoming_size) { 9876 }

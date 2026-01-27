@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module MoabRecordService
+module MoabService
   # Base class for MoabRecord services.
   class Base
     include ActiveModel::Validations
@@ -26,21 +26,21 @@ module MoabRecordService
       @logger = PreservationCatalog::Application.logger
     end
 
-    def preserved_object
-      @preserved_object ||= PreservedObject.find_by!(druid: druid)
-    end
+    # def preserved_object
+    #   @preserved_object ||= PreservedObject.find_by!(druid: druid)
+    # end
 
-    def moab_record
-      # There should be at most one MoabRecord for a given druid on a given storage location:
-      # * At the DB level, there's a unique index on druid for preserved_objects, a unique index on storage_location
-      # for moab_storage_roots, and a unique index on the combo of preserved_object_id and moab_storage_root_id for
-      # moab_records.
-      # * A moab always lives in the druid tree path of the storage_location, so there is only one
-      # possible moab path for any given druid in a given storage root.
-      @moab_record ||= MoabRecord.joins(:preserved_object, :moab_storage_root).find_by!(
-        preserved_objects: { druid: druid }, moab_storage_roots: { storage_location: storage_location }
-      )
-    end
+    # def moab_record
+    #   # There should be at most one MoabRecord for a given druid on a given storage location:
+    #   # * At the DB level, there's a unique index on druid for preserved_objects, a unique index on storage_location
+    #   # for moab_storage_roots, and a unique index on the combo of preserved_object_id and moab_storage_root_id for
+    #   # moab_records.
+    #   # * A moab always lives in the druid tree path of the storage_location, so there is only one
+    #   # possible moab path for any given druid in a given storage root.
+    #   @moab_record ||= MoabRecord.joins(:preserved_object, :moab_storage_root).find_by!(
+    #     preserved_objects: { druid: druid }, moab_storage_roots: { storage_location: storage_location }
+    #   )
+    # end
 
     private
 
@@ -93,9 +93,9 @@ module MoabRecordService
     # Note that this may be called by running M2C on a storage root and discovering a second copy of a Moab,
     #   or maybe by calling #create_after_validation directly after copying a Moab
     def create_db_objects(status, checksums_validated: false)
+      debugger
       transaction_ok = with_active_record_transaction_and_rescue do
         preserved_object = create_preserved_object
-        preserved_object.create_moab_record!(moab_record_attrs(status, checksums_validated))
       end
       return unless transaction_ok
       results.add_result(Results::CREATED_NEW_OBJECT)
@@ -106,8 +106,8 @@ module MoabRecordService
       ResultsReporter.report_results(results: results)
     end
 
-    def moab_record_exists?
-      MoabRecord.by_druid(druid).by_storage_root(moab_storage_root).exists?
+    def preserved_object_exists?
+      PreservedObject.joins(:moab_storage_root).find_by(druid: druid, moab_storage_roots: { id: moab_storage_root.id }).exists?
     end
 
     def validation_errors?
@@ -120,12 +120,13 @@ module MoabRecordService
       create_db_objects(status)
     end
 
-    def moab_record_attrs(status, checksums_validated)
+    def preserved_object_attrs(status, checksums_validated)
       {
+        druid:,
         version: incoming_version,
         size: incoming_size,
-        moab_storage_root: moab_storage_root,
-        status: status
+        moab_storage_root:,
+        status:
       }.tap do |attrs|
         time = Time.current
         if moab_on_storage_validator.ran_moab_validation?
@@ -137,9 +138,7 @@ module MoabRecordService
     end
 
     def create_preserved_object
-      @preserved_object = PreservedObject.find_or_create_by!(druid: druid) do |preserved_object|
-        preserved_object.current_version = incoming_version # init to match version of the first moab for the druid
-      end
+      @preserved_object = PreservedObject.find_or_create_by!(preserved_object_attrs)
     end
   end
 end

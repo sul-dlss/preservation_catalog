@@ -24,14 +24,6 @@ class MoabRecord < ApplicationRecord
   # NOTE: size here is approximate and not used for fixity checking
   validates :size, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
 
-  scope :by_druid, lambda { |druid|
-    joins(:preserved_object).where(preserved_objects: { druid: druid })
-  }
-
-  scope :by_storage_root, lambda { |moab_storage_root|
-    joins(:moab_storage_root).where(moab_storage_root: moab_storage_root)
-  }
-
   scope :version_audit_expired, lambda {
     where('last_version_audit IS NULL or last_version_audit < ?', Time.current)
   }

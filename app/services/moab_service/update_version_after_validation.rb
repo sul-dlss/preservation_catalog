@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module MoabRecordService
+module MoabService
   # Updates MoabRecord and associated objects based on a moab on storage after validation of moab.
   class UpdateVersionAfterValidation < UpdateVersion
     def self.execute(druid:, incoming_version:, incoming_size:, moab_storage_root:, checksums_validated: false)

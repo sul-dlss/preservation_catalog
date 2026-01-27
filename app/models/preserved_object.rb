@@ -10,7 +10,8 @@ class PreservedObject < ApplicationRecord
 
   PREFIX_RE = /druid:/i
 
-  has_one :moab_record, dependent: :restrict_with_exception, autosave: true
+  # has_one :moab_record, dependent: :restrict_with_exception, autosave: true
+  has_one :moab_storage_root, dependent: :restrict_with_exception, autosave: true
   has_many :zipped_moab_versions, dependent: :restrict_with_exception, inverse_of: :preserved_object
 
   validates :druid,

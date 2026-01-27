@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 require 'rails_helper'
-require 'services/moab_record_service/shared_examples'
+require 'services/moab_service/shared_examples'
 
-RSpec.describe MoabRecordService::UpdateVersion do
+RSpec.describe MoabService::UpdateVersion do
   let(:db_update_failed_prefix) { 'db update failed' }
   let(:druid) { 'ab123cd4567' }
   let(:incoming_size) { 9876 }

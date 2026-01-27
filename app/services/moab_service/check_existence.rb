@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module MoabRecordService
+module MoabService
   # Check if MoabRecord and associated objects exist in the Catalog for a moab on storage.
   # Also, verifies that versions are in alignment.
   class CheckExistence < Base

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-module MoabRecordService
-  # Creates MoabRecord and associated objects based on a moab on storage.
+module MoabService
+  # Creates a PreservedObject base on a based on a moab on storage.
   class Create < Base
     def self.execute(druid:, incoming_version:, incoming_size:, moab_storage_root:, checksums_validated: false)
       new(druid: druid, incoming_version: incoming_version, incoming_size: incoming_size,
@@ -14,8 +14,9 @@ module MoabRecordService
 
     # checksums_validated may be set to true if the caller takes responsibility for having validated the checksums
     def execute(checksums_validated: false)
+      debugger
       perform_execute do
-        if moab_record_exists?
+        if preserved_object_exists?
           report_already_exists
         else
           moab_on_storage_validator.ran_moab_validation! if checksums_validated # ensure validation timestamps updated
@@ -27,7 +28,7 @@ module MoabRecordService
     private
 
     def report_already_exists
-      results.add_result(Results::DB_OBJ_ALREADY_EXISTS, 'MoabRecord')
+      results.add_result(Results::DB_OBJ_ALREADY_EXISTS, 'PreservedObject')
     end
 
     def creation_status(checksums_validated)
