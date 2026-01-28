@@ -37,13 +37,13 @@ RSpec.describe ZipPart do
     end
   end
 
-  describe '#druid_version_zip' do
+  describe '#zip_part_file' do
     let(:po) { build(:preserved_object, current_version: 3) }
     let(:zmv) { build(:zipped_moab_version, preserved_object: po, version: 1) }
     let(:zp) { described_class.new(args) }
 
-    it 'gets a DruidVersionZip of the correct version' do
-      expect(zp.druid_version_zip.send(:version)).to eq 1
+    it 'gets a ZipPartFile of the correct version' do
+      expect(zp.zip_part_file.filename).to match(/\.v0001\./)
     end
   end
 
