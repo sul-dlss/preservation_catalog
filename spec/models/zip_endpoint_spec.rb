@@ -37,7 +37,7 @@ RSpec.describe ZipEndpoint do
       # run it a second time
       expect { described_class.seed_from_config }
         .not_to change { described_class.pluck(:endpoint_name).sort }
-        .from(%w[aws_s3_west_2 gcp_s3_south_1 ibm_us_south zip-endpoint])
+        .from(%w[aws_s3_west_2 gcp_s3_south_1 zip-endpoint])
     end
 
     it 'adds new ZipEndpoint record if there are new Settings.zip_endpoint key names' do
@@ -52,7 +52,7 @@ RSpec.describe ZipEndpoint do
 
       # run it a second time
       described_class.seed_from_config
-      expected_ep_names = %w[aws_s3_west_2 fixture_archiveTest gcp_s3_south_1 ibm_us_south zip-endpoint]
+      expected_ep_names = %w[aws_s3_west_2 fixture_archiveTest gcp_s3_south_1 zip-endpoint]
       expect(described_class.pluck(:endpoint_name).sort).to eq expected_ep_names
     end
   end
