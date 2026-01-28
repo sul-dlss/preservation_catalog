@@ -63,6 +63,7 @@ parser = OptionParser.new do |option_parser|
 end
 
 parser.parse!(into: options)
+
 exit_code = 0 # we can update if/when we hit problems
 
 
@@ -71,6 +72,9 @@ logger = ActiveSupport::BroadcastLogger.new(
 )
 logger.broadcast_to(Logger.new($stdout)) unless options[:quiet]
 
+logger.info('======= FIXITY CHECKING RUN WITH OPTIONS =======')
+logger.info("#{options}")
+logger.info('======= ******************************** =======')
 
 endpoints_to_audit = options[:endpoints_to_audit].split(',')
 fixity_check_base_location = Pathname(options[:fixity_check_base_location])
@@ -105,7 +109,7 @@ if options[:single_part_druid_sample_count].positive?
 end
 
 if options[:multipart_druid_sample_count].positive?
-  multipart_zip_po_list = 
+  multipart_zip_po_list =
     PreservedObject.joins(
       zipped_moab_versions: [:zip_parts, :zip_endpoint]
     ).group(
@@ -124,6 +128,10 @@ if options[:multipart_druid_sample_count].positive?
   total_size = number_to_human_size(multipart_zip_po_list.map { |row| row.last }.sum)
   logger.info("over #{ZIP_SEGMENT_THRESHOLD} GB preserved_objects results (#{total_size} total): #{multipart_zip_po_list}")
   druids += multipart_zip_po_list.map { |row| row.first }.uniq
+end
+
+if options[:dry_run]
+  logger.info("======= DRY RUN =======")
 end
 
 logger.info("druids to check: #{druids}")
