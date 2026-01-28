@@ -13,7 +13,7 @@ module Replication
 
     def call
       zipped_moab_version.zip_parts.each do |zip_part|
-        next if zip_part.md5 == (local_md5 = zip_part.druid_version_zip_part.read_md5)
+        next if zip_part.md5 == (local_md5 = zip_part.zip_part_file.read_md5)
 
         results.add_result(Results::ZIP_PART_CHECKSUM_FILE_MISMATCH, s3_key: zip_part.s3_key,
                                                                      md5: zip_part.md5,

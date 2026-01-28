@@ -4,21 +4,18 @@ module Replication
   # For replication purposes, we may have to chunk archival objects (zips) of Moab versions into multiple files to avoid
   #   unwieldy file sizes.  This is the model for a single such part.  Many of our archival objects (zips) will only
   #   have one of these, but all will have at least one.
-  #
-  # Just a regular model, not an ActiveRecord-backed model
-  class DruidVersionZipPart
-    # @param [DruidVersionZip] dvz
-    # @param [String] part_filename, e.g. 'ab/123/cd/4567/ab123cd4567.v0001.z03'
-    # @note part_filename locates the file inside zip_storage AND is the s3_key
-    # @see [S3 key name performance implications] https://docs.aws.amazon.com/AmazonS3/latest/dev/request-rate-perf-considerations.html
-    def initialize(dvz, part_filename)
-      @dvz = dvz
-      @part_filename = part_filename
+  class ZipPartFile
+    attr_reader :filename
+
+    # @note filename locates the file inside zip_storage AND is the s3_key
+    # @param [String] filename, e.g. 'ab/123/cd/4567/ab123cd4567.v0001.z03'
+    def initialize(filename:)
+      @filename = filename
     end
 
     # @return [String] Path to the local temporary transfer zip (part)
     def file_path
-      File.join(Settings.zip_storage, part_filename)
+      File.join(Settings.zip_storage, filename)
     end
 
     # @return [Integer] Zip file size
@@ -43,12 +40,10 @@ module Replication
 
     # @return [String] the filename extension, e.g. '.z03'
     def extname
-      File.extname(part_filename)
+      File.extname(filename)
     end
 
     private
-
-    attr_reader :dvz, :part_filename
 
     # @return [Digest::MD5] cached md5 object
     def md5

@@ -44,10 +44,16 @@ class ZippedMoabVersion < ApplicationRecord
     self.status_details = nil if status_changed? && !status_details_changed?
   end
 
-  def druid_version_zip
-    @druid_version_zip ||= Replication::DruidVersionZip.new(
+  def zip_part_pathfinder
+    @zip_part_pathfinder ||= Replication::ZipPartPathfinder.new(
+      druid: preserved_object.druid,
+      version:,
       # In tests, a PreservedObject may not have a MoabRecord, hence the safe navigation.
-      preserved_object.druid, version, preserved_object&.moab_record&.moab_storage_root&.storage_location # rubocop:disable Style/SafeNavigationChainLength
+      storage_location: preserved_object&.moab_record&.moab_storage_root&.storage_location # rubocop:disable Style/SafeNavigationChainLength
     )
+  end
+
+  def filesystem_size
+    @filesystem_size ||= Replication::MoabVersionFiles.new(root: zip_part_pathfinder.moab_version_root).size
   end
 end

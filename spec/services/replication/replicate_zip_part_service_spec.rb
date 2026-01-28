@@ -6,7 +6,7 @@ RSpec.describe Replication::ReplicateZipPartService do
   subject(:results) { described_class.call(zip_part:) }
 
   let(:zip_part) { create(:zip_part, md5:) }
-  let(:druid_version_zip_part) { instance_double(Replication::DruidVersionZipPart, file_path: '/path/to/file', read_md5: md5, size: 2048) }
+  let(:zip_part_file) { instance_double(Replication::ZipPartFile, file_path: '/path/to/file', read_md5: md5, size: 2048) }
   let(:s3_part) { instance_double(Aws::S3::Object, bucket_name: 'test-bucket') }
   let(:md5) { '00236a2ae558018ed13b5222ef1bd977' }
   let(:transfer_manager) { instance_double(Aws::S3::TransferManager) }
@@ -15,7 +15,7 @@ RSpec.describe Replication::ReplicateZipPartService do
   let(:client) { instance_double(Aws::S3::Client) }
 
   before do
-    allow(zip_part).to receive_messages(s3_part: s3_part, druid_version_zip_part: druid_version_zip_part)
+    allow(zip_part).to receive_messages(s3_part:, zip_part_file:)
 
     allow(s3_part).to receive(:exists?).and_return(false)
     allow(Aws::S3::TransferManager).to receive(:new).with(client:).and_return(transfer_manager)
