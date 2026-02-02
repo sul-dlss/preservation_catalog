@@ -2,6 +2,10 @@
   <caption class="header ps-2" style="caption-side: top; background-color: var(--bs-table-border-color);">Moab Record</caption>
   <tbody>
     <tr>
+      <th scope="row">ID</th>
+      <td><%= id %></td>
+    </tr>
+    <tr>
       <th scope="row">Version</th>
       <td><%= version %></td>
     </tr>
@@ -23,7 +27,7 @@
     </tr>
     <tr>
       <th scope="row">Size</th>
-      <td><%= size %></td>
+      <td><%= number_with_delimiter(size) %></td>
     </tr>
     <tr>
       <th scope="row">Status</th>

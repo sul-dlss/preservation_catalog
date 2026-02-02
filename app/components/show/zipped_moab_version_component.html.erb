@@ -4,8 +4,16 @@
       <caption class="header ps-2" style="caption-side: top; background-color: var(--bs-table-border-color);">Zipped Moab Version</caption>
       <tbody>
         <tr>
+          <th scope="row">ID</th>
+          <td><%= id %></td>
+        </tr>
+        <tr>
           <th scope="row">Version</th>
           <td><%= version %></td>
+        </tr>
+        <tr>
+          <th scope="row">Zip parts count</th>
+          <td><%= zip_parts_count %></td>
         </tr>
         <tr>
           <th scope="row">Created</th>
@@ -20,12 +28,16 @@
           <td><%= endpoint_name %></td>
         </tr>
         <tr>
-          <th scope="row">Endpoint Node</th>
-          <td><%= endpoint_node %></td>
+          <th scope="row">Status</th>
+          <td><%= status %></td>
         </tr>
         <tr>
-          <th scope="row">Storage Location</th>
-          <td><%= storage_location %></td>
+          <th scope="row">Status Details</th>
+          <td><%= status_details %></td>
+        </tr>
+        <tr>
+          <th scope="row">Status Last Updated</th>
+          <td><%= status_updated_at %></td>
         </tr>
       </tbody>
     </table>

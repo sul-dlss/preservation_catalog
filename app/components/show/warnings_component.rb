@@ -51,7 +51,7 @@ module Show
       preserved_object.zipped_moab_versions.filter_map do |zmv|
         next if zmv.zip_parts.any?
 
-        Alert.new('warning', "Zipped Moab Version #{zmv.version} has no associated Zip Parts.")
+        Alert.new('warning', "Zipped Moab Version #{zmv.version} - #{zmv.zip_endpoint.endpoint_name} has no associated Zip Parts.")
       end
     end
   end

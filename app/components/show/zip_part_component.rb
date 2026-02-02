@@ -5,7 +5,7 @@ module Show
   class ZipPartComponent < ViewComponent::Base
     attr_reader :zip_part
 
-    delegate :id, :size, :md5, :created_at, :updated_at, to: :zip_part
+    delegate :id, :size, :md5, :created_at, :updated_at, :suffix, to: :zip_part
 
     def initialize(zip_part:)
       @zip_part = zip_part
