@@ -9,6 +9,10 @@
           <caption class="header ps-2" style="caption-side: top; background-color: var(--bs-table-border-color);">Details</caption>
           <tbody>
             <tr>
+              <th scope="row">ID</th>
+              <td><%= @preserved_object.id %></td>
+            </tr>
+            <tr>
               <th scope="row">Druid</th>
               <td><%= @preserved_object.druid %></td>
             </tr>
@@ -36,11 +40,9 @@
       </div>
     </div>
 
-    <% @preserved_object.zipped_moab_versions.each do |zipped_moab_version| %>
+    <% @preserved_object.zipped_moab_versions.order(:version, :zip_endpoint_id).each do |zipped_moab_version| %>
       <hr>
       <%= render Show::ZippedMoabVersionComponent.new(zipped_moab_version:) %>
     <% end %>
-
-    <%= render Show::ZipPartInfoComponent.new(zip_part_info: @zip_part_info) %>
   <% end %>
 </div>

@@ -27,25 +27,31 @@ RSpec.describe 'Show object show page' do
         expect(page).to have_css('h1', text: "Preserved Object: druid:#{preserved_object.druid}")
         expect(page).to have_no_css('.alert')
         within('table#details-table tbody') do
-          expect(page).to have_css('tr:nth-of-type(1) th', text: 'Druid')
-          expect(page).to have_css('tr:nth-of-type(1) td', text: preserved_object.druid)
+          expect(page).to have_css('tr:nth-of-type(2) th', text: 'Druid')
+          expect(page).to have_css('tr:nth-of-type(2) td', text: preserved_object.druid)
         end
 
         within('table#moab-record-table tbody') do
-          expect(page).to have_css('tr:nth-of-type(1) th', text: 'Version')
-          expect(page).to have_css('tr:nth-of-type(1) td', text: preserved_object.moab_record.version)
+          expect(page).to have_css('tr:nth-of-type(2) th', text: 'Version')
+          expect(page).to have_css('tr:nth-of-type(2) td', text: preserved_object.moab_record.version)
         end
 
         within("table#zipped-moab-version-table-#{zipped_moab_version.id} tbody") do
-          expect(page).to have_css('tr:nth-of-type(1) th', text: 'Version')
-          expect(page).to have_css('tr:nth-of-type(1) td', text: zipped_moab_version.version)
+          expect(page).to have_css('tr:nth-of-type(2) th', text: 'Version')
+          expect(page).to have_css('tr:nth-of-type(2) td', text: zipped_moab_version.version)
+          expect(page).to have_css('tr:nth-of-type(3) th', text: 'Zip parts count')
+          expect(page).to have_css('tr:nth-of-type(3) td', text: zipped_moab_version.zip_parts_count)
+          expect(page).to have_css('tr:nth-of-type(7) th', text: 'Status')
+          expect(page).to have_css('tr:nth-of-type(7) td', text: zipped_moab_version.status)
         end
 
         within("table#zip-part-table-#{zipped_moab_version.zip_parts.first.id} tbody") do
-          expect(page).to have_css('tr:nth-of-type(1) th', text: 'Size')
-          expect(page).to have_css('tr:nth-of-type(1) td', text: zipped_moab_version.zip_parts.first.size)
-          expect(page).to have_css('tr:nth-of-type(2) th', text: 'Checksum')
-          expect(page).to have_css('tr:nth-of-type(2) td', text: zipped_moab_version.zip_parts.first.md5)
+          expect(page).to have_css('tr:nth-of-type(2) th', text: 'Suffix')
+          expect(page).to have_css('tr:nth-of-type(2) td', text: zipped_moab_version.zip_parts.first.suffix)
+          expect(page).to have_css('tr:nth-of-type(3) th', text: 'Size')
+          expect(page).to have_css('tr:nth-of-type(3) td', text: '1,234')
+          expect(page).to have_css('tr:nth-of-type(4) th', text: 'Checksum')
+          expect(page).to have_css('tr:nth-of-type(4) td', text: zipped_moab_version.zip_parts.first.md5)
         end
       end
     end
@@ -57,7 +63,10 @@ RSpec.describe 'Show object show page' do
         visit dashboard_object_path(druid: zipped_moab_version.preserved_object.druid)
 
         expect(page).to have_css('h1', text: "Preserved Object: druid:#{preserved_object.druid}")
-        expect(page).to have_css('div.alert.alert-warning', text: "Zipped Moab Version #{zipped_moab_version.version} has no associated Zip Parts.")
+        expect(page)
+          .to have_css('div.alert.alert-warning',
+                       text: "Zipped Moab Version #{zipped_moab_version.version} - #{zipped_moab_version.zip_endpoint.endpoint_name} " \
+                             'has no associated Zip Parts.')
       end
     end
 
