@@ -64,11 +64,8 @@ module PreservationCatalog
       strict_reference_validation: true,
       parameter_overwrite_by_rails_rule: false
     )
-    # TODO: we can uncomment this at a later date to ensure we are passing back
-    #       valid responses. Currently, uncommenting this line causes 24 spec
-    #       failures. See https://github.com/sul-dlss/preservation_catalog/issues/1407
-    #
-    # config.middleware.use Committee::Middleware::ResponseValidation, schema_path: 'openapi.yml'
+
+    config.middleware.use Committee::Middleware::ResponseValidation, schema_path: 'openapi.yml'
 
     # Application configuration should go into files in config/initializers
     # -- all .rb files in that directory are automatically loaded.
