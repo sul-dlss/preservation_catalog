@@ -19,6 +19,8 @@ RSpec.describe 'Show object show page' do
       before do
         create_list(:zip_part, 2, zipped_moab_version:)
         allow_any_instance_of(ZipPart).to receive(:s3_part).and_return(s3_part_double) # rubocop:disable RSpec/AnyInstance
+        allow(Audit::ReplicationAuditJob).to receive(:perform_later)
+        allow(Audit::ChecksumValidationJob).to receive(:perform_later)
       end
 
       it 'shows the object show page without warnings' do
@@ -53,6 +55,16 @@ RSpec.describe 'Show object show page' do
           expect(page).to have_css('tr:nth-of-type(4) th', text: 'Checksum')
           expect(page).to have_css('tr:nth-of-type(4) td', text: zipped_moab_version.zip_parts.first.md5)
         end
+
+        click_link_or_button 'Checksum Validation'
+        expect(page).to have_current_path(dashboard_object_path(druid: preserved_object.druid))
+        expect(page).to have_css('div.alert', text: 'Checksum validation job started')
+        expect(Audit::ChecksumValidationJob).to have_received(:perform_later).with(preserved_object.moab_record)
+
+        click_link_or_button 'Replication Audit'
+        expect(page).to have_current_path(dashboard_object_path(druid: preserved_object.druid))
+        expect(page).to have_css('div.alert', text: 'Replication audit job started')
+        expect(Audit::ReplicationAuditJob).to have_received(:perform_later).with(preserved_object)
       end
     end
 

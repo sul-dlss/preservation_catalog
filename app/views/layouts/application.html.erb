@@ -13,7 +13,6 @@
   </head>
 
   <body>
-      <%= render AlertComponent.new %>
-      <%= content_for?(:content) ? yield(:content) : yield %>
+    <%= content_for?(:content) ? yield(:content) : yield %>
   </body>
 </html>
