@@ -9,13 +9,20 @@ Rails.application.routes.draw do
   namespace :dashboard do
     root to: 'dashboard#index' # Preservation System Status Overview page
 
-    resources :objects, only: [:show], param: :druid # show -> Object show page
+    resources :objects, only: [:show], param: :druid do # show -> Object show page
+      member do
+        post 'checksum_validation'
+        post 'replication_audit'
+      end
+    end
+
     resources :moab_records, only: [:index] do # index -> Files in moabs on local storage page
       collection do
         get 'with_errors' # MoabRecords in error statuses list page
         get 'stuck' # Stuck MoabRecords list page
       end
     end
+
     resources :zipped_moab_versions, only: [:index] do # Replication of zip part files to cloud endpoints page
       collection do
         get 'with_errors' # ZipppedMoabVersion in failed status list page
@@ -23,6 +30,7 @@ Rails.application.routes.draw do
         get 'incomplete' # Incomplete ZippedMoabVersions list page
       end
     end
+
     resources :search, param: :druid, only: [:create]
   end
 

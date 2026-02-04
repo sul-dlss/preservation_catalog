@@ -40,13 +40,29 @@
             </ul>
           </li>
         </ul>
-        <%= form_with url: dashboard_search_index_path, method: :post, class: 'd-flex', role: 'search' do %>
+        <%# Turbo doesn't play well with Shib, so disabling for this form. %>
+        <%= form_with url: dashboard_search_index_path, method: :post, class: 'd-flex', role: 'search', data: { turbo: false } do %>
           <input class="form-control me-2" type="search" name="druid" placeholder="Search by druid" aria-label="Search by druid" autocomplete="off">
           <button class="btn btn-outline-primary" type="submit">Search</button>
         <% end %>
       </div>
     </div>
   </nav>
+
+  <div class="container my-2">
+    <%= render AlertComponent.new %>
+    <% if flash[:notice] %>
+      <div class="alert alert-primary" role="alert">
+        <%= flash[:notice] %>
+      </div>
+    <% end %>
+    <% if flash[:alert] %>
+      <div class="alert alert-warning" role="alert">
+        <%= flash[:alert] %>
+      </div>
+    <% end %>
+  </div>
+
   <%= yield %>
 <% end %>
 <%= render template: 'layouts/application' %>

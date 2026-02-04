@@ -3,6 +3,11 @@
   <%= render Show::WarningsComponent.new(preserved_object: @preserved_object, druid: @druid) %>
   <hr>
   <% if @preserved_object %>
+    <div class="d-flex my-3">
+      <%= button_to 'Checksum Validation', checksum_validation_dashboard_object_path(@preserved_object.druid), method: :post, class: 'btn btn-primary me-3' %>
+      <%= button_to 'Replication Audit', replication_audit_dashboard_object_path(@preserved_object.druid), method: :post, class: 'btn btn-primary' %>
+    </div>
+    <hr>
     <div class="row">
       <div class="col-md-6">
         <table id="details-table" class="table table-sm mb-5 caption-header border">
