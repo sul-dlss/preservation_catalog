@@ -115,7 +115,7 @@ GEM
       parser (>= 2.4)
       smart_properties
     bigdecimal (4.0.1)
-    bootsnap (1.22.0)
+    bootsnap (1.23.0)
       msgpack (~> 1.2)
     builder (3.3.0)
     bunny (2.24.0)
@@ -148,7 +148,7 @@ GEM
       regexp_parser (>= 1.5, < 3.0)
       xpath (~> 3.2)
     chronic (0.10.2)
-    cocina-models (0.109.0)
+    cocina-models (0.110.1)
       activesupport
       deprecation
       dry-struct (~> 1.0)
@@ -156,16 +156,17 @@ GEM
       edtf
       equivalent-xml
       i18n
+      json_schemer (~> 2.0)
       jsonpath
+      marc (~> 1.3)
       nokogiri
-      openapi_parser (~> 1.0)
       super_diff
       thor
       zeitwerk (~> 2.1)
     coderay (1.1.3)
-    committee (5.0.0)
+    committee (5.6.1)
       json_schema (~> 0.14, >= 0.14.3)
-      openapi_parser (~> 1.0)
+      openapi_parser (~> 2.0)
       rack (>= 1.5)
     concurrent-ruby (1.3.6)
     config (5.6.1)
@@ -198,9 +199,9 @@ GEM
       activesupport (>= 4.2)
       bunny (~> 2.17)
       zeitwerk (~> 2.1)
-    dor-services-client (15.26.0)
+    dor-services-client (15.27.1)
       activesupport (>= 7.0.0)
-      cocina-models (~> 0.109.0)
+      cocina-models (~> 0.110.1)
       deprecation
       faraday (~> 2.0)
       faraday-retry
@@ -266,8 +267,9 @@ GEM
     ffi (1.17.3-x86_64-linux-musl)
     globalid (1.3.0)
       activesupport (>= 6.1)
+    hana (1.3.7)
     hashdiff (1.2.1)
-    honeybadger (6.3.0)
+    honeybadger (6.3.1)
       logger
       ostruct
     i18n (1.14.8)
@@ -278,8 +280,9 @@ GEM
       activesupport (>= 6.0.0)
       railties (>= 6.0.0)
     io-console (0.8.2)
-    irb (1.16.0)
+    irb (1.17.0)
       pp (>= 0.6.0)
+      prism (>= 1.3.0)
       rdoc (>= 4.0.0)
       reline (>= 0.4.2)
     jbuilder (2.14.1)
@@ -288,6 +291,11 @@ GEM
     jmespath (1.6.2)
     json (2.18.1)
     json_schema (0.21.0)
+    json_schemer (2.5.0)
+      bigdecimal
+      hana (~> 1.3)
+      regexp_parser (~> 2.0)
+      simpleidn (~> 0.2)
     jsonpath (1.1.5)
       multi_json
     jwt (3.1.2)
@@ -325,6 +333,9 @@ GEM
       net-imap
       net-pop
       net-smtp
+    marc (1.4.0)
+      nokogiri (~> 1.0)
+      rexml
     marcel (1.1.0)
     matrix (0.4.3)
     method_source (1.1.0)
@@ -340,7 +351,7 @@ GEM
     multi_json (1.19.1)
     net-http (0.9.1)
       uri (>= 0.11.1)
-    net-imap (0.6.2)
+    net-imap (0.6.3)
       date
       net-protocol
     net-pop (0.1.2)
@@ -373,7 +384,7 @@ GEM
       nokogiri (~> 1.5)
     okcomputer (1.19.1)
       benchmark
-    openapi_parser (1.0.0)
+    openapi_parser (2.3.1)
     optimist (3.2.1)
     ostruct (0.6.3)
     parallel (1.27.0)
@@ -412,7 +423,7 @@ GEM
     puma (7.2.0)
       nio4r (~> 2.0)
     racc (1.8.1)
-    rack (3.2.4)
+    rack (3.2.5)
     rack-session (2.1.1)
       base64 (>= 0.1.0)
       rack (>= 3.0.0)
@@ -456,7 +467,7 @@ GEM
     rb-inotify (0.11.1)
       ffi (~> 1.0)
     rbtree (0.4.6)
-    rdoc (7.1.0)
+    rdoc (7.2.0)
       erb
       psych (>= 4.0.0)
       tsort
@@ -492,7 +503,7 @@ GEM
     rspec-support (3.13.7)
     rspec_junit_formatter (0.6.0)
       rspec-core (>= 2, < 4, != 2.12.0)
-    rubocop (1.84.1)
+    rubocop (1.84.2)
       json (~> 2.3)
       language_server-protocol (~> 3.17.0.2)
       lint_roller (~> 1.1.0)
@@ -542,6 +553,7 @@ GEM
       simplecov_json_formatter (~> 0.1)
     simplecov-html (0.13.2)
     simplecov_json_formatter (0.1.4)
+    simpleidn (0.2.3)
     smart_properties (1.17.0)
     sorted_set (1.0.3)
       rbtree
@@ -571,7 +583,7 @@ GEM
     unicode-emoji (4.2.0)
     uri (1.1.1)
     useragent (0.16.11)
-    view_component (4.2.0)
+    view_component (4.4.0)
       actionview (>= 7.1.0)
       activesupport (>= 7.1.0)
       concurrent-ruby (~> 1)
