@@ -460,7 +460,7 @@ RSpec.describe Audit::CatalogToMoab do
 
       context 'invalid moab' do
         before do
-          allow(mock_sov).to receive(:validation_errors).and_return([foo: 'error message'])
+          allow(mock_sov).to receive(:validation_errors).and_return([{ foo: 'error message' }])
           allow(Stanford::StorageObjectValidator).to receive(:new).and_return(mock_sov)
           my_results_double = instance_double(Results,
                                               add_result: nil,
