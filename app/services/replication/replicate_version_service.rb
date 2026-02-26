@@ -37,7 +37,7 @@ module Replication
       replicate_incomplete_zipped_moab_versions
 
       # Delete the local zip part files
-      druid_version_zip.cleanup_zip_parts!
+      ZipPartCleaner.clean!(pathfinder: zip_part_pathfinder)
     end
 
     private
@@ -50,15 +50,19 @@ module Replication
       preserved_object.zipped_moab_versions.where(version:)
     end
 
-    def druid_version_zip
-      @druid_version_zip ||= zipped_moab_versions.first.druid_version_zip
+    def zip_part_pathfinder
+      @zip_part_pathfinder ||= zipped_moab_versions.first.zip_part_pathfinder
+    end
+
+    def zip_part_files
+      @zip_part_files ||= zip_part_pathfinder.zip_keys.map { |zip_key| ZipPartFile.new(filename: zip_key) }
     end
 
     def create_zip_if_necessary
-      return if druid_version_zip.complete?
+      return if ZipPartCompletenessChecker.complete?(pathfinder: zip_part_pathfinder)
 
-      druid_version_zip.cleanup_zip_parts!
-      druid_version_zip.create_zip!
+      ZipPartCleaner.clean!(pathfinder: zip_part_pathfinder)
+      ZipPartCreator.create!(pathfinder: zip_part_pathfinder)
     end
 
     def reset_to_created!(zipped_moab_version)
@@ -83,11 +87,11 @@ module Replication
 
     def populate_zip_parts!(zipped_moab_version)
       ZippedMoabVersion.transaction do
-        druid_version_zip.druid_version_zip_parts.each do |druid_version_zip_part|
+        zip_part_files.each do |zip_part_file|
           zipped_moab_version.zip_parts.create!(
-            suffix: druid_version_zip_part.extname,
-            size: druid_version_zip_part.size,
-            md5: druid_version_zip_part.read_md5
+            suffix: zip_part_file.extname,
+            size: zip_part_file.size,
+            md5: zip_part_file.read_md5
           )
         end
         zipped_moab_version.update!(zip_parts_count: zipped_moab_version.zip_parts.count)

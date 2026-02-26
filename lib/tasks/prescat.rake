@@ -16,7 +16,7 @@ namespace :prescat do
 
   desc 'Determine if temporary local zip is present'
   task :check_temp_zip, [:druid, :version] => :environment do |_task, args|
-    file_path = Replication::DruidVersionZip.new(args[:druid], args[:version]).file_path
+    file_path = Replication::ZipPartPathfinder.new(druid: args[:druid], version: args[:version]).file_path
     puts "#{file_path} exists: #{File.exist?(file_path)}"
   end
 

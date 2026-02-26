@@ -15,20 +15,28 @@ RSpec.describe Replication::ReplicateVersionService do
   let(:version) { 2 }
   let(:druid) { 'bj102hs9687' }
   let(:s3_key) { 'bj/102/hs/9687/bj102hs9687.v0002.zip' }
-
   let(:bucket) { instance_double(Aws::S3::Bucket, object: s3_part) }
   let(:s3_part) { instance_double(Aws::S3::Object) }
   let(:provider) { instance_double(Replication::CloudProvider, bucket:) }
-
-  let(:druid_version_zip) { instance_double(Replication::DruidVersionZip, s3_key:, complete?: true, cleanup_zip_parts!: nil) }
-  let(:druid_version_zip_part) { instance_double(Replication::DruidVersionZipPart) }
+  let(:zip_part_complete) { true }
 
   before do
-    allow(Replication::DruidVersionZip).to receive(:new).with(druid, version, String).and_return(druid_version_zip)
-    allow(Replication::DruidVersionZipPart).to receive(:new).with(druid_version_zip, s3_key).and_return(druid_version_zip_part)
-
+    allow(Replication::ZipPartCompletenessChecker).to receive(:complete?).and_return(zip_part_complete)
     allow(Replication::ProviderFactory).to receive(:create).and_return(provider)
     allow(ResultsReporter).to receive(:report_results)
+  end
+
+  describe '#zip_part_files' do
+    let(:pathfinder) { instance_double(Replication::ZipPartPathfinder, zip_keys: ['foo.zip', 'foo.z01']) }
+
+    before do
+      allow(service).to receive(:zip_part_pathfinder).and_return(pathfinder)
+    end
+
+    it 'returns ZipPartFile instances for each zip key from the pathfinder' do
+      expect(service.send(:zip_part_files).count).to eq(2)
+      expect(service.send(:zip_part_files)).to all(be_a(Replication::ZipPartFile))
+    end
   end
 
   context 'when there are no created or incomplete ZippedMoabVersions' do
@@ -60,7 +68,7 @@ RSpec.describe Replication::ReplicateVersionService do
   end
 
   context 'when zip parts files are not complete' do
-    let(:druid_version_zip) { instance_double(Replication::DruidVersionZip, complete?: false, cleanup_zip_parts!: nil, create_zip!: nil) }
+    let(:zip_part_complete) { false }
 
     before do
       create(:zipped_moab_version, status: :incomplete, preserved_object:, version:)
@@ -68,13 +76,14 @@ RSpec.describe Replication::ReplicateVersionService do
       allow(subject).to receive_messages(no_zip_parts_on_endpoint?: false, check_zip_parts_to_zip_file: nil)
       allow(subject).to receive(:replicate_incomplete_zipped_moab_versions)
 
-      allow(Replication::DruidVersionZip).to receive(:new).and_return(druid_version_zip)
+      allow(Replication::ZipPartCleaner).to receive(:clean!)
+      allow(Replication::ZipPartCreator).to receive(:create!)
     end
 
     it 'creates the zip part files' do
       service.call
-      expect(druid_version_zip).to have_received(:cleanup_zip_parts!).twice
-      expect(druid_version_zip).to have_received(:create_zip!)
+      expect(Replication::ZipPartCleaner).to have_received(:clean!).twice
+      expect(Replication::ZipPartCreator).to have_received(:create!)
     end
   end
 
@@ -130,14 +139,13 @@ RSpec.describe Replication::ReplicateVersionService do
       create(:zipped_moab_version, status: :created, preserved_object:, version:)
     end
 
-    let(:druid_version_zip_part1) { instance_double(Replication::DruidVersionZipPart, extname: '.zip', read_md5: '00236a2ae558018ed13b5222ef1bd977', size: 1234) }
-    let(:druid_version_zip_part2) { instance_double(Replication::DruidVersionZipPart, extname: '.z02', read_md5: '11236a2ae558018ed13b5222ef1bd988', size: 5678) }
+    let(:zip_part_file1) { instance_double(Replication::ZipPartFile, extname: '.zip', read_md5: '00236a2ae558018ed13b5222ef1bd977', size: 1234) }
+    let(:zip_part_file2) { instance_double(Replication::ZipPartFile, extname: '.z02', read_md5: '11236a2ae558018ed13b5222ef1bd988', size: 5678) }
 
     before do
       # This stubs out the other parts that are not being tested here.
       allow(subject).to receive(:replicate_incomplete_zipped_moab_versions)
-
-      allow(druid_version_zip).to receive(:druid_version_zip_parts).and_return([druid_version_zip_part1, druid_version_zip_part2])
+      allow(subject).to receive(:zip_part_files).and_return([zip_part_file1, zip_part_file2])
     end
 
     it 'populates the ZipParts for the ZippedMoabVersion' do
@@ -158,7 +166,7 @@ RSpec.describe Replication::ReplicateVersionService do
     let(:zipped_moab_version) do
       create(:zipped_moab_version, status: :incomplete, preserved_object:, version:)
     end
-    let!(:zip_part) { create(:zip_part, zipped_moab_version:) }
+    let!(:zip_part) { create(:zip_part, zipped_moab_version:, suffix: '.zip') }
     let(:results) { instance_double(Results, empty?: true) }
 
     before do
@@ -167,6 +175,7 @@ RSpec.describe Replication::ReplicateVersionService do
       allow(subject).to receive_messages(no_zip_parts_on_endpoint?: false, check_zip_parts_to_zip_file: nil)
 
       allow(Replication::ReplicateZipPartService).to receive(:call).and_return(results)
+      allow(Replication::ZipPartCleaner).to receive(:clean!)
       allow(Dor::Event::Client).to receive(:create)
       allow(Socket).to receive(:gethostname).and_return('fakehost')
     end
@@ -187,7 +196,7 @@ RSpec.describe Replication::ReplicateVersionService do
         )
       )
 
-      expect(druid_version_zip).to have_received(:cleanup_zip_parts!)
+      expect(Replication::ZipPartCleaner).to have_received(:clean!).once
     end
   end
 
@@ -207,6 +216,7 @@ RSpec.describe Replication::ReplicateVersionService do
       allow(subject).to receive_messages(no_zip_parts_on_endpoint?: false, check_zip_parts_to_zip_file: nil)
 
       allow(Replication::ReplicateZipPartService).to receive(:call).and_return(results, error_results)
+      allow(Replication::ZipPartCleaner).to receive(:clean!)
     end
 
     it 'sets the ZippedMoabVersion status to failed and notifies' do
@@ -214,7 +224,7 @@ RSpec.describe Replication::ReplicateVersionService do
         .to change { zipped_moab_version.reload.status }.from('incomplete').to('failed')
         .and change(zipped_moab_version, :status_details).to(error_msg)
       expect(ResultsReporter).to have_received(:report_results).with(results: error_results)
-      expect(druid_version_zip).to have_received(:cleanup_zip_parts!)
+      expect(Replication::ZipPartCleaner).to have_received(:clean!).once
     end
   end
 end
