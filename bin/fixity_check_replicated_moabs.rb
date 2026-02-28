@@ -160,24 +160,7 @@ zp_relation.pluck(:endpoint_name, :druid, :version, :suffix, :md5, :size).each d
   if options[:dry_run]
     logger.info("DRY RUN: skipping download and fresh MD5 computation of #{s3_key} from #{endpoint_name}")
   else
-    FileUtils.mkdir_p(download_path.dirname) unless download_path.dirname.exist?
-    just_downloaded = false
-    unless download_path.exist?
-      logger.info("downloading #{s3_key} from #{endpoint_name} (#{number_to_human_size(db_size)} expected)")
-      s3_object.download_file(download_path)
-      logger.info("downloaded #{s3_key} from #{endpoint_name} (#{number_to_human_size(File.size(download_path.to_s))} retrieved)")
-      just_downloaded = true
-    else
-      logger.info("skipping download of #{s3_key} from #{endpoint_name}, already downloaded")
-    end
-    if just_downloaded || options[:force_part_md5_comparison]
-      logger.info("comparing fresh MD5 calculation to DB value for #{download_path}")
-      fresh_md5 = Digest::MD5.file(download_path)
-      logger.info("fresh_md5.hexdigest=#{fresh_md5.hexdigest}")
-      logger.info("fresh_md5.hexdigest==db_md5: #{fresh_md5.hexdigest==db_md5 ? '✅' : '🚨' }")
-    else
-      logger.info("skipping comparing fresh MD5 calculation to DB value for #{download_path} (already downloaded, comparison not forced)")
-    end
+    Audit::ReplicationSupport.download_zip_part(download_path:, s3_key:, s3_object:, endpoint_name:, db_size:, db_md5:, force_part_md5_comparison: options[:force_part_md5_comparison], download_logger: logger)
   end
 end
 
@@ -188,23 +171,7 @@ zp_relation.where(suffix: '.zip').pluck(:endpoint_name, :druid, :version, :suffi
   if options[:dry_run]
     logger.info("DRY RUN, skipping unzipping #{download_path.basename} in #{download_path.dirname}")
   else
-    unzip_filename =
-      if Dir.glob("#{download_path.to_s.chomp('zip')}*").size > 1
-        "#{download_path.basename.to_s.chomp('zip')}combined.zip".tap do |combined_filename|
-          logger.info("multi-part zip, combining into one file (#{combined_filename}) so unzip can handle it")
-          if File.exist?("#{download_path.dirname}/#{combined_filename}")
-            logger.info("#{download_path.dirname}/#{combined_filename} exists, skipping combining")
-          else
-            # https://unix.stackexchange.com/questions/40480/how-to-unzip-a-multipart-spanned-zip-on-linux
-            logger.info(Open3.capture2e("zip -s 0 #{download_path.basename} --out #{combined_filename}", chdir: download_path.dirname))
-          end
-        end
-      else
-        download_path.basename
-      end
-    logger.info("unzipping #{unzip_filename} in #{download_path.dirname}")
-    # TODO: delete option to unzip so that it cleans up after itself?  i don't think that's the default behavior?
-    logger.debug(Open3.capture2e("unzip #{unzip_filename}", chdir: download_path.dirname))
+    Audit::ReplicationSupport.unzip_zipped_moab_version_from_zip_parts(download_path:, unzip_logger: logger)
   end
 end
 
