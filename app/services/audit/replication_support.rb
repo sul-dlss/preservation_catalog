@@ -83,23 +83,26 @@ module Audit
       unzip_logger ||= ActiveSupport::BroadcastLogger.new
       unzip_logger.broadcast_to(logger)
 
-      unzip_filename =
-        if Dir.glob("#{download_path.to_s.chomp('zip')}*").size > 1
-          "#{download_path.basename.to_s.chomp('zip')}combined.zip".tap do |combined_filename|
-            unzip_logger.info("multi-part zip, combining into one file (#{combined_filename}) so unzip can handle it")
-            if File.exist?("#{download_path.dirname}/#{combined_filename}")
-              unzip_logger.info("#{download_path.dirname}/#{combined_filename} exists, skipping combining")
-            else
-              # https://unix.stackexchange.com/questions/40480/how-to-unzip-a-multipart-spanned-zip-on-linux
-              unzip_logger.info(Open3.capture2e("zip -s 0 #{download_path.basename} --out #{combined_filename}", chdir: download_path.dirname))
-            end
-          end
-        else
-          download_path.basename
-        end
+      # unzip_filename =
+      #   if Dir.glob("#{download_path.to_s.chomp('zip')}*").size > 1
+      #     "#{download_path.basename.to_s.chomp('zip')}combined.zip".tap do |combined_filename|
+      #       unzip_logger.info("multi-part zip, combining into one file (#{combined_filename}) so unzip can handle it")
+      #       if File.exist?("#{download_path.dirname}/#{combined_filename}")
+      #         unzip_logger.info("#{download_path.dirname}/#{combined_filename} exists, skipping combining")
+      #       else
+      #         # https://unix.stackexchange.com/questions/40480/how-to-unzip-a-multipart-spanned-zip-on-linux
+      #         unzip_logger.info(Open3.capture2e("zip -s 0 #{download_path.basename} --out #{combined_filename}", chdir: download_path.dirname))
+      #       end
+      #     end
+      #   else
+      #     download_path.basename
+      #   end
+      unzip_filename = download_path.basename
+
       unzip_logger.info("unzipping #{unzip_filename} in #{download_path.dirname}")
       # TODO: delete option to unzip so that it cleans up after itself?  i don't think that's the default behavior?
-      unzip_logger.debug(Open3.capture2e("unzip #{unzip_filename}", chdir: download_path.dirname))
+      # unzip_logger.debug(Open3.capture2e("unzip #{unzip_filename}", chdir: download_path.dirname))
+      unzip_logger.debug(Open3.capture2e("7z x #{unzip_filename}", chdir: download_path.dirname))
     end
   end
 end
