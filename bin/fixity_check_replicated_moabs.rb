@@ -21,11 +21,6 @@ require 'optparse'
 
 include ActionView::Helpers::NumberHelper
 
-# somewhat duplicative of DruidVersionZip.ZIP_SPLIT_SIZE = '10g', but that's
-# zip format, and this is just bytes as an int, which is what the query wants
-ZIP_SEGMENT_THRESHOLD_GB = 10
-ZIP_SEGMENT_THRESHOLD = ZIP_SEGMENT_THRESHOLD_GB.gigabytes
-
 options = {
   druid_list: '',
   druid_list_file: nil,
@@ -46,9 +41,9 @@ parser = OptionParser.new do |option_parser|
                    'file with a list of provided druids, e.g. from integration tests, manual tests, your own queries, etc')
   option_parser.on('--fixity_check_base_location FIXITY_CHECK_BASE_LOCATION',
                    'target directory for downloading cloud archived Moabs, where they will be inflated and fixity checked.  ensure sufficient free space.')
-  option_parser.on('--single_part_druid_sample_count SINGLE_PART_DRUID_SAMPLE_COUNT',
+  option_parser.on('--single_part_druid_sample_count SINGLE_PART_DRUID_SAMPLE_COUNT', Integer,
                    'number of < 10 GB Moabs to query for and retrieve (default: 0)')
-  option_parser.on('--multipart_druid_sample_count MULTIPART_DRUID_SAMPLE_COUNT',
+  option_parser.on('--multipart_druid_sample_count MULTIPART_DRUID_SAMPLE_COUNT', Integer,
                    'number of > 10 GB Moabs to query for and retrieve (default: 0)')
   option_parser.on('--endpoints_to_audit ENDPOINTS_TO_AUDIT',
                    'list of cloud endpoints to audit (comma-separated, no spaces, names from config)')
@@ -89,44 +84,44 @@ end
 if options[:single_part_druid_sample_count].positive?
   po_list =
     PreservedObject.joins(
-      zipped_moab_versions: [:zip_parts, :zip_endpoint]
+      zipped_moab_versions: [:zip_parts]
     ).group(
-      'preserved_objects.druid', 'zip_endpoint.endpoint_name'
+      'preserved_objects.id'
     ).having(
-      'SUM(zip_parts.size) < :max_size',
-      { max_size: ZIP_SEGMENT_THRESHOLD } # we segment zips into 10 GB chunks
+      # look for druids with nothing but single part zips, one part per replicated version
+      'COUNT(DISTINCT(zip_parts.id)) = COUNT(DISTINCT(zipped_moab_versions.id))'
     ).order(
       'RANDOM()'
     ).limit(
       options[:single_part_druid_sample_count]
     ).pluck(
-      :druid, 'COUNT(zipped_moab_versions.id)', 'zip_endpoint.endpoint_name', 'COUNT(zip_parts.id)', Arel.sql('ARRAY_AGG((version, suffix))'), 'PG_SIZE_PRETTY(SUM(zip_parts.size))', 'SUM(zip_parts.size)'
+      :druid, :current_version, 'COUNT(DISTINCT(zipped_moab_versions.id))', 'COUNT(DISTINCT(zip_parts.id))', 'PG_SIZE_PRETTY(SUM(zip_parts.size))', 'SUM(zip_parts.size)'
     )
 
   total_size = number_to_human_size(po_list.map { |row| row.last }.sum)
-  logger.info("sub #{ZIP_SEGMENT_THRESHOLD} GB preserved_objects results (#{total_size} total): #{po_list}")
+  logger.info("query results: preserved_objects with only single-part zips: (#{total_size} total): #{po_list}")
   druids += po_list.map { |row| row.first }.uniq
 end
 
 if options[:multipart_druid_sample_count].positive?
   multipart_zip_po_list =
     PreservedObject.joins(
-      zipped_moab_versions: [:zip_parts, :zip_endpoint]
+      zipped_moab_versions: [:zip_parts]
     ).group(
-      'preserved_objects.druid', :version, 'zip_endpoint.endpoint_name'
+      'preserved_objects.id'
     ).having(
-      'SUM(zip_parts.size) > :min_size',
-      { min_size: ZIP_SEGMENT_THRESHOLD } # we segment zips into 10 GB chunks
+      # look for druids with at least one multi-part zip, i.e. more parts than replicated versions
+      'COUNT(DISTINCT(zip_parts.id)) > COUNT(DISTINCT(zipped_moab_versions.id))'
     ).order(
       'RANDOM()'
     ).limit(
       options[:multipart_druid_sample_count]
     ).pluck(
-      :druid, :version, 'COUNT(zipped_moab_versions.id)', 'zip_endpoint.endpoint_name', 'COUNT(zip_parts.id)', 'ARRAY_AGG(suffix)', 'PG_SIZE_PRETTY(SUM(zip_parts.size))', 'SUM(zip_parts.size)'
+      :druid, :current_version, 'COUNT(DISTINCT(zipped_moab_versions.id))', 'COUNT(DISTINCT(zip_parts.id))', 'PG_SIZE_PRETTY(SUM(zip_parts.size))', 'SUM(zip_parts.size)'
     )
 
   total_size = number_to_human_size(multipart_zip_po_list.map { |row| row.last }.sum)
-  logger.info("over #{ZIP_SEGMENT_THRESHOLD} GB preserved_objects results (#{total_size} total): #{multipart_zip_po_list}")
+  logger.info("query results: preserved_objects with at least one multi-part zip: (#{total_size} total): #{multipart_zip_po_list}")
   druids += multipart_zip_po_list.map { |row| row.first }.uniq
 end
 
