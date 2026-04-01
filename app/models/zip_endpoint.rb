@@ -6,6 +6,7 @@ class ZipEndpoint < ApplicationRecord
   has_many :zipped_moab_versions, dependent: :restrict_with_exception
 
   validates :endpoint_name, presence: true, uniqueness: true
+  validates :endpoint_node, :storage_location, presence: true
 
   delegate :bucket, :bucket_name, to: :provider
 
@@ -17,6 +18,14 @@ class ZipEndpoint < ApplicationRecord
   def self.seed_from_config # rubocop:disable Metrics/AbcSize
     return unless Settings.zip_endpoints
     Settings.zip_endpoints.map do |endpoint_name, endpoint_config|
+      unless endpoint_config.endpoint_node.present? && endpoint_config.storage_location.present?
+        err_msg = "Skipping ZipEndpoint config for '#{endpoint_name}': endpoint_node and storage_location " \
+                  'are required. Perhaps credential environment variables for a removed endpoint ' \
+                  'need to be removed from puppet.'
+        logger.warn(err_msg)
+        Honeybadger.notify(err_msg, context: { endpoint_name: endpoint_name.to_s })
+        next nil
+      end
       find_or_create_by!(endpoint_name: endpoint_name.to_s) do |zip_endpoint|
         zip_endpoint.endpoint_node = endpoint_config.endpoint_node
         zip_endpoint.storage_location = endpoint_config.storage_location

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_01_15_121204) do
+ActiveRecord::Schema[8.0].define(version: 2026_04_01_215214) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -63,8 +63,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_15_121204) do
 
   create_table "zip_endpoints", force: :cascade do |t|
     t.string "endpoint_name", null: false
-    t.string "endpoint_node"
-    t.string "storage_location"
+    t.string "endpoint_node", null: false
+    t.string "storage_location", null: false
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
     t.index ["endpoint_name"], name: "index_zip_endpoints_on_endpoint_name", unique: true
