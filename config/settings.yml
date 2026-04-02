@@ -50,6 +50,13 @@ api_jwt:
 
 filesystem_delay_seconds: 0.05 # the default value is artificially low to keep test suite fast
 
+# Controls how jobs are retried after being killed or pruned by SolidQueue.
+# ProcessExitError is raised when a worker is terminated (e.g. KILL signal or OOM killer).
+# ProcessPrunedError is raised when a worker's heartbeat expires and SolidQueue prunes it.
+job_retry:
+  wait: 1      # minutes to wait before re-queuing a killed or pruned job
+  attempts: 5  # maximum number of retry attempts before the job is marked as failed
+
 rabbitmq:
   hostname: localhost
   vhost: /

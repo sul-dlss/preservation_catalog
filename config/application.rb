@@ -51,9 +51,10 @@ module PreservationCatalog
       "[#{datetime.to_fs(:iso8601)}] [#{severity}] #{msg}\n"
     end
 
-    # Allow up to 24 hours for running jobs to finish before SolidQueue workers
-    # are killed during deployment (prevents interruption of long-running jobs).
-    config.solid_queue.shutdown_timeout = 86_400
+    # Allow running jobs to finish before SolidQueue workers are killed during deployment.
+    # Override with JOB_SHUTDOWN_TIMEOUT env var (value in seconds). Default: 345600 (96 hours).
+    # Jobs that exceed this timeout will be retried via retry_on in ApplicationJob.
+    config.solid_queue.shutdown_timeout = ENV.fetch('JOB_SHUTDOWN_TIMEOUT', 345_600).to_i
 
     # accept_request_filter omits OKComputer routes
     accept_proc = proc { |request| request.path.start_with?('/v1') }
