@@ -132,6 +132,8 @@ GEM
       capistrano (~> 3.1)
       capistrano-bundler (>= 1.1, < 3)
     capistrano-shared_configs (0.2.2)
+    capistrano-solid_queue (0.1.2)
+      capistrano (>= 3.0)
     capybara (3.40.0)
       addressable
       matrix
@@ -623,6 +625,7 @@ DEPENDENCIES
   bootsnap
   capistrano-passenger
   capistrano-rails
+  capistrano-solid_queue
   capybara
   committee
   config

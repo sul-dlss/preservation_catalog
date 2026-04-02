@@ -61,5 +61,6 @@ end
 group :deploy do
   gem 'capistrano-rails'
   gem 'capistrano-passenger'
+  gem 'capistrano-solid_queue'
   gem 'dlss-capistrano'
 end

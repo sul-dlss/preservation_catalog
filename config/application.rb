@@ -46,12 +46,16 @@ module PreservationCatalog
 
     # Configuration for the application, engines, and railties goes here.
 
-    # Add timestamps to all loggers (both Rack-based ones and e.g. Sidekiq's)
+    # Add timestamps to all loggers
     config.log_formatter = proc do |severity, datetime, _progname, msg|
       "[#{datetime.to_fs(:iso8601)}] [#{severity}] #{msg}\n"
     end
 
-    # accept_request_filter omits OKComputer & Sidekiq routes
+    # Allow up to 24 hours for running jobs to finish before SolidQueue workers
+    # are killed during deployment (prevents interruption of long-running jobs).
+    config.solid_queue.shutdown_timeout = 86_400
+
+    # accept_request_filter omits OKComputer routes
     accept_proc = proc { |request| request.path.start_with?('/v1') }
     config.middleware.use(
       Committee::Middleware::RequestValidation,

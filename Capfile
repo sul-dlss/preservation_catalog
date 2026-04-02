@@ -12,6 +12,7 @@ install_plugin Capistrano::SCM::Git
 require 'capistrano/bundler'
 require 'capistrano/passenger'
 require 'capistrano/rails'
+require 'capistrano/solid_queue'
 require 'capistrano/honeybadger'
 require 'dlss/capistrano'
 require 'whenever/capistrano'
