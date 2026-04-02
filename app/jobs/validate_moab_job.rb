@@ -8,7 +8,7 @@
 class ValidateMoabJob < ApplicationJob
   queue_as :validate_moab
 
-  include UniqueJob
+  limits_concurrency to: 1, key: ->(job) { job.arguments.first }, duration: 1.hour, on_conflict: :discard
 
   attr_accessor :druid
 

@@ -1,8 +1,7 @@
 # frozen_string_literal: true
 
 Rails.application.routes.draw do
-  require 'sidekiq/web'
-  mount Sidekiq::Web => '/queues'
+  mount MissionControl::Jobs::Engine, at: '/queues'
 
   root to: redirect('/dashboard')
 

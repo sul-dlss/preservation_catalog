@@ -3,12 +3,8 @@
 # Job to replicate a PreservedObject to cloud endpoints
 class ReplicationJob < ApplicationJob
   queue_as :replication
-  include UniqueJob
 
-  def lock_timeout
-    # Between the zipping and the replication, this can take a while.
-    3.days.to_i
-  end
+  limits_concurrency to: 1, key: ->(job) { job.arguments.first }, duration: 3.days, on_conflict: :discard
 
   def perform(preserved_object)
     preserved_object.populate_zipped_moab_versions!

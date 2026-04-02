@@ -6,7 +6,7 @@ module Audit
   class CatalogToMoabJob < ApplicationJob
     queue_as :c2m
 
-    include UniqueJob
+    limits_concurrency to: 1, key: ->(job) { job.arguments.first }, duration: 1.hour, on_conflict: :discard
 
     # @param [MoabRecord] moab_record object to C2M check
     # @see Audit::CatalogToMoab#initialize

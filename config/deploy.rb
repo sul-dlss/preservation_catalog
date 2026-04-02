@@ -24,8 +24,6 @@ append :linked_dirs, 'log', 'config/settings', 'tmp/pids', 'vendor/bundle'
 
 set :honeybadger_env, fetch(:stage)
 
-set :whenever_identifier, -> { "#{fetch(:application)}_#{fetch(:stage)}" }
-
 # Default value for default_env is {}
 # set :default_env, { path: "/opt/ruby/bin:$PATH" }
 
@@ -49,9 +47,6 @@ task :db_seed do
     end
   end
 end
-
-set :sidekiq_systemd_role, :worker
-set :sidekiq_systemd_use_hooks, true
 
 # configure capistrano-rails to work with propshaft instead of sprockets
 # (we don't have public/assets/.sprockets-manifest* or public/assets/manifest*.*)

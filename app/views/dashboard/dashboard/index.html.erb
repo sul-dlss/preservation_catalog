@@ -73,6 +73,6 @@
   <%= render CardComponent.new do %>
     <p class="fw-semibold">Large counts for any of the above may indicate system level issues that need investigation.</p>
     <p>In normal operation, a small number of objects in these states is expected.</p>
-    <%= link_to 'Sidekiq Dashboard', sidekiq_web_path, class: 'card-link' %>
+    <%= link_to 'Jobs Dashboard', mission_control_jobs.root_path, class: 'card-link' %>
   <% end %>
 </div>

@@ -6,7 +6,7 @@ module Audit
   class MoabToCatalogJob < ApplicationJob
     queue_as :m2c
 
-    include UniqueJob
+    limits_concurrency to: 1, key: ->(job) { job.arguments.first }, duration: 1.hour, on_conflict: :discard
 
     # @param [MoabStorageRoot] root mount containing the Moab
     # @param [String] druid

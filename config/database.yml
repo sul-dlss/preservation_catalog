@@ -13,6 +13,23 @@ development:
   <<: *default
   database: development
 
+  queue:
+    <<: *default
+    database: development
+
 test:
   <<: *default
   database: test
+
+  queue:
+    <<: *default
+    database: test
+
+production:
+  primary:
+    <<: *default
+    database: <%= ENV.fetch('DATABASE_NAME', 'preservation_catalog') %>
+
+  queue:
+    <<: *default
+    database: <%= ENV.fetch('DATABASE_NAME', 'preservation_catalog') %>
