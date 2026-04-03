@@ -12,7 +12,6 @@ task :decommission_endpoint, [:endpoint_name, :access_key, :secret_access_key, :
     puts 'Could not find ZipEndpoint'
     exit 1
   end
-  provider = Replication::ProviderFactory.create(zip_endpoint:, access_key_id: args[:access_key], secret_access_key: args[:secret_access_key])
 
   unless dry_run
     puts 'Are you sure you want to proceed? (y/n)'
@@ -24,24 +23,19 @@ task :decommission_endpoint, [:endpoint_name, :access_key, :secret_access_key, :
   end
 
   zip_endpoint.zipped_moab_versions.find_each do |zipped_moab_version|
-    zipped_moab_version.zip_parts.each do |zip_part|
-      zip_info = "#{zipped_moab_version.druid} (#{zipped_moab_version.version}) #{zip_part.s3_key}"
-      s3_object = provider.bucket.object(zip_part.s3_key)
-
-      if dry_run
-        puts "Dry run deleting: #{zip_info}"
-      else
-        puts "Deleting: #{zip_info}"
-        s3_object.delete if s3_object.exists?
-        zip_part.destroy!
-      end
+    zip_info = "#{zipped_moab_version.druid} (#{zipped_moab_version.version})"
+    if dry_run
+      puts "Dry run deleting: #{zip_info}"
+    else
+      puts "Deleting: #{zip_info}"
+      zipped_moab_version.zip_parts.destroy_all
     end
-    zipped_moab_version.reload
-    zipped_moab_version.destroy! unless dry_run
   end
 
   unless dry_run
     puts "Deleting ZipEndpoint: #{args[:endpoint_name]}"
+    zip_endpoint.reload
+    zip_endpoint.zipped_moab_versions.destroy_all
     zip_endpoint.reload
     zip_endpoint.destroy!
   end
