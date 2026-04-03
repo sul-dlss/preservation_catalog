@@ -46,12 +46,17 @@ module PreservationCatalog
 
     # Configuration for the application, engines, and railties goes here.
 
-    # Add timestamps to all loggers (both Rack-based ones and e.g. Sidekiq's)
+    # Add timestamps to all loggers
     config.log_formatter = proc do |severity, datetime, _progname, msg|
       "[#{datetime.to_fs(:iso8601)}] [#{severity}] #{msg}\n"
     end
 
-    # accept_request_filter omits OKComputer & Sidekiq routes
+    # Allow running jobs to finish before SolidQueue workers are killed during deployment.
+    # Override with JOB_SHUTDOWN_TIMEOUT env var (value in seconds). Default: 345600 (96 hours).
+    # Jobs that exceed this timeout will be retried via retry_on in ApplicationJob.
+    config.solid_queue.shutdown_timeout = ENV.fetch('JOB_SHUTDOWN_TIMEOUT', 345_600).to_i
+
+    # accept_request_filter omits OKComputer routes
     accept_proc = proc { |request| request.path.start_with?('/v1') }
     config.middleware.use(
       Committee::Middleware::RequestValidation,

@@ -1,0 +1,91 @@
+# Recurring job configuration for SolidQueue.
+# Replaces config/schedule.rb (formerly managed by the whenever gem).
+# Schedule format is parsed by Fugit (supports cron expressions and natural language).
+# Commands are evaluated via `rails runner`, so any Ruby expression is valid.
+#
+# Honeybadger check-ins are chained with a semicolon after each auditing command
+# so that HB only receives a check-in when the command completes successfully.
+# If changing the schedule of a check-in job, also update the corresponding entry
+# at https://app.honeybadger.io/projects/54415/check_ins
+
+# examples:
+#   periodic_cleanup:
+#     class: CleanSoftDeletedRecordsJob
+#     queue: background
+#     args: [ 1000, { batch_size: 500 } ]
+#     schedule: every hour
+#   periodic_cleanup_with_command:
+#     command: "SoftDeletedRecord.due.delete_all"
+#     priority: 2
+#     schedule: at 5am every day
+
+production:
+  # Clear finished SolidQueue jobs to keep the jobs table from growing unbounded.
+  clear_solid_queue_finished_jobs:
+    command: "SolidQueue::Job.clear_finished_in_batches(sleep_between_batches: 0.3)"
+    schedule: every hour at minute 12
+
+  # M2C (Moab-to-Catalog): walk storage roots and update the catalog for any new/changed Moabs.
+  # Runs on the 1st of every month at 11am. Schedule change requires updating HB check-in.
+  moab_to_catalog_monthly:
+    command: >-
+      MoabStorageRoot.find_each(&:m2c_check!);
+      Honeybadger.check_in(Settings.honeybadger_checkins.moab_to_catalog)
+    schedule: "0 11 1 * *"
+
+  # C2M (Catalog-to-Moab): verify every catalog entry still exists on disk.
+  # Runs on the 15th of every month at 11am. Schedule change requires updating HB check-in.
+  catalog_to_moab_monthly:
+    command: >-
+      MoabStorageRoot.find_each(&:c2m_check!);
+      Honeybadger.check_in(Settings.honeybadger_checkins.catalog_to_moab)
+    schedule: "0 11 15 * *"
+
+  # Spread out replication audit TTL daily to prevent a large queue backlog
+  # from all objects hitting their TTL at the same time. Objects not caught
+  # here will be picked up by the weekly full audit below.
+  replication_audit_daily_spread:
+    command: >-
+      PreservedObject.order(last_archive_audit: :asc)
+        .limit(PreservedObject.daily_check_count)
+        .each_instance(&:audit_moab_version_replication!)
+    schedule: every day at 8pm
+
+  # Full weekly replication audit: check all objects whose archive TTL has expired.
+  # Runs every Wednesday. Schedule change requires updating HB check-in.
+  replication_audit_weekly:
+    command: >-
+      PreservedObject.archive_check_expired.find_each(&:audit_moab_version_replication!);
+      Honeybadger.check_in(Settings.honeybadger_checkins.audit_replication)
+    schedule: every Wednesday
+
+  # Spread out checksum validation TTL daily to prevent a large queue backlog.
+  # Objects not caught here will be picked up by the weekly full validation below.
+  checksum_validation_daily_spread:
+    command: >-
+      MoabRecord.order(last_checksum_validation: :asc)
+        .limit(MoabRecord.daily_check_count)
+        .each_instance(&:validate_checksums!)
+    schedule: every day at 10pm
+
+  # Full weekly checksum validation: validate all Moabs whose fixity TTL has expired.
+  # Runs every Sunday at 1am. Schedule change requires updating HB check-in.
+  checksum_validation_weekly:
+    command: >-
+      MoabStorageRoot.find_each(&:validate_expired_checksums!);
+      Honeybadger.check_in(Settings.honeybadger_checkins.checksum_validation)
+    schedule: every Sunday at 1am
+
+  # Remove stale zip and checksum files from the local zip cache (older than zip_cache_expiry_time).
+  # mindepth 3 ensures we only target files under druid-tree subdirectories, not the root.
+  zip_cache_stale_files:
+    command: >-
+      system("find #{Settings.zip_storage} -mindepth 3 -type f -amin #{Settings.zip_cache_expiry_time} -delete")
+    schedule: every hour
+
+  # Remove empty directories left behind after zip files are cleaned up.
+  # mindepth 1 prevents accidentally deleting the zip_storage root itself.
+  zip_cache_empty_directories:
+    command: >-
+      system("find #{Settings.zip_storage} -mindepth 1 -not -path '*/.*' -type d -empty -delete")
+    schedule: every day at 1:15am

@@ -6,7 +6,7 @@ module Audit
     queue_as :moab_replication_audit
     delegate :logger, to: Audit::ReplicationSupport
 
-    include UniqueJob
+    limits_concurrency to: 1, key: ->(job) { job.arguments.first }, duration: 1.hour, on_conflict: :discard
 
     def perform(preserved_object)
       @preserved_object = preserved_object

@@ -48,11 +48,9 @@ First get the Ruby dependencies:
 bundle install
 ```
 
-The credentials for SideKiq Pro must be provided (e.g., in `.bash_profile`): `export BUNDLE_GEMS__CONTRIBSYS__COM=xxxx:xxxx` (available from shared_configs).
-
-Use `docker compose` to start supporting services (PostgreSQL and Redis)
+Use `docker compose` to start supporting services (PostgreSQL):
 ```sh
-docker compose up -d db redis
+docker compose up -d db
 ```
 
 ### Configure the database
@@ -115,9 +113,9 @@ curl -H 'Authorization: Bearer eyJhbGcxxxxx.eyJzdWIxxxxx.lWMJ66Wxx-xx' http://lo
 
 - The PostgreSQL database is the catalog of metadata about preserved SDR content, both on premises and in the cloud.  Database-level constraints are used heavily for keeping data clean and consistent.
 
-- Background jobs (using ActiveJob/Sidekiq/Redis) perform the audit and replication work.
+- Background jobs (using ActiveJob/SolidQueue) perform the audit and replication work. SolidQueue uses the existing PostgreSQL database — no separate Redis instance is required.
 
-- The whenever gem is used for writing and deploying cron jobs. Queueing of weekly audit jobs, temp space cleanup, etc are scheduled using the whenever gem.
+- Cron jobs (defined in `config/schedule.rb`) handle periodic scheduling of audit jobs, temp space cleanup, etc. Recurring job configuration is in `config/recurring.yml`.
 
 - Communication with other DLSS services happens via REST.
 
@@ -194,11 +192,11 @@ bundle exec cap ENV deploy # e.g. bundle exec cap qa deploy
 
 ## Jobs
 
-Sidekiq is run on one or more worker VMs to handle queued jobs.
+SolidQueue is used to process background jobs on one or more worker VMs. The worker process is started with `bin/jobs start`.
 
-### Sidekiq
+### Mission Control
 
-The Sidekiq admin interface is available at `<hostname>/queues`.  The wiki has advice for troubleshooting failed jobs.
+The job queue admin interface (Mission Control) is available at `<hostname>/queues`. The wiki has advice for troubleshooting failed jobs.
 
 ## API
 
@@ -222,13 +220,13 @@ API requests that do not supply a valid token for the target server will be reje
 At present, all tokens grant the same (full) access to the read/update API.
 
 ## Cron check-ins
-Some cron jobs (configured via the whenever gem) are integrated with Honeybadger check-ins. These cron jobs will check-in with HB (via a curl request to an HB endpoint) whenever run. If a cron job does not check-in as expected, HB will alert.
+Some cron jobs (defined in `config/schedule.rb`) are integrated with Honeybadger check-ins. These cron jobs will check-in with HB (via a curl request to an HB endpoint) whenever run. If a cron job does not check-in as expected, HB will alert.
 
 Cron check-ins are configured in the following locations:
 1. `config/schedule.rb`: This specifies which cron jobs check-in and what setting keys to use for the checkin key. See this file for more details.
 2. `config/settings.yml`: Stubs out a check-in key for each cron job. Since we may not want to have a check-in for all environments, this stub key will be used and produce a null check-in.
 3. `config/settings/production.yml` in shared_configs: This contains the actual check-in keys.
-4. HB notification page: Check-ins are configured per project in HB. To configure a check-in, the cron schedule will be needed, which can be found with `bundle exec whenever`. After a check-in is created, the check-in key will be available. (If the URL is `https://api.honeybadger.io/v1/check_in/rkIdpB` then the check-in key will be `rkIdpB`).
+4. HB notification page: Check-ins are configured per project in HB. To configure a check-in, the cron schedule will be needed (see `config/schedule.rb`). After a check-in is created, the check-in key will be available. (If the URL is `https://api.honeybadger.io/v1/check_in/rkIdpB` then the check-in key will be `rkIdpB`).
 
 ## Query Performance Instrumentation
 To log slow queries to `logs/slow_query.log`, enable the slow query instrumentation in `config/setting/production.yml`:
@@ -286,7 +284,7 @@ These instructions assume that SDR will be quiet during the reset, and that all 
 
 You can view the raw markdown and copy the following checklist into a new issue description for tracking the work (if you notice any necessary changes, please update this README):
 
-- [ ] Quiet Sidekiq workers for preservation_catalog and preservation_robots in the environment being reset.  For both apps, dump any remaining queue contents manually.
+- [ ] Stop SolidQueue workers (`bin/jobs`) for preservation_catalog and preservation_robots in the environment being reset. Drain any remaining queue contents manually.
 - [ ] preservation_catalog: stop the web services
 - _NOTE_: stopping pres bots workers and pres cat web services will effectively halt accessioning for the environment
 - [ ] Delete archived content on cloud endpoints for the environment being reset (inquire with ops if you run into cloud bucket auth issues).  If Suri is not reset, then druids won't be re-used, and this can be done async from the rest of this process.  _But_, if the reset is completed and accessioning starts up again before the old cloud archives are purged, you should dump a list of the old druids before the preservation_catalog DB reset, and use that for cleanup, so that only old content is purged.  You can query for the full druid list (and e.g. redirect or copy and save the output to a file) with the following query from pres cat: `druids = PreservedObject.pluck(:druid)` (to be clear, this will probably return tens of thousands of druids).
@@ -296,7 +294,7 @@ You can view the raw markdown and copy the following checklist into a new issue 
 - [ ] From a preservation_robots VM for the environment: Delete all content under preservation_robots' `Settings.transfer_object.from_dir` path, e.g. `rm -rf /dor/export/*`
 - [ ] preservation_catalog: _NOTE: this step likely not needed for most resets:_ for the environment being reset, `cap shared_configs:update` (to push the latest shared_configs, in case e.g. storage root or cloud endpoint locations have been updated)
 - [ ] preservation_catalog: from any one host in the env to be reset, perform a [db reset](https://github.com/sul-dlss/DeveloperPlaybook/blob/main/best-practices/db_reset.md) including seeding.
-- [ ] re-deploy preservation_catalog, preservation_robots, and techMD.  This will bring the pres cat web services back online, bring the Sidekiq workers for all services back online, and pick up any shared_configs changes.
+- [ ] re-deploy preservation_catalog, preservation_robots, and techMD.  This will bring the pres cat web services back online, bring the SolidQueue workers for all services back online, and pick up any shared_configs changes.
 
 Once the various SDR services are started back up, preserved content on storage roots and in the cloud will be rebuilt by regular accessioning.  Since preservation just preserves whatever flows through accessioning, there's no need to worry about e.g. having particular APOs in place.
 

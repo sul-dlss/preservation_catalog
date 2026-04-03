@@ -6,7 +6,7 @@ gem 'aws-sdk-s3', '~> 1.208.0' # for S3 storage
 gem 'bootsnap', require: false
 gem 'committee' # Validates HTTP requests/responses per OpenAPI specification
 gem 'config' # Settings to manage configs on different instances
-gem 'connection_pool' # Used for redis
+gem 'mission_control-jobs' # web UI for SolidQueue at /queues
 gem 'cssbundling-rails', '~> 1.4'
 gem 'csv' # will be removed from standard library in Ruby 3.4
 gem 'dor-event-client'
@@ -27,20 +27,10 @@ gem 'pry' # make it possible to use pry for IRB
 gem 'pry-byebug' # call 'binding.pry' anywhere in the code to stop execution and get a pry-byebug console
 gem 'puma' # app server
 gem 'rails', '~> 8.0.0'
-gem 'redis', '~> 5.0'
-# The default Socket.getbyhostname and other libc-bound DNS resolutions in Ruby block the entire VM until they complete.
-# In a single thread this doesn't matter, but it can cause competition and deadlock in multi-threaded environments.
-# This library is included as part of Ruby to swap out the libc implementation for a thread-friendly pure ruby version.
-# It is a monkey-patch, but obviously one provided and supported by the Ruby maintainers themselves.
 gem 'resolv-replace'
-gem 'sidekiq', '~> 8.0'
+gem 'solid_queue'
 gem 'turbo-rails'
 gem 'view_component'
-gem 'whenever', require: false # Work around https://github.com/javan/whenever/issues/831
-
-source 'https://gems.contribsys.com/' do
-  gem 'sidekiq-pro'
-end
 
 group :development, :test do
   gem 'erb_lint', require: false
@@ -71,5 +61,6 @@ end
 group :deploy do
   gem 'capistrano-rails'
   gem 'capistrano-passenger'
+  gem 'capistrano-solid_queue'
   gem 'dlss-capistrano'
 end

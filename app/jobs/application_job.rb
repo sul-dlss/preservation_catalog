@@ -6,6 +6,17 @@ class ApplicationJob < ActiveJob::Base
     ActiveRecord::ConnectionAdapters::ConnectionHandler.new.clear_active_connections!
   end
 
+  # Re-enqueue jobs that were killed by the OS (e.g. KILL signal, OOM killer) or
+  # pruned by SolidQueue's heartbeat monitor after the shutdown_timeout expires.
+  # This ensures jobs that don't survive a deploy restart are automatically retried.
+  # Wait and attempts are configurable per-environment via Settings (config/settings.yml).
+  retry_on SolidQueue::Processes::ProcessExitError,
+           wait: Settings.job_retry.wait.minutes,
+           attempts: Settings.job_retry.attempts
+  retry_on SolidQueue::Processes::ProcessPrunedError,
+           wait: Settings.job_retry.wait.minutes,
+           attempts: Settings.job_retry.attempts
+
   # Raises if the metadata is incomplete
   # @param [Hash<Symbol => String>] metadata
   # @option metadata [String] :checksum_md5

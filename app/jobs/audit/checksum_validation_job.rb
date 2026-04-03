@@ -4,9 +4,9 @@ module Audit
   # Confirm checksum for one Moab on storage and update MoabRecord in database
   # @see Audit::ChecksumValidationService
   class ChecksumValidationJob < ApplicationJob
-    include UniqueJob
-
     queue_as :checksum_validation
+
+    limits_concurrency to: 1, key: ->(job) { job.arguments.first }, duration: 1.hour, on_conflict: :discard
 
     RETRIES = 5
 
