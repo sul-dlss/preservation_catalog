@@ -31,6 +31,7 @@ gem 'resolv-replace'
 gem 'solid_queue'
 gem 'turbo-rails'
 gem 'view_component'
+gem 'whenever', require: false # Work around https://github.com/javan/whenever/issues/831
 
 group :development, :test do
   gem 'erb_lint', require: false
