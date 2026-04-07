@@ -24,6 +24,16 @@ task :decommission_endpoint_in_db, [:endpoint_name, :dry_run, :batch_size, :limi
     exit 1
   end
 
+  endpoint_stats =
+    ZipPart.joins(
+      zipped_moab_version: [:zip_endpoint]
+    ).group(
+      :endpoint_name
+    ).pluck(
+      :endpoint_name, 'COUNT(DISTINCT(zipped_moab_versions.id))', 'COUNT(DISTINCT(zip_parts.id))'
+    )
+  logger.info "endpoint stats (name, zipped_moab_versions count, zip_parts count): #{endpoint_stats}"
+
   unless dry_run
     puts 'Are you sure you want to proceed? (y/n)'
     answer = $stdin.gets.chomp.downcase
@@ -53,9 +63,21 @@ task :decommission_endpoint_in_db, [:endpoint_name, :dry_run, :batch_size, :limi
     end
   end
 
-  # if it's not a dry run and all the zipped_moab_versions are gone, remove the endpoint
-  unless dry_run || zip_endpoint.reload.zipped_moab_versions.exist?
+  # only remove the endpoint if it's not a dry run and all its zipped_moab_versions are gone
+  if dry_run || zip_endpoint.reload.zipped_moab_versions.exist?
+    logger.info "dry run, or zipped_moab_versions remain on #{endpoint_name}, cannot delete zip_endpoints row"
+  else
     logger.info "Deleting ZipEndpoint: #{endpoint_name}"
     zip_endpoint.destroy!
   end
+
+  endpoint_stats =
+    ZipPart.joins(
+      zipped_moab_version: [:zip_endpoint]
+    ).group(
+      :endpoint_name
+    ).pluck(
+      :endpoint_name, 'COUNT(DISTINCT(zipped_moab_versions.id))', 'COUNT(DISTINCT(zip_parts.id))'
+    )
+  logger.info "endpoint stats (name, zipped_moab_versions count, zip_parts count): #{endpoint_stats}"
 end
