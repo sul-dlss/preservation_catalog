@@ -14,8 +14,8 @@ task :decommission_endpoint_in_db, [:endpoint_name, :dry_run, :batch_size, :limi
   args.with_defaults(dry_run: 'true', batch_size: 50_000, limit: 50_000)
   endpoint_name = args[:endpoint_name]
   dry_run = args[:dry_run] != 'false'
-  limit = args[:limit]
-  batch_size = args[:batch_size]
+  limit = args[:limit].to_i
+  batch_size = args[:batch_size].to_i
 
   logger.info "===== #{task.name}: interpreted args: #{{ endpoint_name:, dry_run:, batch_size:, limit: }}"
   zip_endpoint = ZipEndpoint.find_by(endpoint_name:)
