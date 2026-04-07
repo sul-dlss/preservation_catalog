@@ -1,11 +1,15 @@
 # frozen_string_literal: true
 
-desc 'Purge zips from cloud storage for decommissioned ZipEndpoint and remove ZippedMoabVersions and ZipParts'
-# For decommissioning a cloud storage endpoint
-# Ops will provide a time-limited access key and secret access key for the endpoint.
-task :decommission_endpoint, [:endpoint_name, :access_key, :secret_access_key, :dry_run] => :environment do |_task, args|
-  args.with_defaults(dry_run: 'true')
+desc 'Delete ZippedMoabVersions and ZipParts in batches, delete associated ZipEndpoint on last batch'
+# For decommissioning a cloud storage endpoint (without having to remove everything all at once).
+# Ops will purge the contents of the S3 bucket; or, can provide a time-limited access key and secret access key for
+# the endpoint, in which case it would also be necessary to obtain or generate a list of S3 keys (druid tree paths) for
+# which to delete S3 content.
+task :decommission_endpoint_in_db, [:endpoint_name, :dry_run, :batch_size, :limit] => :environment do |_task, args|
+  args.with_defaults(dry_run: 'true', batch_size: 50_000, limit: 50_000)
   dry_run = args[:dry_run] != 'false'
+  limit = args[:limit]
+  batch_size = args[:batch_size]
 
   zip_endpoint = ZipEndpoint.find_by(endpoint_name: args[:endpoint_name])
   unless zip_endpoint
@@ -22,21 +26,24 @@ task :decommission_endpoint, [:endpoint_name, :access_key, :secret_access_key, :
     end
   end
 
-  zip_endpoint.zipped_moab_versions.find_each do |zipped_moab_version|
-    zip_info = "#{zipped_moab_version.druid} (#{zipped_moab_version.version})"
+  # this should be stable from run to run, as #in_batches orders on primary key
+  zip_endpoint.zipped_moab_versions.limit(limit).in_batches(of: batch_size) do |zipped_moab_versions_relation|
+    zip_parts_relation = ZipPart.where(zipped_moab_version: zipped_moab_versions_relation)
+    zip_info = "#{zip_parts_relation.count} zip parts for #{zipped_moab_versions_relation.count} zipped moab versions " \
+               "(zipped_moab_versions id range: #{zipped_moab_versions_relation.minimum(:id)} to #{zipped_moab_versions_relation.maxiumum(:id)})"
+
     if dry_run
-      puts "Dry run deleting: #{zip_info}"
+      puts "[Dry run] Deleting: #{zip_info}"
     else
       puts "Deleting: #{zip_info}"
-      zipped_moab_version.zip_parts.destroy_all
+      zip_parts_relation.delete_all
+      zipped_moab_versions_relation.delete_all
     end
   end
 
-  unless dry_run
+  # if it's not a dry run and all the zipped_moab_versions are gone, remove the endpoint
+  unless dry_run || zip_endpoint.reload.zipped_moab_versions.exist?
     puts "Deleting ZipEndpoint: #{args[:endpoint_name]}"
-    zip_endpoint.reload
-    zip_endpoint.zipped_moab_versions.destroy_all
-    zip_endpoint.reload
     zip_endpoint.destroy!
   end
 end
