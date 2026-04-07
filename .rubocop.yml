@@ -14,14 +14,14 @@ AllCops:
   TargetRubyVersion: 3.4
   DisplayCopNames: true
   Exclude:
-    - 'bin/**/*'
-    - 'db/**/*'
-    - 'vendor/**/*'
+    - "bin/**/*"
+    - "db/**/*"
+    - "vendor/**/*"
 
 # customizations
 Bundler/OrderedGems:
   Exclude:
-    - 'Gemfile'
+    - "Gemfile"
 
 Layout/EmptyLineAfterGuardClause:
   Enabled: false
@@ -31,34 +31,34 @@ Layout/LineLength:
 
 Lint/MissingSuper:
   Exclude:
-    - 'app/components/**/*'
+    - "app/components/**/*"
 
 Metrics/BlockLength:
   Exclude:
-    - '**/*.rake'
-    - 'spec/**/*'
-    - 'config/routes.rb'
+    - "**/*.rake"
+    - "spec/**/*"
+    - "config/routes.rb"
 
 Metrics/ClassLength:
   Exclude:
-    - 'app/services/complete_moab_service/base.rb'
+    - "app/services/complete_moab_service/base.rb"
 
 Naming/FileName:
   Exclude:
-    - 'Capfile'
-    - 'Gemfile'
+    - "Capfile"
+    - "Gemfile"
 
 RSpec/AnyInstance:
   Enabled: true
   Exclude:
-    - 'spec/jobs/validate_moab_job_spec.rb'
+    - "spec/jobs/validate_moab_job_spec.rb"
 
 RSpec/ContextWording:
   Enabled: false # too dogmatic
 
 RSpec/DescribeClass:
   Exclude:
-    - 'spec/requests/auth_spec.rb' # technically testing ApplicationController, but rubocop complains even if you provide that
+    - "spec/requests/auth_spec.rb" # technically testing ApplicationController, but rubocop complains even if you provide that
 
 RSpec/ExampleLength:
   Enabled: false
@@ -81,11 +81,11 @@ RSpec/NestedGroups:
 
 Style/AccessModifierDeclarations:
   Exclude:
-    - 'config/initializers/okcomputer.rb' # atypical multi-class file
+    - "config/initializers/okcomputer.rb" # atypical multi-class file
 
 Style/BlockDelimiters:
   Exclude:
-    - 'spec/*/*' # rspec expect statements look ugly with do-end instead of {}
+    - "spec/*/*" # rspec expect statements look ugly with do-end instead of {}
 
 Style/ExplicitBlockArgument: # (new in 0.89)
   Enabled: false
@@ -95,9 +95,9 @@ Style/FormatStringToken:
 
 Style/SymbolArray:
   Exclude:
-    - 'Rakefile' # because [:spec, :rubocop] isn't a big deal
-    - '**/*.rake'
-    - 'config/deploy/*'
+    - "Rakefile" # because [:spec, :rubocop] isn't a big deal
+    - "**/*.rake"
+    - "config/deploy/*"
 
 Style/WordArray:
   Enabled: false # Naomi hates this rule;  "precious" ruby syntax
@@ -760,4 +760,31 @@ Style/ModuleMemberExistenceCheck: # new in 1.82
 Style/NegativeArrayIndex: # new in 1.83
   Enabled: true
 Style/ReverseFind: # new in 1.83
+  Enabled: true
+
+Lint/DataDefineOverride: # new in 1.85
+  Enabled: true
+Lint/UnreachablePatternBranch: # new in 1.85
+  Enabled: true
+Style/FileOpen: # new in 1.85
+  Enabled: true
+Style/MapJoin: # new in 1.85
+  Enabled: true
+Style/OneClassPerFile: # new in 1.85
+  Enabled: false
+Style/PartitionInsteadOfDoubleSelect: # new in 1.85
+  Enabled: true
+Style/PredicateWithKind: # new in 1.85
+  Enabled: true
+Style/ReduceToHash: # new in 1.85
+  Enabled: true
+Style/RedundantMinMaxBy: # new in 1.85
+  Enabled: true
+Style/RedundantStructKeywordInit: # new in 1.85
+  Enabled: true
+Style/SelectByKind: # new in 1.85
+  Enabled: true
+Style/SelectByRange: # new in 1.85
+  Enabled: true
+Style/TallyMethod: # new in 1.85
   Enabled: true

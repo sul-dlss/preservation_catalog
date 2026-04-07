@@ -20,8 +20,7 @@ module MoabRecordCalculations
                                                   :invalid_checksum_count,
                                                   :moab_on_storage_not_found_count,
                                                   :unexpected_version_on_storage_count,
-                                                  :validity_unknown_count,
-                                                  keyword_init: true) do
+                                                  :validity_unknown_count) do
                                                     def initialize(**kwargs) # rubocop:disable Metrics/PerceivedComplexity, Metrics/CyclomaticComplexity
                                                       super
                                                       self.total_size ||= 0

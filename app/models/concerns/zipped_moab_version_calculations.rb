@@ -14,8 +14,7 @@ module ZippedMoabVersionCalculations
                                                     :ok_count,
                                                     :failed_count,
                                                     :created_count,
-                                                    :incomplete_count,
-                                                    keyword_init: true) do
+                                                    :incomplete_count) do
     def initialize(**kwargs)
       super
       self.zipped_moab_version_count ||= 0

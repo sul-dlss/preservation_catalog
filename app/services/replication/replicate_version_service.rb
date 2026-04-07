@@ -109,7 +109,7 @@ module Replication
           zipped_moab_version.update!(status: 'ok', status_details: 'replication complete')
           send_dsa_event(zipped_moab_version)
         else
-          zipped_moab_version.update!(status: 'failed', status_details: error_results.map(&:to_s).join('; '))
+          zipped_moab_version.update!(status: 'failed', status_details: error_results.join('; '))
         end
       end
     end
