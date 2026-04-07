@@ -64,7 +64,7 @@ task :decommission_endpoint_in_db, [:endpoint_name, :dry_run, :batch_size, :limi
   end
 
   # only remove the endpoint if it's not a dry run and all its zipped_moab_versions are gone
-  if dry_run || zip_endpoint.reload.zipped_moab_versions.exist?
+  if dry_run || zip_endpoint.reload.zipped_moab_versions.exists?
     logger.info "dry run, or zipped_moab_versions remain on #{endpoint_name}, cannot delete zip_endpoints row"
   else
     logger.info "Deleting ZipEndpoint: #{endpoint_name}"
