@@ -117,12 +117,12 @@ anymatch@~3.1.2:
     picomatch "^2.0.4"
 
 autoprefixer@^10.4.23:
-  version "10.4.27"
-  resolved "https://registry.yarnpkg.com/autoprefixer/-/autoprefixer-10.4.27.tgz#51ea301a5c3c5f8642f8e564759c4f573be486f2"
-  integrity sha512-NP9APE+tO+LuJGn7/9+cohklunJsXWiaWEfV3si4Gi/XHDwVNgkwr1J3RQYFIvPy76GmJ9/bW8vyoU1LcxwKHA==
+  version "10.5.0"
+  resolved "https://registry.yarnpkg.com/autoprefixer/-/autoprefixer-10.5.0.tgz#33d87e443430f020a0f85319d6ff1593cb291be9"
+  integrity sha512-FMhOoZV4+qR6aTUALKX2rEqGG+oyATvwBt9IIzVR5rMa2HRWPkxf+P+PAJLD1I/H5/II+HuZcBJYEFBpq39ong==
   dependencies:
-    browserslist "^4.28.1"
-    caniuse-lite "^1.0.30001774"
+    browserslist "^4.28.2"
+    caniuse-lite "^1.0.30001787"
     fraction.js "^5.3.4"
     picocolors "^1.1.1"
     postcss-value-parser "^4.2.0"
@@ -133,9 +133,9 @@ balanced-match@^4.0.2:
   integrity sha512-BLrgEcRTwX2o6gGxGOCNyMvGSp35YofuYzw9h1IMTRmKqttAZZVU67bdb9Pr2vUHA8+j3i2tJfjO6C6+4myGTA==
 
 baseline-browser-mapping@^2.10.12:
-  version "2.10.18"
-  resolved "https://registry.yarnpkg.com/baseline-browser-mapping/-/baseline-browser-mapping-2.10.18.tgz#565745085ba7743af7d4072707ad132db3a5a42f"
-  integrity sha512-VSnGQAOLtP5mib/DPyg2/t+Tlv65NTBz83BJBJvmLVHHuKJVaDOBvJJykiT5TR++em5nfAySPccDZDa4oSrn8A==
+  version "2.10.20"
+  resolved "https://registry.yarnpkg.com/baseline-browser-mapping/-/baseline-browser-mapping-2.10.20.tgz#7c99b86d43ae9be3810cac515f4675802e1f6b87"
+  integrity sha512-1AaXxEPfXT+GvTBJFuy4yXVHWJBXa4OdbIebGN/wX5DlsIkU0+wzGnd2lOzokSk51d5LUmqjgBLRLlypLUqInQ==
 
 binary-extensions@^2.0.0:
   version "2.3.0"
@@ -166,7 +166,7 @@ braces@~3.0.2:
   dependencies:
     fill-range "^7.1.1"
 
-browserslist@^4.28.1:
+browserslist@^4.28.2:
   version "4.28.2"
   resolved "https://registry.yarnpkg.com/browserslist/-/browserslist-4.28.2.tgz#f50b65362ef48974ca9f50b3680566d786b811d2"
   integrity sha512-48xSriZYYg+8qXna9kwqjIVzuQxi+KYWp2+5nCYnYKPTr0LvD89Jqk2Or5ogxz0NUMfIjhh2lIUX/LyX9B4oIg==
@@ -177,10 +177,10 @@ browserslist@^4.28.1:
     node-releases "^2.0.36"
     update-browserslist-db "^1.2.3"
 
-caniuse-lite@^1.0.30001774, caniuse-lite@^1.0.30001782:
-  version "1.0.30001787"
-  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001787.tgz#fd25c5e42e2d35df5c75eddda00d15d9c0c68f81"
-  integrity sha512-mNcrMN9KeI68u7muanUpEejSLghOKlVhRqS/Za2IeyGllJ9I9otGpR9g3nsw7n4W378TE/LyIteA0+/FOZm4Kg==
+caniuse-lite@^1.0.30001782, caniuse-lite@^1.0.30001787:
+  version "1.0.30001788"
+  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001788.tgz#31e97d1bfec332b3f2d7eea7781460c97629b3bf"
+  integrity sha512-6q8HFp+lOQtcf7wBK+uEenxymVWkGKkjFpCvw5W25cmMwEDU45p1xQFBQv8JDlMMry7eNxyBaR+qxgmTUZkIRQ==
 
 chokidar@^3.3.0, chokidar@^3.5.2:
   version "3.6.0"
@@ -243,9 +243,9 @@ detect-libc@^2.0.3:
   integrity sha512-Btj2BOOO83o3WyH59e8MgXsxEQVcarkUOpEYrubB0urwnN10yQ364rsiByU11nZlqWYZm05i/of7io4mzihBtQ==
 
 electron-to-chromium@^1.5.328:
-  version "1.5.335"
-  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.5.335.tgz#0b957cea44ef86795c227c616d16b4803d119daa"
-  integrity sha512-q9n5T4BR4Xwa2cwbrwcsDJtHD/enpQ5S1xF1IAtdqf5AAgqDFmR/aakqH3ChFdqd/QXJhS3rnnXFtexU7rax6Q==
+  version "1.5.340"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.5.340.tgz#fe3f76e8d9b9541c123fb7edbc3381688272f79a"
+  integrity sha512-908qahOGocRMinT2nM3ajCEM99H4iPdv84eagPP3FfZy/1ZGeOy2CZYzjhms81ckOPCXPlW7LkY4XpxD8r1DrA==
 
 emoji-regex@^8.0.0:
   version "8.0.0"
@@ -470,9 +470,9 @@ postcss-value-parser@^4.2.0:
   integrity sha512-1NNCs6uurfkVbeXG4S8JFT9t19m45ICnif8zWLd5oPSZ50QnwMfK+H3jv408d4jw/7Bttv5axS5IiHoLaVNHeQ==
 
 postcss@^8.5.6:
-  version "8.5.9"
-  resolved "https://registry.yarnpkg.com/postcss/-/postcss-8.5.9.tgz#f6ee9e0b94f0f19c97d2f172bfbd7fc71fe1cca4"
-  integrity sha512-7a70Nsot+EMX9fFU3064K/kdHWZqGVY+BADLyXc8Dfv+mTLLVl6JzJpPaCZ2kQL9gIJvKXSLMHhqdRRjwQeFtw==
+  version "8.5.10"
+  resolved "https://registry.yarnpkg.com/postcss/-/postcss-8.5.10.tgz#8992d8c30acf3f12169e7c09514a12fed7e48356"
+  integrity sha512-pMMHxBOZKFU6HgAZ4eyGnwXF/EvPGGqUr0MnZ5+99485wwW41kW91A4LOGxSHhgugZmSChL5AlElNdwlNgcnLQ==
   dependencies:
     nanoid "^3.3.11"
     picocolors "^1.1.1"
