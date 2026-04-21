@@ -17,7 +17,7 @@ module Replication
 
       return results if already_replicated? || !check_existing_part_file_on_endpoint
 
-      transfer_manager.upload_file(druid_version_zip_part.file_path,
+      transfer_manager.upload_file(zip_part_file.file_path,
                                    bucket: zip_part.zip_endpoint.bucket_name,
                                    key: zip_part.s3_key, metadata:)
       results
@@ -27,7 +27,7 @@ module Replication
 
     attr_reader :zip_part
 
-    delegate :s3_part, :druid_version_zip_part, :preserved_object, :zip_endpoint, to: :zip_part
+    delegate :s3_part, :zip_part_file, :preserved_object, :zip_endpoint, to: :zip_part
     delegate :druid, to: :preserved_object
 
     def zip_part_file_exists_on_endpoint?
@@ -53,8 +53,8 @@ module Replication
 
     def metadata
       {
-        checksum_md5: druid_version_zip_part.read_md5,
-        size: druid_version_zip_part.size.to_s # S3 metadata values must be strings
+        checksum_md5: zip_part_file.read_md5,
+        size: zip_part_file.size.to_s # S3 metadata values must be strings
       }
     end
 

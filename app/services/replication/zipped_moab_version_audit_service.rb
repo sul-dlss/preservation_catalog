@@ -111,7 +111,7 @@ module Replication
     # @return [Symbol, nil] returns status symbol if inconsistency found, else nil
     def check_zip_part_size_consistency
       total_part_size = zipped_moab_version.total_part_size
-      moab_version_size = zipped_moab_version.druid_version_zip.moab_version_size
+      moab_version_size = zipped_moab_version.filesystem_size
       return unless total_part_size < moab_version_size
       add_result(
         Results::ZIP_PARTS_SIZE_INCONSISTENCY,

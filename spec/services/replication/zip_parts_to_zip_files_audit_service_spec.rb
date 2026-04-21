@@ -6,17 +6,13 @@ RSpec.describe Replication::ZipPartsToZipFilesAuditService do
   subject(:results) { described_class.call(zipped_moab_version:) }
 
   let(:preserved_object) { create(:preserved_object_fixture, druid: 'bj102hs9687') }
-
-  let(:zipped_moab_version) do
-    create(:zipped_moab_version, preserved_object:)
-  end
-
+  let(:zipped_moab_version) { create(:zipped_moab_version, preserved_object:) }
   let!(:zip_part) { create(:zip_part, zipped_moab_version:) }
   let!(:mismatched_zip_part) { create(:zip_part, zipped_moab_version:) }
 
   before do
-    allow(zip_part.druid_version_zip_part).to receive(:read_md5).and_return(zip_part.md5)
-    allow(mismatched_zip_part.druid_version_zip_part).to receive(:read_md5).and_return('different_md5_value')
+    allow(zip_part.zip_part_file).to receive(:read_md5).and_return(zip_part.md5)
+    allow(mismatched_zip_part.zip_part_file).to receive(:read_md5).and_return('different_md5_value')
   end
 
   it 'returns results for zip parts with md5 mismatches' do
