@@ -461,7 +461,7 @@ RSpec/VerifiedDoubleReference: # new in 2.10.0
   Enabled: true
 Capybara/SpecificFinders: # new in 2.13
   Enabled: true
-Capybara/SpecificMatcher: # new in 2.12
+Capybara/RSpec/SpecificMatcher: # new in 2.12
   Enabled: true
 RSpecRails/HaveHttpStatus: # new in 2.12
   Enabled: true
@@ -480,7 +480,7 @@ Rails/WhereNotWithMultipleConditions: # new in 2.17
   Enabled: true
 RSpec/SortMetadata: # new in 2.14
   Enabled: true
-Capybara/NegationMatcher: # new in 2.14
+Capybara/RSpec/NegationMatcher: # new in 2.14
   Enabled: true
 Capybara/SpecificActions: # new in 2.14
   Enabled: true
@@ -514,7 +514,7 @@ FactoryBot/FactoryNameStyle: # new in 2.16
   Enabled: true
 Lint/UselessRescue: # new in 1.43
   Enabled: true
-Capybara/MatchStyle: # new in <<next>>
+Capybara/RSpec/MatchStyle: # new in <<next>>
   Enabled: true
 RSpecRails/MinitestAssertions: # new in 2.17
   Enabled: true
@@ -721,7 +721,7 @@ RSpec/IncludeExamples: # new in 3.6
   Enabled: true
 Capybara/FindAllFirst: # new in 2.22
   Enabled: true
-Capybara/NegationMatcherAfterVisit: # new in 2.22
+Capybara/RSpec/NegationMatcherAfterVisit: # new in 2.22
   Enabled: true
 
 Gemspec/AttributeAssignment: # new in 1.77
