@@ -6,6 +6,7 @@ module Audit
   # with multi-part zip files for larger Moab versions).
   class ReplicatedMoabChecksumValidator # rubocop:disable Metrics/ClassLength
     include ActionView::Helpers::NumberHelper
+    extend ActionView::Helpers::NumberHelper
 
     attr_accessor :fixity_check_base_location
 
