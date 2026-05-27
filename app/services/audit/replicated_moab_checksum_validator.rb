@@ -4,12 +4,32 @@ module Audit
   # This service class provides tools for retrieving and fixity checking
   # archived Moabs (stored as zipped moab versions in S3 buckets, possibly
   # with multi-part zip files for larger Moab versions).
+  #
+  # USAGE NOTES:
+  #   * Look at the logs to tell you how the run went!
+  #   * This code works synchronously. It downloads and checksum validates arbitrarily
+  #     large SDR objects. For anything long running, run via screen or ActiveJob.
+  #   * In practice, as of May 2026, this won't be able to retrieve most of our
+  #     content on AWS endpoints, because that content gets moved to Glacier after
+  #     upload, and a request must be made to restore it to a temp S3 bucket for
+  #     retrieval. GCP-stored content should not have that issue, and should be immediately
+  #     retrievable from the location to which it was initially uploaded.
+  #     See https://docs.aws.amazon.com/AmazonS3/latest/userguide/restoring-objects.html
+  #   * A further possible manual check, and an opportunity to add functionality to this class: compare
+  #     the hash of each manifestInventory.xml with corresponding file in on prem Moab.  This file contains
+  #     checksums for each manifest file in the version, including signatureCatalog.xml, which contains checksums
+  #     for each SDR content and metadata file for its version.
   class ReplicatedMoabChecksumValidator # rubocop:disable Metrics/ClassLength
     include ActionView::Helpers::NumberHelper
     extend ActionView::Helpers::NumberHelper
 
     attr_accessor :fixity_check_base_location
 
+    # @param [Pathname] fixity_check_base_location target directory for downloading cloud archived Moabs
+    # @param [Boolean] dry_run if true, do not actually download or checksum validate
+    # @param [Boolean] force_part_md5_comparison Even if the zip parts are not downloaded on this run, compare
+    #  the previously downloaded MD5 results to what is in the DB
+    # @param [Logger] additional_logger an additional logger for this object to broadcast to
     def initialize(fixity_check_base_location:, dry_run:, force_part_md5_comparison:, additional_logger: nil)
       @fixity_check_base_location = fixity_check_base_location
       @dry_run = dry_run
@@ -24,6 +44,8 @@ module Audit
       )
     end
 
+    # @param [Array<String>] endpoints_to_audit
+    # @param [Array<String>] druids
     def validate_replicated_moab_checksums!(endpoints_to_audit:, druids:)
       logger.info('======= DRY RUN =======') if dry_run?
 
@@ -42,6 +64,8 @@ module Audit
       fixity_check_unzipped_moabs(endpoints_to_audit:, druids:)
     end
 
+    # obtain a random sampling of druids for which each ZippedMoabVersion row
+    # has only one ZipPart
     def self.druids_having_single_part_versions(sample_count, logger: nil)
       logger ||= Audit::ReplicationSupport.logger
 
@@ -59,6 +83,9 @@ module Audit
       po_list.map(&:first).uniq
     end
 
+    # obtain a random sampling of druids where at least one of each druid's
+    # ZippedMoabVersion rows has more than one ZipPart (i.e. each druid has at
+    # least one archive zip split into multiple parts)
     def self.druids_having_a_multi_part_version(sample_count, logger: nil)
       logger ||= Audit::ReplicationSupport.logger
 
@@ -137,6 +164,9 @@ module Audit
       end
     end
 
+    # @param [Pathname] fixity_check_base_location
+    # @param [ActiveRecord::Relation] zip_part_relation The zip parts that will be downloaded and inflated into
+    #  Moab directories
     def download_zip_parts(fixity_check_base_location:, zip_part_relation:) # rubocop:disable Metrics/AbcSize
       zip_part_relation.find_each do |zip_part|
         endpoint_name = zip_part.zip_endpoint.endpoint_name
@@ -165,7 +195,7 @@ module Audit
       end
     end
 
-    # @param [Pathname] download_path
+    # @param [Pathname] download_path the path to which the .zip file was downloaded
     def unzip_zipped_moab_version_from_zip_parts(download_path:)
       unzip_filename = download_path.basename
 
@@ -173,6 +203,8 @@ module Audit
       logger.debug(Open3.capture2e("7z x #{unzip_filename}", chdir: download_path.dirname))
     end
 
+    # @param [ActiveRecord::Relation] zip_part_relation The zip parts that will be downloaded and inflated into
+    #  Moab directories
     def unzip_downloaded_zip_parts(zip_part_relation:) # rubocop:disable Metrics/AbcSize
       zip_part_relation.where(suffix: '.zip').find_each do |zip_part|
         endpoint_name = zip_part.zip_endpoint.endpoint_name
@@ -190,6 +222,8 @@ module Audit
       end
     end
 
+    # @param [Array<String>] endpoints_to_audit
+    # @param [Array<String>] druids
     def fixity_check_unzipped_moabs(endpoints_to_audit:, druids:) # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
       results_objects = []
 

@@ -8,6 +8,8 @@
 # sampling of Moabs smaller than the zip segmenting threshold, and random sampling of
 # Moabs larger than the zip segmenting threshold.
 #
+# SEE ALSO: usage notes in Audit::ReplicatedMoabChecksumValidator
+#
 # WARNING: this does some naive things that assume that the druid lists won't be more than
 # a few hundred long, or possibly a few thousand, since druid lists will be plucked from query
 # results and held in memory, parsed naively from file and held in memory, made unique with
