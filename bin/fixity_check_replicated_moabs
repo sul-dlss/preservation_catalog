@@ -1,0 +1,101 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# This script will pull objects from the preservation cloud archives, and fixity check
+# them, using the preservation_catalog Audit::ChecksumValidator class.  It will report
+# any errors that are found.  The list of druids to retrieve is specified by any combo
+# of druids listed in a file (one bare druid per line with no druid: prefix), random
+# sampling of Moabs smaller than the zip segmenting threshold, and random sampling of
+# Moabs larger than the zip segmenting threshold.
+#
+# SEE ALSO: usage notes in Audit::ReplicatedMoabChecksumValidator
+#
+# WARNING: this does some naive things that assume that the druid lists won't be more than
+# a few hundred long, or possibly a few thousand, since druid lists will be plucked from query
+# results and held in memory, parsed naively from file and held in memory, made unique with
+# Ruby Array#uniq, etc.
+
+# Set default environment if not already set by the command line
+ENV["RAILS_ENV"] ||= "production"
+
+require_relative '../config/environment'
+require 'optparse'
+
+include ActionView::Helpers::NumberHelper
+
+options = {
+  druid_list: '',
+  druid_list_file: nil,
+  single_part_druid_sample_count: 0,
+  multipart_druid_sample_count: 0,
+  # in deployed envs, Settings.zip_storage is a mount with ample free space
+  fixity_check_base_location: "#{Settings.zip_storage}/archive_fixity_checking/#{ENV['USER']}/",
+  endpoints_to_audit: 'aws_s3_west_2,aws_s3_east_1,gcp_s3_south_1',
+  force_part_md5_comparison: false,
+  dry_run: false,
+  quiet: false
+}
+
+parser = OptionParser.new do |option_parser|
+  option_parser.banner = "Usage: #{$PROGRAM_NAME} [options]"
+  option_parser.on('--druid_list DRUID_LIST',
+                   'comma-separated (no spaces) list of bare druids (no prefixes)')
+  option_parser.on('--druid_list_file DRUID_LIST_FILE',
+                   'file with a list of provided druids, e.g. from integration tests, manual tests, your own queries, etc')
+  option_parser.on('--fixity_check_base_location FIXITY_CHECK_BASE_LOCATION',
+                   'target directory for downloading cloud archived Moabs, where they will be inflated and fixity checked.  ensure sufficient free space.')
+  option_parser.on('--single_part_druid_sample_count SINGLE_PART_DRUID_SAMPLE_COUNT', Integer,
+                   'number of < 10 GB Moabs to query for and retrieve (default: 0)')
+  option_parser.on('--multipart_druid_sample_count MULTIPART_DRUID_SAMPLE_COUNT', Integer,
+                   'number of > 10 GB Moabs to query for and retrieve (default: 0)')
+  option_parser.on('--endpoints_to_audit ENDPOINTS_TO_AUDIT',
+                   'list of cloud endpoints to audit (comma-separated, no spaces, names from config)')
+  option_parser.on('--[no-]force_part_md5_comparison', 'Even if the zip parts are not downloaded on this run, compare the previously downloaded MD5 results to what is in the DB')
+  option_parser.on('--[no-]dry_run',
+                   'Simulate download and fixity check for druid list (defaults to false)')
+  option_parser.on('--[no-]quiet', 'Do not output progress information (defaults to false)')
+  option_parser.on('-h', '--help', 'Displays help.') do
+    $stdout.puts option_parser
+    exit
+  end
+end
+
+parser.parse!(into: options)
+
+exit_code = 0 # we can update if/when we hit problems
+
+
+logger = ActiveSupport::BroadcastLogger.new(
+  Logger.new(Rails.root.join('log', 'audit_archive_zip_checksum_validation.log'))
+)
+logger.broadcast_to(Logger.new($stdout)) unless options[:quiet]
+
+logger.info('======= FIXITY CHECKING RUN WITH OPTIONS =======')
+logger.info("#{options}")
+logger.info('======= ******************************** =======')
+
+endpoints_to_audit = options[:endpoints_to_audit].split(',')
+fixity_check_base_location = Pathname(options[:fixity_check_base_location])
+
+
+druids = options[:druid_list].split(',')
+
+if options[:druid_list_file].present? && File.file?(options[:druid_list_file])
+  druids += File.readlines(options[:druid_list_file], chomp: true)
+end
+
+if options[:single_part_druid_sample_count].positive?
+  druids += Audit::ReplicatedMoabChecksumValidator.druids_having_single_part_versions(options[:single_part_druid_sample_count], logger:)
+end
+
+if options[:multipart_druid_sample_count].positive?
+  druids += Audit::ReplicatedMoabChecksumValidator.druids_having_a_multi_part_version(options[:multipart_druid_sample_count], logger:)
+end
+
+validator = Audit::ReplicatedMoabChecksumValidator.new(
+  fixity_check_base_location:, force_part_md5_comparison: options[:force_part_md5_comparison], dry_run: options[:dry_run], additional_logger: logger
+)
+fixity_check_results_objects = validator.validate_replicated_moab_checksums!(endpoints_to_audit:, druids:)
+
+exit_code = 1 if fixity_check_results_objects.any? { |results| results.error_results.present? }
+exit exit_code

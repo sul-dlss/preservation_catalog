@@ -19,13 +19,13 @@ The *prescat* application has several modes of operation, that are either self-m
 
 2. *prescat* has an internal schedule of cron jobs which perform periodic [audits](https://github.com/sul-dlss/preservation_catalog/wiki/Validations-for-Moabs) that compare the Moabs that are on disk, with what is in the database (and vice-versa), and also verify that data has been replicated to the cloud. These audits ensure that files are present with the expected content (fixity). When these audits succeed or fail they generate events using the [DOR Services API](https://sul-dlss.github.io/dor-services-app/#operation/events#create), and (if they fail) Honey Badger alerts.
 
-3. Both [Argo](https://github.com/sul-dlss/argo) and [HappyHeron](https://github.com/sul-dlss/happy-heron) allow users to fetch preserved files using the *prescat* REST API.
+3. Both [Argo](https://github.com/sul-dlss/argo) and [H3](https://github.com/sul-dlss/hungry-hungry-hippo/) allow users to fetch preserved files using the *prescat* REST API.
 
 4. [DOR Services](https://github.com/sul-dlss/dor-services-app) uses the *prescat* REST API in order to determine what files are in need of replication during shelving to [Stacks](https://github.com/sul-dlss/stacks).
 
 ```mermaid
 flowchart LR;
-  H2 --> PresCat;
+  H3 --> PresCat;
   Argo --> PresCat;
   DSA <--> PresCat;
   PresRobots --> PresCat;
@@ -46,6 +46,28 @@ Here are the steps you need to follow to get a working development instance of *
 First get the Ruby dependencies:
 ```sh
 bundle install
+```
+
+Then, install `yarn` if you haven't already.  E.g., if using NVM to manage Node versions, something like:
+```sh
+nvm install 20 --latest-npm
+nvm use 20
+npm install -g yarn
+```
+
+Then, install 7zip.
+
+This is required because it works on multi-part zip files reliably, which pres cat generates for large objects, and
+which the default `unzip` CLI tool does not fully support; and because the test suite tests cloud archive fixity checking, and
+only mocks the download:
+```sh
+# E.g. on Mac, use Homebrew like so, see https://formulae.brew.sh/formula/sevenzip
+brew install sevenzip
+
+# By default, the Mac/Homebrew 7zip binary is called 7zz, but in Linux envs, like the VMs were pres cat is deployed,
+# it's 7z.  You can create a 7z symlink on your path.  E.g., if ~/.local/bin/ is on your path, you could do something like:
+cd /Users/$USER/.local/bin/
+ln -s /opt/homebrew/bin/7zz 7z
 ```
 
 The credentials for SideKiq Pro must be provided (e.g., in `.bash_profile`): `export BUNDLE_GEMS__CONTRIBSYS__COM=xxxx:xxxx` (available from shared_configs).
