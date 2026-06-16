@@ -117,6 +117,8 @@ GEM
     bigdecimal (4.1.2)
     bootsnap (1.24.6)
       msgpack (~> 1.2)
+    brakeman (8.0.5)
+      racc
     builder (3.3.0)
     bunny (2.24.0)
       amq-protocol (~> 2.3)
@@ -621,6 +623,7 @@ PLATFORMS
 DEPENDENCIES
   aws-sdk-s3 (~> 1.208.0)
   bootsnap
+  brakeman
   capistrano-passenger
   capistrano-rails
   capybara

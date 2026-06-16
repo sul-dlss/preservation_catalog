@@ -43,6 +43,8 @@ source 'https://gems.contribsys.com/' do
 end
 
 group :development, :test do
+  # Security audit for known security defects in code (use config/brakeman.ignore to ignore issues)
+  gem 'brakeman', require: false
   gem 'erb_lint', require: false
   # Ruby static code analyzer https://rubocop.readthedocs.io/en/latest/
   gem 'rubocop'
