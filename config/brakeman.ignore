@@ -1,0 +1,51 @@
+{
+  "ignored_warnings": [
+    {
+      "warning_type": "File Access",
+      "warning_code": 16,
+      "fingerprint": "29d36cdd6e6979439379a117721b016e282af9c63208f2db2f2703213c46e01e",
+      "check_name": "SendFile",
+      "message": "Parameter value used in file name",
+      "file": "app/controllers/objects_controller.rb",
+      "line": 56,
+      "link": "https://brakemanscanner.org/docs/warning_types/file_access/",
+      "code": "send_file(MoabOnStorage::StorageServicesWrapper.filepath(druid, params[:category], params[:filepath], params[:version].to_i))",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "ObjectsController",
+        "method": "file"
+      },
+      "user_input": "params[:version]",
+      "confidence": "Weak",
+      "cwe_id": [
+        22
+      ],
+      "note": ""
+    },
+    {
+      "warning_type": "Command Injection",
+      "warning_code": 14,
+      "fingerprint": "2a7649777ff0ca48a43458cfe081d888082c948ae1b284e6e851910e01544b32",
+      "check_name": "Execute",
+      "message": "Possible command injection",
+      "file": "app/services/audit/replicated_moab_checksum_validator.rb",
+      "line": 203,
+      "link": "https://brakemanscanner.org/docs/warning_types/command_injection/",
+      "code": "Open3.capture2e(\"7z x #{download_path.basename}\", :chdir => download_path.dirname)",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "Audit::ReplicatedMoabChecksumValidator",
+        "method": "unzip_zipped_moab_version_from_zip_parts"
+      },
+      "user_input": "download_path.basename",
+      "confidence": "Medium",
+      "cwe_id": [
+        77
+      ],
+      "note": ""
+    }
+  ],
+  "brakeman_version": "8.0.5"
+}
