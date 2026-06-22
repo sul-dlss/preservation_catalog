@@ -3,11 +3,11 @@
   "private": "true",
   "dependencies": {
     "@popperjs/core": "^2.11.8",
-    "autoprefixer": "^10.4.23",
+    "autoprefixer": "^10.5.0",
     "bootstrap": "^5.3.8",
     "bootstrap-icons": "^1.13.1",
     "nodemon": "^3.1.11",
-    "postcss": "^8.5.6",
+    "postcss": "^8.5.15",
     "postcss-cli": "^11.0.1",
     "sass": "^1.97.2"
   },
@@ -19,5 +19,8 @@
   },
   "browserslist": [
     "defaults"
-  ]
+  ],
+  "resolutions": {
+    "browserslist": "^4.28.4"
+  }
 }
