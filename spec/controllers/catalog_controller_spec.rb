@@ -163,6 +163,31 @@ RSpec.describe CatalogController do
       end
     end
 
+    context 'incoming version matches catalog version (no-op)' do
+      before do
+        patch :update, params: { druid: prefixed_druid, incoming_version: comp_moab.version, incoming_size: size,
+                                 storage_location: storage_location_param }
+      end
+
+      it 'does not change MoabRecord#version' do
+        expect { comp_moab.reload }.not_to change(comp_moab, :version)
+      end
+
+      it 'does not change PreservedObject#current_version' do
+        expect { pres_obj.reload }.not_to change(pres_obj, :current_version)
+      end
+
+      it 'response contains version_matches code' do
+        version_matches_msg = "actual version (#{comp_moab.version}) matches MoabRecord db version"
+        exp_msg = [{ Results::VERSION_MATCHES => version_matches_msg }]
+        expect(response.body).to include(exp_msg.to_json)
+      end
+
+      it 'returns an ok response code' do
+        expect(response).to have_http_status(:ok)
+      end
+    end
+
     context 'with invalid params' do
       before do
         patch :update, params: { druid: prefixed_druid, incoming_version: ver, incoming_size: size, storage_location: nil }

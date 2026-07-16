@@ -176,7 +176,7 @@ RSpec.shared_examples 'unexpected version' do |actual_version|
   end
 end
 
-RSpec.shared_examples 'unexpected version with validation' do |service, incoming_version, new_status|
+RSpec.shared_examples 'unexpected version with validation' do |service, incoming_version, new_status, results_count = nil|
   let(:moab_record_service) do
     described_class.new(druid: druid, incoming_version: incoming_version, incoming_size: 1, moab_storage_root: moab_storage_root)
   end
@@ -237,12 +237,7 @@ RSpec.shared_examples 'unexpected version with validation' do |service, incoming
 
     it 'number of results' do
       expect(results).to be_an_instance_of Results
-      case service
-      when :check_existence
-        expect(results.size).to eq 2
-      when :update_version_after_validation
-        expect(results.size).to eq 4
-      end
+      expect(results.size).to eq(results_count || (service == :check_existence ? 2 : 4))
     end
 
     if service == :update_version_after_validation

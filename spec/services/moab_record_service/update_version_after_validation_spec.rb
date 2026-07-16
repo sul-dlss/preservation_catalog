@@ -456,7 +456,7 @@ RSpec.describe MoabRecordService::UpdateVersionAfterValidation do
         end
 
         context 'incoming version same as catalog versions (both)' do
-          it_behaves_like 'unexpected version with validation', :update_version_after_validation, 2, 'invalid_moab'
+          it_behaves_like 'unexpected version with validation', :update_version_after_validation, 2, 'invalid_moab', 3
         end
 
         context 'incoming version lower than catalog versions (both)' do

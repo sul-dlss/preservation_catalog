@@ -4,9 +4,9 @@
 
 require 'simplecov'
 SimpleCov.start :rails do
-  add_filter '/spec/'
-  add_filter '/vendor/'
-  add_filter '/lib/'
+  skip '/spec/'
+  skip '/vendor/'
+  skip '/lib/'
 
   if ENV['CI']
     require 'simplecov_json_formatter'
