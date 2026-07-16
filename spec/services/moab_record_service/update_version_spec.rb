@@ -168,7 +168,43 @@ RSpec.describe MoabRecordService::UpdateVersion do
       end
 
       context 'incoming version same as catalog versions (both)' do
-        it_behaves_like 'unexpected version', 2, 'ok'
+        let(:moab_record_service) do
+          described_class.new(druid: druid, incoming_version: 2, incoming_size: 1, moab_storage_root: moab_storage_root)
+        end
+        let(:version_matches_msg) { 'actual version (2) matches MoabRecord db version' }
+
+        context 'MoabRecord unchanged' do
+          it 'status' do
+            expect { moab_record_service.execute }.not_to change(moab_record, :status)
+          end
+
+          it 'version' do
+            expect { moab_record_service.execute }.not_to change(moab_record, :version)
+          end
+
+          it 'size' do
+            expect { moab_record_service.execute }.not_to change(moab_record, :size)
+          end
+
+          it 'last_version_audit' do
+            expect { moab_record_service.execute }.not_to change(moab_record, :last_version_audit)
+          end
+        end
+
+        it 'PreservedObject current_version stays the same' do
+          expect { moab_record_service.execute }.not_to change(preserved_object, :current_version)
+          expect(ReplicationJob).not_to have_received(:perform_later)
+        end
+
+        context 'returns' do
+          let!(:results) { moab_record_service.execute }
+
+          it '1 VERSION_MATCHES result' do
+            expect(results).to be_an_instance_of Results
+            expect(results.size).to eq 1
+            expect(results.to_a).to include(a_hash_including(Results::VERSION_MATCHES => version_matches_msg))
+          end
+        end
       end
 
       context 'incoming version lower than catalog versions (both)' do

@@ -33,6 +33,8 @@ module MoabRecordService
 
         if incoming_version > moab_record.version
           update_moab_record_to_expected_version(status: status, checksums_validated: checksums_validated)
+        elsif incoming_version == moab_record.version
+          results.add_result(Results::VERSION_MATCHES, 'MoabRecord')
         else
           status = 'unexpected_version_on_storage' if set_status_to_unexpected_version
           update_moab_record_to_unexpected_version(status: status)
@@ -66,9 +68,7 @@ module MoabRecordService
 
     # expects @incoming_version to be numeric
     def version_comparison_results
-      if incoming_version == moab_record.version
-        results.add_result(Results::VERSION_MATCHES, moab_record.class.name)
-      elsif incoming_version < moab_record.version
+      if incoming_version < moab_record.version
         results.add_result(
           Results::ACTUAL_VERS_LT_DB_OBJ,
           db_obj_name: moab_record.class.name, db_obj_version: moab_record.version

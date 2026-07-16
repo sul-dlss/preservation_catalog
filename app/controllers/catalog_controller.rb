@@ -28,7 +28,7 @@ class CatalogController < ApiController
     results = MoabRecordService::UpdateVersion.execute(druid: bare_druid, incoming_version: incoming_version, incoming_size: incoming_size,
                                                        moab_storage_root: moab_storage_root, checksums_validated: checksums_validated)
     status_code =
-      if results.contains_result_code?(:actual_vers_gt_db_obj)
+      if results.contains_result_code?(:actual_vers_gt_db_obj) || results.contains_result_code?(:version_matches)
         :ok # 200
       elsif results.contains_result_code?(:db_obj_does_not_exist)
         :not_found # 404
