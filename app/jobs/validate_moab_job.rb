@@ -6,7 +6,7 @@
 # (https://github.com/sul-dlss/workflow-server-rails/blob/main/config/workflows/preservationIngestWF.xml#L18) -
 # For explanation as to why, see comment in preservation_robots Robots::SdrRepo::PreservationIngest::ValidateMoab.
 class ValidateMoabJob < ApplicationJob
-  queue_as :validate_moab
+  queue_as :validate_moab_default
 
   include UniqueJob
 

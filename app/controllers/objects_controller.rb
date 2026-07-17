@@ -28,7 +28,7 @@ class ObjectsController < ApiController
     # queue successfully. It will return false if the job was not enqueued.
     # The most likely cause is a temporary queue lock for the job and its specific payload, so
     # it is up to the caller to determine whether retrying later is appropriate.
-    if ValidateMoabJob.perform_later(druid)
+    if ValidateMoabJob.set(queue: validate_queue).perform_later(druid)
       render(plain: 'ok', status: :ok)
     else
       err_msg = "Failed to enqueue ValidateMoabJob for #{druid}. " \
@@ -112,5 +112,14 @@ class ObjectsController < ApiController
     content_group.path_hash.map do |file, signature|
       { filename: file, md5: signature.md5, sha1: signature.sha1, sha256: signature.sha256, filesize: signature.size }
     end
+  end
+
+  def lane_id
+    params['lane-id']
+  end
+
+  def validate_queue
+    lane = ['low', 'high'].include?(lane_id) ? lane_id : 'default'
+    :"validate_moab_#{lane}"
   end
 end
