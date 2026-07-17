@@ -5,23 +5,34 @@ RSpec.describe ObjectsController do
   let(:prefixed_druid) { 'druid:bj102hs9687' }
   let(:bare_druid) { 'bj102hs9687' }
   let(:post_headers) { valid_auth_header.merge('Content-Type' => 'application/json') }
+  let(:job) { class_double(ValidateMoabJob, perform_later: 123) }
 
   describe 'GET #validate_moab' do
     context 'when valid druid passed in' do
       before do
-        allow(ValidateMoabJob).to receive(:perform_later).and_return(ValidateMoabJob.new)
+        allow(ValidateMoabJob).to receive(:set).and_return(job)
       end
 
       it 'queues the job and response ok' do
         get validate_moab_object_url(prefixed_druid), headers: valid_auth_header
         expect(response).to have_http_status(:ok)
-        expect(ValidateMoabJob).to have_received(:perform_later).with(bare_druid)
+        expect(ValidateMoabJob).to have_received(:set).with(queue: :validate_moab_default)
+        expect(job).to have_received(:perform_later).with(bare_druid)
       end
 
       it 'queues the job and response ok when given a bare druid' do
         get validate_moab_object_url(bare_druid), headers: valid_auth_header
         expect(response).to have_http_status(:ok)
-        expect(ValidateMoabJob).to have_received(:perform_later).with(bare_druid)
+        expect(job).to have_received(:perform_later).with(bare_druid)
+      end
+
+      context 'with a provided lane-id' do
+        it 'queues the job and response ok' do
+          get validate_moab_object_url(prefixed_druid, 'lane-id': 'high'), headers: valid_auth_header
+          expect(response).to have_http_status(:ok)
+          expect(ValidateMoabJob).to have_received(:set).with(queue: :validate_moab_high)
+          expect(job).to have_received(:perform_later).with(bare_druid)
+        end
       end
     end
 
@@ -29,16 +40,17 @@ RSpec.describe ObjectsController do
       it 'returns a 400 response code' do
         get validate_moab_object_url('not a druid'), headers: valid_auth_header
         expect(response).to have_http_status(:bad_request)
-        expect(ValidateMoabJob).not_to receive(:perform_later)
+        expect(job).not_to receive(:perform_later)
       end
     end
 
     context 'when the caller tries to enqueue the job for a valid druid that is already in the queue' do
       before do
+        allow(ValidateMoabJob).to receive(:set).and_return(job)
         # the first attempt to enqueue is successful and returns an instance of the job class,
         # the second attempt fails and returns false (simulating an attempt to queue when the
         # same job is already waiting to be worked)
-        allow(ValidateMoabJob).to receive(:perform_later).and_return(ValidateMoabJob.new, false)
+        allow(job).to receive(:perform_later).and_return(123, false)
       end
 
       it 'returns a 423 response code' do
@@ -52,7 +64,7 @@ RSpec.describe ObjectsController do
         expect(response.body).to include("Failed to enqueue ValidateMoabJob for #{bare_druid}")
         expect(response.body).to include('The most likely cause is that the job was already enqueued')
 
-        expect(ValidateMoabJob).to have_received(:perform_later).with(bare_druid).exactly(2).times
+        expect(job).to have_received(:perform_later).with(bare_druid).exactly(2).times
       end
     end
   end

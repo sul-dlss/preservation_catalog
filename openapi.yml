@@ -143,6 +143,16 @@ paths:
           example: 'druid:bc123df4567'
           schema:
             $ref: '#/components/schemas/Druid'
+        - name: lane-id
+          in: query
+          schema:
+            description: Lane for prioritizing the work
+            type: string
+            enum:
+              - "default"
+              - "low"
+              - "high"
+            default: "default"
   /v1/objects/{id}/checksum:
     get:
       tags:
@@ -340,7 +350,6 @@ components:
               $ref: '#/components/schemas/Druid'
           required:
             - druid
-
     ContentDiff:
       description: A diff between given and existing content metadata (XML)
       type: object
