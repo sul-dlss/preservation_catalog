@@ -1,5 +1,18 @@
 # frozen_string_literal: true
 
+# Prevents cache_cleaner:stale_files and cache_cleaner:empty_directories from walking/deleting
+# in the same tree concurrently, which otherwise causes intermittent
+# "find: '...': No such file or directory" errors when one task deletes an entry the other
+# has already listed but not yet visited.
+CACHE_CLEANER_LOCK_FILE = '/tmp/prescat_cache_cleaner.lock'
+
+def with_cache_cleaner_lock
+  File.open(CACHE_CLEANER_LOCK_FILE, File::CREAT) do |lock_file|
+    lock_file.flock(File::LOCK_EX)
+    yield
+  end
+end
+
 namespace :prescat do
   desc 'Diagnose failed replication'
   task :diagnose_replication, [:druid] => :environment do |_task, args|
@@ -80,13 +93,17 @@ namespace :prescat do
   namespace :cache_cleaner do
     desc 'Clean zip storage cache of empty directories'
     task empty_directories: :environment do
-      # Setting mindepth to 1 prevents the command from wiping out the root dir if empty
-      `find #{Settings.zip_storage} -mindepth 1 -not -path "*/\.*" -type d -empty -delete`
+      with_cache_cleaner_lock do
+        # Setting mindepth to 1 prevents the command from wiping out the root dir if empty
+        `find #{Settings.zip_storage} -mindepth 1 -not -path "*/\.*" -type d -empty -delete`
+      end
     end
 
     desc 'Clean zip storage cache of stale checksum & zip files'
     task stale_files: :environment do
-      `find #{Settings.zip_storage} -mindepth 3 -type f -amin #{Settings.zip_cache_expiry_time} -delete`
+      with_cache_cleaner_lock do
+        `find #{Settings.zip_storage} -mindepth 3 -type f -amin #{Settings.zip_cache_expiry_time} -delete`
+      end
     end
   end
 
