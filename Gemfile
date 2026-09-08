@@ -15,6 +15,7 @@ gem 'druid-tools' # for druid validation and druid-tree parsing
 gem 'honeybadger' # for error reporting / tracking / notifications
 gem 'importmap-rails'
 gem 'jbuilder' # Build JSON APIs with ease.
+gem 'json', '~> 2.0' # Pinned until Rails 8.1.4 is released https://github.com/rails/rails/issues/58685
 gem 'jwt' # for gating programmatic access to the application
 gem 'kaminari' # pagination
 gem 'lograge'
