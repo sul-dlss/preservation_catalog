@@ -653,7 +653,6 @@ DEPENDENCIES
   honeybadger
   importmap-rails
   jbuilder
-  json (~> 2.0)
   jwt
   kaminari
   listen (~> 3)
