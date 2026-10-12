@@ -39,6 +39,8 @@ For more detailed information please see the [General Info](#general-info) secti
 
 ## Development
 
+Use Ruby 4.0.7 for development and testing.
+
 Here are the steps you need to follow to get a working development instance of *preservation_catalog* running:
 
 ### Install dependencies
