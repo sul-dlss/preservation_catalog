@@ -43,7 +43,7 @@ RSpec.describe ZipPart do
     let(:zp) { described_class.new(args) }
 
     it 'gets a ZipPartFile of the correct version' do
-      expect(zp.zip_part_file.filename).to match(/\.v0001\./)
+      expect(zp.zip_part_file.filename).to include('.v0001.')
     end
   end
 
