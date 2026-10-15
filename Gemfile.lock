@@ -89,7 +89,7 @@ GEM
     ast (2.4.3)
     attr_extras (7.1.0)
     aws-eventstream (1.4.0)
-    aws-partitions (1.1293.0)
+    aws-partitions (1.1296.0)
     aws-sdk-core (3.257.0)
       aws-eventstream (~> 1, >= 1.3.0)
       aws-partitions (~> 1, >= 1.992.0)
@@ -102,8 +102,8 @@ GEM
     aws-sdk-kms (1.132.0)
       aws-sdk-core (~> 3, >= 3.256.0)
       aws-sigv4 (~> 1.5)
-    aws-sdk-s3 (1.208.0)
-      aws-sdk-core (~> 3, >= 3.234.0)
+    aws-sdk-s3 (1.233.2)
+      aws-sdk-core (~> 3, >= 3.256.0)
       aws-sdk-kms (~> 1)
       aws-sigv4 (~> 1.5)
     aws-sigv4 (1.12.1)
@@ -211,7 +211,7 @@ GEM
       activesupport (>= 4.2)
       bunny (~> 2.17)
       zeitwerk (~> 2.1)
-    dor-services-client (15.67.0)
+    dor-services-client (15.69.0)
       activesupport (>= 7.0.0)
       cocina-models (~> 0.133.0)
       deprecation
@@ -306,7 +306,7 @@ GEM
       actionview (>= 7.0.0)
       activesupport (>= 7.0.0)
     jmespath (1.6.2)
-    json (3.0.2)
+    json (3.1.0)
     json_schema (0.21.0)
     jsonschema_rs (0.58.6)
       bigdecimal (>= 3.1, < 5)
@@ -373,7 +373,7 @@ GEM
     net-http (0.10.0)
       net-protocol (>= 0.3.0)
       uri (>= 0.11.1)
-    net-imap (0.6.7)
+    net-imap (0.6.8)
       date
       net-protocol
     net-pop (0.1.2)
@@ -406,7 +406,7 @@ GEM
       nokogiri (~> 1.5)
     okcomputer (1.20.0)
       benchmark
-    openapi_parser (2.3.1)
+    openapi_parser (2.4.0)
     optimist (3.2.1)
     ostruct (0.6.3)
     parallel (2.3.0)
@@ -606,7 +606,7 @@ GEM
       actionview (>= 7.1.0)
       activesupport (>= 7.1.0)
       concurrent-ruby (~> 1)
-    webmock (3.29.0)
+    webmock (3.34.0)
       addressable (>= 2.8.0)
       crack (>= 0.3.2)
       hashdiff (>= 0.4.0, < 2.0.0)
@@ -634,7 +634,7 @@ PLATFORMS
   x86_64-linux-musl
 
 DEPENDENCIES
-  aws-sdk-s3 (~> 1.208.0)
+  aws-sdk-s3
   bootsnap
   brakeman
   capistrano-passenger
@@ -643,7 +643,7 @@ DEPENDENCIES
   committee
   config
   connection_pool
-  cssbundling-rails (~> 1.4)
+  cssbundling-rails
   csv
   debug
   dlss-capistrano
@@ -657,9 +657,9 @@ DEPENDENCIES
   jbuilder
   jwt
   kaminari
-  listen (~> 3)
+  listen
   lograge
-  moab-versioning (~> 6.0)
+  moab-versioning
   okcomputer
   pg
   postgresql_cursor
@@ -668,7 +668,7 @@ DEPENDENCIES
   pry-byebug
   puma
   rails (~> 8.1.0)
-  redis (~> 5.0)
+  redis
   resolv-replace
   rspec-rails
   rspec_junit_formatter
@@ -679,7 +679,7 @@ DEPENDENCIES
   rubocop-rspec
   rubocop-rspec_rails
   shoulda-matchers
-  sidekiq (~> 8.0)
+  sidekiq
   sidekiq-pro!
   simplecov
   turbo-rails

@@ -10,8 +10,7 @@ RSpec.configure do |config|
 
     begin
       Redis.new(url: Settings.redis_url).flushall
-    rescue Redis::CannotConnectError
-      p 'we are rescuing!'
+    rescue Redis::CannotConnectError # rubocop:disable Lint/SuppressedException
     end
   end
 end

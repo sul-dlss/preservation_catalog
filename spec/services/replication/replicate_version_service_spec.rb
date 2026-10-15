@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-# rubocop:disable RSpec/SubjectStub
+# rubocop:disable-next RSpec/SubjectStub
 RSpec.describe Replication::ReplicateVersionService do
   subject(:service) { described_class.new(preserved_object:, version:) }
 
@@ -228,4 +228,3 @@ RSpec.describe Replication::ReplicateVersionService do
     end
   end
 end
-# rubocop:enable RSpec/SubjectStub

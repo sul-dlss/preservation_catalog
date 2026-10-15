@@ -4,6 +4,7 @@
 
 require 'simplecov'
 SimpleCov.start :rails do
+  skip '/bin/'
   skip '/spec/'
   skip '/vendor/'
   skip '/lib/'

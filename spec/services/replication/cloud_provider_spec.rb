@@ -74,7 +74,7 @@ describe Replication::CloudProvider do
       let(:zip_part) { create(:zip_part) }
 
       before do
-        allow(Settings).to receive(:zip_storage).and_return(Rails.root.join('spec', 'fixtures', 'zip_storage'))
+        allow(Settings).to receive(:zip_storage).and_return(file_fixture('zip_storage'))
       end
 
       it 'accepts/returns File body and arbitrary metadata' do

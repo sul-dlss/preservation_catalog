@@ -2,12 +2,12 @@
 
 source 'https://rubygems.org'
 
-gem 'aws-sdk-s3', '~> 1.208.0' # for S3 storage
+gem 'aws-sdk-s3'
 gem 'bootsnap', require: false
 gem 'committee' # Validates HTTP requests/responses per OpenAPI specification
 gem 'config' # Settings to manage configs on different instances
 gem 'connection_pool' # Used for redis
-gem 'cssbundling-rails', '~> 1.4'
+gem 'cssbundling-rails'
 gem 'csv' # will be removed from standard library in Ruby 3.4
 gem 'dor-event-client'
 gem 'dor-services-client'
@@ -18,7 +18,7 @@ gem 'jbuilder' # Build JSON APIs with ease.
 gem 'jwt' # for gating programmatic access to the application
 gem 'kaminari' # pagination
 gem 'lograge'
-gem 'moab-versioning', '~> 6.0' # work with Moab Objects
+gem 'moab-versioning'
 gem 'okcomputer' # ReST endpoint with upness status
 gem 'pg' # postgres database
 gem 'postgresql_cursor' # for paging over large result sets efficiently
@@ -27,13 +27,13 @@ gem 'pry' # make it possible to use pry for IRB
 gem 'pry-byebug' # call 'binding.pry' anywhere in the code to stop execution and get a pry-byebug console
 gem 'puma' # app server
 gem 'rails', '~> 8.1.0'
-gem 'redis', '~> 5.0'
+gem 'redis'
 # The default Socket.getbyhostname and other libc-bound DNS resolutions in Ruby block the entire VM until they complete.
 # In a single thread this doesn't matter, but it can cause competition and deadlock in multi-threaded environments.
 # This library is included as part of Ruby to swap out the libc implementation for a thread-friendly pure ruby version.
 # It is a monkey-patch, but obviously one provided and supported by the Ruby maintainers themselves.
 gem 'resolv-replace'
-gem 'sidekiq', '~> 8.0'
+gem 'sidekiq'
 gem 'turbo-rails'
 gem 'view_component'
 gem 'whenever', require: false # Work around https://github.com/javan/whenever/issues/831
@@ -58,7 +58,7 @@ group :development, :test do
 end
 
 group :development do
-  gem 'listen', '~> 3'
+  gem 'listen'
 end
 
 group :test do
